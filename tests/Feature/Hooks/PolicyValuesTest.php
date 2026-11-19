@@ -19,18 +19,11 @@ use App\Agents\Values\OperationGrant;
 use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Enums\NoSubject;
-use App\Hooks\Stack\StateTypes;
-use App\Hooks\States\ReadyState;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Operations\Exceptions\UnknownAccessType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Values\ProfileBase;
-use Illuminate\Events\Dispatcher;
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\TestCase;
 
 /**
@@ -39,14 +32,6 @@ use Tests\TestCase;
  */
 final class PolicyValuesTest extends TestCase
 {
-    public function test_every_stack_restores_the_one_ready_bottom(): void
-    {
-        $registry = new StateTypes(new Dispatcher(), FixedFileEditPermission::loader())->registry();
-        $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
-
-        $this->assertInstanceOf(ReadyState::class, $registry->get(ReadyState::TYPE_KEY)->statesFor($ready)->stateAt(0));
-    }
-
     public function test_each_role_gets_its_section_51_grants(): void
     {
         $main = ProfileBase::mainAgent()->defaultAccess();
@@ -124,12 +109,10 @@ final class PolicyValuesTest extends TestCase
             [false, AccessRuleType::ExplicitDenial],
             [$denying->decide($push)->allowed, $denying->decide($push)->rule],
         );
+        $readOnly = ProfileBase::readOnlyHelper()->defaultAccess();
         $this->assertSame(
             [false, AccessRuleType::NotGranted],
-            [
-                ProfileBase::readOnlyHelper()->defaultAccess()->decide($edit)->allowed,
-                ProfileBase::readOnlyHelper()->defaultAccess()->decide($edit)->rule,
-            ],
+            [$readOnly->decide($edit)->allowed, $readOnly->decide($edit)->rule],
         );
     }
 

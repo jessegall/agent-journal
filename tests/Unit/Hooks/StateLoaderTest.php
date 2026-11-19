@@ -89,12 +89,10 @@ final class StateLoaderTest extends TestCase
     public function test_the_ready_type_builds_the_one_bottom_state(): void
     {
         $registry = new StateTypes(new Dispatcher(), FixedFileEditPermission::loader(false))->registry();
+        $readyType = $registry->get(ReadyState::TYPE_KEY);
         $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
 
-        $this->assertSame(
-            ReadyState::class,
-            $registry->get(ReadyState::TYPE_KEY)->statesFor($ready)->stateAt(0)::class,
-        );
+        $this->assertSame(ReadyState::class, $readyType->statesFor($ready)->stateAt(0)::class);
     }
 
     public function test_a_failed_build_is_not_kept_and_the_next_use_builds_again(): void

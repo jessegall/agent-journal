@@ -24,7 +24,7 @@ enum HookEvent: string
         return $this === self::PreToolUse;
     }
 
-    public function startsSession(): bool
+    public function isSessionStart(): bool
     {
         return $this === self::SessionStart;
     }

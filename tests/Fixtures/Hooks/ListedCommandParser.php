@@ -19,33 +19,35 @@ final class ListedCommandParser implements ShellCommandParser
 {
     public function parse(string $line, ShellDialect $dialect): ShellCommand
     {
-        $part = match ($line) {
-            'composer test' => new CommandPart(
-'composer',
- ['test'],
- CommandEffect::ChangesFiles,
- CommandType::Verification,
-),
-            'journal run tests' => new CommandPart(
-'journal',
- ['run', 'tests'],
- CommandEffect::ReadsOnly,
- CommandType::Alias,
-),
-            'journal run tests --write' => new CommandPart(
-'journal',
- ['run', 'tests', '--write'],
- CommandEffect::ChangesFiles,
- CommandType::Alias,
-),
-            'git status' => new CommandPart('git', ['status'], CommandEffect::ReadsOnly, CommandType::Ordinary),
-            default => null,
-        };
+        $known = self::knownParts();
 
-        if ($part === null) {
+        if (! array_key_exists($line, $known)) {
             return new ShellCommand($line, $dialect, ParseOutcome::Unparsed, []);
         }
 
-        return new ShellCommand($line, $dialect, ParseOutcome::Complete, [$part]);
+        return new ShellCommand($line, $dialect, ParseOutcome::Complete, [$known[$line]]);
+    }
+
+    /**
+     * @return array<string, CommandPart>
+     */
+    private static function knownParts(): array
+    {
+        return [
+            'composer test' => new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification),
+            'journal run tests' => new CommandPart(
+                'journal',
+                ['run', 'tests'],
+                CommandEffect::ReadsOnly,
+                CommandType::Alias,
+            ),
+            'journal run tests --write' => new CommandPart(
+                'journal',
+                ['run', 'tests', '--write'],
+                CommandEffect::ChangesFiles,
+                CommandType::Alias,
+            ),
+            'git status' => new CommandPart('git', ['status'], CommandEffect::ReadsOnly, CommandType::Ordinary),
+        ];
     }
 }

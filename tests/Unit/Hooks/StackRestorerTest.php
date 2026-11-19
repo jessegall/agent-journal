@@ -10,7 +10,6 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
-use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\InvalidBottomState;
@@ -56,7 +55,7 @@ final class StackRestorerTest extends TestCase
         $stack = $this->restorer->restore($this->records($this->bottom(), $this->task('task-42', 42)));
 
         $this->assertSame(['ready', 'task-42'], $stack->frameIds());
-        $this->assertSame(AnswerType::Deny, $stack->answer(HookInputs::all()['stop'])->decision->answerType());
+        $this->assertTrue($stack->answer(HookInputs::all()['stop'])->isDenied());
     }
 
     public function test_each_restore_reads_the_subjects_fresh(): void
@@ -90,7 +89,7 @@ final class StackRestorerTest extends TestCase
 
         $edit = HookInputs::all()['file edit'];
 
-        $this->assertSame(AnswerType::Deny, $helper->answer($edit)->decision->answerType());
+        $this->assertTrue($helper->answer($edit)->isDenied());
     }
 
     public function test_a_stack_without_a_bottom_is_refused(): void

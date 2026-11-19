@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\RecordRole;
 
 /**
+ * Where a reader stands in a part's output: per stream the next offset it expects and the unfinished line it holds,
+ * and the provisional records and problems so far. A reader resumes from it after every committed chunk.
  * @phpstan-type CheckpointFields array{
  *   offsets: array<string, int>,
  *   pending: array<string, string>,
@@ -20,9 +23,6 @@ use App\Processes\Enums\OutputStream;
  *     explanation: string,
  *   }>,
  * }
- *
- * Where a reader stands in a part's output: per stream the next offset it expects and the unfinished line it holds,
- * and the provisional records and problems so far. A reader resumes from it after every committed chunk.
  */
 final readonly class ReaderCheckpoint
 {
@@ -47,6 +47,16 @@ final readonly class ReaderCheckpoint
     public function pendingOf(OutputStream $stream): string
     {
         return $this->pending[$stream->value] ?? '';
+    }
+
+    /**
+     * The records of one role, in the order they were read.
+     *
+     * @return list<OutputRecord>
+     */
+    public function recordsOf(RecordRole $role): array
+    {
+        return array_values(array_filter($this->records, fn (OutputRecord $record): bool => $record->role === $role));
     }
 
     /**

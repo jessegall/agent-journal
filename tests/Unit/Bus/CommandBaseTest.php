@@ -58,7 +58,7 @@ final class CommandBaseTest extends TestCase
         $item = new BoundItem('Seeds', 3);
         $bound = $item->withDispatcher(ActorContext::forAgent('agent-1'));
         $properties = array_map(
-            fn (ReflectionProperty $property): string => $property->getName(),
+            fn (ReflectionProperty $property) => $property->getName(),
             new ReflectionClass(BoundItem::class)->getProperties(),
         );
         $grammar = new CommandGrammar(fn (string $class) => true);

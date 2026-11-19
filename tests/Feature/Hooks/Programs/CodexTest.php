@@ -24,18 +24,23 @@ use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
-use Tests\Support\ChecksProgramFixtures;
+use Tests\Support\ChecksProgramAdapter;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class CodexTest extends TestCase
 {
-    use ChecksProgramFixtures;
+    use ChecksProgramAdapter;
     use RefreshHookDatabase;
 
     protected static function fixtureFolder(): string
     {
         return 'Codex';
+    }
+
+    protected static function selectedModel(): string
+    {
+        return 'gpt-5-codex';
     }
 
     #[DataProvider('mapping')]
@@ -165,12 +170,6 @@ final class CodexTest extends TestCase
         $this->assertInstanceOf(JudgedCall::class, $call);
 
         return ($call->render)($answer);
-    }
-
-    public function test_the_host_starts_the_program_on_the_selected_model_and_no_actual_model_is_reported(): void
-    {
-        $this->assertSame(['--model', 'gpt-5-codex'], $this->adapter()->modelArguments('gpt-5-codex'));
-        $this->assertFalse($this->adapter()->capabilities()->reportsActualModel);
     }
 
     private function adapter(): CodexAdapter

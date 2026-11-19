@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Text\Values;
 
+use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Support\MarkdownText;
 use App\Text\Support\Section;
 
@@ -43,6 +44,20 @@ final readonly class TextVersion
         $markdown = MarkdownText::body($text);
 
         return new self($id, $label, $markdown->text, $markdown->sections);
+    }
+
+    /**
+     * Version 1 of a Markdown text that has no other version; asking for any other version is refused.
+     *
+     * @throws TextVersionUnavailable
+     */
+    public static function ofOnlyMarkdown(string|null $askedVersion, string $label, string $text): self
+    {
+        if ($askedVersion !== null && $askedVersion !== '1') {
+            throw TextVersionUnavailable::named($askedVersion);
+        }
+
+        return self::ofMarkdown('1', $label, $text);
     }
 
     /**

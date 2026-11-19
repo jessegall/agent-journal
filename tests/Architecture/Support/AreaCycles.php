@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use PhpOption\None;
+use PhpOption\Option;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
@@ -56,9 +58,15 @@ final readonly class AreaCycles
             }
 
             foreach ($names as $use) {
-                $used = self::areaOfName($use->name);
+                $area = self::areaOfName($use->name);
 
-                if ($used !== null && $used !== $user && ! isset($edges[$user][$used])) {
+                if ($area->isEmpty()) {
+                    continue;
+                }
+
+                $used = $area->get();
+
+                if ($used !== $user && ! isset($edges[$user][$used])) {
                     $edges[$user][$used] = substr(
                         $path,
                         strlen(dirname($appFolder)) + 1,
@@ -172,14 +180,19 @@ final readonly class AreaCycles
         return self::areaOf(count($parts) > 1 ? $parts[0] : null);
     }
 
-    private static function areaOfName(string $name): string|null
+    /**
+     * The project area the name belongs to; none for a name outside app and the domains.
+     *
+     * @return Option<string>
+     */
+    private static function areaOfName(string $name): Option
     {
         $parts = explode('\\', ltrim($name, '\\'));
 
         return match ($parts[0]) {
-            'Domain' => count($parts) > 2 ? "Domain\\{$parts[1]}" : null,
-            'App' => self::areaOf(count($parts) > 2 ? $parts[1] : null),
-            default => null,
+            'Domain' => count($parts) > 2 ? Option::fromValue("Domain\\{$parts[1]}") : None::create(),
+            'App' => Option::fromValue(self::areaOf(count($parts) > 2 ? $parts[1] : null)),
+            default => None::create(),
         };
     }
 

@@ -18,9 +18,9 @@ use Tests\TestCase;
  */
 final class SkillAuthoringConsoleTest extends TestCase
 {
-    private const string DISPATCH = AssignmentPolicy::class.':dispatch';
-
     use CommitsHookRows;
+
+    private const string DISPATCH = AssignmentPolicy::class.':dispatch';
 
     private const array TABLES = [
         'skill_publications',
