@@ -76,17 +76,17 @@ final class Exports
     private function event(string $name): string
     {
         $type = $this->ownType('events', $name);
-        $name = $type->getName();
+        $className = $type->getName();
 
-        if ($type->isInterface() || $type->isAbstract() || ! $type->isFinal() || ! is_a($name, Event::class, true)) {
-            throw InvalidExports::notAnEvent($this->owner, $name);
+        if ($type->isInterface() || $type->isAbstract() || ! $type->isFinal() || ! is_a($className, Event::class, true)) {
+            throw InvalidExports::notAnEvent($this->owner, $className);
         }
 
         if ($type->implementsInterface(Command::class)) {
-            throw InvalidExports::eventIsACommand($this->owner, $name);
+            throw InvalidExports::eventIsACommand($this->owner, $className);
         }
 
-        return $name;
+        return $className;
     }
 
     /**
@@ -123,13 +123,13 @@ final class Exports
      */
     private function exception(string $name): string
     {
-        $name = $this->ownType('exceptions', $name)->getName();
+        $className = $this->ownType('exceptions', $name)->getName();
 
-        if (! is_a($name, Throwable::class, true) || ! str_contains($name, '\\Exceptions\\')) {
-            throw InvalidExports::notAnException($this->owner, $name);
+        if (! is_a($className, Throwable::class, true) || ! str_contains($className, '\\Exceptions\\')) {
+            throw InvalidExports::notAnException($this->owner, $className);
         }
 
-        return $name;
+        return $className;
     }
 
     /**
@@ -190,16 +190,16 @@ final class Exports
      */
     private function ownType(string $list, string $name): ReflectionClass
     {
-        $name = ltrim($name, '\\');
+        $className = ltrim($name, '\\');
 
-        if (! class_exists($name) && ! interface_exists($name) && ! enum_exists($name) && ! trait_exists($name)) {
-            throw InvalidExports::missing($this->owner, $list, $name);
+        if (! class_exists($className) && ! interface_exists($className) && ! enum_exists($className) && ! trait_exists($className)) {
+            throw InvalidExports::missing($this->owner, $list, $className);
         }
 
-        if (stripos($name, $this->namespace.'\\') !== 0) {
-            throw InvalidExports::outsideOwner($this->owner, $name, $this->namespace);
+        if (stripos($className, $this->namespace.'\\') !== 0) {
+            throw InvalidExports::outsideOwner($this->owner, $className, $this->namespace);
         }
 
-        return new ReflectionClass($name);
+        return new ReflectionClass($className);
     }
 }

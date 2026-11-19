@@ -84,7 +84,7 @@ final readonly class TreeClassifier implements CommandClassifier
 
     public function withCandidate(CommandRule $rule): self
     {
-        return clone($this, ['rules' => $this->rules->withRules($rule)]);
+        return clone ($this, ['rules' => $this->rules->withRules($rule)]);
     }
 
     private function classifyTree(ShellTree $tree, int $depth, ExecutionContext $context): Classification
@@ -150,20 +150,20 @@ final readonly class TreeClassifier implements CommandClassifier
         if (AnalysisLimit::Depth->isPassedBy($depth)) {
             return new PartClassification($node, [], [new UnresolvedFact(UnresolvedType::UnsupportedSyntax, $node, 'Wrappers and nested shells go deeper than the analysis allows.')], CommandType::Unknown);
         }
-        $words = array_map(fn (Word $word): Word => $word->boundTo($context->positional), $words);
-        $program = $this->names->canonical($words[0], $node, $this->rules->spellings());
+        $boundWords = array_map(fn (Word $word): Word => $word->boundTo($context->positional), $words);
+        $program = $this->names->canonical($boundWords[0], $node, $this->rules->spellings());
         if ($program instanceof UnresolvedFact) {
             return new PartClassification($node, [], [$program], CommandType::Unknown);
         }
-        $alias = $this->aliasOf($program, $words, $context);
+        $alias = $this->aliasOf($program, $boundWords, $context);
         if ($alias->isFound) {
-            return $this->aliasPart($program, $alias, $words, $node, $depth, $context);
+            return $this->aliasPart($program, $alias, $boundWords, $node, $depth, $context);
         }
         $programClassifiers = $this->programClassifiers->for($program);
         if ($programClassifiers !== []) {
-            return $programClassifiers[0]->classify($words, $node, $program, $context);
+            return $programClassifiers[0]->classify($boundWords, $node, $program, $context);
         }
-        $scripts = $this->scripts->scriptOf($program->family, $words, $context->projectRoot);
+        $scripts = $this->scripts->scriptOf($program->family, $boundWords, $context->projectRoot);
         if ($scripts !== []) {
             return $this->scriptPart($program, $scripts[0], $node, $depth, $context);
         }
@@ -171,11 +171,11 @@ final readonly class TreeClassifier implements CommandClassifier
 
         return match (true) {
             in_array($program->family, self::SOURCE_READERS, true) => $this->unknown($node, $program, UnresolvedType::InterpretedSource, "{$program->family} runs source this analysis cannot see."),
-            array_key_exists($program->family, self::SHELL_DIALECTS) => $this->shellPart($program, $words, $node, $depth, $context),
-            $program->family === 'find' => $this->findPart($program, $words, $node, $depth, $context),
-            $program->family === 'git' => $this->gitPart($program, $words, $node),
-            $wrapper !== null => $this->wrapperPart($wrapper, $program, $words, $node, $depth, $context),
-            default => $this->rulePart($program, $words, $node),
+            array_key_exists($program->family, self::SHELL_DIALECTS) => $this->shellPart($program, $boundWords, $node, $depth, $context),
+            $program->family === 'find' => $this->findPart($program, $boundWords, $node, $depth, $context),
+            $program->family === 'git' => $this->gitPart($program, $boundWords, $node),
+            $wrapper !== null => $this->wrapperPart($wrapper, $program, $boundWords, $node, $depth, $context),
+            default => $this->rulePart($program, $boundWords, $node),
         };
     }
 

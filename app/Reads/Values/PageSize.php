@@ -20,13 +20,13 @@ final readonly class PageSize
     public static function from(int|null $rows): self
     {
         $config = Container::getInstance()->make('config');
-        $rows ??= (int) $config->get('reads.default_limit', 50);
+        $requested = $rows ?? (int) $config->get('reads.default_limit', 50);
         $maximum = (int) $config->get('reads.page_max', 100);
 
-        if ($rows < 1 || $rows > $maximum) {
-            throw ValidationException::withMessages(['per_page' => "A page shows 1 to {$maximum} rows, not {$rows}."]);
+        if ($requested < 1 || $requested > $maximum) {
+            throw ValidationException::withMessages(['per_page' => "A page shows 1 to {$maximum} rows, not {$requested}."]);
         }
 
-        return new self($rows);
+        return new self($requested);
     }
 }

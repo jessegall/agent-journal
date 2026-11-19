@@ -24,6 +24,6 @@ final readonly class SetBooleanSettingHandler implements CommandHandler
     {
         $setting = $this->targets->setting($command->setting, BooleanSetting::class, SettingType::Boolean);
 
-        return $this->writer->setValue($setting, $this->codec->encodeBoolean($setting, $command->value), $command->expectedRevision);
+        return $this->writer->setValue($setting, $this->codec->encodeBoolean($command->value), $command->expectedRevision);
     }
 }

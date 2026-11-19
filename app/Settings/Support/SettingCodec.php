@@ -38,7 +38,7 @@ final readonly class SettingCodec
         return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
-    public function encodeBoolean(BooleanSetting $setting, bool $value): EncodedValue
+    public function encodeBoolean(bool $value): EncodedValue
     {
         return EncodedValue::of($value);
     }

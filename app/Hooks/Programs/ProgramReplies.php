@@ -25,9 +25,9 @@ final class ProgramReplies
      */
     public static function allowTool(array $context): ProgramReply
     {
-        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => PreToolOutput::from([
+        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => [
             'additionalContext' => PreToolOutput::contextText($context),
-        ])]));
+        ]]));
     }
 
     /**
@@ -35,11 +35,11 @@ final class ProgramReplies
      */
     public static function denyTool(string $reason, array $context): ProgramReply
     {
-        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => PreToolOutput::from([
+        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => [
             'permissionDecision' => ProgramPermission::Deny,
             'permissionDecisionReason' => $reason,
             'additionalContext' => PreToolOutput::contextText($context),
-        ])]));
+        ]]));
     }
 
     /**
@@ -48,10 +48,10 @@ final class ProgramReplies
      */
     public static function rewriteTool(array $updatedInput, array $context): ProgramReply
     {
-        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => PreToolOutput::from([
+        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => [
             'additionalContext' => PreToolOutput::contextText($context),
             'updatedInput' => $updatedInput,
-        ])]));
+        ]]));
     }
 
     /**

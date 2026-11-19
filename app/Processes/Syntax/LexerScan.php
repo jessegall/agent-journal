@@ -644,17 +644,18 @@ final class LexerScan
      */
     private function closingQuote(string $quote, int $index, int $start, string $what): int
     {
+        $position = $index;
         $length = strlen($this->source);
-        while ($index < $length) {
-            if ($this->source[$index] === '\\') {
-                $index += 2;
+        while ($position < $length) {
+            if ($this->source[$position] === '\\') {
+                $position += 2;
 
                 continue;
             }
-            if ($this->source[$index] === $quote) {
-                return $index;
+            if ($this->source[$position] === $quote) {
+                return $position;
             }
-            $index++;
+            $position++;
         }
 
         throw ShellLineUnreadable::unfinished($what, $start);
@@ -680,30 +681,31 @@ final class LexerScan
      */
     private function pastNestedCase(int $index, int $start, string $what): int
     {
+        $position = $index;
         $depth = 0;
         $length = strlen($this->source);
-        while ($index < $length) {
-            $character = $this->source[$index];
+        while ($position < $length) {
+            $character = $this->source[$position];
             if ($character === "'" || $character === '"') {
-                $index = $this->closingQuoteOf($character, $index, $start, $what) + 1;
+                $position = $this->closingQuoteOf($character, $position, $start, $what) + 1;
 
                 continue;
             }
-            if ($this->startsWord($index, 'case')) {
+            if ($this->startsWord($position, 'case')) {
                 $depth++;
-                $index += 4;
+                $position += 4;
 
                 continue;
             }
-            if ($this->startsWord($index, 'esac') || ($this->startsWord($index, 'esa') === false && substr_compare($this->source, 'esac', $index, 4) === 0 && in_array($this->at($index + 4), ['', ')', ' ', ';', "\n"], true) && str_contains(" \t\n;", $this->source[$index - 1] ?? ' '))) {
+            if ($this->startsWord($position, 'esac') || ($this->startsWord($position, 'esa') === false && substr_compare($this->source, 'esac', $position, 4) === 0 && in_array($this->at($position + 4), ['', ')', ' ', ';', "\n"], true) && str_contains(" \t\n;", $this->source[$position - 1] ?? ' '))) {
                 if (--$depth === 0) {
-                    return $index + 4;
+                    return $position + 4;
                 }
-                $index += 4;
+                $position += 4;
 
                 continue;
             }
-            $index++;
+            $position++;
         }
 
         throw ShellLineUnreadable::unfinished($what, $start);

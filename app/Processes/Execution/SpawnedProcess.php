@@ -42,7 +42,7 @@ final class SpawnedProcess
      */
     public static function start(array $argv, array $descriptors, string $folder, array $environment): self|string
     {
-        $argv = ['setsid', ...$argv];
+        $command = ['setsid', ...$argv];
         $error = '';
         set_error_handler(function (int $level, string $message) use (&$error): bool {
             $error = $message;
@@ -52,13 +52,13 @@ final class SpawnedProcess
         pcntl_signal(SIGPIPE, SIG_DFL);
         try {
             // @phpstan-ignore argument.type (proc_open takes ['redirect', <descriptor>], which its stub does not describe)
-            $process = proc_open($argv, $descriptors, $pipes, $folder, $environment);
+            $process = proc_open($command, $descriptors, $pipes, $folder, $environment);
         } finally {
             restore_error_handler();
             pcntl_signal(SIGPIPE, SIG_IGN);
         }
         if (! is_resource($process)) {
-            return $error === '' ? "{$argv[0]} could not be started" : $error;
+            return $error === '' ? "{$command[0]} could not be started" : $error;
         }
         $status = proc_get_status($process);
 

@@ -46,7 +46,7 @@ final class SettingCodecTest extends TestCase
         }
 
         foreach ([true, false] as $flag) {
-            $this->assertSame($flag, $this->codec->decode('Reviews', $settings->notifyOwner, $this->codec->encodeBoolean($settings->notifyOwner, $flag)));
+            $this->assertSame($flag, $this->codec->decode('Reviews', $settings->notifyOwner, $this->codec->encodeBoolean($flag)));
         }
 
         foreach ([3, 0, 10] as $number) {

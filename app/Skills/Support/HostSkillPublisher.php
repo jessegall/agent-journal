@@ -43,24 +43,24 @@ final readonly class HostSkillPublisher implements SkillPublisher
 
     public function activate(string $target, string $stagingFolder): void
     {
-        $target = $this->insideRoot($target);
+        $activePath = $this->insideRoot($target);
         $folder = $this->insideRoot($stagingFolder);
-        $this->makeFolder(dirname($target));
-        $lock = fopen("{$target}.lock", 'c');
+        $this->makeFolder(dirname($activePath));
+        $lock = fopen("{$activePath}.lock", 'c');
 
         if ($lock === false) {
-            throw SkillPublicationFailed::write("the lock beside {$target} cannot be opened");
+            throw SkillPublicationFailed::write("the lock beside {$activePath} cannot be opened");
         }
 
         try {
             flock($lock, LOCK_EX);
-            $this->checkOwned($target);
-            $pointer = "{$target}.next-".bin2hex(random_bytes(6));
+            $this->checkOwned($activePath);
+            $pointer = "{$activePath}.next-".bin2hex(random_bytes(6));
 
-            if (! @symlink($folder, $pointer) || ! @rename($pointer, $target)) {
+            if (! @symlink($folder, $pointer) || ! @rename($pointer, $activePath)) {
                 @unlink($pointer);
 
-                throw SkillPublicationFailed::write("the pointer at {$target} cannot be switched");
+                throw SkillPublicationFailed::write("the pointer at {$activePath} cannot be switched");
             }
         } finally {
             flock($lock, LOCK_UN);
@@ -100,9 +100,9 @@ final readonly class HostSkillPublisher implements SkillPublisher
 
     public function activeFolder(string $target): string|null
     {
-        $target = $this->insideRoot($target);
+        $activePath = $this->insideRoot($target);
 
-        return is_link($target) ? (string) readlink($target) : null;
+        return is_link($activePath) ? (string) readlink($activePath) : null;
     }
 
     /**

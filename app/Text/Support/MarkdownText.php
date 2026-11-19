@@ -51,17 +51,17 @@ final readonly class MarkdownText
             throw MarkdownInvalid::encoding();
         }
 
-        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $normalized = str_replace(["\r\n", "\r"], "\n", $text);
 
-        if (trim($text) === '') {
+        if (trim($normalized) === '') {
             throw ContentMissing::field('body');
         }
 
-        if (strlen($text) > self::BODY_BYTES) {
+        if (strlen($normalized) > self::BODY_BYTES) {
             throw ContentTooLarge::field('body', self::BODY_BYTES.' bytes');
         }
 
-        return new self($text, self::outlineOf($text));
+        return new self($normalized, self::outlineOf($normalized));
     }
 
     /**

@@ -13,10 +13,10 @@ final readonly class LineNormalizer
 {
     public function normalize(string $line): string
     {
-        $line = (string) preg_replace('/\e\[[0-9;]{0,32}m/', '', rtrim($line, "\r"));
-        $carriageReturn = strrpos($line, "\r");
+        $stripped = (string) preg_replace('/\e\[[0-9;]{0,32}m/', '', rtrim($line, "\r"));
+        $carriageReturn = strrpos($stripped, "\r");
 
-        return $carriageReturn === false ? $line : substr($line, $carriageReturn + 1);
+        return $carriageReturn === false ? $stripped : substr($stripped, $carriageReturn + 1);
     }
 
     public function hasUnsupportedControl(string $line): bool

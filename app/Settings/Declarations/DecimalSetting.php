@@ -59,12 +59,12 @@ final readonly class DecimalSetting implements Setting
         $setting = new self($key, $label, $default, $precision, $scale, $minimum, $maximum);
 
         try {
-            $default = $setting->normalized($default);
+            $normalizedDefault = $setting->normalized($default);
         } catch (DecimalInvalid) {
             throw SettingDeclarationInvalid::defaultOutOfBounds($key);
         }
 
-        return new self($key, $label, $default, $precision, $scale, $minimum, $maximum);
+        return new self($key, $label, $normalizedDefault, $precision, $scale, $minimum, $maximum);
     }
 
     public function key(): string
@@ -90,17 +90,17 @@ final readonly class DecimalSetting implements Setting
      */
     public function normalized(Decimal $value): Decimal
     {
-        $value = $value->toScale($this->scale);
+        $scaled = $value->toScale($this->scale);
 
-        if ($value->precision() > $this->precision) {
+        if ($scaled->precision() > $this->precision) {
             throw DecimalInvalid::tooManyDigits($this->precision);
         }
 
-        if ($this->minimum !== null && $value->isLessThan($this->minimum) || $this->maximum !== null && $value->isGreaterThan($this->maximum)) {
+        if ($this->minimum !== null && $scaled->isLessThan($this->minimum) || $this->maximum !== null && $scaled->isGreaterThan($this->maximum)) {
             throw DecimalInvalid::outOfBounds();
         }
 
-        return $value;
+        return $scaled;
     }
 
     public function defaultValue(): Decimal

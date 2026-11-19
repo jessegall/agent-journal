@@ -22,7 +22,8 @@ final readonly class RepeatedStep extends Step
         $round = $sequence($this->steps);
         $while = $this->while;
 
-        return function (object $value) use ($round, $while): object {
+        return function (object $input) use ($round, $while): object {
+            $value = $input;
             while ($while($value)) {
                 $value = $round($value);
             }

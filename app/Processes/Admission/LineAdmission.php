@@ -30,7 +30,6 @@ use App\Processes\Support\ExecutionPlanner;
 use App\Processes\Support\OutputDiskCapacity;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\RunnerCapability;
-use App\Processes\Values\RunAdmission;
 use App\Processes\Values\Admission;
 use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\AdmittedRun;
@@ -40,6 +39,7 @@ use App\Processes\Values\CommandPermissions;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\PartClassification;
+use App\Processes\Values\RunAdmission;
 use App\Processes\Values\ShellTree;
 use Illuminate\Contracts\Container\Container;
 use Throwable;
@@ -80,7 +80,7 @@ final readonly class LineAdmission implements ShellAdmission
         $tree = $this->syntax->parse($line, $dialect);
         $earlier = ProcessRun::query()->withoutGlobalScopes()->where('admission_id', $requestKey)->first();
         if ($earlier !== null) {
-            return $this->repeated($earlier, $tree, $line, $context, $actor);
+            return $this->repeated($earlier, $tree, $line, $actor);
         }
         if ($tree->outcome !== ParseOutcome::Complete) {
             $reason = $tree->diagnostic === null ? 'The line could not be read completely.' : $tree->diagnostic->reason;
@@ -256,7 +256,6 @@ final readonly class LineAdmission implements ShellAdmission
         ProcessRun $earlier,
         ShellTree $tree,
         string $line,
-        ExecutionContext $context,
         ActorIdentity $actor,
     ): Admission {
         if (! hash_equals($earlier->source_digest, hash('sha256', $line))) {

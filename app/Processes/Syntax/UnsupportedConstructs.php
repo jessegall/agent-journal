@@ -52,15 +52,16 @@ final readonly class UnsupportedConstructs
      */
     private function endOfTrailingRedirects(GrammarContext $context, int $end): int
     {
+        $last = $end;
         $cursor = $context->cursor;
         while ($cursor->is(TokenType::Redirect)) {
             $cursor->advance();
             if ($cursor->is(TokenType::Word)) {
-                $end = $cursor->currentEnd();
+                $last = $cursor->currentEnd();
                 $cursor->advance();
             }
         }
 
-        return $end;
+        return $last;
     }
 }

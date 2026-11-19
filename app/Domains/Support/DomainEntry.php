@@ -147,9 +147,9 @@ final readonly class DomainEntry
      */
     public function ownsEvent(string $name): bool
     {
-        $name = ltrim($name, '\\');
+        $className = ltrim($name, '\\');
 
-        return $this->ownsName($name) && is_subclass_of($name, Event::class);
+        return $this->ownsName($className) && is_subclass_of($className, Event::class);
     }
 
     /**

@@ -113,20 +113,20 @@ final readonly class BuiltinSteps
      */
     private function printed(string $format, string ...$values): string
     {
-        $format = strtr($format, ['\\n' => "\n", '\\t' => "\t", '\\\\' => '\\']);
-        $values = array_values($values);
-        $perPass = max(1, preg_match_all('/%[sd]/', $format));
+        $pattern = strtr($format, ['\\n' => "\n", '\\t' => "\t", '\\\\' => '\\']);
+        $arguments = array_values($values);
+        $perPass = max(1, preg_match_all('/%[sd]/', $pattern));
         $output = '';
         do {
-            $pass = array_splice($values, 0, $perPass);
+            $pass = array_splice($arguments, 0, $perPass);
             $output .= (string) preg_replace_callback('/%([sd%])/', function (array $match) use (&$pass): string {
                 return match ($match[1]) {
                     '%' => '%',
                     'd' => (string) (int) (array_shift($pass) ?? 0),
                     default => (string) (array_shift($pass) ?? ''),
                 };
-            }, $format);
-        } while ($values !== []);
+            }, $pattern);
+        } while ($arguments !== []);
 
         return $output;
     }

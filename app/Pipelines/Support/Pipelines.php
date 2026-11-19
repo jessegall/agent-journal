@@ -83,7 +83,8 @@ final class Pipelines
     {
         $runs = array_map($this->runOf(...), $steps);
 
-        return function (object $value) use ($runs): object {
+        return function (object $input) use ($runs): object {
+            $value = $input;
             foreach ($runs as $run) {
                 $value = $run($value);
             }

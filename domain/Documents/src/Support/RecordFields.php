@@ -63,16 +63,16 @@ final class RecordFields
      */
     private static function text(string $field, string $value, int $maximum): string
     {
-        $value = trim($value);
+        $trimmed = trim($value);
 
-        if ($value === '') {
+        if ($trimmed === '') {
             throw ContentMissing::field($field);
         }
 
-        if (mb_strlen($value) > $maximum) {
+        if (mb_strlen($trimmed) > $maximum) {
             throw ContentTooLarge::field($field, "{$maximum} characters");
         }
 
-        return $value;
+        return $trimmed;
     }
 }
