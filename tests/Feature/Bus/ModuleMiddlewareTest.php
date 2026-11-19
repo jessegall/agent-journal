@@ -25,6 +25,7 @@ use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Models\Message;
 use Domain\Plans\Commands\StartPlan;
@@ -37,6 +38,7 @@ use Domain\Rules\Models\Rule;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
@@ -230,6 +232,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $task = Task::factory()->create(['title' => 'Held']);
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $bus->run(new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($helper)));
 
         try {

@@ -7,6 +7,7 @@ namespace App\Http\Middleware\Web;
 use App\Bus\Support\RequestKey;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -24,10 +25,14 @@ final readonly class ReadIdempotencyKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->hasHeader(self::HEADER)) {
-            $this->key->set((string) $request->header(self::HEADER));
-        }
+        $this->key->set(
+            $request->hasHeader(self::HEADER) ? (string) $request->header(self::HEADER) : (string) Str::ulid(),
+        );
 
-        return $next($request);
+        try {
+            return $next($request);
+        } finally {
+            $this->key->forget();
+        }
     }
 }

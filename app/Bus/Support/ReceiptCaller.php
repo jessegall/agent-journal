@@ -41,6 +41,23 @@ final readonly class ReceiptCaller
     }
 
     /**
+     * Limits a receipt query to the keys this caller may read back: its session's own and those its actor keeps
+     * across sessions.
+     *
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     */
+    public function limitReadable(Builder $query): void
+    {
+        $query->where($query->qualifyColumn('author_type'), $this->actor->type->value)
+            ->where($query->qualifyColumn('author_id'), $this->actor->id)
+            ->where(fn (Builder $sessions) => $sessions
+                ->where($query->qualifyColumn('session_id'), $this->sessionId)
+                ->orWhereNull($query->qualifyColumn('session_id')));
+    }
+
+    /**
      * The columns a new receipt of this caller is stored with.
      *
      * @return array{author_type: string, author_id: string, session_id: string|null}

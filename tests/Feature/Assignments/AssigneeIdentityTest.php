@@ -13,9 +13,11 @@ use App\Assignments\Contracts\Assignee;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\RequestKey;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Illuminate\Support\Str;
 use ReflectionClass;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
@@ -46,9 +48,11 @@ final class AssigneeIdentityTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $bus = $this->app->make(CommandBus::class);
 
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $toAgent = $bus->run(new AssignRecord($task, $agent->assigneeIdentity()))->outcomes[0]->current;
         $this->assertTrue($toAgent->holder()->isSameAs(new AssigneeIdentity('agent', $agent->id)));
 
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $toUser = $bus->run(new ReassignRecord($task, $toAgent->reference, $owner->assigneeIdentity()))
             ->outcomes[0]->current;
         $this->assertTrue($toUser->holder()->isSameAs(new AssigneeIdentity('user', (string) $owner->id)));

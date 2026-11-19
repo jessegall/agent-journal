@@ -17,11 +17,13 @@ use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\PoolReference;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\RequestKey;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
@@ -74,6 +76,7 @@ final class AssignmentPurposeTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), DeskSeat::LINK_TYPE);
 
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $this->assertThrows(fn () => $bus->run(new AssignRecord($seat, $holder)), AssignmentTypeInternal::class);
         $this->assertThrows(
             fn () => $writer->assignUnfinished($holder, fn () => new AssignmentGroup($seat, [$seat])),
@@ -89,6 +92,7 @@ final class AssignmentPurposeTest extends TestCase
         $this->assertSame(0, AssignmentRecord::query()->count());
 
         $task = Task::factory()->create()->assignmentIdentity();
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $bus->run(new AssignRecord($task, $holder));
         $this->assertSame(1, AssignmentRecord::query()->count());
     }

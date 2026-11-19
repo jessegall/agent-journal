@@ -10,6 +10,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
@@ -54,18 +55,18 @@ final class PlanWorkCommandsTest extends TestCase
     {
         $root = ['rootType' => Plan::LINK_TYPE, 'rootId' => $this->plan->id];
 
-        $given = $this->signed($this->main, '/agent/plans/work/assign', [...$root, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])
+        $given = $this->signed($this->main, '/agent/plans/work/assign', [...$root, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id, 'request_key' => (string) Str::ulid()])
             ->assertOk()->assertJson(['cascade' => true, 'changed' => 3, 'unchanged' => 0, 'skipped' => 2])->assertJsonMissingPath('outcomes');
         $reference = (string) $given->json('root.holder.reference');
         $this->assertSame(3, AssignmentRecord::query()->withoutGlobalScopes()->count());
 
-        $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => TestIds::of(999999), 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id])
+        $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => TestIds::of(999999), 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id, 'request_key' => (string) Str::ulid()])
             ->assertConflict();
-        $this->signed($this->helper, '/agent/plans/work/unassign', [...$root, 'assignmentId' => $reference, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id])
+        $this->signed($this->helper, '/agent/plans/work/unassign', [...$root, 'assignmentId' => $reference, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'request_key' => (string) Str::ulid()])
             ->assertForbidden();
-        $moved = $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => $reference, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id])
+        $moved = $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => $reference, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id, 'request_key' => (string) Str::ulid()])
             ->assertOk()->assertJson(['changed' => 3, 'skipped' => 2]);
-        $this->signed($this->main, '/agent/plans/work/unassign', [...$root, 'assignmentId' => (string) $moved->json('root.holder.reference'), 'holderType' => 'agent', 'holderId' => $this->main->agent->id])
+        $this->signed($this->main, '/agent/plans/work/unassign', [...$root, 'assignmentId' => (string) $moved->json('root.holder.reference'), 'holderType' => 'agent', 'holderId' => $this->main->agent->id, 'request_key' => (string) Str::ulid()])
             ->assertOk()->assertJson(['changed' => 3]);
 
         $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());

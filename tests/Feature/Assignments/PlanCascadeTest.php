@@ -11,6 +11,7 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -136,11 +137,15 @@ final class PlanCascadeTest extends TestCase
 
     private function assignWork(RecordIdentity $root, AssigneeIdentity $recipient): AssignmentResult
     {
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+
         return $this->app->make(CommandBus::class)->run(new AssignPlanWork($root, $recipient));
     }
 
     private function unassignWork(RecordIdentity $root, AssignmentReference $expectedRoot): AssignmentResult
     {
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+
         return $this->app->make(CommandBus::class)->run(new UnassignPlanWork($root, $expectedRoot));
     }
 }

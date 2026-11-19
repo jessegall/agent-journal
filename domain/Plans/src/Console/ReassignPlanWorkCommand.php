@@ -20,7 +20,14 @@ final class ReassignPlanWorkCommand extends Command
 {
     use SendsPlanWorkCommands;
 
-    protected $signature = 'plan:reassign-work {type : plans.plan or plans.phase} {id} {--assignment= : The root assignment row id it has now} {--holder= : The root holder now as type:id} {--to= : The new holder as type:id} {--json}';
+    protected $signature = 'plan:reassign-work
+        {type : plans.plan or plans.phase}
+        {id}
+        {--assignment= : The root assignment row id it has now}
+        {--holder= : The root holder now as type:id}
+        {--to= : The new holder as type:id}
+        {--request-key= : Send again under the key a failed attempt printed}
+        {--json}';
 
     protected $description = 'Move a plan or phase and all its unfinished work to another holder';
 

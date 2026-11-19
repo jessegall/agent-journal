@@ -7,6 +7,7 @@ namespace Domain\Plans\Console\Concerns;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use Domain\Plans\Http\Data\PlanWorkResultData;
+use Illuminate\Support\Str;
 
 /**
  * What the cascade commands share: the root by its type and id arguments, the signed call
@@ -19,14 +20,19 @@ trait SendsPlanWorkCommands
      */
     protected function sendCascade(AgentRequestSender $journal, string $verb, array $fields): int
     {
+        $given = (string) $this->option('request-key');
+        $requestKey = $given !== '' ? $given : (string) Str::ulid();
+
         try {
             $reply = $journal->send("/agent/plans/work/{$verb}", [
                 'rootType' => (string) $this->argument('type'),
                 'rootId' => (string) $this->argument('id'),
                 ...$fields,
+                'request_key' => $requestKey,
             ]);
         } catch (AgentRequestFailed $failure) {
             $this->error($failure->getMessage());
+            $this->error("Retry with --request-key={$requestKey} to get this write's answer without making it twice.");
 
             return self::FAILURE;
         }

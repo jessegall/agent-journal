@@ -11,6 +11,7 @@ use App\Assignments\Models\AssignmentRecord;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
@@ -117,6 +118,6 @@ final class SingleRecordCommandsTest extends TestCase
      */
     private function callAs(TestLaunch $launch, string $command, array $body): TestResponse
     {
-        return $this->signed($launch, "/agent/assignments/{$command}", $body);
+        return $this->signed($launch, "/agent/assignments/{$command}", [...$body, 'request_key' => (string) Str::ulid()]);
     }
 }

@@ -66,7 +66,7 @@ final class AgentRequestKeyTest extends TestCase
             ->assertExitCode(1);
     }
 
-    public function test_one_key_in_two_sessions_keys_two_separate_writes(): void
+    public function test_one_key_from_two_agents_keys_two_separate_writes(): void
     {
         $second = TestLaunch::start('hooks.main_ready');
         $other = Task::factory()->create(['title' => 'Other work']);
@@ -74,8 +74,8 @@ final class AgentRequestKeyTest extends TestCase
         $this->signed($this->main, '/agent/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id, 'request_key' => self::KEY])->assertOk();
         $this->signed($second, '/agent/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $other->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id, 'request_key' => self::KEY])->assertOk();
 
-        $sessions = $this->app->make(ConnectionInterface::class)->table('command_receipts')->where('request_key', self::KEY)->pluck('session_id')->all();
-        $this->assertEqualsCanonicalizing([$this->main->session->id, $second->session->id], $sessions);
+        $authors = $this->app->make(ConnectionInterface::class)->table('command_receipts')->where('request_key', self::KEY)->pluck('author_id')->all();
+        $this->assertEqualsCanonicalizing([$this->main->agent->id, $second->agent->id], $authors);
         $this->assertSame(2, AssignmentRecord::query()->withoutGlobalScopes()->count());
     }
 

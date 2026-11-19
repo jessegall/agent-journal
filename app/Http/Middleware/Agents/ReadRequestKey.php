@@ -28,6 +28,10 @@ final readonly class ReadRequestKey
             $this->key->set($request->string(self::FIELD)->value());
         }
 
-        return $next($request);
+        try {
+            return $next($request);
+        } finally {
+            $this->key->forget();
+        }
     }
 }

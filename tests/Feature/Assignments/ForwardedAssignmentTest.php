@@ -8,11 +8,14 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Exceptions\RequestKeyConflict;
 use App\Bus\Support\EntryDispatchers;
+use App\Bus\Support\RequestKey;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Contracts\SeatingWriter;
@@ -20,6 +23,7 @@ use App\Desks\Models\DeskRecord;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
+use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -65,6 +69,7 @@ final class ForwardedAssignmentTest extends TestCase
         );
         $task = Task::factory()->create()->assignmentIdentity();
 
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $result = $this->app->make(CommandBus::class)->run(new AssignRecord($task, $agent->assigneeIdentity()));
 
         $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment()->holder();
@@ -78,10 +83,45 @@ final class ForwardedAssignmentTest extends TestCase
         $agent = $this->withDesk(Agent::named('Builder', AgentRole::ReadOnlyHelper));
         $task = Task::factory()->create()->assignmentIdentity();
 
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $this->app->make(CommandBus::class)->run(new AssignRecord($task, $agent->assigneeIdentity()));
 
         $held = AssignmentRecord::query()->forRecord($task)->sole()->toAssignment()->holder();
         $this->assertTrue($held->isSameAs($agent->assigneeIdentity()));
+    }
+
+    public function test_a_retry_with_the_same_key_returns_the_first_result_after_the_assignment_was_removed(): void
+    {
+        $agent = $this->withDesk(Agent::named('Builder', AgentRole::ReadOnlyHelper));
+        $task = Task::factory()->create()->assignmentIdentity();
+        $bus = $this->app->make(CommandBus::class);
+        $this->app->make(RequestKey::class)->set('assign-the-builder');
+        $first = $bus->run(new AssignRecord($task, $agent->assigneeIdentity()));
+        $this->app->make(RequestKey::class)->set('unassign-the-builder');
+        $bus->run(new UnassignRecord($task, $first->outcomes[0]->current->reference));
+
+        $this->app->make(RequestKey::class)->set('assign-the-builder');
+        $retry = $bus->run(new AssignRecord($task, $agent->assigneeIdentity()));
+
+        $this->assertEquals($first, $retry);
+        $this->assertSame(0, AssignmentRecord::query()->forRecord($task)->count());
+    }
+
+    public function test_a_changed_recipient_under_the_same_key_conflicts(): void
+    {
+        $builder = $this->withDesk(Agent::named('Builder', AgentRole::ReadOnlyHelper));
+        $reviewer = $this->withDesk(Agent::named('Reviewer', AgentRole::ReadOnlyHelper));
+        $task = Task::factory()->create()->assignmentIdentity();
+        $bus = $this->app->make(CommandBus::class);
+        $this->app->make(RequestKey::class)->set('assign-once');
+        $bus->run(new AssignRecord($task, $builder->assigneeIdentity()));
+
+        $this->app->make(RequestKey::class)->set('assign-once');
+
+        $this->assertThrows(
+            fn () => $bus->run(new AssignRecord($task, $reviewer->assigneeIdentity())),
+            RequestKeyConflict::class,
+        );
     }
 
     private function withDesk(Agent $agent): Agent

@@ -10,6 +10,7 @@ use App\Assignments\Support\AssignmentResult;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
+use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
@@ -26,6 +27,7 @@ use Domain\Plans\Policies\PlanPolicy;
 #[HandledBy(ReassignPlanWorkHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 #[RepeatableRead]
+#[RetainedActorRequestKey]
 final readonly class ReassignPlanWork implements Command, HasAuthorizationSubject
 {
     public function __construct(

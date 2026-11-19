@@ -20,7 +20,12 @@ final class AssignPlanWorkCommand extends Command
 {
     use SendsPlanWorkCommands;
 
-    protected $signature = 'plan:assign-work {type : plans.plan or plans.phase} {id} {--to= : The new holder as type:id} {--json}';
+    protected $signature = 'plan:assign-work
+        {type : plans.plan or plans.phase}
+        {id}
+        {--to= : The new holder as type:id}
+        {--request-key= : Send again under the key a failed attempt printed}
+        {--json}';
 
     protected $description = 'Give a plan or phase and all its unfinished work to one holder';
 

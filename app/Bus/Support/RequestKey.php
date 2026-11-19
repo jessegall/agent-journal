@@ -36,6 +36,14 @@ final class RequestKey
     }
 
     /**
+     * Ends the request's key, so nothing after the request is keyed by it.
+     */
+    public function forget(): void
+    {
+        $this->key = null;
+    }
+
+    /**
      * The key of this request's write, or null when the call carries none.
      */
     public function key(): string|null
