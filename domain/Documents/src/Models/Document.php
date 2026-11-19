@@ -58,6 +58,21 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
 
     public const string LINK_TYPE = 'documents.document';
 
+    /**
+     * The most characters a document's or a report's title holds.
+     */
+    public const int TITLE_CHARACTERS = 200;
+
+    /**
+     * The most characters a document's or a report's abstract holds.
+     */
+    public const int ABSTRACT_CHARACTERS = 500;
+
+    /**
+     * The most characters the reason a document or a report is settled holds.
+     */
+    public const int SETTLEMENT_REASON_CHARACTERS = 2000;
+
     protected $attributes = ['attention' => 'active'];
 
     protected function casts(): array
@@ -79,7 +94,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
             'creator_type' => $author->actorType(),
             'creator_id' => $author->actorId(),
         ]);
-        $document->addRevision($title, $abstract, $body->text, $author->actorType(), $author->actorId());
+        $document->addRevision(trim($title), trim($abstract), $body->text, $author->actorType(), $author->actorId());
 
         return $document;
     }

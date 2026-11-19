@@ -12,8 +12,6 @@ use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
-use Domain\Documents\Support\LinkLimit;
-use Domain\Documents\Support\RecordFields;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class CreateDocumentHandler implements CommandHandler
@@ -27,8 +25,7 @@ final readonly class CreateDocumentHandler implements CommandHandler
     public function handle(CreateDocument $command): CreatedRecord
     {
         $actor = $this->actors->actor();
-        LinkLimit::require($command->about, CreateDocument::MOST_LINKS);
-        $document = Document::publish(RecordFields::title($command->title), RecordFields::abstract($command->abstract), MarkdownText::body($command->body), $actor);
+        $document = Document::publish($command->title, $command->abstract, MarkdownText::body($command->body), $actor);
         $this->links->linkFrom($document, $command->about);
         $this->events->dispatch(new DocumentCreated($document->id, $document->number, $actor));
 
