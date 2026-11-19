@@ -21,6 +21,7 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\HasBuilderAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -66,21 +67,31 @@ final class PlanTaskPoolTest extends TestCase
         $this->assertSame([$second, $first, $later, $fourth, $third], $this->open($factory, $plan)->ids->ids);
     }
 
-    public function test_a_plan_that_is_not_started_gives_no_tasks(): void
+    /**
+     * @return array<string, array{PlanState}>
+     */
+    public static function unstartedStates(): array
+    {
+        return [
+            'planned' => [PlanState::Planned],
+            'paused' => [PlanState::Paused],
+            'done' => [PlanState::Done],
+        ];
+    }
+
+    #[DataProvider('unstartedStates')]
+    public function test_a_plan_that_is_not_started_gives_no_tasks(PlanState $state): void
     {
         $factory = $this->app->make(PlanTaskPoolFactory::class);
+        $plan = Plan::factory()->create(['state' => $state]);
+        $plan->addPhase('Build')->addTask(Task::factory()->create()->id);
+        $factory->validate(self::reference($plan), $this->builder);
 
-        foreach ([PlanState::Planned, PlanState::Paused, PlanState::Done] as $state) {
-            $plan = Plan::factory()->create(['state' => $state]);
-            $plan->addPhase('Build')->addTask(Task::factory()->create()->id);
-            $factory->validate(self::reference($plan), $this->builder);
-
-            $this->assertThrows(
-                fn () => $this->open($factory, $plan),
-                AssignmentPoolUnavailable::class,
-                "is {$state->value}",
-            );
-        }
+        $this->assertThrows(
+            fn () => $this->open($factory, $plan),
+            AssignmentPoolUnavailable::class,
+            "is {$state->value}",
+        );
     }
 
     public function test_a_plan_of_more_than_a_thousand_tasks_gives_none(): void

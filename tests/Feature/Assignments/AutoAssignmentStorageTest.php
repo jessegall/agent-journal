@@ -11,6 +11,7 @@ use App\Assignments\Exceptions\AutoAssignmentMissing;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Assignments\Exceptions\AutoAssignmentRevisionChanged;
 use App\Assignments\Exceptions\AutoAssignmentSizeInvalid;
+use App\Assignments\Models\AutoAssignment;
 use App\Assignments\Storage\DatabaseAutoAssignments;
 use App\Assignments\Support\AutoAssignmentChange;
 use App\Assignments\Support\AutoAssignmentFact;
@@ -65,7 +66,7 @@ final class AutoAssignmentStorageTest extends TestCase
 
         $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0));
 
-        $row = (array) DB::table('auto_assignments')->sole();
+        $row = AutoAssignment::query()->sole()->getAttributes();
 
         $this->expectException(UniqueConstraintViolationException::class);
 

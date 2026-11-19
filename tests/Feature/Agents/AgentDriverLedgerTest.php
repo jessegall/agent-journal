@@ -754,13 +754,10 @@ final class AgentDriverLedgerTest extends TestCase
         $refused = [['Format', ['server' => 'journal']], ['LoginMcp', ['server' => 'journal', 'shell' => 'rm']]];
 
         foreach ($refused as [$name, $parameters]) {
-            try {
-                $this->asOwner($this->keyScript($opened, $name, $parameters));
-                $this->fail("{$name} with these parameters was accepted.");
-            } catch (KeyScriptRefused) {
-                $this->assertSame($before, DriverRequest::query()->count());
-            }
+            $this->assertThrows(fn () => $this->asOwner($this->keyScript($opened, $name, $parameters)), KeyScriptRefused::class);
         }
+
+        $this->assertSame($before, DriverRequest::query()->count());
     }
 
     public function test_an_agent_cannot_run_a_key_script(): void

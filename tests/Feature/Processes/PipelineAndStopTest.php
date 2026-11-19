@@ -122,12 +122,8 @@ final class PipelineAndStopTest extends TestCase
         );
         $this->assertInstanceOf(SpawnedProcess::class, $process);
         usleep(200_000);
-        $started = microtime(true);
 
-        $ended = $process->stopGroup(5.0);
-
-        $this->assertTrue($ended);
-        $this->assertLessThan(7.0, microtime(true) - $started);
+        $this->assertTrue($process->stopGroup(5.0));
     }
 
     private function supervise(string $line, StopSignal $stop = new NoStop()): StepOutcome

@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
+use Tests\Fixtures\Hooks\DomainWrite;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\RefreshHookDatabase;
@@ -107,7 +108,7 @@ final class AgentStacksTest extends TestCase
 
         $this->transaction()->run(fn () => $this->launchStacks()->open($this->target));
 
-        $this->assertSame(1, DB::table('agent_stacks')->count());
+        $this->assertSame(1, AgentStackRow::query()->acrossEveryAgent()->count());
         $this->assertSame($firstFrameId, $this->storedFrames()[0]->id);
     }
 
@@ -117,11 +118,11 @@ final class AgentStacksTest extends TestCase
 
         $this->transaction()->run(function (): void {
             $this->launchStacks()->open($this->target);
-            DB::table('domain_writes')->insert(['name' => 'after the race']);
+            DomainWrite::query()->insert(['name' => 'after the race']);
         });
 
         $this->assertSame('racer-ready', $this->storedFrames()[0]->id);
-        $this->assertSame(['after the race'], DB::table('domain_writes')->pluck('name')->all());
+        $this->assertSame(['after the race'], DomainWrite::names());
     }
 
     public function test_a_racing_stack_with_another_bottom_type_is_refused(): void
@@ -145,7 +146,7 @@ final class AgentStacksTest extends TestCase
         $this->createStack();
 
         $this->transaction()->run(function (): void {
-            DB::table('domain_writes')->insert(['name' => 'task 42 started']);
+            DomainWrite::query()->insert(['name' => 'task 42 started']);
             $this->stacks()->push($this->target, $this->task(42));
         });
 
@@ -153,7 +154,7 @@ final class AgentStacksTest extends TestCase
             ['hooks.ready', 'test.tasks'],
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
         );
-        $this->assertSame(['task 42 started'], DB::table('domain_writes')->pluck('name')->all());
+        $this->assertSame(['task 42 started'], DomainWrite::names());
     }
 
     public function test_a_failed_push_rolls_the_domain_write_back(): void
@@ -162,12 +163,12 @@ final class AgentStacksTest extends TestCase
 
         try {
             $this->transaction()->run(function (): void {
-                DB::table('domain_writes')->insert(['name' => 'note opened']);
+                DomainWrite::query()->insert(['name' => 'note opened']);
                 $this->stacks()->push($this->target, new StateReference('notes.reading', NoSubject::None));
             });
             $this->fail('The push of an unknown state type went through.');
         } catch (StateTypeUnknown) {
-            $this->assertSame(0, DB::table('domain_writes')->count());
+            $this->assertSame([], DomainWrite::names());
             $this->assertCount(1, $this->storedFrames());
         }
     }
@@ -293,7 +294,7 @@ final class AgentStacksTest extends TestCase
 
         try {
             $this->transaction()->runWithin(new OperationDeadline(300), function (): void {
-                DB::table('domain_writes')->insert(['name' => 'waiting write']);
+                DomainWrite::query()->insert(['name' => 'waiting write']);
                 $this->stacks()->push($this->target, $this->task(42));
             });
             $this->fail('The push did not time out.');
@@ -303,7 +304,7 @@ final class AgentStacksTest extends TestCase
             $other->rollBack();
         }
 
-        $this->assertSame(0, DB::table('domain_writes')->count());
+        $this->assertSame([], DomainWrite::names());
         $this->assertCount(1, $this->storedFrames());
     }
 

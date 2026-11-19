@@ -7,7 +7,6 @@ namespace App\Hooks\Support;
 use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\AgentSession;
 use Illuminate\Contracts\Container\Container;
 
@@ -26,11 +25,9 @@ final readonly class AgentWorkStack implements WorkStackProvider
      */
     public function sessionsToAdmit(): array
     {
-        try {
-            return [$this->container->make(CurrentSession::class)->sessionId()];
-        } catch (AgentContextMissing) {
-            return [];
-        }
+        $session = $this->container->make(CurrentSession::class);
+
+        return $session->hasSession() ? [$session->sessionId()] : [];
     }
 
     public function sessionsOf(ActorIdentity $actor): array

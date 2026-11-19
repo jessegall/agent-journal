@@ -57,9 +57,7 @@ final class BoundedReadsTest extends TestCase
 
     public function test_reading_every_row_without_a_name_is_refused(): void
     {
-        $this->expectException(ModelReadAllRefused::class);
-
-        Task::all();
+        $this->assertThrows(fn () => Task::all(), ModelReadAllRefused::class);
     }
 
     public function test_a_plain_read_above_the_largest_page_is_refused(): void
@@ -92,13 +90,9 @@ final class BoundedReadsTest extends TestCase
         $this->assertSame(60, $page->total());
         $this->assertCount(50, $page->items());
 
-        $counts = $this->readCounts(function (): void {
-            try {
-                Task::query()->paginate(1_000_000);
-                $this->fail('A page of a million rows was not refused.');
-            } catch (ValidationException) {
-            }
-        });
+        $counts = $this->readCounts(
+            fn () => $this->assertThrows(fn () => Task::query()->paginate(1_000_000), ValidationException::class),
+        );
         $this->assertSame(0, $counts->queriesRun);
     }
 

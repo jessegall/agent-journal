@@ -93,9 +93,7 @@ final class NumberAllocationTest extends TestCase
 
     public function test_a_save_outside_a_command_is_refused(): void
     {
-        $this->expectException(CommandTransactionMissing::class);
-
-        Ledger::query()->create(['title' => 'outside']);
+        $this->assertThrows(fn () => Ledger::query()->create(['title' => 'outside']), CommandTransactionMissing::class);
     }
 
     public function test_a_saved_number_never_changes(): void

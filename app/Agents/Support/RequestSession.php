@@ -16,6 +16,11 @@ final readonly class RequestSession implements CurrentSession
 {
     public function __construct(private Container $container) {}
 
+    public function hasSession(): bool
+    {
+        return $this->container->resolved(AgentContext::class);
+    }
+
     public function sessionId(): string
     {
         return $this->container->make(AgentContext::class)->sessionId;

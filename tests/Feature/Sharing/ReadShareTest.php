@@ -9,6 +9,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
+use App\Links\Models\Link;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ReadShare;
 use App\Sharing\Enums\ShareAuditType;
@@ -136,7 +137,7 @@ final class ReadShareTest extends TestCase
     {
         $token = $this->activeShare($this->plan->shareIdentity(), CarbonImmutable::now()->addDay());
         $share = Share::query()->sole();
-        $linkId = (string) DB::table('links')->value('id');
+        $linkId = Link::query()->sole()->id;
         $step = "records/documents.document/{$this->document->id}";
 
         $this->assertFalse($this->read($token, $step)->allowed);
@@ -191,10 +192,11 @@ final class ReadShareTest extends TestCase
         $share = Share::query()->sole();
 
         foreach ([$this->document, $sibling] as $document) {
-            $linkId = (string) DB::table('links')->where(
-                'target_id',
-                $document->id,
-            )->orWhere('source_id', $document->id)->value('id');
+            $linkId = Link::query()
+                ->where('target_id', $document->id)
+                ->orWhere('source_id', $document->id)
+                ->sole()
+                ->id;
             ShareMember::approve(
                 $share,
                 $this->plan->shareIdentity(),

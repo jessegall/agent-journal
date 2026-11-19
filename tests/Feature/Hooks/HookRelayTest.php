@@ -9,6 +9,7 @@ use App\Agents\Models\LaunchBypass;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Enums\CallFailure;
+use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Relay\CallbackEnvelope;
@@ -20,7 +21,6 @@ use Carbon\CarbonImmutable;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestLaunch;
@@ -86,7 +86,7 @@ final class HookRelayTest extends TestCase
         $reply = $this->relay(self::STOP);
 
         $this->assertSame(['{}', '', 0], [$reply->stdout, $reply->stderr, $reply->exitCode]);
-        $this->assertSame(1, DB::table('hook_calls')->count());
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }
 
     public function test_during_an_outage_the_main_agent_goes_on_and_the_bypass_is_logged(): void
@@ -164,7 +164,7 @@ final class HookRelayTest extends TestCase
         $this->assertSame(['PreToolUse'], LaunchBypass::query()->pluck('native_event')->all());
         $this->assertSame($this->launch->session->id, LaunchBypass::query()->value('agent_session_id'));
         $this->assertFileDoesNotExist($this->bypassLog);
-        $this->assertSame(1, DB::table('hook_calls')->count());
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }
 
     public function test_a_lost_reply_is_sent_again_as_the_same_call_and_gets_the_recorded_answer(): void
@@ -190,7 +190,7 @@ final class HookRelayTest extends TestCase
         $this->assertCount(2, $sent);
         $this->assertSame($sent[0], $sent[1]);
         $this->assertSame(['{}', 0], [$reply->stdout, $reply->exitCode]);
-        $this->assertSame(1, DB::table('hook_calls')->count());
+        $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
         $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
     }
 
@@ -224,7 +224,7 @@ final class HookRelayTest extends TestCase
         $this->relay(self::STOP);
 
         $this->assertCount(2, array_unique($ids));
-        $this->assertSame(2, DB::table('hook_calls')->count());
+        $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
         $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
     }
 
@@ -273,5 +273,10 @@ final class HookRelayTest extends TestCase
         );
 
         return Http::response((string) $response->getContent(), $response->getStatusCode());
+    }
+
+    private function target(): StackTarget
+    {
+        return new StackTarget($this->launch->agent->id, $this->launch->session->id);
     }
 }

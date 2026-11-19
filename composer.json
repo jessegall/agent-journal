@@ -125,11 +125,11 @@
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@test:run-inside"
+            "@php artisan test --parallel --recreate-databases"
         ],
         "test:run": "@php tests/bin/in-docker.php test:run-inside",
         "test:run-inside": [
-            "@php artisan test --parallel --recreate-databases"
+            "@php tests/bin/run-tests.php"
         ],
         "test:affected": "@php tests/bin/in-docker.php test:affected-inside",
         "test:affected-inside": [

@@ -19,8 +19,6 @@ abstract class CommandBusTestCase extends TestCase
     use InstallsCommandModules;
     use InstallsCommandModules;
     use RefreshHookDatabase;
-    use RefreshHookDatabase;
-    use StartsAgentRequests;
     use StartsAgentRequests;
 
     protected function tearDown(): void
