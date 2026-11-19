@@ -89,7 +89,15 @@ final readonly class PublicContracts
     {
         if (! self::exists($export)) {
             return [
-                new Violation('', 0, $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "a name that does not exist, under {$list}"),
+                new Violation(
+                    '',
+                    0,
+                    $export,
+                    $owner->name,
+                    $owner->name,
+                    ViolationType::DisallowedCategory,
+                    "a name that does not exist, under {$list}",
+                ),
             ];
         }
 
@@ -99,7 +107,15 @@ final readonly class PublicContracts
 
         if ($category !== null) {
             return [
-                new Violation($file, (int) $class->getStartLine(), $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "{$category}, under {$list}"),
+                new Violation(
+                    $file,
+                    (int) $class->getStartLine(),
+                    $export,
+                    $owner->name,
+                    $owner->name,
+                    ViolationType::DisallowedCategory,
+                    "{$category}, under {$list}",
+                ),
             ];
         }
 
@@ -159,7 +175,8 @@ final readonly class PublicContracts
     }
 
     /**
-     * A final value whose own properties are all public and read-only or computed: a fact or a Data value, never a service.
+     * A final value whose own properties are all public and read-only or computed: a fact or a Data value, never a
+     * service.
      *
      * @param  ReflectionClass<object>  $class
      */

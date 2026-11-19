@@ -11,7 +11,8 @@ use App\Agents\Models\AgentSession;
 use Carbon\CarbonImmutable;
 
 /**
- * Who is calling in this request: the agent, its journal session, the signed call and the session's last beat. It lives for one request only.
+ * Who is calling in this request: the agent, its journal session, the signed call and the session's last beat. It lives
+ * for one request only.
  */
 final readonly class AgentContext implements Actor
 {

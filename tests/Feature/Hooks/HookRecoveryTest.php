@@ -140,7 +140,10 @@ final class HookRecoveryTest extends TestCase
         $this->assertNotSame($exited->session->id, $replacement->session->id);
         $this->assertSame(
             ['hooks.ready'],
-            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($replacement)->frames->all()),
+            array_map(
+                fn (FrameRecord $frame) => $frame->reference->typeKey,
+                $this->stackOf($replacement)->frames->all(),
+            ),
         );
     }
 
@@ -158,7 +161,12 @@ final class HookRecoveryTest extends TestCase
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->instance(
             AgentContext::class,
-            new AgentContext($launched->session->agent_id, $launched->session->id, new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null),
+            new AgentContext(
+                $launched->session->agent_id,
+                $launched->session->id,
+                new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
+                null,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($launched->session->agent_id),

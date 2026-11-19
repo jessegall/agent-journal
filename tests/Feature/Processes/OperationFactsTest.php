@@ -51,7 +51,10 @@ final class OperationFactsTest extends TestCase
     {
         foreach (['bash -c "$SCRIPT"', 'eval "$LINE"', 'echo $(whoami)'] as $line) {
             $unknown = array_values(
-                array_filter($this->operations($line), fn (Operation $operation): bool => $operation->name === ShellOperations::UNKNOWN),
+                array_filter(
+                    $this->operations($line),
+                    fn (Operation $operation): bool => $operation->name === ShellOperations::UNKNOWN,
+                ),
             );
 
             $this->assertNotSame([], $unknown, "{$line} was placed.");

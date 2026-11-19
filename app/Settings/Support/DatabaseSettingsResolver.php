@@ -119,7 +119,17 @@ final class DatabaseSettingsResolver implements SettingsResolver
         }
 
         return $record
-            ->map(fn (SettingsRecord $found) => new StoredSettings($owner, $found->revision, $found->document, $this->codec, $this->registry))
-            ->getOrCall(fn () => new StoredSettings($owner, 0, SettingsDocument::empty(), $this->codec, $this->registry));
+            ->map(
+                fn (SettingsRecord $found) => new StoredSettings(
+                    $owner,
+                    $found->revision,
+                    $found->document,
+                    $this->codec,
+                    $this->registry,
+                ),
+            )
+            ->getOrCall(
+                fn () => new StoredSettings($owner, 0, SettingsDocument::empty(), $this->codec, $this->registry),
+            );
     }
 }

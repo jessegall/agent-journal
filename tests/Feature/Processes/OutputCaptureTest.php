@@ -53,7 +53,9 @@ final class OutputCaptureTest extends TestCase
         $this->assertInstanceOf(SpawnedProcess::class, $process);
 
         $process->drain(
-            fn (OutputStream $stream, string $bytes) => $recorder->append(new CapturedChunk($part, $stream, $bytes, CarbonImmutable::now())),
+            fn (OutputStream $stream, string $bytes) => $recorder->append(
+                new CapturedChunk($part, $stream, $bytes, CarbonImmutable::now()),
+            ),
         );
         $recorder->finish($part, $process->wait());
 

@@ -128,7 +128,12 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     {
         return array_map(
             strval(...),
-            array_values(PhaseTask::query()->where('phase_id', $this->id)->readAll('every task of the phase')->orderBy('position')->pluck('task_id')->all()),
+            array_values(
+                PhaseTask::query()->where(
+                    'phase_id',
+                    $this->id,
+                )->readAll('every task of the phase')->orderBy('position')->pluck('task_id')->all(),
+            ),
         );
     }
 

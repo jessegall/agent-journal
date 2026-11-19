@@ -76,7 +76,10 @@ final class ReadyTest extends TestCase
             fn (ReflectionMethod $method) => $method->getName(),
             array_filter(
                 $hooks,
-                fn (ReflectionMethod $method) => new ReflectionMethod($class, $method->getName())->getDeclaringClass()->getName() !== $class,
+                fn (ReflectionMethod $method) => new ReflectionMethod(
+                    $class,
+                    $method->getName(),
+                )->getDeclaringClass()->getName() !== $class,
             ),
         ));
     }

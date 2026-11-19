@@ -29,7 +29,12 @@ final readonly class PagePropTypes
     {
         $props = [];
         $inspectors = $this->resultOf(
-            array_values(array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Inspector)),
+            array_values(
+                array_filter(
+                    $this->declarations->pages(),
+                    fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Inspector,
+                ),
+            ),
         );
 
         foreach ($this->declarations->pages() as $page) {

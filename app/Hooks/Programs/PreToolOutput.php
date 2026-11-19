@@ -9,7 +9,8 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
 /**
- * The hook-specific part of a pre-tool reply. A field left out is omitted from the wire, so a neutral reply names no permission.
+ * The hook-specific part of a pre-tool reply. A field left out is omitted from the wire, so a neutral reply names no
+ * permission.
  */
 final class PreToolOutput extends Data
 {

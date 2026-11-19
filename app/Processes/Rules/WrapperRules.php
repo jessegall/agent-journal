@@ -24,7 +24,10 @@ final readonly class WrapperRules
         $rules = [
             new WrapperRule(
                 'env',
-                [OptionGrammar::flag('-i', '--ignore-environment'), OptionGrammar::valued(OperandType::Name, '-u', '--unset')],
+                [
+                    OptionGrammar::flag('-i', '--ignore-environment'),
+                    OptionGrammar::valued(OperandType::Name, '-u', '--unset'),
+                ],
                 CommandClassSet::empty(),
                 takesAssignments: true,
             ),
@@ -32,7 +35,13 @@ final readonly class WrapperRules
             new WrapperRule('builtin', [], CommandClassSet::empty()),
             new WrapperRule(
                 'sudo',
-                [OptionGrammar::valued(OperandType::Name, '-u', '--user'), OptionGrammar::valued(OperandType::Name, '-g', '--group'), OptionGrammar::flag('-E', '--preserve-env'), OptionGrammar::flag('-n', '--non-interactive'), OptionGrammar::flag('-H', '--set-home')],
+                [
+                    OptionGrammar::valued(OperandType::Name, '-u', '--user'),
+                    OptionGrammar::valued(OperandType::Name, '-g', '--group'),
+                    OptionGrammar::flag('-E', '--preserve-env'),
+                    OptionGrammar::flag('-n', '--non-interactive'),
+                    OptionGrammar::flag('-H', '--set-home'),
+                ],
                 CommandClassSet::of(CommandClass::PrivilegeChange),
             ),
             new WrapperRule(
@@ -42,29 +51,34 @@ final readonly class WrapperRules
             ),
             new WrapperRule(
                 'timeout',
-                [OptionGrammar::valued(OperandType::Text, '-s', '--signal'), OptionGrammar::valued(OperandType::Text, '-k', '--kill-after'), OptionGrammar::flag('--preserve-status'), OptionGrammar::flag('--foreground')],
+                [
+                    OptionGrammar::valued(OperandType::Text, '-s', '--signal'),
+                    OptionGrammar::valued(OperandType::Text, '-k', '--kill-after'),
+                    OptionGrammar::flag('--preserve-status'),
+                    OptionGrammar::flag('--foreground'),
+                ],
                 CommandClassSet::of(CommandClass::ProcessControl),
                 leadingOperands: 1,
             ),
             new WrapperRule('exec', [], CommandClassSet::of(CommandClass::ProcessControl)),
             new WrapperRule('time', [OptionGrammar::flag('-p')], CommandClassSet::empty()),
             new WrapperRule('xargs', [
-                            OptionGrammar::flag('-0', '--null'), OptionGrammar::flag(
-                                '-r',
-                                '--no-run-if-empty',
-                            ), OptionGrammar::flag('-t', '--verbose'),
-                            OptionGrammar::valued(OperandType::Count, '-n', '--max-args'), OptionGrammar::valued(
-                                OperandType::Count,
-                                '-L',
-                                '--max-lines',
-                            ),
-                            OptionGrammar::valued(
-                                OperandType::Count,
-                                '-P',
-                                '--max-procs',
-                            ), OptionGrammar::valued(OperandType::Text, '-d', '--delimiter'),
-                            OptionGrammar::valued(OperandType::Text, '-I'),
-                        ], CommandClassSet::empty()),
+                OptionGrammar::flag('-0', '--null'), OptionGrammar::flag(
+                    '-r',
+                    '--no-run-if-empty',
+                ), OptionGrammar::flag('-t', '--verbose'),
+                OptionGrammar::valued(OperandType::Count, '-n', '--max-args'), OptionGrammar::valued(
+                    OperandType::Count,
+                    '-L',
+                    '--max-lines',
+                ),
+                OptionGrammar::valued(
+                    OperandType::Count,
+                    '-P',
+                    '--max-procs',
+                ), OptionGrammar::valued(OperandType::Text, '-d', '--delimiter'),
+                OptionGrammar::valued(OperandType::Text, '-I'),
+            ], CommandClassSet::empty()),
         ];
 
         return array_combine(array_map(fn (WrapperRule $rule): string => $rule->family, $rules), $rules);

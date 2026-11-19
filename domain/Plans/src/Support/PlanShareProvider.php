@@ -41,10 +41,15 @@ final readonly class PlanShareProvider implements ShareRecordProvider
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
     {
         $ids = array_values(
-            array_map(fn (RecordIdentity $target) => $target->id, array_filter($read->targets, fn (RecordIdentity $target) => $target->type === Plan::LINK_TYPE)),
+            array_map(
+                fn (RecordIdentity $target) => $target->id,
+                array_filter($read->targets, fn (RecordIdentity $target) => $target->type === Plan::LINK_TYPE),
+            ),
         );
         $cards = array_values(
-            Plan::query()->whereKey($ids)->readLimit(count($ids))->get(self::SUMMARY_COLUMNS)->map(fn (Plan $plan) => $plan->shareCard())->all(),
+            Plan::query()->whereKey($ids)->readLimit(count($ids))->get(self::SUMMARY_COLUMNS)->map(
+                fn (Plan $plan) => $plan->shareCard(),
+            )->all(),
         );
         $found = array_map(fn (ShareRecordCard $card) => $card->record->id, $cards);
 
@@ -54,7 +59,9 @@ final readonly class PlanShareProvider implements ShareRecordProvider
 
         return new ShareRecords(
             $cards,
-            array_values(array_filter($read->targets, fn (RecordIdentity $target) => ! in_array($target->id, $found, true))),
+            array_values(
+                array_filter($read->targets, fn (RecordIdentity $target) => ! in_array($target->id, $found, true)),
+            ),
             null,
         );
     }

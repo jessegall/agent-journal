@@ -124,7 +124,8 @@ final class SpawnedProcess
     }
 
     /**
-     * Waits for the process to end and reports how: its exit status, or the signal that killed it, never a made-up status.
+     * Waits for the process to end and reports how: its exit status, or the signal that killed it, never a made-up
+     * status.
      */
     public function wait(): PartEnd
     {

@@ -9,7 +9,8 @@ use App\Actors\Contracts\Policy;
 use BackedEnum;
 
 /**
- * Who may recover drafts and change records another actor created: only the owner holds the ability, so the grants decide.
+ * Who may recover drafts and change records another actor created: only the owner holds the ability, so the grants
+ * decide.
  */
 final readonly class DocumentAdministrationPolicy implements Policy
 {

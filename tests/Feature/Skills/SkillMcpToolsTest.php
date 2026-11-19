@@ -81,7 +81,11 @@ final class SkillMcpToolsTest extends TestCase
     {
         $this->actAs(TestActors::user(7));
         $created = $this->app->make(CommandBus::class)->run(
-            new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')),
+            new CreateSkill(
+                'user-review-notes',
+                'create-1',
+                new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
+            ),
         );
 
         $this->app->make(CurrentActorSetter::class)->set(
@@ -91,7 +95,12 @@ final class SkillMcpToolsTest extends TestCase
 
         try {
             $this->app->make(CommandBus::class)->run(
-                new ReviseSkill($created->skillId, 1, 'revise-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Other.')], '')),
+                new ReviseSkill(
+                    $created->skillId,
+                    1,
+                    'revise-1',
+                    new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Other.')], ''),
+                ),
             );
             $this->fail('The bus let an agent revise a skill.');
         } catch (ActorNotAllowed $refusal) {

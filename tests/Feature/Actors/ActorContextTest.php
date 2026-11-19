@@ -77,7 +77,12 @@ final class ActorContextTest extends TestCase
     public function test_the_context_of_a_signed_agent_call_is_that_agent_as_actor(): void
     {
         $actor = ActorContext::of(
-            new AgentContext(TestIds::of(3), TestIds::of(30), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+            new AgentContext(
+                TestIds::of(3),
+                TestIds::of(30),
+                new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
+                null,
+            ),
         );
 
         $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actor->type, $actor->id]);

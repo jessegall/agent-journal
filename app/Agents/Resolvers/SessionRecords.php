@@ -38,7 +38,9 @@ final readonly class SessionRecords implements SessionResolver
      */
     public function active(): array
     {
-        return array_values($this->visibleSessions()->with(['agent', 'currentConversation'])->withCount('visits')->whereIn(
+        return array_values($this->visibleSessions()->with(
+            ['agent', 'currentConversation'],
+        )->withCount('visits')->whereIn(
             'status',
             array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()),
         )

@@ -25,7 +25,8 @@ final readonly class AreaCycles
     private const string CORE_ROOT = 'App';
 
     /**
-     * Laravel's app/Http is the entry layer: its controllers, middleware and requests reach the areas below them, so its
+     * Laravel's app/Http is the entry layer: its controllers, middleware and requests reach the areas below them, so
+     * its
      * references are no area's dependency on another.
      */
     private const string ENTRY_AREA = 'App\\Http';

@@ -47,7 +47,9 @@ final class SkillEditCommand extends Command
             );
 
             return $console->savedLines(
-                $commands->run(new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft)),
+                $commands->run(
+                    new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft),
+                ),
             );
         });
     }

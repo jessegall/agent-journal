@@ -14,7 +14,8 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Records how a host carried out a request in one attempt: its progress, actual binding and outcome. Run for an authenticated host by the journal itself (internal, not exported).
+ * Records how a host carried out a request in one attempt: its progress, actual binding and outcome. Run for an
+ * authenticated host by the journal itself (internal, not exported).
  *
  * @extends Command<null>
  */

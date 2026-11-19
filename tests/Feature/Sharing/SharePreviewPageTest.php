@@ -88,19 +88,22 @@ final class SharePreviewPageTest extends TestCase
         $this->actingAs($this->owner)->get(
             '/sharing/'.rawurlencode("plan {$this->plan->number}"),
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->component('sharing/SharePreview')
-                    ->where('page.data.rootTitle', 'Version 6')
-                    ->where('page.data.candidates.0.id', $this->document->id)
-                    ->where('page.data.candidates.0.title', 'Design')
-                    ->where('page.data.candidates.0.shared', false)
-                    ->missing('page.data.savedPreview')
-                    ->missing('page.data.liveShare'));
+            ->component('sharing/SharePreview')
+            ->where('page.data.rootTitle', 'Version 6')
+            ->where('page.data.candidates.0.id', $this->document->id)
+            ->where('page.data.candidates.0.title', 'Design')
+            ->where('page.data.candidates.0.shared', false)
+            ->missing('page.data.savedPreview')
+            ->missing('page.data.liveShare'));
     }
 
     public function test_saving_the_preview_keeps_the_selected_document(): void
     {
         $this->actingAs($this->owner)
-            ->post('/sharing/'.rawurlencode("plan {$this->plan->number}").'/previews', ['selected' => [$this->document->id]])
+            ->post(
+                '/sharing/'.rawurlencode("plan {$this->plan->number}").'/previews',
+                ['selected' => [$this->document->id]],
+            )
             ->assertStatus(303);
 
         $preview = SharePreview::query()->sole();
@@ -119,7 +122,10 @@ final class SharePreviewPageTest extends TestCase
             $this->actingAs($other)->get('/sharing/'.rawurlencode("plan {$this->plan->number}"))->isOk(),
         );
         $this->assertFalse(
-            $this->actingAs($other)->post('/sharing/'.rawurlencode("plan {$this->plan->number}").'/previews', ['selected' => []])->isSuccessful(),
+            $this->actingAs($other)->post(
+                '/sharing/'.rawurlencode("plan {$this->plan->number}").'/previews',
+                ['selected' => []],
+            )->isSuccessful(),
         );
         $this->assertSame(0, SharePreview::query()->count());
     }

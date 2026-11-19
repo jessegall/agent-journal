@@ -39,7 +39,10 @@ final class OperationResource extends JournalResource implements HasUriTemplate
         $continuation = is_string($query['continuation'] ?? null) ? $query['continuation'] : null;
 
         return Response::text(
-            json_encode($this->operations->read($requestKey, $continuation)->structuredContent(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            json_encode(
+                $this->operations->read($requestKey, $continuation)->structuredContent(),
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+            ),
         );
     }
 }

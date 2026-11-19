@@ -82,7 +82,10 @@ final class GatewayDefaultAndDisableTest extends TestCase
         );
         $this->assertSame(
             [$second->configurationId, 2],
-            [Share::query()->findOrFail($later->shareId)->share_gateway_configuration_id, Share::query()->findOrFail($later->shareId)->configuration_version],
+            [
+                Share::query()->findOrFail($later->shareId)->share_gateway_configuration_id,
+                Share::query()->findOrFail($later->shareId)->configuration_version,
+            ],
         );
         $this->assertSame(
             [$second->configurationId],
@@ -104,12 +107,19 @@ final class GatewayDefaultAndDisableTest extends TestCase
 
         $this->assertSame(
             [ShareState::Revoked],
-            array_values(array_unique(Share::query()->readAll('three shares')->get()->map(fn (Share $share) => $share->state)->all(), SORT_REGULAR)),
+            array_values(
+                array_unique(
+                    Share::query()->readAll('three shares')->get()->map(fn (Share $share) => $share->state)->all(),
+                    SORT_REGULAR,
+                ),
+            ),
         );
         $this->assertSame(3, ShareAudit::query()->where('type', ShareAuditType::Revoked->value)->count());
         $this->assertSame(
             [GatewayOperationType::Close],
-            ShareGatewayOperation::query()->readAll('one close')->get()->map(fn (ShareGatewayOperation $operation) => $operation->type)->all(),
+            ShareGatewayOperation::query()->readAll('one close')->get()->map(
+                fn (ShareGatewayOperation $operation) => $operation->type,
+            )->all(),
         );
         $disabled = ShareGatewayConfiguration::query()->findOrFail($configuration->id);
         $this->assertNotNull($disabled->disabled_at);
@@ -149,7 +159,16 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $key = (string) Str::ulid();
 
         return $this->asOwner(
-            new ConfigureShareGateway(FakeShareGateway::KEY, '1.0.0', 'fake.test', FakeShareGateway::PUBLIC_ORIGIN, 8100, [], true, $key),
+            new ConfigureShareGateway(
+                FakeShareGateway::KEY,
+                '1.0.0',
+                'fake.test',
+                FakeShareGateway::PUBLIC_ORIGIN,
+                8100,
+                [],
+                true,
+                $key,
+            ),
             $key,
         );
     }

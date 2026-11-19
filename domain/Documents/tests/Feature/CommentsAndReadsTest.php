@@ -42,7 +42,8 @@ use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
- * Users and agents comment on records through Core, on the whole record or on an exact quote of a revision; agents read records a bounded part at a
+ * Users and agents comment on records through Core, on the whole record or on an exact quote of a revision; agents read
+ * records a bounded part at a
  * time and search the library literally.
  */
 final class CommentsAndReadsTest extends TestCase
@@ -94,13 +95,27 @@ final class CommentsAndReadsTest extends TestCase
     public function test_section_and_line_comments_reopen_on_their_original_revision_after_a_newer_one(): void
     {
         $this->bus()->run(
-            new CreateDocument('Sections', 'Three parts', "# One\nFirst.\n\n# Two\nSecond.\n\n# Three\nThird part.\nStill third.\n"),
+            new CreateDocument(
+                'Sections',
+                'Three parts',
+                "# One\nFirst.\n\n# Two\nSecond.\n\n# Three\nThird part.\nStill third.\n",
+            ),
         );
         $section = $this->bus()->run(
-            new PostTextComment($this->documentNumbered(2), 'About the third part.', TextRange::section('1', 3), (string) Str::uuid()),
+            new PostTextComment(
+                $this->documentNumbered(2),
+                'About the third part.',
+                TextRange::section('1', 3),
+                (string) Str::uuid(),
+            ),
         );
         $lines = $this->bus()->run(
-            new PostTextComment($this->documentNumbered(2), 'About these lines.', TextRange::lines('1', 2, 5), (string) Str::uuid()),
+            new PostTextComment(
+                $this->documentNumbered(2),
+                'About these lines.',
+                TextRange::lines('1', 2, 5),
+                (string) Str::uuid(),
+            ),
         );
         $draft = $this->bus()->run(new OpenDocument(2));
         $draft = $this->bus()->run(
@@ -114,7 +129,12 @@ final class CommentsAndReadsTest extends TestCase
         $this->assertInstanceOf(TextCommentLocation::class, $sectionPlace);
         $this->assertSame(
             ['1', 3, 7, 10],
-            [$sectionPlace->anchor->versionId, $sectionPlace->anchor->sectionNumber, $sectionPlace->part->firstLine, $sectionPlace->part->lastLine],
+            [
+                $sectionPlace->anchor->versionId,
+                $sectionPlace->anchor->sectionNumber,
+                $sectionPlace->part->firstLine,
+                $sectionPlace->part->lastLine,
+            ],
         );
         $this->assertStringContainsString('Third part.', $sectionPlace->part->text);
         $this->assertInstanceOf(TextCommentLocation::class, $linesPlace);
@@ -237,7 +257,12 @@ final class CommentsAndReadsTest extends TestCase
     private function comment(string $body, WholeRecord|TextRange $subject): void
     {
         $this->bus()->run(
-            $subject instanceof TextRange ? new PostTextComment($this->document(), $body, $subject, (string) Str::uuid()) : new PostComment($this->document(), $body, (string) Str::uuid()),
+            $subject instanceof TextRange ? new PostTextComment(
+                $this->document(),
+                $body,
+                $subject,
+                (string) Str::uuid(),
+            ) : new PostComment($this->document(), $body, (string) Str::uuid()),
         );
     }
 

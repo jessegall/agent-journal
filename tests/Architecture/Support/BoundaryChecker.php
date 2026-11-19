@@ -58,18 +58,39 @@ final readonly class BoundaryChecker
         if (! $this->isDomainName($use->name)) {
             if ($user !== null && $this->isPrivateCoreName($use->name)) {
                 return [
-                    new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::PrivateCoreType),
+                    new Violation(
+                        $use->file,
+                        $use->line,
+                        $use->name,
+                        $userName,
+                        'Core',
+                        ViolationType::PrivateCoreType,
+                    ),
                 ];
             }
 
             if ($user !== null && $this->isCoreEvent($use->name) && ! ($user->holdsListenerFile($use->file) && $use->type->canNameAnEventToHearIt())) {
                 return [
-                    new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::EventOutsideListener),
+                    new Violation(
+                        $use->file,
+                        $use->line,
+                        $use->name,
+                        $userName,
+                        'Core',
+                        ViolationType::EventOutsideListener,
+                    ),
                 ];
             }
 
             return $this->isFreeToUse($use->name) ? [] : [
-                new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationType::OutsideEveryDomain),
+                new Violation(
+                    $use->file,
+                    $use->line,
+                    $use->name,
+                    $userName,
+                    'no domain',
+                    ViolationType::OutsideEveryDomain,
+                ),
             ];
         }
 
@@ -222,7 +243,14 @@ final readonly class BoundaryChecker
         }
 
         return [
-            new Violation($use->file, $use->line, $use->name, $user->name ?? self::SHARED_PLACE, $owner->name, ViolationType::EventOutsideListener),
+            new Violation(
+                $use->file,
+                $use->line,
+                $use->name,
+                $user->name ?? self::SHARED_PLACE,
+                $owner->name,
+                ViolationType::EventOutsideListener,
+            ),
         ];
     }
 
@@ -273,7 +301,8 @@ final readonly class BoundaryChecker
     }
 
     /**
-     * A domain's own Domain class names the Domain classes it requires; that is the one place a descriptor may be named.
+     * A domain's own Domain class names the Domain classes it requires; that is the one place a descriptor may be
+     * named.
      */
     private static function isRequirementInDescriptor(NameUse $use, DomainEntry $user, DomainEntry $owner): bool
     {

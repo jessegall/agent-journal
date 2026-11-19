@@ -7,7 +7,8 @@ namespace Tests\Architecture\Support;
 use App\Domains\Support\DomainEntry;
 
 /**
- * One call that raises or hears an event: the call as written, what it passes, and whether a string there is surely an event.
+ * One call that raises or hears an event: the call as written, what it passes, and whether a string there is surely an
+ * event.
  */
 final readonly class EventCall
 {
@@ -43,7 +44,8 @@ final readonly class EventCall
 
     /**
      * A listener registered by hand instead of through a typed listener in a Listeners folder: an event class of the
-     * project, a wildcard, a subscriber or a provider property. Framework lifecycle strings such as 'eloquent.booted: X'
+     * project, a wildcard, a subscriber or a provider property. Framework lifecycle strings such as 'eloquent.booted:
+     * X'
      * and framework events are not the project's, so they pass.
      */
     public function registersListenerByHand(ProjectRoots $roots): bool

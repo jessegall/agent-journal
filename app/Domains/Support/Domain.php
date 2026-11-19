@@ -61,7 +61,8 @@ abstract class Domain
     }
 
     /**
-     * The domain's public surface, sorted into events, contracts, values, commands and exceptions, each name written out
+     * The domain's public surface, sorted into events, contracts, values, commands and exceptions, each name written
+     * out
      * one by one. Empty exports are a domain nothing outside may use; there is no wildcard.
      */
     abstract public function exports(): Exports;

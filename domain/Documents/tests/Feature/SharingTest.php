@@ -80,7 +80,10 @@ final class SharingTest extends TestCase
         $bus->run(new CreateReport('Check', 'What we found', "# Found\nAll good.\n"));
         $draft = $bus->run(new OpenDocument(1));
         $bus->run(
-            new ReplaceDocumentBody(new DraftTarget($draft->documentNumber, $draft->token, $draft->version), "# Draft\nNot yet.\n"),
+            new ReplaceDocumentBody(
+                new DraftTarget($draft->documentNumber, $draft->token, $draft->version),
+                "# Draft\nNot yet.\n",
+            ),
         );
         $this->document = Document::query()->where('number', 1)->sole();
         $this->report = Report::query()->where('number', 1)->sole();
@@ -133,7 +136,10 @@ final class SharingTest extends TestCase
         $budget = $this->budget();
 
         $this->assertThrows(
-            fn () => $this->app->make(ReportShareProvider::class)->content(new ShareContentRead($this->report->shareIdentity()), $budget),
+            fn () => $this->app->make(ReportShareProvider::class)->content(
+                new ShareContentRead($this->report->shareIdentity()),
+                $budget,
+            ),
             ContentTooLarge::class,
         );
         $this->assertSame(0, $budget->textBytes());

@@ -128,7 +128,8 @@ final readonly class TableScan implements FileScan
     }
 
     /**
-     * A closure or a query builder given to from or join is a subquery; its own table calls are found where they are written.
+     * A closure or a query builder given to from or join is a subquery; its own table calls are found where they are
+     * written.
      *
      * @return list<TableUse>
      */

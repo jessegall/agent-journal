@@ -47,7 +47,8 @@ final class Page
     ) {}
 
     /**
-     * A page at the path of its own key, read by the resolver and drawn by the component in the domain's script folder (resources/js).
+     * A page at the path of its own key, read by the resolver and drawn by the component in the domain's script folder
+     * (resources/js).
      *
      * @param  class-string<PageResolver>  $resolver
      */

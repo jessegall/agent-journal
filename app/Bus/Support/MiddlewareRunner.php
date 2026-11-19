@@ -77,7 +77,8 @@ final readonly class MiddlewareRunner
     }
 
     /**
-     * Whether the owner's commands and middleware run now; Core's always do. Asked of the current request's availability.
+     * Whether the owner's commands and middleware run now; Core's always do. Asked of the current request's
+     * availability.
      */
     private function isAvailable(string $owner): bool
     {
@@ -97,7 +98,9 @@ final readonly class MiddlewareRunner
             fn (
                 Closure $next,
                 CommandMiddleware|MiddlewareStep|Closure $step,
-            ) => fn (CommandCall $current) => $step instanceof Closure ? $step($current, $next) : $step->handle($current, $next),
+            ) => fn (
+                CommandCall $current,
+            ) => $step instanceof Closure ? $step($current, $next) : $step->handle($current, $next),
             $last,
         );
 
@@ -126,7 +129,13 @@ final readonly class MiddlewareRunner
         );
 
         return array_values(
-            array_map(fn (RegisteredMiddleware $entry) => new MiddlewareStep($this->container->make($entry->middlewareClass()), $entry), $entries),
+            array_map(
+                fn (RegisteredMiddleware $entry) => new MiddlewareStep(
+                    $this->container->make($entry->middlewareClass()),
+                    $entry,
+                ),
+                $entries,
+            ),
         );
     }
 }

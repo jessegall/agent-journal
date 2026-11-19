@@ -106,7 +106,15 @@ final class SkillPublishingTest extends TestCase
         $generation = SkillGeneration::ready(
             hash('sha256', $text),
             str_repeat('e', 64),
-            [['key' => 'journal', 'owner' => 'Core', 'revision' => null, 'markdown' => $markdown, 'digest' => hash('sha256', $markdown)]],
+            [
+                [
+                    'key' => 'journal',
+                    'owner' => 'Core',
+                    'revision' => null,
+                    'markdown' => $markdown,
+                    'digest' => hash('sha256', $markdown),
+                ],
+            ],
         );
 
         return SkillPublication::intend(

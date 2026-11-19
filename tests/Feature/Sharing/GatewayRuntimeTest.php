@@ -96,7 +96,10 @@ final class GatewayRuntimeTest extends TestCase
         $this->assertThrows(fn () => $this->claim(self::FIRST_RUN), GatewayRunStale::class);
         $this->assertSame(
             [2, GatewayEndpointState::Opening],
-            [$taken?->operation->endpointVersion, ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->state],
+            [
+                $taken?->operation->endpointVersion,
+                ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->state,
+            ],
         );
         $this->assertSame(
             GatewayEndpointState::Closed,
@@ -165,7 +168,13 @@ final class GatewayRuntimeTest extends TestCase
     {
         $this->assertNotNull($claim);
         $this->asSystem(
-            new RecordGatewayOutcome($runId, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, $outcome),
+            new RecordGatewayOutcome(
+                $runId,
+                $claim->operation->operationId,
+                $claim->operation->endpointVersion,
+                $claim->operation->leaseToken,
+                $outcome,
+            ),
         );
     }
 
@@ -180,7 +189,9 @@ final class GatewayRuntimeTest extends TestCase
     private function auditTypes(): array
     {
         return array_values(
-            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(fn (ShareAudit $audit) => $audit->type)->all(),
+            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(
+                fn (ShareAudit $audit) => $audit->type,
+            )->all(),
         );
     }
 }

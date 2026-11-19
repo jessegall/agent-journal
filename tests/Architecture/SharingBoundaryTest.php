@@ -113,7 +113,10 @@ final class SharingBoundaryTest extends TestCase
     {
         $registry = $this->app->make(CommandRegistry::class);
         $sharing = array_values(
-            array_filter(CoreCommands::commands(), fn (string $command) => str_starts_with($command, 'App\\Sharing\\Commands\\')),
+            array_filter(
+                CoreCommands::commands(),
+                fn (string $command) => str_starts_with($command, 'App\\Sharing\\Commands\\'),
+            ),
         );
 
         $this->assertEqualsCanonicalizing([...self::ENTRY_COMMANDS, ...self::SYSTEM_COMMANDS], $sharing);

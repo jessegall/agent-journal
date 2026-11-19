@@ -47,7 +47,10 @@ final class CreateRecordRequest extends FormRequest
     public function about(RecordResolver $records): array
     {
         return array_values(
-            array_map(fn (string $reference) => $records->identify(RecordReference::parse(trim($reference))), array_filter((array) $this->input('about', []), is_string(...))),
+            array_map(
+                fn (string $reference) => $records->identify(RecordReference::parse(trim($reference))),
+                array_filter((array) $this->input('about', []), is_string(...)),
+            ),
         );
     }
 

@@ -21,7 +21,8 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
 /**
- * A RulesPageTest command that changes what the owner sees tells the owner's page once, through the bus that commits it.
+ * A RulesPageTest command that changes what the owner sees tells the owner's page once, through the bus that commits
+ * it.
  */
 final class RulePageChangeTest extends TestCase
 {

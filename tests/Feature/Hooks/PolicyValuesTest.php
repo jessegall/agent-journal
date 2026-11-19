@@ -126,7 +126,10 @@ final class PolicyValuesTest extends TestCase
         );
         $this->assertSame(
             [false, AccessRuleType::NotGranted],
-            [ProfileBase::readOnlyHelper()->defaultAccess()->decide($edit)->allowed, ProfileBase::readOnlyHelper()->defaultAccess()->decide($edit)->rule],
+            [
+                ProfileBase::readOnlyHelper()->defaultAccess()->decide($edit)->allowed,
+                ProfileBase::readOnlyHelper()->defaultAccess()->decide($edit)->rule,
+            ],
         );
     }
 
@@ -134,7 +137,14 @@ final class PolicyValuesTest extends TestCase
     {
         $this->assertRefused(
             AccessPolicyInvalid::class,
-            fn () => AccessPolicy::make([new ClassGrant(ResourceAreaType::Protected, [AccessType::Read])], [], [], [], [], ProcessGrants::everything()),
+            fn () => AccessPolicy::make(
+                [new ClassGrant(ResourceAreaType::Protected, [AccessType::Read])],
+                [],
+                [],
+                [],
+                [],
+                ProcessGrants::everything(),
+            ),
         );
         $this->assertRefused(UnknownAccessType::class, fn () => AccessType::fromKey('unknown'));
     }
@@ -143,7 +153,10 @@ final class PolicyValuesTest extends TestCase
     {
         $this->assertSame(
             [StopCondition::CLEAN_WORKTREE],
-            array_map(fn (StopCondition $condition) => $condition->key, ProfileBase::writingHelper()->defaultStopConditions()),
+            array_map(
+                fn (StopCondition $condition) => $condition->key,
+                ProfileBase::writingHelper()->defaultStopConditions(),
+            ),
         );
         $this->assertSame([], ProfileBase::readOnlyHelper()->defaultStopConditions());
         $this->assertSame(30, StopConditions::make([])->attemptSeconds);
@@ -159,11 +172,16 @@ final class PolicyValuesTest extends TestCase
         $this->assertRefused(StopConditionsInvalid::class, fn () => StopConditions::make([], 121));
         $this->assertRefused(
             StopConditionsInvalid::class,
-            fn () => StopConditions::make(array_map(fn (int $number) => $this->condition("c{$number}", 1), range(1, 17)), 120),
+            fn () => StopConditions::make(
+                array_map(fn (int $number) => $this->condition("c{$number}", 1), range(1, 17)),
+                120,
+            ),
         );
         $this->assertRefused(
             StopConditionsInvalid::class,
-            fn () => StopConditions::make([new StopCondition('path', 'Path', 'journal-check', [], [], 'workspace', 5, 1024, 'Fix it.')]),
+            fn () => StopConditions::make(
+                [new StopCondition('path', 'Path', 'journal-check', [], [], 'workspace', 5, 1024, 'Fix it.')],
+            ),
         );
         $this->assertRefused(
             StopConditionsInvalid::class,
@@ -177,13 +195,28 @@ final class PolicyValuesTest extends TestCase
 
         $this->assertSame(
             [2, 4 * 1024 ** 3, 4 * 1024 ** 3, 256, 1024, 256 * 1024 ** 2, 10 * 1024 ** 3, 21600],
-            [$budgets->cpuCores, $budgets->memoryBytes, $budgets->memorySwapBytes, $budgets->processes, $budgets->openFiles, $budgets->tmpBytes, $budgets->workspaceBytes, $budgets->wallSeconds],
+            [
+                $budgets->cpuCores,
+                $budgets->memoryBytes,
+                $budgets->memorySwapBytes,
+                $budgets->processes,
+                $budgets->openFiles,
+                $budgets->tmpBytes,
+                $budgets->workspaceBytes,
+                $budgets->wallSeconds,
+            ],
         );
         $this->assertSame(ExecutionModeType::ProtectedHost, ProfileBase::mainAgent()->defaultExecutionMode());
         $this->assertSame(ExecutionModeType::RequiredContainer, ProfileBase::readOnlyHelper()->defaultExecutionMode());
         $this->assertSame(
             ExecutionModeType::RequiredContainer,
-            ExecutionPolicy::make(ExecutionModeType::RequiredContainer, 'registry/helper@sha256:abc', 'worktree-1', $budgets, [])->mode,
+            ExecutionPolicy::make(
+                ExecutionModeType::RequiredContainer,
+                'registry/helper@sha256:abc',
+                'worktree-1',
+                $budgets,
+                [],
+            )->mode,
         );
 
         $this->assertTrue(ProfileBase::writingHelper()->isContainerRequired());

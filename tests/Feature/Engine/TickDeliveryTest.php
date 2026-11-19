@@ -108,7 +108,14 @@ final class TickDeliveryTest extends TestCase
     {
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
         EngineFrameTime::recordMany(
-            [FrameSettlement::at(new StackTarget($stack->agent_id, $stack->session_id), $stack->id, 'a', CarbonImmutable::parse('2026-11-18 12:00:14'))],
+            [
+                FrameSettlement::at(
+                    new StackTarget($stack->agent_id, $stack->session_id),
+                    $stack->id,
+                    'a',
+                    CarbonImmutable::parse('2026-11-18 12:00:14'),
+                ),
+            ],
         );
         $this->app->instance(FrameBaselines::class, new FrameBaselines());
 

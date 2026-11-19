@@ -103,15 +103,33 @@ final class AssignmentCascadeTest extends TestCase
     public function test_a_finished_root_a_missing_record_or_a_group_too_large_is_refused_before_anything_changes(): void
     {
         $this->assertThrows(
-            fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->finished->assignmentIdentity(), [$this->open->assignmentIdentity()])),
+            fn () => $this->writer()->assignUnfinished(
+                $this->builder,
+                fn () => new AssignmentGroup(
+                    $this->finished->assignmentIdentity(),
+                    [$this->open->assignmentIdentity()],
+                ),
+            ),
             AssignmentRootFinished::class,
         );
         $this->assertThrows(
-            fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->plan->assignmentIdentity(), [$this->open->assignmentIdentity(), TestActors::record('tasks.task', 999999)])),
+            fn () => $this->writer()->assignUnfinished(
+                $this->builder,
+                fn () => new AssignmentGroup(
+                    $this->plan->assignmentIdentity(),
+                    [$this->open->assignmentIdentity(), TestActors::record('tasks.task', 999999)],
+                ),
+            ),
             RecordUnavailable::class,
         );
         $this->assertThrows(
-            fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->plan->assignmentIdentity(), array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 1000)))),
+            fn () => $this->writer()->assignUnfinished(
+                $this->builder,
+                fn () => new AssignmentGroup(
+                    $this->plan->assignmentIdentity(),
+                    array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 1000)),
+                ),
+            ),
             AssignmentGroupTooLarge::class,
         );
 
@@ -124,7 +142,11 @@ final class AssignmentCascadeTest extends TestCase
         $root = $this->writer()->assignUnfinished($this->builder, fn () => $this->group())->outcomes[0]->current;
 
         $this->assertThrows(
-            fn () => $this->writer()->reassignUnfinished(new AssignmentReference(TestIds::of(999999), $this->builder), $this->other, fn () => $this->group()),
+            fn () => $this->writer()->reassignUnfinished(
+                new AssignmentReference(TestIds::of(999999), $this->builder),
+                $this->other,
+                fn () => $this->group(),
+            ),
             AssignmentConflict::class,
         );
 

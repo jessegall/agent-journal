@@ -102,7 +102,12 @@ final class HookRetentionTest extends TestCase
         $this->app->make(PruneHookHistory::class)->prune();
         $this->app->instance(
             AgentContext::class,
-            new AgentContext(self::target(1)->agentId, self::target(1)->sessionId, new SignedCall('call-7', $issuedAt, str_repeat('a', 64)), null),
+            new AgentContext(
+                self::target(1)->agentId,
+                self::target(1)->sessionId,
+                new SignedCall('call-7', $issuedAt, str_repeat('a', 64)),
+                null,
+            ),
         );
 
         $this->expectException(HookIdentityExpired::class);
@@ -153,7 +158,17 @@ final class HookRetentionTest extends TestCase
         $row = new AgentStackRow();
         $row->startFor(
             self::target($agent),
-            new FrameRecords([new FrameRecord('ready', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now())]),
+            new FrameRecords(
+                [
+                    new FrameRecord(
+                        'ready',
+                        new StateReference('hooks.ready', NoSubject::None),
+                        true,
+                        1,
+                        CarbonImmutable::now(),
+                    ),
+                ],
+            ),
             new TickingTypes([]),
         );
 

@@ -9,7 +9,8 @@ use App\Contracts\Listener;
 use App\Programs\Enums\HookProgram;
 
 /**
- * Adds the journal's hooks for a program it supports to the launch's isolated settings, and turns off its child tools without identity.
+ * Adds the journal's hooks for a program it supports to the launch's isolated settings, and turns off its child tools
+ * without identity.
  */
 final class SupplyHookSettings implements Listener
 {

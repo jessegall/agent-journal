@@ -21,7 +21,10 @@ final readonly class SaveDraftPageController
     {
         $saved = $commands->run(new ChangeDocumentDetails($request->target(), $request->title(), $request->abstract()));
         $commands->run(
-            new ReplaceDocumentBody(new DraftTarget($saved->documentNumber, $saved->token, $saved->version), $request->body()),
+            new ReplaceDocumentBody(
+                new DraftTarget($saved->documentNumber, $saved->token, $saved->version),
+                $request->body(),
+            ),
         );
 
         return $redirect->back(303);

@@ -7,7 +7,8 @@ namespace App\Hooks\Exceptions;
 use UnexpectedValueException;
 
 /**
- * A hook payload without a field its event needs, or with a value no adapter can read; the call is refused, never guessed.
+ * A hook payload without a field its event needs, or with a value no adapter can read; the call is refused, never
+ * guessed.
  */
 final class UnreadablePayload extends UnexpectedValueException
 {

@@ -242,7 +242,8 @@ final class HookRelayTest extends TestCase
     }
 
     /**
-     * Sends each of the relay's requests through the application's own HTTP kernel, so the relay talks to the real endpoint.
+     * Sends each of the relay's requests through the application's own HTTP kernel, so the relay talks to the real
+     * endpoint.
      */
     private function forwardToTheEndpoint(): void
     {

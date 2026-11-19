@@ -12,7 +12,8 @@ use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 
 /**
- * A module outside the domain folder, such as a paid or third-party one, declares its own state in its Domain class and plugs it
+ * A module outside the domain folder, such as a paid or third-party one, declares its own state in its Domain class and
+ * plugs it
  * into the core without the core naming it.
  */
 final class OutsideModuleStateTest extends TestCase

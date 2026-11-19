@@ -73,7 +73,12 @@ final class NativeSubagentRuleTest extends TestCase
     public function test_rule_36_a_call_to_a_native_child_tool_is_refused_before_the_stack(): void
     {
         $body = (string) json_encode(
-            ['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'collaboration.spawn_agent', 'tool_input' => []],
+            [
+                'session_id' => 'session-redacted',
+                'hook_event_name' => 'PreToolUse',
+                'tool_name' => 'collaboration.spawn_agent',
+                'tool_input' => [],
+            ],
         );
 
         $this->assertDenied($this->hook('codex', $body));
@@ -82,7 +87,14 @@ final class NativeSubagentRuleTest extends TestCase
     public function test_rule_36_a_call_from_inside_a_native_child_is_refused_before_the_stack(): void
     {
         $body = (string) json_encode(
-            ['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'Bash', 'tool_input' => ['command' => 'ls'], 'agent_id' => 'child-1', 'agent_type' => 'general-purpose'],
+            [
+                'session_id' => 'session-redacted',
+                'hook_event_name' => 'PreToolUse',
+                'tool_name' => 'Bash',
+                'tool_input' => ['command' => 'ls'],
+                'agent_id' => 'child-1',
+                'agent_type' => 'general-purpose',
+            ],
         );
 
         $this->assertDenied($this->hook('claude-code', $body));

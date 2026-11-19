@@ -61,7 +61,9 @@ final class SilenceSweepOnTickTest extends TestCase
         );
         $this->assertSame(
             StackStatus::Active,
-            AgentStackRow::query()->authorizedFor(new StackTarget($stale->session->agent_id, $stale->session->id))->sole()->status,
+            AgentStackRow::query()->authorizedFor(
+                new StackTarget($stale->session->agent_id, $stale->session->id),
+            )->sole()->status,
         );
     }
 

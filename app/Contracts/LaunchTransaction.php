@@ -7,7 +7,8 @@ namespace App\Contracts;
 use Closure;
 
 /**
- * The transaction a launch runs in. Agents owns this contract so the domain that keeps the stacks can supply a bounded one.
+ * The transaction a launch runs in. Agents owns this contract so the domain that keeps the stacks can supply a bounded
+ * one.
  */
 interface LaunchTransaction
 {

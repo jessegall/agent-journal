@@ -72,7 +72,8 @@ final readonly class JournalClassifier implements ProgramClassifier
     }
 
     /**
-     * Whether the journal named is this installation's: the bare name, or a written path that is the trusted executable.
+     * Whether the journal named is this installation's: the bare name, or a written path that is the trusted
+     * executable.
      */
     private function isTrusted(ProgramIdentity $program, ExecutionContext $context): bool
     {

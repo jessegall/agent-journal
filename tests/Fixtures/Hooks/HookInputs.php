@@ -65,7 +65,12 @@ $hook,
             'prompt' => new PromptSubmitted($hook, new PromptDetails('prompt-1', 'Build the plan.', 'prompt-1')),
             'shell command' => new ShellCommandRequested(
 $hook,
- new ShellCommand('composer test', ShellDialect::Bash, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification)]),
+ new ShellCommand(
+'composer test',
+ ShellDialect::Bash,
+ ParseOutcome::Complete,
+ [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification)],
+),
 ),
             'file edit' => new FileEditRequested(
 $hook,

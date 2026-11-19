@@ -128,7 +128,13 @@ final class StackRestorerTest extends TestCase
         $this->restorer->restore(
             $this->records(
                 $this->bottom(),
-                new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now()),
+                new FrameRecord(
+                    'note-1',
+                    new StateReference('notes.reading', NoSubject::None),
+                    false,
+                    1,
+                    CarbonImmutable::now(),
+                ),
             ),
         );
     }
@@ -180,7 +186,16 @@ final class StackRestorerTest extends TestCase
         $this->expectException(StateSchemaUnknown::class);
 
         $restorer->restore(
-            $this->records($this->bottom(), new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 2, CarbonImmutable::now())),
+            $this->records(
+                $this->bottom(),
+                new FrameRecord(
+                    'review',
+                    new StateReference('test.switched_off', NoSubject::None),
+                    false,
+                    2,
+                    CarbonImmutable::now(),
+                ),
+            ),
         );
     }
 
@@ -223,7 +238,16 @@ final class StackRestorerTest extends TestCase
         );
 
         $stack = $restorer->restore(
-            $this->records($this->bottom(), new FrameRecord('plan-7', new StateReference('plans.working', NoSubject::None), false, 1, CarbonImmutable::now())),
+            $this->records(
+                $this->bottom(),
+                new FrameRecord(
+                    'plan-7',
+                    new StateReference('plans.working', NoSubject::None),
+                    false,
+                    1,
+                    CarbonImmutable::now(),
+                ),
+            ),
         );
 
         $this->assertSame(1, $loaded);

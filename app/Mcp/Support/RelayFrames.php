@@ -298,7 +298,11 @@ final class RelayFrames
             'error' => [
                 'code' => $jsonRpcCode,
                 'message' => $message,
-                'data' => ['code' => $code->value, 'retryable' => $code->isRetryable(), ...array_filter($data, fn (mixed $value): bool => $value !== null)],
+                'data' => [
+                    'code' => $code->value,
+                    'retryable' => $code->isRetryable(),
+                    ...array_filter($data, fn (mixed $value): bool => $value !== null),
+                ],
             ],
         ], self::JSON_FLAGS));
     }

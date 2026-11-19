@@ -149,7 +149,9 @@ final class UiDeclarationsTest extends TestCase
         );
 
         $this->check(
-            pages: [Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../Desk/Resources/js/Notes.vue')],
+            pages: [
+                Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../Desk/Resources/js/Notes.vue'),
+            ],
         );
     }
 
@@ -193,7 +195,16 @@ final class UiDeclarationsTest extends TestCase
         $this->expectExceptionObject(UiSlotMissing::for('library.notes', 'library.nowhere'));
 
         $this->check(
-            sections: [Section::make('notes', 'Notes', 'library.nowhere', SlotContextType::Nothing, NotesResolver::class, 'Books.vue')],
+            sections: [
+                Section::make(
+                    'notes',
+                    'Notes',
+                    'library.nowhere',
+                    SlotContextType::Nothing,
+                    NotesResolver::class,
+                    'Books.vue',
+                ),
+            ],
         );
     }
 

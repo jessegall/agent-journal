@@ -13,7 +13,8 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Support\ProgramCompatibility;
 
 /**
- * Turns the journal's final answer into one program's native reply. An adapter maps only the hooks its capabilities list.
+ * Turns the journal's final answer into one program's native reply. An adapter maps only the hooks its capabilities
+ * list.
  */
 interface ProgramAdapter
 {

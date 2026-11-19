@@ -10,7 +10,8 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A continuation the journal did not issue for this call: unreadable, changed, from another session or for another read.
+ * A continuation the journal did not issue for this call: unreadable, changed, from another session or for another
+ * read.
  */
 final class ContinuationInvalid extends RuntimeException implements CodedRefusal, CommandRefusal
 {

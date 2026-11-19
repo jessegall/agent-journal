@@ -74,7 +74,12 @@ final class ConditionalReviewStateTest extends TestCase
         $this->target = TestActors::stack(1, 10);
         $this->app->instance(
             AgentContext::class,
-            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+            new AgentContext(
+                TestIds::of(1),
+                TestIds::of(10),
+                new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
+                null,
+            ),
         );
         $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
     }
@@ -146,7 +151,10 @@ final class ConditionalReviewStateTest extends TestCase
     private function pushReview(): void
     {
         $this->transaction()->run(
-            fn () => $this->app->make(AgentStacks::class)->push($this->target, new StateReference(ReviewStateType::TYPE_KEY, NoSubject::None)),
+            fn () => $this->app->make(AgentStacks::class)->push(
+                $this->target,
+                new StateReference(ReviewStateType::TYPE_KEY, NoSubject::None),
+            ),
         );
     }
 

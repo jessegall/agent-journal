@@ -85,7 +85,13 @@ final class SharingPageRefreshTest extends TestCase
         Event::fake([PageChanged::class]);
 
         $this->asSystem(
-            new RecordGatewayOutcome(self::RUN, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, GatewayOutcome::Succeeded),
+            new RecordGatewayOutcome(
+                self::RUN,
+                $claim->operation->operationId,
+                $claim->operation->endpointVersion,
+                $claim->operation->leaseToken,
+                GatewayOutcome::Succeeded,
+            ),
         );
 
         Event::assertDispatched(

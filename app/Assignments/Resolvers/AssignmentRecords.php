@@ -94,7 +94,10 @@ final readonly class AssignmentRecords implements AssignmentResolver
 
             $visible = array_map(
                 fn (RecordIdentity $record) => $record->id,
-                $this->visibleAmong($type, array_values(array_map(fn (string $id) => new RecordIdentity($type, $id), $candidates))),
+                $this->visibleAmong(
+                    $type,
+                    array_values(array_map(fn (string $id) => new RecordIdentity($type, $id), $candidates)),
+                ),
             );
 
             foreach ($candidates as $candidate) {
@@ -169,7 +172,13 @@ final readonly class AssignmentRecords implements AssignmentResolver
         }
 
         return array_values(
-            array_filter($records, fn (RecordIdentity $record) => array_any($answered, fn (RecordIdentity $visible) => $visible->isSameAs($record))),
+            array_filter(
+                $records,
+                fn (RecordIdentity $record) => array_any(
+                    $answered,
+                    fn (RecordIdentity $visible) => $visible->isSameAs($record),
+                ),
+            ),
         );
     }
 }

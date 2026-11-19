@@ -11,7 +11,8 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * The owner configured a gateway revision or disabled one. Raised after the transaction committed; it carries the
- * configuration, its version and whether it is now disabled, never a setting or secret. The owner's open sharing pages reread on it.
+ * configuration, its version and whether it is now disabled, never a setting or secret. The owner's open sharing pages
+ * reread on it.
  */
 final readonly class ShareGatewayChanged implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {

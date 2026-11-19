@@ -26,7 +26,10 @@ final class OverviewResource extends JournalResource
     protected function read(Request $request): Response
     {
         return Response::text(
-            json_encode($this->overview->read()->structuredContent(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            json_encode(
+                $this->overview->read()->structuredContent(),
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+            ),
         );
     }
 }

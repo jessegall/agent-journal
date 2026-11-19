@@ -54,7 +54,10 @@ final class HookCompactionTest extends TestCase
         $context = json_decode($this->compact('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertContains(
-            'Rule '.Rule::query()->where('text', 'No phase waits on the user.')->value('id').': No phase waits on the user.',
+            'Rule '.Rule::query()->where(
+                'text',
+                'No phase waits on the user.',
+            )->value('id').': No phase waits on the user.',
             $context,
         );
         $this->assertContains('Memory: Use plain words.', $context);

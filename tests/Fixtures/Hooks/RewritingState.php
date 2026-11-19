@@ -10,7 +10,8 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\States\AgentState;
 
 /**
- * A test state that rewrites each line it knows to its replacement, may push a child with it, and delegates on anything else.
+ * A test state that rewrites each line it knows to its replacement, may push a child with it, and delegates on anything
+ * else.
  */
 final class RewritingState extends AgentState
 {

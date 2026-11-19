@@ -14,7 +14,8 @@ use Closure;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
- * The one place this request's actor is kept, bound once per request as both CurrentActor and CurrentActorSetter, so the
+ * The one place this request's actor is kept, bound once per request as both CurrentActor and CurrentActorSetter, so
+ * the
  * reader and the middleware that fills it always share it and a long-running worker never carries it to the next one.
  */
 #[Scoped]

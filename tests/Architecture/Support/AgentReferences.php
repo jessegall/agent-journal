@@ -104,7 +104,10 @@ final readonly class AgentReferences
         return match (true) {
             $type instanceof ReflectionNamedType => [$type->getName()],
             $type instanceof ReflectionUnionType => array_values(
-                array_map(fn (ReflectionType $part) => $part instanceof ReflectionNamedType ? $part->getName() : '', $type->getTypes()),
+                array_map(
+                    fn (ReflectionType $part) => $part instanceof ReflectionNamedType ? $part->getName() : '',
+                    $type->getTypes(),
+                ),
             ),
             default => [],
         };

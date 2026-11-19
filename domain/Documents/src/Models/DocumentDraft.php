@@ -43,7 +43,17 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  */
 #[Fillable(
-    ['document_id', 'token', 'author_type', 'author_id', 'base_revision_number', 'title', 'abstract', 'body', 'opened_at'],
+    [
+        'document_id',
+        'token',
+        'author_type',
+        'author_id',
+        'base_revision_number',
+        'title',
+        'abstract',
+        'body',
+        'opened_at',
+    ],
 )]
 final class DocumentDraft extends Model implements ReadableModel
 {

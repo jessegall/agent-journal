@@ -141,7 +141,10 @@ final class SettingRegistryTest extends TestCase
         $this->expectExceptionMessage('Library declares more than '.SettingRegistry::SETTINGS_PER_OWNER.' settings');
 
         SettingRegistry::from(
-            ['Core' => new CoreSettings(), 'Library' => new SettingsList([SettingGroup::make('many', 'Many', $settings)])],
+            [
+                'Core' => new CoreSettings(),
+                'Library' => new SettingsList([SettingGroup::make('many', 'Many', $settings)]),
+            ],
         );
     }
 }

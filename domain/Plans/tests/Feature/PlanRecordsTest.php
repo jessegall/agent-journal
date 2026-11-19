@@ -75,7 +75,10 @@ final class PlanRecordsTest extends TestCase
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
         $this->app->instance(
             CurrentState::class,
-            new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]),
+            new FixedCurrentState(
+                new StackTarget($agent->id, TestIds::of(10)),
+                [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)],
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),
@@ -99,7 +102,10 @@ final class PlanRecordsTest extends TestCase
     {
         $this->assertSame(
             [$this->build->id],
-            array_map(fn (PlanCard $card) => $card->id, $this->records()->list(new PlanFilters(search: 'RELEASE'))->cards),
+            array_map(
+                fn (PlanCard $card) => $card->id,
+                $this->records()->list(new PlanFilters(search: 'RELEASE'))->cards,
+            ),
         );
 
         $empty = $this->records()->list(new PlanFilters(search: 'nothing like this'));

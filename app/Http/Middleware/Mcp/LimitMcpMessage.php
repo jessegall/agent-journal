@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Refuses an MCP message over 256 KiB or nested deeper than 32 levels before the package parses it. It never logs the body.
+ * Refuses an MCP message over 256 KiB or nested deeper than 32 levels before the package parses it. It never logs the
+ * body.
  */
 final readonly class LimitMcpMessage
 {

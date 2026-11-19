@@ -214,7 +214,10 @@ final readonly class ListenerPolicy
     {
         return [
             ...$this->coreExports->events,
-            ...array_merge([], ...array_map(fn (DomainEntry $entry) => $entry->exports->events, $this->registry->all())),
+            ...array_merge(
+                [],
+                ...array_map(fn (DomainEntry $entry) => $entry->exports->events, $this->registry->all()),
+            ),
         ];
     }
 }

@@ -10,7 +10,8 @@ use App\Hooks\Decisions\StateReference;
 use Illuminate\Container\Attributes\Bind;
 
 /**
- * Pushes a state onto the calling agent's own stack, inside the caller's StackTransactionRunner, under the stack's row lock.
+ * Pushes a state onto the calling agent's own stack, inside the caller's StackTransactionRunner, under the stack's row
+ * lock.
  */
 #[Bind(AgentStacks::class)]
 interface AgentStack

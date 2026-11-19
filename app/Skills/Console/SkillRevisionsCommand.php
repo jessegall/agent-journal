@@ -29,7 +29,16 @@ final class SkillRevisionsCommand extends Command
             $skill = $console->stored((string) $this->argument('number'));
             $this->table(
                 ['Revision', 'Name', 'Author', 'Copied from', 'Saved'],
-                array_map(fn (SkillRevision $revision) => [$revision->revision, $revision->name, "{$revision->author_type->value}:{$revision->author_id}", $revision->source_key ?? '', $revision->created_at->toIso8601String()], SkillRevision::historyOf($skill, self::ROWS)),
+                array_map(
+                    fn (SkillRevision $revision) => [
+                        $revision->revision,
+                        $revision->name,
+                        "{$revision->author_type->value}:{$revision->author_id}",
+                        $revision->source_key ?? '',
+                        $revision->created_at->toIso8601String(),
+                    ],
+                    SkillRevision::historyOf($skill, self::ROWS),
+                ),
             );
 
             return $console->statusLines($skill);

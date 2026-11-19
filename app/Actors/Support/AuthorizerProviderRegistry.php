@@ -41,7 +41,8 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
     {
         $providerClass = $this->providers[$type->value] ?? throw AuthorizerProviderMissing::forType($type->value);
 
-        // The registry outlives a request under Octane; the provider comes from the request's own container, so it reads
+        // The registry outlives a request under Octane; the provider comes from the request's own container, so it
+        // reads
         // that request's actor, never the one of the request that booted the registry.
         return Container::getInstance()->make($providerClass);
     }

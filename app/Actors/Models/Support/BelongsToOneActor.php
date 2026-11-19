@@ -58,7 +58,8 @@ trait BelongsToOneActor
     }
 
     /**
-     * The explicit read of one actor's rows, for the journal's own work on that actor; it lifts the current-actor limit.
+     * The explicit read of one actor's rows, for the journal's own work on that actor; it lifts the current-actor
+     * limit.
      *
      * @param  Builder<static>  $query
      */

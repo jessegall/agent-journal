@@ -120,7 +120,11 @@ final class AssignmentWriterTest extends TestCase
         );
         $this->assertSame(
             AssignmentOutcomeType::Unchanged,
-            $this->writer()->reassign($this->task, $back->reference, AssigneeIdentity::of($this->helper))->outcomes[0]->type,
+            $this->writer()->reassign(
+                $this->task,
+                $back->reference,
+                AssigneeIdentity::of($this->helper),
+            )->outcomes[0]->type,
         );
     }
 
@@ -151,7 +155,10 @@ final class AssignmentWriterTest extends TestCase
             AssigneeUnavailable::class,
         );
         $this->assertThrows(
-            fn () => $this->writer()->assign(TestActors::record('tasks.task', 999999), AssigneeIdentity::of($this->main)),
+            fn () => $this->writer()->assign(
+                TestActors::record('tasks.task', 999999),
+                AssigneeIdentity::of($this->main),
+            ),
             RecordUnavailable::class,
         );
     }
@@ -174,7 +181,10 @@ final class AssignmentWriterTest extends TestCase
 
             $this->assertCount(
                 1,
-                $other->select("SELECT id FROM assignments WHERE holder_type = 'agent' AND holder_id = ?", [$this->helper->id]),
+                $other->select(
+                    "SELECT id FROM assignments WHERE holder_type = 'agent' AND holder_id = ?",
+                    [$this->helper->id],
+                ),
             );
         });
     }
@@ -193,7 +203,15 @@ final class AssignmentWriterTest extends TestCase
 
                 if ($attempts === 1) {
                     $other->table('assignments')->insert(
-                        ['id' => strtolower((string) Str::ulid()), 'record_type' => $this->task->type, 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()],
+                        [
+                            'id' => strtolower((string) Str::ulid()),
+                            'record_type' => $this->task->type,
+                            'record_id' => $this->task->id,
+                            'holder_type' => 'agent',
+                            'holder_id' => $this->main->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ],
                     );
                 }
 

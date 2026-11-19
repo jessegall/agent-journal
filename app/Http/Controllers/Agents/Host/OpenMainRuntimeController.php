@@ -19,7 +19,15 @@ final readonly class OpenMainRuntimeController
     public function __invoke(MainRuntimeRequestData $request, HostContext $host, CommandBus $commands): JsonResponse
     {
         $opened = $commands->run(
-            new OpenHostMainRuntime($request->agentId, $host->hostId, $request->folder, $request->program, $request->programBuild, $request->profile, $request->model),
+            new OpenHostMainRuntime(
+                $request->agentId,
+                $host->hostId,
+                $request->folder,
+                $request->program,
+                $request->programBuild,
+                $request->profile,
+                $request->model,
+            ),
         );
 
         return new JsonResponse(

@@ -66,7 +66,9 @@ final class IsolationTest extends TestCase
 
             $this->assertSame(
                 [],
-                array_values(array_filter($parameters, fn (string $name) => preg_match('/author|creator|actor/i', $name) === 1)),
+                array_values(
+                    array_filter($parameters, fn (string $name) => preg_match('/author|creator|actor/i', $name) === 1),
+                ),
             );
         }
 

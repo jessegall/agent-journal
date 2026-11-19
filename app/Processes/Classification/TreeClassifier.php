@@ -99,7 +99,14 @@ final readonly class TreeClassifier implements CommandClassifier
 
             return new Classification(
                 $tree,
-                [new PartClassification($tree->root, [], [new UnresolvedFact(UnresolvedType::UnsupportedSyntax, $tree->root, $reason)], CommandType::Unknown)],
+                [
+                    new PartClassification(
+                        $tree->root,
+                        [],
+                        [new UnresolvedFact(UnresolvedType::UnsupportedSyntax, $tree->root, $reason)],
+                        CommandType::Unknown,
+                    ),
+                ],
                 [],
             );
         }
@@ -128,7 +135,19 @@ final readonly class TreeClassifier implements CommandClassifier
                 $this->commandPart($tree, $node, $unresolvedRedirects, $depth, $context),
             ],
             $node->type === NodeType::Unsupported => [
-                new PartClassification($node->id, [], [new UnresolvedFact(UnresolvedType::UnsupportedSyntax, $node->id, 'This construct is not supported, so what it runs is unknown.'), ...$unresolvedRedirects], CommandType::Unknown),
+                new PartClassification(
+                    $node->id,
+                    [],
+                    [
+                        new UnresolvedFact(
+                            UnresolvedType::UnsupportedSyntax,
+                            $node->id,
+                            'This construct is not supported, so what it runs is unknown.',
+                        ),
+                        ...$unresolvedRedirects,
+                    ],
+                    CommandType::Unknown,
+                ),
             ],
             $unresolvedRedirects !== [] => [
                 new PartClassification($node->id, [], $unresolvedRedirects, CommandType::Unknown),
@@ -183,7 +202,13 @@ final readonly class TreeClassifier implements CommandClassifier
             return new PartClassification(
                 $node,
                 [],
-                [new UnresolvedFact(UnresolvedType::UnsupportedSyntax, $node, 'Wrappers and nested shells go deeper than the analysis allows.')],
+                [
+                    new UnresolvedFact(
+                        UnresolvedType::UnsupportedSyntax,
+                        $node,
+                        'Wrappers and nested shells go deeper than the analysis allows.',
+                    ),
+                ],
                 CommandType::Unknown,
             );
         }
@@ -311,7 +336,12 @@ final readonly class TreeClassifier implements CommandClassifier
             ) : $line;
             $inner = $this->classifyTree($this->syntax->parse($source, ShellDialect::Bash), $depth + 1, $context);
             $facts = array_map(
-                fn (ClassFact $fact) => new ClassFact($fact->class, $node, new ScriptOrigin($script->binding, $fact->origin), $fact->reason),
+                fn (ClassFact $fact) => new ClassFact(
+                    $fact->class,
+                    $node,
+                    new ScriptOrigin($script->binding, $fact->origin),
+                    $fact->reason,
+                ),
                 $inner->facts(),
             );
             $contracts = array_merge(
@@ -378,7 +408,10 @@ final readonly class TreeClassifier implements CommandClassifier
                 $node,
                 $program,
                 UnresolvedType::UnsupportedSyntax,
-                "The saved alias {$alias->name} takes ".count($alias->arguments).' plain arguments ('.implode(', ', $alias->arguments).').',
+                "The saved alias {$alias->name} takes ".count($alias->arguments).' plain arguments ('.implode(
+                    ', ',
+                    $alias->arguments,
+                ).').',
             );
         }
         $inner = $this->classifyTree(
@@ -387,7 +420,12 @@ final readonly class TreeClassifier implements CommandClassifier
             $context->insideAlias($alias->id, array_values(array_filter($values, 'is_string'))),
         );
         $facts = array_map(
-            fn (ClassFact $fact) => new ClassFact($fact->class, $node, new AliasOrigin($alias, $fact->origin), $fact->reason),
+            fn (ClassFact $fact) => new ClassFact(
+                $fact->class,
+                $node,
+                new AliasOrigin($alias, $fact->origin),
+                $fact->reason,
+            ),
             $inner->facts(),
         );
         $contracts = array_merge(...array_map(fn (PartClassification $part): array => $part->contracts, $inner->parts));
@@ -444,7 +482,12 @@ final readonly class TreeClassifier implements CommandClassifier
         ExecutionContext $context,
     ): PartClassification {
         $own = array_map(
-            fn (CommandClass $class) => new ClassFact($class, $node, new RuleOrigin("core.wrapper.{$wrapper->family}", 1), "{$wrapper->family} itself does it."),
+            fn (CommandClass $class) => new ClassFact(
+                $class,
+                $node,
+                new RuleOrigin("core.wrapper.{$wrapper->family}", 1),
+                "{$wrapper->family} itself does it.",
+            ),
             $wrapper->classes->classes,
         );
         $unresolved = [];
@@ -673,7 +716,12 @@ final readonly class TreeClassifier implements CommandClassifier
     private function ruleFacts(CommandRule $rule, int $node): array
     {
         return array_map(
-            fn (CommandClass $class) => new ClassFact($class, $node, new RuleOrigin($rule->id, $rule->revision), "The rule {$rule->id} declares it."),
+            fn (CommandClass $class) => new ClassFact(
+                $class,
+                $node,
+                new RuleOrigin($rule->id, $rule->revision),
+                "The rule {$rule->id} declares it.",
+            ),
             $rule->classes->classes,
         );
     }
@@ -709,7 +757,11 @@ final readonly class TreeClassifier implements CommandClassifier
         }
 
         return [
-            new UnresolvedFact(UnresolvedType::UnresolvedExecutable, $node, "Setting {$name} changes which program runs or how it starts."),
+            new UnresolvedFact(
+                UnresolvedType::UnresolvedExecutable,
+                $node,
+                "Setting {$name} changes which program runs or how it starts.",
+            ),
         ];
     }
 
@@ -719,7 +771,12 @@ final readonly class TreeClassifier implements CommandClassifier
     private function backgroundFacts(ShellNode $node): array
     {
         return $node->type === NodeType::Background ? [
-            new ClassFact(CommandClass::ProcessControl, $node->id, new SyntaxOrigin('background'), 'A background job keeps running after the line ends.'),
+            new ClassFact(
+                CommandClass::ProcessControl,
+                $node->id,
+                new SyntaxOrigin('background'),
+                'A background job keeps running after the line ends.',
+            ),
         ] : [];
     }
 }

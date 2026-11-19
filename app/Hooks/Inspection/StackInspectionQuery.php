@@ -11,7 +11,8 @@ use App\Hooks\Models\HookCall;
 use App\Hooks\Stack\StackRestorer;
 
 /**
- * The named read a signed-in user makes of any agent's stack: an explicit authorized query, never the calling agent's own scope.
+ * The named read a signed-in user makes of any agent's stack: an explicit authorized query, never the calling agent's
+ * own scope.
  */
 final readonly class StackInspectionQuery implements InspectsStacks
 {

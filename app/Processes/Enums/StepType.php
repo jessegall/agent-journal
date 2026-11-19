@@ -33,7 +33,16 @@ enum StepType: string
     {
         return in_array(
             $type,
-            [NodeType::Sequence, NodeType::AndList, NodeType::OrList, NodeType::Pipeline, NodeType::Background, NodeType::Negation, NodeType::Group, NodeType::Subshell],
+            [
+                NodeType::Sequence,
+                NodeType::AndList,
+                NodeType::OrList,
+                NodeType::Pipeline,
+                NodeType::Background,
+                NodeType::Negation,
+                NodeType::Group,
+                NodeType::Subshell,
+            ],
             true,
         );
     }

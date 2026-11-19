@@ -36,7 +36,14 @@ final class SkillSectionsCast implements CastsAttributes
     public function set(Model $model, string $key, mixed $value, array $attributes): string
     {
         return json_encode(
-            array_map(fn (SkillSection $section) => ['key' => $section->key, 'heading' => $section->heading, 'markdown' => $section->content], $value),
+            array_map(
+                fn (SkillSection $section) => [
+                    'key' => $section->key,
+                    'heading' => $section->heading,
+                    'markdown' => $section->content,
+                ],
+                $value,
+            ),
             JSON_THROW_ON_ERROR,
         );
     }

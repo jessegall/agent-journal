@@ -11,7 +11,8 @@ use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\JudgedCall;
 
 /**
- * What the adapter tests of every program share: its recorded fixture, its mapping as a data provider, and reading a call's input.
+ * What the adapter tests of every program share: its recorded fixture, its mapping as a data provider, and reading a
+ * call's input.
  */
 trait ChecksProgramFixtures
 {
