@@ -7,7 +7,7 @@ namespace Domain\Chat\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use Domain\Chat\Enums\MessagePinAbility;
 use Domain\Chat\Handlers\UnpinMessageHandler;
@@ -18,12 +18,12 @@ use Domain\Chat\Support\ConversationPair;
 /**
  * Removes the asker's pin of one message of a conversation.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(UnpinMessageHandler::class)]
 #[Authorize(MessagePinPolicy::class, MessagePinAbility::Work)]
 #[RetainedActorRequestKey]
-final readonly class UnpinMessage implements Command, HasAuthorizationSubject
+final readonly class UnpinMessage extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $sourceInboxId,

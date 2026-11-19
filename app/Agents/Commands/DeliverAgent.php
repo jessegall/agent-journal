@@ -12,17 +12,17 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 
 /**
  * Delivers content to an agent's runtime, in order behind its earlier requests.
  *
- * @implements Command<DriverReceipt>
+ * @extends Command<DriverReceipt>
  */
 #[HandledBy(DeliverAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class DeliverAgent implements Command, HasAuthorizationSubject
+final readonly class DeliverAgent extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $agentId,

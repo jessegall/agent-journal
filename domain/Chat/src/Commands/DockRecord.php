@@ -7,7 +7,7 @@ namespace Domain\Chat\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
 use Domain\Chat\Enums\DockedRecordAbility;
@@ -19,12 +19,12 @@ use Domain\Chat\Support\ConversationPair;
 /**
  * Docks one readable record above the composer of a conversation, for the asker only.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(DockRecordHandler::class)]
 #[Authorize(DockedRecordPolicy::class, DockedRecordAbility::Work)]
 #[RetainedActorRequestKey]
-final readonly class DockRecord implements Command, HasAuthorizationSubject
+final readonly class DockRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $sourceInboxId,

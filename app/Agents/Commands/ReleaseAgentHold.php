@@ -12,18 +12,18 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 
 /**
  * A person releases the hold they read on an agent's runtime: an interrupt or a call for attention, never a hold the
  * program itself shows.
  *
- * @implements Command<void>
+ * @extends Command<void>
  */
 #[HandledBy(ReleaseAgentHoldHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-final readonly class ReleaseAgentHold implements Command, HasAuthorizationSubject
+final readonly class ReleaseAgentHold extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $agentId,

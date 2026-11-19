@@ -7,7 +7,7 @@ namespace Domain\Chat\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use Domain\Chat\Enums\MessagePinAbility;
 use Domain\Chat\Handlers\PinMessageHandler;
@@ -18,12 +18,12 @@ use Domain\Chat\Support\ConversationPair;
 /**
  * Pins one readable message of a conversation for the person or agent asking.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(PinMessageHandler::class)]
 #[Authorize(MessagePinPolicy::class, MessagePinAbility::Work)]
 #[RetainedActorRequestKey]
-final readonly class PinMessage implements Command, HasAuthorizationSubject
+final readonly class PinMessage extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $sourceInboxId,

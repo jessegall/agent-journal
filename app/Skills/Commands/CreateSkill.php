@@ -6,7 +6,7 @@ namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Skills\Enums\SkillAbility;
 use App\Skills\Handlers\CreateSkillHandler;
@@ -19,11 +19,11 @@ use App\Skills\Values\SkillRevisionResult;
  * A user stores a new skill under a user- key; its first revision is the draft. A retry under the same request id
  * answers the same result.
  *
- * @implements Command<SkillRevisionResult>
+ * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(CreateSkillHandler::class)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
-final readonly class CreateSkill implements Command, HasAuthorizationSubject
+final readonly class CreateSkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $key,

@@ -8,7 +8,7 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Communication\Data\MessageReadBatch;
 use App\Communication\Enums\MessageAbility;
@@ -20,13 +20,13 @@ use App\Communication\Policies\MessagePolicy;
  * Reads up to a hundred messages of one inbox: the first read of each is kept, and the reader takes up each one that
  * waits for an answer and nobody holds.
  *
- * @implements Command<MessageReadBatch>
+ * @extends Command<MessageReadBatch>
  */
 #[HandledBy(ReadMessagesHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-final readonly class ReadMessages implements Command, HasAuthorizationSubject
+final readonly class ReadMessages extends Command implements HasAuthorizationSubject
 {
     /**
      * @param  list<string>  $messageIds

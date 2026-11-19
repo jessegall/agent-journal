@@ -9,7 +9,7 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Desks\Enums\DeskAbility;
 use App\Desks\Handlers\SeatActorHandler;
@@ -20,13 +20,13 @@ use App\Desks\Support\SeatChangeResult;
 /**
  * Seats an actor in a desk's lowest free seat.
  *
- * @implements Command<SeatChangeResult>
+ * @extends Command<SeatChangeResult>
  */
 #[HandledBy(SeatActorHandler::class)]
 #[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-final readonly class SeatActor implements Command, HasAuthorizationSubject
+final readonly class SeatActor extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $deskId,

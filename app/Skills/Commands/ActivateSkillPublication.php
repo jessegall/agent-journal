@@ -6,7 +6,7 @@ namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
 use App\Skills\Handlers\ActivateSkillPublicationHandler;
 
@@ -14,11 +14,11 @@ use App\Skills\Handlers\ActivateSkillPublicationHandler;
  * The worker holding a fully staged publication switches its target to it and marks it delivered; a target already
  * on it is recorded delivered.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(ActivateSkillPublicationHandler::class)]
 #[Entry(CommandEntry::SkillPublisher)]
-final readonly class ActivateSkillPublication implements Command
+final readonly class ActivateSkillPublication extends Command
 {
     public function __construct(
         public string $publicationId,

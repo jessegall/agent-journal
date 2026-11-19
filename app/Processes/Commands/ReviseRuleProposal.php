@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\ReviseRuleProposalHandler;
@@ -18,11 +18,11 @@ use App\Processes\Values\ProposedRule;
 /**
  * The author of a proposal adds its next revision on top of the revision they read.
  *
- * @implements Command<ProposalReceipt>
+ * @extends Command<ProposalReceipt>
  */
 #[HandledBy(ReviseRuleProposalHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
-final readonly class ReviseRuleProposal implements Command, HasAuthorizationSubject
+final readonly class ReviseRuleProposal extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $proposalId,

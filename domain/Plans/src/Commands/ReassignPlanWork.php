@@ -11,7 +11,7 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanAbility;
@@ -22,13 +22,13 @@ use Domain\Plans\Policies\PlanPolicy;
 /**
  * Moves a plan or phase and its unfinished work from the holder the caller saw to another, in one repeatable-read transaction.
  *
- * @implements Command<AssignmentResult>
+ * @extends Command<AssignmentResult>
  */
 #[HandledBy(ReassignPlanWorkHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-final readonly class ReassignPlanWork implements Command, HasAuthorizationSubject
+final readonly class ReassignPlanWork extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public RecordIdentity $root,

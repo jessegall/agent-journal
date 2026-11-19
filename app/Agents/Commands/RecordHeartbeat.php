@@ -10,17 +10,17 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 
 /**
  * Records a heartbeat of a running session at the database server's time; an ended, revoked or retired one is refused.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(RecordHeartbeatHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class RecordHeartbeat implements Command, HasAuthorizationSubject
+final readonly class RecordHeartbeat extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $sessionId) {}
 

@@ -6,7 +6,7 @@ namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Skills\Enums\SkillAbility;
 use App\Skills\Handlers\RetireSkillHandler;
@@ -17,11 +17,11 @@ use App\Skills\Values\SkillRevisionResult;
 /**
  * The owner retires a stored skill: no selection offers it again, and its revisions stay readable.
  *
- * @implements Command<SkillRevisionResult>
+ * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(RetireSkillHandler::class)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
-final readonly class RetireSkill implements Command, HasAuthorizationSubject
+final readonly class RetireSkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $skillId,

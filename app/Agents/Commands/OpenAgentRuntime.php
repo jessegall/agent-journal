@@ -12,7 +12,7 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 
 /**
@@ -20,11 +20,11 @@ use App\Bus\Contracts\HasAuthorizationSubject;
  * opens a child on its own session's host inside its own folder. One commit holds the session, the runtime in
  * Starting and the first delivery (doc 40, section 11).
  *
- * @implements Command<OpenedRuntime>
+ * @extends Command<OpenedRuntime>
  */
 #[HandledBy(OpenAgentRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class OpenAgentRuntime implements Command, HasAuthorizationSubject
+final readonly class OpenAgentRuntime extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $agentId,

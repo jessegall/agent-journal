@@ -12,17 +12,17 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 
 /**
  * Changes the effort a runtime uses; a later effort replaces an earlier one that has not run.
  *
- * @implements Command<DriverReceipt>
+ * @extends Command<DriverReceipt>
  */
 #[HandledBy(ChangeAgentEffortHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class ChangeAgentEffort implements Command, HasAuthorizationSubject
+final readonly class ChangeAgentEffort extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $agentId,

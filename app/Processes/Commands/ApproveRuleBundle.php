@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\ApproveRuleBundleHandler;
@@ -16,11 +16,11 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
 /**
  * A project owner activates one installed module's rule bundle at the exact version and digest they reviewed.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(ApproveRuleBundleHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
-final readonly class ApproveRuleBundle implements Command, HasAuthorizationSubject
+final readonly class ApproveRuleBundle extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $module, public string $version, public string $digest) {}
 

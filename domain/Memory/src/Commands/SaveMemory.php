@@ -6,7 +6,7 @@ namespace Domain\Memory\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Handlers\SaveMemoryHandler;
@@ -17,11 +17,11 @@ use Domain\Memory\Policies\MemoryPolicy;
  * Keeps a memory for the calling actor at a weight and answers its id; sent again under the same request key, the
  * bus answers the first id from its receipt.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(SaveMemoryHandler::class)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
-final readonly class SaveMemory implements Command, HasAuthorizationSubject
+final readonly class SaveMemory extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $text, public int $weight) {}
 

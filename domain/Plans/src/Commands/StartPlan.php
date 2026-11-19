@@ -6,7 +6,7 @@ namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\StartPlanHandler;
@@ -16,11 +16,11 @@ use Domain\Plans\Policies\PlanPolicy;
 /**
  * Starts a plan for the actor of this request, a user or an agent alike; starting a started plan changes nothing.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(StartPlanHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
-final readonly class StartPlan implements Command, HasAuthorizationSubject
+final readonly class StartPlan extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $planId,

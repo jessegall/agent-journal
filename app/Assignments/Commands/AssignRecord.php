@@ -14,20 +14,20 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
 
 /**
  * Gives one record to a holder, in one repeatable-read transaction.
  *
- * @implements Command<AssignmentResult>
+ * @extends Command<AssignmentResult>
  */
 #[HandledBy(AssignRecordHandler::class)]
 #[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-final readonly class AssignRecord implements Command, HasAuthorizationSubject
+final readonly class AssignRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public RecordIdentity $record,

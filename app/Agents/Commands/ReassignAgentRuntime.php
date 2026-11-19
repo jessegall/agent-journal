@@ -11,18 +11,18 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 
 /**
  * An operator moves a lost runtime to a new process, on its own host or another, once they have proof that the old
  * process stopped: the session keeps going under a rotated credential. The new process generation is the answer.
  *
- * @implements Command<int>
+ * @extends Command<int>
  */
 #[HandledBy(ReassignAgentRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-final readonly class ReassignAgentRuntime implements Command, HasAuthorizationSubject
+final readonly class ReassignAgentRuntime extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $agentId,

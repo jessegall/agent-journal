@@ -8,7 +8,7 @@ use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\ModelSelection;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Handlers\LaunchProfileMainHandler;
@@ -20,11 +20,11 @@ use App\Profiles\Values\ProfileKey;
  * A person launches a main agent from a main_agent profile, with an explicit model or the profile's default and,
  * when the profile does not pin one, a program of their choosing.
  *
- * @implements Command<LaunchReceipt>
+ * @extends Command<LaunchReceipt>
  */
 #[HandledBy(LaunchProfileMainHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
-final readonly class LaunchProfileMain implements Command, HasAuthorizationSubject
+final readonly class LaunchProfileMain extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $requestId,

@@ -6,7 +6,7 @@ namespace App\Settings\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Settings\Enums\SettingAbility;
 use App\Settings\Handlers\SetIntegerChoiceHandler;
@@ -18,11 +18,11 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores the chosen whole-number option of a choice or int-backed enum setting as the owner's next revision.
  *
- * @implements Command<SettingsChange>
+ * @extends Command<SettingsChange>
  */
 #[HandledBy(SetIntegerChoiceHandler::class)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
-final readonly class SetIntegerChoice implements Command, HasAuthorizationSubject
+final readonly class SetIntegerChoice extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public SettingReference $setting,

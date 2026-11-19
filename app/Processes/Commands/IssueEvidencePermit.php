@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\IssueEvidencePermitHandler;
@@ -16,11 +16,11 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
 /**
  * A project owner lets one actor run one exact, fully known command line once, as an evidence-only sample.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(IssueEvidencePermitHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
-final readonly class IssueEvidencePermit implements Command, HasAuthorizationSubject
+final readonly class IssueEvidencePermit extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $line,

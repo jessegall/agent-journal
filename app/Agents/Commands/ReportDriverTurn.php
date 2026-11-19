@@ -7,17 +7,17 @@ namespace App\Agents\Commands;
 use App\Agents\Handlers\ReportDriverTurnHandler;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
 
 /**
  * Records a native turn a host saw start or finish, by the program's own prompt id, with its settings. Run for an authenticated host by the journal itself (internal, not exported).
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(ReportDriverTurnHandler::class)]
 #[Entry(CommandEntry::HostControl)]
-final readonly class ReportDriverTurn implements Command
+final readonly class ReportDriverTurn extends Command
 {
     public function __construct(
         public string $hostId,

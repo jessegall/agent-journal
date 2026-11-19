@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\ProposeReaderHandler;
@@ -18,11 +18,11 @@ use App\Processes\Values\ReaderDefinition;
  * An agent, or a user, proposes the reader for a request's declaration revision; it is stored as a draft that never
  * unlocks a run.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(ProposeReaderHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
-final readonly class ProposeReader implements Command, HasAuthorizationSubject
+final readonly class ProposeReader extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $commandRequestId,

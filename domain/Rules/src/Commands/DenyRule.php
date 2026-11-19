@@ -6,7 +6,7 @@ namespace Domain\Rules\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Handlers\DenyRuleHandler;
@@ -16,11 +16,11 @@ use Domain\Rules\Policies\RulePolicy;
 /**
  * The user denies a proposed rule, so it never holds.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(DenyRuleHandler::class)]
 #[Authorize(RulePolicy::class, RuleAbility::Deny)]
-final readonly class DenyRule implements Command, HasAuthorizationSubject
+final readonly class DenyRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $ruleId) {}
 

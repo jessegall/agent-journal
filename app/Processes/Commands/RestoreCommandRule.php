@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\RestoreCommandRuleHandler;
@@ -18,11 +18,11 @@ use App\Processes\Values\ProposalReceipt;
  * A project owner restores an earlier approved revision of a rule: it becomes a new proposal that still needs
  * approval.
  *
- * @implements Command<ProposalReceipt>
+ * @extends Command<ProposalReceipt>
  */
 #[HandledBy(RestoreCommandRuleHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
-final readonly class RestoreCommandRule implements Command, HasAuthorizationSubject
+final readonly class RestoreCommandRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $classificationRuleId,

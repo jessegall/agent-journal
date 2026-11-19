@@ -6,7 +6,7 @@ namespace App\Settings\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Settings\Enums\SettingAbility;
 use App\Settings\Handlers\ResetSettingGroupHandler;
@@ -18,11 +18,11 @@ use App\Settings\Values\SettingsChange;
 /**
  * Removes a group's stored switch so it follows its declared default again, keeping its settings' values.
  *
- * @implements Command<SettingsChange>
+ * @extends Command<SettingsChange>
  */
 #[HandledBy(ResetSettingGroupHandler::class)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
-final readonly class ResetSettingGroup implements Command, HasAuthorizationSubject
+final readonly class ResetSettingGroup extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public GroupReference $group,

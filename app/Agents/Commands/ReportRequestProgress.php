@@ -10,17 +10,17 @@ use App\Agents\Handlers\ReportRequestProgressHandler;
 use App\Agents\Values\ScriptProgress;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
 
 /**
  * Records how a host carried out a request in one attempt: its progress, actual binding and outcome. Run for an authenticated host by the journal itself (internal, not exported).
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(ReportRequestProgressHandler::class)]
 #[Entry(CommandEntry::HostControl)]
-final readonly class ReportRequestProgress implements Command
+final readonly class ReportRequestProgress extends Command
 {
     public function __construct(
         public string $hostId,

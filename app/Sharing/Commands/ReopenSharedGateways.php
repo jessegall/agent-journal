@@ -6,7 +6,7 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
 use App\Sharing\Handlers\ReopenSharedGatewaysHandler;
 
@@ -14,11 +14,11 @@ use App\Sharing\Handlers\ReopenSharedGatewaysHandler;
  * A sharing supervisor run that just started takes the gateways over and asks to open again the endpoint of every
  * configuration that still serves a live, unexpired share; it answers how many opens it requested.
  *
- * @implements Command<int>
+ * @extends Command<int>
  */
 #[HandledBy(ReopenSharedGatewaysHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
-final readonly class ReopenSharedGateways implements Command
+final readonly class ReopenSharedGateways extends Command
 {
     public function __construct(public string $runId) {}
 }

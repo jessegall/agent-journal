@@ -6,7 +6,7 @@ namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Handlers\ActivateProfilesHandler;
@@ -19,11 +19,11 @@ use App\Profiles\Values\ProfileActivation;
  * The owner activates a proposal: every profile in it is resolved and checked, and only when all pass does each
  * become its profile's next immutable revision, reaching only launches that start after it.
  *
- * @implements Command<ProfileActivation>
+ * @extends Command<ProfileActivation>
  */
 #[HandledBy(ActivateProfilesHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
-final readonly class ActivateProfiles implements Command, HasAuthorizationSubject
+final readonly class ActivateProfiles extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public ProfileProposal $proposal,

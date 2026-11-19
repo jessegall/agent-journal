@@ -6,7 +6,7 @@ namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\EditTaskHandler;
@@ -17,11 +17,11 @@ use Domain\Tasks\Policies\TaskPolicy;
  * Gives a task a new title, brief or both, refused when the task moved past the revision the caller read; answers the
  * new revision. A title or brief left out stays as it is.
  *
- * @implements Command<int>
+ * @extends Command<int>
  */
 #[HandledBy(EditTaskHandler::class)]
 #[Authorize(TaskPolicy::class, TaskAbility::Work)]
-final readonly class EditTask implements Command, HasAuthorizationSubject
+final readonly class EditTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $taskId,

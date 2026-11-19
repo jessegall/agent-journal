@@ -9,7 +9,7 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Communication\Enums\MessageAbility;
 use App\Communication\Handlers\ReleaseMessageClaimHandler;
@@ -20,13 +20,13 @@ use App\Communication\Policies\MessagePolicy;
  * Ends one stalled claim on a waiting message, naming the exact claim as it was read; a newer claim is never
  * removed. The first read and the message's state stay.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(ReleaseMessageClaimHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Recover)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-final readonly class ReleaseMessageClaim implements Command, HasAuthorizationSubject
+final readonly class ReleaseMessageClaim extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $messageId,

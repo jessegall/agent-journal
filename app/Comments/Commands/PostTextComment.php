@@ -6,7 +6,7 @@ namespace App\Comments\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Comments\Enums\CommentAbility;
 use App\Comments\Handlers\PostTextCommentHandler;
@@ -19,11 +19,11 @@ use App\Text\Values\TextRange;
  * Leaves a comment about an exact place in one version of a record's text. The submission key makes a retry return
  * the first comment instead of a second one.
  *
- * @implements Command<string> the comment's id
+ * @extends Command<string> the comment's id
  */
 #[HandledBy(PostTextCommentHandler::class)]
 #[Authorize(CommentPolicy::class, CommentAbility::Work)]
-final readonly class PostTextComment implements Command, HasAuthorizationSubject
+final readonly class PostTextComment extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public RecordIdentity $target,

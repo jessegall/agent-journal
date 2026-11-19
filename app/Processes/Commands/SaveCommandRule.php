@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\SaveCommandRuleHandler;
@@ -19,11 +19,11 @@ use App\Processes\Values\ProposedRule;
  * A project owner writes a declaration and approves it in one step; both the proposal and the approval are recorded
  * (story 81). A test, check or build still goes through a request, as its reader must be proven.
  *
- * @implements Command<ApprovalReceipt>
+ * @extends Command<ApprovalReceipt>
  */
 #[HandledBy(SaveCommandRuleHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
-final readonly class SaveCommandRule implements Command, HasAuthorizationSubject
+final readonly class SaveCommandRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $requestId,

@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\ReplayAssessmentHandler;
@@ -18,11 +18,11 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
  * reader: a new assessment linked to the old one, and a receipt when it is valid. The answer is the receipt id, or
  * empty.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(ReplayAssessmentHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
-final readonly class ReplayAssessment implements Command, HasAuthorizationSubject
+final readonly class ReplayAssessment extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $partRunId) {}
 

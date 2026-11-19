@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\RetireCommandRuleHandler;
@@ -16,11 +16,11 @@ use App\Processes\Policies\ProcessAdministrationPolicy;
 /**
  * A project owner retires an active rule at the revision they expect; processes already started are untouched.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(RetireCommandRuleHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
-final readonly class RetireCommandRule implements Command, HasAuthorizationSubject
+final readonly class RetireCommandRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $classificationRuleId,

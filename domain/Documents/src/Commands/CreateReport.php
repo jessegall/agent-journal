@@ -6,7 +6,7 @@ namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\CreatedRecord;
@@ -19,11 +19,11 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
  * Files a new report, once; a report is never edited.
  * The author is whoever runs the command; the command names no author.
  *
- * @implements Command<CreatedRecord>
+ * @extends Command<CreatedRecord>
  */
 #[HandledBy(CreateReportHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-final readonly class CreateReport implements Command, HasAuthorizationSubject
+final readonly class CreateReport extends Command implements HasAuthorizationSubject
 {
     public const int MOST_LINKS = 50;
 

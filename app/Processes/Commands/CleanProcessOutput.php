@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\CleanProcessOutputHandler;
@@ -18,11 +18,11 @@ use App\Processes\Values\CleanPreview;
  * A user removes the stored output of ended runs, after seeing a preview of what goes; their parts say the output
  * was removed and their receipts stay.
  *
- * @implements Command<CleanPreview>
+ * @extends Command<CleanPreview>
  */
 #[HandledBy(CleanProcessOutputHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
-final readonly class CleanProcessOutput implements Command, HasAuthorizationSubject
+final readonly class CleanProcessOutput extends Command implements HasAuthorizationSubject
 {
     /**
      * @param  list<string>  $runIds

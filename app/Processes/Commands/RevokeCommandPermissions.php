@@ -6,7 +6,7 @@ namespace App\Processes\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\ProcessAbility;
@@ -19,11 +19,11 @@ use App\Processes\Values\CommandPattern;
  * A user takes classes or exact commands away from a permission source, such as a role; the next admission is
  * narrowed by them.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(RevokeCommandPermissionsHandler::class)]
 #[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
-final readonly class RevokeCommandPermissions implements Command, HasAuthorizationSubject
+final readonly class RevokeCommandPermissions extends Command implements HasAuthorizationSubject
 {
     /**
      * @param  list<CommandClass>  $classes
