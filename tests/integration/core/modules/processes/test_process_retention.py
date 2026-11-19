@@ -48,6 +48,7 @@ def test_running_processes_remain_beside_the_newest_ended_runs(process_log):
     running = start_process(process_log, "make active", category=CommandCategory.BUILD)
     for number in range(4):
         ended_run(process_log, f"make finished-{number}", "done\n")
+    process_log.run_listeners()
     queries = process_log.container.get(Queries)
     assert queries.query(Process).count() == 3 and queries.query(Process).find(running.id).ended_at is None
     assert queries.query(Output).filter(process_id=running.id).exists() and running.id in process_log.container.get(OutputFolder).process_ids()
@@ -60,6 +61,7 @@ def test_a_long_run_is_kept_when_it_finishes_after_newer_short_runs(process_log)
     first = ended_run(process_log, "make first", "first\n")
     ended_run(process_log, "make second", "second\n")
     end_run(process_log, long_run, "complete\n")
+    process_log.run_listeners()
     queries = process_log.container.get(Queries)
     assert queries.query(Process).filter(id=long_run.id).exists() and not queries.query(Process).filter(id=first.id).exists()
 
