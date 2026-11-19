@@ -131,7 +131,10 @@ class TestTurns:
             time.sleep(POLL_SECONDS)
 
     def holds_a_turn(self, worker: Worker) -> bool:
-        return any(turn.worker == worker.id for turn in [*self.turns.waiting(), *self.running()])
+        return self.held_turn(worker) is not None
+
+    def held_turn(self, worker: Worker) -> TestTurn | None:
+        return next((turn for turn in [*self.turns.waiting(), *self.running()] if turn.worker == worker.id), None)
 
     def added_turn(self, worker: Worker, ids: str, command: str, folder: str) -> TestTurn:
         waiting, cap = self.turns.waiting(), self.waiting_cap()

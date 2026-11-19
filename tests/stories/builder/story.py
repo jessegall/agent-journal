@@ -1,3 +1,4 @@
+import threading
 from journal.console.support.outcome import Outcome
 from journal.support.agent_role import AgentRole
 from tests.stories.builder.story_agent import StoryAgent
@@ -45,6 +46,7 @@ class Story(AgentSteps, UserSteps, WorkerSteps, TimeSteps, DeveloperSteps, Story
         self.stack_checked_at = -1
         self.shell_text, self.shell_exit, self.shell_outputs = "", 0, 0
         self.viewer_status, self.viewer_answer = 0, {}
+        self.clock_outs_going: dict[int, tuple[threading.Thread, list]] = {}
         self.closers: list = []
         self.team_addresses: dict[str, str] = {}
         self.typed: list[str] = []

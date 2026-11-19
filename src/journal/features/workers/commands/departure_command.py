@@ -11,6 +11,7 @@ from journal.features.plugins.plugins_options import PluginsOptions
 from journal.support.time_source import TimeSource
 from journal.features.workers.support.worker_branch import REBASE_STEPS, WorkerBranch
 from journal.features.workers.support.affected_tests import AffectedTests
+from journal.features.workers.support.clock_outs_running import ClockOutsRunning
 from journal.features.workers.support.test_selection import TestSelection
 from journal.features.workers.support.test_turns import TestTurns
 from journal.features.workers.support.worker_reports import WorkerReports
@@ -32,13 +33,13 @@ TESTING_REFUSAL = "your clock-out was held by a plugin before the journal rebase
 DELIVERY_REFUSAL = "your tests passed, but a plugin held your work before it reaches the agent that sent you; fix what it found, then clock out again, and the journal runs your tests again"
 
 class DepartureCommand(Command):
-    """journal clock-out "<report>": a worker's one report, accepted only once every point of its task's brief has a valid proof, its worktree has no uncommitted file and its branch has been moved up to the branch its work merges into, a clash there sent back to it at once with the files that clash, and, while the journal runs the tests, the tests it names have passed in its worktree, a failing run sent back to it at once with its failing lines. A worker with a task still queued may not clock out: the journal hands it the next as it proves the last point of this one, and it clocks out once, when its queue is done, a blocked task next in the queue or a point proved not done ending the queue there."""
+    """journal clock-out "<report>": a worker's one report, accepted only once every point of its task's brief has a valid proof, its worktree has no uncommitted file and its branch has been moved up to the branch its work merges into, a clash there sent back to it at once with the files that clash, and, while the journal runs the tests, the tests it names have passed in its worktree, a failing run sent back to it at once with its failing lines. A worker with a task still queued may not clock out: the journal hands it the next as it proves the last point of this one, and it clocks out once, when its queue is done, a blocked task next in the queue or a point proved not done ending the queue there. A worktree whose branch adds no commit and changes no file is handed in without a test run. A second clock-out of a worker whose clock-out still runs is refused at once."""
 
     noun = "clock-out"
     default_verb = "record"
 
-    def __init__(self, workers: Workers, tasks: Tasks, reports: WorkerReports, branch: WorkerBranch, turns: TestTurns, settings: SettingRows, logs: TaskLogs, events: CommandEvents, time_source: TimeSource, affected: AffectedTests, advance: QueueAdvance, stacks: WorkerStacks) -> None:
-        self.advance, self.stacks = advance, stacks
+    def __init__(self, workers: Workers, tasks: Tasks, reports: WorkerReports, branch: WorkerBranch, turns: TestTurns, settings: SettingRows, logs: TaskLogs, events: CommandEvents, time_source: TimeSource, affected: AffectedTests, advance: QueueAdvance, stacks: WorkerStacks, running: ClockOutsRunning) -> None:
+        self.advance, self.stacks, self.running = advance, stacks, running
         self.workers, self.tasks, self.reports, self.branch = workers, tasks, reports, branch
         self.turns, self.settings, self.logs, self.events, self.time_source, self.affected = turns, settings, logs, events, time_source, affected
 
@@ -49,6 +50,15 @@ class DepartureCommand(Command):
 
     def record(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(caller.worker_number)
+        with self.running.held(worker.id, lambda: self.still_running(worker)):
+            return self.recorded(args, caller, worker)
+
+    def still_running(self, worker: Worker) -> str:
+        turn = self.turns.held_turn(worker)
+        held = f", its test turn {turn.id} is {turn.state.value}" if turn is not None else ""
+        return f"your earlier clock-out still runs{held}, so this is not stuck: wait a few minutes, then clock out again; a clock-out after it has ended runs your tests and hands your work in again"
+
+    def recorded(self, args: Namespace, caller: Caller, worker: Worker) -> int:
         holdings = self.tasks.holder_task_ids(Ref(Worker.table(), worker.id))
         if not holdings:
             raise Rejection(f"worker {worker.id} has no task: a worker clocks out of the task it was sent on")
@@ -82,7 +92,7 @@ class DepartureCommand(Command):
         if left:
             raise Rejection(f"your Docker stacks still run: {', '.join(left)}; take them down first: {self.stacks.command(left)}")
         if self.turns.has_command(str(self.branch.place(worker))):
-            self.tested(worker, task, args.tests, caller)
+            self.tested_if_changed(worker, task, args.tests, caller)
         self.plugin_check(WorkerDelivering, worker, task, DELIVERY_REFUSAL)
         self.reports.delivered(worker, args.report, caller.actor)
         print(f"worker {worker.id} clocked out of task {task.id}; the agent that sent you checks each proof")
@@ -97,6 +107,13 @@ class DepartureCommand(Command):
         refusals = self.events.worker_merging(self.branch.merging_event(event_class, worker, task.id, self.settings.integer(PluginsOptions.CLOCK_OUT_WINDOW_SECONDS) * 1000))
         if refusals:
             raise Rejection(refusal_heading + "\n" + "\n".join(refusals))
+
+    def tested_if_changed(self, worker: Worker, task: Task, tests: str, caller: Caller) -> None:
+        if not self.is_unchanged(worker):
+            self.tested(worker, task, tests, caller)
+            return
+        self.logs.save(TaskLog.build(task, "no changes, no tests at clock-out", self.time_source.moment().timestamp()), caller.actor)
+        print("your branch changes no file, so the journal runs no tests for it")
 
     def tested(self, worker: Worker, task: Task, tests: str, caller: Caller) -> None:
         folder = self.branch.place(worker)
@@ -113,6 +130,9 @@ class DepartureCommand(Command):
             return tests
         print(f"the journal runs the tests that cover your changes and that you did not name too: {' '.join(missing)}")
         return f"{tests} && {self.turns.command(str(folder))} {shlex.join(missing)}"
+
+    def is_unchanged(self, worker: Worker) -> bool:
+        return worker.worktree and self.branch.touched(worker) == () and self.branch.unmerged_count(worker) == 0
 
     def clashing(self, worker: Worker) -> str:
         return self.branch.rebased_onto_branch(worker)

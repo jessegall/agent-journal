@@ -3,9 +3,11 @@ import json
 import re
 import shlex
 import threading
+import time
 
 from journal.engine.clock import Clock
 from journal.features.workers.jobs.auto_dispatch import AutoDispatch
+from journal.features.workers.support.clock_outs_running import ClockOutsRunning
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.test_turn import TestTurn
@@ -21,7 +23,7 @@ from tests.stories.builder.step_result import StepResult
 
 
 class WorkerSteps:
-    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, a command it only tries, which may be refused, a test turn it already holds and its end, and the journal's own dispatch of the next tasks."""
+    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, a command it only tries, which may be refused, a test turn it already holds and its end, a clock-out left running beside its next steps, a file it commits in its worktree, and the journal's own dispatch of the next tasks."""
 
     def agent_dispatches_worker(self, agent: StoryAgent, name: str, task: int) -> int:
         self.agent_runs(agent, f"worker dispatch '{name}' --task {task} --changes 'the files of its task' --profile journal-medior --model sonnet --tests 'Scoped tests'")
@@ -87,6 +89,28 @@ class WorkerSteps:
     def worker_test_run_ends(self, agent: StoryAgent) -> StepResult:
         self.ended_turns(agent)
         return self.observed(f"the {agent.role}'s test run ends", None, None)
+
+    def worker_clock_out_starts(self, agent: StoryAgent, line: str) -> StepResult:
+        outcomes: list = []
+        thread = threading.Thread(target=lambda: outcomes.append(self.app.console().run(shlex.split(line), self.caller_of(agent))), daemon=True)
+        self.clock_outs_going[agent.number] = (thread, outcomes)
+        thread.start()
+        running, deadline = self.app.container.get(ClockOutsRunning), time.time() + 10
+        while thread.is_alive() and not running.is_running(agent.number) and time.time() < deadline:
+            time.sleep(0.05)
+        return self.observed(f"the {agent.role}'s clock-out starts and keeps running", None, None)
+
+    def worker_clock_out_ends(self, agent: StoryAgent) -> StepResult:
+        thread, outcomes = self.clock_outs_going.pop(agent.number)
+        thread.join(30)
+        return self.record_command(f"the {agent.role}'s first clock-out ends", outcomes[0])
+
+    def worker_commits_a_file_in_its_worktree(self, agent: StoryAgent, path: str, text: str) -> StepResult:
+        folder = next((self.app.config.home / "worktrees").glob(f"{agent.number}-*"))
+        (folder / path).write_text(text)
+        self.git_in(folder, "add", path)
+        self.git_in(folder, "-c", "user.email=story@example.com", "-c", "user.name=Story", "commit", "-q", "-m", f"add {path}")
+        return self.observed(f"the {agent.role} commits {path} in its worktree", None, None)
 
     def ended_turns(self, agent: StoryAgent) -> None:
         with self.app.container.get(Scope).environment(1):

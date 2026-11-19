@@ -3997,6 +3997,9 @@ def test_the_journal_runs_a_workers_named_tests_at_clock_out_and_only_a_passing_
     assert console.run(["tests", "command", "test", "--proof", "1 = 1"], AGENT).code == 0
     assert (settings.option(WorkersOptions.TEST_COMMAND), settings.option(WorkersOptions.TEST_COMMAND_PROOF)) == ("test", "1 = 1"), "a passing proof sets the command and keeps what proved it"
     worker, folder, caller = worktree_worker(app, monkeypatch, "the job")
+    (folder / "a.py").write_text("A = 1\n")
+    for argv in (["add", "a.py"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "-m", "a"]):
+        subprocess.run(["git", *argv], cwd=folder, capture_output=True, timeout=30)
     assert console.run(["proof", "1", "a.py:1, test_a passes"], caller).code == 0
     assert "--tests" in console.run(["clock-out", "done"], caller).error, "a clock-out names the tests the journal is to run"
     red = console.run(["clock-out", "done", "--tests", "1 = 2"], caller)
