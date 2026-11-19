@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use Tests\Support\InstallsBuiltInProfiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
@@ -41,6 +42,7 @@ final class RefreshSkillsTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
+    use InstallsBuiltInProfiles;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts', 'agent_sessions', 'agents'];
 
