@@ -17,12 +17,14 @@ use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
 use Tests\Support\TestActors;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * A host's screen frame is kept only for a runtime it runs and somebody watches, within the size bound and four
  * frames a second; every refusal answers refused and keeps nothing.
  */
+#[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
 final class ScreenReportRouteTest extends TestCase
 {
     use CommitsHookRows;

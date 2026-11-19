@@ -26,6 +26,7 @@ use Tests\TestCase;
  * The host learns which runtimes are watched through its claim, at once when the list changed, and the engine ends
  * views that lapsed or whose runtime stopped; while the engine does not run, nothing ends.
  */
+#[TimeLimit(seconds: 3, reason: 'It commits real rows on the hook database and empties its tables around each test.')]
 final class TerminalViewOnHostTest extends TestCase
 {
     use CommitsHookRows;
