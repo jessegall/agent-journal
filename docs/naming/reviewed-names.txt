@@ -878,6 +878,7 @@ class	ActorDestinationProvider
 class	ActorIdentity
 class	ActorLabelSet
 class	ActorNotAllowed
+class	ActorProviderMissing
 class	ActorProviderRegistry
 class	ActorProviderRepeated
 class	ActorScope
@@ -1788,6 +1789,7 @@ class	FinishTaskHandler
 class	FinishTree
 class	FinishedToolCalls
 class	FloatSize
+class	FolderClasses
 class	FollowingSequenceState
 class	FollowingSequenceStateFactory
 class	FollowingSequenceStateReference
@@ -2470,6 +2472,7 @@ class	PlanFiltersData
 class	PlanFinishCancelTest
 class	PlanFinished
 class	PlanHasUnfinishedTasks
+class	PlanInputLimitsTest
 class	PlanList
 class	PlanListData
 class	PlanMissing
@@ -2930,6 +2933,7 @@ class	RegisteredSection
 class	RegisteredSettingCommands
 class	RegisteredStateFactory
 class	RegistrationDeskTest
+class	Registry
 class	RejectProposalCall
 class	RejectProposalController
 class	RejectProposalPageController
@@ -3173,6 +3177,7 @@ class	RuleDetails
 class	RuleExample
 class	RuleFilters
 class	RuleFiltersData
+class	RuleInputLimitsTest
 class	RuleList
 class	RuleListData
 class	RuleMissing
@@ -4310,13 +4315,18 @@ constant	PhaseCheck::CREATED_AT
 constant	PhaseCheck::UPDATED_AT
 constant	PhaseTimingTest::TABLES
 constant	PipelinePump::WAITING_BYTES
+constant	Plan::BRIEF_CHARACTERS
 constant	Plan::LINK_TYPE
+constant	Plan::NOTE_CHARACTERS
+constant	Plan::TITLE_CHARACTERS
 constant	PlanAuthoringTest::TABLES
 constant	PlanBuilder::BUILTINS
 constant	PlanBuilder::SHELLS
 constant	PlanDetailsResolver::TASKS_PER_READ
 constant	PlanDetailsResolverTest::TABLES
 constant	PlanFinishCancelTest::TABLES
+constant	PlanInputLimitsTest::PLAN_ID
+constant	PlanInputLimitsTest::TABLES
 constant	PlanRecords::PER_PAGE
 constant	PlanRecordsTest::TABLES
 constant	PlanShareProvider::SUMMARY_COLUMNS
@@ -4416,8 +4426,11 @@ constant	RetainedNumberedPages::SELECTOR
 constant	RetainedPage::LINK_TYPE
 constant	ReviewRuleTest::TABLES
 constant	RoutePath::SEGMENT
+constant	Rule::REASON_CHARACTERS
+constant	Rule::TEXT_CHARACTERS
 constant	RuleCommandsTest::TABLES
 constant	RuleDeclarations::RULE_ID
+constant	RuleInputLimitsTest::TABLES
 constant	RulePageChangeTest::TABLES
 constant	RuleProposalRevision::UPDATED_AT
 constant	RuleProposalTest::TABLES
@@ -5062,6 +5075,8 @@ method	AbilityGrant::fromArray()
 method	AbilityGrant::isFor()
 method	AbilityGrant::toArray()
 method	AbilityNotRegistered::for()
+method	AbilityNotRegistered::forModel()
+method	AbilityNotRegistered::forPolicy()
 method	AbilityRequirement::__construct()
 method	AbilityRequirement::isGrantedToCaller()
 method	AbilityRequirement::key()
@@ -5187,6 +5202,7 @@ method	ActorNotAllowed::render()
 method	ActorNotAllowed::to()
 method	ActorNotAllowed::withoutStoredAuthority()
 method	ActorProvider::actor()
+method	ActorProviderMissing::forType()
 method	ActorProviderRegistration::register()
 method	ActorProviderRegistration::registerLabels()
 method	ActorProviderRegistration::registerVisibility()
@@ -5203,6 +5219,7 @@ method	ActorProviderRegistry::registerVisibility()
 method	ActorProviderRegistry::registerWorkStack()
 method	ActorProviderRegistry::sessionsOf()
 method	ActorProviderRegistry::sessionsToAdmit()
+method	ActorProviderRegistry::workStackOf()
 method	ActorProviderRepeated::forType()
 method	ActorProvisioning::provision()
 method	ActorResolver::get()
@@ -5560,6 +5577,9 @@ method	AnsweringMessageStateFactory::schemaVersion()
 method	AnsweringMessageStateFactory::stateOf()
 method	AnsweringMessageStateFactory::statesFor()
 method	AnsweringMessageStateReference::forClaim()
+method	AnswersMessageCommands::answerWithActedMessage()
+method	AnswersMessageCommands::answerWithNewMessage()
+method	AnswersMessageCommands::answerWithResult()
 method	AnyOf::__construct()
 method	AnyOf::evaluate()
 method	AnyOf::toArray()
@@ -5862,7 +5882,6 @@ method	AssignmentRegistry::activity()
 method	AssignmentRegistry::assignedWork()
 method	AssignmentRegistry::assigneeProvider()
 method	AssignmentRegistry::autoAssigner()
-method	AssignmentRegistry::autoAssignerDefinition()
 method	AssignmentRegistry::build()
 method	AssignmentRegistry::checkPools()
 method	AssignmentRegistry::checkRecordModels()
@@ -5979,6 +5998,7 @@ method	AuthorizerProvider::forActor()
 method	AuthorizerProvider::forTarget()
 method	AuthorizerProviderMissing::forType()
 method	AuthorizerProviderRegistration::register()
+method	AuthorizerProviderRegistry::__construct()
 method	AuthorizerProviderRegistry::get()
 method	AuthorizerProviderRegistry::register()
 method	AuthorizerProviderRegistry::requireEveryType()
@@ -8349,6 +8369,7 @@ method	FinishedToolCalls::announce()
 method	FloatSize::__construct()
 method	FloatSize::of()
 method	FloatSize::standard()
+method	FolderClasses::in()
 method	FolderType::ofFolder()
 method	FolderType::requirement()
 method	FolderType::requirementNotMetBy()
@@ -8397,6 +8418,7 @@ method	Frame::restored()
 method	Frame::resume()
 method	Frame::typeKey()
 method	FrameBaselineMissing::forFrame()
+method	FrameBaselines::__construct()
 method	FrameBaselines::has()
 method	FrameBaselines::of()
 method	FrameBaselines::settle()
@@ -8715,6 +8737,7 @@ method	HostCredentialRejected::replayed()
 method	HostCredentialRejected::revoked()
 method	HostCredentialRejected::stale()
 method	HostCredentialRejected::unknown()
+method	HostLaunchMaterial::__construct()
 method	HostLaunchMaterial::keep()
 method	HostLaunchMaterial::material()
 method	HostReportRefused::notOwned()
@@ -9071,6 +9094,7 @@ method	LaunchRecord::casts()
 method	LaunchRecord::forAgent()
 method	LaunchRecord::forOwnerReference()
 method	LaunchRecord::launchedAs()
+method	LaunchRecord::replyInboxId()
 method	LaunchRecord::requireDigest()
 method	LaunchRecordDetails::__construct()
 method	LaunchRecordMissing::forRequest()
@@ -9829,6 +9853,7 @@ method	NumberedModelUndeclared::for()
 method	NumberedPage::__construct()
 method	NumberedPageContent::__construct()
 method	NumberedPages::answer()
+method	NumberedTypeRegistry::__construct()
 method	NumberedTypeRegistry::checkDeclarations()
 method	NumberedTypeRegistry::register()
 method	NumberedTypeRegistry::requireDeclared()
@@ -10406,6 +10431,9 @@ method	PlanHasUnfinishedTasks::for()
 method	PlanHasUnfinishedTasks::notStarted()
 method	PlanHasUnfinishedTasks::refusalCode()
 method	PlanHasUnfinishedTasks::status()
+method	PlanInputLimitsTest::refusedInput()
+method	PlanInputLimitsTest::test_a_title_and_brief_at_their_limits_create_the_plan()
+method	PlanInputLimitsTest::test_input_past_its_limit_is_refused_naming_the_field()
 method	PlanList::__construct()
 method	PlanListData::__construct()
 method	PlanMissing::withId()
@@ -11253,6 +11281,7 @@ method	ReadPermit::__construct()
 method	ReadPermit::__serialize()
 method	ReadPermitMissing::forReference()
 method	ReadPermitMissing::serialized()
+method	ReadPermits::__construct()
 method	ReadPermits::clear()
 method	ReadPermits::issue()
 method	ReadPermits::take()
@@ -11831,6 +11860,17 @@ method	RegisteredStateFactory::frameFor()
 method	RegisteredStateFactory::isEnabled()
 method	RegistersCalls::register()
 method	RegistrationDeskTest::test_a_registered_person_has_their_own_inbox()
+method	Registry::__construct()
+method	Registry::all()
+method	Registry::clear()
+method	Registry::find()
+method	Registry::get()
+method	Registry::has()
+method	Registry::keys()
+method	Registry::once()
+method	Registry::put()
+method	Registry::remove()
+method	Registry::replacing()
 method	RejectProposalCall::__construct()
 method	RejectProposalController::__invoke()
 method	RejectProposalPageController::__invoke()
@@ -12408,6 +12448,9 @@ method	RuleFiltersData::onPage()
 method	RuleFiltersData::rules()
 method	RuleFiltersData::toDomain()
 method	RuleFiltersData::toQuery()
+method	RuleInputLimitsTest::refusedProposals()
+method	RuleInputLimitsTest::test_a_proposal_past_its_limit_is_refused_naming_the_field()
+method	RuleInputLimitsTest::test_a_text_and_reason_at_their_limits_are_proposed()
 method	RuleList::__construct()
 method	RuleList::selection()
 method	RuleListData::__construct()
@@ -14193,6 +14236,7 @@ method	StateSet::build()
 method	StateSet::stateAt()
 method	StateSubjectMissing::for()
 method	StateTypeMissing::forClass()
+method	StateTypeRegistry::__construct()
 method	StateTypeRegistry::freeze()
 method	StateTypeRegistry::get()
 method	StateTypeRegistry::has()
@@ -15316,7 +15360,6 @@ property	ActivateSkillPublicationHandler::$targets
 property	ActivatedProfile::$change
 property	ActivatedProfile::$key
 property	ActivatedProfile::$revision
-property	ActiveActorCounterRegistry::$container
 property	ActiveActorCounterRegistry::$counters
 property	ActiveActorsResolver::$clock
 property	ActiveActorsResolver::$counters
@@ -15342,7 +15385,6 @@ property	ActorDestinationProvider::$seats
 property	ActorIdentity::$id
 property	ActorIdentity::$type
 property	ActorLabelSet::$namesByType
-property	ActorProviderRegistry::$container
 property	ActorProviderRegistry::$labelProviders
 property	ActorProviderRegistry::$providers
 property	ActorProviderRegistry::$visibilityProviders
@@ -15689,7 +15731,6 @@ property	AssignmentReference::$id
 property	AssignmentRegistry::$activities
 property	AssignmentRegistry::$assigneeProviders
 property	AssignmentRegistry::$autoAssigners
-property	AssignmentRegistry::$container
 property	AssignmentRegistry::$owners
 property	AssignmentRegistry::$poolOwners
 property	AssignmentRegistry::$pools
@@ -16469,7 +16510,6 @@ property	DeskSeating::$claims
 property	DeskSeating::$facts
 property	DeskSeating::$repair
 property	DeskSeating::$responsibilities
-property	DestinationRegistry::$container
 property	DestinationRegistry::$providers
 property	DirectDestinations::$actor
 property	DirectDestinations::$holder
@@ -17369,6 +17409,7 @@ property	LaunchAgentHandler::$events
 property	LaunchAgentHandler::$images
 property	LaunchAgentHandler::$launches
 property	LaunchAgentHandler::$material
+property	LaunchAgentHandler::$replyInboxes
 property	LaunchEnded::$agentId
 property	LaunchEnded::$sessionId
 property	LaunchEnvironment::$variables
@@ -18979,7 +19020,6 @@ property	RecordPhaseCheckCall::$requestKey
 property	RecordPhaseCheckHandler::$receipts
 property	RecordPhaseCheckHandler::$tasks
 property	RecordProvenSkillReads::$reads
-property	RecordProviders::$container
 property	RecordProviders::$providerOfType
 property	RecordReceipt::$accepted
 property	RecordReceipt::$callers
@@ -19115,7 +19155,6 @@ property	RegisteredCondition::$parameters
 property	RegisteredCondition::$version
 property	RegisteredCondition::$wireParameters
 property	RegisteredInboxDestinations::$destinations
-property	RegisteredInboxes::$container
 property	RegisteredInboxes::$providers
 property	RegisteredMiddleware::$declaration
 property	RegisteredMiddleware::$owner
@@ -19134,7 +19173,6 @@ property	RegisteredPage::$resolver
 property	RegisteredPage::$slots
 property	RegisteredPage::$uri
 property	RegisteredPolicies::$byPolicy
-property	RegisteredPolicies::$container
 property	RegisteredPolicies::$gate
 property	RegisteredPolicies::$modelOwners
 property	RegisteredSection::$componentFile
@@ -19148,6 +19186,9 @@ property	RegisteredSection::$slot
 property	RegisteredSettingCommands::$registry
 property	RegisteredStateFactory::$clock
 property	RegisteredStateFactory::$types
+property	Registry::$items
+property	Registry::$missing
+property	Registry::$repeated
 property	RejectProposalCall::$proposal
 property	RejectProposalCall::$reason
 property	RejectProposalCall::$requestKey
@@ -20215,7 +20256,6 @@ property	ShareRecordRegistration::$alias
 property	ShareRecordRegistration::$capabilities
 property	ShareRecordRegistration::$modelClass
 property	ShareRecordRegistration::$providerClass
-property	ShareRecordRegistry::$container
 property	ShareRecordRegistry::$registrations
 property	ShareRecordRegistry::$relationSets
 property	ShareRecords::$continuation
@@ -21133,6 +21173,7 @@ property	WriteAssignments::$store
 property	WriteAssignments::$transaction
 property	WriteResponsibilities::$providers
 property	WriteResponsibilities::$store
+trait	AnswersMessageCommands
 trait	AssignableListing
 trait	BelongsToOneActor
 trait	BelongsToOneRoot

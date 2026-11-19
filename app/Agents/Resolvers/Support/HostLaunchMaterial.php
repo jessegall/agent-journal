@@ -7,6 +7,7 @@ namespace App\Agents\Resolvers\Support;
 use App\Agents\Exceptions\LaunchMaterialMissing;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\LaunchMaterial;
+use App\Registries\Support\Registry;
 
 /**
  * Holds the token and settings of the launches accepted in this request until the host reads them; the token is
@@ -15,17 +16,22 @@ use App\Agents\Support\LaunchMaterial;
 final class HostLaunchMaterial
 {
     /**
-     * @var array<string, LaunchMaterial>
+     * @var Registry<LaunchMaterial>
      */
-    private array $materials = [];
+    private readonly Registry $materials;
+
+    public function __construct()
+    {
+        $this->materials = Registry::replacing(LaunchMaterialMissing::forRequest(...));
+    }
 
     public function keep(string $requestId, LaunchedAgent $launched): void
     {
-        $this->materials[$requestId] = $launched->material();
+        $this->materials->put($requestId, $launched->material());
     }
 
     public function material(string $requestId): LaunchMaterial
     {
-        return $this->materials[$requestId] ?? throw LaunchMaterialMissing::forRequest($requestId);
+        return $this->materials->get($requestId);
     }
 }

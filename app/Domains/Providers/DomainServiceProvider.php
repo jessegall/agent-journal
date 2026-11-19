@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Autoload\Support\Psr4ClassNames;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\PropertyRules;
 use App\Contracts\DomainAvailability;
@@ -14,7 +15,6 @@ use App\CoreMcpTools;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\DomainSwitches;
 use App\Domains\Support\Exports as ExportsCheck;
-use App\Domains\Support\Psr4ClassNames;
 use App\Domains\Support\SettingsDomainAvailability;
 use App\Mcp\Support\McpCatalogue;
 use App\Processes\Rules\CoreRules;

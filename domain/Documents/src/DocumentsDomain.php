@@ -6,6 +6,8 @@ namespace Domain\Documents;
 
 use App\Actors\Contracts\ProvidesPolicies;
 use App\Actors\Values\PolicyRegistration;
+use App\Autoload\Support\FolderClasses;
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
@@ -244,19 +246,7 @@ final class DocumentsDomain extends Domain implements
 
     public function commands(): array
     {
-        return [
-            CreateDocument::class,
-            CreateReport::class,
-            OpenDocument::class,
-            ReplaceDocumentBody::class,
-            ReplaceDocumentSection::class,
-            ReplaceDocumentText::class,
-            ChangeDocumentDetails::class,
-            CloseDocument::class,
-            SettleDocument::class,
-            SettleReport::class,
-            RecoverDocument::class,
-        ];
+        return FolderClasses::in(__DIR__.'/Commands', Command::class);
     }
 
     public function pages(): array

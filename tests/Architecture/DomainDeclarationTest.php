@@ -102,8 +102,6 @@ final class DomainDeclarationTest extends TestCase
         'Providers/DomainEventServiceProvider.php',
         'Support/ListenerPolicy.php',
         'Support/Exports.php',
-        'Support/Psr4ClassNames.php',
-        'Exceptions/FileOutsideAutoload.php',
         'Exceptions/AlwaysOnDomainRequiresSwitchable.php',
         'Exceptions/AmbiguousDomainRoot.php',
         'Exceptions/DomainCycle.php',

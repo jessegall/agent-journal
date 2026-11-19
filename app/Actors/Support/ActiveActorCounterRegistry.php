@@ -9,20 +9,27 @@ use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActiveActorCounterMissing;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
-use Illuminate\Contracts\Container\Container;
+use App\Registries\Support\Registry;
+use Illuminate\Container\Container;
 
 /**
  * The one counter of present actors for each actor type. It keeps class names only and builds a counter when one is
- * asked for, so a counter is never kept beyond its call.
+ * asked for, from the asking request's container, so a counter is never kept beyond its call.
  */
 final class ActiveActorCounterRegistry implements ActiveActorRegistration
 {
     /**
-     * @var array<string, class-string<ActiveActorCounter>>
+     * @var Registry<class-string<ActiveActorCounter>>
      */
-    private array $counters = [];
+    private readonly Registry $counters;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct()
+    {
+        $this->counters = Registry::once(
+            fn (string $type) => ActiveActorCounterMissing::for(ActorType::from($type)),
+            fn (string $type) => ActiveActorCounterRepeated::for(ActorType::from($type)),
+        );
+    }
 
     /**
      * @param  class-string<ActiveActorCounter>  $counterClass
@@ -31,18 +38,12 @@ final class ActiveActorCounterRegistry implements ActiveActorRegistration
      */
     public function register(string $counterClass): void
     {
-        $type = $counterClass::type();
-
-        if ($this->has($type)) {
-            throw ActiveActorCounterRepeated::for($type);
-        }
-
-        $this->counters[$type->value] = $counterClass;
+        $this->counters->put($counterClass::type()->value, $counterClass);
     }
 
     public function has(ActorType $type): bool
     {
-        return array_key_exists($type->value, $this->counters);
+        return $this->counters->has($type->value);
     }
 
     /**
@@ -50,8 +51,6 @@ final class ActiveActorCounterRegistry implements ActiveActorRegistration
      */
     public function get(ActorType $type): ActiveActorCounter
     {
-        $counterClass = $this->counters[$type->value] ?? throw ActiveActorCounterMissing::for($type);
-
-        return $this->container->make($counterClass);
+        return Container::getInstance()->make($this->counters->get($type->value));
     }
 }

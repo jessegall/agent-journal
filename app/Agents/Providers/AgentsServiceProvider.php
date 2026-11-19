@@ -22,18 +22,6 @@ use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SendSignedCalls;
 use App\Agents\Actions\LaunchHeartbeats;
-use App\Agents\Console\CancelDriverRequestCommand;
-use App\Agents\Console\CancelKeyScriptCommand;
-use App\Agents\Console\EnrollHostCommand;
-use App\Agents\Console\ReassignAgentRuntimeCommand;
-use App\Agents\Console\RecordRuntimeCommand;
-use App\Agents\Console\ReleaseAgentHoldCommand;
-use App\Agents\Console\RepairDriverSettingsCommand;
-use App\Agents\Console\ResolveDriverDeliveryCommand;
-use App\Agents\Console\ResumeKeyScriptCommand;
-use App\Agents\Console\RetireAgentCommand;
-use App\Agents\Console\RetryDriverRequestCommand;
-use App\Agents\Console\RunKeyScriptCommand;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchRecordResolver;
@@ -68,7 +56,9 @@ use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
+use App\Autoload\Support\FolderClasses;
 use App\Contracts\LaunchTransaction;
+use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -144,18 +134,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
         $this->commands([
-            RetireAgentCommand::class,
-            EnrollHostCommand::class,
-            RunKeyScriptCommand::class,
-            RetryDriverRequestCommand::class,
-            CancelDriverRequestCommand::class,
-            ResolveDriverDeliveryCommand::class,
-            RepairDriverSettingsCommand::class,
-            ReleaseAgentHoldCommand::class,
-            ResumeKeyScriptCommand::class,
-            CancelKeyScriptCommand::class,
-            ReassignAgentRuntimeCommand::class,
-            RecordRuntimeCommand::class,
+            ...FolderClasses::in(dirname(__DIR__).'/Console', Command::class),
             GenerateCallsCommand::class,
         ]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent->value, AgentAssignees::class));

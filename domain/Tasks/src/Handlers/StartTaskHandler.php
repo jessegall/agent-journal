@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
+use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
-use App\Desks\Contracts\ReplyInboxes;
 use App\Desks\Contracts\RunClaims;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;

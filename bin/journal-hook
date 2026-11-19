@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
 # The command a launched program's isolated settings run for every hook: it passes the call to the journal.
 # The launch sets JOURNAL_URL, JOURNAL_LAUNCH_TOKEN, JOURNAL_PROFILE, JOURNAL_PROFILE_REVISION, JOURNAL_OFFLINE_REPLY and JOURNAL_BYPASS_LOG in the program's environment.
+# The relay needs only that environment and one HTTP call, so its cache, sessions and queue stay inside this process:
+# it runs on any host with PHP, whatever database and Redis hosts the journal's .env names.
+export CACHE_STORE=array SESSION_DRIVER=array QUEUE_CONNECTION=sync
 exec php "$(dirname "$0")/../artisan" hooks:relay "$@"

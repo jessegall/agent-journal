@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('payload_digest', 64);
             $table->string('disposition', 16);
             $table->ulid('session_id')->nullable()->index();
+            $table->foreignUlid('reply_inbox_id')->nullable()->constrained('inboxes')->restrictOnDelete();
             $table->timestampsTz();
         });
     }

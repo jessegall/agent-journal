@@ -23,6 +23,7 @@ use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\SelectedProgram;
 use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\Schema;
+use PhpOption\None;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -39,45 +40,36 @@ final class LaunchRecordTest extends TestCase
 
     public function test_both_tables_have_the_selection_and_request_columns(): void
     {
-        $this->assertTrue(
-            Schema::hasColumns(
-                'agent_sessions',
-                [
-                    'model',
-                    'requested_model_type',
-                    'requested_model',
-                    'program_source',
-                    'profile_key',
-                    'profile_revision',
-                    'launch_request_id',
-                ],
-            ),
-        );
-        $this->assertTrue(
-            Schema::hasColumns(
-                'launch_records',
-                [
-                    'request_id',
-                    'agent_id',
-                    'actor_type',
-                    'actor_id',
-                    'program',
-                    'model',
-                    'requested_model_type',
-                    'requested_model',
-                    'program_source',
-                    'profile_key',
-                    'profile_revision',
-                    'origin_type',
-                    'owner_reference',
-                    'context_reference',
-                    'conversation_mode',
-                    'payload_digest',
-                    'disposition',
-                    'session_id',
-                ],
-            ),
-        );
+        $this->assertTrue(Schema::hasColumns('agent_sessions', [
+            'model',
+            'requested_model_type',
+            'requested_model',
+            'program_source',
+            'profile_key',
+            'profile_revision',
+            'launch_request_id',
+        ]));
+        $this->assertTrue(Schema::hasColumns('launch_records', [
+            'request_id',
+            'agent_id',
+            'actor_type',
+            'actor_id',
+            'program',
+            'model',
+            'requested_model_type',
+            'requested_model',
+            'program_source',
+            'profile_key',
+            'profile_revision',
+            'origin_type',
+            'owner_reference',
+            'context_reference',
+            'conversation_mode',
+            'payload_digest',
+            'disposition',
+            'session_id',
+            'reply_inbox_id',
+        ]));
     }
 
     public function test_a_session_shows_the_requested_default_apart_from_the_resolved_model(): void
@@ -131,8 +123,8 @@ final class LaunchRecordTest extends TestCase
         $request = $this->request($agent, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
         $requester = ActorIdentity::system();
 
-        $first = LaunchRecord::accept($request, $requester);
-        $again = LaunchRecord::accept($request, $requester);
+        $first = LaunchRecord::accept($request, $requester, None::create());
+        $again = LaunchRecord::accept($request, $requester, None::create());
 
         $this->assertSame($first->id, $again->id);
         $this->assertSame(1, LaunchRecord::query()->where('request_id', $request->requestId)->count());
@@ -140,10 +132,9 @@ final class LaunchRecordTest extends TestCase
 
         $this->expectException(LaunchRequestConflict::class);
 
-        LaunchRecord::accept(
-            $this->request($agent, $request->requestId, ModelSelection::named('claude-sonnet-5-5')),
-            $requester,
-        );
+        $changed = $this->request($agent, $request->requestId, ModelSelection::named('claude-sonnet-5-5'));
+
+        LaunchRecord::accept($changed, $requester, None::create());
     }
 
     public function test_an_agent_reads_its_own_record_and_not_another_agents(): void
@@ -157,13 +148,11 @@ final class LaunchRecordTest extends TestCase
             'helpers.job 7',
         );
         $otherRequest = $this->request($other, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
-        LaunchRecord::accept($ownRequest, ActorIdentity::system());
-        LaunchRecord::accept($otherRequest, ActorIdentity::system());
-        $session = $this->app->make(LaunchSessions::class)->launch(
-            $own,
-            TestSelections::of(),
-            TestSelections::requestId(),
-        )->session;
+        LaunchRecord::accept($ownRequest, ActorIdentity::system(), None::create());
+        LaunchRecord::accept($otherRequest, ActorIdentity::system(), None::create());
+        $session = $this->app->make(LaunchSessions::class)
+            ->launch($own, TestSelections::of(), TestSelections::requestId())
+            ->session;
         $this->startRequestAs($own->id, $session->id);
         $resolver = $this->app->make(LaunchRecordResolver::class);
 

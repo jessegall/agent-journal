@@ -37,7 +37,7 @@ final class AutoAssignmentRegistryTest extends TestCase
     {
         parent::setUp();
 
-        $this->registry = new AssignmentRegistry($this->app);
+        $this->registry = new AssignmentRegistry();
     }
 
     public function test_a_domains_assigner_and_pools_are_reachable_under_its_name(): void

@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Providers;
 
+use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
 use App\Processes\Contracts\VerificationTiming;
-use Domain\Plans\Console\AssignedPlansCommand;
-use Domain\Plans\Console\AssignPlanWorkCommand;
-use Domain\Plans\Console\PhaseCheckCommand;
-use Domain\Plans\Console\PhaseShowCommand;
-use Domain\Plans\Console\ReassignPlanWorkCommand;
-use Domain\Plans\Console\UnassignPlanWorkCommand;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Exceptions\PlanMissing;
@@ -21,6 +16,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\PlanDetailRecords;
 use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\Support\PhaseTiming;
+use Illuminate\Console\Command;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Routing\Redirector;
@@ -53,14 +49,7 @@ final class PlansServiceProvider extends ServiceProvider
         }
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands([
-            AssignedPlansCommand::class,
-            AssignPlanWorkCommand::class,
-            ReassignPlanWorkCommand::class,
-            UnassignPlanWorkCommand::class,
-            PhaseCheckCommand::class,
-            PhaseShowCommand::class,
-        ]);
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $links->register([
             Plan::LINK_TYPE => Plan::class,
             Phase::LINK_TYPE => Phase::class,

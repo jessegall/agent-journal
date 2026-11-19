@@ -8,6 +8,8 @@ use App\Actors\Contracts\ProvidesPolicies;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Support\PoolDefinition;
+use App\Autoload\Support\FolderClasses;
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
@@ -49,15 +51,8 @@ use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Assignments\PlanTaskPoolFactory;
-use Domain\Plans\Commands\AddPhase;
-use Domain\Plans\Commands\AddPhaseTasks;
 use Domain\Plans\Commands\AssignPlanWork;
-use Domain\Plans\Commands\CancelPlan;
-use Domain\Plans\Commands\CreatePlan;
-use Domain\Plans\Commands\EditPlan;
-use Domain\Plans\Commands\FinishPlan;
 use Domain\Plans\Commands\ReassignPlanWork;
-use Domain\Plans\Commands\RecordPhaseCheck;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanDetailsResolver;
@@ -204,19 +199,7 @@ final class PlansDomain extends Domain implements
      */
     public function commands(): array
     {
-        return [
-            StartPlan::class,
-            CreatePlan::class,
-            EditPlan::class,
-            FinishPlan::class,
-            CancelPlan::class,
-            AddPhase::class,
-            AddPhaseTasks::class,
-            AssignPlanWork::class,
-            ReassignPlanWork::class,
-            UnassignPlanWork::class,
-            RecordPhaseCheck::class,
-        ];
+        return FolderClasses::in(__DIR__.'/Commands', Command::class);
     }
 
     public function skills(): array

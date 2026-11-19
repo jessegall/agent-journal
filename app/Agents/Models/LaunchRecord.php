@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\Option;
 
 /**
  * The durable record of one launch request: who asked for which agent, the selection, its origin and conversation,
@@ -45,31 +46,31 @@ use Illuminate\Support\Carbon;
  * @property string $payload_digest
  * @property LaunchDisposition $disposition
  * @property string|null $session_id
+ * @property string|null $reply_inbox_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(
-    [
-        'request_id',
-        'agent_id',
-        'actor_type',
-        'actor_id',
-        'program',
-        'model',
-        'requested_model_type',
-        'requested_model',
-        'program_source',
-        'profile_key',
-        'profile_revision',
-        'origin_type',
-        'owner_reference',
-        'context_reference',
-        'conversation_mode',
-        'payload_digest',
-        'disposition',
-        'session_id',
-    ],
-)]
+#[Fillable([
+    'request_id',
+    'agent_id',
+    'actor_type',
+    'actor_id',
+    'program',
+    'model',
+    'requested_model_type',
+    'requested_model',
+    'program_source',
+    'profile_key',
+    'profile_revision',
+    'origin_type',
+    'owner_reference',
+    'context_reference',
+    'conversation_mode',
+    'payload_digest',
+    'disposition',
+    'session_id',
+    'reply_inbox_id',
+])]
 final class LaunchRecord extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -91,11 +92,14 @@ final class LaunchRecord extends Model implements ReadableModel
     }
 
     /**
-     * The record of this request: the one already kept under its id when the contents match, else a new accepted one.
+     * The record of this request: the one already kept under its id when the contents match, else a new accepted one
+     * that answers to the requester's reply inbox, fixed from then on.
+     *
+     * @param  Option<string>  $replyInboxId
      *
      * @throws LaunchRequestConflict
      */
-    public static function accept(LaunchRequest $request, ActorIdentity $requester): self
+    public static function accept(LaunchRequest $request, ActorIdentity $requester, Option $replyInboxId): self
     {
         $existing = self::query()->where('request_id', $request->requestId)->lockForUpdate()->first();
 
@@ -125,7 +129,18 @@ final class LaunchRecord extends Model implements ReadableModel
             'conversation_mode' => $request->conversationMode,
             'payload_digest' => $request->digest(),
             'disposition' => LaunchDisposition::Accepted,
+            'reply_inbox_id' => $replyInboxId->getOrElse(null),
         ]);
+    }
+
+    /**
+     * The inbox the launched agent answers to, when its dispatcher had one.
+     *
+     * @return Option<string>
+     */
+    public function replyInboxId(): Option
+    {
+        return Option::fromValue($this->reply_inbox_id);
     }
 
     public function launchedAs(AgentSession $session): void

@@ -9,16 +9,7 @@ use App\Actors\Values\PolicyRegistration;
 use App\Agents\Support\PendingWorkSources;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Enums\AssignmentPurpose;
-use App\Communication\Console\AskMessageCommand;
-use App\Communication\Console\DismissMessageCommand;
-use App\Communication\Console\InboxCountsCommand;
-use App\Communication\Console\InboxHistoryCommand;
-use App\Communication\Console\ReadMessagesCommand;
-use App\Communication\Console\ReplyToMessageCommand;
-use App\Communication\Console\RequireMessageAnswerCommand;
-use App\Communication\Console\SendMessageCommand;
-use App\Communication\Console\ShowMessageCommand;
-use App\Communication\Console\TakeNextMessagesCommand;
+use App\Autoload\Support\FolderClasses;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
@@ -36,6 +27,7 @@ use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
 use App\Records\Contracts\RecordProviderRegistration;
+use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -69,18 +61,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         ));
         $links->register([Message::LINK_TYPE => Message::class]);
         $pendingWork->register(PendingInboxWork::class);
-        $this->commands([
-            SendMessageCommand::class,
-            AskMessageCommand::class,
-            ReplyToMessageCommand::class,
-            RequireMessageAnswerCommand::class,
-            ReadMessagesCommand::class,
-            TakeNextMessagesCommand::class,
-            DismissMessageCommand::class,
-            ShowMessageCommand::class,
-            InboxHistoryCommand::class,
-            InboxCountsCommand::class,
-        ]);
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/communication.php');
         $incoming->register(MessageAnswerActivation::class);
         $assignments->registerOwner('Communication', []);

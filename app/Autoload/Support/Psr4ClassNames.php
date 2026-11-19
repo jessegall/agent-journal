@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domains\Support;
+namespace App\Autoload\Support;
 
-use App\Domains\Exceptions\FileOutsideAutoload;
+use App\Autoload\Exceptions\FileOutsideAutoload;
 use Composer\Autoload\ClassLoader;
 
 /**

@@ -10,6 +10,7 @@ use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
 use App\Hooks\Exceptions\StateTypeUnknown;
+use App\Registries\Support\Registry;
 
 /**
  * Every state type under its type key. Domains register theirs while it is being built; then it is frozen.
@@ -17,11 +18,16 @@ use App\Hooks\Exceptions\StateTypeUnknown;
 final class StateTypeRegistry implements StateRegistration
 {
     /**
-     * @var array<string, StateLoader>
+     * @var Registry<StateLoader>
      */
-    private array $types = [];
+    private readonly Registry $types;
 
     private bool $isFrozen = false;
+
+    public function __construct()
+    {
+        $this->types = Registry::once(StateTypeUnknown::forKey(...), StateTypeRepeated::forKey(...));
+    }
 
     public function register(string $typeKey, StateLoader $type): void
     {
@@ -29,21 +35,17 @@ final class StateTypeRegistry implements StateRegistration
             throw StateTypesFrozen::forKey($typeKey);
         }
 
-        if ($this->has($typeKey)) {
-            throw StateTypeRepeated::forKey($typeKey);
-        }
-
-        $this->types[$typeKey] = $type;
+        $this->types->put($typeKey, $type);
     }
 
     public function get(string $typeKey): StateLoader
     {
-        return $this->types[$typeKey] ?? throw StateTypeUnknown::forKey($typeKey);
+        return $this->types->get($typeKey);
     }
 
     public function has(string $typeKey): bool
     {
-        return isset($this->types[$typeKey]);
+        return $this->types->has($typeKey);
     }
 
     /**
@@ -53,7 +55,9 @@ final class StateTypeRegistry implements StateRegistration
      */
     public function tickingTypeKeys(): array
     {
-        return array_keys(array_filter($this->types, fn (StateLoader $type) => $type instanceof TickableStateLoader));
+        $ticking = array_filter($this->types->all(), fn (StateLoader $type) => $type instanceof TickableStateLoader);
+
+        return array_keys($ticking);
     }
 
     /**

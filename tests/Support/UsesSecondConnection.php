@@ -34,10 +34,16 @@ trait UsesSecondConnection
         return $other;
     }
 
-    protected function tearDownUsesSecondConnection(): void
+    /**
+     * Closes the second session before any other cleanup runs, so a transaction a failed test left open in it never
+     * holds the locks the table cleanup waits for.
+     */
+    protected function setUpUsesSecondConnection(): void
     {
-        if ($this->app->make('config')->has('database.connections.'.self::SECOND_CONNECTION)) {
-            DB::connection(self::SECOND_CONNECTION)->disconnect();
-        }
+        array_unshift($this->beforeApplicationDestroyedCallbacks, function (): void {
+            if ($this->app->make('config')->has('database.connections.'.self::SECOND_CONNECTION)) {
+                DB::connection(self::SECOND_CONNECTION)->disconnect();
+            }
+        });
     }
 }

@@ -109,7 +109,7 @@ final class AssignmentQueryTest extends TestCase
 
     public function test_the_work_reader_asks_the_registered_provider_and_lets_its_failure_through(): void
     {
-        $registry = new AssignmentRegistry($this->app);
+        $registry = new AssignmentRegistry();
         new RegisterAssignables($registry)(DomainEntry::fromClass(ErrandsDomain::class));
         $resolver = new RegisteredAssignedWork($registry);
         $this->app->scoped(ErrandWork::class, fn () => new class implements AssignedWorkProvider

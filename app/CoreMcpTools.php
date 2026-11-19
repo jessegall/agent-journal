@@ -4,35 +4,13 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Communication\Mcp\InboxCountsTool;
-use App\Communication\Mcp\InboxHistoryTool;
-use App\Communication\Mcp\MessageAskTool;
-use App\Communication\Mcp\MessageDismissTool;
-use App\Communication\Mcp\MessageReadTool;
-use App\Communication\Mcp\MessageReplyTool;
-use App\Communication\Mcp\MessageSendTool;
-use App\Communication\Mcp\MessageShowTool;
-use App\Communication\Mcp\MessageTakeNextTool;
+use App\Autoload\Support\FolderClasses;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
-use App\Mcp\Resources\OperationResource;
 use App\Mcp\Resources\OverviewResource;
-use App\Mcp\Tools\AssigneesListTool;
-use App\Mcp\Tools\AssignmentReadTool;
 use App\Mcp\Tools\CapabilitiesReadTool;
 use App\Mcp\Tools\JournalTool;
-use App\Mcp\Tools\OperationsReadTool;
 use App\Mcp\Tools\OverviewReadTool;
-use App\Skills\Mcp\SkillCopyTool;
-use App\Skills\Mcp\SkillEditTool;
-use App\Skills\Mcp\SkillMakeTool;
-use App\Skills\Mcp\SkillPreviewTool;
-use App\Skills\Mcp\SkillRestoreTool;
-use App\Skills\Mcp\SkillRetireTool;
-use App\Skills\Mcp\SkillRevisionsTool;
-use App\Skills\Mcp\SkillRevisionTool;
-use App\Skills\Mcp\SkillShowTool;
-use App\Skills\Mcp\SkillsListTool;
 
 /**
  * Core's own MCP tools and resources, added to the catalogue before the domains'.
@@ -40,30 +18,26 @@ use App\Skills\Mcp\SkillsListTool;
 final class CoreMcpTools
 {
     /**
+     * The tools an agent should read first, listed before every other tool.
+     */
+    private const array ORIENTATION_TOOLS = [OverviewReadTool::class, CapabilitiesReadTool::class];
+
+    /**
+     * The resource an agent should read first, listed before every other resource.
+     */
+    private const array ORIENTATION_RESOURCES = [OverviewResource::class];
+
+    /**
      * @return list<class-string<JournalTool>>
      */
     public static function tools(): array
     {
-        return [
-            OverviewReadTool::class,
-            CapabilitiesReadTool::class,
-            OperationsReadTool::class,
-            AssignmentReadTool::class,
-            AssigneesListTool::class,
-            MessageSendTool::class, MessageAskTool::class, MessageReplyTool::class, MessageReadTool::class,
-            MessageTakeNextTool::class, MessageDismissTool::class, MessageShowTool::class, InboxHistoryTool::class,
-            InboxCountsTool::class,
-            SkillsListTool::class,
-            SkillShowTool::class,
-            SkillPreviewTool::class,
-            SkillRevisionsTool::class,
-            SkillRevisionTool::class,
-            SkillMakeTool::class,
-            SkillEditTool::class,
-            SkillRestoreTool::class,
-            SkillRetireTool::class,
-            SkillCopyTool::class,
+        $found = [
+            ...FolderClasses::in(__DIR__.'/Mcp/Tools', JournalTool::class),
+            ...FolderClasses::in(__DIR__.'/*/Mcp', JournalTool::class),
         ];
+
+        return [...self::ORIENTATION_TOOLS, ...array_values(array_diff($found, self::ORIENTATION_TOOLS))];
     }
 
     /**
@@ -71,7 +45,9 @@ final class CoreMcpTools
      */
     public static function resources(): array
     {
-        return [OverviewResource::class, OperationResource::class];
+        $found = FolderClasses::in(__DIR__.'/Mcp/Resources', JournalResource::class);
+
+        return [...self::ORIENTATION_RESOURCES, ...array_values(array_diff($found, self::ORIENTATION_RESOURCES))];
     }
 
     public static function registerIn(McpRegistration $registration): void

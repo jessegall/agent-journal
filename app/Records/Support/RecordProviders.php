@@ -12,8 +12,9 @@ use App\Records\Contracts\RecordProviderRegistration;
 use App\Records\Contracts\RecordResolver;
 use App\Records\Data\RecordCard;
 use App\Records\Exceptions\RecordProviderInvalid;
+use App\Registries\Support\Registry;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -26,30 +27,29 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
     public const int MOST_LINKS_SHOWN = 200;
 
     /**
-     * @var array<string, class-string<RecordProvider>>
+     * @var Registry<class-string<RecordProvider>>
      */
-    private array $providerOfType = [];
+    private readonly Registry $providerOfType;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct()
+    {
+        $this->providerOfType = Registry::once(UnknownLinkType::forAlias(...), RecordProviderInvalid::repeated(...));
+    }
 
     public function register(string $type, string $providerClass): void
     {
         RecordIdentity::checkType($type);
 
-        if (array_key_exists($type, $this->providerOfType)) {
-            throw RecordProviderInvalid::repeated($type);
-        }
-
         if (! is_subclass_of($providerClass, RecordProvider::class)) {
             throw RecordProviderInvalid::notAProvider($type, $providerClass);
         }
 
-        $this->providerOfType[$type] = $providerClass;
+        $this->providerOfType->put($type, $providerClass);
     }
 
     public function identify(RecordReference $reference): RecordIdentity
     {
-        foreach (array_keys($this->providerOfType) as $type) {
+        foreach ($this->providerOfType->keys() as $type) {
             $provider = $this->providerOf($type);
 
             if ($provider->referenceWord() === $reference->type) {
@@ -84,7 +84,7 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
         foreach ($links as $link) {
             [$type, $id] = $link->otherSideFrom($record);
 
-            if (array_key_exists($type, $this->providerOfType)) {
+            if ($this->providerOfType->has($type)) {
                 $linked[] = new RecordIdentity($type, $id);
             }
         }
@@ -107,9 +107,7 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
      */
     private function providerOf(string $type): RecordProvider
     {
-        $providerClass = $this->providerOfType[$type] ?? throw UnknownLinkType::forAlias($type);
-
-        return $this->container->make($providerClass);
+        return Container::getInstance()->make($this->providerOfType->get($type));
     }
 
     /**

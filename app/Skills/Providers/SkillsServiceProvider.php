@@ -6,23 +6,9 @@ namespace App\Skills\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Autoload\Support\FolderClasses;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
-use App\Skills\Console\SkillCopyCommand;
-use App\Skills\Console\SkillEditCommand;
-use App\Skills\Console\SkillListCommand;
-use App\Skills\Console\SkillMakeCommand;
-use App\Skills\Console\SkillPreviewCommand;
-use App\Skills\Console\SkillPruneCommand;
-use App\Skills\Console\SkillRefreshCommand;
-use App\Skills\Console\SkillRestoreCommand;
-use App\Skills\Console\SkillResumeCommand;
-use App\Skills\Console\SkillRetireCommand;
-use App\Skills\Console\SkillRetryCommand;
-use App\Skills\Console\SkillRevisionCommand;
-use App\Skills\Console\SkillRevisionsCommand;
-use App\Skills\Console\SkillShowCommand;
-use App\Skills\Console\SkillStatusCommand;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\SkillAbility;
@@ -41,6 +27,7 @@ use App\Skills\Support\SkillTables;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\SkillContext;
+use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
@@ -94,23 +81,7 @@ final class SkillsServiceProvider extends ServiceProvider
         });
 
         if ($this->app->runningInConsole()) {
-            $this->commands([
-                SkillListCommand::class,
-                SkillShowCommand::class,
-                SkillPreviewCommand::class,
-                SkillMakeCommand::class,
-                SkillEditCommand::class,
-                SkillRestoreCommand::class,
-                SkillRetireCommand::class,
-                SkillCopyCommand::class,
-                SkillRevisionsCommand::class,
-                SkillRevisionCommand::class,
-                SkillRefreshCommand::class,
-                SkillResumeCommand::class,
-                SkillRetryCommand::class,
-                SkillPruneCommand::class,
-                SkillStatusCommand::class,
-            ]);
+            $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         }
     }
 }

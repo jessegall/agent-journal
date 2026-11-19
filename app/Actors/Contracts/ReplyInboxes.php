@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Desks\Contracts;
+namespace App\Actors\Contracts;
 
 use App\Actors\Support\ActorIdentity;
 use PhpOption\Option;

@@ -6,6 +6,7 @@ namespace App\Desks\Providers;
 
 use App\Actors\Contracts\ActorProvisioning;
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Enums\ActorType;
 use App\Actors\Values\PolicyRegistration;
 use App\Agents\Contracts\MainSeatTakeover;
@@ -19,7 +20,6 @@ use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxRegistration;
 use App\Desks\Console\InstallDesksCommand;
 use App\Desks\Contracts\ActorDesks;
-use App\Desks\Contracts\ReplyInboxes;
 use App\Desks\Contracts\RunClaims;
 use App\Desks\Enums\DeskAbility;
 use App\Desks\Models\DeskPreference;
