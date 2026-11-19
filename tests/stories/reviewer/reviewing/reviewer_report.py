@@ -11,7 +11,9 @@ from tests.stories.fixtures.reviewer.reviewer_at_work import ReviewerAtWork
 
 
 @story(ReviewerAtWork, mode=ORCHESTRATOR_MODE, subject=AgentRole.REVIEWER)
-def test_a_report_that_passes_every_point_signs_the_work_off_and_ends_the_reviewer(story):
+def test_a_reviewer_handed_the_passing_clock_out_run_passes_every_point_which_signs_the_work_off_and_ends_it(story):
+    story.expect_reviewer_brief_holding(story.agents.subject, "the journal ran: ./run_tests.sh parser_story.py (passed)")
+    story.expect_reviewer_brief_holding(story.agents.subject, "run no test yourself, and leave no point undecided for want of one")
     result = story.agent_runs(story.agents.subject, "review record '1 passed. 2 passed.'")
     result.expect_command_passed()
     result.expect_agent_told(story.agents.main, WorkersNudges.IDLE_WORKER)
