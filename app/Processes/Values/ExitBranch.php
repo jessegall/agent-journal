@@ -16,22 +16,6 @@ final readonly class ExitBranch
     private function __construct(public int $status, public Outcome $outcome, public string $requires) {}
 
     /**
-     * @return array{status: int, outcome: string, requires: string}
-     */
-    public function toArray(): array
-    {
-        return ['status' => $this->status, 'outcome' => $this->outcome->value, 'requires' => $this->requires];
-    }
-
-    /**
-     * @param  array{status: int, outcome: string, requires: string}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self($fields['status'], Outcome::from($fields['outcome']), $fields['requires']);
-    }
-
-    /**
      * @throws VerificationContractInvalid
      */
     public static function of(int $status, Outcome $outcome, string $requires): self

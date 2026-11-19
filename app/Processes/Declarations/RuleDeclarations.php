@@ -21,10 +21,7 @@ use App\Processes\Enums\StreamUse;
 use App\Processes\Enums\SummaryRule;
 use App\Processes\Enums\ToolType;
 use App\Processes\Exceptions\DeclarationInvalid;
-use App\Processes\Values\CommandRule;
 use App\Processes\Values\DeclaredProposal;
-use App\Processes\Values\ProposedRule;
-use App\Processes\Values\RuleExample;
 use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Validation\Rule;
 use JsonException;
@@ -82,24 +79,10 @@ final readonly class RuleDeclarations
                 $this->fieldErrors(array_map(array_values(...), $validator->errors()->messages())),
             );
         }
-        $declared = array_values(array_map($this->declared(...), $validator->validated()['declarations']));
+        $declared = RuleDeclarationFile::from($validator->validated())->toProposals();
         $this->checkPurposes($declared);
 
         return $declared;
-    }
-
-    /**
-     * @param  array<string, mixed>  $declaration
-     */
-    private function declared(array $declaration): DeclaredProposal
-    {
-        $examples = array_map(RuleExample::fromArray(...), $declaration['examples']);
-        $rule = CommandRule::fromArray($declaration['rule']);
-
-        return new DeclaredProposal(
-            $declaration['request_id'],
-            new ProposedRule($rule, $declaration['evidence'], array_values($examples)),
-        );
     }
 
     /**

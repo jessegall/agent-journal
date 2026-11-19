@@ -7,7 +7,7 @@ namespace App\Profiles\Casts;
 use App\Agents\Stored\StoredAccessPolicy;
 use App\Agents\Stored\StoredExecutionPolicy;
 use App\Agents\Stored\StoredStopConditions;
-use App\Profiles\Enums\PolicyOriginType;
+use App\Profiles\Data\FieldOriginData;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileProvenance;
@@ -16,6 +16,7 @@ use App\Programs\Enums\HookProgram;
 use Exception;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use JsonException;
 use TypeError;
 use ValueError;
@@ -40,11 +41,14 @@ final class ProfileStartPolicyCast implements CastsAttributes
             return new ProfileStartPolicy(
                 HookProgram::tryFrom((string) $attributes['program']),
                 (bool) $attributes['program_pinned'],
-                self::decode($attributes['allowed_models']),
-                StoredAccessPolicy::from(self::decode($attributes['access_policy']))->toAccessPolicy(),
-                StoredStopConditions::from(self::decode($attributes['stop_conditions']))->toStopConditions(),
-                StoredExecutionPolicy::from(self::decode($attributes['execution_policy']))->toExecutionPolicy(),
-                self::provenance((string) $attributes['configuration_hash'], self::decode($attributes['provenance'])),
+                self::models((string) $attributes['allowed_models']),
+                StoredAccessPolicy::from((string) $attributes['access_policy'])->toAccessPolicy(),
+                StoredStopConditions::from((string) $attributes['stop_conditions'])->toStopConditions(),
+                StoredExecutionPolicy::from((string) $attributes['execution_policy'])->toExecutionPolicy(),
+                new ProfileProvenance(
+                    (string) $attributes['configuration_hash'],
+                    self::origins((string) $attributes['provenance']),
+                ),
             );
         } catch (Exception|TypeError|ValueError $failure) {
             throw ProfileRevisionUnreadable::forRevision((string) $model->getKey(), $failure);
@@ -61,48 +65,53 @@ final class ProfileStartPolicyCast implements CastsAttributes
         return [
             'program' => $value->program?->value,
             'program_pinned' => $value->programPinned,
-            'allowed_models' => self::encode($value->allowedModels),
-            'access_policy' => self::encode(StoredAccessPolicy::fromAccessPolicy($value->access)->toArray()),
-            'stop_conditions' => self::encode(
-                StoredStopConditions::fromStopConditions($value->stopConditions)->toArray(),
-            ),
-            'execution_policy' => self::encode(
-                StoredExecutionPolicy::fromExecutionPolicy($value->execution)->toArray(),
-            ),
+            'allowed_models' => json_encode($value->allowedModels, JSON_THROW_ON_ERROR),
+            'access_policy' => StoredAccessPolicy::fromAccessPolicy($value->access)->toJson(),
+            'stop_conditions' => StoredStopConditions::fromStopConditions($value->stopConditions)->toJson(),
+            'execution_policy' => StoredExecutionPolicy::fromExecutionPolicy($value->execution)->toJson(),
             'configuration_hash' => $value->provenance->configurationHash,
-            'provenance' => self::encode(array_map(
-                fn (FieldOrigin $origin) => ['field' => $origin->field, 'origin' => $origin->origin->value],
-                $value->provenance->origins,
-            )),
+            'provenance' => json_encode(
+                array_map(FieldOriginData::fromFieldOrigin(...), $value->provenance->origins),
+                JSON_THROW_ON_ERROR,
+            ),
         ];
     }
 
     /**
-     * @param  list<array{field: string, origin: string}>  $origins
-     */
-    private static function provenance(string $configurationHash, array $origins): ProfileProvenance
-    {
-        return new ProfileProvenance($configurationHash, array_map(
-            fn (array $origin) => new FieldOrigin($origin['field'], PolicyOriginType::from($origin['origin'])),
-            $origins,
-        ));
-    }
-
-    /**
-     * The column's JSON; a value that is no object or list fails where it is used as one.
+     * The allowed models a column lists; any entry that is no model name fails the read.
+     *
+     * @return list<string>
      *
      * @throws JsonException
      */
-    private static function decode(mixed $column): mixed
+    private static function models(string $column): array
     {
-        return json_decode((string) $column, true, 16, JSON_THROW_ON_ERROR);
+        return array_values(self::list($column)->map(fn (string $model): string => $model)->all());
     }
 
     /**
-     * @param  array<array-key, mixed>  $value
+     * Where each effective field came from, as the provenance column lists it.
+     *
+     * @return list<FieldOrigin>
+     *
+     * @throws JsonException
      */
-    private static function encode(array $value): string
+    private static function origins(string $column): array
     {
-        return json_encode($value, JSON_THROW_ON_ERROR);
+        return array_values(FieldOriginData::collect(self::list($column))
+            ->map(fn (FieldOriginData $origin): FieldOrigin => $origin->toFieldOrigin())
+            ->all());
+    }
+
+    /**
+     * The list a JSON column holds; a value that is no list fails where its entries are read.
+     *
+     * @return Collection<int, mixed>
+     *
+     * @throws JsonException
+     */
+    private static function list(string $column): Collection
+    {
+        return Collection::fromJson($column, 16, JSON_THROW_ON_ERROR);
     }
 }

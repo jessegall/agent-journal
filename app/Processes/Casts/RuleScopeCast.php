@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Casts;
 
+use App\Processes\Enums\ScopeType;
 use App\Processes\Values\RuleScope;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
@@ -20,11 +21,11 @@ final class RuleScopeCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): RuleScope
     {
-        return RuleScope::fromArray([
-            'type' => $attributes['scope_type'],
-            'owner' => $attributes['scope_owner'],
-            'version' => $attributes['scope_version'],
-        ]);
+        return RuleScope::stored(
+            ScopeType::from($attributes['scope_type']),
+            $attributes['scope_owner'],
+            $attributes['scope_version'],
+        );
     }
 
     /**

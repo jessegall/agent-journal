@@ -33,19 +33,11 @@ final readonly class RuleScope
     }
 
     /**
-     * @return array{type: string, owner: string, version: string}
+     * The scope as it was stored, read back without the checks of a new one.
      */
-    public function toArray(): array
+    public static function stored(ScopeType $type, string $owner, string $version): self
     {
-        return ['type' => $this->type->value, 'owner' => $this->owner, 'version' => $this->version];
-    }
-
-    /**
-     * @param  array{type: string, owner: string, version: string}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(ScopeType::from($fields['type']), $fields['owner'], $fields['version']);
+        return new self($type, $owner, $version);
     }
 
     public function name(): string
