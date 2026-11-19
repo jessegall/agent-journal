@@ -64,7 +64,7 @@ final class TerminalViewOnHostTest extends TestCase
         $this->assertSame($watched->version($host->hostId), $response->json('watched_version'));
     }
 
-    #[TimeLimit(seconds: 4, reason: 'It waits out a one second long poll to prove the claim waits when nothing changed.')]
+    #[TimeLimit(seconds: 4, reason: 'It waits out a one second long poll to prove the claim waits.')]
     public function test_a_claim_with_the_current_version_waits_and_returns_the_same_version(): void
     {
         $host = $this->enrolledHost();
