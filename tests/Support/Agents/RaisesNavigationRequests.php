@@ -29,7 +29,7 @@ trait RaisesNavigationRequests
         [, $opened] = $this->openRuntime();
         $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
 
-        return DriverRequest::query()->findOrFail($receipt->requestId);
+        return DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId);
     }
 
     private function raise(DriverRequest $stalled, string $operationKey): NavigationRequest
