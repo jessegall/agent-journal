@@ -6,7 +6,6 @@ namespace App\Agents\Stored;
 
 use App\Agents\Values\StopCondition;
 use App\Operations\Enums\AccessType;
-use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -19,14 +18,13 @@ final class StoredStopCondition extends Data
 {
     /**
      * @param  list<string>  $arguments
-     * @param  list<AccessType>  $access
+     * @param  list<string>  $access  the access type names
      */
     public function __construct(
         public readonly string $key,
         public readonly string $label,
         public readonly string $executable,
         public readonly array $arguments,
-        #[DataCollectionOf(AccessType::class)]
         public readonly array $access,
         public readonly string $directory,
         public readonly int $timeoutSeconds,
@@ -41,7 +39,7 @@ final class StoredStopCondition extends Data
             'label' => $condition->label,
             'executable' => $condition->executable,
             'arguments' => $condition->arguments,
-            'access' => $condition->accessTypes,
+            'access' => array_map(fn (AccessType $access): string => $access->value, $condition->accessTypes),
             'directory' => $condition->directory,
             'timeout_seconds' => $condition->timeoutSeconds,
             'output_bytes' => $condition->outputBytes,
@@ -56,7 +54,7 @@ final class StoredStopCondition extends Data
             $this->label,
             $this->executable,
             $this->arguments,
-            $this->access,
+            array_map(AccessType::from(...), $this->access),
             $this->directory,
             $this->timeoutSeconds,
             $this->outputBytes,

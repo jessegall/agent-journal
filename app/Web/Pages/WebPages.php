@@ -11,12 +11,12 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
-use App\Http\Controllers\Web\Runtimes\CancelRuntimeRequestController;
-use App\Http\Controllers\Web\Runtimes\CancelScriptRuntimeRequestController;
-use App\Http\Controllers\Web\Runtimes\ReleaseRuntimeHoldController;
-use App\Http\Controllers\Web\Runtimes\ResolveRuntimeRequestController;
-use App\Http\Controllers\Web\Runtimes\ResumeScriptRuntimeRequestController;
-use App\Http\Controllers\Web\Runtimes\RetryRuntimeRequestController;
+use App\Web\Http\Controllers\Runtimes\CancelRuntimeRequestController;
+use App\Web\Http\Controllers\Runtimes\CancelScriptRuntimeRequestController;
+use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
+use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
+use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
+use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
 use App\Web\Resolvers\HomeWindowResolver;
 use App\Web\Resolvers\RuntimeStatusResolver;
 
@@ -41,27 +41,27 @@ final class WebPages implements ProvidesPages
                         'release-runtime-hold',
                     ),
                     ActionRoute::post(
-                        'runtimes/requests/{driverRequest}/retry',
+                        'runtimes/requests/{driver_request}/retry',
                         RetryRuntimeRequestController::class,
                         'retry-runtime-request',
                     ),
                     ActionRoute::post(
-                        'runtimes/requests/{driverRequest}/cancel',
+                        'runtimes/requests/{driver_request}/cancel',
                         CancelRuntimeRequestController::class,
                         'cancel-runtime-request',
                     ),
                     ActionRoute::post(
-                        'runtimes/requests/{driverRequest}/resolve',
+                        'runtimes/requests/{driver_request}/resolve',
                         ResolveRuntimeRequestController::class,
                         'resolve-runtime-request',
                     ),
                     ActionRoute::post(
-                        'runtimes/requests/{driverRequest}/resume-script',
+                        'runtimes/requests/{driver_request}/resume-script',
                         ResumeScriptRuntimeRequestController::class,
                         'resume-runtime-script',
                     ),
                     ActionRoute::post(
-                        'runtimes/requests/{driverRequest}/cancel-script',
+                        'runtimes/requests/{driver_request}/cancel-script',
                         CancelScriptRuntimeRequestController::class,
                         'cancel-runtime-script',
                     ),

@@ -7,7 +7,6 @@ namespace App\Agents\Stored;
 use App\Agents\Values\ClassGrant;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
-use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 
 /**
@@ -16,21 +15,23 @@ use Spatie\LaravelData\Data;
 final class StoredClassGrant extends Data
 {
     /**
-     * @param  list<AccessType>  $access
+     * @param  list<string>  $access  the access type names
      */
     public function __construct(
         public readonly ResourceAreaType $area,
-        #[DataCollectionOf(AccessType::class)]
         public readonly array $access,
     ) {}
 
     public static function fromClassGrant(ClassGrant $grant): self
     {
-        return self::from(['area' => $grant->area, 'access' => $grant->accessTypes]);
+        return self::from([
+            'area' => $grant->area,
+            'access' => array_map(fn (AccessType $access): string => $access->value, $grant->accessTypes),
+        ]);
     }
 
     public function toClassGrant(): ClassGrant
     {
-        return new ClassGrant($this->area, $this->access);
+        return new ClassGrant($this->area, array_map(AccessType::from(...), $this->access));
     }
 }

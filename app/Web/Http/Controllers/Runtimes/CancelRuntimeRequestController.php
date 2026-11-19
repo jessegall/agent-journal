@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Web\Runtimes;
+namespace App\Web\Http\Controllers\Runtimes;
 
 use App\Agents\Commands\CancelDriverRequest;
 use App\Http\Requests\Web\RequestRecoveryRequest;

@@ -26,7 +26,7 @@ final class RequestRecoveryRequest extends FormRequest
 
     public function requestId(): string
     {
-        return (string) $this->route('driverRequest');
+        return (string) $this->route('driver_request');
     }
 
     public function reason(): string
