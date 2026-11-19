@@ -59,7 +59,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $script_evidence
  * @property string|null $navigation_request_id
  * @property array{request: string, row_version: int, generation: int, keys: list<string>, choose: string|null,
- *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null}|null $navigation_round
+ *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null,
+ *     type_parameter: string|null}|null $navigation_round
  * @property HoldReason $hold_reason
  * @property int $row_version
  */

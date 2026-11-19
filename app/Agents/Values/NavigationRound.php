@@ -27,7 +27,28 @@ final readonly class NavigationRound
         public string|null $proof = null,
         public NavigationCompletion|null $completes = null,
         public int|null $nextStep = null,
+        public string|null $typeParameter = null,
     ) {}
+
+    /**
+     * The round of a main agent's answer to the request at the row version and screen generation it read.
+     */
+    public static function answering(
+        string $navigationRequestId,
+        int $rowVersion,
+        int $generation,
+        NavigationAnswer $answer,
+    ): self {
+        return new self(
+            $navigationRequestId,
+            $rowVersion,
+            $generation,
+            keys: $answer->keys,
+            choose: $answer->choose,
+            confirm: $answer->confirm,
+            typeParameter: $answer->typeParameter,
+        );
+    }
 
     /**
      * @param  non-empty-list<NavigationKey>  $keys
@@ -69,7 +90,8 @@ final readonly class NavigationRound
      * The round as a driver request's navigation_round column keeps it.
      *
      * @param  array{request: string, row_version: int, generation: int, keys: list<string>, choose: string|null,
-     *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null}  $stored
+     *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null,
+     *     type_parameter: string|null}  $stored
      */
     public static function fromStored(array $stored): self
     {
@@ -83,12 +105,14 @@ final readonly class NavigationRound
             $stored['proof'],
             $stored['completes'] === null ? null : NavigationCompletion::from($stored['completes']),
             $stored['next_step'],
+            $stored['type_parameter'],
         );
     }
 
     /**
      * @return array{request: string, row_version: int, generation: int, keys: list<string>, choose: string|null,
-     *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null}
+     *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null,
+     *     type_parameter: string|null}
      */
     public function toStored(): array
     {
@@ -102,6 +126,7 @@ final readonly class NavigationRound
             'proof' => $this->proof,
             'completes' => $this->completes?->value,
             'next_step' => $this->nextStep,
+            'type_parameter' => $this->typeParameter,
         ];
     }
 }

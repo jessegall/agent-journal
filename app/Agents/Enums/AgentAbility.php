@@ -17,6 +17,7 @@ enum AgentAbility: string implements DeclaresClassLevelAbilities
     case Inspect = 'inspect';
     case Steer = 'steer';
     case Recover = 'recover';
+    case Navigate = 'navigate';
 
     /**
      * Each is decided on the model class alone, before the handler loads a record.

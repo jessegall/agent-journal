@@ -19,6 +19,14 @@ final readonly class NavigationRounds
 {
     public function __construct(private DriverRequests $requests) {}
 
+    /**
+     * The idempotency key of the round that answers the request at the row version.
+     */
+    public static function keyOf(NavigationRequest $navigation, int $rowVersion): string
+    {
+        return "navigation:{$navigation->id}:{$rowVersion}";
+    }
+
     public function append(NavigationRequest $navigation, NavigationRound $round): DriverRequest
     {
         $runtime = AgentRuntime::query()->with('session')->findOrFail($navigation->agent_runtime_id);
@@ -27,7 +35,7 @@ final readonly class NavigationRounds
         return $this->requests->append(
             $target,
             DriverOperation::Navigate,
-            "navigation:{$navigation->id}:{$round->rowVersion}",
+            self::keyOf($navigation, $round->rowVersion),
             DriverRequestPayload::navigate($round),
         );
     }
