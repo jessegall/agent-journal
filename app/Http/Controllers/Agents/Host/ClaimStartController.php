@@ -28,6 +28,7 @@ final readonly class ClaimStartController
                 'session_id' => $claimed->sessionId,
                 'directory' => $claimed->directory,
                 'generation' => $claimed->generation,
+                'recipe' => $claimed->recipe,
             ]);
     }
 }

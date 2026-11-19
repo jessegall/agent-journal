@@ -92,3 +92,19 @@ A start is bound to the host that claimed it; another host's reports find nothin
 A start the host never names stays unresolved, so a missing process id or a lost host never ends one, and account
 maintenance waits for it. The protected launcher that installs the fixed program and hook copies, claims, spawns and
 reconciles is task 258; until it exists no start is spawned, and a pending start is not a running process.
+
+### The recipe a claim carries
+
+`ClaimStart` asks the program's adapter for the start's account settings (`AccountSettingsRequested`, answered by
+`App\Hooks\Listeners\SupplyAccountSettings`); Agents itself knows no program. The adapter reads the program's
+`ProgramCompatibility` and refuses the claim with `ProgramArrangementUnproven` (409, the start stays pending) unless
+the real program showed its arrangement; the recipe also names the build and arrangement it holds for, so the host
+refuses a different binary. The recipe never names a host path but the account folder; the host writes the per-launch
+files itself.
+
+| Program | Environment | Empty folder | Removed | Flags | Account configuration |
+|---|---|---|---|---|---|
+| Claude Code | `CLAUDE_CONFIG_DIR` = account folder | `ANTHROPIC_CONFIG_DIR` | `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` | `--restricted`, `--strict-mcp-config`, `--mcp-config`, `--settings`, `--tools` | none |
+| Codex | `CODEX_HOME` = account folder | none | `OPENAI_API_KEY`, `CODEX_API_KEY` | `app-server`, `--add-dir` | `cli_auth_credentials_store = "file"` |
+
+The journal's own `JOURNAL_*` hook environment is unchanged by the recipe and set by the launcher as before.

@@ -17,6 +17,11 @@ use App\Agents\Models\ProcessStart;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
+use App\Hooks\Contracts\ProgramCompatibilities;
+use App\Hooks\Enums\ProgramEvidence;
+use App\Hooks\Resolvers\PinnedCompatibilities;
+use App\Hooks\Support\ProgramCompatibility;
+use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -62,6 +67,50 @@ final class HostStartsTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
+        $this->app->instance(ProgramCompatibilities::class, new class implements ProgramCompatibilities {
+            public function for(HookProgram $program): ProgramCompatibility
+            {
+                $pinned = ProgramCompatibility::pinned($program);
+
+                return new ProgramCompatibility(
+                    $pinned->program,
+                    $pinned->version,
+                    $pinned->binaryDigest,
+                    $pinned->launchFlags,
+                    $pinned->settings,
+                    $pinned->arrangement,
+                    ProgramEvidence::NativeShown,
+                    $pinned->evidenceOwner,
+                );
+            }
+        });
+    }
+
+    public function test_until_the_real_program_shows_its_arrangement_no_start_is_claimed(): void
+    {
+        $this->app->forgetInstance(ProgramCompatibilities::class);
+        $this->app->bind(ProgramCompatibilities::class, PinnedCompatibilities::class);
+        [$host, $opened] = $this->openRuntime();
+
+        $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertStatus(409);
+
+        $this->assertSame(ProcessStartState::Pending, ProcessStart::query()->withoutGlobalScopes()->sole()->state);
+    }
+
+    public function test_the_claim_carries_the_checked_recipe_for_the_account_folder(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+
+        $recipe = $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->assertOk()
+            ->json('recipe');
+
+        $this->assertSame('CLAUDE_CONFIG_DIR', $recipe['environment'][0]['name']);
+        $this->assertSame('/journal/accounts/claude-code', $recipe['environment'][0]['value']);
+        $this->assertSame(['ANTHROPIC_CONFIG_DIR'], $recipe['emptyFolderVariables']);
+        $this->assertContains('ANTHROPIC_API_KEY', $recipe['removedVariables']);
+        $this->assertContains('--restricted', $recipe['launchFlags']);
+        $this->assertSame(['2.1.323', 'direct-processes'], [$recipe['programVersion'], $recipe['arrangement']]);
     }
 
     public function test_the_host_claims_a_start_once_and_reports_its_execution_and_exit(): void
