@@ -22,6 +22,11 @@ final class NavigationRaiseRefused extends RuntimeException implements CommandRe
         return new self("There is no navigation request {$navigationId}.");
     }
 
+    public static function unknownEntry(string $entryId): self
+    {
+        return new self("There is no menu entry {$entryId}.");
+    }
+
     public static function notOfRuntime(string $requestId, string $runtimeId): self
     {
         return new self("Request {$requestId} is not a request of runtime {$runtimeId}.");

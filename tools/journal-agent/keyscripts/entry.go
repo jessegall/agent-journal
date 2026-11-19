@@ -23,15 +23,31 @@ type Entry struct {
 	Goal      EntryGoal   `json:"goal"`
 	Steps     []EntryStep `json:"steps"`
 	Completes string      `json:"completes"`
-	NextStep  *int        `json:"next_step"`
+	NextStep  *int        `json:"nextStep"`
 	Proof     string      `json:"proof"`
 }
 
 // EntryGoal is the key script an entry reaches, with its version and parameters.
 type EntryGoal struct {
-	Script     string            `json:"script"`
-	Version    int               `json:"version"`
-	Parameters map[string]string `json:"parameters"`
+	Script     string           `json:"script"`
+	Version    int              `json:"version"`
+	Parameters []EntryParameter `json:"parameters"`
+}
+
+// EntryParameter is one named value of an entry's goal.
+type EntryParameter struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+// values is the goal's parameters by name, as a run is given them.
+func (goal EntryGoal) values() map[string]string {
+	values := make(map[string]string, len(goal.Parameters))
+	for _, parameter := range goal.Parameters {
+		values[parameter.Name] = parameter.Value
+	}
+
+	return values
 }
 
 // EntryStep is one step of an entry: the fingerprint of the screen it expects, then a label to choose or a named
@@ -127,7 +143,7 @@ func (runner *Runner) Replay(entry Entry, profile string) (ReplayResult, error) 
 	if err != nil {
 		return ReplayResult{}, err
 	}
-	result, err := runner.Run(script, entry.Goal.Parameters)
+	result, err := runner.Run(script, entry.Goal.values())
 	if err != nil {
 		return ReplayResult{}, err
 	}

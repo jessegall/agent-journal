@@ -28,6 +28,7 @@ return new class extends Migration
             $table->json('builds');
             $table->unsignedInteger('uses')->default(0);
             $table->timestampTz('last_used_at')->nullable();
+            $table->string('last_replay_key')->nullable();
             $table->ulid('source_request_id');
             $table->ulid('superseded_by_id')->nullable();
             $table->timestampsTz();

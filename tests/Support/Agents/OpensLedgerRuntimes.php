@@ -35,7 +35,7 @@ trait OpensLedgerRuntimes
     /**
      * @return array{EnrolledHost, OpenedRuntime}
      */
-    private function openRuntime(string|null $firstMessage = null): array
+    private function openRuntime(string|null $firstMessage = null, string $build = '2.1.323'): array
     {
         $host = $this->enrollHost();
         $opened = $this->asOwner(
@@ -44,7 +44,7 @@ trait OpensLedgerRuntimes
                 $host->hostId,
                 self::FOLDER,
                 'claude-code',
-                '2.1.323',
+                $build,
                 'claude',
                 DriverType::Process,
                 'claude-opus-5-5',

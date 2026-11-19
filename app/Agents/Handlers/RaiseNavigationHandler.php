@@ -14,8 +14,10 @@ use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\MenuEntry;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Support\HostRuntimes;
+use App\Agents\Support\LibraryEntryAnswer;
 use App\Agents\Support\NavigationDispatch;
 use App\Agents\Support\NavigationRaiseAnswer;
 use App\Agents\Values\NavigationScreen;
@@ -64,15 +66,51 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         if ($raisedBefore !== null) {
             return NavigationRaiseAnswer::opened($raisedBefore->id);
         }
+        $owner = ActorIdentity::of($this->admission->owner());
+        $library = $this->libraryAnswer($command, $runtime, $request, $owner);
+        if ($library !== null) {
+            return $library;
+        }
         if ($this->dispatch->answererFor($runtime) === NavigationAnswerer::Person) {
             return NavigationRaiseAnswer::held();
         }
-        $owner = ActorIdentity::of($this->admission->owner());
         if ($this->sameMenuOpenElsewhere($command, $runtime, $request, $owner)) {
             return NavigationRaiseAnswer::wait($this->retryAfterSeconds);
         }
 
         return NavigationRaiseAnswer::opened($this->open($command, $runtime, $request, $owner)->id);
+    }
+
+    /**
+     * The owner's library entry for this screen and goal: one current on the runtime's build, or else one proven on
+     * another build only, which the host replays guarded; none for a stale, superseded or retired entry.
+     */
+    private function libraryAnswer(
+        RaiseNavigation $command,
+        AgentRuntime $runtime,
+        DriverRequest $request,
+        ActorIdentity $owner,
+    ): NavigationRaiseAnswer|null {
+        $entries = MenuEntry::query()
+            ->ownedBy($owner)
+            ->current()
+            ->forProgram($runtime->program)
+            ->matching($command->fingerprint, $request->scriptGoal())
+            ->recentFirst()
+            ->readLimit(20)
+            ->get();
+        $build = $runtime->program_build;
+        $current = $entries->first(fn (MenuEntry $entry) => $entry->isCurrentOn($build));
+        if ($current !== null) {
+            return NavigationRaiseAnswer::entry(LibraryEntryAnswer::of($current), guarded: false);
+        }
+        $elsewhere = $entries->first(fn (MenuEntry $entry) => $entry->wasProvenElsewhere($build));
+
+        if ($elsewhere === null) {
+            return null;
+        }
+
+        return NavigationRaiseAnswer::entry(LibraryEntryAnswer::of($elsewhere), guarded: true);
     }
 
     private function open(

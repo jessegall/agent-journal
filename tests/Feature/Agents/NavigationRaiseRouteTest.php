@@ -6,17 +6,26 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\ActorAttention;
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\NavigationCompletion;
+use App\Agents\Enums\NavigationReason;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\MenuEntry;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\OpenedRuntime;
+use App\Agents\Values\MenuStep;
+use App\Agents\Values\NavigationScreen;
+use App\Agents\Values\NavigationUncertainty;
 use App\Assignments\Contracts\AssignmentTransaction;
+use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\RecordedAttention;
@@ -49,12 +58,15 @@ final class NavigationRaiseRouteTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'navigation_requests',
+        'menu_entries',
         'inboxes',
         'desks',
         'desk_seats',
         'desk_preferences',
         'assignments',
     ];
+
+    private const string FINGERPRINT = 'fp1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
     private RecordedAttention $attention;
 
@@ -121,6 +133,83 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->assertSame(0, NavigationRequest::query()->acrossActors()->count());
     }
 
+    public function test_an_entry_current_on_the_build_is_answered_and_opens_nothing(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        $entry = $this->libraryEntry('2.1.323');
+        [$host, $opened, $request] = $this->stalledScript();
+        $before = NavigationRequest::query()->acrossActors()->count();
+        $wakes = count($this->attention->wakes);
+
+        $answer = $this->raise($host, $opened, $request)->assertOk();
+
+        $this->assertSame(['entry', false, $entry->id], [
+            $answer->json('answer'),
+            $answer->json('guarded'),
+            $answer->json('entry.id'),
+        ]);
+        $this->assertSame('GPT-6', $answer->json('entry.steps.0.choose'));
+        $this->assertSame($before, NavigationRequest::query()->acrossActors()->count());
+        $this->assertCount($wakes, $this->attention->wakes);
+    }
+
+    public function test_an_entry_proven_on_another_build_only_is_answered_guarded(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        $entry = $this->libraryEntry('2.1.300');
+        [$host, $opened, $request] = $this->stalledScript();
+
+        $answer = $this->raise($host, $opened, $request)->assertOk();
+
+        $this->assertSame(['entry', true, $entry->id], [
+            $answer->json('answer'),
+            $answer->json('guarded'),
+            $answer->json('entry.id'),
+        ]);
+    }
+
+    public function test_a_stale_or_retired_entry_is_not_answered(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        $this->libraryEntry('2.1.323')->markStaleOn('2.1.323', 'label-missing', []);
+        $this->libraryEntry('2.1.323')->retire();
+        [$host, $opened, $request] = $this->stalledScript();
+
+        $this->assertSame('opened', $this->raise($host, $opened, $request)->assertOk()->json('answer'));
+    }
+
+    public function test_the_replayed_report_counts_once_and_lists_the_build(): void
+    {
+        $entry = $this->libraryEntry('2.1.300');
+        [$host, $opened] = $this->openRuntime();
+        $replayed = ['runtime_id' => $opened->runtimeId, 'operation_key' => 'replay-1'];
+
+        $this->hostCall($host, "/host/menu-entries/{$entry->id}/replayed", $replayed)->assertNoContent();
+        $this->hostCall($host, "/host/menu-entries/{$entry->id}/replayed", $replayed)->assertNoContent();
+
+        $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
+        $this->assertSame(1, $entry->uses);
+        $this->assertTrue($entry->isCurrentOn('2.1.323'));
+    }
+
+    /**
+     * An entry of the owner's library, proven on the build, that chooses GPT-6 on the picker the raises show.
+     */
+    private function libraryEntry(string $build): MenuEntry
+    {
+        [, $opened] = $this->openRuntime(build: $build);
+        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
+        $request = DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId);
+        $screen = new NavigationScreen(['Model: GPT-5', '❯ GPT-6'], 1, 7);
+        $uncertainty = new NavigationUncertainty(NavigationReason::LabelMissing, 2, self::FINGERPRINT, $screen);
+        $owner = new ActorIdentity(ActorType::User, 'owner');
+        $source = NavigationRequest::raised($request, $owner, $uncertainty, 'source', CarbonImmutable::now());
+        $source->cancel();
+        $steps = [new MenuStep(self::FINGERPRINT, 'GPT-6', null, null)];
+
+        return MenuEntry::proven($owner, $source, $steps, NavigationCompletion::Goal, 'GPT-6');
+    }
+
     /**
      * A ChangeModel key script on a newly opened runtime of its own host, as the host claimed it.
      *
@@ -151,7 +240,7 @@ final class NavigationRaiseRouteTest extends TestCase
             'attempt' => $request->attempt_version,
             'step' => 2,
             'reason' => 'label-missing',
-            'fingerprint' => 'fp1:'.str_repeat('a', 64),
+            'fingerprint' => self::FINGERPRINT,
             'rows' => $rows,
             'highlight' => 1,
             'generation' => 7,

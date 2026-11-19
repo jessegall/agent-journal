@@ -10,6 +10,7 @@ use App\Http\Controllers\Agents\Host\InterruptNavigationController;
 use App\Http\Controllers\Agents\Host\LaunchGrantController;
 use App\Http\Controllers\Agents\Host\OpenMainRuntimeController;
 use App\Http\Controllers\Agents\Host\RaiseNavigationController;
+use App\Http\Controllers\Agents\Host\ReplayedEntryController;
 use App\Http\Controllers\Agents\Host\RequestReportController;
 use App\Http\Controllers\Agents\Host\TurnReportController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,7 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/runtimes/{runtime}/navigation', RaiseNavigationController::class)->name('navigation.raise');
     Route::post('/navigation/{navigation}/interrupt', InterruptNavigationController::class)
         ->name('navigation.interrupt');
+    Route::post('/menu-entries/{entry}/replayed', ReplayedEntryController::class)->name('menu-entries.replayed');
     Route::post('/reports/activity', ActivityReportController::class)->name('reports.activity');
     Route::post('/reports/request', RequestReportController::class)->name('reports.request');
     Route::post('/reports/turn', TurnReportController::class)->name('reports.turn');

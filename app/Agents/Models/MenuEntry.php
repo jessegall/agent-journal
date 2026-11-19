@@ -32,7 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $goal_version
  * @property array<string, string> $goal_parameters
  * @property string $goal_key
- * @property list<array<string, string|null>> $steps
+ * @property list<array{fingerprint: string, choose: string|null, key: string|null, proof: string|null}> $steps
  * @property NavigationCompletion $completes
  * @property int|null $next_step
  * @property string $proof
@@ -40,6 +40,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<array<string, mixed>> $builds
  * @property int $uses
  * @property CarbonImmutable|null $last_used_at
+ * @property string|null $last_replay_key
  * @property string $source_request_id
  * @property string|null $superseded_by_id
  */
@@ -91,7 +92,7 @@ final class MenuEntry extends Model implements ReadableModel
         $entry->goal_version = $goal->version;
         $entry->goal_parameters = $goal->sortedParameters();
         $entry->goal_key = $goal->key();
-        $entry->steps = array_map(fn (MenuStep $step) => $step->toArray(), $steps);
+        $entry->steps = array_map(fn (MenuStep $step) => $step->toStored(), $steps);
         $entry->completes = $completes;
         $entry->next_step = $source->next_step;
         $entry->proof = $proof;
@@ -114,7 +115,7 @@ final class MenuEntry extends Model implements ReadableModel
      */
     public function steps(): array
     {
-        return array_map(fn (array $step) => MenuStep::from($step), $this->steps);
+        return array_map(fn (array $step) => MenuStep::fromStored($step), $this->steps);
     }
 
     /**
@@ -149,6 +150,21 @@ final class MenuEntry extends Model implements ReadableModel
     public function wasProvenElsewhere(string $build): bool
     {
         return $this->state->isUsable() && ! array_key_exists($build, $this->builds());
+    }
+
+    /**
+     * A host's replay of the entry worked on the build: the use is counted and the build listed as proven, once for
+     * the replay however often the host reports it.
+     */
+    public function recordReplay(string $operationKey, string $build): void
+    {
+        if ($this->last_replay_key === $operationKey) {
+            return;
+        }
+
+        $this->last_replay_key = $operationKey;
+        $this->used();
+        $this->provenOn($build);
     }
 
     /**

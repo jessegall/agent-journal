@@ -4,21 +4,19 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use Spatie\LaravelData\Data;
-
 /**
  * What a key script run is for: the script with its version and parameters, such as ChangeEffort effort=low. A
  * navigation request navigates to it and a menu entry replays it.
  */
-final class ScriptGoal extends Data
+final readonly class ScriptGoal
 {
     /**
      * @param  array<string, string>  $parameters
      */
     public function __construct(
-        public readonly string $script,
-        public readonly int $version,
-        public readonly array $parameters,
+        public string $script,
+        public int $version,
+        public array $parameters,
     ) {}
 
     /**
