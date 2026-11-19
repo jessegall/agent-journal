@@ -257,20 +257,22 @@ final class MarkdownPartsSectionsTest extends TestCase
         $this->sections('Shell');
     }
 
-    public function test_a_missing_file_is_refused(): void
+    /**
+     * @return iterable<string, array{string, string}>
+     */
+    public static function unreachablePaths(): iterable
     {
-        $this->expectException(SkillSourceInvalid::class);
-        $this->expectExceptionMessage('nope.md does not exist');
-
-        new MarkdownParts()->sectionsOf('nope.md', $this->owner(), 'Shell');
+        yield 'a missing file' => ['nope.md', 'nope.md does not exist'];
+        yield 'a file outside the folder' => ['../secrets.md', 'is not a relative path inside'];
     }
 
-    public function test_a_file_outside_the_folder_is_refused(): void
+    #[DataProvider('unreachablePaths')]
+    public function test_a_path_to_no_file_inside_the_folder_is_refused(string $path, string $message): void
     {
         $this->expectException(SkillSourceInvalid::class);
-        $this->expectExceptionMessage('is not a relative path inside');
+        $this->expectExceptionMessage($message);
 
-        new MarkdownParts()->sectionsOf('../secrets.md', $this->owner(), 'Shell');
+        new MarkdownParts()->sectionsOf($path, $this->owner(), 'Shell');
     }
 
     public function test_a_file_that_is_not_text_is_refused_as_unreadable(): void

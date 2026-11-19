@@ -75,13 +75,16 @@ final class ProgramCapabilitiesTest extends TestCase
         $this->assertSame([], array_diff(['onShellCommand', 'onStop'], $hookMethods));
     }
 
-    public function test_the_evidence_lives_in_one_document(): void
+    public function test_the_evidence_lives_in_one_document_with_the_pinned_versions_and_no_production_run(): void
     {
         $evidence = (string) file_get_contents(base_path('docs/hooks/program-capabilities.md'));
 
         $this->assertStringContainsString('## Claude Code', $evidence);
         $this->assertStringContainsString('## Codex', $evidence);
         $this->assertStringContainsString('X-Journal-Call-Signature', $evidence);
+        $this->assertStringContainsString('| Program and pinned version | Claude Code 2.1.323,', $evidence);
+        $this->assertStringContainsString('| Program and pinned version | codex-cli 0.165.0,', $evidence);
+        $this->assertStringContainsString('No production program runs under it yet:', $evidence);
     }
 
     private function capabilities(RewriteSupport $rewrites): ProgramCapabilities

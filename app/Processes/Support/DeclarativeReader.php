@@ -67,14 +67,14 @@ final readonly class DeclarativeReader
             );
         }
         $checkpoint = $builder->build();
-        $summaries = $this->recordsOf($checkpoint, RecordRole::Summary);
+        $summaries = $checkpoint->recordsOf(RecordRole::Summary);
         $this->checkSummaries($builder, $summaries);
         $summary = $summaries === [] ? null : $summaries[array_key_last($summaries)];
         $counts = $this->countsOf($builder, $summary);
         $progress = $this->progressOf($builder, $checkpoint, $summary);
         $final = $builder->build();
 
-        $claimed = $this->claimOf($summary, $this->recordsOf($final, RecordRole::Outcome), $final->records === []);
+        $claimed = $this->claimOf($summary, $final->recordsOf(RecordRole::Outcome), $final->records === []);
 
         return new ReaderAssessment($final->records, $final->problems, $counts, $progress, $claimed);
     }
@@ -258,7 +258,7 @@ final readonly class DeclarativeReader
         ReaderCheckpoint $checkpoint,
         OutputRecord|null $summary,
     ): ReadProgress {
-        $records = $this->recordsOf($checkpoint, RecordRole::Progress);
+        $records = $checkpoint->recordsOf(RecordRole::Progress);
         if ($records === []) {
             return ReadProgress::none();
         }
@@ -300,15 +300,5 @@ final readonly class DeclarativeReader
             $empty && $this->contract->allowsEmptySuccess() => ClaimedOutcome::Passed,
             default => ClaimedOutcome::Unknown,
         };
-    }
-
-    /**
-     * @return list<OutputRecord>
-     */
-    private function recordsOf(ReaderCheckpoint $checkpoint, RecordRole $role): array
-    {
-        return array_values(
-            array_filter($checkpoint->records, fn (OutputRecord $record): bool => $record->role === $role),
-        );
     }
 }

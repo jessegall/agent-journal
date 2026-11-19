@@ -18,18 +18,23 @@ use App\Hooks\Stack\HookAnswer;
 use App\Processes\Enums\CommandType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
-use Tests\Support\ChecksProgramFixtures;
+use Tests\Support\ChecksProgramAdapter;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class ClaudeCodeTest extends TestCase
 {
-    use ChecksProgramFixtures;
+    use ChecksProgramAdapter;
     use RefreshHookDatabase;
 
     protected static function fixtureFolder(): string
     {
         return 'ClaudeCode';
+    }
+
+    protected static function selectedModel(): string
+    {
+        return 'claude-opus-5-5';
     }
 
     #[DataProvider('mapping')]
@@ -177,12 +182,6 @@ final class ClaudeCodeTest extends TestCase
         $this->assertInstanceOf(JudgedCall::class, $call);
 
         return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory())));
-    }
-
-    public function test_the_host_starts_the_program_on_the_selected_model_and_no_actual_model_is_reported(): void
-    {
-        $this->assertSame(['--model', 'claude-opus-5-5'], $this->adapter()->modelArguments('claude-opus-5-5'));
-        $this->assertFalse($this->adapter()->capabilities()->reportsActualModel);
     }
 
     private function adapter(): ClaudeCodeAdapter

@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use App\CoreApi;
 use App\Domains\Support\DomainRegistry;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
@@ -19,15 +18,18 @@ use Tests\Architecture\Support\ViolationType;
 use Tests\Fixtures\Boundary\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Tasks\TasksDomain;
+use Tests\Support\JudgesFixtureFiles;
 use Tests\Support\TimeLimits\TimeLimit;
 
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class BoundaryCheckerTest extends TestCase
 {
+    use JudgesFixtureFiles;
+
     /**
      * @return iterable<string, array{string, list<string>}>
      */
-    public static function boundaryFixtures(): iterable
+    public static function fixtures(): iterable
     {
         yield 'allowed uses of every type' => ['Plans/UsesAllowed.php', []];
         yield 'the Plans domain class' => ['Plans/PlansDomain.php', []];
@@ -45,15 +47,6 @@ final class BoundaryCheckerTest extends TestCase
             '18 uses Tests\Fixtures\Boundary\PlansExtra\Thing, which is project code outside every domain',
             '18 uses tests\fixtures\boundary\chat\Message, but Plans does not require Chat',
         ]];
-    }
-
-    /**
-     * @param  list<string>  $expected
-     */
-    #[DataProvider('boundaryFixtures')]
-    public function test_each_use_is_judged_against_the_declared_domains(string $fixture, array $expected): void
-    {
-        $this->assertSame($expected, $this->violationLines($fixture));
     }
 
     public function test_the_shared_place_may_use_no_domain(): void

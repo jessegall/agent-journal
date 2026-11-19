@@ -23,6 +23,7 @@ declare(strict_types=1);
  */
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
+require_once __DIR__.'/promoted-parameters.php';
 
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
@@ -223,7 +224,10 @@ function typeIndex(array $files): array
             $related = [];
 
             if ($type instanceof Node\Stmt\Class_) {
-                $related = [...($type->extends !== null ? [$type->extends->toString()] : []), ...array_map(static fn (Node\Name $name) => $name->toString(), $type->implements)];
+                $related = array_map(
+                    static fn (Node\Name $name) => $name->toString(),
+                    array_values(array_filter([$type->extends, ...$type->implements])),
+                );
             }
 
             if ($type instanceof Node\Stmt\Interface_) {
@@ -241,7 +245,7 @@ function typeIndex(array $files): array
             }
 
             foreach ($type->getMethod('__construct')?->params ?? [] as $param) {
-                if ($param->flags !== 0 && $param->var instanceof Node\Expr\Variable && is_string($param->var->name)) {
+                if (isPromoted($param)) {
                     $properties[] = $param->var->name;
                 }
             }
@@ -383,11 +387,7 @@ function memberSites(Node $node, string $what, string $old, string $new, array $
         };
 
         if ($node instanceof Node\Expr\New_ && $inFamily($node->class)) {
-            foreach ($node->args as $argument) {
-                if ($argument instanceof Node\Arg && $argument->name?->toString() === $old) {
-                    $sites[] = [$argument->name->getStartFilePos(), $argument->name->getEndFilePos(), $new];
-                }
-            }
+            array_push($sites, ...namedArgumentSites($node, $old, $new));
         }
     } else {
         $named = match (true) {
@@ -405,9 +405,35 @@ function memberSites(Node $node, string $what, string $old, string $new, array $
 }
 
 /**
- * A promoted constructor parameter is also a variable in its constructor: its parameter, its uses there and its
+ * The named arguments of a constructor call that pass the old property name.
  *
- * @param line follow the property.
+ * @return list<array{int, int, string}>
+ */
+function namedArgumentSites(Node\Expr\New_ $node, string $old, string $new): array
+{
+    $sites = [];
+
+    foreach ($node->args as $argument) {
+        if ($argument instanceof Node\Arg && $argument->name?->toString() === $old) {
+            $sites[] = [$argument->name->getStartFilePos(), $argument->name->getEndFilePos(), $new];
+        }
+    }
+
+    return $sites;
+}
+
+/**
+ * Whether the node is the variable of that name.
+ */
+function isVariableNamed(Node $node, string $name): bool
+{
+    return $node instanceof Node\Expr\Variable && $node->name === $name;
+}
+
+/**
+ * A promoted constructor parameter is also a variable in its constructor: the parameter, its uses there and its
+ * docblock line follow the property.
+ *
  * @param  list<Node>  $statements
  * @param  array<string, true>  $family
  * @return list<array{int, int, string}>
@@ -422,13 +448,16 @@ function promotedVariableSites(array $statements, string $old, string $new, arra
             continue;
         }
 
-        $promoted = array_filter($method->params, static fn (Node\Param $param) => $param->flags !== 0 && $param->var instanceof Node\Expr\Variable && $param->var->name === $old);
+        $promoted = array_filter(
+            $method->params,
+            static fn (Node\Param $param) => isPromoted($param) && $param->var->name === $old,
+        );
 
         if ($promoted === []) {
             continue;
         }
 
-        foreach ($finder->find($method, static fn (Node $node) => $node instanceof Node\Expr\Variable && $node->name === $old) as $variable) {
+        foreach ($finder->find($method, static fn (Node $node) => isVariableNamed($node, $old)) as $variable) {
             $sites[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
         }
 
@@ -452,7 +481,7 @@ function variableEdits(array $files, string $old, string $new): array
     foreach ($files as $path => $file) {
         $found = [];
 
-        foreach ($finder->find($file['statements'], static fn (Node $node) => $node instanceof Node\Expr\Variable && $node->name === $old) as $variable) {
+        foreach ($finder->find($file['statements'], static fn (Node $node) => isVariableNamed($node, $old)) as $variable) {
             $found[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
         }
 
@@ -507,13 +536,15 @@ function applied(string $code, array $edits): string
 
     krsort($unique);
 
+    $edited = $code;
+
     foreach ($unique as [$start, $end, $text]) {
         // a declared property's name spans its $, which the new name keeps
-        $sigil = $code[$start] === '$' && ! str_starts_with($text, '$') ? '$' : '';
-        $code = substr($code, 0, $start).$sigil.$text.substr($code, $end + 1);
+        $sigil = $edited[$start] === '$' && ! str_starts_with($text, '$') ? '$' : '';
+        $edited = substr($edited, 0, $start).$sigil.$text.substr($edited, $end + 1);
     }
 
-    return $code;
+    return $edited;
 }
 
 /**

@@ -71,7 +71,7 @@ final class PlanSharingTest extends TestCase
         $this->assertSame('Version 6', $candidates->root->title);
         $this->assertSame(
             [$document->id],
-            array_map(fn (ShareLinkedCandidate $candidate) => $candidate->card->record->id, $candidates->linked),
+            array_map(fn (ShareLinkedCandidate $candidate) => $candidate->recordId(), $candidates->linked),
         );
         $this->assertSame('Design', $candidates->linked[0]->card->title);
         $this->assertStringContainsString('Version 6', $content->body);

@@ -76,7 +76,7 @@ final class HookPayload extends Data
 
     public function isSessionStart(): bool
     {
-        return $this->event()->map(fn (HookEvent $event) => $event->startsSession())->getOrElse(false);
+        return $this->event()->map(fn (HookEvent $event) => $event->isSessionStart())->getOrElse(false);
     }
 
     /**

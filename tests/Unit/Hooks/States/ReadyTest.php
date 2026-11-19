@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks\States;
 
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Enums\AnswerType;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
@@ -41,15 +42,15 @@ final class ReadyTest extends TestCase
     public function test_ready_allows_each_hook(HookInput $input): void
     {
         $this->assertSame(
-            'allow',
-            $input->answerBy(new ReadyState(new FixedFileEditPermission()))->answerType()->value,
+            AnswerType::Allow,
+            $input->answerBy(new ReadyState(new FixedFileEditPermission()))->answerType(),
         );
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_the_base_state_delegates_each_hook(HookInput $input): void
     {
-        $this->assertSame('delegate', $input->answerBy(new class extends AgentState {})->answerType()->value);
+        $this->assertSame(AnswerType::Delegate, $input->answerBy(new class extends AgentState {})->answerType());
     }
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void

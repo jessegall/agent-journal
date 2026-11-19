@@ -49,8 +49,8 @@ final class PipelineRulesTest extends TestCase
 
         foreach (self::classes() as $class) {
             $name = substr($class, strrpos($class, '\\') + 1);
-            preg_match('/^[A-Z][a-z]+/', $name, $firstWord);
-            $startsWithVerb = in_array($firstWord[0] ?? '', self::VERBS, true);
+            $startsWithVerb = preg_match('/^[A-Z][a-z]+/', $name, $firstWord) === 1
+                && in_array($firstWord[0], self::VERBS, true);
             if (is_subclass_of($class, PipelineDefinition::class) && ! $startsWithVerb) {
                 $vague[] = $class;
             }

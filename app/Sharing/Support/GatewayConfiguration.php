@@ -14,4 +14,12 @@ final readonly class GatewayConfiguration
         public int $configurationVersion,
         public GatewaySettings $settings,
     ) {}
+
+    /**
+     * The key of the gateway this configuration sets up.
+     */
+    public function gatewayKey(): string
+    {
+        return $this->settings->gatewayKey;
+    }
 }

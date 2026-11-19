@@ -40,13 +40,13 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 5, reason: 'Retirement waits out locks another connection holds.')]
 final class AgentRetirementTest extends TestCase
 {
+    use CommitsHookRows;
+    use StartsAgentRequests;
+
     /**
      * How often the forked child looks for the waiting retirement before it gives up and commits anyway.
      */
     private const int WAIT_CHECKS = 100_000;
-
-    use CommitsHookRows;
-    use StartsAgentRequests;
 
     private const array TABLES = [
         'users',

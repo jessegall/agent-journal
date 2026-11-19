@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Http\Middleware\Web\HandleInertiaRequests;
-use App\Settings\Models\SettingsRecord;
-use App\Settings\Storage\EncodedToggle;
-use App\Settings\Storage\EncodedValue;
 use App\Ui\Declarations\RegisteredSection;
 use App\Ui\Support\UiDeclarations;
 use Domain\Plans\Enums\PlanType;
@@ -18,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\TestCase;
 
 /**
@@ -28,11 +26,12 @@ final class DomainSwitchPagesTest extends TestCase
 {
     use ActsAsOwner;
     use RefreshHookDatabase;
+    use SwitchesDomainsOff;
 
     public function test_pages_and_actions_of_a_switched_off_domain_answer_not_found_and_others_stay(): void
     {
         $plan = Plan::factory()->create(['title' => 'Kept', 'type' => PlanType::Build]);
-        $this->switchPlansOff();
+        $this->switchDomainOff('plans');
 
         $this->inertia('/plans')->assertNotFound();
         $this->actingAs($this->owner)->post("/plans/{$plan->number}/start")->assertNotFound();
@@ -41,7 +40,7 @@ final class DomainSwitchPagesTest extends TestCase
 
     public function test_navigation_and_counts_leave_out_a_switched_off_domain_without_reading_them(): void
     {
-        $this->switchPlansOff();
+        $this->switchDomainOff('plans');
         $countRead = false;
         $this->app->resolving(OpenPlansCount::class, function () use (&$countRead): void {
             $countRead = true;
@@ -65,7 +64,7 @@ final class DomainSwitchPagesTest extends TestCase
             fn (RegisteredSection $found) => $found->owner->name === 'Plans',
         );
         $this->assertInstanceOf(RegisteredSection::class, $section);
-        $this->switchPlansOff();
+        $this->switchDomainOff('plans');
         $sectionRead = false;
         $this->app->resolving(WaitingPlansSection::class, function () use (&$sectionRead): void {
             $sectionRead = true;
@@ -102,13 +101,5 @@ final class DomainSwitchPagesTest extends TestCase
             )->version(Request::create($uri)),
             ...$headers,
         ]);
-    }
-
-    private function switchPlansOff(): void
-    {
-        SettingsRecord::insertIfAbsent('Core');
-        $record = SettingsRecord::sharedRuntimeForOwner('Core')->get();
-        $record->revise($record->document->withToggle(new EncodedToggle('domain_plans', EncodedValue::of(false))));
-        $this->app->forgetScopedInstances();
     }
 }

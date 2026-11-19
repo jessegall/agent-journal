@@ -214,7 +214,7 @@ final readonly class BoundaryChecker
                 );
             }
 
-            if ($userName !== self::SHARED_PLACE && $call->raisesClassEvent() && $this->isCoreEvent($call->event)) {
+            if ($this->reRaisesCoreEvent($call, $userName)) {
                 $violations[] = new Violation(
                     $call->file,
                     $call->line,
@@ -227,6 +227,14 @@ final readonly class BoundaryChecker
         }
 
         return $violations;
+    }
+
+    /**
+     * Whether a domain raises an event of Core by its class, which only Core may raise.
+     */
+    private function reRaisesCoreEvent(EventCall $call, string $userName): bool
+    {
+        return $userName !== self::SHARED_PLACE && $call->raisesClassEvent() && $this->isCoreEvent($call->event);
     }
 
     /**

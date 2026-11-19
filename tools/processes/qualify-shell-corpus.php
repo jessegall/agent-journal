@@ -120,9 +120,13 @@ foreach (glob(WORK.'/differences-*.jsonl') ?: [] as $file) {
     }
 }
 sort($failingIds);
-$complete = count($cursor['done']) === count($chunks);
+$qualification = match (true) {
+    count($cursor['done']) !== count($chunks) => 'incomplete',
+    $failingIds === [] => 'passed',
+    default => 'failed',
+};
 $report = [
-    'qualification' => $complete ? ($failingIds === [] ? 'passed' : 'failed') : 'incomplete',
+    'qualification' => $qualification,
     'unexplained' => count($failingIds),
     'input_hash' => $inputHash,
     'sources' => $sources,
@@ -189,9 +193,9 @@ function corpusRecords(): array
     eachLine(CORPUS.'/docker-build-commands.jsonl', fn (string $line) => $add('docker-build-commands.jsonl', json_decode($line, true, 512, JSON_THROW_ON_ERROR)['source'] ?? null));
     foreach (glob(CORPUS.'/helper-report-*.txt') ?: [] as $path) {
         eachLine($path, function (string $line) use ($add): void {
-            $line = trim($line);
-            if (str_starts_with($line, '"')) {
-                $decoded = json_decode($line, true);
+            $written = trim($line);
+            if (str_starts_with($written, '"')) {
+                $decoded = json_decode($written, true);
                 $add('helper-written', is_string($decoded) ? $decoded : null);
             }
         });
@@ -269,10 +273,12 @@ function readings(array $command, string $input): array
     }
     $readings = [];
     foreach (explode("\n", trim($output)) as $line) {
-        if ($line !== '') {
-            $reading = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
-            $readings[$reading['id']] = $reading;
+        if ($line === '') {
+            continue;
         }
+
+        $reading = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+        $readings[$reading['id']] = $reading;
     }
 
     return $readings;

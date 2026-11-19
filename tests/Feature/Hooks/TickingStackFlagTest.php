@@ -53,15 +53,9 @@ final class TickingStackFlagTest extends TestCase
         parent::setUp();
 
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register('test.ticking', new TickingLoader(fn (
-                StateReference $reference,
-            ): AgentState => new TickingState(
-                $reference->subject instanceof SubjectReference && in_array(
-                    $reference->subject->id,
-                    $this->finished,
-                    true,
-                ),
-            )));
+            $event->registry->register('test.ticking', new TickingLoader(
+                fn (StateReference $reference): AgentState => TickingState::of($reference, $this->finished),
+            ));
             $event->registry->register(
                 'test.plain',
                 new ClosureStateLoader(fn (): AgentState => new TickingState(false)),

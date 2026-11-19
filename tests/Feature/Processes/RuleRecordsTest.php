@@ -29,7 +29,7 @@ use App\Processes\Values\RuleExample;
 use App\Processes\Values\RuleReference;
 use App\Processes\Values\RuleScope;
 use App\Processes\Values\ScriptBinding;
-use Illuminate\Support\Facades\Schema;
+use Tests\Support\ChecksSchemaTables;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -40,14 +40,13 @@ use Tests\TestCase;
 final class RuleRecordsTest extends TestCase
 {
     use RefreshHookDatabase;
+    use ChecksSchemaTables;
 
     private const string PROJECT = 'acme-project';
 
-    public function test_the_fresh_schema_has_the_four_tables(): void
+    protected static function storedTables(): array
     {
-        foreach (['rule_proposals', 'rule_proposal_revisions', 'rule_revisions', 'classification_rules'] as $table) {
-            $this->assertTrue(Schema::hasTable($table), "{$table} is missing");
-        }
+        return ['rule_proposals', 'rule_proposal_revisions', 'rule_revisions', 'classification_rules'];
     }
 
     public function test_the_same_request_id_and_payload_is_the_same_proposal_and_another_payload_is_refused(): void

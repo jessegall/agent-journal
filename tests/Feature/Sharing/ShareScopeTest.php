@@ -68,7 +68,7 @@ final class ShareScopeTest extends TestCase
         $memo = $this->link($root, TestActors::record('binders.memo', 5_000));
 
         $candidates = $this->scope()->discover($root, $this->budget());
-        $ids = array_map(fn (ShareLinkedCandidate $candidate) => $candidate->card->record->id, $candidates->linked);
+        $ids = array_map(fn (ShareLinkedCandidate $candidate) => $candidate->recordId(), $candidates->linked);
 
         $this->assertCount(3, $ids);
         $this->assertNotContains(BinderShareProvider::INELIGIBLE_ID, $ids);

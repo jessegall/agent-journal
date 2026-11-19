@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use Tests\Architecture\Support\FolderType;
 use Tests\TestCase;
 
 /**
@@ -36,6 +37,10 @@ final class CommandBusDocumentationTest extends TestCase
      */
     private static function isNamespace(string $name): bool
     {
-        return in_array(basename(str_replace('\\', '/', $name)), ['Commands', 'Handlers'], true);
+        return in_array(
+            FolderType::ofFolder(str_replace('\\', '/', $name)),
+            [FolderType::Commands, FolderType::Handlers],
+            true,
+        );
     }
 }

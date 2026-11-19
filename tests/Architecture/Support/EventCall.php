@@ -30,23 +30,22 @@ final readonly class EventCall
      */
     public function isEventNamedByString(): bool
     {
-        return $this->takesOnlyEvents && $this->argument->isWrittenName() && ! $this->namesModelLifecycle();
+        return $this->takesOnlyEvents && $this->argument->isWrittenName() && ! $this->isModelLifecycle();
     }
 
     /**
      * One of Laravel's model lifecycle strings, such as 'eloquent.retrieved: *': a framework hook, not an event of
      * the project.
      */
-    private function namesModelLifecycle(): bool
+    private function isModelLifecycle(): bool
     {
         return str_starts_with($this->event, 'eloquent.');
     }
 
     /**
      * A listener registered by hand instead of through a typed listener in a Listeners folder: an event class of the
-     * project, a wildcard, a subscriber or a provider property. Framework lifecycle strings such as 'eloquent.booted:
-     * X'
-     * and framework events are not the project's, so they pass.
+     * project, a wildcard, a subscriber or a provider property. Framework lifecycle strings such as
+     * 'eloquent.booted: X' and framework events are not the project's, so they pass.
      */
     public function registersListenerByHand(ProjectRoots $roots): bool
     {
@@ -56,13 +55,13 @@ final readonly class EventCall
 
         return match ($this->argument) {
             EventArgument::ClassName => $roots->startsWithProjectNamespace($this->event),
-            EventArgument::String => str_contains($this->event, '*') && ! $this->namesModelLifecycle(),
+            EventArgument::String => str_contains($this->event, '*') && ! $this->isModelLifecycle(),
             EventArgument::Other => in_array(
                 $this->call,
                 ['subscribe(Dispatcher)', '$listen', '$subscribe'],
                 true,
             ) || str_ends_with($this->call, 'subscribe()'),
-            default => false,
+            EventArgument::StringList, EventArgument::ListenerParameter => false,
         };
     }
 

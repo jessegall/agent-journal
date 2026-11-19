@@ -12,7 +12,6 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Text\Contracts\TextContent;
-use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Values\TextVersion;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -37,11 +36,7 @@ final class NotePage extends Model implements Commentable, Numbered, ReadableMod
 
     public function textVersion(string|null $version = null): TextVersion
     {
-        if ($version !== null && $version !== '1') {
-            throw TextVersionUnavailable::named($version);
-        }
-
-        return TextVersion::ofMarkdown('1', 'page', $this->text);
+        return TextVersion::ofOnlyMarkdown($version, 'page', $this->text);
     }
 
     public static function written(string $text): self
