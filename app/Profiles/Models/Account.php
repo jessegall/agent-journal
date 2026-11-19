@@ -142,6 +142,29 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
+     * The account locked for the journal's own maintenance or the host that signs it in, whoever acts.
+     */
+    public static function lockedForJournal(string $accountId): self
+    {
+        return self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->whereKey($accountId)
+            ->lockForUpdate()
+            ->firstOrFail();
+    }
+
+    /**
+     * The account signed in again by the attempt that holds its folder: signed in, checked now, its writer released.
+     */
+    public function signedInAgain(SignInAttempt $attempt, string|null $identity, CarbonImmutable $checkedAt): void
+    {
+        $this->state = AccountState::SignedIn;
+        $this->identity = $identity;
+        $this->checked_at = $checkedAt;
+        $this->releaseWriter($attempt);
+    }
+
+    /**
      * The account as the launch it is chosen for runs with it.
      */
     public function selectedForLaunch(): SelectedAccount

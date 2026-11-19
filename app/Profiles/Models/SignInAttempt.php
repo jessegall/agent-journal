@@ -6,6 +6,8 @@ namespace App\Profiles\Models;
 
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Exceptions\SignInAttemptMissing;
+use App\Profiles\Models\Support\HumanAccounts;
 use App\Profiles\Values\AccountLabel;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
@@ -71,10 +73,12 @@ final class SignInAttempt extends Model implements ReadableModel
     public static function forNewAccount(
         HookProgram $program,
         AccountLabel $label,
+        string $directory,
         string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self(['program' => $program->value, 'label' => $label->label]);
+        $attempt->directory = $directory;
         $attempt->begin($requestKey, $expiresAt);
 
         return $attempt;
@@ -88,6 +92,7 @@ final class SignInAttempt extends Model implements ReadableModel
         $attempt = new self(['program' => $account->program]);
         $attempt->account_id = $account->id;
         $attempt->generation = $account->sign_in_generation;
+        $attempt->directory = $account->directory;
         $attempt->begin($requestKey, $expiresAt);
 
         return $attempt;
@@ -110,11 +115,155 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
+     * The attempt a repeated start with the same request key made, so a retried click rejoins it.
+     */
+    public static function withRequestKey(string $requestKey): self|null
+    {
+        return self::query()->where('request_key', $requestKey)->lockForUpdate()->first();
+    }
+
+    /**
+     * The owner's attempt, locked.
+     *
+     * @throws SignInAttemptMissing
+     */
+    public static function lockedForOwner(string $attemptId): self
+    {
+        return self::found($attemptId, self::query()->whereKey($attemptId)->lockForUpdate()->first());
+    }
+
+    /**
+     * The attempt locked for the journal's own maintenance or the host that runs its sign-in, whoever acts.
+     *
+     * @throws SignInAttemptMissing
+     */
+    public static function lockedForJournal(string $attemptId): self
+    {
+        $attempt = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->whereKey($attemptId)
+            ->lockForUpdate()
+            ->first();
+
+        return self::found($attemptId, $attempt);
+    }
+
+    /**
+     * The program of an attempt, read before its locks are taken in their order: selection, then attempt.
+     *
+     * @throws SignInAttemptMissing
+     */
+    public static function programForJournal(string $attemptId): HookProgram
+    {
+        $program = self::query()->withoutGlobalScope(HumanAccounts::class)->whereKey($attemptId)->value('program');
+
+        if (! is_string($program)) {
+            throw SignInAttemptMissing::for($attemptId);
+        }
+
+        return HookProgram::from($program);
+    }
+
+    /**
+     * The live attempts whose deadline has passed, oldest first, for the reconciliation sweep.
+     *
+     * @return list<string>
+     */
+    public static function expiredLiveIds(CarbonImmutable $now, int $limit): array
+    {
+        $ids = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->where('expires_at', '<=', $now)
+            ->orderBy('expires_at')
+            ->readLimit($limit)
+            ->pluck('id');
+
+        return array_values(array_map(strval(...), $ids->all()));
+    }
+
+    public function isLive(): bool
+    {
+        return $this->state->isLive();
+    }
+
+    public function isExpiredAt(CarbonImmutable $now): bool
+    {
+        return $this->expires_at <= $now;
+    }
+
+    /**
+     * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.
+     */
+    public function end(SignInState $state): void
+    {
+        $this->state = $state;
+        $this->cleanup_pending = $this->account_id === null && $state !== SignInState::Complete;
+        $this->save();
+    }
+
+    /**
+     * The program's sign-in started and now waits for its person; only from here may a verified result complete it.
+     */
+    public function waitForPerson(): void
+    {
+        if ($this->state !== SignInState::Starting) {
+            return;
+        }
+
+        $this->state = SignInState::Waiting;
+        $this->save();
+    }
+
+    /**
+     * Takes the account's folder as its one writer and runs in the sign-in generation that starts.
+     */
+    public function writeFolderOf(Account $account): void
+    {
+        $account->writerFor($this);
+        $this->generation = $account->sign_in_generation;
+        $this->save();
+    }
+
+    /**
+     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it.
+     */
+    public function finish(SignInState $state): void
+    {
+        $this->end($state);
+
+        if ($this->account_id !== null) {
+            Account::lockedForJournal($this->account_id)->releaseWriter($this);
+        }
+    }
+
+    /**
+     * Whether a sign-in result the host reports still speaks for this attempt: it is live, within its deadline, and
+     * made in the attempt's sign-in generation.
+     */
+    public function accepts(int $generation, CarbonImmutable $now): bool
+    {
+        return $this->state->canComplete() && ! $this->isExpiredAt($now) && $this->generation === $generation;
+    }
+
+    /**
      * @return BelongsTo<Account, $this>
      */
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * @throws SignInAttemptMissing
+     */
+    private static function found(string $attemptId, self|null $attempt): self
+    {
+        if ($attempt === null) {
+            throw SignInAttemptMissing::for($attemptId);
+        }
+
+        return $attempt;
     }
 
     private function begin(string $requestKey, CarbonImmutable $expiresAt): void

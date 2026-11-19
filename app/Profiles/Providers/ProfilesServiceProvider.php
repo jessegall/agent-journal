@@ -19,6 +19,7 @@ use App\Profiles\Console\ProfileActivateCommand;
 use App\Profiles\Console\ProfileListCommand;
 use App\Profiles\Console\ProfileRevokeCommand;
 use App\Profiles\Console\ProfileShowCommand;
+use App\Profiles\Console\ReconcileAccountsCommand;
 use App\Profiles\Contracts\KnownOperations;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
@@ -40,6 +41,7 @@ use App\Profiles\Support\ProfileAuthorizerProvider;
 use App\Profiles\Support\ProfileFileEditPermission;
 use App\Profiles\Support\ProfileLaunchAdmission;
 use App\Profiles\Support\ProfilePermissionReader;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
@@ -80,6 +82,10 @@ final class ProfilesServiceProvider extends ServiceProvider
             ownerOnly: [AccountAbility::Read, AccountAbility::Manage],
         ));
         $this->scopeAccountsToTheirOwner($events);
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule->command('accounts:reconcile')->everyMinute()->withoutOverlapping(),
+        );
         $authorizers->register(ActorType::Agent, ProfileAuthorizerProvider::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/web.php');
 
@@ -89,6 +95,7 @@ final class ProfilesServiceProvider extends ServiceProvider
                 ProfileShowCommand::class,
                 ProfileActivateCommand::class,
                 ProfileRevokeCommand::class,
+                ReconcileAccountsCommand::class,
             ]);
         }
     }

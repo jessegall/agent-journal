@@ -100,8 +100,13 @@ use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\CancelSignIn;
+use App\Profiles\Commands\CompleteSignIn;
+use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
+use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Commands\SwitchAccount;
@@ -262,6 +267,11 @@ final class CoreCommandsTest extends CommandBusTestCase
             LaunchProfileMain::class,
             SwitchAccount::class,
             RenameAccount::class,
+            BeginSignIn::class,
+            CancelSignIn::class,
+            CompleteSignIn::class,
+            ExpireSignInAttempt::class,
+            ReconcileAccounts::class,
             ProposeCommandRule::class,
             ReviseRuleProposal::class,
             WithdrawRuleProposal::class,
@@ -327,6 +337,9 @@ final class CoreCommandsTest extends CommandBusTestCase
             RecordSkillRead::class,
             FenceProfileRevision::class,
             ReconcileStarts::class,
+            CompleteSignIn::class,
+            ExpireSignInAttempt::class,
+            ReconcileAccounts::class,
             MarkRunsStale::class,
             ReconcileLostRuns::class,
             StopSurvivors::class,

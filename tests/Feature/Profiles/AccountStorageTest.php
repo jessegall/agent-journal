@@ -146,6 +146,7 @@ final class AccountStorageTest extends TestCase
         $attempt = SignInAttempt::forNewAccount(
             HookProgram::Codex,
             AccountLabel::from('Home'),
+            '/journal/accounts/new-home',
             'request-1',
             CarbonImmutable::now()->addMinutes(10),
         );

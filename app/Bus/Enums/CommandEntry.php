@@ -15,4 +15,5 @@ enum CommandEntry: string
     case ShareGateway = 'share_gateway';
     case SkillPublisher = 'skill_publisher';
     case EngineMaintenance = 'engine_maintenance';
+    case AccountMaintenance = 'account_maintenance';
 }

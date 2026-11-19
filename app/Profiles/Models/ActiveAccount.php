@@ -90,6 +90,41 @@ final class ActiveAccount extends Model implements ReadableModel
     }
 
     /**
+     * The program's selection row for the journal's own maintenance or the host, made when first needed and locked;
+     * whoever acts.
+     */
+    public static function lockedForJournal(HookProgram $program): self
+    {
+        $now = Carbon::now();
+        self::query()->withoutGlobalScope(HumanAccounts::class)->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'program' => $program->value,
+            'has_selected' => false,
+            'change_number' => 0,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        return self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->ofProgram($program)
+            ->lockForUpdate()
+            ->firstOrFail();
+    }
+
+    /**
+     * Chooses the account when the program never had one chosen, as for its first signed-in account.
+     */
+    public function chooseFirst(Account $account): void
+    {
+        if ($this->has_selected) {
+            return;
+        }
+
+        $this->select($account);
+    }
+
+    /**
      * Each program's current choice, one row per program made so far.
      *
      * @return list<self>

@@ -48,6 +48,12 @@ services:
             - .:/app
             - /app/node_modules
 
+    scheduler:
+        # schedule:work starts each run as a new process, so a code change needs no restart.
+        volumes:
+            - .:/app
+            - /app/node_modules
+
     ticker:
         # engine:tick keeps its code loaded for the life of the process: after a code change run
         # docker compose restart ticker. No file watcher restarts it.

@@ -665,6 +665,8 @@ use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
@@ -688,6 +690,8 @@ use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
+use App\Profiles\Exceptions\SignInAttemptMissing;
+use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Support\BaseOverride;
 use App\Profiles\Support\ClassRule;
 use App\Profiles\Support\OperationRule;
@@ -707,6 +711,7 @@ use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileProvenance;
 use App\Profiles\Values\ProfileSelection;
 use App\Profiles\Values\ProfileSnapshot;
+use App\Profiles\Values\SignInStarted;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
 use App\Programs\Exceptions\ProviderKeyInvalid;
@@ -1246,6 +1251,7 @@ final class CoreApi
                 AccountUse::class,
                 AccountUseCounts::class,
                 HeldAccountUses::class,
+                SignInStarted::class,
                 AccountProcessRole::class,
                 LaunchUnavailableReason::class,
                 ProgramFailure::class,
@@ -1653,6 +1659,8 @@ final class CoreApi
                 LaunchProfileMain::class,
                 SwitchAccount::class,
                 RenameAccount::class,
+                BeginSignIn::class,
+                CancelSignIn::class,
                 HoldAccountUses::class,
                 CancelAccountUses::class,
                 SettleAccountUses::class,
@@ -1861,6 +1869,8 @@ final class CoreApi
                 AccountMissing::class,
                 AccountLabelTaken::class,
                 AccountLabelInvalid::class,
+                SignInAttemptMissing::class,
+                SignInAttemptStale::class,
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 InvalidRecordIds::class,
