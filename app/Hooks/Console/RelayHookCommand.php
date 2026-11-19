@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Console;
 
 use App\AgentRequests\Contracts\StartTokenSource;
+use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Support\OfflineReplySeal;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
@@ -20,10 +21,13 @@ final class RelayHookCommand extends Command
 
     protected $description = 'Pass one native hook call to the journal and print its reply';
 
-    public function handle(HookRelay $relay, StartTokenSource $credentials, OfflineReplySeal $seal): int
-    {
-        $environment = array_filter(getenv(), 'is_string');
-        $settings = RelaySettings::forStart($credentials->forThisStart(), $environment, $seal);
+    public function handle(
+        HookRelay $relay,
+        StartTokenSource $credentials,
+        StartEnvironment $start,
+        OfflineReplySeal $seal,
+    ): int {
+        $settings = RelaySettings::forStart($credentials->forThisStart(), $start, $seal);
         $program = HookProgram::from((string) $this->argument('program'));
         $reply = $relay->relay($program, (string) stream_get_contents(STDIN), $settings);
 

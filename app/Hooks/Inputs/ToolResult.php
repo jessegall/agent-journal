@@ -8,13 +8,10 @@ use App\Hooks\Enums\ToolOutcome;
 
 final readonly class ToolResult
 {
-    /**
-     * @param  array<string, mixed>  $arguments  the arguments the program called the tool with
-     */
     public function __construct(
         public string $toolName,
         public ToolOutcome $outcome,
-        public array $arguments,
+        public ProgramToolInput $arguments,
     ) {}
 
     /**
@@ -22,13 +19,11 @@ final readonly class ToolResult
      */
     public function textArgument(string $name): string|null
     {
-        $value = $this->arguments[$name] ?? null;
-
-        return is_string($value) ? $value : null;
+        return $this->arguments->textArgument($name);
     }
 
     public function hasArgument(string $name): bool
     {
-        return array_key_exists($name, $this->arguments) && $this->arguments[$name] !== null;
+        return $this->arguments->hasArgument($name);
     }
 }

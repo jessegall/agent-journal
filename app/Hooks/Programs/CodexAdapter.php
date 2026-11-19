@@ -17,6 +17,7 @@ use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
@@ -137,7 +138,7 @@ final readonly class CodexAdapter implements ProgramAdapter
             return JournalToolCall::starting();
         }
 
-        $original = new ProgramToolInput($payload->toolArguments());
+        $original = $payload->toolArguments();
 
         if ($tool->isShell()) {
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);

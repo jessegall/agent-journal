@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Programs;
 
 use App\AgentRequests\Support\AgentClientSettings;
+use App\AgentRequests\Support\StartEnvironment;
 use App\AgentRequests\Support\StartProfilePin;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Exceptions\OfflineReplyModeInvalid;
@@ -67,10 +68,10 @@ final class OfflineReplySettingsTest extends TestCase
     {
         $client = new AgentClientSettings('http://journal.test', 'start-token', new StartProfilePin('main-agent', 1));
 
-        return RelaySettings::forStart($client, [
+        return RelaySettings::forStart($client, new StartEnvironment([
             'JOURNAL_OFFLINE_REPLY' => $mode,
             'JOURNAL_OFFLINE_REPLY_SEAL' => $seal,
             'JOURNAL_BYPASS_LOG' => '/tmp/bypasses.jsonl',
-        ], new OfflineReplySeal(self::KEY));
+        ]), new OfflineReplySeal(self::KEY));
     }
 }

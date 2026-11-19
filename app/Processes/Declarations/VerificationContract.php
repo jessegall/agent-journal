@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Declarations;
 
 use App\Processes\Enums\ToolType;
+use App\Processes\Exceptions\VerificationContractInvalid;
+use App\Processes\Stored\StoredVerificationContract;
 use App\Processes\Values\ExecutableBinding;
 use App\Processes\Values\ExitBranch;
 use App\Processes\Values\ExitPolicy;
@@ -30,35 +32,23 @@ final readonly class VerificationContract
     ) {}
 
     /**
+     * The contract as a stored rule holds it.
+     *
      * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return [
-            'operation' => $this->operation,
-            'tool' => $this->tool->value,
-            'binding' => $this->binding->toArray(),
-            'output' => $this->output->toArray(),
-            'exits' => $this->exits->toArray(),
-            'progress' => $this->progress->toArray(),
-            'reader' => $this->reader->revision,
-        ];
+        return StoredVerificationContract::fromContract($this)->toArray();
     }
 
     /**
      * @param  array<string, mixed>  $fields  the shape toArray writes
+     *
+     * @throws VerificationContractInvalid
      */
     public static function fromArray(array $fields): self
     {
-        return new self(
-            $fields['operation'],
-            ToolType::from($fields['tool']),
-            ExecutableBinding::fromArray($fields['binding']),
-            OutputContract::fromArray($fields['output']),
-            ExitPolicy::fromArray($fields['exits']),
-            ProgressPolicy::fromArray($fields['progress']),
-            ReaderReference::stored($fields['reader']),
-        );
+        return StoredVerificationContract::from($fields)->toContract();
     }
 
     /**

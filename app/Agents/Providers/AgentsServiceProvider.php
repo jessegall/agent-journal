@@ -20,6 +20,7 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
+use App\AgentRequests\Support\StartEnvironment;
 use App\AgentRequests\Support\SendSignedCalls;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Contracts\AgentResolver;
@@ -117,10 +118,8 @@ final class AgentsServiceProvider extends ServiceProvider
             fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')),
         );
         $this->app->bindIf(StartTransaction::class, DatabaseStartTransaction::class);
-        $this->app->bind(
-            StartTokenSource::class,
-            fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))),
-        );
+        $this->app->bind(StartEnvironment::class, StartEnvironment::ofThisProcess(...));
+        $this->app->bind(StartTokenSource::class, EnvironmentCredentialSource::class);
         $this->app->bind(
             AgentClientSettings::class,
             fn ($app) => $app->make(StartTokenSource::class)->forThisStart(),

@@ -8,7 +8,6 @@ use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\StepType;
 use App\Processes\Values\ExecutionPlan;
-use App\Processes\Values\PlanStep;
 use App\Processes\Values\RunAdmission;
 
 /**
@@ -34,7 +33,7 @@ final class TestRunAdmissions
             'policy-1',
             $workingFolder,
             $plan ?? ExecutionPlan::from([
-                'root' => PlanStep::from(['type' => StepType::Sequence, 'node' => 0, 'context' => 0]),
+                'root' => ['type' => StepType::Sequence, 'node' => 0, 'context' => 0],
                 'tree_digest' => str_repeat('b', 64),
             ]),
         );

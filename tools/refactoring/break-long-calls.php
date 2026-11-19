@@ -16,17 +16,19 @@ require_once __DIR__.'/php-files.php';
 /**
  * The tokens of the source with the line each starts on.
  *
- * @return list<array{text: string, line: int, kind: int|null}>
+ * @return list<PhpToken>
  */
 function tokensOf(string $source): array
 {
-    $tokens = [];
+    return PhpToken::tokenize($source);
+}
 
-    foreach (PhpToken::tokenize($source) as $token) {
-        $tokens[] = ['text' => $token->text, 'line' => $token->line, 'kind' => $token->id < 256 ? null : $token->id];
-    }
-
-    return $tokens;
+/**
+ * Whether the token is this one character of code, never text inside a string.
+ */
+function isCharacter(PhpToken $token, string $character): bool
+{
+    return $token->id === ord($character);
 }
 
 /**
@@ -42,7 +44,7 @@ function isLeftForAPerson(string $line): bool
 /**
  * The index of the opening bracket on the line whose group is widest and closes on the same line, or null.
  *
- * @param  list<array{text: string, line: int, kind: int|null}>  $tokens
+ * @param  list<PhpToken>  $tokens
  */
 function widestGroupOpening(array $tokens, int $lineNumber): int|null
 {
@@ -51,7 +53,7 @@ function widestGroupOpening(array $tokens, int $lineNumber): int|null
     $stack = [];
 
     foreach ($tokens as $index => $token) {
-        if ($token['line'] > $lineNumber) {
+        if ($token->line > $lineNumber) {
             break;
         }
 
@@ -62,7 +64,7 @@ function widestGroupOpening(array $tokens, int $lineNumber): int|null
         if (isClosing($token) && $stack !== []) {
             $open = array_pop($stack);
 
-            if ($tokens[$open]['line'] !== $lineNumber || $token['line'] !== $lineNumber || $index - $open < 3) {
+            if ($tokens[$open]->line !== $lineNumber || $token->line !== $lineNumber || $index - $open < 3) {
                 continue;
             }
 
@@ -73,7 +75,7 @@ function widestGroupOpening(array $tokens, int $lineNumber): int|null
             $width = 0;
 
             for ($inner = $open; $inner <= $index; $inner++) {
-                $width += strlen($tokens[$inner]['text']);
+                $width += strlen($tokens[$inner]->text);
             }
 
             if ($width > $bestWidth) {
@@ -88,22 +90,18 @@ function widestGroupOpening(array $tokens, int $lineNumber): int|null
 
 /**
  * Whether the token is a code bracket that opens a group; a bracket inside a string arrives as string text.
- *
- * @param  array{text: string, line: int, kind: int|null}  $token
  */
-function isOpening(array $token): bool
+function isOpening(PhpToken $token): bool
 {
-    return $token['kind'] === null && ($token['text'] === '(' || $token['text'] === '[');
+    return isCharacter($token, '(') || isCharacter($token, '[');
 }
 
 /**
  * Whether the token is a code bracket that closes a group.
- *
- * @param  array{text: string, line: int, kind: int|null}  $token
  */
-function isClosing(array $token): bool
+function isClosing(PhpToken $token): bool
 {
-    return $token['kind'] === null && ($token['text'] === ')' || $token['text'] === ']');
+    return isCharacter($token, ')') || isCharacter($token, ']');
 }
 
 /**
@@ -111,14 +109,14 @@ function isClosing(array $token): bool
  * that starts an array, or a round one after a name, a variable, a closing bracket or the function keywords. A round
  * bracket after an operator or a control keyword only groups an expression.
  *
- * @param  list<array{text: string, line: int, kind: int|null}>  $tokens
+ * @param  list<PhpToken>  $tokens
  */
 function opensAList(array $tokens, int $open): bool
 {
     $before = null;
 
     for ($index = $open - 1; $index >= 0; $index--) {
-        if (trim($tokens[$index]['text']) !== '') {
+        if (trim($tokens[$index]->text) !== '') {
             $before = $tokens[$index];
 
             break;
@@ -129,27 +127,27 @@ function opensAList(array $tokens, int $open): bool
         return false;
     }
 
-    if ($tokens[$open]['text'] === '[') {
-        return ! in_array($before['kind'], [T_VARIABLE, T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)
-            && ! in_array($before['text'], [')', ']', '}'], true);
+    if ($tokens[$open]->text === '[') {
+        return ! in_array($before->id, [T_VARIABLE, T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)
+            && ! in_array($before->text, [')', ']', '}'], true);
     }
 
     $keywords = [T_IF, T_ELSEIF, T_WHILE, T_FOR, T_FOREACH, T_SWITCH, T_MATCH, T_CATCH, T_ECHO, T_PRINT, T_RETURN];
 
-    if (in_array($before['kind'], $keywords, true)) {
+    if (in_array($before->id, $keywords, true)) {
         return false;
     }
 
-    return in_array($before['kind'], [
+    return in_array($before->id, [
         T_STRING, T_VARIABLE, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_NAME_RELATIVE, T_STATIC, T_FUNCTION, T_FN,
         T_ARRAY, T_ISSET, T_UNSET, T_LIST, T_NEW,
-    ], true) || in_array($before['text'], [')', ']'], true);
+    ], true) || in_array($before->text, [')', ']'], true);
 }
 
 /**
  * The index of the bracket that closes the one opened at the index.
  *
- * @param  list<array{text: string, line: int, kind: int|null}>  $tokens
+ * @param  list<PhpToken>  $tokens
  */
 function closingOf(array $tokens, int $open): int
 {
@@ -175,7 +173,7 @@ function closingOf(array $tokens, int $open): int
 /**
  * The indexes of the commas directly inside the bracket group, not inside a nested one.
  *
- * @param  list<array{text: string, line: int, kind: int|null}>  $tokens
+ * @param  list<PhpToken>  $tokens
  * @return list<int>
  */
 function topLevelCommas(array $tokens, int $open, int $close): array
@@ -186,15 +184,15 @@ function topLevelCommas(array $tokens, int $open, int $close): array
     for ($index = $open + 1; $index < $close; $index++) {
         $token = $tokens[$index];
 
-        if (isOpening($token) || ($token['kind'] === null && $token['text'] === '{') || $token['kind'] === T_CURLY_OPEN) {
+        if (isOpening($token) || isCharacter($token, '{') || $token->id === T_CURLY_OPEN) {
             $depth++;
         }
 
-        if (isClosing($token) || ($token['kind'] === null && $token['text'] === '}')) {
+        if (isClosing($token) || isCharacter($token, '}')) {
             $depth--;
         }
 
-        if ($token['kind'] === null && $token['text'] === ',' && $depth === 0) {
+        if (isCharacter($token, ',') && $depth === 0) {
             $commas[] = $index;
         }
     }
@@ -205,13 +203,13 @@ function topLevelCommas(array $tokens, int $open, int $close): array
 /**
  * Whether the last thing before the closing bracket is already a comma.
  *
- * @param  list<array{text: string, line: int, kind: int|null}>  $tokens
+ * @param  list<PhpToken>  $tokens
  */
 function isTrailingComma(array $tokens, int $close): bool
 {
     for ($index = $close - 1; $index >= 0; $index--) {
-        if (trim($tokens[$index]['text']) !== '') {
-            return $tokens[$index]['text'] === ',';
+        if (trim($tokens[$index]->text) !== '') {
+            return $tokens[$index]->text === ',';
         }
     }
 
@@ -279,7 +277,7 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
             $rewritten .= "\n";
         }
 
-        $rewritten .= $token['text'];
+        $rewritten .= $token->text;
 
         if (isset($breaks[$index]) || isset($commas[$index])) {
             $rewritten .= "\n";

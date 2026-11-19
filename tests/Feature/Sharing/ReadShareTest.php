@@ -200,7 +200,9 @@ final class ReadShareTest extends TestCase
             ->get();
 
         foreach ($documents as $document) {
-            $link = $links->sole(fn (Link $link) => in_array($document->id, [$link->target_id, $link->source_id], true));
+            $link = $links->sole(
+                fn (Link $link) => in_array($document->id, [$link->target_id, $link->source_id], true),
+            );
             ShareMember::approve(
                 $share,
                 $this->plan->shareIdentity(),

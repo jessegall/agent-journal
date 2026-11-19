@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Enums;
 
 use App\Hooks\Decisions\Decision;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Programs\ProgramReply;
-use App\Hooks\Programs\ProgramToolInput;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 

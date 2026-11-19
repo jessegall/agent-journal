@@ -29,38 +29,6 @@ final readonly class OutputContract
     ) {}
 
     /**
-     * @return array<string, mixed>
-     */
-    public function toArray(): array
-    {
-        return [
-            'encoding' => $this->encoding->value,
-            'framing' => $this->framing->value,
-            'schema_versions' => $this->schemaVersions,
-            'streams' => $this->streams->value,
-            'summary' => $this->summary->value,
-            'empty' => $this->empty->toArray(),
-            'empty_selection' => $this->emptySelection->value,
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(
-            OutputEncoding::from($fields['encoding']),
-            FramingType::from($fields['framing']),
-            $fields['schema_versions'],
-            StreamUse::from($fields['streams']),
-            SummaryRule::from($fields['summary']),
-            EmptyRunPolicy::fromArray($fields['empty']),
-            EmptySelection::from($fields['empty_selection']),
-        );
-    }
-
-    /**
      * The contract as a reader names it: its framing, summary rule and empty-run policy.
      */
     public function label(): string

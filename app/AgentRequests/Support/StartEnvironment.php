@@ -17,11 +17,24 @@ final readonly class StartEnvironment
     public function __construct(private array $variables) {}
 
     /**
+     * The environment this process was started with.
+     */
+    public static function ofThisProcess(): self
+    {
+        return new self(array_filter(getenv(), is_string(...)));
+    }
+
+    public function has(string $name): bool
+    {
+        return array_key_exists($name, $this->variables);
+    }
+
+    /**
      * @throws StartSettingMissing
      */
     public function value(string $name): string
     {
-        if (! array_key_exists($name, $this->variables)) {
+        if (! $this->has($name)) {
             throw StartSettingMissing::forName($name);
         }
 

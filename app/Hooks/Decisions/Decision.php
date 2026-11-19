@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Decisions;
 
 use App\Hooks\Contracts\Answer;
-use App\Hooks\Contracts\Refusal;
 use App\Hooks\Contracts\StackTransition;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\SimpleAnswer;
@@ -123,7 +122,7 @@ final readonly class Decision
      */
     public function refusalReason(): string
     {
-        if (! $this->answer instanceof Refusal) {
+        if (! $this->answer instanceof Denied) {
             throw NoRefusalReason::forAnswer($this->answerType()->value);
         }
 

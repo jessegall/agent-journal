@@ -522,6 +522,7 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
@@ -947,6 +948,7 @@ use App\Ui\Declarations\ChoiceOption;
 use App\Ui\Declarations\FloatSize;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page as UiPage;
+use App\Ui\Declarations\PaneChoice;
 use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Declarations\SlotContext;
@@ -1389,6 +1391,7 @@ final class CoreApi
                 StopDetails::class,
                 ToolFinished::class,
                 ToolResult::class,
+                ProgramToolInput::class,
                 ToolOutcome::class,
                 ActorIdentity::class,
                 AbilityRequirement::class,
@@ -1456,6 +1459,7 @@ final class CoreApi
                 FloatSize::class,
                 NavigationItem::class,
                 UiPage::class,
+                PaneChoice::class,
                 Section::class,
                 Slot::class,
                 SlotContext::class,

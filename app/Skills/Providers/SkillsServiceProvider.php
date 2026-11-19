@@ -8,8 +8,8 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Hooks\Contracts\FileAccessPolicy;
+use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
-use App\Numbers\Support\NumberedTypeRegistry;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\SkillAbility;
@@ -68,7 +68,7 @@ final class SkillsServiceProvider extends ServiceProvider
         ));
     }
 
-    public function boot(NumberedTypeRegistry $numbers, PolicyCatalogue $policies): void
+    public function boot(NumberedModelRegistration $numbers, PolicyCatalogue $policies): void
     {
         $policies->register('Core', new PolicyRegistration(
             Skill::class,

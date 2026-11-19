@@ -5005,7 +5005,6 @@ interface	RecordResolver
 interface	RecordVisibility
 interface	RecordsStartHeartbeats
 interface	RecordsNavigation
-interface	Refusal
 interface	RegistersCalls
 interface	ReminderContribution
 interface	ReplyInboxes
