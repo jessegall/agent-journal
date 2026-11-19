@@ -37,7 +37,7 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[AgentLimitCounts, ...]:
         kept = tuple(self.queries.query(AgentCounts).get())
-        pending_ids = tuple(self.work.pending())
+        pending_ids = self.work.place_holders()
         pending = tuple(self.queries.query(Agent).matching(Among("id", pending_ids)).matching(IsNull("retired_at")).every_row(PENDING_AGENTS_REASON)) if pending_ids else ()
         installed_profiles = {profile.name: profile for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         titles = {name: profile.display_title for name, profile in installed_profiles.items()}

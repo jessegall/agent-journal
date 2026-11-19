@@ -55,10 +55,13 @@ RUNNING_PROOF = Exists(Select("proofs").joined(ConditionJoin("processes", condit
                        .matching(ColumnCompare("proofs.worktree_id", "=", "worktree.id")).matching(Equal("proofs.state", "running"))
                        .matching(IsNull("processes.queued_at")))
 
+# the one review status of a worker's delivered work that asks the worker itself for more work; the others wait on tests,
+# the judge, the main agent or the merge
+CHANGES_REQUESTED = "changes requested"
 WORKER_WORK_REVIEW_SELECT = worktrees().selecting(
     Aliased(Column(WORKER), "agent_id"), Column("worktree.environment_id"),
     Aliased(CaseExpression([
-        (worktree_state("cut"), Literal("changes requested")),
+        (worktree_state("cut"), Literal(CHANGES_REQUESTED)),
         (HasValue("worktree.returned_at"), Literal("with the main agent")),
         (RUNNING_PROOF, Literal("tests running")),
         (worktree_proofs(Among("proofs.state", WAITING_PROOF_STATES)), Literal("tests queued")),

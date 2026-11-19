@@ -1,3 +1,6 @@
+from engine.environment.environment_names import EnvironmentNames
+from suites.coding.modules.workers.support.worker_places import WorkerPlaces
+from engine.scope.scopes import Scopes
 from suites.coding.modules.workers.models.worktree import Worktree
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
@@ -110,6 +113,19 @@ def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
     story.expect_rows(limit_start_count == 1, len(launcher.starts) == 2)
+
+
+def test_a_stopped_worker_whose_delivered_work_only_waits_holds_no_running_place(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
+    worker = delivered_worker(story, repository)
+    story.run_listeners()
+    stopped(story, worker)
+    story.run_listeners()
+    with story.container.get(Scopes).opened(None, story.container.get(EnvironmentNames).environment_id("main")):
+        places = story.container.get(WorkerPlaces)
+        story.expect_rows(worker.id in places.work.pending(), worker.id not in {agent.id for agent in places.running()})
 
 
 def test_a_task_sent_to_a_delivered_worker_waits_and_the_delivery_stays_mergeable(new_story):

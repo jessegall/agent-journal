@@ -7,6 +7,7 @@ from engine.query.queries import Queries
 from engine.agent.work.merged_work import MergedWork
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.models.worker_work_review import WorkerWorkReview
+from suites.coding.modules.workers.models.support.views import CHANGES_REQUESTED
 
 WORK_REASON = "the agent cards name the work of every worker with a worktree"
 
@@ -26,6 +27,9 @@ class WorkerAgentWork(AgentWork):
 
     def pending(self) -> Mapping[int, str]:
         return self.kept.scoped_current(self.read, name="workers.pending_work")
+
+    def place_holders(self) -> tuple[int, ...]:
+        return tuple(agent_id for agent_id, status in self.pending().items() if status == CHANGES_REQUESTED)
 
     def read(self) -> Mapping[int, str]:
         return {row.agent_id: row.status for row in self.queries.query(WorkerWorkReview).every_row(WORK_REASON)}

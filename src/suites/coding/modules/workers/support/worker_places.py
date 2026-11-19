@@ -32,9 +32,12 @@ class WorkerPlaces:
         self.work, self.rows = work, rows
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
+    # the workers that hold a place: those running, and those whose delivered work came back with changes for them to
+    # make; one whose work waits on tests, the judge or the merge has nothing to do and holds none, and resumes past the
+    # limit if its work comes back
     def running(self) -> tuple[Agent, ...]:
         running = self.agents.running(Worker.key)
-        pending_ids = tuple(self.work.pending())
+        pending_ids = self.work.place_holders()
         pending = tuple(self.rows.required_index(Agent, pending_ids).values())
         return tuple({worker.id: worker for worker in (*running, *pending)}.values())
 

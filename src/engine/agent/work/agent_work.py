@@ -10,6 +10,11 @@ class AgentWork:
     def pending(self) -> Mapping[int, str]:
         return {}
 
+    # the agents with pending work that still hold a running place after their process ended: those whose work waits on
+    # them, not on a test, a review or a merge
+    def place_holders(self) -> tuple[int, ...]:
+        return ()
+
     def unit_names(self, agent_ids: Sequence[int]) -> Mapping[int, str]:
         return {}
 
