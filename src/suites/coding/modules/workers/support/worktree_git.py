@@ -84,6 +84,10 @@ class WorktreeGit:
     def has_branch(self, folder: str, branch: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}").returncode == 0
 
+    # the local branches whose names start with the prefix, read in one run
+    def branches(self, folder: str, prefix: str) -> frozenset[str]:
+        return frozenset(self.checked(folder, GIT_LIMIT_SECONDS, "for-each-ref", "--format=%(refname:short)", f"refs/heads/{prefix}").stdout.split())
+
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
         if revision.returncode != 0:

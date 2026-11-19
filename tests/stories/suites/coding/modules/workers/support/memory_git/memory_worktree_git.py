@@ -85,6 +85,9 @@ class MemoryWorktreeGit(WorktreeGit):
     def has_branch(self, folder: str, branch: str) -> bool:
         return self.history.has_branch(branch)
 
+    def branches(self, folder: str, prefix: str) -> frozenset[str]:
+        return frozenset(name for name in self.history.branches if name.startswith(prefix))
+
     def tip(self, folder: str, branch: str) -> str:
         if not self.history.has_branch(branch):
             raise Refusal(f"branch {branch} does not exist in {folder}", "make it there, or name another with journal environment edit <name> --branch <branch>")

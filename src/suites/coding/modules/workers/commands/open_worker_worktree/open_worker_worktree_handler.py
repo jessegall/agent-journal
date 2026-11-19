@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
+from suites.coding.support.worktree_checkouts import WORKER_BRANCHES, WORKTREES_FOLDER
 
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -15,7 +15,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.opened_worker import OpenedWorker
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_opening_rows import WorkerOpeningRows
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from core.modules.environments.models.environment import Environment
 from engine.file.file_access import FileAccess
 
@@ -29,10 +28,9 @@ class OpenWorkerWorktreeHandler(Handler[OpenWorkerWorktree, OpenedWorker]):
 
     command = OpenWorkerWorktree
 
-    def __init__(self, bus: Bus, repository: Repository, rows: EventRows, environments: EnvironmentRows, places: WorkerPlaces, opening: WorkerOpeningRows,
-                 git: WorktreeGit) -> None:
+    def __init__(self, bus: Bus, repository: Repository, rows: EventRows, environments: EnvironmentRows, places: WorkerPlaces, opening: WorkerOpeningRows) -> None:
         self.bus, self.repository, self.rows, self.environments, self.places = bus, repository, rows, environments, places
-        self.opening, self.git = opening, git
+        self.opening = opening
 
     def handle(self, command: OpenWorkerWorktree, context: Context) -> OpenedWorker:
         task = self.rows.required(Task, command.task_id)
@@ -40,20 +38,24 @@ class OpenWorkerWorktreeHandler(Handler[OpenWorkerWorktree, OpenedWorker]):
         if not environment.test:
             self.places.check_new_place()
         worker = self.bus.dispatch(command.start, context)
-        name = self.free_name(environment, worker.id)
+        name = self.free_name(environment, worker.id, command.taken_branches)
         try:
             worktree = self.repository.save(Worktree(session_agent_id=worker.id, task_id=task.id, creator_id=context.actor.id,
                                                      folder=str(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name),
-                                                     branch=f"journal/{environment.name}/{name}", base_branch=environment.branch, new_agent_reason=command.new_agent_reason, route_reason=command.route_reason, starts_program=command.starts_program), context)
+                                                     branch=worker_branch(environment, name), base_branch=environment.branch, new_agent_reason=command.new_agent_reason, route_reason=command.route_reason, starts_program=command.starts_program), context)
         except Refusal:
             self.opening.remove_agent(worker.id, context)
             raise
         return OpenedWorker(worker, worktree)
 
-    def free_name(self, environment: Environment, worker_id: int) -> str:
+    def free_name(self, environment: Environment, worker_id: int, taken_branches: frozenset[str]) -> str:
         names = (f"worker-{worker_id}" if count == 0 else f"worker-{worker_id}-{count}" for count in range(NAME_TRIES))
-        return next(name for name in names if not self.is_taken(environment, name))
+        return next(name for name in names if not self.is_taken(environment, name, taken_branches))
 
-    def is_taken(self, environment: Environment, name: str) -> bool:
-        return (FileAccess.exists(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name)
-                or self.git.has_branch(environment.folder, f"journal/{environment.name}/{name}"))
+    @staticmethod
+    def is_taken(environment: Environment, name: str, taken_branches: frozenset[str]) -> bool:
+        return FileAccess.exists(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name) or worker_branch(environment, name) in taken_branches
+
+
+def worker_branch(environment: Environment, name: str) -> str:
+    return WORKER_BRANCHES.format(environment=environment.name) + name

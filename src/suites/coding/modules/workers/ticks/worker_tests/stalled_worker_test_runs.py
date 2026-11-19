@@ -6,7 +6,7 @@ from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.setting.setting_values import SettingValues
 from engine.time.clock import Clock
-from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run import StartCheckpointRun
+from core.modules.plans.support.checkpoint_run_start import CheckpointRunStart
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
@@ -15,7 +15,7 @@ from suites.coding.modules.workers.commands.record_checkpoint_test.record_checkp
 from suites.coding.modules.workers.commands.queue_worker_tests.end_stalled_proof_run import EndStalledProofRun
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests import QueueStalledTests
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import ENDED_RUN_NOTE, REMOVED_RUN_NOTE, RecordWorkerTest
-from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
+from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.models.checkpoint_test import RUNNING_STATES, CheckpointTest
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
@@ -48,7 +48,7 @@ class StalledWorkerTestRuns:
         worktree_environments = {worktree.id: worktree.environment_id for worktree in worktrees.all_worktrees()}
         queued = {worktree_environments[proof.worktree_id] for proof in container.get(ProofQuery).queued_tests(worktree_environments)}
         for environment_id in queued:
-            bus.run(StartWorkerTests(), Actor.core(), environment_id=environment_id)
+            container.get(WorkerTestStarts).start_in(environment_id)
         self.start_reaches_with_no_tests(container)
         # last, so a checkpoint test that cannot be recorded never holds the proofs of other workers back
         self.record_ended_checkpoint_tests(container)
@@ -58,7 +58,7 @@ class StalledWorkerTestRuns:
     @staticmethod
     def start_reaches_with_no_tests(container: Container) -> None:
         for plan in container.get(Queries).query(Plan).all_environments(TIMED_JOB_REASON).filter(state=PlanState.STARTED).every_row(STARTED_PLANS_REASON):
-            container.get(Bus).run(StartCheckpointRun(plan.id), Actor.core(), environment_id=plan.environment_id)
+            container.get(CheckpointRunStart).start(plan.id, plan.environment_id)
 
     @staticmethod
     def record_ended(container: Container, running: list[Proof], environments: dict[int, int]) -> None:

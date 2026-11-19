@@ -52,6 +52,10 @@ class PlanCheckpoints:
     def reaches(self, plan_id: int) -> tuple[CheckpointReach, ...]:
         return tuple(self.queries.query(CheckpointReach).filter(plan_id=plan_id).every_row(REACHES_REASON))
 
+    # the reach whose run goes first, as one run of a plan goes at a time; a plan with no running reach has none
+    def oldest_running(self, plan_id: int) -> CheckpointReach | None:
+        return next((reach for reach in self.reaches(plan_id) if reach.state is CheckpointState.RUNNING), None)
+
     def status_lines(self, plan_id: int, windows: CheckpointWindows) -> tuple[str, ...]:
         newest = {reach.phase_id: reach for reach in self.reaches(plan_id)}
         return windows.status_lines(newest, self.passed_phase_ids(plan_id))

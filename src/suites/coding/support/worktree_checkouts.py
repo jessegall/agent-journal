@@ -6,6 +6,7 @@ from engine.journal.journal_home import JournalHome
 
 WORKTREES_FOLDER = Path(".journal") / "worktrees"
 WORKTREE_PATTERN = "*/*"
+WORKER_BRANCHES = "journal/{environment}/"
 
 
 class WorktreeCheckouts(ProjectCheckouts):

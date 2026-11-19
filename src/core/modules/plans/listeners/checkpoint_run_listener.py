@@ -1,12 +1,10 @@
-from engine.actor.actor import Actor
-from engine.command.bus import Bus
 from engine.event.created import Created
 from engine.event.logged_event import LoggedEvent
 from engine.event.moved import Moved
 from engine.listener.commit.commit_listener import CommitListener
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.lifecycles.checkpoint_lifecycle import CheckpointLifecycle
-from core.modules.plans.commands.start_checkpoint_run.start_checkpoint_run import StartCheckpointRun
+from core.modules.plans.support.checkpoint_run_start import CheckpointRunStart
 
 
 class CheckpointRunListener(CommitListener[Created[CheckpointReach] | Moved[CheckpointReach]]):
@@ -17,8 +15,8 @@ class CheckpointRunListener(CommitListener[Created[CheckpointReach] | Moved[Chec
     name = "plans.checkpoint-run-start"
     moves = [CheckpointLifecycle.passed, CheckpointLifecycle.failed]
 
-    def __init__(self, bus: Bus) -> None:
-        self.bus = bus
+    def __init__(self, starts: CheckpointRunStart) -> None:
+        self.starts = starts
 
     def handle(self, event: Created[CheckpointReach] | Moved[CheckpointReach], logged: LoggedEvent) -> None:
-        self.bus.run(StartCheckpointRun(event.row.plan_id), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+        self.starts.start(event.row.plan_id, event.row.environment_id, logged.id)

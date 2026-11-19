@@ -40,6 +40,7 @@ from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.name_worker_tests.name_worker_tests import NameWorkerTests
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
+from suites.coding.support.worktree_checkouts import WORKER_BRANCHES
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.commands.record_worktree_takeover.record_worktree_takeover import RecordWorktreeTakeover
@@ -106,7 +107,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             return self.takeover_launch(command, start, choice, environment, context)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
-        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program and AssignableTasks.has_open(tasks)), context)
+        taken = self.git.branches(environment.folder, WORKER_BRANCHES.format(environment=environment.name))
+        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, taken, command.new_agent_reason.strip(), choice.reason, command.starts_program and AssignableTasks.has_open(tasks)), context)
         try:
             start = self.git.start(environment.folder, opened.worktree, tuple(listed.id for listed in tasks))
             self.git.cut(environment.folder, opened.worktree, start.point)
