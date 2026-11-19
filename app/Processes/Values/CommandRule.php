@@ -11,6 +11,8 @@ use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ScopeType;
 use App\Processes\Enums\ToolType;
 use App\Processes\Exceptions\CommandRuleInvalid;
+use App\Processes\Stored\StoredExecutableBinding;
+use App\Processes\Stored\StoredRuleScope;
 
 /**
  * One declared behaviour of a program (doc 21 revision 3, sections 9 and 27): which program and subcommands it
@@ -126,14 +128,14 @@ final readonly class CommandRule implements StoredValue
     {
         return [
             'id' => $this->id,
-            'scope' => $this->scope->toArray(),
+            'scope' => StoredRuleScope::fromRuleScope($this->scope)->toArray(),
             'program' => $this->program->toArray(),
             'subcommands' => $this->subcommands,
             'arguments' => $this->arguments->toArray(),
             'classes' => $this->classes->toArray(),
             'purpose' => $this->purpose->value,
             'output_requirement' => $this->outputRequirement->value,
-            'binding' => $this->binding->toArray(),
+            'binding' => StoredExecutableBinding::fromBinding($this->binding)->toArray(),
             'revision' => $this->revision,
             'replaces' => array_map(fn (RuleReference $replaced): array => $replaced->toArray(), $this->replaces),
             'contracts' => array_map(fn (VerificationContract $item): array => $item->toArray(), $this->contracts),
@@ -147,14 +149,14 @@ final readonly class CommandRule implements StoredValue
     {
         return new self(
             $fields['id'],
-            RuleScope::fromArray($fields['scope']),
+            StoredRuleScope::from($fields['scope'])->toRuleScope(),
             ProgramSpellings::fromArray($fields['program']),
             $fields['subcommands'],
             ArgumentGrammar::fromArray($fields['arguments']),
             CommandClassSet::fromArray($fields['classes']),
             CommandType::from($fields['purpose']),
             OutputRequirement::from($fields['output_requirement']),
-            ExecutableBinding::fromArray($fields['binding']),
+            StoredExecutableBinding::from($fields['binding'])->toBinding(),
             $fields['revision'],
             array_values(array_map(RuleReference::fromArray(...), $fields['replaces'])),
             array_values(array_map(VerificationContract::fromArray(...), $fields['contracts'])),

@@ -32,22 +32,6 @@ final readonly class ExitPolicy
         return new self(array_values($branches));
     }
 
-    /**
-     * @return list<array{status: int, outcome: string, requires: string}>
-     */
-    public function toArray(): array
-    {
-        return array_map(fn (ExitBranch $branch): array => $branch->toArray(), $this->branches);
-    }
-
-    /**
-     * @param  list<array{status: int, outcome: string, requires: string}>  $branches
-     */
-    public static function fromArray(array $branches): self
-    {
-        return new self(array_map(ExitBranch::fromArray(...), $branches));
-    }
-
     public static function unproven(): self
     {
         return new self([]);
