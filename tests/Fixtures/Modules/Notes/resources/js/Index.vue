@@ -6,5 +6,9 @@ defineProps<{ data: { texts: string[] } }>();
 </script>
 
 <template>
-    <ul><li v-for="text in data.texts" :key="text">{{ text }}</li></ul>
+    <ul>
+        <template v-for="text in data.texts" :key="text">
+            <li>{{ text }}</li>
+        </template>
+    </ul>
 </template>
