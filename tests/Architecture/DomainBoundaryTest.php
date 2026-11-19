@@ -20,7 +20,8 @@ use Tests\TestCase;
  * The core uses no domain.
  * It does not see class names built at run time, class names read from config, relation chains
  * on untyped models, morph alias lookups, raw SQL text, where on tasks.id and select on tasks.*, Blade views,
- * the folders routes, config, bootstrap and database beyond the composition files and the root migrations rule, edits inside the listed
+ * the folders routes, config, bootstrap and database beyond the composition files and the root migrations rule, edits
+ * inside the listed
  * starter-kit files beyond their domain names, a received event re-raised through a copied variable or another
  * method, a query built in another file and passed in, and a string passed to ->dispatch() on an injected dispatcher.
  */

@@ -36,7 +36,9 @@ final class SkillCatalogueTest extends TestCase
     {
         $domainClasses = DomainRegistry::installedClasses(base_path());
         $registry = SkillRegistry::of(
-            DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner()),
+            DomainRegistry::from(
+                [...$domainClasses, CardsDomain::class, NotesDomain::class],
+            )->skillDeclarations(CoreSkills::owner()),
         );
         $entry = $this->catalogue($registry)->find(SkillKey::from('notes-writing'));
 
@@ -54,7 +56,9 @@ final class SkillCatalogueTest extends TestCase
         $this->expectExceptionMessage('Guide and Copy both declare the skill key journal-guide');
 
         $this->catalogue(
-            SkillRegistry::of([$this->guide('Guide', [GuideSkill::class]), $this->guide('Copy', [RenamedGuideSkill::class])]),
+            SkillRegistry::of(
+                [$this->guide('Guide', [GuideSkill::class]), $this->guide('Copy', [RenamedGuideSkill::class])],
+            ),
         );
     }
 
@@ -80,7 +84,9 @@ final class SkillCatalogueTest extends TestCase
         $this->expectExceptionMessage('Guide declares the skill key journal-guide, whose prefix it does not own');
 
         $this->catalogue(
-            SkillRegistry::of([new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [GuideSkill::class], false)]),
+            SkillRegistry::of(
+                [new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [GuideSkill::class], false)],
+            ),
         );
     }
 

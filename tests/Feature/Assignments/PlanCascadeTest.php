@@ -113,7 +113,12 @@ final class PlanCascadeTest extends TestCase
     public function test_a_task_that_vanished_from_a_phase_aborts_the_cascade(): void
     {
         PhaseTask::query()->insert(
-            ['id' => strtolower((string) Str::ulid()), 'phase_id' => $this->working->id, 'task_id' => TestIds::of(99999), 'position' => 2],
+            [
+                'id' => strtolower((string) Str::ulid()),
+                'phase_id' => $this->working->id,
+                'task_id' => TestIds::of(99999),
+                'position' => 2,
+            ],
         );
 
         $this->assertThrows(

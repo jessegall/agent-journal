@@ -31,7 +31,8 @@ enum RewriteSupport: string
     }
 
     /**
-     * A rewrite this program cannot take becomes a refusal on the stack from before the walk, so the rewrite's own pushes are dropped.
+     * A rewrite this program cannot take becomes a refusal on the stack from before the walk, so the rewrite's own
+     * pushes are dropped.
      */
     public function finalAnswer(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
     {

@@ -15,7 +15,8 @@ use Tests\TestCase;
 /**
  * Every class in an Events folder of Core, a domain or an installed module implements Core's Event marker, so what
  * happens is recognisable as an event (user message 2307); every class in a Listeners folder implements Listener and
- * every class in a Handlers folder implements CommandHandler (user message 3246), and neither marker is used outside its
+ * every class in a Handlers folder implements CommandHandler (user message 3246), and neither marker is used outside
+ * its
  * folder.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]

@@ -65,7 +65,10 @@ final class TextOwnerCommentTest extends TestCase
         $this->assertSame(['1', 4], [$this->text()->version($page)->id, $this->text()->version($page)->lineCount]);
         $this->assertSame(
             ['Plan'],
-            array_map(fn ($section) => $section->heading, $this->text()->sections($page, '1', 0, PageSize::from(null))->items),
+            array_map(
+                fn ($section) => $section->heading,
+                $this->text()->sections($page, '1', 0, PageSize::from(null))->items,
+            ),
         );
         $this->assertStringContainsString(
             'Second line.',

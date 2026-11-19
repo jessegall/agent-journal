@@ -40,7 +40,9 @@ final readonly class Refusal
         ];
 
         return Response::make(
-            Response::error(json_encode($structured, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)),
+            Response::error(
+                json_encode($structured, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            ),
         )
             ->withStructuredContent($structured);
     }

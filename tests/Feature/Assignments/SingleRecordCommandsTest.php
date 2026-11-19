@@ -58,21 +58,42 @@ final class SingleRecordCommandsTest extends TestCase
             'assign',
             [...$record, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id],
         )
-            ->assertOk()->assertJson(['changed' => 1, 'outcomes' => [['type' => 'changed', 'record' => ['holder' => ['type' => 'agent', 'id' => (string) $this->helper->agent->id]]]]]);
+            ->assertOk()->assertJson(
+                [
+                    'changed' => 1,
+                    'outcomes' => [
+                        ['type' => 'changed', 'record' => ['holder' => ['type' => 'agent', 'id' => (string) $this->helper->agent->id]]],
+                    ],
+                ],
+            );
         $shown = $this->callAs($this->main, 'show', $record)->assertOk();
         $first = (string) $shown->json('holder.reference');
 
         $this->callAs(
             $this->main,
             'reassign',
-            [...$record, 'assignment_id' => $first, 'holder_type' => 'agent', 'holder_id' => $this->helper->agent->id, 'recipient_type' => 'agent', 'recipient_id' => $this->main->agent->id],
+            [
+                ...$record,
+                'assignment_id' => $first,
+                'holder_type' => 'agent',
+                'holder_id' => $this->helper->agent->id,
+                'recipient_type' => 'agent',
+                'recipient_id' => $this->main->agent->id,
+            ],
         )
             ->assertOk()->assertJson(['changed' => 1]);
         $second = (string) $this->callAs($this->main, 'show', $record)->json('holder.reference');
         $this->callAs(
             $this->main,
             'reassign',
-            [...$record, 'assignment_id' => $second, 'holder_type' => 'agent', 'holder_id' => $this->main->agent->id, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id],
+            [
+                ...$record,
+                'assignment_id' => $second,
+                'holder_type' => 'agent',
+                'holder_id' => $this->main->agent->id,
+                'recipient_type' => 'agent',
+                'recipient_id' => $this->helper->agent->id,
+            ],
         )->assertOk();
 
         $this->callAs(
@@ -88,7 +109,12 @@ final class SingleRecordCommandsTest extends TestCase
         $this->callAs(
             $this->main,
             'assign',
-            [...$record, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id, 'agent' => $this->helper->agent->id],
+            [
+                ...$record,
+                'recipient_type' => 'agent',
+                'recipient_id' => $this->helper->agent->id,
+                'agent' => $this->helper->agent->id,
+            ],
         )->assertUnprocessable();
 
         $this->assertSame(1, AssignmentRecord::query()->withoutGlobalScopes()->count());
@@ -101,12 +127,24 @@ final class SingleRecordCommandsTest extends TestCase
 
         $this->actingAs($this->owner)->postJson(
             '/assignments/assign',
-            ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'user', 'recipientId' => $this->owner->id],
+            [
+                'recordType' => 'tasks.task',
+                'recordId' => $this->task->id,
+                'recipientType' => 'user',
+                'recipientId' => $this->owner->id,
+            ],
         )
-            ->assertOk()->assertJson(['outcomes' => [['record' => ['holder' => ['type' => 'user', 'id' => (string) $this->owner->id]]]]]);
+            ->assertOk()->assertJson(
+                ['outcomes' => [['record' => ['holder' => ['type' => 'user', 'id' => (string) $this->owner->id]]]]],
+            );
         $this->actingAs($this->owner)->postJson(
             '/assignments/assign',
-            ['recordType' => 'tasks.task', 'recordId' => $other->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id],
+            [
+                'recordType' => 'tasks.task',
+                'recordId' => $other->id,
+                'recipientType' => 'agent',
+                'recipientId' => $this->helper->agent->id,
+            ],
         )
             ->assertOk();
         $this->actingAs($this->owner)->getJson('/assignments/show?recordType=tasks.task&recordId='.$other->id)
@@ -120,7 +158,12 @@ final class SingleRecordCommandsTest extends TestCase
         $spare = Agent::named('Spare', 'read-only-helper');
         $this->actingAs($this->owner)->postJson(
             '/assignments/assign',
-            ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id],
+            [
+                'recordType' => 'tasks.task',
+                'recordId' => $this->task->id,
+                'recipientType' => 'agent',
+                'recipientId' => $this->helper->agent->id,
+            ],
         )->assertOk();
 
         $this->signed(
@@ -148,14 +191,24 @@ final class SingleRecordCommandsTest extends TestCase
 
         $this->artisan(
             'assignment:assign',
-            ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->helper->agent->id}", '--json' => true],
+            [
+                'type' => 'tasks.task',
+                'id' => $this->task->id,
+                '--to' => "agent:{$this->helper->agent->id}",
+                '--json' => true,
+            ],
         )
             ->expectsOutputToContain('"changed":1')->assertExitCode(0);
         $this->artisan('assignment:show', ['type' => 'tasks.task', 'id' => $this->task->id, '--json' => true])
             ->expectsOutputToContain('"reference"')->assertExitCode(0);
         $this->artisan(
             'assignment:unassign',
-            ['type' => 'tasks.task', 'id' => $this->task->id, '--assignment' => TestIds::of(999999), '--holder' => "agent:{$this->helper->agent->id}"],
+            [
+                'type' => 'tasks.task',
+                'id' => $this->task->id,
+                '--assignment' => TestIds::of(999999),
+                '--holder' => "agent:{$this->helper->agent->id}",
+            ],
         )
             ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
         $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => 'somebody'])

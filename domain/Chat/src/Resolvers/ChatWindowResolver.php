@@ -44,14 +44,19 @@ final readonly class ChatWindowResolver implements PageResolver
         $sessions = $this->sessions->active();
         $chosen = $this->request->chosenSession()->flatMap(
             fn (string $sessionId) => Option::fromArraysValue(
-                array_values(array_filter($sessions, fn (SessionOption $session) => $session->sessionId === $sessionId)),
+                array_values(
+                    array_filter($sessions, fn (SessionOption $session) => $session->sessionId === $sessionId),
+                ),
                 0,
             ),
         );
 
         return ChatData::from([
             'sessions' => array_map(
-                fn (SessionOption $session) => ['id' => (string) $session->sessionId, 'agentName' => $session->agentName],
+                fn (SessionOption $session) => [
+                    'id' => (string) $session->sessionId,
+                    'agentName' => $session->agentName,
+                ],
                 $sessions,
             ),
             'conversation' => $chosen->map($this->conversationIn(...))->getOrElse(Optional::create()),

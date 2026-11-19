@@ -34,7 +34,22 @@ final class ShellLexerTest extends TestCase
         $line = $this->lex('git log | grep fix && wc -l > out.log 2>&1; true');
 
         $this->assertSame(
-            [TokenType::Word, TokenType::Word, TokenType::Pipe, TokenType::Word, TokenType::Word, TokenType::AndIf, TokenType::Word, TokenType::Word, TokenType::Redirect, TokenType::Word, TokenType::Redirect, TokenType::Word, TokenType::Semicolon, TokenType::Word],
+            [
+                TokenType::Word,
+                TokenType::Word,
+                TokenType::Pipe,
+                TokenType::Word,
+                TokenType::Word,
+                TokenType::AndIf,
+                TokenType::Word,
+                TokenType::Word,
+                TokenType::Redirect,
+                TokenType::Word,
+                TokenType::Redirect,
+                TokenType::Word,
+                TokenType::Semicolon,
+                TokenType::Word,
+            ],
             $this->types($line),
         );
         $this->assertSame(RedirectType::Output, $line->tokens[8]->redirect);

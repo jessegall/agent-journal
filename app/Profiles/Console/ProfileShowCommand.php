@@ -32,7 +32,10 @@ final class ProfileShowCommand extends Command
         $this->line("Model: {$revision->model}");
         $this->line('Skill allowlist: '.$this->allowlist($revision->skill_allowlist));
         $this->line(
-            'Required skills: '.($revision->required_skills === [] ? 'none' : implode(', ', $revision->required_skills)),
+            'Required skills: '.($revision->required_skills === [] ? 'none' : implode(
+                ', ',
+                $revision->required_skills,
+            )),
         );
         $this->line('Instructions:');
         $this->line($revision->instructions);

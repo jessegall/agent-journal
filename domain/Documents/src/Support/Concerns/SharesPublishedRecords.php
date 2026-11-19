@@ -83,7 +83,10 @@ trait SharesPublishedRecords
     private function publishedCards(array $records, ShareBudget $budget): array
     {
         $ids = array_values(
-            array_map(fn (RecordIdentity $record) => $record->id, array_filter($records, fn (RecordIdentity $record) => $record->type === $this->linkType())),
+            array_map(
+                fn (RecordIdentity $record) => $record->id,
+                array_filter($records, fn (RecordIdentity $record) => $record->type === $this->linkType()),
+            ),
         );
         $cards = $ids === [] ? [] : $this->cardsOf($ids);
 

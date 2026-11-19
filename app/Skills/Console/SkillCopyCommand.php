@@ -31,7 +31,9 @@ final class SkillCopyCommand extends Command
             $console->actAsOwner();
 
             return $console->savedLines(
-                $commands->run(new CopySkill((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId)),
+                $commands->run(
+                    new CopySkill((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId),
+                ),
             );
         });
     }

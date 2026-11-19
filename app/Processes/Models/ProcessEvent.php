@@ -59,7 +59,12 @@ final class ProcessEvent extends Model implements ReadableModel
         $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
 
         return self::query()->create(
-            ['process_run_id' => $run->id, 'sequence' => $next, 'type' => self::OPERATIONAL_ERROR, 'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $payload]],
+            [
+                'process_run_id' => $run->id,
+                'sequence' => $next,
+                'type' => self::OPERATIONAL_ERROR,
+                'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $payload],
+            ],
         );
     }
 

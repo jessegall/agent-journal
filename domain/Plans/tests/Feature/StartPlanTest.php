@@ -56,7 +56,9 @@ final class StartPlanTest extends TestCase
         Event::assertDispatchedTimes(PlanStarted::class, 1);
         Event::assertDispatched(
             PlanStarted::class,
-            fn (PlanStarted $event) => $event->planId === $this->plan->id && $event->startedBy->type === ActorType::User,
+            fn (
+                PlanStarted $event,
+            ) => $event->planId === $this->plan->id && $event->startedBy->type === ActorType::User,
         );
     }
 

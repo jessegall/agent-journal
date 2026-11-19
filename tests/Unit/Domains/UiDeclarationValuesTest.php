@@ -42,7 +42,10 @@ final class UiDeclarationValuesTest extends TestCase
             ->loadingAs(PageSkeleton::Reader)
             ->onHome(20)
             ->floating(FloatSize::of(400, 500))
-            ->options(ToggleOption::make('wide', 'Wide'), ChoiceOption::make('sort', 'Sort', ['new' => 'Newest', 'old' => 'Oldest'], 'new'))
+            ->options(
+                ToggleOption::make('wide', 'Wide'),
+                ChoiceOption::make('sort', 'Sort', ['new' => 'Newest', 'old' => 'Oldest'], 'new'),
+            )
             ->slots(Slot::record('inspector', 'plan'))
             ->actions(ActionRoute::post('start', LooseResolver::class, 'start'));
 

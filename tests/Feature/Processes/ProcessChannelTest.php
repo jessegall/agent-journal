@@ -70,7 +70,10 @@ final class ProcessChannelTest extends TestCase
         );
         $this->assertSame(
             0,
-            ProcessEvent::query()->where('process_run_id', $run->id)->where('type', ProcessEvent::OPERATIONAL_ERROR)->count(),
+            ProcessEvent::query()->where('process_run_id', $run->id)->where(
+                'type',
+                ProcessEvent::OPERATIONAL_ERROR,
+            )->count(),
         );
     }
 

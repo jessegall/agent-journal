@@ -135,7 +135,12 @@ final class ShareEntriesTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview($this->document->shareIdentity()->type, $this->document->id, [], $this->configuration->id),
+            new SaveSharePreview(
+                $this->document->shareIdentity()->type,
+                $this->document->id,
+                [],
+                $this->configuration->id,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->clear();
         $preview = SharePreview::query()->sole();

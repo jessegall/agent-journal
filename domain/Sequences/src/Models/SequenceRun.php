@@ -20,7 +20,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One run of a sequence: its steps, the step it is on and whether it still runs. The agent and session following it are set by starting it.
+ * One run of a sequence: its steps, the step it is on and whether it still runs. The agent and session following it are
+ * set by starting it.
  * Only the agent following it reads it.
  *
  * @property string $id

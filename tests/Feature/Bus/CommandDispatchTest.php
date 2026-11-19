@@ -47,7 +47,11 @@ final class CommandDispatchTest extends CommandBusTestCase
 
         Log::shouldHaveReceived('info')->with(
             'Command WriteNote done',
-            Mockery::on(fn (array $context): bool => $context['queries_run'] > 0 && isset($context['models_loaded']) && ! isset($context['milliseconds'])),
+            Mockery::on(
+                fn (array $context): bool => $context['queries_run'] > 0 && isset(
+                    $context['models_loaded'],
+                ) && ! isset($context['milliseconds']),
+            ),
         )->once();
     }
 

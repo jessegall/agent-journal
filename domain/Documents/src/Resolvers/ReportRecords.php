@@ -32,7 +32,11 @@ final readonly class ReportRecords implements ReportResolver
         $size = $filters->pageSize()->rows;
         $reports = Report::query()->sharedPublished()->inAttention($filters->attention->state())
             ->when($filters->searches(), fn (Builder $query) => $query->matchingText($filters->query))
-            ->when($filters->after !== '', fn (Builder $query) => $query->where('id', '<', $filters->after), fn (Builder $query) => $query->offset(($filters->page - 1) * $size))
+            ->when(
+                $filters->after !== '',
+                fn (Builder $query) => $query->where('id', '<', $filters->after),
+                fn (Builder $query) => $query->offset(($filters->page - 1) * $size),
+            )
             ->orderByDesc('id')
             ->limit($size + 1)
             ->get();
@@ -40,7 +44,9 @@ final readonly class ReportRecords implements ReportResolver
 
         return ReportList::from([
             'rows' => array_values(
-                $page->map(fn (Report $report) => $filters->searches() ? $report->hit($filters->query) : $report->card())->all(),
+                $page->map(
+                    fn (Report $report) => $filters->searches() ? $report->hit($filters->query) : $report->card(),
+                )->all(),
             ),
             'page' => $filters->page,
             'hasNextPage' => $reports->count() > $size,

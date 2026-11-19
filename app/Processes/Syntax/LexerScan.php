@@ -208,7 +208,18 @@ final class LexerScan
 
         return $last === null || in_array(
             $last->type,
-            [TokenType::Newline, TokenType::Semicolon, TokenType::Background, TokenType::AndIf, TokenType::OrIf, TokenType::Pipe, TokenType::PipeBoth, TokenType::Bang, TokenType::OpenParen, TokenType::OpenBrace],
+            [
+                TokenType::Newline,
+                TokenType::Semicolon,
+                TokenType::Background,
+                TokenType::AndIf,
+                TokenType::OrIf,
+                TokenType::Pipe,
+                TokenType::PipeBoth,
+                TokenType::Bang,
+                TokenType::OpenParen,
+                TokenType::OpenBrace,
+            ],
             true,
         );
     }
@@ -330,7 +341,11 @@ final class LexerScan
         $this->position += min(2, strlen($this->source) - $this->position);
         $word->add(
             $escapeStart,
-            new WordSegment(WordSegmentType::Escaped, substr($this->source, $escapeStart + 1, $this->position - $escapeStart - 1), new SourceRange($escapeStart, $this->position)),
+            new WordSegment(
+                WordSegmentType::Escaped,
+                substr($this->source, $escapeStart + 1, $this->position - $escapeStart - 1),
+                new SourceRange($escapeStart, $this->position),
+            ),
         );
     }
 
@@ -371,7 +386,8 @@ final class LexerScan
     }
 
     /**
-     * Reads [[ ... ]] up to its closing ]] as one literal word: inside it, && || < > and parentheses belong to the test,
+     * Reads [[ ... ]] up to its closing ]] as one literal word: inside it, && || < > and parentheses belong to the
+     * test,
      * not to the shell.
      *
      * @throws ShellLineUnreadable
@@ -880,7 +896,8 @@ final class LexerScan
     }
 
     /**
-     * The $(...) and backtick substitutions in an unquoted here-document body; its ordinary lines are only text. It runs
+     * The $(...) and backtick substitutions in an unquoted here-document body; its ordinary lines are only text. It
+     * runs
      * on a scan of its own, so the scan that found the body keeps its place.
      */
     private function substitutionsIn(SourceRange $body): Word

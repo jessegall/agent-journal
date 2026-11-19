@@ -109,7 +109,10 @@ final class ShareMember extends Model implements ReadableModel
     public static function approvedLinkIdsOf(Share $share): array
     {
         return array_values(
-            array_map(strval(...), self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all()),
+            array_map(
+                strval(...),
+                self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all(),
+            ),
         );
     }
 

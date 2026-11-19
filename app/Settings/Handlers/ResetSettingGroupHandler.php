@@ -11,7 +11,8 @@ use App\Settings\Support\SettingTargets;
 use App\Settings\Values\SettingsChange;
 
 /**
- * Removes a group's stored switch after checking who asks and that the group can be switched, so it follows its default.
+ * Removes a group's stored switch after checking who asks and that the group can be switched, so it follows its
+ * default.
  */
 final readonly class ResetSettingGroupHandler implements CommandHandler
 {

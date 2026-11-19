@@ -198,7 +198,12 @@ final class HookLaunchTest extends TestCase
     {
         return $this->as($launched, function () use ($launched, $callId): string {
             $stop = new StopRequested(
-                new HookIdentity($launched->session->agent_id, $launched->session->id, $callId, hash('sha256', $callId)),
+                new HookIdentity(
+                    $launched->session->agent_id,
+                    $launched->session->id,
+                    $callId,
+                    hash('sha256', $callId),
+                ),
                 new StopDetails('turn-1', false),
             );
             $capabilities = new ProgramCapabilities(

@@ -178,7 +178,9 @@ final readonly class MarkdownText
     public function outlineWithLines(): array
     {
         return array_map(
-            fn (Section $section) => "{$section->number} {$section->heading} (lines {$section->firstLine}-{$section->lastLine})",
+            fn (
+                Section $section,
+            ) => "{$section->number} {$section->heading} (lines {$section->firstLine}-{$section->lastLine})",
             $this->sections,
         );
     }

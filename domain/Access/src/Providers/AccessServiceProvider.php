@@ -45,7 +45,9 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
-        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => new ReflectionClass(AccessSettings::class)->newLazyGhost(function (
+        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => new ReflectionClass(
+            AccessSettings::class,
+        )->newLazyGhost(function (
             AccessSettings $settings,
         ): void {
             $ownerEmail = $this->app->make('config')->get('access.owner_email');

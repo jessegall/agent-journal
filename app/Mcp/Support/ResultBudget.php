@@ -47,7 +47,14 @@ final readonly class ResultBudget
         $structured = $result->structuredContent();
         $text = json_encode($structured, self::JSON_FLAGS);
         $resultBytes = strlen(
-            json_encode(['content' => [['type' => 'text', 'text' => $text]], 'isError' => false, 'structuredContent' => $structured], self::JSON_FLAGS),
+            json_encode(
+                [
+                    'content' => [['type' => 'text', 'text' => $text]],
+                    'isError' => false,
+                    'structuredContent' => $structured,
+                ],
+                self::JSON_FLAGS,
+            ),
         );
 
         if ($resultBytes > self::RESULT_BYTES) {

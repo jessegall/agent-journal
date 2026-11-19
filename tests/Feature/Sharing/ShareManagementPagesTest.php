@@ -110,14 +110,17 @@ final class ShareManagementPagesTest extends TestCase
         $detail = $this->actingAs($this->owner)->get(
             "/sharing/shares/{$share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->component('sharing/ShareWindow')
-                    ->where('page.data.members.0.targetId', $this->document->id)
-                    ->where('page.data.mayReveal', true));
+            ->component('sharing/ShareWindow')
+            ->where('page.data.members.0.targetId', $this->document->id)
+            ->where('page.data.mayReveal', true));
         $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) $detail->getContent());
 
         $this->actingAs($this->owner)->postJson("/sharing/shares/{$share->id}/link")
             ->assertOk()
-            ->assertJsonPath('url', FakeShareGateway::PUBLIC_ORIGIN.'/s/'.Share::query()->findOrFail($share->id)->token_ciphertext);
+            ->assertJsonPath(
+                'url',
+                FakeShareGateway::PUBLIC_ORIGIN.'/s/'.Share::query()->findOrFail($share->id)->token_ciphertext,
+            );
     }
 
     public function test_a_write_without_an_idempotency_key_is_refused(): void
@@ -126,7 +129,10 @@ final class ShareManagementPagesTest extends TestCase
         $preview = SharePreview::query()->sole();
 
         $this->actingAs($this->owner)
-            ->postJson($this->rootPath().'/shares', ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum])
+            ->postJson(
+                $this->rootPath().'/shares',
+                ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum],
+            )
             ->assertUnprocessable()
             ->assertJsonValidationErrors('idempotency_key');
         $this->assertSame(0, Share::query()->count());
@@ -199,14 +205,17 @@ final class ShareManagementPagesTest extends TestCase
             ->where('page.data.rows.0.id', $share->id));
         $first = $this->actingAs($this->owner)->get('/sharing?state=proposed')->assertOk();
         $first->assertInertia(
-            fn (AssertableInertia $page) => $page->has('page.data.rows', 25)->whereType('page.data.nextAfter', 'string'),
+            fn (AssertableInertia $page) => $page->has('page.data.rows', 25)->whereType(
+                'page.data.nextAfter',
+                'string',
+            ),
         );
         $after = $first->viewData('page')['props']['page']['data']['nextAfter'];
         $this->actingAs($this->owner)->get(
             "/sharing?state=proposed&after={$after}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->has('page.data.rows', 1)
-                    ->where('page.data.nextAfter', null));
+            ->has('page.data.rows', 1)
+            ->where('page.data.nextAfter', null));
     }
 
     public function test_another_user_sees_no_share_and_changes_nothing(): void
@@ -218,7 +227,11 @@ final class ShareManagementPagesTest extends TestCase
         $this->assertFalse($this->actingAs($other)->get("/sharing/shares/{$share->id}")->isOk());
         $this->assertFalse($this->actingAs($other)->postJson("/sharing/shares/{$share->id}/link")->isOk());
         $this->assertFalse(
-            $this->actingAs($other)->deleteJson("/sharing/shares/{$share->id}", [], ['Idempotency-Key' => '01JD8X0G9M3QZ6V4K2OTHER001'])->isSuccessful(),
+            $this->actingAs($other)->deleteJson(
+                "/sharing/shares/{$share->id}",
+                [],
+                ['Idempotency-Key' => '01JD8X0G9M3QZ6V4K2OTHER001'],
+            )->isSuccessful(),
         );
         $this->assertSame(ShareState::Pending, Share::query()->findOrFail($share->id)->state);
     }

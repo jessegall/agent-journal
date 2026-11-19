@@ -66,7 +66,9 @@ final class SharingValuesTest extends TestCase
         $this->assertSame([], ShareRelationSet::none()->relations);
         $this->assertEquals(
             [$comments, $records],
-            ShareRelationSet::owned('comments', 'share-comment')->with(ShareRelationSet::linked('records', 'share-linked-record'))->relations,
+            ShareRelationSet::owned('comments', 'share-comment')->with(
+                ShareRelationSet::linked('records', 'share-linked-record'),
+            )->relations,
         );
     }
 
@@ -102,7 +104,10 @@ final class SharingValuesTest extends TestCase
     public function test_every_sharing_value_fits_the_bus_grammar(string $class): void
     {
         $grammar = new CommandGrammar(
-            static fn (string $name): bool => str_starts_with($name, 'App\\Sharing\\') || $name === RecordIdentity::class,
+            static fn (string $name): bool => str_starts_with(
+                $name,
+                'App\\Sharing\\',
+            ) || $name === RecordIdentity::class,
         );
 
         $this->assertNull($grammar->problemWithProperties($class));

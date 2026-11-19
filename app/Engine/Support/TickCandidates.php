@@ -24,7 +24,8 @@ use PhpOption\Some;
 /**
  * Selects the ticking frames of a pass: open stacks that hold one, in stack and frame order from where the last pass
  * stopped, up to a limit, and restores only their ticking states, at most 100 references per type per read. Finished
- * frames and the frames of a switched-off type are skipped and stay stored. The scan progress lives as long as the engine process.
+ * frames and the frames of a switched-off type are skipped and stay stored. The scan progress lives as long as the
+ * engine process.
  */
 final class TickCandidates
 {

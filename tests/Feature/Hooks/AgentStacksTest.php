@@ -64,7 +64,12 @@ final class AgentStacksTest extends TestCase
         $this->target = TestActors::stack(1, 10);
         $this->app->instance(
             AgentContext::class,
-            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+            new AgentContext(
+                TestIds::of(1),
+                TestIds::of(10),
+                new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
+                null,
+            ),
         );
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         Event::listen(
@@ -178,7 +183,12 @@ final class AgentStacksTest extends TestCase
 
         $this->assertSame(
             [null, '42', '43'],
-            array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null, $this->storedFrames()),
+            array_map(
+                fn (
+                    FrameRecord $frame,
+                ) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null,
+                $this->storedFrames(),
+            ),
         );
     }
 
@@ -240,7 +250,10 @@ final class AgentStacksTest extends TestCase
         $this->createStack();
 
         $this->transaction()->run(
-            fn () => $this->stacks()->push($this->target, new StateReference('plans.working', new SubjectReference(TestIds::of(999), 1))),
+            fn () => $this->stacks()->push(
+                $this->target,
+                new StateReference('plans.working', new SubjectReference(TestIds::of(999), 1)),
+            ),
         );
 
         $this->assertSame(

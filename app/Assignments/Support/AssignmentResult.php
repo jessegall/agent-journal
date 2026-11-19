@@ -58,7 +58,9 @@ final readonly class AssignmentResult
     public function currentAssignments(): AssignmentSet
     {
         return new AssignmentSet(
-            array_values(array_filter(array_map(fn (AssignmentOutcome $outcome) => $outcome->current, $this->outcomes))),
+            array_values(
+                array_filter(array_map(fn (AssignmentOutcome $outcome) => $outcome->current, $this->outcomes)),
+            ),
         );
     }
 }

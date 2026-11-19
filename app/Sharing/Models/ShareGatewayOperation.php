@@ -206,7 +206,11 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     protected function claimable(Builder $query): void
     {
         $query->unfinished()->where(
-            fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere('lease_ends_at', '<=', CarbonImmutable::now()),
+            fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere(
+                'lease_ends_at',
+                '<=',
+                CarbonImmutable::now(),
+            ),
         );
     }
 

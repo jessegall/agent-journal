@@ -73,7 +73,12 @@ final class SessionSkillsTest extends TestCase
 
         $this->artisan(
             'skill:make',
-            ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n", '--ability' => [AssignmentPolicy::class.':dispatch']],
+            [
+                'key' => 'user-probe',
+                '--description' => 'A probe skill',
+                '--body' => "# Probe\n\nProbe text.\n",
+                '--ability' => [AssignmentPolicy::class.':dispatch'],
+            ],
         )
             ->assertSuccessful();
         $reminders = $this->boundary($session);

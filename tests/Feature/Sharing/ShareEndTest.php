@@ -191,7 +191,9 @@ final class ShareEndTest extends TestCase
     private function auditTypes(): array
     {
         return array_values(
-            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(fn (ShareAudit $audit) => $audit->type)->all(),
+            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(
+                fn (ShareAudit $audit) => $audit->type,
+            )->all(),
         );
     }
 }

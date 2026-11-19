@@ -64,7 +64,10 @@ final readonly class PackageScripts
         }
 
         return [
-            new ScriptBody(new ScriptBinding($file, $name, hash('sha256', json_encode($lines, JSON_THROW_ON_ERROR))), $lines),
+            new ScriptBody(
+                new ScriptBinding($file, $name, hash('sha256', json_encode($lines, JSON_THROW_ON_ERROR))),
+                $lines,
+            ),
         ];
     }
 

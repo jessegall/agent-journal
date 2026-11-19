@@ -10,7 +10,8 @@ use App\Bus\Support\CommandCall;
 use Closure;
 
 /**
- * Refuses after the handler has returned, inside the transaction, so everything the command wrote rolls back (story 37).
+ * Refuses after the handler has returned, inside the transaction, so everything the command wrote rolls back (story
+ * 37).
  */
 final readonly class RefusesAfterRetirement implements CommandMiddleware
 {

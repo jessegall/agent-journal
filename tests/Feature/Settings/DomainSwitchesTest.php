@@ -83,7 +83,9 @@ final class DomainSwitchesTest extends TestCase
         $this->app->forgetScopedInstances();
         $this->assertInstanceOf(
             DisabledSettingsGroup::class,
-            $this->app->make(SettingsResolver::class)->group($this->app->make(DomainSwitches::class)->of('Plans')->get()),
+            $this->app->make(SettingsResolver::class)->group(
+                $this->app->make(DomainSwitches::class)->of('Plans')->get(),
+            ),
         );
     }
 

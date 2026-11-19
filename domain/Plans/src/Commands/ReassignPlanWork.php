@@ -20,7 +20,8 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 
 /**
- * Moves a plan or phase and its unfinished work from the holder the caller saw to another, in one repeatable-read transaction.
+ * Moves a plan or phase and its unfinished work from the holder the caller saw to another, in one repeatable-read
+ * transaction.
  *
  * @extends Command<AssignmentResult>
  */

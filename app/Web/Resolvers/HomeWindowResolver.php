@@ -30,7 +30,10 @@ final readonly class HomeWindowResolver implements PageResolver
         );
         usort(
             $windows,
-            fn (RegisteredPage $one, RegisteredPage $other) => [$one->page->homePosition, $one->key] <=> [$other->page->homePosition, $other->key],
+            fn (
+                RegisteredPage $one,
+                RegisteredPage $other,
+            ) => [$one->page->homePosition, $one->key] <=> [$other->page->homePosition, $other->key],
         );
         $owners = array_count_values(array_map(fn (RegisteredPage $page) => $page->owner->key, $windows));
 

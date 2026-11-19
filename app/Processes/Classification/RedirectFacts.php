@@ -70,12 +70,22 @@ final readonly class RedirectFacts
         }
         if (str_starts_with($endpoint, '/dev/tcp/') || str_starts_with($endpoint, '/dev/udp/')) {
             return [
-                new ClassFact(CommandClass::Network, $node->id, new SyntaxOrigin('redirect'), "The redirect to {$endpoint} opens a network connection."),
+                new ClassFact(
+                    CommandClass::Network,
+                    $node->id,
+                    new SyntaxOrigin('redirect'),
+                    "The redirect to {$endpoint} opens a network connection.",
+                ),
             ];
         }
 
         return array_map(
-            fn (CommandClass $class) => new ClassFact($class, $node->id, new SyntaxOrigin('redirect'), "The {$redirect->type->value} redirect uses {$endpoint}."),
+            fn (CommandClass $class) => new ClassFact(
+                $class,
+                $node->id,
+                new SyntaxOrigin('redirect'),
+                "The {$redirect->type->value} redirect uses {$endpoint}.",
+            ),
             $this->classesOf($redirect->type),
         );
     }

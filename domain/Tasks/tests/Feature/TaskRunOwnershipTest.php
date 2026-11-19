@@ -172,7 +172,12 @@ final class TaskRunOwnershipTest extends TestCase
         $agent = $session->agent()->firstOrFail();
         $this->app->instance(
             AgentContext::class,
-            new AgentContext($agent->id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null),
+            new AgentContext(
+                $agent->id,
+                $session->id,
+                new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'),
+                null,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),

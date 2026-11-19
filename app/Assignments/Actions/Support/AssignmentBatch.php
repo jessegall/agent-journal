@@ -113,7 +113,13 @@ final readonly class AssignmentBatch
     public function skip(RecordIdentity $record): AssignmentResult
     {
         return new AssignmentResult(
-            [new AssignmentOutcome($record, $this->store->lockCurrent($record)->getOrElse(null), AssignmentOutcomeType::SkippedFinished)],
+            [
+                new AssignmentOutcome(
+                    $record,
+                    $this->store->lockCurrent($record)->getOrElse(null),
+                    AssignmentOutcomeType::SkippedFinished,
+                ),
+            ],
             [],
         );
     }

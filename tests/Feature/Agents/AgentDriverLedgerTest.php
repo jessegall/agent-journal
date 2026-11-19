@@ -118,7 +118,16 @@ final class AgentDriverLedgerTest extends TestCase
         $this->expectExceptionMessage('/elsewhere');
 
         $this->asOwner(
-            new OpenAgentRuntime($this->agent()->id, $host->hostId, '/elsewhere', 'claude-code', '2.1.323', 'claude', DriverType::Process, 'claude-opus-5-5'),
+            new OpenAgentRuntime(
+                $this->agent()->id,
+                $host->hostId,
+                '/elsewhere',
+                'claude-code',
+                '2.1.323',
+                'claude',
+                DriverType::Process,
+                'claude-opus-5-5',
+            ),
         );
     }
 
@@ -330,7 +339,13 @@ final class AgentDriverLedgerTest extends TestCase
 
         try {
             $this->asSystem(
-                new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 1),
+                new ReportRuntimeActivity(
+                    $host->hostId,
+                    $opened->runtimeId,
+                    RuntimeActivity::Idle,
+                    HoldReason::None,
+                    1,
+                ),
             );
             $this->fail('A stale report was applied.');
         } catch (HostReportRefused) {
@@ -749,7 +764,15 @@ final class AgentDriverLedgerTest extends TestCase
 
         $attempt = $request->attempt_version;
         $this->asSystem(
-            new ReportRequestProgress($host->hostId, $request->id, $attempt, RequestProgress::Applying, null, null, $progress),
+            new ReportRequestProgress(
+                $host->hostId,
+                $request->id,
+                $attempt,
+                RequestProgress::Applying,
+                null,
+                null,
+                $progress,
+            ),
         );
 
         $request->refresh();
@@ -765,7 +788,17 @@ final class AgentDriverLedgerTest extends TestCase
     {
         $host = $this->enrollHost();
         $opened = $this->asOwner(
-            new OpenAgentRuntime($this->agent()->id, $host->hostId, self::FOLDER, 'claude-code', '2.1.323', 'claude', DriverType::Process, 'claude-opus-5-5', firstMessage: $firstMessage),
+            new OpenAgentRuntime(
+                $this->agent()->id,
+                $host->hostId,
+                self::FOLDER,
+                'claude-code',
+                '2.1.323',
+                'claude',
+                DriverType::Process,
+                'claude-opus-5-5',
+                firstMessage: $firstMessage,
+            ),
         );
 
         return [$host, $opened];

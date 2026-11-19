@@ -95,7 +95,10 @@ final class ShareScopeTest extends TestCase
             UnknownShareRecordType::class,
         );
         $this->assertThrows(
-            fn () => $this->scope()->discover(new RecordIdentity('binders.binder', BinderShareProvider::HIDDEN_ROOT_ID), $this->budget()),
+            fn () => $this->scope()->discover(
+                new RecordIdentity('binders.binder', BinderShareProvider::HIDDEN_ROOT_ID),
+                $this->budget(),
+            ),
             RecordUnavailable::class,
         );
     }

@@ -141,7 +141,14 @@ final class ShareProposalTest extends TestCase
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2PROPOSE2');
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new CreateShare(TestIds::of(1), str_repeat('0', 64), ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2PROPOSE2')),
+            fn () => $this->app->make(CommandBus::class)->run(
+                new CreateShare(
+                    TestIds::of(1),
+                    str_repeat('0', 64),
+                    ShareDuration::STANDARD_MINUTES,
+                    '01JD8X0G9M3QZ6V4K2PROPOSE2',
+                ),
+            ),
             ActorNotAllowed::class,
         );
         $this->assertSame(0, Share::query()->count());
@@ -157,7 +164,13 @@ final class ShareProposalTest extends TestCase
         $saved = $this->preview();
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2APPROVE1');
         $summary = $this->app->make(CommandBus::class)->run(
-            new ApproveShareRequest($proposal->id, $saved->previewId, $saved->checksum, 60, '01JD8X0G9M3QZ6V4K2APPROVE1'),
+            new ApproveShareRequest(
+                $proposal->id,
+                $saved->previewId,
+                $saved->checksum,
+                60,
+                '01JD8X0G9M3QZ6V4K2APPROVE1',
+            ),
         );
         $granted = Share::query()->findOrFail($proposal->id);
 
@@ -175,7 +188,9 @@ final class ShareProposalTest extends TestCase
             ShareGatewayOperation::query()->readAll('one operation')->sole()->type,
         );
         $this->assertTrue(
-            ShareAudit::query()->readAll('two audits')->get()->contains(fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved),
+            ShareAudit::query()->readAll('two audits')->get()->contains(
+                fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved,
+            ),
         );
 
         $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);

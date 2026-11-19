@@ -412,7 +412,8 @@ final readonly class DomainEntry
     }
 
     /**
-     * The record types this domain lets actors hold, each with its provider; none when it declares no ProvidesAssignables.
+     * The record types this domain lets actors hold, each with its provider; none when it declares no
+     * ProvidesAssignables.
      *
      * @return array<string, class-string<AssignableProvider>>
      */

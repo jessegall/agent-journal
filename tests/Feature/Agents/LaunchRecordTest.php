@@ -40,10 +40,43 @@ final class LaunchRecordTest extends TestCase
     public function test_both_tables_have_the_selection_and_request_columns(): void
     {
         $this->assertTrue(
-            Schema::hasColumns('agent_sessions', ['model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'launch_request_id']),
+            Schema::hasColumns(
+                'agent_sessions',
+                [
+                    'model',
+                    'requested_model_type',
+                    'requested_model',
+                    'program_source',
+                    'profile_key',
+                    'profile_revision',
+                    'launch_request_id',
+                ],
+            ),
         );
         $this->assertTrue(
-            Schema::hasColumns('launch_records', ['request_id', 'agent_id', 'actor_type', 'actor_id', 'program', 'model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'origin_type', 'owner_reference', 'context_reference', 'conversation_mode', 'payload_digest', 'disposition', 'session_id']),
+            Schema::hasColumns(
+                'launch_records',
+                [
+                    'request_id',
+                    'agent_id',
+                    'actor_type',
+                    'actor_id',
+                    'program',
+                    'model',
+                    'requested_model_type',
+                    'requested_model',
+                    'program_source',
+                    'profile_key',
+                    'profile_revision',
+                    'origin_type',
+                    'owner_reference',
+                    'context_reference',
+                    'conversation_mode',
+                    'payload_digest',
+                    'disposition',
+                    'session_id',
+                ],
+            ),
         );
     }
 
@@ -69,7 +102,12 @@ final class LaunchRecordTest extends TestCase
         );
         $this->assertSame(
             [HookProgram::ClaudeCode, 'claude-sonnet-5-5', 'journal-researcher', 4],
-            [$session->selection()->program, $session->selection()->model, $session->selection()->source->profileKey, $session->selection()->source->profileRevision],
+            [
+                $session->selection()->program,
+                $session->selection()->model,
+                $session->selection()->source->profileKey,
+                $session->selection()->source->profileRevision,
+            ],
         );
         $this->assertSame(ModelSelectionType::ProfileDefault, $session->selection()->requested->type);
     }

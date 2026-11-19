@@ -7,7 +7,8 @@ namespace App\Engine\Contracts;
 use App\Engine\Events\EngineTicked;
 
 /**
- * Periodic work on each engine pass: small bounded reads and its own engine maintenance commands, inside the one maintenance
+ * Periodic work on each engine pass: small bounded reads and its own engine maintenance commands, inside the one
+ * maintenance
  * scope it declares. The engine calls it each pass; it is not an event listener and sits in no Listeners folder.
  */
 interface EngineListener

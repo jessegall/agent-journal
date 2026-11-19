@@ -166,7 +166,13 @@ final class HookIdentityTest extends TestCase
 
         $this->send(
             $launch,
-            $launch->serverHeaders(self::BODY, 'call-7', $this->now(), signingToken: $other->token, target: '/testing/hook-identity'),
+            $launch->serverHeaders(
+                self::BODY,
+                'call-7',
+                $this->now(),
+                signingToken: $other->token,
+                target: '/testing/hook-identity',
+            ),
         )->assertUnauthorized();
     }
 
@@ -177,7 +183,10 @@ final class HookIdentityTest extends TestCase
         unset($headers['HTTP_X_JOURNAL_CALL_SIGNATURE']);
 
         $this->send($launch, $headers)->assertUnauthorized()->assertJson(
-            ['code' => 'unauthenticated', 'message' => 'The call could not be authenticated with this launch credential.'],
+            [
+                'code' => 'unauthenticated',
+                'message' => 'The call could not be authenticated with this launch credential.',
+            ],
         );
     }
 

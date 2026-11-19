@@ -61,7 +61,10 @@ final class TunlerGatewayTest extends TestCase
     public function test_readiness_names_each_missing_piece_and_is_ready_when_all_are_there(): void
     {
         $this->processes->fake(
-            ['*version*' => 'tunler 1.4.0', '*status*' => '{"logged_in": true, "auth_ok": true, "host": "example.test"}'],
+            [
+                '*version*' => 'tunler 1.4.0',
+                '*status*' => '{"logged_in": true, "auth_ok": true, "host": "example.test"}',
+            ],
         );
 
         $this->assertTrue($this->gateway()->readiness($this->configuration())->isReady());
@@ -89,7 +92,11 @@ final class TunlerGatewayTest extends TestCase
     public function test_opening_accepts_the_configured_origin_from_the_launch_line(): void
     {
         $this->processes->fake(
-            ['*--domain=docs*' => $this->processes->describe()->output('connecting')->output('tunnel up: '.self::ORIGIN.' -> localhost:8090')->iterations(2)],
+            [
+                '*--domain=docs*' => $this->processes->describe()->output('connecting')->output(
+                    'tunnel up: '.self::ORIGIN.' -> localhost:8090',
+                )->iterations(2),
+            ],
         );
 
         $endpoint = $this->gateway()->open($this->operation());
@@ -104,7 +111,11 @@ final class TunlerGatewayTest extends TestCase
     {
         foreach (['https://evil.example.test', 'http://docs.example.test', 'https://docs.example.test:8443'] as $address) {
             $this->processes->fake(
-                ['*--domain=docs*' => $this->processes->describe()->output("tunnel up: {$address} -> localhost:8090")->iterations(1)],
+                [
+                    '*--domain=docs*' => $this->processes->describe()->output(
+                        "tunnel up: {$address} -> localhost:8090",
+                    )->iterations(1),
+                ],
             );
 
             $this->assertThrows(
@@ -128,7 +139,9 @@ final class TunlerGatewayTest extends TestCase
 
         $this->assertSame(['The public origin redirected the probe.'], $this->gateway()->health($endpoint)->problems);
         $this->assertFalse(
-            $this->gateway()->health(new GatewayEndpoint('run-1', 1, 'http://docs.example.test', 'run-1:1'))->isHealthy(),
+            $this->gateway()->health(
+                new GatewayEndpoint('run-1', 1, 'http://docs.example.test', 'run-1:1'),
+            )->isHealthy(),
         );
     }
 

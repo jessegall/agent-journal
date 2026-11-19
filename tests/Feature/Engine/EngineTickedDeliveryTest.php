@@ -42,7 +42,10 @@ final class EngineTickedDeliveryTest extends TestCase
         $this->assertSame(['fixtures.second'], $second->allowed);
         $this->assertSame([$event], $second->heard);
         $log->shouldHaveReceived('error')->withArgs(
-            fn (string $line, array $context) => $line === 'Engine listener failed' && $context['listener'] === FailingEngineListener::class,
+            fn (
+                string $line,
+                array $context,
+            ) => $line === 'Engine listener failed' && $context['listener'] === FailingEngineListener::class,
         )->once();
         $this->expectException(EngineAccessRefused::class);
         $this->app->make(EngineAccess::class)->checkMaintenance('fixtures.second');

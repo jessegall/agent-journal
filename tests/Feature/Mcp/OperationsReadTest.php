@@ -73,7 +73,10 @@ final class OperationsReadTest extends TestCase
     {
         $this->receipt(
             $this->launch->session->id,
-            new CascadeResult('plans.plan 1', array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 1000))),
+            new CascadeResult(
+                'plans.plan 1',
+                array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 1000)),
+            ),
         );
 
         $records = [];
@@ -98,7 +101,10 @@ final class OperationsReadTest extends TestCase
     {
         $this->receipt(
             $this->launch->session->id,
-            new CascadeResult('plans.plan 1', array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 30))),
+            new CascadeResult(
+                'plans.plan 1',
+                array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 30)),
+            ),
         );
         $tool = $this->callMcpTool(
             $this->launch,

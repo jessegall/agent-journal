@@ -100,7 +100,11 @@ final readonly class TunlerGateway implements ShareGateway
             self::KEY,
             $operation,
             $child,
-            fn (InvokedProcess $started) => $this->lookAt($started->latestOutput(), $settings->publicOrigin, $settings->providerHost),
+            fn (InvokedProcess $started) => $this->lookAt(
+                $started->latestOutput(),
+                $settings->publicOrigin,
+                $settings->providerHost,
+            ),
         );
     }
 

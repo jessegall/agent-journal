@@ -62,7 +62,8 @@ final readonly class RuntimeRecords implements RuntimeResolver
     }
 
     /**
-     * A caller that inspects agents sees every runtime; any other sees only the runtimes of its own sessions, as SessionRecords decides.
+     * A caller that inspects agents sees every runtime; any other sees only the runtimes of its own sessions, as
+     * SessionRecords decides.
      *
      * @return ReadBuilder<AgentRuntime>
      */

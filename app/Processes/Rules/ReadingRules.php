@@ -33,30 +33,64 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'head',
-                $this->paths()->acceptingNumericOptions()->withOptions(OptionGrammar::valued(OperandType::Count, '-n', '--lines'), OptionGrammar::valued(OperandType::Count, '-c', '--bytes'), ...$this->flags('-q', '-v')),
+                $this->paths()->acceptingNumericOptions()->withOptions(
+                    OptionGrammar::valued(OperandType::Count, '-n', '--lines'),
+                    OptionGrammar::valued(OperandType::Count, '-c', '--bytes'),
+                    ...$this->flags('-q', '-v'),
+                ),
                 $read,
             ),
             $this->reader(
                 'tail',
-                $this->paths()->acceptingNumericOptions()->withOptions(OptionGrammar::valued(OperandType::Count, '-n', '--lines'), OptionGrammar::valued(OperandType::Count, '-c', '--bytes'), ...$this->flags('-f', '-F', '--follow', '-q', '-v')),
+                $this->paths()->acceptingNumericOptions()->withOptions(
+                    OptionGrammar::valued(OperandType::Count, '-n', '--lines'),
+                    OptionGrammar::valued(OperandType::Count, '-c', '--bytes'),
+                    ...$this->flags('-f', '-F', '--follow', '-q', '-v'),
+                ),
                 $read,
             ),
             $this->reader(
                 'ls',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '--color'), ...$this->flags('-l', '-a', '-A', '-h', '-R', '-t', '-r', '-S', '-1', '-d', '-F', '-G', '-i', '-s', '--all', '--human-readable')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '--color'),
+                    ...$this->flags(
+                        '-l',
+                        '-a',
+                        '-A',
+                        '-h',
+                        '-R',
+                        '-t',
+                        '-r',
+                        '-S',
+                        '-1',
+                        '-d',
+                        '-F',
+                        '-G',
+                        '-i',
+                        '-s',
+                        '--all',
+                        '--human-readable',
+                    ),
+                ),
                 $read,
             ),
             $this->reader('pwd', ArgumentGrammar::options(['-L', '-P']), $read),
             $this->reader('wc', $this->paths()->withOptions(...$this->flags('-l', '-w', '-c', '-m', '-L')), $read),
             $this->reader(
                 'stat',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-c', '--format'), OptionGrammar::valued(OperandType::Text, '-f'), ...$this->flags('-L', '-x')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-c', '--format'),
+                    OptionGrammar::valued(OperandType::Text, '-f'),
+                    ...$this->flags('-L', '-x'),
+                ),
                 $read,
             ),
             $this->reader('file', $this->paths()->withOptions(...$this->flags('-b', '-i', '-L', '--mime-type')), $read),
             $this->reader(
                 'echo',
-                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(...$this->flags('-n', '-e', '-E')),
+                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(
+                    ...$this->flags('-n', '-e', '-E'),
+                ),
                 CommandClassSet::empty(),
             ),
             $this->reader(
@@ -72,12 +106,21 @@ final readonly class ReadingRules
                     OperandType::Pattern,
                     '-e',
                     '--regexp',
-                ), OptionGrammar::valued(OperandType::Count, '-A'), OptionGrammar::valued(OperandType::Count, '-B'), OptionGrammar::valued(OperandType::Count, '-C'),
+                ), OptionGrammar::valued(
+                    OperandType::Count,
+                    '-A',
+                ), OptionGrammar::valued(OperandType::Count, '-B'), OptionGrammar::valued(OperandType::Count, '-C'),
                 OptionGrammar::valued(
                     OperandType::Count,
                     '-m',
                     '--max-count',
-                ), OptionGrammar::valued(OperandType::Pattern, '--include'), OptionGrammar::valued(OperandType::Pattern, '--exclude'), OptionGrammar::valued(OperandType::Pattern, '--exclude-dir'), OptionGrammar::valued(OperandType::Text, '--color'),
+                ), OptionGrammar::valued(
+                    OperandType::Pattern,
+                    '--include',
+                ), OptionGrammar::valued(OperandType::Pattern, '--exclude'), OptionGrammar::valued(
+                    OperandType::Pattern,
+                    '--exclude-dir',
+                ), OptionGrammar::valued(OperandType::Text, '--color'),
                 ...$this->flags(
                     '-r',
                     '-R',
@@ -115,7 +158,11 @@ final readonly class ReadingRules
                 OperandType::Pattern,
                 OperandType::Path,
             )->repeating()->endingOptionsAtDoubleDash()->withOptions(
-                OptionGrammar::valued(OperandType::Pattern, '-g', '--glob'), OptionGrammar::valued(OperandType::Name, '-t', '--type'), OptionGrammar::valued(
+                OptionGrammar::valued(
+                    OperandType::Pattern,
+                    '-g',
+                    '--glob',
+                ), OptionGrammar::valued(OperandType::Name, '-t', '--type'), OptionGrammar::valued(
                     OperandType::Name,
                     '-T',
                     '--type-not',
@@ -125,7 +172,11 @@ final readonly class ReadingRules
                     '-B',
                     '--before-context',
                 ), OptionGrammar::valued(OperandType::Count, '-C', '--context'),
-                OptionGrammar::valued(OperandType::Pattern, '-e', '--regexp'), OptionGrammar::valued(OperandType::Count, '-m', '--max-count'), OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'), OptionGrammar::valued(
+                OptionGrammar::valued(OperandType::Pattern, '-e', '--regexp'), OptionGrammar::valued(
+                    OperandType::Count,
+                    '-m',
+                    '--max-count',
+                ), OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'), OptionGrammar::valued(
                     OperandType::Count,
                     '-M',
                     '--max-columns',
@@ -166,7 +217,10 @@ final readonly class ReadingRules
             ), $read),
             $this->reader(
                 'diff',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Count, '-U', '--unified'), ...$this->flags('-u', '-r', '-N', '-q', '-w', '-b', '-i', '-y', '--brief', '--recursive')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(OperandType::Count, '-U', '--unified'),
+                    ...$this->flags('-u', '-r', '-N', '-q', '-w', '-b', '-i', '-y', '--brief', '--recursive'),
+                ),
                 $read,
             ),
             $this->reader(
@@ -176,47 +230,142 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'date',
-                ArgumentGrammar::operands(OperandType::Text)->withOptions(OptionGrammar::valued(OperandType::Text, '-d', '--date'), OptionGrammar::valued(OperandType::Path, '-r', '--reference'), ...$this->flags('-u', '-R', '-I', '--utc', '--iso-8601', '--rfc-2822')),
+                ArgumentGrammar::operands(OperandType::Text)->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-d', '--date'),
+                    OptionGrammar::valued(OperandType::Path, '-r', '--reference'),
+                    ...$this->flags('-u', '-R', '-I', '--utc', '--iso-8601', '--rfc-2822'),
+                ),
                 $read,
             ),
             $this->reader(
                 'ps',
-                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(OptionGrammar::valued(OperandType::Text, '-o', '-p', '-u', '-U', '-C', '--pid', '--ppid', '--sort'), ...$this->flags('-e', '-f', '-A', '-a', '-x', '-l', '-w', '-ww', '-ef', '-eo', '-ax', '--forest', '--no-headers')),
+                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-o', '-p', '-u', '-U', '-C', '--pid', '--ppid', '--sort'),
+                    ...$this->flags(
+                        '-e',
+                        '-f',
+                        '-A',
+                        '-a',
+                        '-x',
+                        '-l',
+                        '-w',
+                        '-ww',
+                        '-ef',
+                        '-eo',
+                        '-ax',
+                        '--forest',
+                        '--no-headers',
+                    ),
+                ),
                 $read,
             ),
             $this->reader(
                 'pgrep',
-                ArgumentGrammar::operands(OperandType::Pattern)->withOptions(OptionGrammar::valued(OperandType::Text, '-u', '-P', '-g'), ...$this->flags('-f', '-l', '-a', '-x', '-n', '-o', '-c', '-i', '-fl', '-af')),
+                ArgumentGrammar::operands(OperandType::Pattern)->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-u', '-P', '-g'),
+                    ...$this->flags('-f', '-l', '-a', '-x', '-n', '-o', '-c', '-i', '-fl', '-af'),
+                ),
                 $read,
             ),
             $this->reader(
                 'lsof',
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(OptionGrammar::valued(OperandType::Text, '-i', '-p', '-c', '-u', '-s'), ...$this->flags('-n', '-P', '-t', '-a', '-nP', '-iTCP', '-sTCP:LISTEN')),
+                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-i', '-p', '-c', '-u', '-s'),
+                    ...$this->flags('-n', '-P', '-t', '-a', '-nP', '-iTCP', '-sTCP:LISTEN'),
+                ),
                 $read,
             ),
             $this->reader(
                 'cut',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-d', '-f', '-c', '-b', '--delimiter', '--fields', '--characters'), ...$this->flags('-s', '--complement', '--only-delimited')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(
+                        OperandType::Text,
+                        '-d',
+                        '-f',
+                        '-c',
+                        '-b',
+                        '--delimiter',
+                        '--fields',
+                        '--characters',
+                    ),
+                    ...$this->flags('-s', '--complement', '--only-delimited'),
+                ),
                 $read,
             ),
             $this->reader(
                 'sort',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-k', '-t', '--key', '--field-separator'), ...$this->flags('-n', '-r', '-u', '-h', '-V', '-f', '-b', '-g', '-s', '-rn', '-nr', '-hr', '--numeric-sort', '--reverse', '--unique', '--human-numeric-sort', '--version-sort')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-k', '-t', '--key', '--field-separator'),
+                    ...$this->flags(
+                        '-n',
+                        '-r',
+                        '-u',
+                        '-h',
+                        '-V',
+                        '-f',
+                        '-b',
+                        '-g',
+                        '-s',
+                        '-rn',
+                        '-nr',
+                        '-hr',
+                        '--numeric-sort',
+                        '--reverse',
+                        '--unique',
+                        '--human-numeric-sort',
+                        '--version-sort',
+                    ),
+                ),
                 $read,
             ),
             $this->reader(
                 'tr',
-                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(...$this->flags('-d', '-s', '-c', '-cd', '-ds', '--delete', '--squeeze-repeats')),
+                ArgumentGrammar::operands(OperandType::Text)->repeating()->withOptions(
+                    ...$this->flags('-d', '-s', '-c', '-cd', '-ds', '--delete', '--squeeze-repeats'),
+                ),
                 $read,
             ),
             $this->reader(
                 'du',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'), ...$this->flags('-s', '-h', '-a', '-c', '-k', '-m', '-x', '-sh', '-hs', '-sk', '--summarize', '--human-readable')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'),
+                    ...$this->flags(
+                        '-s',
+                        '-h',
+                        '-a',
+                        '-c',
+                        '-k',
+                        '-m',
+                        '-x',
+                        '-sh',
+                        '-hs',
+                        '-sk',
+                        '--summarize',
+                        '--human-readable',
+                    ),
+                ),
                 $read,
             ),
             $this->reader(
                 'jq',
-                ArgumentGrammar::operands(OperandType::Pattern, OperandType::Path)->repeating()->withOptions(...$this->flags('-r', '-c', '-e', '-s', '-n', '-S', '-j', '-M', '-C', '-rc', '--raw-output', '--compact-output', '--slurp', '--sort-keys')),
+                ArgumentGrammar::operands(OperandType::Pattern, OperandType::Path)->repeating()->withOptions(
+                    ...$this->flags(
+                        '-r',
+                        '-c',
+                        '-e',
+                        '-s',
+                        '-n',
+                        '-S',
+                        '-j',
+                        '-M',
+                        '-C',
+                        '-rc',
+                        '--raw-output',
+                        '--compact-output',
+                        '--slurp',
+                        '--sort-keys',
+                    ),
+                ),
                 $read,
             ),
             $this->reader('sleep', ArgumentGrammar::operands(OperandType::Text)->repeating(), CommandClassSet::empty()),
@@ -246,7 +395,11 @@ final readonly class ReadingRules
             ),
             $this->reader(
                 'tree',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Count, '-L'), OptionGrammar::valued(OperandType::Pattern, '-I'), ...$this->flags('-a', '-d', '-f', '-h', '--gitignore')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(OperandType::Count, '-L'),
+                    OptionGrammar::valued(OperandType::Pattern, '-I'),
+                    ...$this->flags('-a', '-d', '-f', '-h', '--gitignore'),
+                ),
                 $read,
             ),
         ];

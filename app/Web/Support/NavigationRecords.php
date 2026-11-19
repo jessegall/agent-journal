@@ -128,7 +128,10 @@ final readonly class NavigationRecords implements RecordsNavigation
 
         return [
             ...$item->children,
-            ...($resolver instanceof NavigationChildren ? $this->declarations->childrenOf($item, $resolver->children()) : []),
+            ...($resolver instanceof NavigationChildren ? $this->declarations->childrenOf(
+                $item,
+                $resolver->children(),
+            ) : []),
         ];
     }
 

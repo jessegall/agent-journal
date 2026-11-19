@@ -211,7 +211,13 @@ final class AgentStackRow extends Model implements ReadableModel
         $query->withoutGlobalScope(AgentSessionScope::class)
             ->where('status', StackStatus::Active->value)
             ->where('has_ticking_frames', true)
-            ->whereIn('session_id', AgentSession::query()->select('id')->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running())));
+            ->whereIn(
+                'session_id',
+                AgentSession::query()->select('id')->whereIn(
+                    'status',
+                    array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()),
+                ),
+            );
     }
 
     /**
@@ -229,7 +235,8 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
-     * The explicit read of another agent or session's stack, for a caller the user authorized; it lifts the current-agent limit.
+     * The explicit read of another agent or session's stack, for a caller the user authorized; it lifts the
+     * current-agent limit.
      *
      * @param  Builder<self>  $query
      */

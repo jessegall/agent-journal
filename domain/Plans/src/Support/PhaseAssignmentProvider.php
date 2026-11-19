@@ -58,7 +58,10 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
     public function finishedRecords(array $records): array
     {
         $phaseIds = array_values(
-            array_map(fn (Phase $phase) => $phase->id, array_filter($records, fn (Assignable $record) => $record instanceof Phase)),
+            array_map(
+                fn (Phase $phase) => $phase->id,
+                array_filter($records, fn (Assignable $record) => $record instanceof Phase),
+            ),
         );
         $taskGroups = array_fill_keys($phaseIds, []);
 

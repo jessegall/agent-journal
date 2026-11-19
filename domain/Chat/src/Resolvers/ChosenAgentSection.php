@@ -22,7 +22,10 @@ final readonly class ChosenAgentSection implements SectionResolver
     public function read(SlotContext $context): ChosenAgentData
     {
         $chosen = array_values(
-            array_filter($this->sessions->active(), fn (SessionOption $session) => (string) $session->sessionId === $context->id),
+            array_filter(
+                $this->sessions->active(),
+                fn (SessionOption $session) => (string) $session->sessionId === $context->id,
+            ),
         );
 
         return $chosen === [] ? throw new NotFoundHttpException() : ChosenAgentData::from(

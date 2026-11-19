@@ -8,7 +8,8 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A document number that no readable document has. A number outside the reader's scope answers the same, so it reveals nothing.
+ * A document number that no readable document has. A number outside the reader's scope answers the same, so it reveals
+ * nothing.
  */
 final class DocumentMissing extends RuntimeException implements CommandRefusal
 {

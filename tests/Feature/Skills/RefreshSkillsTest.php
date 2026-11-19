@@ -73,7 +73,10 @@ final class RefreshSkillsTest extends TestCase
     {
         $ready = $this->refresh();
         $this->useOwners(
-            ...[...$this->installedOwners(), new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [BrokenGuideSkill::class], true)],
+            ...[
+                ...$this->installedOwners(),
+                new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [BrokenGuideSkill::class], true),
+            ],
         );
 
         $failed = $this->refresh();
@@ -95,7 +98,11 @@ final class RefreshSkillsTest extends TestCase
 
         $this->actAs(TestActors::user(7));
         $this->app->make(CommandBus::class)->run(
-            new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')),
+            new CreateSkill(
+                'user-review-notes',
+                'create-1',
+                new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
+            ),
         );
 
         $pending = SkillPublication::query()->where('session_id', $session->id)->where(

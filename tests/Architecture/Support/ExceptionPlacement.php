@@ -24,7 +24,10 @@ final class ExceptionPlacement
             array_filter(DomainFiles::in($folders), fn (string $path) => basename(dirname($path)) !== 'Exceptions'),
         );
         $misplaced = array_values(
-            array_filter(ScanCache::findings(new ClassesDeclared(), $paths), fn (string $name) => is_subclass_of($name, Throwable::class)),
+            array_filter(
+                ScanCache::findings(new ClassesDeclared(), $paths),
+                fn (string $name) => is_subclass_of($name, Throwable::class),
+            ),
         );
         sort($misplaced);
 

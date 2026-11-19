@@ -84,7 +84,11 @@ final readonly class AuthenticateHost
 
         return new HostContext(
             $host->id,
-            new SignedCall($callId, CarbonImmutable::createFromTimestamp($issuedAt), SignedCall::digestOf($request->getContent())),
+            new SignedCall(
+                $callId,
+                CarbonImmutable::createFromTimestamp($issuedAt),
+                SignedCall::digestOf($request->getContent()),
+            ),
         );
     }
 

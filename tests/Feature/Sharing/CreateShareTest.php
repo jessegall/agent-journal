@@ -150,7 +150,9 @@ final class CreateShareTest extends TestCase
         $saved = $this->preview([]);
 
         $this->assertThrows(
-            fn () => $this->app->make(CommandBus::class)->run(new CreateShare($saved->previewId, $saved->checksum, 60, self::KEY)),
+            fn () => $this->app->make(CommandBus::class)->run(
+                new CreateShare($saved->previewId, $saved->checksum, 60, self::KEY),
+            ),
             RequestKeyMissing::class,
         );
         $this->assertSame(0, Share::query()->count());

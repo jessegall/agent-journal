@@ -61,7 +61,12 @@ final readonly class PlanAssignmentGroup
     {
         return array_map(
             strval(...),
-            array_values(PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->readAll('every task of the plan is assigned')->orderBy('phase_id')->orderBy('position')->pluck('task_id')->all()),
+            array_values(
+                PhaseTask::query()->whereIn(
+                    'phase_id',
+                    $phases->modelKeys(),
+                )->readAll('every task of the plan is assigned')->orderBy('phase_id')->orderBy('position')->pluck('task_id')->all(),
+            ),
         );
     }
 }

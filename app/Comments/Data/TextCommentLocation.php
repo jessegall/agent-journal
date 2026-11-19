@@ -14,7 +14,8 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Where a text comment leads: the record, the place in its text and the lines around it from the version it was left on.
+ * Where a text comment leads: the record, the place in its text and the lines around it from the version it was left
+ * on.
  */
 #[TypeScript]
 final class TextCommentLocation extends Data

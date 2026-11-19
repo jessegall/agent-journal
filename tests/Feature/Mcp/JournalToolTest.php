@@ -28,7 +28,12 @@ final class JournalToolTest extends TestCase
 
         $this->app->instance(
             AgentContext::class,
-            new AgentContext('agent-1', 'session-1', new SignedCall(self::CALL_ID, CarbonImmutable::now(), 'digest'), null),
+            new AgentContext(
+                'agent-1',
+                'session-1',
+                new SignedCall(self::CALL_ID, CarbonImmutable::now(), 'digest'),
+                null,
+            ),
         );
     }
 
@@ -71,7 +76,9 @@ final class JournalToolTest extends TestCase
     {
         FixtureServer::tool(FixtureReadTool::class, ['number' => 4, 'answer' => 'refused'])
             ->assertHasErrors(['Record 4 is not available.'])
-            ->assertStructuredContent(['code' => 'record_unavailable', 'message' => 'Record 4 is not available.', 'retryable' => false]);
+            ->assertStructuredContent(
+                ['code' => 'record_unavailable', 'message' => 'Record 4 is not available.', 'retryable' => false],
+            );
     }
 
     public function test_an_unexpected_failure_gives_the_generic_message_and_correlation_id_even_with_debug_on(): void

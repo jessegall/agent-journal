@@ -96,7 +96,16 @@ final readonly class NgrokGateway implements ShareGateway
         $configFile = $this->writeConfiguration($this->secrets->read($reference));
         $upstream = "127.0.0.1:{$settings->listenerPort}";
         $child = $this->processes->newPendingProcess()->timeout(0)->env(['HOME' => $this->configFolder])
-            ->start([$this->binary, 'http', $upstream, "--url={$settings->publicOrigin}", "--config={$configFile}", '--log=false']);
+            ->start(
+                [
+                    $this->binary,
+                    'http',
+                    $upstream,
+                    "--url={$settings->publicOrigin}",
+                    "--config={$configFile}",
+                    '--log=false',
+                ],
+            );
 
         return $this->launches->open(
             self::KEY,

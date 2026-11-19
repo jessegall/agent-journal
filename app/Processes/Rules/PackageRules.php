@@ -76,7 +76,9 @@ final readonly class PackageRules
                     "core.{$program}.{$subcommand}",
                     new ProgramSpellings($program),
                     [$subcommand],
-                    ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(...array_map(fn (string $flag) => OptionGrammar::flag($flag), $options)),
+                    ArgumentGrammar::operands(OperandType::Name)->repeating()->withOptions(
+                        ...array_map(fn (string $flag) => OptionGrammar::flag($flag), $options),
+                    ),
                     $install,
                 );
             }

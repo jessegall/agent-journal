@@ -14,7 +14,8 @@ use App\Hooks\Ticks\TickingTypes;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Builds the state type registry on first use, once per worker, and keeps it; a build that fails is tried again next time.
+ * Builds the state type registry on first use, once per worker, and keeps it; a build that fails is tried again next
+ * time.
  */
 final class StateTypes implements ResolvesStateTypes
 {

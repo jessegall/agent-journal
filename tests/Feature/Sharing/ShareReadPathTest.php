@@ -87,12 +87,18 @@ final class ShareReadPathTest extends TestCase
 
         $this->assertSame('after-50', $cursors->read($text, $place)->continuation);
         $this->assertThrows(
-            fn () => $cursors->read($text, new ShareCursor(TestIds::of(9), 2, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, '')),
+            fn () => $cursors->read(
+                $text,
+                new ShareCursor(TestIds::of(9), 2, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, ''),
+            ),
             ShareReadRefused::class,
             'older view',
         );
         $this->assertThrows(
-            fn () => $cursors->read($text, new ShareCursor(TestIds::of(8), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, '')),
+            fn () => $cursors->read(
+                $text,
+                new ShareCursor(TestIds::of(8), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, ''),
+            ),
             ShareReadRefused::class,
         );
         $this->assertThrows(fn () => $cursors->read($text.'x', $place), ShareReadRefused::class);

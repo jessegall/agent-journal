@@ -106,7 +106,10 @@ final readonly class ShareScope
         array $seen,
     ): array {
         $links = $budget->run(
-            fn () => Link::query()->touchingKey($source->type, $source->id)->orderBy('id')->readLimit($budget->mostLinks + 1)->get(),
+            fn () => Link::query()->touchingKey(
+                $source->type,
+                $source->id,
+            )->orderBy('id')->readLimit($budget->mostLinks + 1)->get(),
         );
         $budget->chargeLinks($links->count());
         $budget->chargeRecords($links->count());

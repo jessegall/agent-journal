@@ -47,45 +47,51 @@ final class SettingsCatalogueDataTest extends TestCase
                         ['state' => GroupAvailability::Disabled, 'defaultEnabled' => true],
                     ),
                     'settings' => [
-                                            SettingData::from([
-                                                'identity' => $this->identity('notify_owner'),
-                                                'label' => 'Notify the owner',
-                                                'type' => SettingType::Boolean,
-                                                'source' => SettingSource::Override,
-                                                'availability' => SettingAvailability::GroupDisabled,
-                                                'default' => BooleanValueData::from(['value' => true]),
-                                                'configured' => BooleanValueData::from(['value' => false]),
-                                            ]),
-                                            SettingData::from([
-                                                'identity' => $this->identity('weight'),
-                                                'label' => 'Weight',
-                                                'type' => SettingType::Decimal,
-                                                'source' => SettingSource::Override,
-                                                'availability' => SettingAvailability::GroupDisabled,
-                                                'default' => DecimalValueData::from(['value' => '0.50']),
-                                                'constraints' => DecimalConstraintsData::from(['precision' => 5, 'scale' => 2]),
-                                                'configured' => InvalidValueData::from([]),
-                                            ]),
-                                        ],
+                        SettingData::from([
+                            'identity' => $this->identity('notify_owner'),
+                            'label' => 'Notify the owner',
+                            'type' => SettingType::Boolean,
+                            'source' => SettingSource::Override,
+                            'availability' => SettingAvailability::GroupDisabled,
+                            'default' => BooleanValueData::from(['value' => true]),
+                            'configured' => BooleanValueData::from(['value' => false]),
+                        ]),
+                        SettingData::from([
+                            'identity' => $this->identity('weight'),
+                            'label' => 'Weight',
+                            'type' => SettingType::Decimal,
+                            'source' => SettingSource::Override,
+                            'availability' => SettingAvailability::GroupDisabled,
+                            'default' => DecimalValueData::from(['value' => '0.50']),
+                            'constraints' => DecimalConstraintsData::from(
+                                ['precision' => 5, 'scale' => 2],
+                            ),
+                            'configured' => InvalidValueData::from([]),
+                        ]),
+                    ],
                 ]),
                 SettingGroupData::from([
-                                        'identity' => $this->identity('general'),
-                                        'label' => 'General',
-                                        'availability' => PlainGroupAvailabilityData::from([]),
-                                        'settings' => [
-                                            SettingData::from([
-                                                'identity' => $this->identity('priority'),
-                                                'label' => 'Priority',
-                                                'type' => SettingType::Choice,
-                                                'source' => SettingSource::Default,
-                                                'availability' => SettingAvailability::Available,
-                                                'default' => IntegerChoiceValueData::from(['value' => 0]),
-                                                'constraints' => IntegerChoiceConstraintsData::from(
-                                                    ['options' => [IntegerChoiceOptionData::from(['value' => 0, 'label' => 'Normal'])]],
-                                                ),
-                                            ]),
-                                        ],
-                                    ]),
+                    'identity' => $this->identity('general'),
+                    'label' => 'General',
+                    'availability' => PlainGroupAvailabilityData::from([]),
+                    'settings' => [
+                        SettingData::from([
+                            'identity' => $this->identity('priority'),
+                            'label' => 'Priority',
+                            'type' => SettingType::Choice,
+                            'source' => SettingSource::Default,
+                            'availability' => SettingAvailability::Available,
+                            'default' => IntegerChoiceValueData::from(['value' => 0]),
+                            'constraints' => IntegerChoiceConstraintsData::from(
+                                [
+                                    'options' => [
+                                        IntegerChoiceOptionData::from(['value' => 0, 'label' => 'Normal']),
+                                    ],
+                                ],
+                            ),
+                        ]),
+                    ],
+                ]),
             ],
         ])->toArray();
 

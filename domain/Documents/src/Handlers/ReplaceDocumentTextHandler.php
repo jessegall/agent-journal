@@ -18,7 +18,9 @@ final readonly class ReplaceDocumentTextHandler implements CommandHandler
     {
         return $this->drafts->saveEdit(
             $command->draft,
-            fn (DraftText $text) => $text->withBody($text->body->withTextReplaced($command->oldText, $command->newText)),
+            fn (DraftText $text) => $text->withBody(
+                $text->body->withTextReplaced($command->oldText, $command->newText),
+            ),
         );
     }
 }
