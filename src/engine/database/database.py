@@ -23,9 +23,10 @@ if TYPE_CHECKING:
 FILE_PRAGMAS = {"auto_vacuum": ("INCREMENTAL", "2"), "journal_mode": ("WAL", "wal")}
 # the size the write-ahead log file is cut back to when it starts over, so one busy spell does not keep it large
 LOG_SIZE_LIMIT_BYTES = 32 * 1024 * 1024
-# no commit copies the write-ahead log into the file: that copy writes megabytes while the commit holds the write turn;
-# the server copies it on a timer outside the turn (copy_log), and the last connection to close copies the rest
-CONNECTION_PRAGMAS = ("foreign_keys = ON", "synchronous = NORMAL", "wal_autocheckpoint = 0", f"journal_size_limit = {LOG_SIZE_LIMIT_BYTES}")
+# the server copies the write-ahead log into the file on a timer, outside the write turn (copy_log), so a commit less
+# often finds the log past sqlite's own mark and copies it while it holds the turn; that copy in a commit stays, since
+# readers that never pause keep the timer's copy from finishing, and without it the log grows without end
+CONNECTION_PRAGMAS = ("foreign_keys = ON", "synchronous = NORMAL", f"journal_size_limit = {LOG_SIZE_LIMIT_BYTES}")
 BUSY_TIMEOUT_SECONDS = 5.0
 READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
