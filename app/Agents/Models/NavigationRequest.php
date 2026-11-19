@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\NavigationState;
+use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\NavigationTransitionRefused;
 use App\Agents\Values\NavigationScreen;
 use App\Agents\Values\NavigationUncertainty;
@@ -176,6 +177,15 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     /**
+     * The host reports the stable screen after a round: it is the request's current screen from now on.
+     */
+    public function showScreen(NavigationScreen $screen): void
+    {
+        $this->screen = $screen;
+        $this->change();
+    }
+
+    /**
      * The main agent sends a round: the first one opens the conversation, a later one goes on with it.
      */
     public function answer(): void
@@ -225,6 +235,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function abandon(): void
     {
         $this->moveTo(NavigationState::Abandoned);
+        $this->cancelQueuedRounds();
     }
 
     /**
@@ -233,6 +244,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function interrupt(): void
     {
         $this->moveTo(NavigationState::Interrupted);
+        $this->cancelQueuedRounds();
     }
 
     /**
@@ -241,6 +253,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function cancel(): void
     {
         $this->moveTo(NavigationState::Cancelled);
+        $this->cancelQueuedRounds();
     }
 
     /**
@@ -249,6 +262,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     public function expire(): void
     {
         $this->moveTo(NavigationState::Expired);
+        $this->cancelQueuedRounds();
     }
 
     /**
@@ -276,6 +290,22 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     protected function expiredBefore(Builder $query, CarbonImmutable $moment): void
     {
         $query->where('expires_at', '<', $moment);
+    }
+
+    /**
+     * Cancels the main agent's rounds that have not reached the host yet: the request they answer has ended.
+     */
+    private function cancelQueuedRounds(): void
+    {
+        $queued = DriverRequest::query()
+            ->where('navigation_request_id', $this->id)
+            ->whereIn('progress', [RequestProgress::Accepted, RequestProgress::Staged])
+            ->lockForUpdate()
+            ->readLimit(20)
+            ->get();
+        foreach ($queued as $round) {
+            $round->cancel();
+        }
     }
 
     private function moveTo(NavigationState $next): void

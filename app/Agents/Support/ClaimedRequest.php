@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Values\NavigationRound;
 use App\Agents\Values\ScriptParameter;
 
 /**
@@ -28,6 +29,8 @@ final readonly class ClaimedRequest
         public int|null $scriptVersion,
         public array $scriptParameters,
         public int|null $scriptStep,
+        public string|null $navigationRequestId,
+        public NavigationRound|null $navigationRound,
     ) {}
 
 }

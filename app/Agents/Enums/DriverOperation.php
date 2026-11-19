@@ -21,6 +21,7 @@ enum DriverOperation: string
     case KeyScript = 'key_script';
     case StartRecording = 'start_recording';
     case StopRecording = 'stop_recording';
+    case Navigate = 'navigate';
 
     /**
      * The operations that act on the runtime itself rather than its turns; a host takes them before any other work.

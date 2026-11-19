@@ -14,6 +14,7 @@ use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
+use App\Agents\Values\NavigationRound;
 use App\Agents\Values\ScriptGoal;
 use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
@@ -56,6 +57,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string, string> $script_parameters
  * @property int|null $script_generation
  * @property string|null $script_evidence
+ * @property string|null $navigation_request_id
+ * @property array{request: string, row_version: int, generation: int, keys: list<string>, choose: string|null,
+ *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null}|null $navigation_round
  * @property HoldReason $hold_reason
  * @property int $row_version
  */
@@ -73,6 +77,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'script_id',
     'script_version',
     'script_parameters',
+    'navigation_request_id',
+    'navigation_round',
 ])]
 final class DriverRequest extends Model implements ReadableModel
 {
@@ -87,6 +93,7 @@ final class DriverRequest extends Model implements ReadableModel
     {
         return [
             'script_parameters' => 'array',
+            'navigation_round' => 'array',
             'operation' => DriverOperation::class,
             'progress' => RequestProgress::class,
             'outcome' => RequestOutcome::class,
@@ -364,6 +371,8 @@ final class DriverRequest extends Model implements ReadableModel
             $this->script_version,
             ScriptParameter::listOf($this->script_parameters),
             $this->script_step,
+            $this->navigation_request_id,
+            $this->navigationRound(),
         );
     }
 
@@ -426,6 +435,20 @@ final class DriverRequest extends Model implements ReadableModel
         $this->script_id = $payload->scriptId;
         $this->script_version = $payload->scriptVersion;
         $this->script_parameters = $payload->scriptParameters;
+        $this->navigation_request_id = $payload->navigationRound?->navigationRequestId;
+        $this->navigation_round = $payload->navigationRound?->toStored();
+    }
+
+    /**
+     * The main agent's round this request carries; none for any other operation.
+     */
+    public function navigationRound(): NavigationRound|null
+    {
+        if ($this->navigation_round === null) {
+            return null;
+        }
+
+        return NavigationRound::fromStored($this->navigation_round);
     }
 
     /**
