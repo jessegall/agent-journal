@@ -37,6 +37,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\FileViewFinder;
 use Throwable;
 
@@ -51,11 +52,18 @@ final class WebServiceProvider extends ServiceProvider
     {
         $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
         $this->app->bind(AutoAssignmentAccess::class, OwnerAutoAssignmentAccess::class);
-        $this->app->singleton(UiDeclarations::class, fn ($app) => $app->make(DomainRegistry::class)->uiDeclarations(...CorePages::declarations()));
+        $this->app->singleton(
+            UiDeclarations::class,
+            fn ($app) => $app->make(DomainRegistry::class)->uiDeclarations(...CorePages::declarations()),
+        );
         // Inertia's page check reads the declared components, and today's pages through its usual finder.
         $this->app->bind('inertia.view-finder', fn ($app) => new UiComponentFinder(
             $app->make(UiDeclarations::class),
-            new FileViewFinder($app['files'], $app['config']->get('inertia.pages.paths'), $app['config']->get('inertia.pages.extensions')),
+            new FileViewFinder(
+                $app['files'],
+                $app['config']->get('inertia.pages.paths'),
+                $app['config']->get('inertia.pages.extensions'),
+            ),
         ));
     }
 
@@ -71,7 +79,10 @@ final class WebServiceProvider extends ServiceProvider
         ExceptionHandler $exceptions,
         PolicyCatalogue $policies,
     ): void {
-        $policies->register('Core', new PolicyRegistration(UserPresence::class, PresencePolicy::class, PresenceAbility::class));
+        $policies->register(
+            'Core',
+            new PolicyRegistration(UserPresence::class, PresencePolicy::class, PresenceAbility::class),
+        );
         $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);
         $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserResolver::class));
@@ -86,15 +97,17 @@ final class WebServiceProvider extends ServiceProvider
         }
 
         // Every provider has registered its routes by now, cached or not, so a prefix someone else uses is found.
-        $this->app->booted(fn () => $declaredRoutes->refuseTakenPrefixes($router->getRoutes(), $this->app->publicPath()));
+        $this->app->booted(
+            fn () => $declaredRoutes->refuseTakenPrefixes($router->getRoutes(), $this->app->publicPath()),
+        );
         // The channel sign-in runs behind the same session, sign-in and user checks as every page.
         $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
     }
 
     /**
-     * A refused command is a form error on a web page and a 403 with its message on an agent route. The text names no
-     * class and holds no trace.
+     * A refused command is a form error on a web page and a 403 with its message on an agent route; refused input is
+     * left to Laravel, which answers each field. The text names no class and holds no trace.
      */
     private function renderRefusals(ExceptionHandler $exceptions): void
     {
@@ -103,7 +116,7 @@ final class WebServiceProvider extends ServiceProvider
         }
 
         $exceptions->renderable(function (Throwable $failure, Request $request): JsonResponse|RedirectResponse|null {
-            if (! $failure instanceof CommandRefusal) {
+            if (! $failure instanceof CommandRefusal || $failure instanceof ValidationException) {
                 return null;
             }
 

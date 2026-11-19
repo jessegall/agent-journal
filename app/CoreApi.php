@@ -336,6 +336,7 @@ use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandHandlerTwice;
 use App\Bus\Exceptions\CommandListedTwice;
@@ -1834,6 +1835,7 @@ final class CoreApi
                 AssigneeTypeRepeated::class,
                 AssignmentTypeRepeated::class,
                 CommandDeclarationInvalid::class,
+                CommandInputInvalid::class,
                 CommandHandlerMissing::class,
                 CommandHandlerTwice::class,
                 CommandListedTwice::class,
