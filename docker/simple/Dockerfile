@@ -38,6 +38,7 @@ RUN printf '%s\n' "$COMMIT" > /opt/agent-journal/src/commit
 
 COPY --chmod=755 docker/simple/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/simple/Caddyfile /etc/caddy/Caddyfile
+COPY --chmod=644 docker/simple/login_gate.py /usr/local/lib/login_gate.py
 
 ENV PYTHONDONTWRITEBYTECODE=1
 
