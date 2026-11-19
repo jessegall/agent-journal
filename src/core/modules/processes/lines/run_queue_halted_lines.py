@@ -7,6 +7,9 @@ from engine.enums.agent_role import AgentRole
 from core.modules.processes.agent_messages.run_queue_halted_message import RunQueueHaltedMessage
 from core.modules.processes.agent_messages.update_waiting_message import UpdateWaitingMessage
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
+from core.modules.processes.queries.process_query import ProcessQuery
+
+RUNNING_REASON = "an update waits for the runs still going, which the main agent is told of"
 
 
 class RunQueueHaltedLines(EventLineSource):
@@ -20,12 +23,16 @@ class RunQueueHaltedLines(EventLineSource):
 
     main_role_reason = "only the main agent resumes a halted queue or lets a waiting update go on"
 
-    def __init__(self, halt: RunQueueHalt) -> None:
-        self.halt = halt
+    def __init__(self, halt: RunQueueHalt, processes: ProcessQuery) -> None:
+        self.halt, self.processes = halt, processes
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if self.halt.command_halted:
             return [RunQueueHaltedMessage.declared().agent_message()]
         if self.halt.is_update_waiting:
-            return [UpdateWaitingMessage.declared().agent_message(outputs=", ".join(f"output:{run}" for run in self.halt.running_run_ids()) or "none")]
+            return [UpdateWaitingMessage.declared().agent_message(outputs=", ".join(f"output:{run}" for run in self.running_ids()) or "none")]
         return []
+
+    # the runs the update waits for, read from the rows, never by looking through every kept run folder on each hook
+    def running_ids(self) -> list[int]:
+        return [process.id for process in self.processes.all_environments(RUNNING_REASON).running().every_row(RUNNING_REASON)]

@@ -2,7 +2,6 @@ from engine.time.clock import Clock
 from engine.journal.journal_home import JournalHome
 from engine.hosting.server_restart_state import ServerRestartState
 from engine.file.file_access import FileAccess
-from core.modules.processes.support.output_folder import OutputFolder
 
 
 class RunQueueHalt:
@@ -44,9 +43,6 @@ class RunQueueHalt:
         if self.is_update_waiting:
             return "An update waits for the running commands to end"
         return "Server restart" if self.is_restarting else ""
-
-    def running_run_ids(self) -> tuple[int, ...]:
-        return OutputFolder(self.home).running_ids()
 
     def halt(self, reason: str) -> None:
         FileAccess.write(self.home.run_queue_halt_file, reason)
