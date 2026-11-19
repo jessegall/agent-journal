@@ -1115,7 +1115,6 @@ final class CoreApi
                 ProvidesAutoAssignments::class,
                 CurrentUserResolver::class,
                 Command::class,
-                BaseCommand::class,
                 CommandBus::class,
                 CommandMiddleware::class,
                 CommandRefusal::class,
@@ -1928,6 +1927,7 @@ final class CoreApi
                 RunsCallPipelines::class,
                 NamesRecipient::class,
                 NamesExpectedAssignment::class,
+                BaseCommand::class,
             )
             ->build();
     }

@@ -32,9 +32,11 @@ use Tests\Fixtures\Bus\Shop\CommandMiddleware\LogShop;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\NotMiddleware;
 use Tests\Fixtures\Bus\Shop\Commands\AddItem;
 use Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem;
+use Tests\Fixtures\Bus\Shop\Commands\BaselessItem;
 use Tests\Fixtures\Bus\Shop\Commands\ClosureItem;
 use Tests\Fixtures\Bus\Shop\Commands\LooseItem;
 use Tests\Fixtures\Bus\Shop\Commands\NoHandlerItem;
+use Tests\Fixtures\Bus\Shop\Commands\OpenItem;
 use Tests\Fixtures\Bus\Shop\Commands\QueuedItem;
 use Tests\Fixtures\Bus\Shop\Commands\RemoveItem;
 use Tests\Fixtures\Bus\Shop\Commands\SingletonItem;
@@ -109,6 +111,20 @@ final class CommandRegistryTest extends TestCase
     public function test_a_command_that_is_not_final_readonly_is_refused(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [$this->shop([LooseItem::class])]);
+    }
+
+    public function test_a_readonly_command_that_is_not_final_is_refused(): void
+    {
+        $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [$this->shop([OpenItem::class])]);
+    }
+
+    public function test_a_command_that_does_not_extend_the_base_command_is_refused(): void
+    {
+        $this->refusedWith(
+            CommandDeclarationInvalid::class,
+            'extends App\\Bus\\Support\\Command',
+            [$this->shop([BaselessItem::class])],
+        );
     }
 
     public function test_a_queued_command_is_refused(): void

@@ -20,8 +20,8 @@ use Throwable;
 final class Exports
 {
     /**
-     * The only names Core may export as support: traits, a base state and adapters that no other list describes.
-     * Adding one is an architecture decision, never a fallback for a type that fits no list.
+     * The only names Core may export as support: traits, a base state, the base command and adapters that no other
+     * list describes. Adding one is an architecture decision, never a fallback for a type that fits no list.
      */
     private const array CORE_SUPPORT = [
         'App\Actors\Models\Support\BelongsToOneActor',
@@ -47,6 +47,7 @@ final class Exports
         'App\AgentRequests\Console\Concerns\RunsCallPipelines',
         'App\Assignments\Calls\Concerns\NamesRecipient',
         'App\Assignments\Calls\Concerns\NamesExpectedAssignment',
+        'App\Bus\Support\Command',
     ];
 
     /**

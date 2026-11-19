@@ -28,6 +28,7 @@ use App\Bus\Exceptions\HandlerInOtherOwner;
 use App\Bus\Exceptions\HandlerServesTwoCommands;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
+use App\Bus\Support\Command as BaseCommand;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
@@ -260,6 +261,10 @@ final readonly class CommandRegistry
 
         if (! $reflection->isFinal() || ! $reflection->isReadOnly()) {
             throw CommandDeclarationInvalid::for($command, 'a command is a final readonly class');
+        }
+
+        if (! $reflection->isSubclassOf(BaseCommand::class)) {
+            throw CommandDeclarationInvalid::for($command, 'a command extends App\\Bus\\Support\\Command');
         }
 
         if ($reflection->implementsInterface(ShouldQueue::class)) {
