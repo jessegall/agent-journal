@@ -852,7 +852,6 @@ class	AgentHoldReleased
 class	AgentLabel
 class	AgentLabels
 class	AgentLifecycle
-class	AgentNameRequired
 class	AgentNotAvailable
 class	AgentPolicy
 class	AgentProfileMissing
@@ -1848,7 +1847,6 @@ class	MessageAnswered
 class	MessageAskTool
 class	MessageAttention
 class	MessageBody
-class	MessageBodyEmpty
 class	MessageBodyTooLong
 class	MessageClaimHolder
 class	MessageClaimProvider
@@ -4500,7 +4498,6 @@ method	AgentLabels::namesOf()
 method	AgentLifecycle::lockExclusive()
 method	AgentLifecycle::lockExclusiveActive()
 method	AgentLifecycle::lockShared()
-method	AgentNameRequired::forAgent()
 method	AgentNotAvailable::forAgent()
 method	AgentNotAvailable::refusalCode()
 method	AgentNotAvailable::status()
@@ -6062,7 +6059,6 @@ method	ContainerUnavailable::because()
 method	ContainerUnavailable::reason()
 method	ContentMissing::field()
 method	ContentTooLarge::field()
-method	ContentTooLarge::lineBreak()
 method	ContextBody::__construct()
 method	ContextBudget::__construct()
 method	ContextCollection::__construct()
@@ -7999,7 +7995,6 @@ method	MessageAttention::record()
 method	MessageAttention::wakeStatus()
 method	MessageBody::__construct()
 method	MessageBody::from()
-method	MessageBodyEmpty::forSend()
 method	MessageBodyTooLong::forBytes()
 method	MessageBodyTooLong::refusalCode()
 method	MessageBodyTooLong::status()

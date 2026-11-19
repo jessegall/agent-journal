@@ -12,6 +12,7 @@ use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\BlockTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
 
 /**
  * Blocks the caller's current run of a task with the reason it waits; the task's work ends on every stack.
@@ -25,7 +26,7 @@ final readonly class BlockTask extends Command implements HasAuthorizationSubjec
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        public string $reason,
+        #[Max(Task::NOTE_CHARACTERS)] public string $reason,
     ) {}
 
     public function subject(): Task

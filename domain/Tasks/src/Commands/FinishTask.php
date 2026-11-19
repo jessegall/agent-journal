@@ -12,6 +12,7 @@ use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\FinishTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
 
 /**
  * Finishes the caller's current run of a task with a result note; the task's work ends on every stack.
@@ -25,7 +26,7 @@ final readonly class FinishTask extends Command implements HasAuthorizationSubje
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        public string $note,
+        #[Max(Task::NOTE_CHARACTERS)] public string $note,
     ) {}
 
     public function subject(): Task

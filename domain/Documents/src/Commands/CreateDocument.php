@@ -6,6 +6,7 @@ namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\OneLine;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Bus\Support\Command;
 use App\Records\Support\RecordIdentity;
@@ -14,6 +15,8 @@ use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\CreateDocumentHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Publishes a new document with its text as revision 1.
@@ -31,10 +34,10 @@ final readonly class CreateDocument extends Command implements HasAuthorizationS
      * @param  list<RecordIdentity>  $about  the records it is about, linked with it or not created at all
      */
     public function __construct(
-        public string $title,
-        public string $abstract,
+        #[Required, OneLine, Max(Document::TITLE_CHARACTERS)] public string $title,
+        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)] public string $abstract,
         public string $body,
-        public array $about = [],
+        #[Max(self::MOST_LINKS)] public array $about = [],
     ) {}
 
     /**

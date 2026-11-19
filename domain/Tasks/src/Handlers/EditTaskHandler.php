@@ -8,7 +8,6 @@ use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRevisionChanged;
-use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\Models\Task;
 
 final readonly class EditTaskHandler implements CommandHandler
@@ -16,7 +15,6 @@ final readonly class EditTaskHandler implements CommandHandler
     /**
      * @throws TaskMissing
      * @throws TaskRevisionChanged
-     * @throws TaskTextTooLong
      */
     public function handle(EditTask $command): int
     {

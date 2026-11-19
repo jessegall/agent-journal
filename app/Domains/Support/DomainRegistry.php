@@ -6,6 +6,7 @@ namespace App\Domains\Support;
 
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
+use App\Bus\Support\PropertyRules;
 use App\Domains\Exceptions\AlwaysOnDomainRequiresSwitchable;
 use App\Domains\Exceptions\AmbiguousDomainRoot;
 use App\Domains\Exceptions\DomainCycle;
@@ -102,16 +103,20 @@ final readonly class DomainRegistry
      */
     public function uiDeclarations(DomainUi ...$coreDeclarations): UiDeclarations
     {
-        return UiDeclarations::check(array_values([...$coreDeclarations, ...array_map(fn (DomainEntry $entry) => $entry->ui(), $this->all())]));
+        $domainDeclarations = array_map(fn (DomainEntry $entry) => $entry->ui(), $this->all());
+
+        return UiDeclarations::check(array_values([...$coreDeclarations, ...$domainDeclarations]));
     }
 
     /**
      * Every owner's commands and middleware, Core's first and then the domains in bootstrap/domains.php order, checked
      * together; start-up stops at the first wrong declaration.
      */
-    public function commandDeclarations(CommandOwner $core): CommandRegistry
+    public function commandDeclarations(CommandOwner $core, PropertyRules $propertyRules): CommandRegistry
     {
-        return CommandRegistry::from([$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())]);
+        $owners = [$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())];
+
+        return CommandRegistry::from($owners, $propertyRules);
     }
 
     /**
@@ -147,7 +152,11 @@ final readonly class DomainRegistry
      */
     public function commandRules(array $coreRules): CommandRuleRegistry
     {
-        return CommandRuleRegistry::from([...$coreRules, ...array_merge(...array_map(fn (DomainEntry $entry): array => $entry->commandRules(), $this->all()))]);
+        $domainRules = array_merge(
+            ...array_map(fn (DomainEntry $entry): array => $entry->commandRules(), $this->all()),
+        );
+
+        return CommandRuleRegistry::from([...$coreRules, ...$domainRules]);
     }
 
     /**

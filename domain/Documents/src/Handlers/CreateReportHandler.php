@@ -11,8 +11,6 @@ use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Support\LinkLimit;
-use Domain\Documents\Support\RecordFields;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class CreateReportHandler implements CommandHandler
@@ -25,13 +23,7 @@ final readonly class CreateReportHandler implements CommandHandler
     public function handle(CreateReport $command): CreatedRecord
     {
         $actor = $command->dispatchedBy();
-        LinkLimit::require($command->about, CreateReport::MOST_LINKS);
-        $report = Report::file(
-            RecordFields::title($command->title),
-            RecordFields::abstract($command->abstract),
-            MarkdownText::body($command->body),
-            $actor,
-        );
+        $report = Report::file($command->title, $command->abstract, MarkdownText::body($command->body), $actor);
         $this->links->linkFrom($report, $command->about);
         $this->events->dispatch(new ReportFiled($report->id, $report->number, $actor));
 

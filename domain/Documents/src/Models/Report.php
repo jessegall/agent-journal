@@ -53,7 +53,16 @@ use Illuminate\Support\Carbon;
 #[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'filed_at'])]
 final class Report extends Model implements Commentable, Numbered, ReadableModel, Shareable, TextContent
 {
-    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, MeasuresBody, SearchesText, Settles, SharedWithComments;
+    use BoundedReads;
+    use CreatedWithAttention;
+    use HasComments;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
+    use MeasuresBody;
+    use SearchesText;
+    use Settles;
+    use SharedWithComments;
 
     public const string LINK_TYPE = 'documents.report';
 
@@ -76,8 +85,8 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     public static function file(string $title, string $abstract, MarkdownText $body, Actor $author): self
     {
         return self::query()->create([
-            'title' => $title,
-            'abstract' => $abstract,
+            'title' => trim($title),
+            'abstract' => trim($abstract),
             'body' => $body->text,
             'creator_type' => $author->actorType(),
             'creator_id' => $author->actorId(),
@@ -87,7 +96,13 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
 
     public function card(): ReportCard
     {
-        return ReportCard::from(['id' => $this->id, 'number' => (string) $this->number, 'title' => $this->title, 'abstract' => $this->abstract, 'attention' => $this->attention]);
+        return ReportCard::from([
+            'id' => $this->id,
+            'number' => (string) $this->number,
+            'title' => $this->title,
+            'abstract' => $this->abstract,
+            'attention' => $this->attention,
+        ]);
     }
 
     /**
@@ -108,7 +123,13 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
 
     public function dockCard(): DockCard
     {
-        return DockCard::from(['type' => 'report', 'number' => (string) $this->number, 'title' => $this->title, 'abstract' => $this->abstract, 'route' => "/documents/reports/{$this->number}"]);
+        return DockCard::from([
+            'type' => 'report',
+            'number' => (string) $this->number,
+            'title' => $this->title,
+            'abstract' => $this->abstract,
+            'route' => "/documents/reports/{$this->number}",
+        ]);
     }
 
     public function view(): ReportView

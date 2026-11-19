@@ -14,6 +14,8 @@ use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\RecoverDocumentHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * A user closes an abandoned draft at the version they were shown, with a reason; a changed text becomes the next
@@ -25,7 +27,10 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Administer)]
 final readonly class RecoverDocument extends Command implements HasAuthorizationSubject
 {
-    public function __construct(public DraftTarget $draft, public string $reason) {}
+    public function __construct(
+        public DraftTarget $draft,
+        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)] public string $reason,
+    ) {}
 
     /**
      * @return class-string

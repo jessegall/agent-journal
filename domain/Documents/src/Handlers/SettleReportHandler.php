@@ -10,7 +10,6 @@ use Domain\Documents\Commands\SettleReport;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordChanges;
-use Domain\Documents\Support\RecordFields;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class SettleReportHandler implements CommandHandler
@@ -19,13 +18,12 @@ final readonly class SettleReportHandler implements CommandHandler
 
     public function handle(SettleReport $command): void
     {
-        $reason = RecordFields::settlementReason($command->reason);
         $report = Report::query()->where('number', $command->reportNumber)->lockForUpdate()->first()
             ?? throw ReportMissing::numbered($command->reportNumber);
 
         $this->changes->requireChangeOf($report);
 
-        if ($report->settle($command->dispatchedBy(), $reason, null)) {
+        if ($report->settle($command->dispatchedBy(), $command->reason, null)) {
             $this->events->dispatch(new RecordSettled(Report::LINK_TYPE, $report->id));
         }
     }

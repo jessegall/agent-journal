@@ -8,7 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
-use App\Text\Exceptions\ContentMissing;
+use App\Bus\Exceptions\CommandInputInvalid;
+use App\Records\Support\RecordIdentity;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Contracts\DocumentResolver;
@@ -18,6 +19,7 @@ use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
+use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -39,7 +41,10 @@ final class DocumentsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
     }
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
@@ -67,14 +72,46 @@ final class DocumentsTest extends TestCase
 
     public function test_an_empty_title_leaves_no_row_and_names_the_field(): void
     {
-        try {
-            $this->bus()->run(new CreateDocument(' ', 'What we build', "Text\n"));
-            $this->fail('An empty title was accepted.');
-        } catch (ContentMissing $missing) {
-            $this->assertStringContainsString('title', $missing->getMessage());
-        }
-
+        $this->assertThrows(
+            fn () => $this->bus()->run(new CreateDocument(' ', 'What we build', "Text\n")),
+            CommandInputInvalid::class,
+            'title: The title field is required.',
+        );
         $this->assertSame(0, Document::query()->count());
+    }
+
+    public function test_a_two_line_abstract_or_too_many_links_leaves_no_row_and_names_the_field(): void
+    {
+        $about = array_map(
+            fn (int $number) => new RecordIdentity('tasks.task', TestIds::of($number)),
+            range(1, CreateDocument::MOST_LINKS + 1),
+        );
+
+        $this->assertThrows(
+            fn () => $this->bus()->run(new CreateDocument('Design', "What we\nbuild", "Text\n")),
+            CommandInputInvalid::class,
+            'abstract: The abstract must be one line',
+        );
+        $this->assertThrows(
+            fn () => $this->bus()->run(new CreateReport('Check', 'What we found', "Text\n", $about)),
+            CommandInputInvalid::class,
+            'about: The about field must not have more than 50 items.',
+        );
+        $this->assertSame(0, Document::query()->count() + Report::query()->count());
+    }
+
+    public function test_a_title_and_abstract_are_stored_trimmed(): void
+    {
+        $this->bus()->run(new CreateDocument('  Plan for May  ', ' What we build ', "Text\n"));
+        $this->bus()->run(new CreateReport('  Plan for May  ', ' What we found ', "Text\n"));
+
+        $document = $this->app->make(DocumentResolver::class)->show(1);
+
+        $this->assertSame(['Plan for May', 'What we build'], [$document->title, $document->abstract]);
+        $this->assertSame(['Plan for May', 'What we found'], [
+            Report::query()->sole()->title,
+            Report::query()->sole()->abstract,
+        ]);
     }
 
     public function test_a_saved_revision_does_not_change(): void

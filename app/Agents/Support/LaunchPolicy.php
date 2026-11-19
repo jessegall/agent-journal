@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\StopConditions;
 use App\Processes\Values\ProcessGrants;
@@ -35,6 +36,17 @@ final readonly class LaunchPolicy
             null,
             null,
             null,
+        );
+    }
+
+    /**
+     * A person's main agent launched with an explicit program and model and no profile: on the protected host, in
+     * the given folder, with the default budgets.
+     */
+    public static function mainOnHost(string $worktree): self
+    {
+        return self::withoutProfile(
+            ExecutionPolicy::make(ExecutionModeType::ProtectedHost, null, $worktree, ExecutionBudgets::defaults(), []),
         );
     }
 

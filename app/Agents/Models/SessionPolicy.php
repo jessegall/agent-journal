@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Agents\Exceptions\SessionPolicyFrozen;
 use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\StoredPolicies;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -42,6 +43,7 @@ use Illuminate\Database\Eloquent\Model;
 final class SessionPolicy extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>

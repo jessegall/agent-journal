@@ -7,7 +7,6 @@ namespace Domain\Memory\Handlers;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use Domain\Memory\Commands\SaveMemory;
-use Domain\Memory\Exceptions\MemoryInvalid;
 use Domain\Memory\Models\Memory;
 
 /**
@@ -15,9 +14,6 @@ use Domain\Memory\Models\Memory;
  */
 final readonly class SaveMemoryHandler implements CommandHandler
 {
-    /**
-     * @throws MemoryInvalid
-     */
     public function handle(SaveMemory $command): string
     {
         return Memory::keep(ActorIdentity::of($command->dispatchedBy()), $command->text, $command->weight)->id;

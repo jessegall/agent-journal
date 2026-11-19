@@ -12,6 +12,8 @@ use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\SettleDocumentHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Settles a document at the revision the settler read, with the reason it needs no more attention.
@@ -25,7 +27,7 @@ final readonly class SettleDocument extends Command implements HasAuthorizationS
     public function __construct(
         public int $documentNumber,
         public int $expectedRevision,
-        public string $reason,
+        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)] public string $reason,
     ) {}
 
     /**

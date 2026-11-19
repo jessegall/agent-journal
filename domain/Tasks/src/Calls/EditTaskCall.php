@@ -11,7 +11,7 @@ use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Transformers\CallKeyTransformer;
-use Domain\Tasks\Support\TaskLimits;
+use Domain\Tasks\Models\Task;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -37,9 +37,9 @@ final class EditTaskCall extends Data implements JournalCall
         public string $taskId,
         #[Min(1)]
         public int $expectedRevision,
-        #[Max(TaskLimits::TITLE_CHARACTERS), RequiredWithout('brief')]
+        #[Max(Task::TITLE_CHARACTERS), RequiredWithout('brief')]
         public string|null $title,
-        #[Max(TaskLimits::NOTE_CHARACTERS), RequiredWithout('title')]
+        #[Max(Task::NOTE_CHARACTERS), RequiredWithout('title')]
         public string|null $brief,
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]

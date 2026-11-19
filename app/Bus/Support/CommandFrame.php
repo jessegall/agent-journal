@@ -12,13 +12,15 @@ use App\Bus\CommandMiddleware\LogCommand;
 use App\Bus\CommandMiddleware\RecordReceipt;
 use App\Bus\CommandMiddleware\RecordRefusalReceipt;
 use App\Bus\CommandMiddleware\RunInTransaction;
+use App\Bus\CommandMiddleware\ValidateCommand;
 use App\Bus\Contracts\CommandMiddleware;
 
 /**
- * The order every command passes (doc 19, section 6.5): LogCommand, CheckEntry, BindDispatcher, AdmitStack,
- * RecordRefusalReceipt, the module middleware of the BeforeTransaction stage, RunInTransaction, RecordReceipt (check,
- * then write after the handler), [guard], the module middleware of the InsideTransaction stage, the handler. The place
- * in brackets belongs to doc 16's MCP plan, which adds its step to these lists without changing MiddlewareRunner.
+ * The order every command passes (doc 19, section 6.5): LogCommand, CheckEntry, BindDispatcher, ValidateCommand,
+ * AdmitStack, RecordRefusalReceipt, the module middleware of the BeforeTransaction stage, RunInTransaction,
+ * RecordReceipt (check, then write after the handler), [guard], the module middleware of the InsideTransaction stage,
+ * the handler. The place in brackets belongs to doc 16's MCP plan, which adds its step to these lists without
+ * changing MiddlewareRunner.
  */
 final class CommandFrame
 {
@@ -31,6 +33,7 @@ final class CommandFrame
         LogCommand::class,
         CheckEntry::class,
         BindDispatcher::class,
+        ValidateCommand::class,
         AdmitStack::class,
         RecordRefusalReceipt::class,
     ];

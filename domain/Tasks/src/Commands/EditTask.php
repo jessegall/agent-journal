@@ -12,6 +12,8 @@ use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\EditTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
 
 /**
  * Gives a task a new title, brief or both, refused when the task moved past the revision the caller read; answers the
@@ -26,8 +28,8 @@ final readonly class EditTask extends Command implements HasAuthorizationSubject
     public function __construct(
         public string $taskId,
         public int $expectedRevision,
-        public string|null $title = null,
-        public string|null $brief = null,
+        #[RequiredWithout('brief'), Max(Task::TITLE_CHARACTERS)] public string|null $title = null,
+        #[Max(Task::NOTE_CHARACTERS)] public string|null $brief = null,
     ) {}
 
     /**

@@ -11,6 +11,7 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Communication\Models\Message;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Models\Link;
@@ -21,7 +22,6 @@ use App\Records\Contracts\RecordResolver;
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
-use App\Text\Exceptions\ContentTooLarge;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
@@ -80,7 +80,10 @@ final class RecordLinksTest extends TestCase
         Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
 
-        $cards = array_map(fn (string $reference) => $this->records()->card($this->records()->identify(RecordReference::parse($reference))), ['task 1', 'plan 1', 'doc 1']);
+        $cards = array_map(
+            fn (string $reference) => $this->records()->card($this->identified($reference)),
+            ['task 1', 'plan 1', 'doc 1'],
+        );
 
         $this->assertSame(['task 1', 'plan 1', 'doc 1'], array_map(fn ($card) => $card->label, $cards));
         $this->assertSame(['Write the client', 'Version 6', 'Design'], array_map(fn ($card) => $card->title, $cards));
@@ -104,7 +107,9 @@ final class RecordLinksTest extends TestCase
         $this->actAsAgent(9);
 
         $id = (string) Str::ulid();
-        $hidden = $this->refusalOf(fn () => $this->records()->card(new RecordIdentity(Message::LINK_TYPE, $message->id)));
+        $hidden = $this->refusalOf(
+            fn () => $this->records()->card(new RecordIdentity(Message::LINK_TYPE, $message->id)),
+        );
         $missing = $this->refusalOf(fn () => $this->records()->card(new RecordIdentity(Message::LINK_TYPE, $id)));
 
         $this->assertSame(str_replace($message->id, 'ID', $hidden), str_replace($id, 'ID', $missing));
@@ -116,7 +121,7 @@ final class RecordLinksTest extends TestCase
         Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
         $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
-        [$report, $plan, $document] = array_map(fn (string $reference) => $this->records()->identify(RecordReference::parse($reference)), ['report 1', 'plan 1', 'doc 1']);
+        [$report, $plan, $document] = array_map($this->identified(...), ['report 1', 'plan 1', 'doc 1']);
 
         $this->bus()->run(new LinkRecords($report, $plan));
         $this->bus()->run(new LinkRecords($report, $document));
@@ -125,7 +130,10 @@ final class RecordLinksTest extends TestCase
 
         $this->bus()->run(new UnlinkRecords($document, $report));
 
-        $this->assertSame(['plan 1'], array_map(fn ($card) => $card->label, $this->records()->linkedCards(Report::query()->sole())));
+        $this->assertSame(
+            ['plan 1'],
+            array_map(fn ($card) => $card->label, $this->records()->linkedCards(Report::query()->sole())),
+        );
         $this->assertSame(1, Document::query()->count());
     }
 
@@ -141,13 +149,14 @@ final class RecordLinksTest extends TestCase
         $this->actAsAgent(9);
 
         try {
-            $this->bus()->run(new CreateDocument('Leak', 'Should not exist', "Text\n", [new RecordIdentity(Message::LINK_TYPE, $message->id)]));
+            $about = [new RecordIdentity(Message::LINK_TYPE, $message->id)];
+            $this->bus()->run(new CreateDocument('Leak', 'Should not exist', "Text\n", $about));
             $this->fail('A document about a private message was created.');
         } catch (RecordUnavailable) {
             $this->assertSame(1, Document::query()->count());
         }
 
-        $this->expectException(ContentTooLarge::class);
+        $this->expectException(CommandInputInvalid::class);
         $this->bus()->run(new CreateDocument('Many', 'Too many links', "Text\n", array_fill(0, 51, $task)));
     }
 
@@ -186,13 +195,26 @@ final class RecordLinksTest extends TestCase
 
     private function actAsUser(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
+    }
+
+    private function identified(string $reference): RecordIdentity
+    {
+        return $this->records()->identify(RecordReference::parse($reference));
     }
 
     private function actAsAgent(int $agent): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), TestLaunchAuthority::forAgent(TestIds::of($agent)));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of($agent)),
+            TestLaunchAuthority::forAgent(TestIds::of($agent)),
+        );
+        $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
+        $context = new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), $call, null);
+        $this->app->instance(AgentContext::class, $context);
     }
 
     private function records(): RecordResolver

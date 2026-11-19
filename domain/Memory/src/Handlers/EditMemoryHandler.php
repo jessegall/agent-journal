@@ -6,7 +6,6 @@ namespace Domain\Memory\Handlers;
 
 use App\Contracts\CommandHandler;
 use Domain\Memory\Commands\EditMemory;
-use Domain\Memory\Exceptions\MemoryInvalid;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
@@ -18,7 +17,6 @@ final readonly class EditMemoryHandler implements CommandHandler
 {
     /**
      * @throws MemoryUnavailable
-     * @throws MemoryInvalid
      * @throws MemoryRevisionChanged
      */
     public function handle(EditMemory $command): string
