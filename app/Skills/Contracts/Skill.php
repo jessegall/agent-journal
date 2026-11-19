@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Skills\Contracts;
 
-use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
- * One skill: a stable key, a name, a short description, the condition that decides who receives it, and its sections
- * in the order they are written.
+ * One skill: a stable key, a name, a short description, the condition that decides who receives it, and its sections,
+ * listed by hand or read from the headings of its file.
  */
 interface Skill
 {
@@ -20,8 +20,5 @@ interface Skill
 
     public function condition(): SkillCondition;
 
-    /**
-     * @return list<SkillSection>
-     */
-    public function sections(): array;
+    public function sections(): SkillSections;
 }

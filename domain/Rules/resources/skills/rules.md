@@ -1,5 +1,7 @@
 # Rules
 
+Rules are what every agent of the project must follow.
+
 ## What a rule is
 
 A rule is a standing instruction every agent of the project is told. It holds only while it is active.

@@ -26,6 +26,7 @@ use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -43,7 +44,7 @@ final class SkillContractsTest extends TestCase
             $this->assertContains($contract, $exports->contracts);
         }
 
-        foreach ([SkillKey::class, SkillSection::class, MarkdownPart::class, SkillContext::class, Conditions::class] as $value) {
+        foreach ([SkillKey::class, SkillSection::class, SkillSections::class, MarkdownPart::class, SkillContext::class, Conditions::class] as $value) {
             $this->assertContains($value, $exports->values);
         }
 

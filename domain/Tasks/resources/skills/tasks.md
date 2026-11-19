@@ -1,5 +1,7 @@
 # Tasks
 
+A task is one unit of work, from open to finished.
+
 ## States
 
 A task is open until someone starts it, then started; it may be blocked while it waits on something, and it ends finished or cancelled. A task keeps a log of what happened to it.

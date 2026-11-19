@@ -1,5 +1,7 @@
 # Sequences
 
+Sequences are steps you follow one at a time.
+
 ## What a sequence is
 
 A sequence is a list of steps an agent follows one at a time. A run of a sequence knows its steps, the step it is on, and whether it is running, finished or cancelled.

@@ -8,13 +8,24 @@ program reads are a projection of those sources, written by the journal.
 
 - The owner's domain class implements `App\Skills\Contracts\ProvidesSkills` and lists its skill classes in `skills()`.
   Core lists its own in `App\Skills\Support\CoreSkills`.
-- A skill class implements `App\Skills\Contracts\Skill`: its key, name, description, condition and sections. Keys are
-  lowercase words joined by hyphens; `journal-*` is reserved for Core and the shipped domains, a registered module uses
-  its own slug as prefix, and `user-*` is for stored skills.
-- A section is `SkillSection::text(key, heading, markdown)` or `SkillSection::markdown(key, heading, MarkdownPart)`.
-  `MarkdownPart::body(file)` includes a whole file and `MarkdownPart::heading(file, [path])` one heading's subtree, both
-  from the owner's `resources/skills` folder. Includes are checked: no absolute path, no `..`, no link leaving the
-  folder, no repeated or missing heading.
+- A skill class implements `App\Skills\Contracts\Skill`: its key, name, description, condition and
+  `sections(): SkillSections`. Keys are lowercase words joined by hyphens; `journal-*` is reserved for Core and the
+  shipped domains, a registered module uses its own slug as prefix, and `user-*` is for stored skills.
+- A shipped skill names its file: `SkillSections::fromFile('core/shell.md')`, a file in the owner's `resources/skills`
+  folder. The file's `#` title must equal the skill's `name()`. The text between the title and the first `##` becomes
+  the Purpose section; each `##` heading becomes one section, in file order, with the heading as written for its title,
+  the heading in kebab case (`Str::slug`) for its key, and everything under it, `###` subheadings included, for its
+  body. A heading added to the file is published without a code change.
+- A module may still list its sections by hand: `SkillSections::listed(...)` of `SkillSection::text(key, heading,
+  markdown)` or `SkillSection::markdown(key, heading, MarkdownPart)`. `MarkdownPart::body(file)` includes a whole file
+  and `MarkdownPart::heading(file, [path])` one heading's subtree, both from the owner's `resources/skills` folder.
+  Includes are checked: no absolute path, no `..`, no link leaving the folder, no repeated or missing heading.
+- A broken file stops the catalogue with a refusal that names the file and the heading, as
+  `App\Skills\Exceptions\SkillSourceInvalid`: `missingFile`, `outsideFolder` and `unreadable` for the file itself,
+  `missingTitle` (no `#` title before the first `##`, or text before it), `secondTitle`, `titleDiffers` (the title is
+  not the skill's name) and `headingWithoutKey` (a `##` heading with only punctuation). The renderer also refuses a key
+  used twice (`SkillDeclarationInvalid::sectionKeyTwice`, for example two `## States`) and no sections or more than 64
+  (`SkillDeclarationInvalid::sectionCount`).
 - Two owners declaring one key stop the catalogue with both names; there is no winner by order.
 
 ## Who a skill reaches

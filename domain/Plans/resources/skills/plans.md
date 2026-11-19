@@ -1,5 +1,7 @@
 # Plans
 
+A plan orders the work: phases of tasks, worked one phase after another.
+
 ## States
 
 A plan has a type (build, fix, research or cleanup) and moves through these states: planned, reviewing, started, paused, and finally done or cancelled. Its phases hold its tasks in order.

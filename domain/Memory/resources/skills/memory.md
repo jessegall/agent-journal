@@ -1,5 +1,7 @@
 # Memory
 
+Memories keep what matters beyond your context window.
+
 ## What a memory is
 
 A memory is something you must still know after a compaction: a short text kept at a weight. Only the agent that keeps a memory reads it.

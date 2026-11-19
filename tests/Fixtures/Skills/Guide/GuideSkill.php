@@ -9,6 +9,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * A fixture skill with one written section and one taken from a heading of a Markdown file.
@@ -44,11 +45,11 @@ final readonly class GuideSkill implements Skill
         return Conditions::everyone();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
+        return SkillSections::listed(
             SkillSection::text('purpose', 'Purpose', "A guide to retrying.\r\n"),
             SkillSection::markdown('retry', 'Retrying', MarkdownPart::heading($this->file, $this->headingPath)),
-        ];
+        );
     }
 }

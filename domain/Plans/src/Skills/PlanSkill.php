@@ -8,8 +8,7 @@ use App\Profiles\Values\ProfileBase;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
-use App\Skills\Values\MarkdownPart;
-use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * The Plans domain's skill: what a plan is and how its work is held.
@@ -36,12 +35,8 @@ final class PlanSkill implements Skill
         return Conditions::any(Conditions::dispatchesWork(), Conditions::profileBases(ProfileBase::writingHelper()));
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
-            SkillSection::text('purpose', 'Purpose', 'A plan orders the work: phases of tasks, worked one phase after another.'),
-            SkillSection::markdown('states', 'States', MarkdownPart::heading('plans.md', ['Plans', 'States'])),
-            SkillSection::markdown('holding', 'Holding plan work', MarkdownPart::heading('plans.md', ['Plans', 'Holding plan work'])),
-        ];
+        return SkillSections::fromFile('plans.md');
     }
 }
