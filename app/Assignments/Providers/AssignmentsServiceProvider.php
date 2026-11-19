@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Providers;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Actions\WriteAssignments;
 use App\Assignments\Console\AssignRecordCommand;
 use App\Assignments\Console\AutoAssignmentPoolsCommand;
@@ -28,6 +30,9 @@ use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\RecordVisibility;
+use App\Assignments\Enums\AssignmentAbility;
+use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Registry\AssignmentRegistry;
 use App\Assignments\Resolvers\AssigneeRecords;
 use App\Assignments\Resolvers\AssignmentRecords;
@@ -66,8 +71,13 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AutoAssignmentWriter::class, DatabaseAutoAssignments::class);
     }
 
-    public function boot(): void
+    public function boot(PolicyCatalogue $policies): void
     {
+        $policies->register('Core', new PolicyRegistration(
+            AssignmentRecord::class,
+            AssignmentPolicy::class,
+            AssignmentAbility::class,
+        ));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
         $this->commands([
             ShowAssignmentCommand::class,

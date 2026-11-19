@@ -61,7 +61,7 @@ final class AgentRequestKeyTest extends TestCase
     {
         $this->runCommandsAs($this->helper);
 
-        $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->helper->agent->id}", '--request-key' => self::KEY])
+        $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->main->agent->id}", '--request-key' => self::KEY])
             ->expectsOutputToContain('--request-key='.self::KEY)
             ->assertExitCode(1);
     }

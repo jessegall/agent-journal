@@ -18,13 +18,13 @@ return new class extends Migration
             $table->text('body');
             $table->string('state', 32)->default('sent');
             $table->unsignedInteger('answer_round')->default(0);
-            $table->ulid('agent_id')->nullable();
-            $table->ulid('session_id')->nullable();
+            $table->string('actor_type', 16)->nullable();
+            $table->string('actor_id')->nullable();
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);
 
-            $table->index(['agent_id', 'session_id']);
+            $table->index(['actor_type', 'actor_id']);
         });
 
         DB::statement('ALTER TABLE messages ADD CONSTRAINT messages_number_positive CHECK (number > 0)');

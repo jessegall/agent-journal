@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
@@ -95,10 +97,10 @@ final class HomePageTest extends TestCase
             ->assertStatus(303)
             ->assertRedirect($home);
 
-        $this->assertSame([$body], Message::query()->ownedBy($this->session->agent_id)->pluck('body')->all());
+        $this->assertSame([$body], Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->session->agent_id))->pluck('body')->all());
         $this->actingAs($this->owner)->get($home)->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.data.conversation.id', "{$this->session->agent_id}-{$this->session->id}")
+                ->where('window_chat_conversation.data.conversation.id', "agent-{$this->session->agent_id}")
                 ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)
                 ->where('window_chat_conversation.data.conversation.messages.0.body', $body)));
     }
@@ -140,7 +142,7 @@ final class HomePageTest extends TestCase
             ->assertRedirect('/')
             ->assertSessionHasErrors('body');
 
-        $this->assertSame(0, Message::query()->ownedBy($this->session->agent_id)->count());
+        $this->assertSame(0, Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->session->agent_id))->count());
     }
 
     public function test_a_guessed_session_is_refused_on_the_session(): void

@@ -15,6 +15,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 
 /**
  * Other domains read tasks only through Tasks' published reads: progress counts and visibility checks, with an actor.
@@ -25,7 +26,7 @@ final class TaskReadsTest extends TestCase
 
     public function test_every_named_task_must_exist_or_the_whole_check_fails(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Test the walk']);
 

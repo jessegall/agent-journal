@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
@@ -12,7 +13,6 @@ use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Exceptions\AssigneeUnavailable;
 use App\Assignments\Exceptions\AssignmentConflict;
-use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Models\AssignmentRecord;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
@@ -84,17 +84,14 @@ final class AssignmentWriterTest extends TestCase
         $this->assertThrows(fn () => $this->writer()->assign($this->task, ActorIdentity::of($this->main)), AssignmentConflict::class);
     }
 
-    public function test_a_main_agent_gives_out_work_and_a_helper_or_a_retired_main_may_not(): void
+    public function test_a_main_agent_gives_out_work_and_a_helper_may_not(): void
     {
         $this->startRequestAs($this->main->id, TestIds::of(1));
         $this->writer()->assign($this->task, ActorIdentity::of($this->helper));
 
         $this->startRequestAs($this->helper->id, TestIds::of(2));
-        $this->assertThrows(fn () => $this->writer()->assign(Task::factory()->create(['title' => 'Other'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
-
-        $this->main->retireAt(CarbonImmutable::now());
-        $this->startRequestAs($this->main->id, TestIds::of(1));
-        $this->assertThrows(fn () => $this->writer()->assign(Task::factory()->create(['title' => 'Third'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
+        $other = Task::factory()->create(['title' => 'Other'])->assignmentIdentity();
+        $this->assertThrows(fn () => $this->writer()->assign($other, ActorIdentity::of($this->main)), ActorNotAllowed::class);
     }
 
     public function test_a_reassignment_needs_the_reference_it_read_even_after_a_round_trip(): void

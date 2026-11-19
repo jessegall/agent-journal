@@ -6,7 +6,6 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -24,6 +23,7 @@ use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestLaunchAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -56,7 +56,7 @@ final class HookEndpointTest extends TestCase
     public function test_a_started_task_holds_the_stop_through_the_endpoint(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->asLaunchedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->launch->session->id)));
+        $this->asLaunchedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
 
         $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');
 
@@ -160,7 +160,7 @@ final class HookEndpointTest extends TestCase
             new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id), TestLaunchAuthority::forAgent($this->launch->agent->id));
         $work();
         $this->app->forgetScopedInstances();
     }

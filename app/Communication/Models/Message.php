@@ -4,26 +4,31 @@ declare(strict_types=1);
 
 namespace App\Communication\Models;
 
-use App\Agents\Support\StackTarget;
+use App\Actors\Contracts\ActorVisibility;
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Models\Support\BelongsToOneActor;
+use App\Actors\Models\Support\VisibleActorScope;
+use App\Actors\Support\ActorIdentity;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\MessageWorkState;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageRoundStale;
 use App\Communication\Support\MessageWork;
-use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Scope as QueryScope;
 use Illuminate\Support\Carbon;
 
 /**
- * One message. When it needs an agent's answer, the agent and session that owe it are set by asking for the answer.
- * Only the agent it is addressed to reads it; a message not yet addressed belongs to no agent.
+ * One message. When it needs an answer, the actor that owes it is set by asking for the answer. Only the actor it
+ * is addressed to reads it, as that actor's visibility says; a message not yet addressed belongs to no actor.
  *
  * @property string $id
  * @property string $number_group_id
@@ -31,15 +36,15 @@ use Illuminate\Support\Carbon;
  * @property string $body
  * @property MessageState $state
  * @property int $answer_round the round of asking for an answer; 0 before anyone was asked
- * @property string|null $agent_id
- * @property string|null $session_id
+ * @property string|null $actor_type
+ * @property string|null $actor_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['body'])]
 final class Message extends Model implements Numbered, ReadableModel
 {
-    use BelongsToOneAgent, HasNumber, HasUlids;
+    use BelongsToOneActor, HasNumber, HasUlids;
     use BoundedReads;
     use Linkable;
 
@@ -74,7 +79,7 @@ final class Message extends Model implements Numbered, ReadableModel
      */
     public static function lockedById(string $id): self
     {
-        // A message belongs to no agent until one is asked to answer it.
+        // A message belongs to no actor until one is asked to answer it.
         return self::lockedForActorOrUnheld($id) ?? throw MessageMissing::forId($id);
     }
 
@@ -87,15 +92,33 @@ final class Message extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * Opens a new round of asking the session for an answer, so a frame of an earlier round stays finished.
+     * Opens a new round of asking the actor for an answer, so a frame of an earlier round stays finished.
      */
-    public function requireAnswerFrom(StackTarget $target): void
+    public function requireAnswerFrom(ActorIdentity $actor): void
     {
         $this->answer_round++;
         $this->state = MessageState::WaitingForAnswer;
-        $this->agent_id = $target->agentId;
-        $this->session_id = $target->sessionId;
+        $this->belongTo($actor);
         $this->save();
+    }
+
+    /**
+     * @return QueryScope<Model>
+     */
+    protected static function actorScope(): QueryScope
+    {
+        return new VisibleActorScope(
+            static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
+            static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
+        );
+    }
+
+    /**
+     * @return class-string<QueryScope<Model>>
+     */
+    protected static function ownerScope(): string
+    {
+        return VisibleActorScope::class;
     }
 
     /**

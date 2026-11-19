@@ -13,6 +13,7 @@ use App\Bus\Support\OperationDeadline;
 use App\Contracts\LaunchTransaction;
 use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
+use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
@@ -25,6 +26,7 @@ use App\Hooks\Support\ContextBudget;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
+use App\Hooks\Support\WorkStackPushes;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -41,6 +43,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(StateTypes::class);
         $this->app->bind(LaunchTransaction::class, StackTransaction::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
+        $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
             $this->app->make('config')->integer('hooks.hook_call_days'),
             $this->app->make('config')->integer('hooks.closed_stack_days'),

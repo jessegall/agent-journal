@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Enums\AgentRole;
-use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Commands\AssignRecord;
@@ -192,22 +193,22 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $session = $this->launchedSession();
         $this->startUserRequestAs(TestIds::of(1));
 
-        $this->app->make(CommandBus::class)->run(new SendMessage("  Trim me  \n", $session->id));
+        $this->app->make(CommandBus::class)->run(new SendMessage("  Trim me  \n", new ActorIdentity(ActorType::Agent, $session->agent_id)));
 
-        $this->assertSame('Trim me', Message::query()->ownedBy($session->agent_id)->sole()->body);
+        $this->assertSame('Trim me', Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $session->agent_id))->sole()->body);
     }
 
-    public function test_a_message_pointed_at_an_unseen_session_is_refused_and_leaves_no_message(): void
+    public function test_a_message_pointed_at_an_unknown_agent_is_refused_and_leaves_no_message(): void
     {
         $this->installCommandModulesRequiring(['Chat'], MiddlewareDeclaration::around(SendsToUnknownSession::class, CommandScope::command(SendMessage::class)));
         $session = $this->launchedSession();
         $this->startUserRequestAs(TestIds::of(1));
 
         try {
-            $this->app->make(CommandBus::class)->run(new SendMessage('Hello', $session->id));
-            $this->fail('A message reached a session nobody may see.');
-        } catch (StackTargetRefused) {
-            $this->assertSame(0, Message::query()->ownedBy($session->agent_id)->count());
+            $this->app->make(CommandBus::class)->run(new SendMessage('Hello', new ActorIdentity(ActorType::Agent, $session->agent_id)));
+            $this->fail('A message reached an agent that does not exist.');
+        } catch (ActorUnavailable) {
+            $this->assertSame(0, Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $session->agent_id))->count());
         }
     }
 

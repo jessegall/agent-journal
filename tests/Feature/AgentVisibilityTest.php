@@ -69,7 +69,7 @@ final class AgentVisibilityTest extends TestCase
     public function test_another_agents_message_is_missing_to_the_caller(): void
     {
         $this->startRequestAs(TestIds::of(2), TestIds::of(20));
-        $messageOfAgentOne = $this->idOf(Message::query()->ownedBy(TestIds::of(1)));
+        $messageOfAgentOne = $this->idOf(Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1))));
 
         $this->expectException(MessageMissing::class);
 
@@ -81,10 +81,10 @@ final class AgentVisibilityTest extends TestCase
         $this->startRequestAs(TestIds::of(2), TestIds::of(20));
         $agentOne = new StackTarget(TestIds::of(1), TestIds::of(10));
 
-        $message = $this->app->make(MessageRecords::class)->addressedTo($agentOne, $this->idOf(Message::query()->ownedBy(TestIds::of(1))));
+        $message = $this->app->make(MessageRecords::class)->addressedTo($agentOne->actorIdentity(), $this->idOf(Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1)))));
         $run = $this->app->make(SequenceRecords::class)->followedBy($agentOne, $this->idOf(SequenceRun::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1)))));
 
-        $this->assertSame([TestIds::of(1), TestIds::of(1)], [$message->agent_id, $run->actor_id]);
+        $this->assertSame([TestIds::of(1), TestIds::of(1)], [$message->actor_id, $run->actor_id]);
         $this->assertSame(['Kept by agent 1'], Memory::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1)))->pluck('text')->all());
     }
 
@@ -138,7 +138,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_a_user_route_binds_any_agents_message_and_an_agent_only_its_own(): void
     {
-        $messageOfAgentOne = $this->idOf(Message::query()->ownedBy(TestIds::of(1)));
+        $messageOfAgentOne = $this->idOf(Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1))));
 
         $this->startUserRequestAs(TestIds::of(7));
         $this->assertSame('For agent 1', new Message()->resolveRouteBinding($messageOfAgentOne)?->body);
@@ -150,7 +150,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_route_binding_without_an_actor_fails_before_reading(): void
     {
-        $messageOfAgentOne = $this->idOf(Message::query()->ownedBy(TestIds::of(1)));
+        $messageOfAgentOne = $this->idOf(Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1))));
 
         $this->expectException(ActorContextMissing::class);
 
@@ -160,7 +160,7 @@ final class AgentVisibilityTest extends TestCase
     private function giveWorkTo(int $agent, int $session): void
     {
         $target = new StackTarget(TestIds::of($agent), TestIds::of($session));
-        Message::write("For agent {$agent}")->requireAnswerFrom($target);
+        Message::write("For agent {$agent}")->requireAnswerFrom($target->actorIdentity());
         SequenceRun::written("Run of agent {$agent}", ['Read the brief.'])->startFor($target->actorIdentity());
     }
 

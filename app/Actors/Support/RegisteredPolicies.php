@@ -58,4 +58,12 @@ final class RegisteredPolicies implements PolicyCatalogue
             throw AbilityNotRegistered::for($policy, $ability);
         }
     }
+
+    public function grantable(): array
+    {
+        $availability = $this->container->make(DomainAvailability::class);
+        $grantable = array_filter($this->byPolicy, fn (array $entry): bool => $availability->isEnabled($entry[0]));
+
+        return array_values(array_map(fn (array $entry): PolicyRegistration => $entry[1], $grantable));
+    }
 }

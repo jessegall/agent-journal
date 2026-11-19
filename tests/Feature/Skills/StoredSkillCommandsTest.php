@@ -26,6 +26,7 @@ use App\Skills\Values\SkillRevisionResult;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 use Throwable;
 
@@ -90,7 +91,7 @@ final class StoredSkillCommandsTest extends TestCase
 
     public function test_an_agent_is_refused_before_any_row_changes(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
 
         $this->assertRefused(UserActorRequired::class, new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
         $this->assertSame(0, Skill::query()->count());

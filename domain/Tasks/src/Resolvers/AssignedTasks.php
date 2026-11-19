@@ -6,12 +6,10 @@ namespace Domain\Tasks\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\CurrentSession;
-use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Decisions\StateReference;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
@@ -33,25 +31,19 @@ final readonly class AssignedTasks implements AssignedTaskResolver
         private AssignmentTransaction $transaction,
         private AssignmentResolver $assignments,
         private AssigneeResolver $assignees,
-        private CurrentSession $session,
-        private CurrentState $currentState,
+        private ActorWorkStacks $workStack,
         private TaskExecutions $executions,
     ) {}
 
     public function currentForCaller(): Option
     {
-        $caller = $this->actors->actor();
-        $caller->requireAgent();
-
-        return $this->currentState->of(new StackTarget($caller->actorId(), $this->session->sessionId()), WorkingOnTaskStateReference::TYPE_KEY)
+        return $this->workStack->current(WorkingOnTaskStateReference::TYPE_KEY)
             ->flatMap(fn (StateReference $frame) => Task::summaryOf($frame));
     }
 
     public function assignedToCaller(TaskFilters $filters): TaskList
     {
-        $caller = $this->actors->actor();
-        $caller->requireAgent();
-        $holder = ActorIdentity::of($caller);
+        $holder = ActorIdentity::of($this->actors->actor());
 
         return $this->transaction->run(function () use ($filters, $holder): TaskList {
             $heldIds = $this->assignments->allRecordIdsFor(Task::LINK_TYPE, $holder);

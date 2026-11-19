@@ -20,6 +20,14 @@ final readonly class PolicyRegistration
      */
     public function __construct(public string $model, public string $policy, public string $abilities) {}
 
+    /**
+     * @return list<BackedEnum>
+     */
+    public function abilities(): array
+    {
+        return $this->abilities::cases();
+    }
+
     public function grants(BackedEnum $ability): bool
     {
         return $ability instanceof $this->abilities;

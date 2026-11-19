@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Comments\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\WorkStacks;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\CurrentSession;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Enums\WholeRecord;
 use App\Comments\Events\CommentPosted;
@@ -30,7 +30,7 @@ final readonly class CommentWriter
     public function __construct(
         private RecordResolver $records,
         private CurrentActor $actors,
-        private CurrentSession $session,
+        private WorkStacks $workStacks,
         private CommentEvents $events,
     ) {}
 
@@ -45,7 +45,7 @@ final readonly class CommentWriter
         $body = MarkdownText::comment($text);
         $actor = $this->actors->actor();
         $author = ActorIdentity::of($actor);
-        $sessionId = $actor->isUser() ? null : $this->session->sessionId();
+        $sessionId = $this->workStacks->sessionsToAdmit()[0] ?? null;
         $hash = self::hashOf($targetIdentity, $subject, $body);
         $earlier = Comment::query()->submittedAs($author, $sessionId, $submissionKey)->first();
 

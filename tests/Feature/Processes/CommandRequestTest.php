@@ -6,7 +6,6 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\WithdrawCommandRequest;
@@ -15,6 +14,7 @@ use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Models\CommandRequest;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -85,7 +85,7 @@ final class CommandRequestTest extends TestCase
     private function runAs(string $agentId, object $command): string
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
@@ -49,6 +51,7 @@ use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
+use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Enums\TaskWorkState;
@@ -57,13 +60,14 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Mcp\AssignedTasksTool;
 use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Resolvers\TaskAssignments;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Domain\Tasks\Skills\TasksSkill;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesSkills, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -128,6 +132,11 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesA
             )
             ->exceptions(TaskMissing::class)
             ->build();
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(Task::class, TaskPolicy::class, TaskAbility::class)];
     }
 
     public function states(): array

@@ -18,6 +18,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 final class ActorContextTest extends TestCase
@@ -47,7 +48,7 @@ final class ActorContextTest extends TestCase
         $actors = $this->app->make(CurrentActor::class);
         $this->assertFalse($actors->hasActor());
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
         $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actors->actor()->type, $actors->actor()->id]);
 
         $this->app->make(CurrentActorSetter::class)->clear();

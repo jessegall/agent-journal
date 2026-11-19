@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Enums\ActorType;
+use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
-use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Commands\AnswerMessage;
@@ -26,6 +29,7 @@ use App\Communication\Models\Message;
 use App\Communication\Resolvers\MessageRecords;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -52,6 +56,7 @@ final class SendMessageTest extends TestCase
         $session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
     }
 
     public function test_a_sent_message_keeps_its_text_waits_for_the_agent_and_sits_on_its_stack(): void
@@ -60,8 +65,8 @@ final class SendMessageTest extends TestCase
 
         $this->send($body, $this->target->sessionId);
 
-        $stored = Message::query()->ownedBy($this->target->agentId)->sole();
-        $this->assertSame([$body, MessageState::WaitingForAnswer, $this->target->sessionId], [$stored->body, $stored->state, $stored->session_id]);
+        $stored = Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->target->agentId))->sole();
+        $this->assertSame([$body, MessageState::WaitingForAnswer, $this->target->agentId], [$stored->body, $stored->state, $stored->actor_id]);
         $this->assertSame(['hooks.main_ready', 'communication.answering'], $this->stackTypeKeys());
         Event::assertDispatched(MessageSent::class, fn (MessageSent $event) => $event->messageId === $stored->id);
     }
@@ -69,10 +74,11 @@ final class SendMessageTest extends TestCase
     public function test_a_guessed_target_is_refused_and_leaves_no_message(): void
     {
         try {
-            $this->send('Hello', TestIds::of(99999));
+            $guessed = new ActorIdentity(ActorType::Agent, TestIds::of(99999));
+            $this->app->make(CommandBus::class)->run(new SendMessage('Hello', $guessed));
             $this->fail('A guessed target took a message.');
-        } catch (StackTargetRefused) {
-            $this->assertSame(0, Message::query()->ownedBy($this->target->agentId)->count());
+        } catch (ActorUnavailable) {
+            $this->assertSame(0, Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->target->agentId))->count());
             Event::assertNotDispatched(MessageSent::class);
         }
     }
@@ -84,14 +90,14 @@ final class SendMessageTest extends TestCase
         $this->send("  \n\t ", $this->target->sessionId);
     }
 
-    public function test_the_user_reads_the_conversation_with_that_session_only(): void
+    public function test_the_user_reads_the_conversation_with_that_agent(): void
     {
         $this->send('First', $this->target->sessionId);
         $this->send('Second', $this->target->sessionId);
 
-        $conversation = $this->app->make(MessageRecords::class)->conversationWith($this->target);
+        $conversation = $this->app->make(MessageRecords::class)->conversationWith($this->target->actorIdentity());
 
-        $this->assertSame("{$this->target->agentId}-{$this->target->sessionId}", $conversation->id());
+        $this->assertSame("agent-{$this->target->agentId}", $conversation->id());
         $this->assertSame(['First', 'Second'], array_map(fn (MessageView $message) => $message->body, $conversation->messages));
     }
 
@@ -99,7 +105,7 @@ final class SendMessageTest extends TestCase
     {
         $this->send('Answer me', $this->target->sessionId);
         $this->send('Never mind', $this->target->sessionId);
-        [$answered, $dismissed] = Message::query()->ownedBy($this->target->agentId)->orderBy('id')->get()->all();
+        [$answered, $dismissed] = Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->target->agentId))->orderBy('id')->get()->all();
         $this->app->make(CommandBus::class)->run(new AnswerMessage($answered->id, $answered->answer_round));
         $this->app->make(CommandBus::class)->run(new DismissMessage($dismissed->id, $dismissed->answer_round));
 
@@ -109,7 +115,8 @@ final class SendMessageTest extends TestCase
 
     private function send(string $body, string $sessionId): void
     {
-        $this->app->make(CommandBus::class)->run(new SendMessage($body, $sessionId));
+        $agentId = AgentSession::query()->findOrFail($sessionId)->agent_id;
+        $this->app->make(CommandBus::class)->run(new SendMessage($body, new ActorIdentity(ActorType::Agent, $agentId)));
     }
 
     /**

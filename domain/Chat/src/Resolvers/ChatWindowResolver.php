@@ -35,7 +35,14 @@ final readonly class ChatWindowResolver implements PageResolver
 
         return ChatData::from([
             'sessions' => array_map(fn (SessionOption $session) => ['id' => (string) $session->sessionId, 'agentName' => $session->agentName], $sessions),
-            'conversation' => $chosen->map(fn (SessionOption $session) => ConversationData::fromConversation($this->messages->conversationWith($session->target)))->getOrElse(Optional::create()),
+            'conversation' => $chosen->map($this->conversationIn(...))->getOrElse(Optional::create()),
         ]);
+    }
+
+    private function conversationIn(SessionOption $session): ConversationData
+    {
+        $conversation = $this->messages->conversationWith($session->target->actorIdentity());
+
+        return ConversationData::fromConversation($conversation, (string) $session->sessionId);
     }
 }

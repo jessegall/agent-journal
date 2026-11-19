@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 
 /**
  * The Rules commands on the bus (doc 19, phase 2): proposing answers the new rule's id, removing raises its fact,
@@ -66,7 +67,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_a_main_agent_may_not_approve_a_rule_and_it_stays_proposed(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
         $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
 
         try {
@@ -79,7 +80,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_an_agent_asking_to_approve_is_answered_403(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
         $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
         Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
 

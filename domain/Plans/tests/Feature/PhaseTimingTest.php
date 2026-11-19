@@ -7,7 +7,6 @@ namespace Domain\Plans\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Processes\Contracts\VerificationTiming;
@@ -21,7 +20,9 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 
 /**
  * An agent's tests and checks wait while the current phase of the started plan it holds has open or started tasks,
@@ -30,6 +31,7 @@ use Tests\Support\TestIds;
 final class PhaseTimingTest extends TestCase
 {
     use CommitsHookRows;
+    use StartsAgentRequests;
 
     private const array TABLES = ['agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
 
@@ -49,7 +51,7 @@ final class PhaseTimingTest extends TestCase
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Started->value]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
         $plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->startUserRequestAs(TestIds::of(7));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->agent));
     }
@@ -81,7 +83,7 @@ final class PhaseTimingTest extends TestCase
     public function test_a_user_is_not_held(): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->startUserRequestAs(TestIds::of(7));
 
         $this->assertTrue($this->app->make(VerificationTiming::class)->forCaller()->isAllowed());
     }
@@ -89,7 +91,7 @@ final class PhaseTimingTest extends TestCase
     private function timingForAgent(): TimingVerdict
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), TestLaunchAuthority::forAgent($this->agent->id));
 
         return $this->app->make(VerificationTiming::class)->forCaller();
     }

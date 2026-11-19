@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Communication\Resolvers;
 
-use App\Agents\Support\StackTarget;
+use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Data\Conversation;
 use App\Communication\Data\MessageView;
+use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
 use Illuminate\Container\Attributes\Scoped;
@@ -18,6 +19,8 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 final readonly class MessageRecords implements ConversationResolver
 {
+    private const int OPEN_ROUNDS_READ = 100;
+
     public function get(string $messageId): Message
     {
         return Message::query()->forActor()->find($messageId) ?? throw MessageMissing::forId($messageId);
@@ -35,27 +38,40 @@ final readonly class MessageRecords implements ConversationResolver
     }
 
     /**
-     * The journal's own read of a message it addressed to an agent, outside that agent's requests.
+     * The journal's own read of a message it addressed to an actor, outside that actor's requests.
      */
-    public function addressedTo(StackTarget $target, string $messageId): Message
+    public function addressedTo(ActorIdentity $actor, string $messageId): Message
     {
-        return Message::query()->ownedBy($target->agentId)->find($messageId) ?? throw MessageMissing::forId($messageId);
+        return Message::query()->ownedBy($actor)->find($messageId) ?? throw MessageMissing::forId($messageId);
     }
 
     /**
-     * The conversation with one agent's session, as the user acting in this request may read it.
+     * The messages whose open round waits on the actor, oldest first, for its new session's stack.
+     *
+     * @return list<Message>
      */
-    public function conversationWith(StackTarget $target): Conversation
+    public function openRoundsFor(ActorIdentity $actor): array
+    {
+        $messages = Message::query()->ownedBy($actor)->where('state', MessageState::WaitingForAnswer)->orderBy('id')
+            ->readLimit(self::OPEN_ROUNDS_READ)
+            ->get()->all();
+
+        return array_values($messages);
+    }
+
+    /**
+     * The conversation with one actor, as the user acting in this request may read it.
+     */
+    public function conversationWith(ActorIdentity $actor): Conversation
     {
         $messages = Message::query()->acrossOwners()
-            ->where('agent_id', $target->agentId)
-            ->where('session_id', $target->sessionId)
+            ->byActor($actor)
             ->orderBy('id')
             ->readAll('the whole conversation, oldest first, until it is paged')
             ->get()
             ->all();
 
-        return new Conversation($target, array_values(array_map(
+        return new Conversation($actor, array_values(array_map(
             fn (Message $message) => new MessageView($message->id, $message->body, $message->state),
             $messages,
         )));

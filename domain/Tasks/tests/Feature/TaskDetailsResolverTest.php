@@ -34,6 +34,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -64,7 +65,7 @@ final class TaskDetailsResolverTest extends TestCase
         $this->asUser();
         $this->app->make(AssignmentWriterInTransaction::class)->assign($task->assignmentIdentity(), ActorIdentity::of($holder));
         $this->actAs($runner);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $runner->id));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $this->asUser();
 
         $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Context);
@@ -82,7 +83,7 @@ final class TaskDetailsResolverTest extends TestCase
         $this->actAs($runner);
 
         foreach (range(1, 20) as $number) {
-            $this->app->make(CommandBus::class)->run(new StartTask(Task::factory()->create(['title' => "Task {$number}"])->id, $runner->id));
+            $this->app->make(CommandBus::class)->run(new StartTask(Task::factory()->create(['title' => "Task {$number}"])->id));
         }
 
         $this->asUser();
@@ -115,7 +116,7 @@ final class TaskDetailsResolverTest extends TestCase
     {
         $this->app->forgetScopedInstances();
         $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, 'hooks.main_ready', new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), TestLaunchAuthority::forAgent($session->agent_id));
     }
 
     private function asUser(): void

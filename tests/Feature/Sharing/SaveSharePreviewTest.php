@@ -76,6 +76,7 @@ final class SaveSharePreviewTest extends TestCase
     public function test_a_user_who_is_not_the_owner_is_refused(): void
     {
         $this->startUserRequestAs(TestIds::of(8));
+        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
 
         $this->expectException(SharingNotAllowed::class);
 

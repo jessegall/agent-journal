@@ -28,6 +28,7 @@ use App\Profiles\Values\ProfileKey;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -138,7 +139,7 @@ final class ProfilePolicyTest extends TestCase
 
     public function test_an_agent_cannot_activate(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(9)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(9)), TestLaunchAuthority::forAgent(TestIds::of(9)));
 
         $this->expectException(UserActorRequired::class);
 

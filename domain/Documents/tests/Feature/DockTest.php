@@ -34,6 +34,7 @@ use Domain\Documents\Tests\TestCase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 
 /**
  * A record an agent creates docks as one card in its own session; cards are docked, hidden and shown again without
@@ -137,7 +138,7 @@ final class DockTest extends TestCase
 
     private function actAsAgent(AgentSession $session): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), TestLaunchAuthority::forAgent($session->agent_id));
         $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, 'hooks.main_ready', new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 

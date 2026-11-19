@@ -20,6 +20,7 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -101,7 +102,7 @@ final class AgentResolversTest extends TestCase
         $this->assertSame(['Builder', 'Reviewer'], [$labels[$this->builder->id]->name, $labels[$this->reviewer->id]->name]);
         $this->assertArrayNotHasKey(TestIds::of(999999), $labels);
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->reviewer->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->reviewer->id), TestLaunchAuthority::forAgent($this->reviewer->id));
         $this->assertSame([$this->reviewer->id], array_keys($this->app->make(AgentResolver::class)->labelsFor([$this->builder->id, $this->reviewer->id])));
     }
 

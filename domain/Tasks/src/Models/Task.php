@@ -312,14 +312,13 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
-     * Refuses a run number that is not the task's current run, or an actor that does not own it; a caller who may act
-     * on any run (the user) names the run only.
+     * Refuses a run number that is not the task's current run, whoever names it.
      *
      * @throws TaskRunNotYours
      */
-    public function requireRun(int $runNumber, ActorIdentity|null $owner): void
+    public function requireCurrentRun(int $runNumber): void
     {
-        if ($runNumber !== $this->run_number || ($owner !== null && ! $this->isRunOwnedBy($owner))) {
+        if ($runNumber !== $this->run_number) {
             throw TaskRunNotYours::forRun($this->number, $runNumber);
         }
     }

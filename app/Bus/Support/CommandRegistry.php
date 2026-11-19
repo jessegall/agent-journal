@@ -426,7 +426,9 @@ final readonly class CommandRegistry
     private static function typeFits(string $given, string $accepted): bool
     {
         foreach (explode('|', $accepted) as $type) {
-            if ($type === $given || (class_exists($given) && is_a($given, $type, true))) {
+            $anyObject = $type === 'object' && class_exists($given);
+
+            if ($type === $given || $anyObject || (class_exists($given) && is_a($given, $type, true))) {
                 return true;
             }
         }

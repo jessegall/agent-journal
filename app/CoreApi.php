@@ -348,6 +348,7 @@ use App\Engine\Values\FrameSettlement;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
+use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\ConditionalState;
@@ -403,7 +404,6 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
-use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Http\Data\Assignments\RecordHolderData;
@@ -911,6 +911,7 @@ final class CoreApi
                 ActorLabels::class,
                 Policy::class,
                 PolicyCatalogue::class,
+                ActorWorkStacks::class,
                 ProvidesPolicies::class,
                 WorkStackProvider::class,
                 HasAuthorizationSubject::class,
@@ -1671,7 +1672,6 @@ final class CoreApi
                 CountsLoads::class,
                 CountsPivotLoads::class,
                 AgentState::class,
-                BelongsToOneAgent::class,
                 Linkable::class,
                 LinkAccess::class,
                 LinkTypeRegistry::class,

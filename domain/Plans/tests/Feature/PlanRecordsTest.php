@@ -26,6 +26,7 @@ use Tests\Fixtures\Hooks\FixedSession;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 
 final class PlanRecordsTest extends TestCase
 {
@@ -71,7 +72,7 @@ final class PlanRecordsTest extends TestCase
         $agent = Agent::named('Planner', AgentRole::MainAgent);
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
         $this->app->instance(CurrentState::class, new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), TestLaunchAuthority::forAgent($agent->id));
         $this->app->make(AssignmentWriterInTransaction::class)->assign($this->build->assignmentIdentity(), ActorIdentity::of($agent));
 
         $cards = $this->records()->list(new PlanFilters())->cards;

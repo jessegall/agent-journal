@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
-use App\Agents\Contracts\SessionResolver;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Contracts\MessageAddressResolver;
 use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Models\Message;
 use App\Communication\States\Support\AnsweringMessageStateReference;
 use App\Contracts\CommandHandler;
-use App\Hooks\Contracts\UserStack;
+use App\Hooks\Contracts\ActorWorkStacks;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -20,8 +20,8 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class SendMessageHandler implements CommandHandler
 {
     public function __construct(
-        private SessionResolver $sessions,
-        private UserStack $stacks,
+        private MessageAddressResolver $addresses,
+        private ActorWorkStacks $workStacks,
         private Dispatcher $events,
     ) {}
 
@@ -31,10 +31,10 @@ final readonly class SendMessageHandler implements CommandHandler
             throw MessageBodyEmpty::forSend();
         }
 
-        $target = $this->sessions->requireActive($command->sessionId);
+        $this->addresses->requireReceiver($command->recipient);
         $message = Message::write($command->body);
-        $message->requireAnswerFrom($target);
-        $this->stacks->push($target, AnsweringMessageStateReference::forMessage($message));
-        $this->events->dispatch(new MessageSent($message->id, $target, $message->answer_round));
+        $message->requireAnswerFrom($command->recipient);
+        $this->workStacks->pushFor($command->recipient, AnsweringMessageStateReference::forMessage($message));
+        $this->events->dispatch(new MessageSent($message->id, $command->recipient, $message->answer_round));
     }
 }

@@ -26,7 +26,7 @@ final class MessageStateContributionTest extends TestCase
     {
         $message = Message::write('Which database?');
 
-        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId, $message->answer_round));
+        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), $message->answer_round));
 
         $this->assertSame(MessageState::WaitingForAnswer, $message->fresh()?->state);
         $this->assertSame(['hooks.main_ready', 'communication.answering'], $this->storedTypeKeys());
@@ -38,7 +38,7 @@ final class MessageStateContributionTest extends TestCase
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         try {
-            $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId, $message->answer_round));
+            $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), $message->answer_round));
             $this->fail('The request went through without its push.');
         } catch (StackAlreadyClosed) {
             $this->assertSame(MessageState::Sent, $message->fresh()?->state);
@@ -48,9 +48,9 @@ final class MessageStateContributionTest extends TestCase
     public function test_an_answered_message_is_passed_over_and_the_task_below_still_holds_the_stop(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $message = Message::write('Which database?');
-        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId, $message->answer_round));
+        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), $message->answer_round));
 
         $whileWaiting = $this->answerStop('call-1');
         $message->markAnswered();
@@ -64,7 +64,7 @@ final class MessageStateContributionTest extends TestCase
     public function test_a_dismissed_message_is_also_passed_over_and_stays_stored(): void
     {
         $message = Message::write('Which database?');
-        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId, $message->answer_round));
+        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), $message->answer_round));
 
         $message->dismiss();
 
@@ -77,9 +77,9 @@ final class MessageStateContributionTest extends TestCase
         $message = Message::write('Which database?');
         $bus = $this->app->make(CommandBus::class);
 
-        $bus->run(new RequireMessageAnswer($message->id, $this->target->sessionId, 0));
+        $bus->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), 0));
         $bus->run(new AnswerMessage($message->id, 1));
-        $bus->run(new RequireMessageAnswer($message->id, $this->target->sessionId, 1));
+        $bus->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), 1));
         $asked = $message->fresh();
 
         $this->assertSame(2, $asked?->answer_round);
@@ -92,9 +92,9 @@ final class MessageStateContributionTest extends TestCase
     {
         $message = Message::write('Which database?');
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new RequireMessageAnswer($message->id, $this->target->sessionId, 0));
+        $bus->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), 0));
         $bus->run(new AnswerMessage($message->id, 1));
-        $bus->run(new RequireMessageAnswer($message->id, $this->target->sessionId, 1));
+        $bus->run(new RequireMessageAnswer($message->id, $this->target->actorIdentity(), 1));
 
         $this->assertThrows(fn () => $bus->run(new AnswerMessage($message->id, 1)), MessageRoundStale::class);
         $this->assertSame(MessageState::WaitingForAnswer, $message->fresh()?->state);

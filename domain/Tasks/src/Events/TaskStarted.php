@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Events;
 
-use App\Agents\Support\StackTarget;
+use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
 
 /**
@@ -14,6 +14,6 @@ final readonly class TaskStarted implements Event
 {
     public function __construct(
         public string $taskId,
-        public StackTarget $target,
+        public ActorIdentity $actor,
     ) {}
 }

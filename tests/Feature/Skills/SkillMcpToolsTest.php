@@ -21,6 +21,7 @@ use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -58,7 +59,7 @@ final class SkillMcpToolsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $created = $this->app->make(CommandBus::class)->run(new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')));
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->caller->agent->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->caller->agent->id), TestLaunchAuthority::forAgent($this->caller->agent->id));
 
         try {
             $this->app->make(CommandBus::class)->run(new ReviseSkill($created->skillId, 1, 'revise-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Other.')], '')));

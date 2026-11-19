@@ -31,4 +31,11 @@ interface MessageAddressResolver
      * @throws ActorCannotSend
      */
     public function sender(): MessageAddress;
+
+    /**
+     * Refuses an actor that cannot receive a message.
+     *
+     * @throws ActorUnavailable
+     */
+    public function requireReceiver(ActorIdentity $actor): void;
 }

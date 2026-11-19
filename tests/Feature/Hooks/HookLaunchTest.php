@@ -6,7 +6,6 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
@@ -41,6 +40,7 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 final class HookLaunchTest extends TestCase
@@ -114,7 +114,7 @@ final class HookLaunchTest extends TestCase
     {
         $parent = $this->launch('hooks.main_ready');
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $parent->session->id)));
+        $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
         $childAgent = Agent::named('Helper', AgentRole::ReadOnlyHelper);
 
         $child = $this->app->make(LaunchSessions::class)->launch($childAgent, TestSelections::of('claude-code'), TestSelections::requestId(), $parent->session);
@@ -182,7 +182,7 @@ final class HookLaunchTest extends TestCase
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), TestLaunchAuthority::forAgent($launched->session->agent_id));
 
         try {
             return $work();

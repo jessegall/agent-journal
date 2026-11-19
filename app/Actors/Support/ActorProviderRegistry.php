@@ -197,6 +197,13 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
         return $sessions;
     }
 
+    public function sessionsOf(ActorIdentity $actor): array
+    {
+        $providerClass = $this->workStackProviders[$actor->type->value] ?? null;
+
+        return $providerClass === null ? [] : $this->container->make($providerClass)->sessionsOf($actor);
+    }
+
     public function get(ActorIdentity $identity): Actor
     {
         $providerClass = $this->providers[$identity->type->value] ?? throw ActorUnavailable::forIdentity($identity);

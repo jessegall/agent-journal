@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Actors\Contracts\PolicyCatalogue;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
@@ -30,7 +31,7 @@ use App\Profiles\Values\ProfileProvenance;
  */
 final readonly class PolicyResolver
 {
-    public function __construct(private KnownOperations $operations) {}
+    public function __construct(private KnownOperations $operations, private PolicyCatalogue $policies) {}
 
     /**
      * @throws ProfilePolicyRefused
@@ -73,7 +74,7 @@ final readonly class PolicyResolver
             $profile->skillAllowlist,
             $profile->requiredSkills,
             $launch,
-            BuiltInAuthorizations::for($profile->type),
+            BuiltInAuthorizations::for($profile->type, $this->policies->grantable()),
         );
     }
 

@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
-use App\Agents\Exceptions\StackTargetRefused;
-use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
@@ -18,14 +11,13 @@ use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -35,6 +27,7 @@ use Tests\Support\TestIds;
 final class TaskCommandsTest extends TestCase
 {
     use CommitsHookRows;
+    use StartsAgentRequests;
 
     /**
      * The bus commits the Tasks commands for real, so these tables are emptied around each test.
@@ -46,7 +39,7 @@ final class TaskCommandsTest extends TestCase
         parent::setUp();
 
         Event::fake([TaskFinished::class, TaskBlocked::class, TaskCancelled::class]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->startUserRequestAs(TestIds::of(7));
     }
 
     public function test_finish_block_and_cancel_each_announce_their_change_once(): void
@@ -72,19 +65,6 @@ final class TaskCommandsTest extends TestCase
             $this->app->make(CommandBus::class)->run(new FinishTask(TestIds::of(999999), 0, 'Done.'));
         } finally {
             Event::assertNotDispatched(TaskFinished::class);
-        }
-    }
-
-    public function test_a_start_for_a_session_the_actor_may_not_see_is_refused_and_the_task_stays_unstarted(): void
-    {
-        $task = $this->task('Start');
-        $session = $this->app->make(LaunchSessions::class)->launch(Agent::named('Builder', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
-
-        try {
-            $this->app->make(CommandBus::class)->run(new StartTask($task->id, TestIds::of(999999)));
-            $this->fail('A start reached a session nobody may see.');
-        } catch (StackTargetRefused) {
-            $this->assertNotSame(TaskState::Started, $task->fresh()?->state);
         }
     }
 

@@ -10,24 +10,21 @@ use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Support\TaskCaller;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class BlockTaskHandler implements CommandHandler
 {
     public function __construct(
         private Dispatcher $events,
-        private TaskCaller $caller,
     ) {}
 
     /**
      * @throws TaskRunNotYours
      * @throws TaskTextTooLong
      */
-    public function handle(BlockTask $command): void
+    public function handle(BlockTask $command, Task $task): void
     {
-        $task = Task::lockedById($command->taskId);
-        $task->requireRun($command->runNumber, $this->caller->runOwner());
+        $task->requireCurrentRun($command->runNumber);
         $task->blockRun($command->reason);
         $this->events->dispatch(new TaskBlocked($command->taskId));
     }

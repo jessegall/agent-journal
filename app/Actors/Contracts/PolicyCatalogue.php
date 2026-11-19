@@ -27,4 +27,11 @@ interface PolicyCatalogue
      * @throws AbilityNotRegistered
      */
     public function requireGrantable(string $policy, BackedEnum $ability): void;
+
+    /**
+     * Every registration whose owner is available now, in the order they were registered.
+     *
+     * @return list<PolicyRegistration>
+     */
+    public function grantable(): array;
 }

@@ -21,6 +21,7 @@ use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -42,7 +43,7 @@ final class PlanWorkingStateTest extends TestCase
     public function test_an_agent_starting_a_plan_gets_its_working_frame_once(): void
     {
         $plan = $this->plan();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), TestLaunchAuthority::forAgent(TestIds::of(1)));
 
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));

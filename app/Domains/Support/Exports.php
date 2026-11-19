@@ -27,7 +27,6 @@ final class Exports
         'App\Actors\Models\Support\BelongsToOneActor',
         'App\Comments\Support\HasComments',
         'App\Hooks\States\AgentState',
-        'App\Hooks\Models\Support\BelongsToOneAgent',
         'App\Links\Support\Linkable',
         'App\Hooks\Decisions\StateReferenceFactory',
         'App\Assignments\Models\Support\AssignableListing',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
@@ -128,11 +127,11 @@ final class AssignedListsTest extends TestCase
         $this->assertCount(1, $after->cards);
     }
 
-    public function test_a_user_has_no_assigned_list_and_a_bad_page_is_refused(): void
+    public function test_a_user_reads_its_own_empty_assigned_list_and_a_bad_page_is_refused(): void
     {
         $this->startUserRequestAs(TestIds::of(1));
 
-        $this->assertThrows(fn () => $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters()), AgentActorRequired::class);
+        $this->assertSame(0, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())->total);
         $this->assertThrows(fn () => new NumberedPage(0, 20), InvalidAssignmentPage::class);
         $this->assertThrows(fn () => new NumberedPage(1, 101), InvalidAssignmentPage::class);
     }

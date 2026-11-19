@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Events;
 
-use App\Agents\Support\StackTarget;
+use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
 
 /**
@@ -14,7 +14,7 @@ final readonly class MessageNeedsAnswer implements Event
 {
     public function __construct(
         public string $messageId,
-        public StackTarget $target,
+        public ActorIdentity $recipient,
         public int $round,
     ) {}
 }

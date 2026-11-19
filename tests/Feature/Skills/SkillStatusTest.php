@@ -6,7 +6,6 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
@@ -28,6 +27,7 @@ use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -103,7 +103,7 @@ final class SkillStatusTest extends TestCase
         $own = $this->publish($this->launchSession('Main', AgentRole::MainAgent), 'First text.');
         $other = $this->publish($this->launchSession('Helper', AgentRole::WritingHelper), 'Second text.');
         $agentId = AgentSession::byId($own->session_id)->agent_id;
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
 
         $status = $this->app->make(SkillStatusResolver::class)->status();
 

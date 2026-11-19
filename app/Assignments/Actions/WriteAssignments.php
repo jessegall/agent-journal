@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace App\Assignments\Actions;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\Support\AssignmentBatch;
-use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentRootFinished;
+use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
@@ -37,7 +38,7 @@ final readonly class WriteAssignments implements AssignmentWriter
 {
     public function __construct(
         private CurrentActor $actors,
-        private AgentAuthority $authority,
+        private CurrentAuthorizer $authorizer,
         private AssignmentProviders $providers,
         private AssignmentTransaction $transaction,
         private AssignmentStore $store,
@@ -162,23 +163,16 @@ final readonly class WriteAssignments implements AssignmentWriter
     }
 
     /**
-     * Checks the caller and the recipient, each under its shared lifecycle lock, in type and id order so two commands
-     * never take them in opposite orders.
+     * Authorizes the caller for the write, then checks the recipient may hold work, before anything changes.
      */
     private function checkActors(ActorIdentity|null $recipient): void
     {
         $caller = ActorIdentity::of($this->actors->actor());
-        $actors = array_filter([$caller, $recipient]);
-        usort($actors, fn (ActorIdentity $one, ActorIdentity $other) => [$one->type->value, $one->id] <=> [$other->type->value, $other->id]);
+        $ability = AssignmentAbility::forRecipient($caller, $recipient);
+        $this->authorizer->authorize(AssignmentPolicy::class, $recipient ?? AssignmentPolicy::class, $ability);
 
-        foreach ($actors as $actor) {
-            if ($actor === $caller && $caller->type === ActorType::Agent) {
-                $this->authority->requireDispatcher($caller->id);
-            }
-
-            if ($actor === $recipient) {
-                $this->providers->assigneeProvider($recipient->type)->requireEligible($recipient);
-            }
+        if ($recipient !== null) {
+            $this->providers->assigneeProvider($recipient->type)->requireEligible($recipient);
         }
     }
 

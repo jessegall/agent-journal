@@ -41,6 +41,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 
 /**
  * Records are settled with a reason and become active again when a changed revision is published; a user recovers
@@ -204,7 +205,7 @@ final class SettleAndRecoverTest extends TestCase
 
     private function actAsAgent(int $agent, int $session): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), TestLaunchAuthority::forAgent(TestIds::of($agent)));
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($session), 'hooks.main_ready', new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 

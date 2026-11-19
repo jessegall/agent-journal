@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
-use App\Actors\Enums\ActorType;
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\SessionResolver;
 use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Events\TaskStarted;
@@ -22,20 +21,21 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class StartTaskHandler implements CommandHandler
 {
     public function __construct(
-        private SessionResolver $sessions,
+        private CurrentActor $actors,
         private Dispatcher $events,
     ) {}
 
     /**
+     * Starts the run for whoever acts, a user or an agent alike.
+     *
      * @throws TaskRestartRefused
      * @throws TaskRunTaken
      */
-    public function handle(StartTask $command): int
+    public function handle(StartTask $command, Task $task): int
     {
-        $target = $this->sessions->requireActive($command->sessionId);
-        $task = Task::lockedById($command->taskId);
-        $task->startRun(new ActorIdentity(ActorType::Agent, $target->agentId));
-        $this->events->dispatch(new TaskStarted($command->taskId, $target));
+        $actor = ActorIdentity::of($this->actors->actor());
+        $task->startRun($actor);
+        $this->events->dispatch(new TaskStarted($command->taskId, $actor));
 
         return $task->run_number;
     }

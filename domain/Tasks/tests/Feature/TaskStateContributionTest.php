@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Tests\Feature;
 
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StackAlreadyClosed;
@@ -16,7 +17,6 @@ use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
@@ -30,7 +30,7 @@ final class TaskStateContributionTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
 
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $stored = $task->fresh();
         $this->assertNotNull($stored);
@@ -44,7 +44,7 @@ final class TaskStateContributionTest extends TestCase
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         try {
-            $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
+            $this->app->make(CommandBus::class)->run(new StartTask($task->id));
             $this->fail('The start went through without its push.');
         } catch (StackAlreadyClosed) {
             $stored = $task->fresh();
@@ -57,8 +57,8 @@ final class TaskStateContributionTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
 
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
     }
@@ -66,7 +66,7 @@ final class TaskStateContributionTest extends TestCase
     public function test_the_state_reads_the_task_fresh_and_the_next_hook_passes_over_a_finished_run(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $held = $this->answerStop('call-1');
         $task->finish();
@@ -80,10 +80,10 @@ final class TaskStateContributionTest extends TestCase
     public function test_a_new_run_after_a_blocked_one_gets_its_own_frame(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $task->block();
 
-        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $this->assertSame(["tasks.working {$task->id} 2"], $this->taskFrames());
     }
@@ -93,8 +93,8 @@ final class TaskStateContributionTest extends TestCase
     {
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Fix the hook']);
-        $this->app->make(CommandBus::class)->run(new StartTask($first->id, $this->target->sessionId));
-        $this->app->make(CommandBus::class)->run(new StartTask($second->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($first->id));
+        $this->app->make(CommandBus::class)->run(new StartTask($second->id));
         $tasks = $this->app->make(AssignedTaskResolver::class);
 
         $this->assertSame($second->number, $tasks->currentForCaller()->get()->number);
@@ -110,8 +110,8 @@ final class TaskStateContributionTest extends TestCase
     {
         $blocked = Task::factory()->create(['title' => 'Wait for review']);
         $cancelled = Task::factory()->create(['title' => 'Drop the idea']);
-        $this->app->make(CommandBus::class)->run(new StartTask($blocked->id, $this->target->sessionId));
-        $this->app->make(CommandBus::class)->run(new StartTask($cancelled->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($blocked->id));
+        $this->app->make(CommandBus::class)->run(new StartTask($cancelled->id));
 
         $this->app->make(CommandBus::class)->run(new CancelTask($cancelled->id, 'Dropped.'));
         $this->app->make(CommandBus::class)->run(new BlockTask($blocked->id, 1, 'Waits for review.'));
@@ -124,9 +124,9 @@ final class TaskStateContributionTest extends TestCase
     {
         $started = Task::factory()->create(['title' => 'Write the walk']);
         $neverStarted = Task::factory()->create(['title' => 'Someday']);
-        $this->app->make(CommandBus::class)->run(new StartTask($started->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($started->id));
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id, 0, 'Done.')), TaskRunNotYours::class);
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id, 0, 'Done.')), ActorNotAllowed::class);
 
         $this->assertSame(["tasks.working {$started->id} 1"], $this->taskFrames());
     }

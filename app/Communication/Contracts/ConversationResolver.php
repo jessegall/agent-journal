@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Contracts;
 
-use App\Agents\Support\StackTarget;
+use App\Actors\Support\ActorIdentity;
 use App\Communication\Data\Conversation;
 use App\Communication\Resolvers\MessageRecords;
 use Illuminate\Container\Attributes\Bind;
@@ -15,5 +15,5 @@ use Illuminate\Container\Attributes\Bind;
 #[Bind(MessageRecords::class)]
 interface ConversationResolver
 {
-    public function conversationWith(StackTarget $target): Conversation;
+    public function conversationWith(ActorIdentity $actor): Conversation;
 }

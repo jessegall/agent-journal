@@ -26,11 +26,14 @@ final class ConversationData extends Data
         #[DataCollectionOf(MessageData::class)] public readonly array $messages,
     ) {}
 
-    public static function fromConversation(Conversation $conversation): self
+    /**
+     * The conversation shown for the session the window has chosen; the session is only the window's choice.
+     */
+    public static function fromConversation(Conversation $conversation, string $sessionId): self
     {
         return self::from([
             'id' => $conversation->id(),
-            'sessionId' => (string) $conversation->target->sessionId,
+            'sessionId' => $sessionId,
             'messages' => MessageData::collect($conversation->messages),
         ]);
     }

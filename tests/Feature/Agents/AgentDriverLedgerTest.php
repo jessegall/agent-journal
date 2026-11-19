@@ -59,6 +59,7 @@ use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -410,7 +411,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_an_agent_cannot_run_a_key_script(): void
     {
         [, $opened] = $this->openRuntime();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)), TestLaunchAuthority::forAgent($this->agentIdOf($opened)));
 
         $this->expectException(UserActorRequired::class);
         $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));

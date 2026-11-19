@@ -10,6 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use Carbon\CarbonImmutable;
+use Domain\Access\Support\AccessSettings;
 
 /**
  * Starts a request as one agent and session, or as a user, the way the authenticating middleware binds them.
@@ -25,11 +26,13 @@ trait StartsAgentRequests
             new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
     }
 
     protected function startUserRequestAs(string $userId): void
     {
+        $this->app->instance(AccessSettings::class, new AccessSettings($userId));
+
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId), new OwnerAuthority('test'));
     }
 }
