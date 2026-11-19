@@ -17,6 +17,7 @@ use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
@@ -155,7 +156,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         }
 
         if ($tool === ClaudeCodeTool::Bash) {
-            $original = new ProgramToolInput($payload->toolArguments());
+            $original = $payload->toolArguments();
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
             return new JudgedCall(
@@ -165,7 +166,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         }
 
         if ($tool->changesFiles()) {
-            $original = new ProgramToolInput($payload->toolArguments());
+            $original = $payload->toolArguments();
             $path = $payload->argument('file_path', 'notebook_path');
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
 

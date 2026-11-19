@@ -6,6 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\AgentRequests\Exceptions\LaunchSettingMissing;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
+use App\AgentRequests\Support\LaunchEnvironment;
 use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -111,7 +112,10 @@ final class AssignedListCommandsTest extends TestCase
 
     public function test_the_launcher_turns_subject_and_verb_into_the_command_and_needs_the_launch_settings(): void
     {
-        $this->assertThrows(fn () => new EnvironmentCredentialSource([])->forThisLaunch(), LaunchSettingMissing::class);
+        $this->assertThrows(
+            fn () => new EnvironmentCredentialSource(new LaunchEnvironment([]))->forThisLaunch(),
+            LaunchSettingMissing::class,
+        );
 
         $process = new Process(
             [base_path('bin/journal'), 'task', 'assigned'],

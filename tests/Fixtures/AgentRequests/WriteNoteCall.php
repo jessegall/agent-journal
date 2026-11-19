@@ -17,6 +17,7 @@ use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
  * A keyed write declared in full: its path placeholder, its answer, its receipt owner and its request key.
@@ -31,6 +32,7 @@ final class WriteNoteCall extends Data implements JournalCall
         public string $notebookId,
         public string $text,
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
+        #[LiteralTypeScriptType('string')]
         public CallKey $requestKey,
     ) {}
 }

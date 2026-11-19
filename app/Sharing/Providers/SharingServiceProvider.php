@@ -7,8 +7,8 @@ namespace App\Sharing\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
+use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
-use App\Numbers\Support\NumberedTypeRegistry;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\SharePolicy;
@@ -41,8 +41,11 @@ final class SharingServiceProvider extends ServiceProvider
         $this->app->bind(SharePolicy::class, OwnerSharePolicy::class);
     }
 
-    public function boot(ShareGatewayRegistry $gateways, NumberedTypeRegistry $numbers, PolicyCatalogue $policies): void
-    {
+    public function boot(
+        ShareGatewayRegistry $gateways,
+        NumberedModelRegistration $numbers,
+        PolicyCatalogue $policies,
+    ): void {
         $policies->register('Core', new PolicyRegistration(
             Share::class,
             SharingPolicy::class,

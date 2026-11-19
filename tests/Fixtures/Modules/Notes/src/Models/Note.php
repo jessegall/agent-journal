@@ -56,12 +56,4 @@ final class Note extends Model implements Assignable, Commentable, Numbered, Rea
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [];
-    }
 }

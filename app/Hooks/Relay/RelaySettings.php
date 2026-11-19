@@ -31,13 +31,13 @@ final readonly class RelaySettings
      * The launch's credential with the offline reply and bypass file its environment names; the reply counts only
      * under the seal the journal issued for this launch.
      *
-     * @param  array<string, string>  $environment
-     *
      * @throws OfflineReplySealInvalid
      */
-    public static function forLaunch(AgentClientSettings $client, array $environment, OfflineReplySeal $seal): self
-    {
-        $launch = new LaunchEnvironment($environment);
+    public static function forLaunch(
+        AgentClientSettings $client,
+        LaunchEnvironment $launch,
+        OfflineReplySeal $seal,
+    ): self {
         $mode = OfflineReplyMode::fromLaunch($launch->value('JOURNAL_OFFLINE_REPLY'));
         $seal->verify($client->token, $client->profile, $mode, $launch->value('JOURNAL_OFFLINE_REPLY_SEAL'));
 
@@ -47,8 +47,20 @@ final readonly class RelaySettings
             $client->profile,
             $mode->passesOutages(),
             $launch->value('JOURNAL_BYPASS_LOG'),
-            processGeneration: (int) ($environment['JOURNAL_PROCESS_GENERATION'] ?? 0),
+            processGeneration: self::processGenerationOf($launch),
         );
+    }
+
+    /**
+     * The process generation the host gave this program, or 0 when the host gave none.
+     */
+    private static function processGenerationOf(LaunchEnvironment $launch): int
+    {
+        if (! $launch->has('JOURNAL_PROCESS_GENERATION')) {
+            return 0;
+        }
+
+        return (int) $launch->value('JOURNAL_PROCESS_GENERATION');
     }
 
     /**

@@ -15,6 +15,7 @@ use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
@@ -80,7 +81,7 @@ $hook,
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
             'tool finished' => new ToolFinished(
 $hook,
- new ToolResult('Bash', ToolOutcome::Succeeded, ['command' => 'ls']),
+ new ToolResult('Bash', ToolOutcome::Succeeded, new ProgramToolInput(['command' => 'ls'])),
 ),
             'session end' => new SessionEnded($hook, new SessionEndDetails(SessionEndReason::Exit)),
         ];

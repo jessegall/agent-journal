@@ -12,6 +12,7 @@ use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\InvalidObservationAnswer;
 use App\Hooks\Exceptions\InvalidShellAnswer;
 use App\Hooks\Exceptions\InvalidStopAnswer;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Stack\HookAnswer;
 
 /**

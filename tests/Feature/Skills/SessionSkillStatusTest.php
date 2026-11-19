@@ -11,6 +11,7 @@ use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\ToolCallFinished;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Support\ContextReminders;
 use App\Skills\Listeners\RecordProvenSkillReads;
@@ -85,7 +86,11 @@ final class SessionSkillStatusTest extends TestCase
 
         $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
             new StackTarget($session->agent_id, $session->id),
-            new ToolResult('mcp__journal__skills_show', ToolOutcome::Succeeded, ['key' => 'user-guide']),
+            new ToolResult(
+                'mcp__journal__skills_show',
+                ToolOutcome::Succeeded,
+                new ProgramToolInput(['key' => 'user-guide']),
+            ),
         ));
         $this->assertTrue($this->guideOf($session)->loaded);
 
