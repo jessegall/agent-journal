@@ -20,6 +20,9 @@ class AgentActivity(ViewModel):
     ended_at: Timestamp | None
     last_hook_at: Timestamp | None
 
+    @property
+    def activity_at(self) -> Timestamp:
+        return self.last_hook_at if self.last_hook_at is not None else self.created_at
+
     def is_inactive(self, timestamp: Timestamp, seconds: int) -> bool:
-        activity_at = self.last_hook_at if self.last_hook_at is not None else self.created_at
-        return activity_at.elapsed_seconds(timestamp) >= seconds
+        return self.activity_at.elapsed_seconds(timestamp) >= seconds

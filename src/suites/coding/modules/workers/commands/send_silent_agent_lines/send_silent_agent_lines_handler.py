@@ -41,6 +41,7 @@ from engine.query.conditions.prefix import Prefix
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
+from engine.query.conditions.greater import Greater
 
 SILENT_AGENTS_REASON = "every checked agent is judged silent or idle from its worktrees, lines and merger lines"
 
@@ -75,8 +76,13 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         if connection.status is not ConnectionStatus.ONLINE:
             return
         lines: dict[int, list[AgentLine]] = defaultdict(list)
-        for line in self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).every_row(SILENT_AGENTS_REASON):
-            lines[line.session_agent_id].append(line)
+        # only a line sent since an agent's last sign of life counts as an attempt, so none older than the oldest of
+        # those is read: the lines of every agent build up for as long as the journal runs
+        oldest_activity = min((activities[agent_id].activity_at for agent_id in agent_ids), default=None)
+        if oldest_activity is not None:
+            recent = self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).matching(Greater("created_at", oldest_activity.text))
+            for line in recent.every_row(SILENT_AGENTS_REASON):
+                lines[line.session_agent_id].append(line)
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
         attempt_limit = self.settings.number(SILENT_RECOVERY_ATTEMPTS)
         resumes = self.settings.flag(RESUME_SILENT_AGENTS)
@@ -89,7 +95,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
                 continue
             if agent.ended_at is not None and (agent.id not in workers or self.stop.was_stopped(agent)):
                 continue
-            activity_at = activity.last_hook_at if activity.last_hook_at is not None else activity.created_at
+            activity_at = activity.activity_at
             attempts = [line for line in lines[agent.id] if line.creation_timestamp() > activity_at
                         and (connection.reconnected_at is None or line.creation_timestamp() >= connection.reconnected_at)]
             if attempts and attempts[-1].creation_timestamp().elapsed_seconds(context.timestamp) < span.count * 2 ** len(attempts):
