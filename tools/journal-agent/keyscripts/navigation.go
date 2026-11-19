@@ -49,6 +49,8 @@ type ActionRecord struct {
 	Label       string
 	Fingerprint string
 	Key         string
+	// Replayable is whether the screen before the action had an option list, so a replay can find it again.
+	Replayable bool
 }
 
 // RoundResult is what came of a round: the screen after it (no rows on a secret screen), the actions carried out,
@@ -114,7 +116,7 @@ func (runner *Runner) pressKeys(keys []string, values map[string]string) RoundRe
 			}
 			bytes = named
 		}
-		record := ActionRecord{Kind: "key", Key: name, Fingerprint: runner.liveFingerprint()}
+		record := runner.record(ActionRecord{Kind: "key", Key: name})
 		if err := runner.gate.Keys(bytes); err != nil {
 			return runner.stoppedRound(result, err)
 		}
@@ -126,7 +128,7 @@ func (runner *Runner) pressKeys(keys []string, values map[string]string) RoundRe
 }
 
 func (runner *Runner) choose(label string, values map[string]string) RoundResult {
-	record := ActionRecord{Kind: "choose", Label: label, Fingerprint: runner.liveFingerprint()}
+	record := runner.record(ActionRecord{Kind: "choose", Label: label})
 	if err := runner.act(KeyStep{Action: ChooseEntry, Label: label, Deadline: roundDeadline}, values); err != nil {
 		return runner.stoppedRound(RoundResult{}, err)
 	}
@@ -141,7 +143,7 @@ func (runner *Runner) confirm(label string) RoundResult {
 	if match != screen.ShownOnce || index != entries.Highlighted {
 		return RoundResult{Refusal: string(HighlightWrong)}
 	}
-	record := ActionRecord{Kind: "choose", Label: entries.HighlightedLabel(), Fingerprint: runner.liveFingerprint()}
+	record := runner.record(ActionRecord{Kind: "choose", Label: entries.HighlightedLabel()})
 	if err := runner.gate.Keys(enterKey); err != nil {
 		return runner.stoppedRound(RoundResult{}, err)
 	}
@@ -153,7 +155,7 @@ func (runner *Runner) typeParameter(name string, values map[string]string) Round
 	if _, given := values[name]; !given {
 		return RoundResult{Refusal: RefusedNoParameter}
 	}
-	record := ActionRecord{Kind: "key", Key: "text:" + name, Fingerprint: runner.liveFingerprint()}
+	record := runner.record(ActionRecord{Kind: "key", Key: "text:" + name})
 	if err := runner.act(KeyStep{Action: TypeText, Parameter: name}, values); err != nil {
 		return runner.stoppedRound(RoundResult{}, err)
 	}
@@ -203,6 +205,15 @@ func (runner *Runner) after(result RoundResult, values map[string]string) RoundR
 	return result
 }
 
-func (runner *Runner) liveFingerprint() string {
-	return runner.fingerprint(runner.screen.Classify(runner.clock.Now()))
+// record is the action with the live screen's fingerprint before it, and whether that screen is replayable.
+func (runner *Runner) record(action ActionRecord) ActionRecord {
+	reading := runner.screen.Classify(runner.clock.Now())
+	action.Fingerprint, action.Replayable = screen.FingerprintOf(
+		runner.program.Layout,
+		runner.program.Name,
+		runner.screen.Snapshot(),
+		reading.Menu,
+	)
+
+	return action
 }
