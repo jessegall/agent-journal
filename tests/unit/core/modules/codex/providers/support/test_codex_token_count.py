@@ -1,5 +1,6 @@
 import json
 
+from engine.time.timestamp import Timestamp
 from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
 
 ROLLOUT_RECORD = json.dumps({"timestamp": "2026-11-06T21:03:11.402Z", "ordinal": 812, "type": "event_msg", "payload": {"type": "token_count", "info": {
@@ -10,7 +11,7 @@ ROLLOUT_RECORD = json.dumps({"timestamp": "2026-11-06T21:03:11.402Z", "ordinal":
 
 def test_a_token_count_record_of_a_rollout_gives_the_last_turn_tokens_of_the_window():
     count = CodexTokenCount.parsed(ROLLOUT_RECORD)
-    assert count == CodexTokenCount(150390, 475000)
+    assert count == CodexTokenCount(150390, 475000, Timestamp.parsed("2026-11-06T21:03:11.402Z"))
     assert count.percent() == 31
 
 

@@ -734,3 +734,17 @@ def test_a_message_is_typed_to_an_agent_that_rests_a_minute_after_a_refused_stop
     post_message(story, "Are you there")
     story.run_listeners()
     expect_terminal_lines(typing, [f"[journal] {NewMessageNotice.declared().agent_message(message=2).text}"])
+
+
+def test_a_message_sent_just_after_a_refused_stop_wakes_the_agent_at_its_prompt(new_story):
+    story = new_story(SAMPLES, fixture=UnreadCartMessage)
+    typing = KeptTyping()
+    story.replace(TerminalTyping, typing)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Message 1 is unread")
+    post_message(story, "Are you there")
+    story.run_listeners()
+    expect_terminal_lines(typing, [])
+    story.advance(timedelta(minutes=1))
+    story.run_ticker_round("agent minute steps", "agent step round", "agent wake delivery")
+    story.run_listeners()
+    expect_terminal_lines(typing, [f"[journal] {NewMessageNotice.declared().agent_message(message=2).text}"])

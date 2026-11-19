@@ -7,7 +7,7 @@ JOURNAL_AUTHOR = "journal"
 MONITOR_AUTHOR = "monitor"
 PEER_AUTHOR = "peer"
 USER_AUTHOR = "user"
-JOURNAL_OPENINGS = ("[journal]", "Stop hook feedback", "<system-reminder", "[SYSTEM NOTIFICATION")
+JOURNAL_OPENINGS = ("[journal]", "Stop hook feedback", "<system-reminder", "[SYSTEM NOTIFICATION", "<hook_prompt ")
 MONITOR_OPENINGS = ("<task-notification", "<monitor")
 PEER_OPENINGS = ("<cross-session-message", "[Cross-session idle notice")
 # the prompt Claude Code makes of a wake hook's line, a task notification about stop hook feedback (report 1427, P2)

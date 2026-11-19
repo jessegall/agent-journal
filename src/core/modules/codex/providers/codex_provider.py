@@ -202,7 +202,7 @@ class CodexProvider(Provider):
 
     def context_window(self, home: JournalHome, session: str) -> ContextWindow:
         latest = self.latest_token_count(home, session)
-        return ContextWindow(latest.percent(), latest.used_tokens) if latest else ContextWindow(None, None)
+        return ContextWindow(latest.percent(), latest.used_tokens, latest.read_at, latest.window_tokens) if latest else ContextWindow(None, None)
 
     def latest_token_count(self, home: JournalHome, session: str) -> CodexTokenCount | None:
         path = self.transcript(home.folder.parent, session)
@@ -240,7 +240,8 @@ class CodexProvider(Provider):
         shown = html.unescape(HOOK_PROMPT_TAG.sub("", text))
         if not shown.strip():
             return None
-        return TranscriptAuthor.row(position, JOURNAL_AUTHOR if role == DEVELOPER_ROLE else role, shown, fields.get("timestamp") if is_mapping(fields) else "")
+        row = TranscriptAuthor.row(position, JOURNAL_AUTHOR if role == DEVELOPER_ROLE else role, text, fields.get("timestamp") if is_mapping(fields) else "")
+        return replace(row, text=shown)
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         pass

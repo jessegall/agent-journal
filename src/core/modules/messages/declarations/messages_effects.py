@@ -5,5 +5,6 @@ from core.modules.messages.effects.peer_message_effect import PeerMessageEffect
 from core.modules.messages.effects.text_preceding_tool_effect import TextPrecedingToolEffect
 from core.modules.messages.effects.transcript_sync_effect import TranscriptSyncEffect
 from core.modules.messages.effects.typed_prompt_effect import TypedPromptEffect
+from core.modules.messages.effects.waiting_message_effect import WaitingMessageEffect
 
-MESSAGES_EFFECTS = [MessageDeliveryEffect, MessageReadEffect, AgentTextEffect, TextPrecedingToolEffect, TranscriptSyncEffect, TypedPromptEffect, PeerMessageEffect]
+MESSAGES_EFFECTS = [MessageDeliveryEffect, MessageReadEffect, AgentTextEffect, TextPrecedingToolEffect, TranscriptSyncEffect, TypedPromptEffect, PeerMessageEffect, WaitingMessageEffect]

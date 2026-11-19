@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 
+from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_mapping
 
 
@@ -11,6 +12,7 @@ class CodexTokenCount:
 
     used_tokens: int
     window_tokens: int
+    read_at: Timestamp | None = None
 
     @classmethod
     def parsed(cls, line: str) -> "CodexTokenCount | None":
@@ -20,7 +22,10 @@ class CodexTokenCount:
         usage = token_count.get("last_token_usage") if is_mapping(token_count) else None
         used_tokens = usage.get("total_tokens") if is_mapping(usage) else None
         window_tokens = token_count.get("model_context_window") if is_mapping(token_count) else None
-        return cls(used_tokens, window_tokens) if isinstance(used_tokens, int) and isinstance(window_tokens, int) and window_tokens > 0 else None
+        if not (isinstance(used_tokens, int) and isinstance(window_tokens, int) and window_tokens > 0):
+            return None
+        timestamp = fields.get("timestamp") if is_mapping(fields) else None
+        return cls(used_tokens, window_tokens, Timestamp.parsed(timestamp) if isinstance(timestamp, str) else None)
 
     def percent(self) -> int:
         return self.used_tokens * 100 // self.window_tokens
