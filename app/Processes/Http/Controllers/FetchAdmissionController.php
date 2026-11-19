@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Http\Controllers;
 
+use App\Processes\Enums\AdmissionState;
 use App\Processes\Exceptions\RunnerUnavailable;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\RunnerCapability;
@@ -22,12 +23,12 @@ final readonly class FetchAdmissionController
         }
         $eventKey = $processRun->consumeWithEventKey();
         if ($eventKey === '') {
-            return new JsonResponse(['run_id' => $processRun->id, 'already_started' => true]);
+            return new JsonResponse(['run_id' => $processRun->id, 'state' => AdmissionState::AlreadyStarted->value]);
         }
 
         return new JsonResponse([
             'run_id' => $processRun->id,
-            'already_started' => false,
+            'state' => AdmissionState::ToRun->value,
             'event_key' => $eventKey,
             'dialect' => $processRun->dialect->value,
             'working_folder' => $processRun->working_folder,

@@ -17,6 +17,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Support\StoredOutput;
 use App\Processes\Values\EvidenceRange;
 use App\Processes\Values\OutputProblem;
+use App\Processes\Values\Run\PartResult;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -78,22 +79,23 @@ final readonly class ReadOutputController
     /**
      * The part's result as the one receipt gate answers it, or why there is none.
      */
-    private function resultOf(ProcessRun $run, PartRun $part): string
+    private function resultOf(ProcessRun $run, PartRun $part): PartResult
     {
         if ($run->mode === RunMode::Evidence) {
-            return 'evidence only';
+            return PartResult::evidenceOnly();
         }
         $receipt = $this->receipts->forPart($part->id);
         if ($receipt->isDefined()) {
-            return "result {$receipt->get()->outcome->value}, receipt {$receipt->get()->receiptId}";
+            return PartResult::receipted($receipt->get()->outcome->value, $receipt->get()->receiptId);
         }
         $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
         if ($assessment === null) {
-            return 'result unavailable: no assessment';
+            return PartResult::unavailable(['no assessment']);
         }
-        $codes = array_map(fn (OutputProblem $problem): string => $problem->code->value, $assessment->problems);
 
-        return 'result unavailable: '.implode(', ', $codes);
+        $codes = array_map(fn (OutputProblem $problem) => $problem->code->value, $assessment->problems);
+
+        return PartResult::unavailable($codes);
     }
 
     private function summary(ProcessRun $run, CommandBus $commands): JsonResponse
@@ -115,7 +117,7 @@ final readonly class ReadOutputController
                 'code' => $part->end()->hasStatus() ? $part->end_code : null,
                 'capture' => $part->capture_state->value,
                 'bytes' => $part->stream_offsets,
-                'result' => $this->resultOf($run, $part),
+                'result' => $this->resultOf($run, $part)->toArray(),
             ])->all(),
         ]);
     }
