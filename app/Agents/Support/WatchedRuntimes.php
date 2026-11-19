@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Models\TerminalView;
-use Illuminate\Contracts\Cache\Repository;
 
 /**
- * The runtimes of a host that somebody watches, and a per-host counter raised whenever that set may have changed, so
- * a waiting claim can tell cheaply that it must answer.
+ * The runtimes of a host that somebody watches, and the version of that list: a hash of the list itself, so every
+ * change of a view, a runtime's host or the engine's sweep changes it without any writer having to say so.
  */
 final readonly class WatchedRuntimes
 {
-    public function __construct(private Repository $cache) {}
-
     /**
      * Every runtime of the host with a view not ended, once, at the shortest interval its views ask for; a lapsed view
      * counts until the engine ends it.
@@ -34,22 +31,40 @@ final readonly class WatchedRuntimes
             ->all();
     }
 
-    public function version(string $hostId): int
+    /**
+     * Whether the runtime of the host has a view not ended.
+     */
+    public function isWatched(string $hostId, string $runtimeId): bool
     {
-        return (int) $this->cache->get($this->key($hostId), 0);
+        return TerminalView::query()
+            ->acrossActors()
+            ->watchedOnHost($hostId)
+            ->where('agent_runtime_id', $runtimeId)
+            ->exists();
     }
 
     /**
-     * The host's watched set may have changed: its version goes up by one.
+     * The version of the host's watched list: 0 while nobody watches, otherwise a hash of the sorted list.
      */
-    public function changed(string $hostId): void
+    public function version(string $hostId): int
     {
-        $this->cache->add($this->key($hostId), 0);
-        $this->cache->increment($this->key($hostId));
+        return self::versionOf($this->forHost($hostId));
     }
 
-    private function key(string $hostId): string
+    /**
+     * @param  list<WatchedRuntime>  $watched
+     */
+    public static function versionOf(array $watched): int
     {
-        return "host-watched-version:{$hostId}";
+        if ($watched === []) {
+            return 0;
+        }
+
+        $entries = array_map(
+            fn (WatchedRuntime $runtime): string => "{$runtime->runtimeId}:{$runtime->intervalMs}",
+            $watched,
+        );
+
+        return crc32(implode(',', $entries));
     }
 }

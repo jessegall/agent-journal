@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import type { DriverRequestStatus, RuntimeStatus } from '@/types/generated';
+import { ref } from 'vue';
 import { recover } from './runtimeRecovery';
 import RuntimeRequestRow from './RuntimeRequestRow.vue';
+import TerminalView from './TerminalView.vue';
 
 /**
  * One agent runtime as stored: its program, activity, hold, settings and latest driver requests, with a button that
- * releases a hold the owner may release.
+ * releases a hold the owner may release, and for a terminal runtime its live terminal and how many people watch it.
  */
 const props = defineProps<{ status: RuntimeStatus; requests: DriverRequestStatus[] }>();
+
+const watching = ref(false);
 
 function releaseHold(): void {
     recover(
@@ -34,7 +38,18 @@ function age(seconds: number | null): string {
             <span :class="status.isStale ? 'text-warn' : 'text-text-3'">
                 observed {{ age(status.observationAgeSeconds) }}{{ status.isStale ? ', stale' : '' }}
             </span>
+            <template v-if="status.driverType === 'terminal'">
+                <button type="button" @click="watching = !watching">
+                    {{ watching ? 'Stop watching' : 'Watch terminal' }}
+                </button>
+            </template>
+            <template v-if="status.watchers > 0">
+                <span class="text-text-3">{{ status.watchers }} watching</span>
+            </template>
         </header>
+        <template v-if="watching">
+            <TerminalView :agent-id="status.agentId" />
+        </template>
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 text-sm">
             <dt class="text-text-3">model</dt>
             <dd>

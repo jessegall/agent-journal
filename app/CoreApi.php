@@ -108,6 +108,7 @@ use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Commands\CloseTerminalView;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
@@ -115,16 +116,19 @@ use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
+use App\Agents\Commands\OpenTerminalView;
 use App\Agents\Commands\ReassignAgentRuntime;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RecordRuntime;
 use App\Agents\Commands\ReleaseAgentHold;
+use App\Agents\Commands\RenewTerminalView;
 use App\Agents\Commands\RepairDriverSettings;
 use App\Agents\Commands\ReportDriverTurn;
 use App\Agents\Commands\ReportRequestProgress;
 use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\ReportRuntimeScreen;
 use App\Agents\Commands\ResolveDriverDelivery;
 use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
@@ -458,6 +462,7 @@ use App\Desks\Exceptions\SecondForwardingSeat;
 use App\Desks\Support\SeatChangeResult;
 use App\Domains\Contracts\ProvidesIncomingWork;
 use App\Domains\Contracts\ProvidesInternalAssignables;
+use App\Engine\Commands\EndTerminalViews;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Events\EngineTicked;
@@ -1649,6 +1654,9 @@ final class CoreApi
                 ResolveDriverDelivery::class,
                 RepairDriverSettings::class,
                 ReleaseAgentHold::class,
+                OpenTerminalView::class,
+                RenewTerminalView::class,
+                CloseTerminalView::class,
                 ResumeKeyScript::class,
                 CancelKeyScript::class,
                 ReassignAgentRuntime::class,
@@ -1659,8 +1667,10 @@ final class CoreApi
                 ReportDriverTurn::class,
                 ReportRuntimeHeartbeat::class,
                 ReportRuntimeExit::class,
+                ReportRuntimeScreen::class,
                 OpenHostMainRuntime::class,
                 MarkSilentSessions::class,
+                EndTerminalViews::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,
                 CreateShare::class,

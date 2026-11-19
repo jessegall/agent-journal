@@ -12,6 +12,7 @@ import (
 
 	"journal-agent/client"
 	"journal-agent/screen"
+	"journal-agent/screen/contracts"
 )
 
 // signOfLife is how long an unchanged screen goes without a frame before one is sent anyway.
@@ -173,12 +174,16 @@ func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 	reader, found := sender.watcher.readers.ReaderFor(sender.runtimeID)
 	if !found {
 		sender.reader, sender.captured = nil, false
-		return screen.Frame{Epoch: sender.watcher.epoch, Captured: now, Rows: [][]screen.Run{}, NoTerminal: true}, true
+		marker := sender.marker(now)
+		marker.NoTerminal = true
+		return marker, true
 	}
 
 	if reader.Unreadable() {
 		sender.captured = false
-		return screen.Frame{Epoch: sender.watcher.epoch, Captured: now, Rows: [][]screen.Run{}, Unreadable: true}, true
+		marker := sender.marker(now)
+		marker.Unreadable = true
+		return marker, true
 	}
 
 	version := reader.Version()
@@ -189,6 +194,11 @@ func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 	sender.reader, sender.version, sender.captured = reader, version, true
 
 	return reader.Frame(sender.watcher.epoch, sender.sequence+1, now).Bounded(screen.FrameLimit), true
+}
+
+// marker is a frame with no screen in it, which says why by the flag the caller sets.
+func (sender *screenSender) marker(now time.Time) screen.Frame {
+	return screen.Frame{Epoch: sender.watcher.epoch, Captured: now, Rows: [][]screen.Run{}, Buffer: contracts.NormalBuffer}
 }
 
 func (sender *screenSender) signOfLifeDue(now time.Time) bool {

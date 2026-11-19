@@ -17,6 +17,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -143,6 +145,45 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
+     * How many live terminal views watch the runtime, counted once with the runtime when it was read with its watchers.
+     */
+    public function watcherCount(): int
+    {
+        if (! array_key_exists('watchers', $this->getAttributes())) {
+            $this->loadCount(['terminalViews as watchers' => fn (Builder $views) => $views->acrossActors()->live()]);
+        }
+
+        return (int) $this->getAttribute('watchers');
+    }
+
+    /**
+     * Reads each runtime with how many live terminal views watch it.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withWatchers(Builder $query): void
+    {
+        $query->withCount(['terminalViews as watchers' => fn (Builder $views) => $views->acrossActors()->live()]);
+    }
+
+    /**
+     * Whether the runtime's program draws a screen a viewer can watch: only a terminal runtime does.
+     */
+    public function hasScreen(): bool
+    {
+        return $this->driver_type === DriverType::Terminal;
+    }
+
+    /**
+     * Whether the runtime is stopping or stopped.
+     */
+    public function hasEnded(): bool
+    {
+        return in_array($this->activity, [RuntimeActivity::Stopping, RuntimeActivity::Stopped], true);
+    }
+
+    /**
      * A stop was asked for: the runtime takes no more requests while it stops.
      */
     public function markStopping(): void
@@ -260,6 +301,8 @@ final class AgentRuntime extends Model implements ReadableModel
             'isStale' => $this->isStale($now),
             'processGeneration' => $this->process_generation,
             'canReleaseHold' => $this->canReleaseHold(),
+            'driverType' => $this->driver_type,
+            'watchers' => $this->watcherCount(),
         ]);
     }
 

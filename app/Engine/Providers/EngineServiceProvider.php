@@ -12,6 +12,7 @@ use App\Engine\Contracts\Sleeper;
 use App\Engine\Contracts\Watchdog;
 use App\Engine\Support\AdvisoryEngineLock;
 use App\Engine\Support\AlarmWatchdog;
+use App\Engine\Support\EndTerminalViewsOnTick;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineAuthorizerProvider;
 use App\Engine\Support\EngineListenerSet;
@@ -69,6 +70,7 @@ final class EngineServiceProvider extends ServiceProvider
     ): void {
         $authorizers->register(ActorType::Engine, EngineAuthorizerProvider::class);
         $listeners->add(MarkSilentSessionsOnTick::class);
+        $listeners->add(EndTerminalViewsOnTick::class);
         $selfMeasured->add('engine:tick');
         $this->commands([TickCommand::class]);
     }

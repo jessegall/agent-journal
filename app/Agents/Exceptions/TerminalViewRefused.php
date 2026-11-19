@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Exceptions;
+
+use App\Agents\Enums\TerminalViewRefusal;
+use App\Agents\Models\TerminalView;
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
+use App\Contracts\CommandRefusal;
+use Carbon\CarbonInterface;
+use RuntimeException;
+
+/**
+ * A terminal view refused before it is opened, so no view is stored.
+ */
+final class TerminalViewRefused extends RuntimeException implements CodedRefusal, CommandRefusal
+{
+    use RendersRefusal;
+
+    private function __construct(string $message, public readonly TerminalViewRefusal $refusal)
+    {
+        parent::__construct($message);
+    }
+
+    /**
+     * An unknown agent and an agent the viewer may not inspect get this same answer, which says nothing of whether the
+     * agent runs.
+     */
+    public static function mayNotInspect(): self
+    {
+        return new self('You may not inspect this agent', TerminalViewRefusal::MayNotInspect);
+    }
+
+    public static function processDriver(): self
+    {
+        return new self(
+            'This agent runs without a terminal (process driver); there is nothing to watch.',
+            TerminalViewRefusal::ProcessDriver,
+        );
+    }
+
+    public static function notRunning(CarbonInterface $endedAt): self
+    {
+        return new self(
+            "This agent is not running; its terminal ended at {$endedAt->format('H:i')}.",
+            TerminalViewRefusal::NotRunning,
+        );
+    }
+
+    public static function tooManyViews(): self
+    {
+        return new self(
+            'You may have at most '.TerminalView::MAX_PER_VIEWER.' terminal views open; close one first.',
+            TerminalViewRefusal::TooManyViews,
+        );
+    }
+
+    public static function interval(int $intervalMs): self
+    {
+        return new self(
+            "A terminal view refreshes every 500 or 1000 ms, not every {$intervalMs} ms.",
+            TerminalViewRefusal::Interval,
+        );
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return $this->refusal->code();
+    }
+
+    protected function status(): int
+    {
+        return $this->refusal->code()->status();
+    }
+}

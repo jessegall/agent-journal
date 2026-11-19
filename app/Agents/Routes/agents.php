@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Http\Controllers\Calls;
+use App\Http\Controllers\Agents\CloseTerminalViewController;
 use App\Http\Controllers\Agents\LaunchAgentController;
+use App\Http\Controllers\Agents\OpenTerminalViewController;
+use App\Http\Controllers\Agents\RenewTerminalViewController;
 use App\Http\Controllers\Agents\RetireAgentController;
+use App\Http\Controllers\Agents\TerminalFrameController;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +20,16 @@ Route::post('/agents/retire', RetireAgentController::class)
 Route::post('/agents/{agent}/launch', LaunchAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->name('agents.launch');
+
+Route::middleware(['web', 'auth', 'journal.user'])
+    ->prefix('/agents/{agent}/terminal')
+    ->name('agents.terminal.')
+    ->group(function (): void {
+        Route::get('/', TerminalFrameController::class)->name('frame');
+        Route::post('/', OpenTerminalViewController::class)->name('open');
+        Route::put('/', RenewTerminalViewController::class)->name('renew');
+        Route::delete('/', CloseTerminalViewController::class)->name('close');
+    });
 
 Route::middleware('journal.agent')
     ->prefix('agent')

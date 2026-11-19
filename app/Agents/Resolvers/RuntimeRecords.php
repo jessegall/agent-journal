@@ -27,6 +27,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
 
         return array_values($this->visibleRuntimes()
             ->with('session')
+            ->withWatchers()
             ->orderBy('id')
             ->forPage(max(1, $page), $perPage)
             ->readLimit($perPage)

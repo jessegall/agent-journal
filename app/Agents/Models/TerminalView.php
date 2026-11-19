@@ -6,6 +6,7 @@ namespace App\Agents\Models;
 
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\RuntimeActivity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -45,16 +46,23 @@ final class TerminalView extends Model implements ReadableModel
     public const int LEASE_SECONDS = 30;
 
     /**
+     * How long an ended view is kept before the engine deletes it.
+     */
+    public const int KEEP_ENDED_HOURS = 24;
+
+    /**
      * How many live views one viewer may hold at once.
      */
     public const int MAX_PER_VIEWER = 20;
 
     /**
-     * The capture intervals a view may ask the host for, in milliseconds; the first is the default.
+     * The capture intervals a view may ask the host for, in milliseconds.
      *
      * @var list<int>
      */
     public const array INTERVALS_MS = [500, 1000];
+
+    public const int DEFAULT_INTERVAL_MS = 500;
 
     /**
      * @return array<string, string>
@@ -90,6 +98,38 @@ final class TerminalView extends Model implements ReadableModel
     }
 
     /**
+     * Ends every view whose lease ran out unrenewed, in one update.
+     */
+    public static function endLapsed(CarbonImmutable $now): void
+    {
+        self::query()->acrossActors()->lapsed($now)->update(['closed_at' => $now]);
+    }
+
+    /**
+     * Ends every live view of a runtime that stopped, in one update.
+     */
+    public static function endOfStoppedRuntimes(CarbonImmutable $now): void
+    {
+        self::query()->acrossActors()->live()->whereHas(
+            'runtime',
+            fn (Builder $runtime) => $runtime->where('activity', RuntimeActivity::Stopped),
+        )->update(['closed_at' => $now]);
+    }
+
+    /**
+     * Deletes the views that ended or lapsed before the cutoff, in one statement.
+     */
+    public static function pruneEndedBefore(CarbonImmutable $cutoff): void
+    {
+        self::query()
+            ->acrossActors()
+            ->where(fn (Builder $ended) => $ended
+                ->where('closed_at', '<', $cutoff)
+                ->orWhere('expires_at', '<', $cutoff))
+            ->delete();
+    }
+
+    /**
      * @return BelongsTo<AgentRuntime, $this>
      */
     public function runtime(): BelongsTo
@@ -104,6 +144,24 @@ final class TerminalView extends Model implements ReadableModel
     {
         $this->expires_at = $now->addSeconds(self::LEASE_SECONDS);
         $this->save();
+    }
+
+    /**
+     * Moves the view to the runtime the agent runs in now, at that runtime's generation.
+     */
+    public function follow(AgentRuntime $runtime): void
+    {
+        $this->agent_runtime_id = $runtime->id;
+        $this->process_generation = $runtime->process_generation;
+        $this->save();
+    }
+
+    /**
+     * Whether the view still watches the runtime as it ran when the view opened or last followed it.
+     */
+    public function watches(AgentRuntime $runtime): bool
+    {
+        return $this->agent_runtime_id === $runtime->id && $this->process_generation === $runtime->process_generation;
     }
 
     public function close(CarbonImmutable $now): void
@@ -140,6 +198,23 @@ final class TerminalView extends Model implements ReadableModel
             ->selectRaw('min(interval_ms) as interval_ms')
             ->groupBy('agent_runtime_id')
             ->orderBy('agent_runtime_id');
+    }
+
+    /**
+     * Views of any runtime of the agent.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function ofAgent(Builder $query, string $agentId): void
+    {
+        $query->whereHas(
+            'runtime',
+            fn (Builder $runtime) => $runtime->whereHas(
+                'session',
+                fn (Builder $session) => $session->where('agent_id', $agentId),
+            ),
+        );
     }
 
     /**

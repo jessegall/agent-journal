@@ -9,6 +9,7 @@ use App\Http\Controllers\Agents\Host\HeartbeatReportController;
 use App\Http\Controllers\Agents\Host\LaunchGrantController;
 use App\Http\Controllers\Agents\Host\OpenMainRuntimeController;
 use App\Http\Controllers\Agents\Host\RequestReportController;
+use App\Http\Controllers\Agents\Host\ScreenReportController;
 use App\Http\Controllers\Agents\Host\TurnReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,4 +22,5 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/reports/turn', TurnReportController::class)->name('reports.turn');
     Route::post('/reports/heartbeat', HeartbeatReportController::class)->name('reports.heartbeat');
     Route::post('/reports/exit', ExitReportController::class)->name('reports.exit');
+    Route::post('/reports/screen', ScreenReportController::class)->name('reports.screen');
 });
