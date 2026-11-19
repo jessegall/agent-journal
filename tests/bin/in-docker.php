@@ -26,6 +26,7 @@ if (! file_exists('/.dockerenv')) {
         'agent-journal-6',
         'exec',
         '-T',
+        ...worktreeDatabase($checkout, $worktreeAt),
         '-w',
         $containerFolder,
         'queue',
@@ -36,6 +37,23 @@ if (! file_exists('/.dockerenv')) {
 $process = proc_open($command, [STDIN, STDOUT, STDERR], $pipes, $checkout);
 
 exit(is_resource($process) ? proc_close($process) : 1);
+
+/**
+ * A worktree's tests run on a database named after its folder, journal_hooks_test_wt_<folder in a-z0-9>, so a
+ * worker's or a checkpoint's run never shares a database with another suite; the main checkout keeps the default.
+ *
+ * @return list<string>
+ */
+function worktreeDatabase(string $checkout, int|false $worktreeAt): array
+{
+    if ($worktreeAt === false) {
+        return [];
+    }
+
+    $folder = preg_replace('/[^a-z0-9]/', '', strtolower(basename($checkout)));
+
+    return ['-e', 'DB_DATABASE=journal_hooks_test_wt_'.$folder];
+}
 
 /**
  * The container has no git, so the host names the changed files: the ones given, or those git finds since the
