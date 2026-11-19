@@ -19,6 +19,8 @@ from engine.time.clock import Clock
 from server.work.boot_resolve import BootResolve
 from server.work.rounds.round_container import RoundContainer
 
+REGISTRY_CHECK_SECONDS = 1.0
+
 
 def background_container(home: JournalHome, turns: WriteTurns | None = None) -> Container:
     database = Database.opened(home, turns)
@@ -40,6 +42,7 @@ class KeptRoundContainer(RoundContainer):
         self.container: Container | None = None
         self.registry_version: RegistryVersion | None = None
         self.database_file: os.stat_result | None = None
+        self.registry_read_at = 0.0
 
     def round_container(self) -> Container:
         if self.container is not None and self.database_file_replaced():
@@ -58,8 +61,15 @@ class KeptRoundContainer(RoundContainer):
         BootResolve.sealed(self.container)
         return self.container
 
+    # a round asks many times a second and the registry changes only when modules sync, so it is read once a second
     def registry_changed(self) -> bool:
-        return self.container is not None and RegistryTable(self.container.get(Database)).version() != self.registry_version
+        if self.container is None:
+            return False
+        now = Clock().unix_seconds()
+        if now - self.registry_read_at < REGISTRY_CHECK_SECONDS:
+            return False
+        self.registry_read_at = now
+        return RegistryTable(self.container.get(Database)).version() != self.registry_version
 
     def database_file_replaced(self) -> bool:
         current = FileAccess.stat(self.home.database)
