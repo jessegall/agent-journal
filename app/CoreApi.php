@@ -522,6 +522,7 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
@@ -1390,6 +1391,7 @@ final class CoreApi
                 StopDetails::class,
                 ToolFinished::class,
                 ToolResult::class,
+                ProgramToolInput::class,
                 ToolOutcome::class,
                 ActorIdentity::class,
                 AbilityRequirement::class,

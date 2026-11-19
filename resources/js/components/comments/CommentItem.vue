@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RecordCommentView, TextCommentView } from '@/generated/types/core';
-import SwitchCase from '@/components/kit/SwitchCase.vue';
+import SwitchVariant from '@/components/kit/SwitchVariant.vue';
 
 /**
  * One comment in a list: who left it and when, what it is about, and its text. A whole-record comment offers to open
@@ -16,19 +16,17 @@ const comment = props.item.comment;
 <template>
     <article class="flex flex-col gap-1">
         <p class="text-small text-text-3">{{ comment.authorType }} {{ comment.authorId }} · {{ comment.createdAt }}</p>
-        <SwitchCase :value="item.type">
+        <SwitchVariant :subject="item" by="type">
             <template #record>
                 <button type="button" class="text-small text-left underline" @click="$emit('open', comment.id)">On the whole record: open record</button>
             </template>
-            <template #text>
-                <template v-if="item.type === 'text'">
-                    <button type="button" class="text-small text-left underline" @click="$emit('open', comment.id)">
-                        On {{ item.anchor.versionLabel }}, lines {{ item.anchor.firstLine }}–{{ item.anchor.lastLine }}
-                        <template v-if="currentVersion !== undefined && item.anchor.versionId !== currentVersion"> (an older version): open original location</template>
-                    </button>
-                </template>
+            <template #text="{ subject: textItem }">
+                <button type="button" class="text-small text-left underline" @click="$emit('open', comment.id)">
+                    On {{ textItem.anchor.versionLabel }}, lines {{ textItem.anchor.firstLine }}–{{ textItem.anchor.lastLine }}
+                    <template v-if="currentVersion !== undefined && textItem.anchor.versionId !== currentVersion"> (an older version): open original location</template>
+                </button>
             </template>
-        </SwitchCase>
+        </SwitchVariant>
         <div class="prose" v-html="comment.bodyHtml" />
     </article>
 </template>

@@ -6,7 +6,7 @@ import type { Section, TextSections } from '@/generated/types/core';
 import { post } from '@/routes/comments';
 import { sections } from '@/routes/text';
 import Button from '@/components/kit/Button.vue';
-import SwitchCase from '@/components/kit/SwitchCase.vue';
+import SwitchVariant from '@/components/kit/SwitchVariant.vue';
 import { formSendingHooks } from '@/composables/usePageChanges';
 import SourcePane from '@/components/text/SourcePane.vue';
 import TextComposer from '@/components/text/TextComposer.vue';
@@ -78,12 +78,10 @@ function send(): void {
     <TextComposer v-model="form.body" :pending="form.processing" :errors="form.errors" placeholder="Write a comment" send-label="Post comment" @send="send">
         <template #before>
             <p class="text-small text-text-3" aria-live="polite">
-                <SwitchCase :value="subject.type">
+                <SwitchVariant :subject="subject" by="type">
                     <template #record>About the whole record</template>
-                    <template #text>
-                        <template v-if="subject.type === 'text'">About {{ describeRange(subject.range) }}</template>
-                    </template>
-                </SwitchCase>
+                    <template #text="{ subject: textSubject }">About {{ describeRange(textSubject.range) }}</template>
+                </SwitchVariant>
             </p>
             <template v-if="sourceWindow && version">
                 <SourcePane :target="target" :version="version" :first-line="sourceWindow.firstLine" :last-line="sourceWindow.lastLine" @choose="choose" @close="sourceWindow = null" />

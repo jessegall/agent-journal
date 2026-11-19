@@ -2,7 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import type { DocumentPageData } from '@generated/types/documents';
 import CommentsPanel from '@kit/CommentsPanel';
-import LinksPanel from './LinksPanel.vue';
+import LinksPanel from '@kit/LinksPanel';
 import DraftEditor from './DraftEditor.vue';
 import RecordStatus from './RecordStatus.vue';
 import RecoverForm from './RecoverForm.vue';

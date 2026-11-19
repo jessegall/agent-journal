@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import type { RecordCommentLocation, TextCommentLocation } from '@/generated/types/core';
 import { location } from '@/routes/comments';
 import Button from '@/components/kit/Button.vue';
-import SwitchCase from '@/components/kit/SwitchCase.vue';
+import SwitchVariant from '@/components/kit/SwitchVariant.vue';
 import CommentSource from './CommentSource.vue';
 
 /**
@@ -30,30 +30,24 @@ onMounted(async () => {
 
 <template>
     <section class="flex flex-col gap-2" aria-live="polite">
-        <SwitchCase :value="loaded.state">
+        <SwitchVariant :subject="loaded" by="state">
             <template #loading>
                 <p class="text-small text-text-3">Opening the comment's place…</p>
             </template>
-            <template #unavailable>
-                <template v-if="loaded.state === 'unavailable'">
-                    <p class="text-small text-warn">The place this comment points at is not available: {{ loaded.message }}</p>
-                </template>
+            <template #unavailable="{ subject: unavailable }">
+                <p class="text-small text-warn">The place this comment points at is not available: {{ unavailable.message }}</p>
             </template>
-            <template #found>
-                <template v-if="loaded.state === 'found'">
-                    <SwitchCase :value="loaded.place.type">
-                        <template #record>
-                            <a :href="loaded.place.target.route ?? undefined" class="text-small underline">Open {{ loaded.place.target.label }}</a>
-                        </template>
-                        <template #text>
-                            <template v-if="loaded.place.type === 'text'">
-                                <CommentSource :location="loaded.place" />
-                            </template>
-                        </template>
-                    </SwitchCase>
-                </template>
+            <template #found="{ subject: found }">
+                <SwitchVariant :subject="found.place" by="type">
+                    <template #record="{ subject: place }">
+                        <a :href="place.target.route ?? undefined" class="text-small underline">Open {{ place.target.label }}</a>
+                    </template>
+                    <template #text="{ subject: place }">
+                        <CommentSource :location="place" />
+                    </template>
+                </SwitchVariant>
             </template>
-        </SwitchCase>
+        </SwitchVariant>
         <div>
             <Button @click="$emit('close')">Close</Button>
         </div>

@@ -24,8 +24,6 @@ final readonly class ChoiceOption implements PageOption
 
     /**
      * @param  list<PaneChoice>  $choices
-     *
-     * @throws InvalidPageDeclaration
      */
     public static function make(string $key, string $label, array $choices, string $startsOn): self
     {

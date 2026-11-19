@@ -14,12 +14,10 @@ final readonly class ProgramToolInput
     /**
      * @param  array<string, mixed>  $arguments
      */
-    public function __construct(private array $arguments) {}
+    public function __construct(public array $arguments) {}
 
     /**
-     * The first of the named arguments that holds text.
-     *
-     * @throws UnreadablePayload
+     * The first of the named arguments that holds text; a call with none of them is unreadable.
      */
     public function firstText(string ...$names): string
     {
