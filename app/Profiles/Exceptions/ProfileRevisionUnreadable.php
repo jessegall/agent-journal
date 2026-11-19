@@ -8,12 +8,12 @@ use RuntimeException;
 use Throwable;
 
 /**
- * A stored profile revision whose launch policy does not read as one; it fails rather than stand in for a default.
+ * A stored profile revision whose start policy does not read as one; it fails rather than stand in for a default.
  */
 final class ProfileRevisionUnreadable extends RuntimeException
 {
     public static function forRevision(string $revisionId, Throwable $failure): self
     {
-        return new self("The launch policy of profile revision {$revisionId} cannot be read.", 0, $failure);
+        return new self("The start policy of profile revision {$revisionId} cannot be read.", 0, $failure);
     }
 }

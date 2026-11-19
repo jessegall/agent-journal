@@ -6,7 +6,7 @@ namespace Tests\Support;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Support\AssigneeIdentity;
@@ -36,7 +36,7 @@ abstract class MessagingTestCase extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'agent_runtimes',
         'driver_requests',
@@ -63,8 +63,8 @@ abstract class MessagingTestCase extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->builder = $this->launch('Builder');
-        $this->reviewer = $this->launch('Reviewer');
+        $this->builder = $this->start('Builder');
+        $this->reviewer = $this->start('Reviewer');
         $this->asOwner();
     }
 
@@ -126,11 +126,11 @@ abstract class MessagingTestCase extends TestCase
         return $this->app->make(ProvedClaims::class)->validClaimsOn(Message::LINK_TYPE, [$messageId]);
     }
 
-    private function launch(string $name): AgentSession
+    private function start(string $name): AgentSession
     {
         $agent = Agent::named($name, 'main-agent');
-        $session = $this->app->make(LaunchSessions::class)
-            ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+        $session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
         $this->openDriverRuntime($session);
         $this->inboxOf(ActorIdentity::of($agent));

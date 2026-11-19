@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Models\LaunchBypass;
+use App\Agents\Models\StartBypass;
 use App\Agents\Support\StackTarget;
-use App\Hooks\Actions\LaunchStacks;
+use App\Hooks\Actions\StartStacks;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
@@ -23,7 +23,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Hooks\JournalUnreachable;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -35,8 +35,8 @@ final class HookRelayTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
-        'launch_bypasses',
+        'start_tokens',
+        'start_bypasses',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -50,7 +50,7 @@ final class HookRelayTest extends TestCase
 
     private const string SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status"}}';
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     private string $bypassLog;
 
@@ -60,9 +60,9 @@ final class HookRelayTest extends TestCase
     {
         parent::setUp();
 
-        $this->launch = TestLaunch::start('main-agent');
-        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open(
-            new StackTarget($this->launch->agent->id, $this->launch->session->id),
+        $this->start = TestStart::start('main-agent');
+        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(StartStacks::class)->open(
+            new StackTarget($this->start->agent->id, $this->start->session->id),
         ));
         $this->bypassLog = sys_get_temp_dir().'/hook-relay-bypasses-'.getmypid().'.jsonl';
     }
@@ -146,7 +146,7 @@ final class HookRelayTest extends TestCase
     {
         $this->forwardToTheEndpoint();
 
-        $reply = $this->relay(self::SHELL, token: 'not-the-launch-token');
+        $reply = $this->relay(self::SHELL, token: 'not-the-start-token');
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
         $this->assertFileDoesNotExist($this->bypassLog);
@@ -161,8 +161,8 @@ final class HookRelayTest extends TestCase
 
         $this->relay(self::STOP);
 
-        $this->assertSame(['PreToolUse'], LaunchBypass::query()->pluck('native_event')->all());
-        $this->assertSame($this->launch->session->id, LaunchBypass::query()->value('agent_session_id'));
+        $this->assertSame(['PreToolUse'], StartBypass::query()->pluck('native_event')->all());
+        $this->assertSame($this->start->session->id, StartBypass::query()->value('agent_session_id'));
         $this->assertFileDoesNotExist($this->bypassLog);
         $this->assertSame(1, DB::table('hook_calls')->count());
     }
@@ -232,8 +232,8 @@ final class HookRelayTest extends TestCase
     {
         $settings = new RelaySettings(
             'http://journal.test',
-            $token ?? $this->launch->token,
-            $this->launch->pin(),
+            $token ?? $this->start->token,
+            $this->start->pin(),
             $passesOutages,
             $this->bypassLog,
         );

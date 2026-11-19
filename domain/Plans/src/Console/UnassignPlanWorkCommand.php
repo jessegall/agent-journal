@@ -15,7 +15,7 @@ use Domain\Plans\Console\Concerns\ReportsPlanWork;
 use Illuminate\Console\Command;
 
 /**
- * Release a plan or phase and all its unfinished work, over a signed call as the agent of the launch.
+ * Release a plan or phase and all its unfinished work, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class UnassignPlanWorkCommand extends Command

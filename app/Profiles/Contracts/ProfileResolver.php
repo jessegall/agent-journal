@@ -20,7 +20,7 @@ interface ProfileResolver
     public function snapshotFor(ProfileKey $key): ProfileSnapshot;
 
     /**
-     * The profile's revision with this number, retired or not, as a launch recorded it.
+     * The profile's revision with this number, retired or not, as a start recorded it.
      *
      * @throws ProfileMissing when no profile has this key
      */
@@ -29,7 +29,7 @@ interface ProfileResolver
     public function has(ProfileKey $key): bool;
 
     /**
-     * A launch's pinned revision, refused when the profile is no longer admitted; a pin older than the current
+     * A start's pinned revision, refused when the profile is no longer admitted; a pin older than the current
      * revision stays valid, and the current revision never replaces it.
      *
      * @throws ProfileRetired

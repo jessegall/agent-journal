@@ -8,7 +8,7 @@ use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Exceptions\ModelRequired;
 
 /**
- * The model a launch asked for: a named model, or its profile's default. It is never empty.
+ * The model a start asked for: a named model, or its profile's default. It is never empty.
  */
 final readonly class ModelSelection
 {
@@ -28,7 +28,7 @@ final readonly class ModelSelection
     public static function named(string $model): self
     {
         if (trim($model) === '') {
-            throw ModelRequired::forLaunch();
+            throw ModelRequired::forStart();
         }
 
         return new self(ModelSelectionType::Named, $model);
@@ -47,7 +47,7 @@ final readonly class ModelSelection
     public static function fromInput(string|null $input): self
     {
         if ($input === null) {
-            throw ModelRequired::forLaunch();
+            throw ModelRequired::forStart();
         }
 
         return $input === self::DEFAULT_INPUT ? self::profileDefault() : self::named($input);

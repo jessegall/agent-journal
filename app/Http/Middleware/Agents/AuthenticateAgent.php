@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Authenticates an agent request by its launch credential and signed call, refreshes its session's heartbeat when the
+ * Authenticates an agent request by its start token and signed call, refreshes its session's heartbeat when the
  * stored one is stale, and makes its agent context and its actor the ones for this request only: both are forgotten
  * when it ends. A refused call gets one unauthenticated answer, whichever check failed.
  */
@@ -30,7 +30,7 @@ final readonly class AuthenticateAgent
     /**
      * The one refusal every failed check gives, so the answer never tells which check failed.
      */
-    private const string UNAUTHENTICATED = 'The call could not be authenticated with this launch credential.';
+    private const string UNAUTHENTICATED = 'The call could not be authenticated with this start token.';
 
     public function __construct(
         private AgentContextFactory $contexts,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Communication\Models\Message;
@@ -34,7 +34,7 @@ final class HomePageTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'messages',
@@ -63,7 +63,7 @@ final class HomePageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agent = Agent::named('Builder', 'main-agent');
-        $this->session = $this->app->make(LaunchSessions::class)->launch(
+        $this->session = $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),

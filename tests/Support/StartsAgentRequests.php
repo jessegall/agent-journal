@@ -27,7 +27,7 @@ trait StartsAgentRequests
         ));
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agentId),
-            TestLaunchAuthority::forAgent($agentId),
+            TestStartAuthority::forAgent($agentId),
         );
     }
 

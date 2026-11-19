@@ -9,7 +9,7 @@ use App\Reads\Exceptions\LazyLoadRefused;
 use App\Reads\Exceptions\QueryInValueRead;
 use App\Reads\Support\ScopedReadMeter;
 use Domain\Access\Models\User;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -24,8 +24,8 @@ final class ValueReadsTest extends TestCase
 
     public function test_touching_an_unloaded_relation_on_one_model_is_refused_before_a_query(): void
     {
-        $launch = TestLaunch::start();
-        $session = AgentSession::query()->findOrFail($launch->session->id);
+        $start = TestStart::start();
+        $session = AgentSession::query()->findOrFail($start->session->id);
 
         $counts = $this->readCounts(function () use ($session): void {
             try {
@@ -37,8 +37,8 @@ final class ValueReadsTest extends TestCase
 
         $this->assertSame(0, $counts->queriesRun);
         $this->assertSame(
-            $launch->agent->id,
-            AgentSession::query()->with('agent')->findOrFail($launch->session->id)->agent->id,
+            $start->agent->id,
+            AgentSession::query()->with('agent')->findOrFail($start->session->id)->agent->id,
         );
     }
 

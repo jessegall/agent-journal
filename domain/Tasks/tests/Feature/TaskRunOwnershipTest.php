@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -30,7 +30,7 @@ use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 
 /**
  * A task run belongs to the session that started it: another session cannot take it, finish it or block it, a helper
@@ -45,7 +45,7 @@ final class TaskRunOwnershipTest extends TestCase
         'task_runs',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -64,8 +64,8 @@ final class TaskRunOwnershipTest extends TestCase
     {
         parent::setUp();
 
-        $this->first = $this->launch('First', 'main-agent');
-        $this->second = $this->launch('Second', 'read-only-helper');
+        $this->first = $this->start('First', 'main-agent');
+        $this->second = $this->start('Second', 'read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Owned work']);
     }
 
@@ -155,11 +155,11 @@ final class TaskRunOwnershipTest extends TestCase
         $this->assertThrows(fn () => $this->bus()->run(new StartTask($this->task->id)), TaskRestartRefused::class);
     }
 
-    private function launch(string $name, string $profileKey): AgentSession
+    private function start(string $name, string $profileKey): AgentSession
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             Agent::named($name, $profileKey),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -181,7 +181,7 @@ final class TaskRunOwnershipTest extends TestCase
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),
-            TestLaunchAuthority::forAgent($agent->id),
+            TestStartAuthority::forAgent($agent->id),
         );
     }
 

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\SelectedProgram;
+use App\Agents\Support\StartReceipt;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
@@ -44,7 +44,7 @@ final class SessionSelectionReadTest extends TestCase
             new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []),
             null,
         );
-        $this->session = $this->app->make(LaunchSessions::class)->launch(
+        $this->session = $this->app->make(StartSessions::class)->start(
             $agent,
             $selection,
             TestSelections::requestId(),
@@ -73,7 +73,7 @@ final class SessionSelectionReadTest extends TestCase
                 $option->selection->source->profileRevision,
             ],
         );
-        $this->assertSame(LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED, $option->actualModel);
+        $this->assertSame(StartReceipt::ACTUAL_MODEL_NOT_REPORTED, $option->actualModel);
         $this->assertSame([null, 0], [$option->conversationNativeId, $option->visitCount]);
     }
 

@@ -9,7 +9,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * The identity of one call an agent makes: its id, when the agent issued it, and the digest of its body.
- * The agent signs the three with its launch token, so none of them can change on the way.
+ * The agent signs the three with its start token, so none of them can change on the way.
  */
 final readonly class SignedCall
 {
@@ -64,8 +64,8 @@ final readonly class SignedCall
     }
 
     /**
-     * An agent call's signature: the version-2 envelope with the launch's pinned profile key and revision after it, so
-     * a call cannot claim another profile than the one it was launched with.
+     * An agent call's signature: the version-2 envelope with the start's pinned profile key and revision after it, so
+     * a call cannot claim another profile than the one it was started with.
      *
      * @throws CallFieldInvalid
      */
@@ -76,7 +76,7 @@ final readonly class SignedCall
         string $callId,
         int $issuedAt,
         string $body,
-        LaunchProfilePin $profile,
+        StartProfilePin $profile,
     ): string {
         $fields = [
             self::PROTOCOL,

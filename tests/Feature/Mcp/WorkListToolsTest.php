@@ -10,7 +10,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -31,7 +31,7 @@ final class WorkListToolsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'plans',
         'phases',
@@ -40,7 +40,7 @@ final class WorkListToolsTest extends TestCase
         'core_mcp_retained_pages',
     ];
 
-    private TestLaunch $caller;
+    private TestStart $caller;
 
     private AssignmentWriterInTransaction $writer;
 
@@ -50,7 +50,7 @@ final class WorkListToolsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->caller = TestLaunch::start();
+        $this->caller = TestStart::start();
         $this->startUserRequestAs($owner->id);
         $this->writer = $this->app->make(AssignmentWriterInTransaction::class);
     }
@@ -71,7 +71,7 @@ final class WorkListToolsTest extends TestCase
             )->outcomes[0]->current->reference->id;
         }
 
-        $other = TestLaunch::start();
+        $other = TestStart::start();
         $this->writer->assign(
             Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(),
             AssigneeIdentity::of($other->agent),

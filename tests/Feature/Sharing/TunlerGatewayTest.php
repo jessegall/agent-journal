@@ -18,7 +18,7 @@ use Tests\TestCase;
 
 /**
  * The Tunler gateway against fixture outputs of the tunler program, with no real account: readiness names each
- * missing piece, opening accepts only the configured HTTPS origin from the launch's own line, and the probe accepts
+ * missing piece, opening accepts only the configured HTTPS origin from the start's own line, and the probe accepts
  * only its own challenge without a redirect.
  */
 final class TunlerGatewayTest extends TestCase
@@ -89,7 +89,7 @@ final class TunlerGatewayTest extends TestCase
         );
     }
 
-    public function test_opening_accepts_the_configured_origin_from_the_launch_line(): void
+    public function test_opening_accepts_the_configured_origin_from_the_start_line(): void
     {
         $this->processes->fake(
             [

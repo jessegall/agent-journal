@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
@@ -17,15 +17,15 @@ final class ModelUnavailable extends InvalidArgumentException implements Command
     {
         return new self(
             sprintf(
-                'Model %s is not allowed for %s with this profile. Name an allowed model. Nothing was launched.',
+                'Model %s is not allowed for %s with this profile. Name an allowed model. Nothing was started.',
                 $model,
                 $program,
             ),
         );
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::ModelUnavailable;
+        return StartRefusalType::ModelUnavailable;
     }
 }

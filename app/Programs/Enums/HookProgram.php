@@ -30,7 +30,7 @@ enum HookProgram: string
 
     /**
      * The program's own tools that start or reach another agent; they are always denied, since only the journal's
-     * helpers and workers are ever started (rule 36). The names are those plan 26's launch evidence found per build.
+     * helpers and workers are ever started (rule 36). The names are those plan 26's start evidence found per build.
      *
      * @return list<string>
      */

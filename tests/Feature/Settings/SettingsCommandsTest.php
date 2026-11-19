@@ -38,7 +38,7 @@ use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -177,7 +177,7 @@ final class SettingsCommandsTest extends TestCase
         $agent = TestIds::of(3);
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent),
-            TestLaunchAuthority::granting(ProfileBase::mainAgent(), []),
+            TestStartAuthority::granting(ProfileBase::mainAgent(), []),
         );
         $this->assertRefused(ActorNotAllowed::class, $command);
 

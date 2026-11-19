@@ -15,7 +15,7 @@ use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
@@ -34,15 +34,15 @@ final class MemoryCommandsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'memories',
         'number_groups',
         'command_receipts',
     ];
 
-    private TestLaunch $owner;
+    private TestStart $owner;
 
-    private TestLaunch $other;
+    private TestStart $other;
 
     protected function setUp(): void
     {
@@ -50,8 +50,8 @@ final class MemoryCommandsTest extends TestCase
 
         $user = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($user->id));
-        $this->owner = TestLaunch::start('read-only-helper');
-        $this->other = TestLaunch::start('read-only-helper');
+        $this->owner = TestStart::start('read-only-helper');
+        $this->other = TestStart::start('read-only-helper');
     }
 
     public function test_an_agent_saves_a_memory_and_reads_it_back(): void

@@ -10,7 +10,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -36,7 +36,7 @@ use Tests\Support\ActsAsOwner;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -53,7 +53,7 @@ final class TaskDetailsResolverTest extends TestCase
         'tasks',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -70,7 +70,7 @@ final class TaskDetailsResolverTest extends TestCase
     public function test_a_task_held_by_a_desk_and_run_by_its_occupant_shows_both_separately(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 1, false);
-        $runner = $this->launch('Runner');
+        $runner = $this->start('Runner');
         $task = Task::factory()->create(['title' => 'Split work', 'brief' => 'Held by one, run by another.']);
         $this->asUser();
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
@@ -104,7 +104,7 @@ final class TaskDetailsResolverTest extends TestCase
     #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]
     public function test_a_page_of_20_cards_reads_its_runs_in_one_query(): void
     {
-        $runner = $this->launch('Runner');
+        $runner = $this->start('Runner');
         $this->actAs($runner);
 
         foreach (range(1, 20) as $number) {
@@ -136,11 +136,11 @@ final class TaskDetailsResolverTest extends TestCase
         );
     }
 
-    private function launch(string $name): AgentSession
+    private function start(string $name): AgentSession
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             Agent::named($name, 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -161,7 +161,7 @@ final class TaskDetailsResolverTest extends TestCase
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($session->agent_id),
-            TestLaunchAuthority::forAgent($session->agent_id),
+            TestStartAuthority::forAgent($session->agent_id),
         );
     }
 

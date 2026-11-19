@@ -13,8 +13,8 @@ use Domain\Tasks\Http\Data\AssignedTaskCardData;
 use Illuminate\Console\Command;
 
 /**
- * Lists the tasks the calling agent holds, asked of the journal over a signed call with the launch's token: the
- * launch decides who calls, never an option.
+ * Lists the tasks the calling agent holds, asked of the journal over a signed call with the start's token: the
+ * start decides who calls, never an option.
  */
 #[JournalRoute(JournalRouteType::Read)]
 final class AssignedTasksCommand extends Command

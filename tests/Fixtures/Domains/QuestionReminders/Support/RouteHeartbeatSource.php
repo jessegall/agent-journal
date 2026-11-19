@@ -8,7 +8,7 @@ use Closure;
 
 /**
  * Sends a quiet agent's own beats to the agent heartbeat route through the sender it is given, which signs them as
- * the agent's launch.
+ * the agent's start.
  */
 final readonly class RouteHeartbeatSource
 {

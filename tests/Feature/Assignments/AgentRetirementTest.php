@@ -6,12 +6,12 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Agents\Actions\AgentSessions;
-use App\Agents\Actions\LaunchCredentials;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
+use App\Agents\Actions\StartTokens;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\CredentialRejected;
-use App\Agents\Exceptions\LaunchRefused;
+use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\CredentialLookup;
@@ -52,7 +52,7 @@ final class AgentRetirementTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'tasks',
@@ -78,7 +78,7 @@ final class AgentRetirementTest extends TestCase
 
     public function test_the_owner_retires_an_agent_releasing_its_work_and_ending_its_sessions(): void
     {
-        $session = $this->app->make(LaunchSessions::class)->launch(
+        $session = $this->app->make(StartSessions::class)->start(
             $this->helper,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -98,9 +98,9 @@ final class AgentRetirementTest extends TestCase
         $this->assertCount(2, $result->changes);
         $this->assertTrue($this->helper->refresh()->isRetired());
         $this->assertSame(0, AssignmentRecord::query()->count());
-        $ended = AgentSession::query()->with('credential')->findOrFail($session->id);
+        $ended = AgentSession::query()->with('startToken')->findOrFail($session->id);
         $this->assertFalse($ended->isActive());
-        $this->assertNotNull($ended->credential?->revoked_at);
+        $this->assertNotNull($ended->startToken?->revoked_at);
     }
 
     public function test_a_main_agent_retires_a_helper_but_not_itself_and_a_helper_retires_nobody(): void
@@ -154,9 +154,9 @@ final class AgentRetirementTest extends TestCase
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
 
-    public function test_a_retired_agent_cannot_be_launched_and_its_credential_is_refused(): void
+    public function test_a_retired_agent_cannot_be_started_and_its_credential_is_refused(): void
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch(
+        $started = $this->app->make(StartSessions::class)->start(
             $this->helper,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -164,22 +164,22 @@ final class AgentRetirementTest extends TestCase
         Agent::query()->whereKey($this->helper->id)->update(['retired_at' => now()]);
 
         $this->assertThrows(
-            fn () => $this->app->make(LaunchSessions::class)->launch(
+            fn () => $this->app->make(StartSessions::class)->start(
                 $this->helper->refresh(),
                 TestSelections::of('claude-code'),
                 TestSelections::requestId(),
             ),
-            LaunchRefused::class,
+            StartRefused::class,
         );
         $this->assertThrows(
-            fn () => $this->app->make(CredentialLookup::class)->sessionFor($launched->token),
+            fn () => $this->app->make(CredentialLookup::class)->sessionFor($started->token),
             CredentialRejected::class,
         );
     }
 
     public function test_ending_a_session_keeps_the_agents_work(): void
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch(
+        $started = $this->app->make(StartSessions::class)->start(
             $this->helper,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -189,19 +189,19 @@ final class AgentRetirementTest extends TestCase
             AssigneeIdentity::of($this->helper),
         );
 
-        $this->app->make(LaunchSessions::class)->end($launched->session);
+        $this->app->make(StartSessions::class)->end($started->session);
 
         $this->assertSame(1, AssignmentRecord::query()->count());
     }
 
-    public function test_a_launch_committed_while_retirement_waits_is_ended_by_it(): void
+    public function test_a_start_committed_while_retirement_waits_is_ended_by_it(): void
     {
         DB::disconnect();
         [$parentEnd, $childEnd] = $this->handshake();
         $child = pcntl_fork();
 
         if ($child === 0) {
-            $this->launchWhileHoldingTheSharedLock($childEnd);
+            $this->startWhileHoldingTheSharedLock($childEnd);
         }
 
         fgets($parentEnd);
@@ -209,19 +209,19 @@ final class AgentRetirementTest extends TestCase
         $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
         pcntl_waitpid($child, $status);
 
-        $session = AgentSession::query()->with('credential')->where('agent_id', $this->helper->id)->sole();
+        $session = AgentSession::query()->with('startToken')->where('agent_id', $this->helper->id)->sole();
         $this->assertFalse($session->isActive());
-        $this->assertNotNull($session->credential?->revoked_at);
+        $this->assertNotNull($session->startToken?->revoked_at);
     }
 
     /**
-     * The forked process: it writes what a launch writes, a session under the shared lifecycle lock and its
+     * The forked process: it writes what a start writes, a session under the shared lifecycle lock and its
      * credential, tells the parent it holds the lock, waits until the retirement is seen waiting for it, commits and
      * leaves.
      *
      * @param  resource  $parent
      */
-    private function launchWhileHoldingTheSharedLock($parent): never
+    private function startWhileHoldingTheSharedLock($parent): never
     {
         DB::reconnect();
         DB::transaction(function () use ($parent): void {
@@ -230,7 +230,7 @@ final class AgentRetirementTest extends TestCase
                 TestSelections::of(),
                 TestSelections::requestId(),
             );
-            $this->app->make(LaunchCredentials::class)->issue($session);
+            $this->app->make(StartTokens::class)->issue($session);
             $this->holdUntilTheRetirementWaits($parent);
         });
         DB::disconnect();

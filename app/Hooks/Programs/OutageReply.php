@@ -9,10 +9,10 @@ use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\ProgramStopDecision;
 
 /**
- * The reply the host gives a program when a hook call to the journal fails. During an outage a launch granted the
+ * The reply the host gives a program when a hook call to the journal fails. During an outage a start granted the
  * neutral
- * reply goes on and the host logs the bypass; any other launch is refused. Any other failure is refused for every
- * launch.
+ * reply goes on and the host logs the bypass; any other start is refused. Any other failure is refused for every
+ * start.
  * The host holds these replies; a journal that is down cannot send them.
  */
 final class OutageReply

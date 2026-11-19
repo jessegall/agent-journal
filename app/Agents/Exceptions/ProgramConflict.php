@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
@@ -18,8 +18,8 @@ final class ProgramConflict extends InvalidArgumentException implements CommandR
         return new self("Profile {$profile} cannot run on {$program}. Choose a permitted program or profile.");
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::ProgramConflict;
+        return StartRefusalType::ProgramConflict;
     }
 }

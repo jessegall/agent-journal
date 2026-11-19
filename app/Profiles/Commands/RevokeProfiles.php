@@ -15,7 +15,7 @@ use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Values\ProfileKey;
 
 /**
- * The owner retires profiles: new launches can no longer choose them, while their keys and revisions stay readable.
+ * The owner retires profiles: new starts can no longer choose them, while their keys and revisions stay readable.
  * The result is how many profiles were retired.
  *
  * @extends Command<int>

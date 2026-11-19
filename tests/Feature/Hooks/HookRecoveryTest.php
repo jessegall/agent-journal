@@ -7,16 +7,16 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Actions\LaunchHeartbeats;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartHeartbeats;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\CredentialLookup;
-use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartedAgent;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Models\AgentStackRow;
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\BackdatesSessions;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 final class HookRecoveryTest extends TestCase
@@ -40,74 +40,74 @@ final class HookRecoveryTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'tasks',
         'links',
     ];
 
-    public function test_silence_first_makes_the_session_silent_and_keeps_the_launch_working(): void
+    public function test_silence_first_makes_the_session_silent_and_keeps_the_start_working(): void
     {
-        $launched = $this->launch();
+        $started = $this->start();
 
-        $this->startedSecondsAgo($launched, 121);
-        $this->heartbeats()->markSilentLaunches();
+        $this->startedSecondsAgo($started, 121);
+        $this->heartbeats()->markSilentStarts();
 
-        $this->assertSame(SessionStatus::Silent, $launched->session->refresh()->status);
-        $this->assertSame(StackStatus::Active, $this->stackOf($launched)->status);
+        $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
+        $this->assertSame(StackStatus::Active, $this->stackOf($started)->status);
         $this->assertSame(
-            $launched->session->id,
-            $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id,
+            $started->session->id,
+            $this->app->make(CredentialLookup::class)->sessionFor($started->token)->id,
         );
     }
 
     public function test_a_session_inside_its_presence_window_stays_active(): void
     {
-        $launched = $this->launch();
+        $started = $this->start();
 
-        $this->startedSecondsAgo($launched, 100);
-        $this->heartbeats()->markSilentLaunches();
+        $this->startedSecondsAgo($started, 100);
+        $this->heartbeats()->markSilentStarts();
 
-        $this->assertSame(SessionStatus::Active, $launched->session->refresh()->status);
+        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
     }
 
     public function test_a_heartbeat_makes_a_silent_session_active_again(): void
     {
-        $launched = $this->launch();
-        $this->startedSecondsAgo($launched, 121);
-        $this->heartbeats()->markSilentLaunches();
+        $started = $this->start();
+        $this->startedSecondsAgo($started, 121);
+        $this->heartbeats()->markSilentStarts();
 
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($launched->session->agent_id),
-            TestLaunchAuthority::forAgent($launched->session->agent_id),
+            ActorContext::forAgent($started->session->agent_id),
+            TestStartAuthority::forAgent($started->session->agent_id),
         );
-        $this->app->make(CommandBus::class)->run(new RecordHeartbeat($launched->session->id));
-        $this->heartbeats()->markSilentLaunches();
+        $this->app->make(CommandBus::class)->run(new RecordHeartbeat($started->session->id));
+        $this->heartbeats()->markSilentStarts();
 
-        $this->assertSame(SessionStatus::Active, $launched->session->refresh()->status);
-        $this->assertNull($launched->session->refresh()->end_evidence);
+        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
+        $this->assertNull($started->session->refresh()->end_evidence);
     }
 
     public function test_a_long_silence_never_ends_the_session_and_keeps_the_credential_and_the_stack(): void
     {
-        $launched = $this->launch();
-        $task = $this->startTask($launched);
+        $started = $this->start();
+        $task = $this->startTask($started);
 
-        $this->startedSecondsAgo($launched, 17 * 60);
-        $this->heartbeats()->markSilentLaunches();
-        $this->heartbeats()->markSilentLaunches();
+        $this->startedSecondsAgo($started, 17 * 60);
+        $this->heartbeats()->markSilentStarts();
+        $this->heartbeats()->markSilentStarts();
 
-        $this->assertSame(SessionStatus::Silent, $launched->session->refresh()->status);
-        $this->assertNull($launched->session->refresh()->end_evidence);
+        $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
+        $this->assertNull($started->session->refresh()->end_evidence);
         $this->assertSame(
-            $launched->session->id,
-            $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id,
+            $started->session->id,
+            $this->app->make(CredentialLookup::class)->sessionFor($started->token)->id,
         );
-        $this->assertSame(StackStatus::Active, $this->stackOf($launched)->status);
+        $this->assertSame(StackStatus::Active, $this->stackOf($started)->status);
         $this->assertSame(
             ['hooks.ready', 'tasks.working'],
-            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($launched)->frames->all()),
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($started)->frames->all()),
         );
         $this->assertSame(TaskState::Started, $task->fresh()?->state);
         $this->assertSame(0, DB::table('hook_calls')->count());
@@ -115,24 +115,24 @@ final class HookRecoveryTest extends TestCase
 
     public function test_the_host_reporting_an_exit_ends_the_session_at_once(): void
     {
-        $launched = $this->launch();
+        $started = $this->start();
 
-        $this->heartbeats()->markExited($launched->session, 'exit code 137');
+        $this->heartbeats()->markExited($started->session, 'exit code 137');
 
-        $this->assertSame(SessionStatus::Ended, $launched->session->refresh()->status);
-        $this->assertSame('host reported exit: exit code 137', $launched->session->refresh()->end_evidence);
-        $this->assertSame(StackStatus::Closed, $this->stackOf($launched)->status);
+        $this->assertSame(SessionStatus::Ended, $started->session->refresh()->status);
+        $this->assertSame('host reported exit: exit code 137', $started->session->refresh()->end_evidence);
+        $this->assertSame(StackStatus::Closed, $this->stackOf($started)->status);
         $this->expectException(CredentialRejected::class);
-        $this->app->make(CredentialLookup::class)->sessionFor($launched->token);
+        $this->app->make(CredentialLookup::class)->sessionFor($started->token);
     }
 
-    public function test_a_replacement_launch_starts_from_its_own_bottom_and_copies_nothing(): void
+    public function test_a_replacement_start_starts_from_its_own_bottom_and_copies_nothing(): void
     {
-        $exited = $this->launch();
+        $exited = $this->start();
         $this->startTask($exited);
         $this->heartbeats()->markExited($exited->session, 'killed');
 
-        $replacement = $this->app->make(LaunchSessions::class)->launch(
+        $replacement = $this->app->make(StartSessions::class)->start(
             $exited->session->loadMissing('agent')->agent,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -148,30 +148,30 @@ final class HookRecoveryTest extends TestCase
         );
     }
 
-    private function launch(): LaunchedAgent
+    private function start(): StartedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             Agent::named('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );
     }
 
-    private function startTask(LaunchedAgent $launched): Task
+    private function startTask(StartedAgent $started): Task
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->instance(
             AgentContext::class,
             new AgentContext(
-                $launched->session->agent_id,
-                $launched->session->id,
+                $started->session->agent_id,
+                $started->session->id,
                 new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
                 null,
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($launched->session->agent_id),
-            TestLaunchAuthority::forAgent($launched->session->agent_id),
+            ActorContext::forAgent($started->session->agent_id),
+            TestStartAuthority::forAgent($started->session->agent_id),
         );
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $this->app->forgetScopedInstances();
@@ -179,15 +179,15 @@ final class HookRecoveryTest extends TestCase
         return $task;
     }
 
-    private function stackOf(LaunchedAgent $launched): AgentStackRow
+    private function stackOf(StartedAgent $started): AgentStackRow
     {
         return AgentStackRow::query()->authorizedFor(
-            new StackTarget($launched->session->agent_id, $launched->session->id),
+            new StackTarget($started->session->agent_id, $started->session->id),
         )->sole();
     }
 
-    private function heartbeats(): LaunchHeartbeats
+    private function heartbeats(): StartHeartbeats
     {
-        return $this->app->make(LaunchHeartbeats::class);
+        return $this->app->make(StartHeartbeats::class);
     }
 }

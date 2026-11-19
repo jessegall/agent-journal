@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('staged_effort', 32)->nullable();
             $table->string('observed_effort', 32)->nullable();
             $table->timestampTz('settings_observed_at')->nullable();
-            $table->text('launch_grant')->nullable();
+            $table->text('start_grant')->nullable();
             $table->unsignedInteger('process_generation')->default(0);
             $table->timestampTz('last_observed_at')->nullable();
             $table->unsignedInteger('row_version')->default(1);

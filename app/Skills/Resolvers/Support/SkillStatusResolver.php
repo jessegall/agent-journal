@@ -58,16 +58,16 @@ final readonly class SkillStatusResolver
         $entries = $this->container->make(SkillResolver::class)->all();
         $selection = $this->selectionOf($session, $entries);
         $delivered = SkillPublication::latestDeliveredOfSession($sessionId);
-        $launched = SkillPublication::firstOfSession($sessionId);
+        $started = SkillPublication::firstOfSession($sessionId);
         $generation = SkillGeneration::latestReady();
-        $reloadsAtNewSession = $this->adapters->supports(ProgramKey::from($launched->program))
-            && $this->adapters->for(ProgramKey::from($launched->program))->reloadMode() === SkillReload::NewSession;
+        $reloadsAtNewSession = $this->adapters->supports(ProgramKey::from($started->program))
+            && $this->adapters->for(ProgramKey::from($started->program))->reloadMode() === SkillReload::NewSession;
 
         return array_map(function (SkillEntry $entry) use (
             $sessionId,
             $selection,
             $delivered,
-            $launched,
+            $started,
             $generation,
             $reloadsAtNewSession,
         ) {
@@ -76,8 +76,8 @@ final readonly class SkillStatusResolver
             $deliveredEntry = $delivered !== null && in_array($key, $delivered->skill_keys, true)
                 ? $delivered->generation()->entry($key)
                 : null;
-            $launchedEntry = in_array($key, $launched->skill_keys, true) ? $launched->generation()->entry($key) : null;
-            $launchedDigest = $launchedEntry === null ? null : $launchedEntry['digest'];
+            $startedEntry = in_array($key, $started->skill_keys, true) ? $started->generation()->entry($key) : null;
+            $startedDigest = $startedEntry === null ? null : $startedEntry['digest'];
             $currentDigest = $deliveredEntry === null ? null : $deliveredEntry['digest'];
 
             return new SessionSkillStatus(
@@ -89,7 +89,7 @@ final readonly class SkillStatusResolver
                 $deliveredEntry === null ? null : $delivered->generation_id,
                 $deliveredEntry === null ? 'not-delivered' : PublicationState::Delivered->value,
                 $deliveredEntry !== null && SkillReceipt::hasRead($sessionId, $key, $deliveredEntry['digest']),
-                $reloadsAtNewSession && $selected && ($launchedDigest === null || $launchedDigest !== $currentDigest),
+                $reloadsAtNewSession && $selected && ($startedDigest === null || $startedDigest !== $currentDigest),
             );
         }, $entries);
     }

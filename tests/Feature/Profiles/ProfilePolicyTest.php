@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Event;
 use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -67,8 +67,8 @@ final class ProfilePolicyTest extends TestCase
             'profiles' => ['journal-worker' => self::WORKER],
         ]);
 
-        $launch = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'))->launch;
-        $access = $launch->access;
+        $start = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'))->start;
+        $access = $start->access;
 
         $this->assertFalse($access->decide(self::operation('file.delete', AccessType::Delete, 'workspace'))->allowed);
         $this->assertTrue($access->decide(
@@ -77,7 +77,7 @@ final class ProfilePolicyTest extends TestCase
         $push = self::operation('shell:git.push', AccessType::Execute, 'workspace');
 
         $this->assertFalse($access->decide($push)->allowed);
-        $this->assertSame(PolicyOriginType::Profile, $launch->provenance->originOf('access'));
+        $this->assertSame(PolicyOriginType::Profile, $start->provenance->originOf('access'));
     }
 
     public function test_a_reader_widened_into_workspace_edits_is_refused_and_nothing_is_activated(): void
@@ -115,7 +115,7 @@ final class ProfilePolicyTest extends TestCase
         );
     }
 
-    public function test_a_session_keeps_its_revision_and_the_next_launch_gets_the_new_one(): void
+    public function test_a_session_keeps_its_revision_and_the_next_start_gets_the_new_one(): void
     {
         $first = $this->activate(['profiles' => ['journal-worker' => self::WORKER]]);
         $second = $this->activate(['profiles' => ['journal-worker' => [...self::WORKER, 'model' => 'sonnet']]]);
@@ -135,7 +135,7 @@ final class ProfilePolicyTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(9)),
-            TestLaunchAuthority::forAgent(TestIds::of(9)),
+            TestStartAuthority::forAgent(TestIds::of(9)),
         );
 
         $this->expectException(ActorNotAllowed::class);

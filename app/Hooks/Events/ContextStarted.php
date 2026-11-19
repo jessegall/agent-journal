@@ -10,7 +10,7 @@ use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Enums\ContextStartType;
 
 /**
- * An agent's context started again in one hook call: a launch, clear, resume or compaction. Listeners run their own
+ * An agent's context started again in one hook call: a start, clear, resume or compaction. Listeners run their own
  * idempotent reaction and add their current reminders, at once, inside the hook call; nothing in a summary counts as
  * finished work.
  */

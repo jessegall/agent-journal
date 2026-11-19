@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Event;
 use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 use Throwable;
 
@@ -109,7 +109,7 @@ final class StoredSkillCommandsTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(3)),
-            TestLaunchAuthority::forAgent(TestIds::of(3)),
+            TestStartAuthority::forAgent(TestIds::of(3)),
         );
 
         $this->assertRefused(

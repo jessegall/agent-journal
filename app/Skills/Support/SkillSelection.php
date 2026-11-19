@@ -11,8 +11,8 @@ use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillEntry;
 
 /**
- * Selects the skills of one context: only skills whose condition matches, narrowed by the launch profile's allowlist
- * (absent keeps all, empty keeps none). Every skill the profile requires must be selected, or the launch is refused.
+ * Selects the skills of one context: only skills whose condition matches, narrowed by the start profile's allowlist
+ * (absent keeps all, empty keeps none). Every skill the profile requires must be selected, or the start is refused.
  * A profile never makes a skill eligible that its condition does not match.
  */
 final readonly class SkillSelection

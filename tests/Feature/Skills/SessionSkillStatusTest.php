@@ -74,7 +74,7 @@ final class SessionSkillStatusTest extends TestCase
 
     public function test_a_skill_is_delivered_then_read_and_an_edit_makes_it_unread_with_a_new_digest(): void
     {
-        $session = $this->launchedMainAgent();
+        $session = $this->startedMainAgent();
 
         $guide = $this->guideOf($session);
         $this->assertTrue($guide->selected);

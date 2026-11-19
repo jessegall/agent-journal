@@ -15,12 +15,12 @@ use App\Processes\Values\ProcessGrants;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
-use App\Profiles\Values\LaunchProfileAuthority;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
+use App\Profiles\Values\StartProfileAuthority;
 
 /**
- * What an actor may run, read from the profile its session was launched under: the caller's own pinned profile, or a
+ * What an actor may run, read from the profile its session was started under: the caller's own pinned profile, or a
  * target's live pin, so a caller's rights never widen another agent's ceiling. Revocations narrow both. An owner or
  * trusted infrastructure acting without a profile runs under no profile ceiling.
  */
@@ -35,7 +35,7 @@ final readonly class ProfilePermissionReader implements CommandPermissionResolve
     {
         $authority = $this->actors->authority();
 
-        if (! $authority instanceof LaunchProfileAuthority) {
+        if (! $authority instanceof StartProfileAuthority) {
             return PermissionRevocation::narrow(
                 CommandPermissions::granted($authority->description(), ProcessGrants::everything()),
             );

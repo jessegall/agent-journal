@@ -19,7 +19,7 @@ type fakeJournal struct {
 	exits    int
 }
 
-func (journal *fakeJournal) LaunchGrant(context.Context, string) (client.Grant, error) {
+func (journal *fakeJournal) StartGrant(context.Context, string) (client.Grant, error) {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.grants++

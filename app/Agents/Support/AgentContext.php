@@ -24,7 +24,7 @@ final readonly class AgentContext implements Actor
     ) {}
 
     /**
-     * The context of a call signed for this launched session.
+     * The context of a call signed for this started session.
      */
     public static function ofSession(AgentSession $session, SignedCall $call): self
     {

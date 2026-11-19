@@ -9,7 +9,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -27,7 +27,7 @@ final class AgentRequestKeyTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'assignments',
         'command_receipts',
@@ -35,9 +35,9 @@ final class AgentRequestKeyTest extends TestCase
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2CLIKEY001';
 
-    private TestLaunch $main;
+    private TestStart $main;
 
-    private TestLaunch $helper;
+    private TestStart $helper;
 
     private Task $task;
 
@@ -47,8 +47,8 @@ final class AgentRequestKeyTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->main = TestLaunch::start('main-agent');
-        $this->helper = TestLaunch::start('read-only-helper');
+        $this->main = TestStart::start('main-agent');
+        $this->helper = TestStart::start('read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Keyed work']);
     }
 
@@ -105,7 +105,7 @@ final class AgentRequestKeyTest extends TestCase
 
     public function test_one_key_from_two_agents_keys_two_separate_writes(): void
     {
-        $second = TestLaunch::start('main-agent');
+        $second = TestStart::start('main-agent');
         $other = Task::factory()->create(['title' => 'Other work']);
 
         $this->signed(

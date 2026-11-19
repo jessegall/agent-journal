@@ -15,7 +15,7 @@ use Domain\Plans\Console\Concerns\ReportsPlanWork;
 use Illuminate\Console\Command;
 
 /**
- * Give a plan or phase and all its unfinished work to one holder, over a signed call as the agent of the launch.
+ * Give a plan or phase and all its unfinished work to one holder, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class AssignPlanWorkCommand extends Command

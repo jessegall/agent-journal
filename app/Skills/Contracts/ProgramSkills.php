@@ -11,7 +11,7 @@ use App\Skills\Values\SkillKey;
 
 /**
  * How one program finds its skills: the layout of a published set, the folder the host writes it to and what the
- * launch adds, how an agent is told to read a skill, and whether a running session sees a changed set.
+ * start adds, how an agent is told to read a skill, and whether a running session sees a changed set.
  */
 interface ProgramSkills
 {

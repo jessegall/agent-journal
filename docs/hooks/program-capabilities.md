@@ -4,13 +4,13 @@ This is the one place where the journal records what it knows about each agent p
 
 ## What plan 2 delivered, and what it did not
 
-The core is built and tested on PostgreSQL: typed hook inputs, the top-first walk with recorded steps, the role bottom states, the state types and restoration, the rewrite recheck, the two Hooks tables with versioned casts, the per-request agent scope, the bounded stack transaction with replay, the domain states pushed by their own listeners, the authoritative shell parser, the Claude Code and Codex adapters, the authenticated endpoint `POST /hooks/{program}`, launches with isolated settings and separate child stacks, compaction once with reminders, loss confirmation, the outage replies, the read-only inspector `GET /hooks/stacks/{agentId}/{sessionId}` and retention.
+The core is built and tested on PostgreSQL: typed hook inputs, the top-first walk with recorded steps, the role bottom states, the state types and restoration, the rewrite recheck, the two Hooks tables with versioned casts, the per-request agent scope, the bounded stack transaction with replay, the domain states pushed by their own listeners, the authoritative shell parser, the Claude Code and Codex adapters, the authenticated endpoint `POST /hooks/{program}`, starts with isolated settings and separate child stacks, compaction once with reminders, loss confirmation, the outage replies, the read-only inspector `GET /hooks/stacks/{agentId}/{sessionId}` and retention.
 
 No production program runs under it yet: the host relay exists but has not run under a real program. Task 89 pinned Claude Code 2.1.323 and codex-cli 0.165.0 and captured their hook payloads on 2026-11-17, each run headless under isolated settings with a capture hook that answered every callback with `{}`; the fixtures are those payloads, redacted. What the capture could not show (the replies a program accepts, timeouts, the stop cap) is marked below as not verified. The owner work still missing is listed in `docs/hooks/dependencies.md`.
 
 ## Native subagents are never started (rule 36)
 
-The prohibition is permanent: only the journal's own helpers and workers are ever started, never a program's native subagent, team or forked skill. Each program's `HookProgram::nativeChildTools()` lists the tools that start or reach another agent; the launch settings deny every one, and `POST /hooks/{program}` refuses a pre-tool call to any of them, and any call from inside a native child (one that carries `agent_id`), before a session is mapped or a stack is touched.
+The prohibition is permanent: only the journal's own helpers and workers are ever started, never a program's native subagent, team or forked skill. Each program's `HookProgram::nativeChildTools()` lists the tools that start or reach another agent; the start settings deny every one, and `POST /hooks/{program}` refuses a pre-tool call to any of them, and any call from inside a native child (one that carries `agent_id`), before a session is mapped or a stack is touched.
 
 ## Measured limits
 
@@ -21,7 +21,7 @@ Measured on 2026-11-17 against the running FrankenPHP Octane app in Docker, from
 | The health check `/up` | 1.7 ms | 6.7 ms |
 | A hook call with an unknown token, refused at the credential lookup | 2.7 ms | 10.5 ms |
 
-Task 93 measured the authenticated path the same way, with a throwaway agent on the main-agent profile, launched through `LaunchSessions` in the dev database and deleted afterwards. Each call was signed with the launch token as the relay signs it and walked the agent's real stack:
+Task 93 measured the authenticated path the same way, with a throwaway agent on the main-agent profile, started through `StartSessions` in the dev database and deleted afterwards. Each call was signed with the start token as the relay signs it and walked the agent's real stack:
 
 | What | Calls | Median | Worst |
 |---|---|---|---|
@@ -49,9 +49,9 @@ the host before any work starts (`build 2.1.999 of claude is not the pinned buil
 | Stop | exit proven, runtime stopped, session ended | refused for a runtime whose host restarted (its one-time grant was used): reassignment covers it | not run live |
 | Hook calls | reach the journal, through `bin/journal-hook claude-code` | through `bin/journal-hook codex` | not run live |
 
-Rule 36 at launch: Claude Code starts with `--agents {}` and the delegation tools in `--disallowedTools`, and a prompt
+Rule 36 at start: Claude Code starts with `--agents {}` and the delegation tools in `--disallowedTools`, and a prompt
 asking for the Task tool ran without any child; codex starts with `features.multi_agent` and every related feature
-set to false. Not yet shown live: a contradictory control at launch, and the same evidence after a resume and after a
+set to false. Not yet shown live: a contradictory control at start, and the same evidence after a resume and after a
 reassignment.
 
 Limits found by the live run: the hook relay boots the whole app, so on a machine without the app's database and
@@ -72,17 +72,17 @@ The journal never sends `allow`, `ask`, `continue: false` or any other native ap
 
 ## How a call proves who sent it (plan 2, task 57)
 
-Every agent call carries the launch token as a bearer token and three headers the host signs with that token:
+Every agent call carries the start token as a bearer token and three headers the host signs with that token:
 
 - `X-Journal-Call-Id`: the hook call id, the same on every retry of one call.
 - `X-Journal-Call-Issued-At`: when the host issued the call, in Unix seconds.
-- `X-Journal-Call-Signature`: HMAC-SHA256 of the id, the issue time and the SHA-256 of the body, joined by newlines, keyed with the launch token.
+- `X-Journal-Call-Signature`: HMAC-SHA256 of the id, the issue time and the SHA-256 of the body, joined by newlines, keyed with the start token.
 
 A retry is accepted while the issue time is within the retry window (`hooks.retry_seconds`, 300 by default). The host shim that adds these headers is not built yet.
 
 ## When the journal cannot answer (plan 2, task 72)
 
-The host shim, not the journal, answers a hook when the journal is unreachable, because a journal that is down cannot send anything. `OutageReply` holds the replies the host gives, by the offline reply the launch grant sealed and by how the call failed (`CallFailure`):
+The host shim, not the journal, answers a hook when the journal is unreachable, because a journal that is down cannot send anything. `OutageReply` holds the replies the host gives, by the offline reply the start grant sealed and by how the call failed (`CallFailure`):
 
 | How the call failed | Granted the neutral reply | Granted the refusal |
 |---|---|---|
@@ -92,9 +92,9 @@ The host shim, not the journal, answers a hook when the journal is unreachable, 
 | 422 (a payload the adapter cannot read) | refused | refused |
 | 404, 500, 503 or a malformed answer (the journal's own answer) | refused | refused |
 
-A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host relay is `bin/journal-hook <program>`, which runs `php artisan hooks:relay <program>` (`HookRelay`): it signs each call, posts it, answers alone with `OutageReply` when the journal is unreachable, logs the bypass of a launch granted the neutral reply to the file `JOURNAL_BYPASS_LOG`, and uploads the logged bypasses to `POST /hooks/bypasses` before its next call, where Agents keeps them in `launch_bypasses`. The launch must set `JOURNAL_URL`, `JOURNAL_LAUNCH_TOKEN`, the profile pin, `JOURNAL_OFFLINE_REPLY` with its seal `JOURNAL_OFFLINE_REPLY_SEAL`, and `JOURNAL_BYPASS_LOG` in the program's environment; a seal the journal did not issue for this launch stops the relay.
+A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host relay is `bin/journal-hook <program>`, which runs `php artisan hooks:relay <program>` (`HookRelay`): it signs each call, posts it, answers alone with `OutageReply` when the journal is unreachable, logs the bypass of a start granted the neutral reply to the file `JOURNAL_BYPASS_LOG`, and uploads the logged bypasses to `POST /hooks/bypasses` before its next call, where Agents keeps them in `start_bypasses`. The start must set `JOURNAL_URL`, `JOURNAL_START_TOKEN`, the profile pin, `JOURNAL_OFFLINE_REPLY` with its seal `JOURNAL_OFFLINE_REPLY_SEAL`, and `JOURNAL_BYPASS_LOG` in the program's environment; a seal the journal did not issue for this start stops the relay.
 
-A program that exits or is killed without an end hook is handled by `LaunchHeartbeats`: silence first marks the launch possibly lost (`agents.silent_after_seconds`), and a long silence (`agents.timed_out_after_seconds`) or the host's report of the exit marks it lost, and the stack is closed and kept with its obligations.
+A program that exits or is killed without an end hook is handled by `StartHeartbeats`: silence first marks the start possibly lost (`agents.silent_after_seconds`), and a long silence (`agents.timed_out_after_seconds`) or the host's report of the exit marks it lost, and the stack is closed and kept with its obligations.
 
 ## Claude Code
 
@@ -117,7 +117,7 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 |---|---|
 | Program and pinned version | Claude Code 2.1.323, captured 2026-11-17 with `claude -p --settings <file> --setting-sources local` |
 | Native callbacks and schema | captured: SessionStart (`source` startup, resume or compact; resume adds `seconds_since_last_response` and `context_tokens`, compact adds `model`), UserPromptSubmit (`prompt`, `prompt_id`, `permission_mode`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as an object and `duration_ms`), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other), PreCompact (`trigger`, `custom_instructions`), SubagentStop. Notification: a headless run raises none, so its fixture keeps the documented shape |
-| Agent, launch, vendor session and child identity | the vendor session id is kept on session start. A child starts through the `Agent` tool; its tool calls and its SubagentStop carry `agent_id` and `agent_type` on the parent's `session_id`. Native children are never started (rule 36): the isolated settings deny `Agent`, `Task`, `Workflow`, `SendMessage`, `ListAgents`, `RemoteTrigger` and `Skill` for 2.1.323, and the hook endpoint refuses any call carrying `agent_id` and any of those tools |
+| Agent, start, vendor session and child identity | the vendor session id is kept on session start. A child starts through the `Agent` tool; its tool calls and its SubagentStop carry `agent_id` and `agent_type` on the parent's `session_id`. Native children are never started (rule 36): the isolated settings deny `Agent`, `Task`, `Workflow`, `SendMessage`, `ListAgents`, `RemoteTrigger` and `Skill` for 2.1.323, and the hook endpoint refuses any call carrying `agent_id` and any of those tools |
 | Tool coverage | captured: Bash, Read, Edit, Write and Agent; any other tool, MCP tools included, is refused |
 | Legal answers | neutral, deny, prompt block, stop block, context and `updatedInput` without a permission grant, from the documentation: the capture answered every hook with `{}` |
 | Native permissions | a neutral reply keeps the user's approval prompt, from the documentation |
@@ -148,7 +148,7 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 | Program and pinned version | codex-cli 0.165.0, captured 2026-11-17 with `codex exec` under an isolated `CODEX_HOME` |
 | Native callbacks and schema | captured: SessionStart (`source` startup, `model`, `permission_mode`), UserPromptSubmit (`turn_id`, `prompt`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as the tool's text, which starts with `Exit code: N` for apply_patch), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other). PreCompact: `codex exec` raises none, so its fixture keeps the documented shape |
 | Settings file shape | `hooks.json` in `CODEX_HOME`, shaped as Claude Code's: each event holds `[{"matcher": "*", "hooks": [{"type": "command", "command": "..."}]}]`, with no matcher on UserPromptSubmit and Stop. Codex runs a hook only when `config.toml` holds `[hooks.state."<hooks.json path>:<event_key>:<group>:<index>"]` with `enabled = true` and `trusted_hash`, the sha256 of the hook's normalized definition, and the work folder has `trust_level = "trusted"`; an untrusted hook is skipped without a word |
-| Agent, launch, vendor session and child identity | the vendor session id is kept on session start. Native children are never started (rule 36): with every agent feature off, 0.165.0 still offers `collaboration.spawn_agent`, `wait_agent`, `send_message`, `followup_task`, `interrupt_agent` and `list_agents` (plan 26 task 888), so the hook endpoint refuses every call to them, as version 5 does |
+| Agent, start, vendor session and child identity | the vendor session id is kept on session start. Native children are never started (rule 36): with every agent feature off, 0.165.0 still offers `collaboration.spawn_agent`, `wait_agent`, `send_message`, `followup_task`, `interrupt_agent` and `list_agents` (plan 26 task 888), so the hook endpoint refuses every call to them, as version 5 does |
 | Tool coverage | captured: Bash and apply_patch; any other tool is refused |
 | Legal answers | neutral, deny and stop block from the documentation; `updatedInput` only with `permissionDecision: allow`, so the journal refuses rewrites |
 | Native permissions | a neutral reply omits `permissionDecision`, from the documentation |
@@ -160,7 +160,7 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 
 ## Container capabilities
 
-Doc 14 (sections 55 to 57 and 60) asks five things of each pinned program before a helper runs it in a required container. `docs/accounts/container-capabilities.json` holds one row per capability and program, read through `HostCapabilities`; a launch whose configured guarantee needs a capability that is not `supported` is refused before work with `capability-unsupported` (`HostCapabilityUnsupported`), and the account transport with `account-container-unsupported`.
+Doc 14 (sections 55 to 57 and 60) asks five things of each pinned program before a helper runs it in a required container. `docs/accounts/container-capabilities.json` holds one row per capability and program, read through `HostCapabilities`; a start whose configured guarantee needs a capability that is not `supported` is refused before work with `capability-unsupported` (`HostCapabilityUnsupported`), and the account transport with `account-container-unsupported`.
 
 A capability is marked supported only from a native run inside the admitted container, never from documentation. No such run exists yet: the protected host that starts containers is task 258 (plan 8), and the hook capture of task 89 ran the programs headless on the host. Every row is therefore unverified, with what is known:
 

@@ -17,10 +17,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One launch's share of the host's CPU, memory and disk, held from admission until its exit is confirmed.
+ * One start's share of the host's CPU, memory and disk, held from admission until its exit is confirmed.
  *
  * @property string $id
- * @property string $launch_request_id
+ * @property string $start_request_id
  * @property int $cpu_cores
  * @property int $memory_bytes
  * @property int $disk_bytes
@@ -28,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['launch_request_id', 'cpu_cores', 'memory_bytes', 'disk_bytes', 'state'])]
+#[Fillable(['start_request_id', 'cpu_cores', 'memory_bytes', 'disk_bytes', 'state'])]
 final class CapacityReservation extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -49,14 +49,14 @@ final class CapacityReservation extends Model implements ReadableModel
     }
 
     /**
-     * Reserves the launch's budgets when the host has room for them beside every reservation still held; a repeat of
-     * the same launch finds its reservation. Refuses instead of overcommitting. The caller holds the HostCapacityLock.
+     * Reserves the start's budgets when the host has room for them beside every reservation still held; a repeat of
+     * the same start finds its reservation. Refuses instead of overcommitting. The caller holds the HostCapacityLock.
      *
      * @throws CapacityUnavailable
      */
-    public static function reserve(string $launchRequestId, ExecutionBudgets $budgets, HostCapacity $capacity): self
+    public static function reserve(string $startRequestId, ExecutionBudgets $budgets, HostCapacity $capacity): self
     {
-        $existing = self::query()->where('launch_request_id', $launchRequestId)->first();
+        $existing = self::query()->where('start_request_id', $startRequestId)->first();
 
         if ($existing !== null) {
             return $existing;
@@ -80,7 +80,7 @@ final class CapacityReservation extends Model implements ReadableModel
 
         return self::query()->create(
             [
-                'launch_request_id' => $launchRequestId,
+                'start_request_id' => $startRequestId,
                 'cpu_cores' => $budgets->cpuCores,
                 'memory_bytes' => $budgets->memoryBytes,
                 'disk_bytes' => $budgets->workspaceBytes,

@@ -10,7 +10,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * php artisan mcp:relay as a launched program runs it: a child process on stdio, posting each frame as one signed call
+ * php artisan mcp:relay as a started program runs it: a child process on stdio, posting each frame as one signed call
  * to a stand-in journal (tests/Fixtures/Mcp/relay-server.php) and writing each answer back as one line.
  */
 #[TimeLimit(
@@ -143,7 +143,7 @@ final class RelayTest extends TestCase
     {
         return new Process([PHP_BINARY, base_path('artisan'), 'mcp:relay'], base_path(), [
             'JOURNAL_URL' => "http://127.0.0.1:{$this->port}",
-            'JOURNAL_LAUNCH_TOKEN' => 'test-launch-token',
+            'JOURNAL_START_TOKEN' => 'test-start-token',
             'JOURNAL_PROFILE' => 'main-agent',
             'JOURNAL_PROFILE_REVISION' => '1',
         ], timeout: 60);

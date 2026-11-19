@@ -14,7 +14,7 @@ not wrap long lines, so the writer does.
 Break a long call or signature one argument per line, with a trailing comma:
 
 ```php
-return new LaunchAgent(new LaunchRequest(
+return new StartAgent(new StartRequest(
     $requestId,
     $agentId,
     $selection,

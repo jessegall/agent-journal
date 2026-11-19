@@ -11,7 +11,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Retires an agent for good, over a signed call as the main agent of the launch, and prints what it released.
+ * Retires an agent for good, over a signed call as the main agent of the start, and prints what it released.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class RetireAgentCommand extends Command

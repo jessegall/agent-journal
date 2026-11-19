@@ -15,7 +15,7 @@ use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestRunAdmissions;
@@ -30,7 +30,7 @@ final class StoredOutputReadTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     private ProcessRun $run;
 
@@ -39,9 +39,9 @@ final class StoredOutputReadTest extends TestCase
         parent::setUp();
 
         Storage::fake(SpoolRecorder::DISK);
-        $this->launch = TestLaunch::start();
+        $this->start = TestStart::start();
         $this->run = ProcessRun::admit(
-            new ActorIdentity(ActorType::Agent, $this->launch->agent->id),
+            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             TestRunAdmissions::of(admissionId: 'stored-output'),
         );
         $part = PartRun::queue($this->run, new PartKey(1, 1, 'tool'));
@@ -60,7 +60,7 @@ final class StoredOutputReadTest extends TestCase
     public function test_the_tail_shows_the_last_lines_escaped_and_the_bytes_before_them(): void
     {
         $reply = $this->signed(
-            $this->launch,
+            $this->start,
             "/agent/processes/runs/{$this->run->id}/output/tail",
             ['part' => 1, 'lines' => 2],
         )->assertOk();
@@ -75,19 +75,19 @@ final class StoredOutputReadTest extends TestCase
         $this->assertCount(
             1,
             $this->signed(
-                $this->launch,
+                $this->start,
                 "/agent/processes/runs/{$this->run->id}/output/search",
                 ['part' => 1, 'text' => 'error'],
             )->json('offsets'),
         );
-        $summary = $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output/summary", []);
+        $summary = $this->signed($this->start, "/agent/processes/runs/{$this->run->id}/output/summary", []);
         $this->assertSame(1, $summary->json('parts.0.code'), (string) $summary->getContent());
     }
 
     public function test_another_agent_finds_no_run(): void
     {
         $this->signed(
-            TestLaunch::start(),
+            TestStart::start(),
             "/agent/processes/runs/{$this->run->id}/output/summary",
             [],
         )->assertNotFound();

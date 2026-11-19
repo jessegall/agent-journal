@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Agents\Actions\AgentSessions;
-use App\Agents\Actions\LaunchCredentials;
+use App\Agents\Actions\StartTokens;
 use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Models\LaunchCredential;
+use App\Agents\Models\StartToken;
 use App\Agents\Support\AgentContext;
 use App\Hooks\Stack\StateTypes;
 use App\Http\Middleware\Agents\AuthenticateAgent;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -35,42 +35,42 @@ final class AgentContextTest extends TestCase
         ])->middleware(AuthenticateAgent::class);
     }
 
-    public function test_a_launch_credential_authenticates_its_own_agent_and_session(): void
+    public function test_a_start_token_authenticates_its_own_agent_and_session(): void
     {
-        $launch = TestLaunch::start('read-only-helper');
+        $start = TestStart::start('read-only-helper');
 
-        $this->callAs($launch)->assertOk()->assertExactJson([
-            'agent' => $launch->agent->id,
-            'session' => $launch->session->id,
+        $this->callAs($start)->assertOk()->assertExactJson([
+            'agent' => $start->agent->id,
+            'session' => $start->session->id,
         ]);
     }
 
     public function test_only_the_hash_of_the_token_is_stored(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
 
-        $stored = LaunchCredential::query()->sole();
+        $stored = StartToken::query()->sole();
 
-        $this->assertNotSame($launch->token, $stored->token_hash);
-        $this->assertSame(hash('sha256', $launch->token), $stored->token_hash);
+        $this->assertNotSame($start->token, $stored->token_hash);
+        $this->assertSame(hash('sha256', $start->token), $stored->token_hash);
     }
 
     public function test_ids_in_the_headers_or_body_do_not_change_who_is_calling(): void
     {
-        $launch = TestLaunch::start();
-        $other = TestLaunch::start();
+        $start = TestStart::start();
+        $other = TestStart::start();
         $body = json_encode(['agent' => $other->agent->id, 'session' => $other->session->id]) ?: '';
 
         $this->call('POST', '/testing/agent-context', server: [
-            ...$launch->serverHeaders($body, target: '/testing/agent-context'),
+            ...$start->serverHeaders($body, target: '/testing/agent-context'),
             'HTTP_X_AGENT_ID' => (string) $other->agent->id,
-        ], content: $body)->assertOk()->assertJson(['agent' => $launch->agent->id, 'session' => $launch->session->id]);
+        ], content: $body)->assertOk()->assertJson(['agent' => $start->agent->id, 'session' => $start->session->id]);
     }
 
     public function test_a_request_without_a_credential_is_refused(): void
     {
-        $launch = TestLaunch::start();
-        $headers = $launch->serverHeaders(self::BODY, target: '/testing/agent-context');
+        $start = TestStart::start();
+        $headers = $start->serverHeaders(self::BODY, target: '/testing/agent-context');
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/testing/agent-context', server: $headers, content: self::BODY)->assertUnauthorized();
@@ -78,9 +78,9 @@ final class AgentContextTest extends TestCase
 
     public function test_an_unknown_credential_is_refused(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
         $headers = [
-            ...$launch->serverHeaders(self::BODY, target: '/testing/agent-context'),
+            ...$start->serverHeaders(self::BODY, target: '/testing/agent-context'),
             'HTTP_AUTHORIZATION' => 'Bearer not-a-token',
         ];
 
@@ -89,38 +89,38 @@ final class AgentContextTest extends TestCase
 
     public function test_a_revoked_credential_is_refused(): void
     {
-        $launch = TestLaunch::start();
-        new LaunchCredentials()->revoke($launch->session);
+        $start = TestStart::start();
+        new StartTokens()->revoke($start->session);
 
-        $this->callAs($launch)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
+        $this->callAs($start)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
     }
 
     public function test_the_credential_of_an_ended_session_is_refused(): void
     {
-        $launch = TestLaunch::start();
-        $this->app->make(AgentSessions::class)->end($launch->session);
+        $start = TestStart::start();
+        $this->app->make(AgentSessions::class)->end($start->session);
 
-        $this->callAs($launch)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
+        $this->callAs($start)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
     }
 
     public function test_a_child_session_names_its_parent(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
 
         $child = $this->app->make(AgentSessions::class)->start(
-            $launch->agent,
+            $start->agent,
             TestSelections::of(),
             TestSelections::requestId(),
-            $launch->session,
+            $start->session,
         );
 
-        $this->assertSame($launch->session->id, $child->parent_session_id);
+        $this->assertSame($start->session->id, $child->parent_session_id);
     }
 
     public function test_a_reused_worker_gives_each_request_its_own_agent_and_keeps_the_state_types(): void
     {
-        $first = TestLaunch::start();
-        $second = TestLaunch::start();
+        $first = TestStart::start();
+        $second = TestStart::start();
         $stateTypes = $this->app->make(StateTypes::class);
 
         $this->callAs($first)->assertJson(['agent' => $first->agent->id]);
@@ -140,12 +140,12 @@ final class AgentContextTest extends TestCase
     /**
      * @return TestResponse<Response>
      */
-    private function callAs(TestLaunch $launch): TestResponse
+    private function callAs(TestStart $start): TestResponse
     {
         return $this->call(
             'POST',
             '/testing/agent-context',
-            server: $launch->serverHeaders(self::BODY, target: '/testing/agent-context'),
+            server: $start->serverHeaders(self::BODY, target: '/testing/agent-context'),
             content: self::BODY,
         );
     }

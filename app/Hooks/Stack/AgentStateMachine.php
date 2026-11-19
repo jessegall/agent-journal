@@ -114,7 +114,7 @@ final readonly class AgentStateMachine
     }
 
     /**
-     * The reminders a new context start brings (launch, clear, resume or compaction), collected after the replay check
+     * The reminders a new context start brings (start, clear, resume or compaction), collected after the replay check
      * under the stack lock; a replay and any other hook bring none.
      *
      * @return list<string>

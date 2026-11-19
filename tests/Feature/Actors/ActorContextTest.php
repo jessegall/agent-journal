@@ -18,7 +18,7 @@ use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 final class ActorContextTest extends TestCase
@@ -54,7 +54,7 @@ final class ActorContextTest extends TestCase
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(3)),
-            TestLaunchAuthority::forAgent(TestIds::of(3)),
+            TestStartAuthority::forAgent(TestIds::of(3)),
         );
         $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actors->actor()->type, $actors->actor()->id]);
 

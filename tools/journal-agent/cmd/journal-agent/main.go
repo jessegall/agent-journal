@@ -26,7 +26,7 @@ import (
 	"journal-agent/screen"
 )
 
-// profileFor is the pinned launch profile of each program, by its command name and by the name the journal gives it.
+// profileFor is the pinned start profile of each program, by its command name and by the name the journal gives it.
 var profileFor = map[string]contracts.ProgramProfile{
 	"claude":      profiles.ClaudeCode{},
 	"claude-code": profiles.ClaudeCode{},
@@ -90,7 +90,7 @@ func record(arguments []string) (int, error) {
 	program := flags.String("program", "", "the agent program: claude or codex")
 	mode := flags.String("mode", "", "process or terminal")
 	out := flags.String("out", "", "the recording folder")
-	useProfile := flags.Bool("use-profile", false, "launch the program through its pinned profile; the words after -- are the prompt")
+	useProfile := flags.Bool("use-profile", false, "start the program through its pinned profile; the words after -- are the prompt")
 	sessionID := flags.String("session", "", "with --use-profile: the exact session ID to start, or to resume with --resume")
 	resume := flags.Bool("resume", false, "with --use-profile: resume the session given by --session")
 	folder := flags.String("folder", "", "the working folder the program starts in; an empty folder keeps project instructions out of evidence")
@@ -135,12 +135,12 @@ func record(arguments []string) (int, error) {
 			}
 			hookCommand = self + " capture-hook " + capture
 		}
-		launched, launch, err := profiledCommand(profile, contracts.Mode(*mode), *out, *sessionID, *resume, strings.Join(command, " "), hookCommand)
+		started, start, err := profiledCommand(profile, contracts.Mode(*mode), *out, *sessionID, *resume, strings.Join(command, " "), hookCommand)
 		if err != nil {
 			return 2, err
 		}
-		command = launched
-		environment = profile.Environment(environment, launch)
+		command = started
+		environment = profile.Environment(environment, start)
 		profileName = profile.Program() + "@" + profile.Build()
 	}
 
@@ -317,40 +317,40 @@ func exitCodeOf(err error) (int, error) {
 	return 0, nil
 }
 
-// profiledCommand builds the launch of a program through its pinned profile: it refuses another build, writes the
-// isolated settings files into the recording folder and gives the full command line with the launch it made.
-func profiledCommand(profile contracts.ProgramProfile, mode contracts.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Launch, error) {
-	launch := contracts.Launch{Mode: mode, SessionID: sessionID, Resume: resume, Prompt: prompt, HookCommand: hookCommand}
+// profiledCommand builds the start of a program through its pinned profile: it refuses another build, writes the
+// isolated settings files into the recording folder and gives the full command line with the start it made.
+func profiledCommand(profile contracts.ProgramProfile, mode contracts.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Start, error) {
+	start := contracts.Start{Mode: mode, SessionID: sessionID, Resume: resume, Prompt: prompt, HookCommand: hookCommand}
 
 	if err := profile.CheckBuild(programVersion(profile.Program())); err != nil {
-		return nil, launch, err
+		return nil, start, err
 	}
 
 	settingsFolder, err := filepath.Abs(filepath.Join(out, "settings"))
 	if err != nil {
-		return nil, launch, err
+		return nil, start, err
 	}
-	launch.SettingsFolder = settingsFolder
+	start.SettingsFolder = settingsFolder
 
-	files, err := profile.SettingsFiles(launch)
+	files, err := profile.SettingsFiles(start)
 	if err != nil {
-		return nil, launch, err
+		return nil, start, err
 	}
-	if err := os.MkdirAll(launch.SettingsFolder, 0o755); err != nil {
-		return nil, launch, err
+	if err := os.MkdirAll(start.SettingsFolder, 0o755); err != nil {
+		return nil, start, err
 	}
 	for _, file := range files {
-		if err := writeSettingsFile(launch.SettingsFolder, file); err != nil {
-			return nil, launch, err
+		if err := writeSettingsFile(start.SettingsFolder, file); err != nil {
+			return nil, start, err
 		}
 	}
 
-	arguments, err := profile.Arguments(launch)
+	arguments, err := profile.Arguments(start)
 	if err != nil {
-		return nil, launch, err
+		return nil, start, err
 	}
 
-	return append([]string{profile.Program()}, arguments...), launch, nil
+	return append([]string{profile.Program()}, arguments...), start, nil
 }
 
 // writeSettingsFile writes one isolated settings file, or links it when it is a login the person already holds.
