@@ -1,6 +1,7 @@
 package scripts
 
 import (
+	"strings"
 	"testing"
 
 	"journal-agent/keyscripts"
@@ -22,10 +23,21 @@ func TestOnlyTheRecordedScriptsAreRegistered(t *testing.T) {
 }
 
 func TestNoScriptTypesACredential(t *testing.T) {
-	for _, script := range []keyscripts.KeyScript{changeModel("claude@2.1.323", "model-picker")} {
+	for _, script := range recorded() {
 		for _, step := range script.Steps {
 			if step.Action == keyscripts.TypeText {
 				t.Fatalf("%s types a parameter at %q; only menu keys and slash commands are scripted", script.Name, step.Name)
+			}
+		}
+	}
+}
+
+func TestNoScriptMovesThroughAMenuByCountedArrowKeys(t *testing.T) {
+	for _, script := range recorded() {
+		for _, step := range script.Steps {
+			if strings.Contains(step.Keys, "\x1b[A") || strings.Contains(step.Keys, "\x1b[B") {
+				t.Fatalf("%s for %s presses an arrow at %q; a menu entry is found by its label", script.Name,
+					script.Profile, step.Name)
 			}
 		}
 	}
