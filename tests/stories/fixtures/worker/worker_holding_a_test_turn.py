@@ -5,18 +5,15 @@ from journal.features.workers.states.working_task import WorkingTask
 from tests.stories.fixtures.state_fixture import StateFixture
 from tests.stories.fixtures.worker.working_worker import WorkingWorker
 
-TEST_SCRIPT = "#!/bin/sh\necho '1 passed'\n"
-
 
 class WorkerHoldingATestTurn(StateFixture):
-    """The working worker proved both points of its task and still holds a test turn of its own that runs, about to clock out; the project's run_tests.sh passes."""
+    """The working worker proved both points of its task and still holds a test turn of its own that runs, about to clock out."""
 
     stack = (Ready, ExternalWait)
 
     parent = WorkingWorker
 
     def steps(self, story) -> None:
-        story.project_script_holding("run_tests.sh", TEST_SCRIPT)
         story.agent_proves(story.agents.workers.first(), 1, "parser.py:12, test_reads passes")
         story.agent_proves(story.agents.workers.first(), 2, "parser.py:30, test_names passes")
         story.worker_has_a_test_turn_running(story.agents.workers.first(), "earlier_story.py")
