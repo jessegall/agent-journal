@@ -21,11 +21,14 @@ final readonly class LaunchGrant
         public int|null $profileRevision,
         public OfflineReplyMode $offlineReply,
         public string $offlineReplySeal,
+        public RuntimeLaunch $runtime,
     ) {}
 
     /**
      * @return array{token: string, folders: list<array<string, mixed>>, profile_key: string|null,
-     *     profile_revision: int|null, offline_reply: string, offline_reply_seal: string}
+     *     profile_revision: int|null, offline_reply: string, offline_reply_seal: string,
+     *     runtime: array{driver_type: string, program: string, program_build: string, folder: string,
+     *     process_generation: int, model: string|null, effort: string|null}}
      */
     public function toArray(): array
     {
@@ -36,6 +39,7 @@ final readonly class LaunchGrant
             'profile_revision' => $this->profileRevision,
             'offline_reply' => $this->offlineReply->value,
             'offline_reply_seal' => $this->offlineReplySeal,
+            'runtime' => $this->runtime->toArray(),
         ];
     }
 }

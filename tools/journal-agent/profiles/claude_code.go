@@ -122,7 +122,7 @@ func (ClaudeCode) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFi
 	if launch.HookCommand != "" {
 		hooks := map[string]any{}
 		for _, event := range nativeHookEvents {
-			hooks[event] = []map[string]any{{"hooks": []map[string]any{{"type": "command", "command": launch.HookCommand}}}}
+			hooks[event] = []map[string]any{{"hooks": []map[string]any{{"type": "command", "command": relayCommand(launch.HookCommand, claudeCodeJournalName)}}}}
 		}
 		settings["hooks"] = hooks
 	}

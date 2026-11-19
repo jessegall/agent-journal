@@ -17,6 +17,10 @@ import (
 	profilecontracts "journal-agent/profiles/contracts"
 )
 
+// BypassLogName is the file in a runtime's settings folder where the hook relay writes the calls it answered alone
+// while the journal could not be reached, to send them once it answers again.
+const BypassLogName = "bypasses.jsonl"
+
 // ProcessDriverType is the driver type the journal names for a runtime run one child per turn.
 const ProcessDriverType = "process"
 
@@ -160,6 +164,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		"JOURNAL_URL="+driver.runtime.JournalURL,
 		"JOURNAL_LAUNCH_TOKEN="+driver.runtime.Credential,
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(driver.generation),
+		"JOURNAL_BYPASS_LOG="+filepath.Join(driver.runtime.SettingsFolder, BypassLogName),
 	)
 	command.Env = append(command.Env, driver.runtime.ProfilePin...)
 	if err := command.Start(); err != nil {

@@ -9,7 +9,7 @@ use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\AuthorizerProviderMissing;
 use App\Actors\Exceptions\AuthorizerProviderRepeated;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 
 /**
  * The authorizer provider of each actor type, registered once at boot; a provider is built per call, so nothing it
@@ -21,8 +21,6 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
      * @var array<string, class-string<AuthorizerProvider>>
      */
     private array $providers = [];
-
-    public function __construct(private readonly Container $container) {}
 
     /**
      * @param  class-string<AuthorizerProvider>  $providerClass
@@ -43,7 +41,9 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
     {
         $providerClass = $this->providers[$type->value] ?? throw AuthorizerProviderMissing::forType($type->value);
 
-        return $this->container->make($providerClass);
+        // The registry outlives a request under Octane; the provider comes from the request's own container, so it reads
+        // that request's actor, never the one of the request that booted the registry.
+        return Container::getInstance()->make($providerClass);
     }
 
     /**

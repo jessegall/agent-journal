@@ -11,6 +11,7 @@ use App\Agents\Support\HostRuntimes;
 use App\Agents\Support\LaunchAdditions;
 use App\Agents\Support\LaunchGrant;
 use App\Agents\Support\OfflineReplySeal;
+use App\Agents\Support\RuntimeLaunch;
 use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -48,6 +49,7 @@ final readonly class ClaimLaunchGrantHandler implements CommandHandler
             $session->profile_revision,
             $additions->offlineReply(),
             $this->seal->seal($token, $pin, $additions->offlineReply()),
+            RuntimeLaunch::of($runtime),
         );
     }
 }

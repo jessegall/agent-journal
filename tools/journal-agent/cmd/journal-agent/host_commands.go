@@ -22,9 +22,11 @@ import (
 
 	"journal-agent/client"
 	"journal-agent/drivers"
+	drivercontracts "journal-agent/drivers/contracts"
 	"journal-agent/host"
 	"journal-agent/profiles/contracts"
 	"journal-agent/screen"
+	"journal-agent/serving"
 )
 
 // defaultStateFolder is the host's private folder unless --state names another.
@@ -66,6 +68,7 @@ func enroll(arguments []string) error {
 func serve(arguments []string) error {
 	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
 	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
+	hookCommand := flags.String("hook-command", "", "the hook relay command the programs call")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
@@ -81,12 +84,54 @@ func serve(arguments []string) error {
 		return err
 	}
 	defer listener.Close()
-	client.New(enrollment).Poll(ctx, func(claimed []client.ClaimedRequest) {
+	journal := client.New(enrollment)
+	loop := serving.NewLoop(journal, processRuntimes(*stateFolder, journal.JournalURL(), *hookCommand))
+	journal.Poll(ctx, func(claimed []client.ClaimedRequest) {
 		for _, request := range claimed {
 			log.Printf("claimed %s request %s (sequence %d, attempt %d) of runtime %s", request.Operation, request.RequestID, request.Sequence, request.Attempt, request.RuntimeID)
 		}
+		loop.Take(ctx, claimed)
 	})
 	return nil
+}
+
+// processRuntimes opens a runtime run one child per turn from its launch grant, with a conversation of its own, the
+// pinned profile of its program and the model the journal asked for.
+func processRuntimes(stateFolder, journalURL, hookCommand string) serving.Opener {
+	return func(runtimeID string, grant client.Grant) (serving.Runtime, error) {
+		if grant.Runtime.DriverType != drivers.ProcessDriverType {
+			return nil, fmt.Errorf("runtime %s runs under the %s driver, which serve opens only through attach", runtimeID, grant.Runtime.DriverType)
+		}
+		profile, known := profileFor[grant.Runtime.Program]
+		if !known {
+			return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Program)
+		}
+		if err := pinnedBuild(profile, grant.Runtime.ProgramBuild); err != nil {
+			return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
+		}
+		conversationID, err := newConversationID()
+		if err != nil {
+			return nil, err
+		}
+		driver := drivers.NewProcessDriver(drivers.ProcessRuntime{
+			JournalURL:     journalURL,
+			Credential:     grant.Token,
+			ProfilePin:     grant.ProfileEnvironment(),
+			ConversationID: conversationID,
+			SettingsFolder: filepath.Join(stateFolder, "runtimes", runtimeID),
+			WorkingFolder:  grant.Runtime.Folder,
+			HookCommand:    hookCommand,
+			Profile:        profile,
+		}, grant.Runtime.ProcessGeneration)
+		identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
+		if grant.Runtime.Model != nil {
+			_, _ = driver.ChangeModel(context.Background(), drivercontracts.ModelChange{Request: identity, Model: *grant.Runtime.Model})
+		}
+		if grant.Runtime.Effort != nil {
+			_, _ = driver.ChangeEffort(context.Background(), drivercontracts.EffortChange{Request: identity, Effort: *grant.Runtime.Effort})
+		}
+		return driver, nil
+	}
 }
 
 // startTerminal starts a runtime's program on a PTY the host owns, for the attach socket.
@@ -225,7 +270,8 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	}
 	launchArguments = append(launchArguments, folderArguments...)
 	environment := append(profile.Environment(drivers.WithoutJournalVariables(os.Environ()), launch),
-		"JOURNAL_URL="+journal.JournalURL(), "JOURNAL_LAUNCH_TOKEN="+grant.Token, "JOURNAL_PROCESS_GENERATION=1")
+		"JOURNAL_URL="+journal.JournalURL(), "JOURNAL_LAUNCH_TOKEN="+grant.Token, "JOURNAL_PROCESS_GENERATION=1",
+		"JOURNAL_BYPASS_LOG="+filepath.Join(launch.SettingsFolder, drivers.BypassLogName))
 	environment = append(environment, grant.ProfileEnvironment()...)
 	return host.AttachRequest{RuntimeID: opened.RuntimeID, Command: append([]string{profile.Program()}, launchArguments...), Folder: absolute, Env: environment}, nil
 }
@@ -284,4 +330,18 @@ func layoutOf(request host.AttachRequest) (screen.Layout, error) {
 	}
 
 	return profile.Screens(), nil
+}
+
+// pinnedBuild refuses a runtime opened for another build than the profile pins, and a program on this host whose
+// installed version is not that build, before any work starts.
+func pinnedBuild(profile contracts.ProgramProfile, requested string) error {
+	if requested != profile.Build() {
+		return fmt.Errorf("build %s of %s is not the pinned build %s", requested, profile.Program(), profile.Build())
+	}
+	output, err := exec.Command(profile.Program(), "--version").Output()
+	if err != nil {
+		return fmt.Errorf("the version of %s could not be read: %w", profile.Program(), err)
+	}
+
+	return profile.CheckBuild(strings.TrimSpace(string(output)))
 }

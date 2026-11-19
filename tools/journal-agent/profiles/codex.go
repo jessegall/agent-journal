@@ -144,7 +144,7 @@ func (Codex) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFile, e
 	files := []contracts.SettingsFile{}
 	if launch.HookCommand != "" {
 		hookFile := filepath.Join(launch.SettingsFolder, "hooks.json")
-		hooks, trust, err := codexHooks(hookFile, launch.HookCommand)
+		hooks, trust, err := codexHooks(hookFile, relayCommand(launch.HookCommand, codexJournalName))
 		if err != nil {
 			return nil, err
 		}

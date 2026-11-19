@@ -26,8 +26,12 @@ import (
 	"journal-agent/screen"
 )
 
-// profileFor is the pinned launch profile of each program.
-var profileFor = map[string]contracts.ProgramProfile{"claude": profiles.ClaudeCode{}, "codex": profiles.Codex{}}
+// profileFor is the pinned launch profile of each program, by its command name and by the name the journal gives it.
+var profileFor = map[string]contracts.ProgramProfile{
+	"claude":      profiles.ClaudeCode{},
+	"claude-code": profiles.ClaudeCode{},
+	"codex":       profiles.Codex{},
+}
 
 // secretToggle is the key (Ctrl-]) that turns secret marking of typed input on and off; it is never forwarded.
 const secretToggle = 0x1d

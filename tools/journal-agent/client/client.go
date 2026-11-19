@@ -118,6 +118,18 @@ type Grant struct {
 	ProfileRevision int            `json:"profile_revision"`
 	OfflineReply    string         `json:"offline_reply"`
 	OfflineSeal     string         `json:"offline_reply_seal"`
+	Runtime         RuntimeLaunch  `json:"runtime"`
+}
+
+// RuntimeLaunch mirrors App\Agents\Support\RuntimeLaunch: what the host needs to start the runtime's program.
+type RuntimeLaunch struct {
+	DriverType        string  `json:"driver_type"`
+	Program           string  `json:"program"`
+	ProgramBuild      string  `json:"program_build"`
+	Folder            string  `json:"folder"`
+	ProcessGeneration int     `json:"process_generation"`
+	Model             *string `json:"model"`
+	Effort            *string `json:"effort"`
 }
 
 // ProfileEnvironment is the launch's pinned authorization profile as environment entries; none when it has no pin.
