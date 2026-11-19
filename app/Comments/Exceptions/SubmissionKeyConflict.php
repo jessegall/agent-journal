@@ -14,6 +14,8 @@ final class SubmissionKeyConflict extends RuntimeException implements CommandRef
 {
     public static function for(string $key): self
     {
-        return new self("The submission key {$key} was already used for a different comment; use a new key for a new comment.");
+        return new self(
+            "The submission key {$key} was already used for a different comment; use a new key for a new comment.",
+        );
     }
 }

@@ -91,7 +91,10 @@ final class StateLoaderTest extends TestCase
         $registry = new StateTypes(new Dispatcher(), FixedFileEditPermission::loader(false))->registry();
         $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
 
-        $this->assertSame(ReadyState::class, $registry->get(ReadyState::TYPE_KEY)->statesFor($ready)->stateAt(0)::class);
+        $this->assertSame(
+            ReadyState::class,
+            $registry->get(ReadyState::TYPE_KEY)->statesFor($ready)->stateAt(0)::class,
+        );
     }
 
     public function test_a_failed_build_is_not_kept_and_the_next_use_builds_again(): void
@@ -124,8 +127,14 @@ final class StateLoaderTest extends TestCase
     {
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active]);
         $events = new Dispatcher();
-        $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
-        $factory = new RegisteredStateFactory(new StateTypes($events, FixedFileEditPermission::loader()), new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00')));
+        $events->listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks),
+        );
+        $factory = new RegisteredStateFactory(
+            new StateTypes($events, FixedFileEditPermission::loader()),
+            new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00')),
+        );
         $reference = new StateReference('tasks.working', new SubjectReference('42', 1));
 
         $first = $factory->frameFor($reference);

@@ -26,7 +26,9 @@ final class SettingsRecordTest extends TestCase
 
     public function test_the_migration_creates_the_table(): void
     {
-        $this->assertTrue(Schema::hasColumns('settings_records', ['id', 'owner', 'revision', 'document', 'created_at', 'updated_at']));
+        $this->assertTrue(
+            Schema::hasColumns('settings_records', ['id', 'owner', 'revision', 'document', 'created_at', 'updated_at']),
+        );
     }
 
     public function test_an_absent_owner_has_no_record_and_insert_if_absent_makes_one_empty_record_once(): void
@@ -62,13 +64,19 @@ final class SettingsRecordTest extends TestCase
 
         $record->revise($record->document->withoutSetting('retry_limit')->withoutToggle('review'));
 
-        $this->assertSame('{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null}],"toggles":[]}', $this->storedText());
+        $this->assertSame(
+            '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null}],"toggles":[]}',
+            $this->storedText(),
+        );
         $this->assertSame(1, SettingsRecord::lockedForOwner('Library')->revision);
 
         $record = SettingsRecord::lockedForOwner('Library');
         $record->revise($record->document->withSetting($retryLimit));
 
-        $this->assertSame('{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null},{"key":"retry_limit","value":4}],"toggles":[]}', $this->storedText());
+        $this->assertSame(
+            '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null},{"key":"retry_limit","value":4}],"toggles":[]}',
+            $this->storedText(),
+        );
         $this->assertSame(2, SettingsRecord::lockedForOwner('Library')->revision);
         $this->assertTrue($record->document->setting('retired_key')->isDefined());
         $this->assertTrue($record->document->setting('missing')->isEmpty());
@@ -87,7 +95,9 @@ final class SettingsRecordTest extends TestCase
             'invalid key' => ['{"settings":[{"key":"Secret Value","value":1}],"toggles":[]}'],
             'entry without value' => ['{"settings":[],"toggles":[{"key":"secret_value"}]}'],
             'entry with an extra field' => ['{"settings":[{"key":"secret_value","value":1,"more":2}],"toggles":[]}'],
-            'over 512 KiB' => ['{"settings":[{"key":"secret_value","value":"'.str_repeat('x', SettingsDocument::MOST_BYTES).'"}],"toggles":[]}'],
+            'over 512 KiB' => [
+                '{"settings":[{"key":"secret_value","value":"'.str_repeat('x', SettingsDocument::MOST_BYTES).'"}],"toggles":[]}',
+            ],
         ];
     }
 
@@ -109,7 +119,12 @@ final class SettingsRecordTest extends TestCase
     public function test_text_that_is_not_json_is_refused_by_the_cast_without_its_content(): void
     {
         try {
-            new SettingsDocumentCast()->get(new SettingsRecord(), 'document', '{"settings":[{"key":"secret_value"', ['owner' => 'Library']);
+            new SettingsDocumentCast()->get(
+                new SettingsRecord(),
+                'document',
+                '{"settings":[{"key":"secret_value"',
+                ['owner' => 'Library'],
+            );
             $this->fail('Text that is not JSON was read.');
         } catch (SettingsDocumentInvalid $invalid) {
             $this->assertSame(SettingsDocumentInvalid::notJson('Library')->getMessage(), $invalid->getMessage());

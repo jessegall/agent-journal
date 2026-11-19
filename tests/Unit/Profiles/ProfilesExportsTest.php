@@ -36,11 +36,21 @@ final class ProfilesExportsTest extends TestCase
     public function test_no_profiles_domain_is_registered_or_autoloaded(): void
     {
         $domains = DomainRegistry::installedClasses(base_path());
-        $composer = json_decode((string) file_get_contents(base_path('composer.json')), true, flags: JSON_THROW_ON_ERROR);
+        $composer = json_decode(
+            (string) file_get_contents(base_path('composer.json')),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
 
-        $this->assertSame([], array_values(array_filter($domains, fn (string $class) => str_contains($class, 'Profiles'))));
+        $this->assertSame(
+            [],
+            array_values(array_filter($domains, fn (string $class) => str_contains($class, 'Profiles'))),
+        );
         $this->assertArrayNotHasKey('Domain\\Profiles\\', $composer['autoload']['psr-4']);
-        $this->assertSame(['main-agent', 'writing-helper', 'read-only-helper'], array_column(ProfileBase::all(), 'key'));
+        $this->assertSame(
+            ['main-agent', 'writing-helper', 'read-only-helper'],
+            array_column(ProfileBase::all(), 'key'),
+        );
     }
 
     public function test_a_snapshot_keeps_an_absent_allowlist_apart_from_an_empty_one(): void

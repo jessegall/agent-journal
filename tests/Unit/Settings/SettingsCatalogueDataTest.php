@@ -43,45 +43,49 @@ final class SettingsCatalogueDataTest extends TestCase
                 SettingGroupData::from([
                     'identity' => $this->identity('review'),
                     'label' => 'Review',
-                    'availability' => ToggleGroupAvailabilityData::from(['state' => GroupAvailability::Disabled, 'defaultEnabled' => true]),
+                    'availability' => ToggleGroupAvailabilityData::from(
+                        ['state' => GroupAvailability::Disabled, 'defaultEnabled' => true],
+                    ),
                     'settings' => [
-                        SettingData::from([
-                            'identity' => $this->identity('notify_owner'),
-                            'label' => 'Notify the owner',
-                            'type' => SettingType::Boolean,
-                            'source' => SettingSource::Override,
-                            'availability' => SettingAvailability::GroupDisabled,
-                            'default' => BooleanValueData::from(['value' => true]),
-                            'configured' => BooleanValueData::from(['value' => false]),
-                        ]),
-                        SettingData::from([
-                            'identity' => $this->identity('weight'),
-                            'label' => 'Weight',
-                            'type' => SettingType::Decimal,
-                            'source' => SettingSource::Override,
-                            'availability' => SettingAvailability::GroupDisabled,
-                            'default' => DecimalValueData::from(['value' => '0.50']),
-                            'constraints' => DecimalConstraintsData::from(['precision' => 5, 'scale' => 2]),
-                            'configured' => InvalidValueData::from([]),
-                        ]),
-                    ],
+                                            SettingData::from([
+                                                'identity' => $this->identity('notify_owner'),
+                                                'label' => 'Notify the owner',
+                                                'type' => SettingType::Boolean,
+                                                'source' => SettingSource::Override,
+                                                'availability' => SettingAvailability::GroupDisabled,
+                                                'default' => BooleanValueData::from(['value' => true]),
+                                                'configured' => BooleanValueData::from(['value' => false]),
+                                            ]),
+                                            SettingData::from([
+                                                'identity' => $this->identity('weight'),
+                                                'label' => 'Weight',
+                                                'type' => SettingType::Decimal,
+                                                'source' => SettingSource::Override,
+                                                'availability' => SettingAvailability::GroupDisabled,
+                                                'default' => DecimalValueData::from(['value' => '0.50']),
+                                                'constraints' => DecimalConstraintsData::from(['precision' => 5, 'scale' => 2]),
+                                                'configured' => InvalidValueData::from([]),
+                                            ]),
+                                        ],
                 ]),
                 SettingGroupData::from([
-                    'identity' => $this->identity('general'),
-                    'label' => 'General',
-                    'availability' => PlainGroupAvailabilityData::from([]),
-                    'settings' => [
-                        SettingData::from([
-                            'identity' => $this->identity('priority'),
-                            'label' => 'Priority',
-                            'type' => SettingType::Choice,
-                            'source' => SettingSource::Default,
-                            'availability' => SettingAvailability::Available,
-                            'default' => IntegerChoiceValueData::from(['value' => 0]),
-                            'constraints' => IntegerChoiceConstraintsData::from(['options' => [IntegerChoiceOptionData::from(['value' => 0, 'label' => 'Normal'])]]),
-                        ]),
-                    ],
-                ]),
+                                        'identity' => $this->identity('general'),
+                                        'label' => 'General',
+                                        'availability' => PlainGroupAvailabilityData::from([]),
+                                        'settings' => [
+                                            SettingData::from([
+                                                'identity' => $this->identity('priority'),
+                                                'label' => 'Priority',
+                                                'type' => SettingType::Choice,
+                                                'source' => SettingSource::Default,
+                                                'availability' => SettingAvailability::Available,
+                                                'default' => IntegerChoiceValueData::from(['value' => 0]),
+                                                'constraints' => IntegerChoiceConstraintsData::from(
+                                                    ['options' => [IntegerChoiceOptionData::from(['value' => 0, 'label' => 'Normal'])]],
+                                                ),
+                                            ]),
+                                        ],
+                                    ]),
             ],
         ])->toArray();
 
@@ -97,7 +101,10 @@ final class SettingsCatalogueDataTest extends TestCase
         $this->assertSame(['value' => 0, 'type' => 'integerChoice'], $priority['default']);
         $this->assertSame([['value' => 0, 'label' => 'Normal']], $priority['constraints']['options']);
         $this->assertArrayNotHasKey('configured', $priority);
-        $this->assertSame(['owner' => 'Reviews', 'key' => 'priority', 'canonicalKey' => 'Reviews.priority'], $priority['identity']);
+        $this->assertSame(
+            ['owner' => 'Reviews', 'key' => 'priority', 'canonicalKey' => 'Reviews.priority'],
+            $priority['identity'],
+        );
     }
 
     public function test_no_catalogue_property_is_mixed_or_an_untyped_array(): void
@@ -106,7 +113,10 @@ final class SettingsCatalogueDataTest extends TestCase
             $class = new ReflectionClass('App\\Settings\\Data\\'.basename($file, '.php'));
             $this->assertTrue($class->isFinal(), "{$class->getName()} is not final.");
 
-            $ownProperties = array_filter($class->getProperties(), fn ($property) => $property->getDeclaringClass()->getName() === $class->getName());
+            $ownProperties = array_filter(
+                $class->getProperties(),
+                fn ($property) => $property->getDeclaringClass()->getName() === $class->getName(),
+            );
 
             foreach ($ownProperties as $property) {
                 $type = $property->getType();
@@ -115,10 +125,17 @@ final class SettingsCatalogueDataTest extends TestCase
                     : [$type instanceof ReflectionNamedType ? $type->getName() : 'mixed'];
 
                 $this->assertNotContains('mixed', $names, "{$class->getName()}::\${$property->getName()} is mixed.");
-                $this->assertTrue($property->isReadOnly(), "{$class->getName()}::\${$property->getName()} is not readonly.");
+                $this->assertTrue(
+                    $property->isReadOnly(),
+                    "{$class->getName()}::\${$property->getName()} is not readonly.",
+                );
 
                 if ($names === ['array']) {
-                    $this->assertNotSame([], $property->getAttributes(DataCollectionOf::class), "{$class->getName()}::\${$property->getName()} is an array without its element type.");
+                    $this->assertNotSame(
+                        [],
+                        $property->getAttributes(DataCollectionOf::class),
+                        "{$class->getName()}::\${$property->getName()} is an array without its element type.",
+                    );
                 }
             }
         }

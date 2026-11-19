@@ -20,13 +20,19 @@ final readonly class ReadSite
     {
         foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 60) as $frame) {
             $file = $frame['file'] ?? '';
-            $isApplicationCode = (str_starts_with($file, $basePath.'/app/') || str_starts_with($file, $basePath.'/domain/'))
+            $isApplicationCode = (str_starts_with($file, $basePath.'/app/') || str_starts_with(
+                $file,
+                $basePath.'/domain/',
+            ))
                 && ! str_starts_with($file, $basePath.'/app/Reads/');
 
             if ($isApplicationCode) {
                 $shape = (string) preg_replace(['/\s+/', '/\((\?\s*,\s*)+\?\)/'], [' ', '(?)'], trim($query));
 
-                return new self(substr($file, strlen($basePath) + 1).':'.($frame['line'] ?? 0), "{$connection}|{$shape}");
+                return new self(
+                    substr($file, strlen($basePath) + 1).':'.($frame['line'] ?? 0),
+                    "{$connection}|{$shape}",
+                );
             }
         }
 

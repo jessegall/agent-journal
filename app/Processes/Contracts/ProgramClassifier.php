@@ -20,5 +20,10 @@ interface ProgramClassifier
     /**
      * @param  list<Word>  $words  the command's words, the program first
      */
-    public function classify(array $words, int $node, ProgramIdentity $program, ExecutionContext $context): PartClassification;
+    public function classify(
+        array $words,
+        int $node,
+        ProgramIdentity $program,
+        ExecutionContext $context,
+    ): PartClassification;
 }

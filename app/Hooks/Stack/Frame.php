@@ -35,7 +35,15 @@ final readonly class Frame
      */
     public static function restored(FrameRecord $record, AgentState $state, bool $typeEnabled = true): self
     {
-        return new self($record->id, $record->reference, $state, $record->enteredAt, $record->isBottom, $record->schemaVersion, $typeEnabled);
+        return new self(
+            $record->id,
+            $record->reference,
+            $state,
+            $record->enteredAt,
+            $record->isBottom,
+            $record->schemaVersion,
+            $typeEnabled,
+        );
     }
 
     public function isBottom(): bool

@@ -18,6 +18,8 @@ final readonly class UppercasesText implements CommandMiddleware
     {
         $command = $call->command();
 
-        return $next($command instanceof WriteNote ? $call->replacedBy(new WriteNote(strtoupper($command->text))) : $call);
+        return $next(
+$command instanceof WriteNote ? $call->replacedBy(new WriteNote(strtoupper($command->text))) : $call,
+);
     }
 }

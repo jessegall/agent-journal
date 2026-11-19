@@ -32,7 +32,15 @@ final class TaskCommandsTest extends TestCase
     /**
      * The bus commits the Tasks commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links'];
+    private const array TABLES = [
+        'tasks',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+    ];
 
     protected function setUp(): void
     {
@@ -51,7 +59,10 @@ final class TaskCommandsTest extends TestCase
         $bus->run(new BlockTask($blocked->id, 0, 'Waits.'));
         $bus->run(new CancelTask($cancelled->id, 'Dropped.'));
 
-        $this->assertSame([TaskState::Finished, TaskState::Blocked, TaskState::Cancelled], [$finished->fresh()?->state, $blocked->fresh()?->state, $cancelled->fresh()?->state]);
+        $this->assertSame(
+            [TaskState::Finished, TaskState::Blocked, TaskState::Cancelled],
+            [$finished->fresh()?->state, $blocked->fresh()?->state, $cancelled->fresh()?->state],
+        );
         Event::assertDispatchedTimes(TaskFinished::class, 1);
         Event::assertDispatchedTimes(TaskBlocked::class, 1);
         Event::assertDispatchedTimes(TaskCancelled::class, 1);

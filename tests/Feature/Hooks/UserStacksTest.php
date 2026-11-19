@@ -41,7 +41,14 @@ final class UserStacksTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links'];
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+    ];
 
     private StackTarget $target;
 
@@ -50,7 +57,10 @@ final class UserStacksTest extends TestCase
         parent::setUp();
 
         DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
-        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false))));
+        Event::listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false))),
+        );
         $this->target = $this->targetOf($this->launch());
     }
 
@@ -68,7 +78,10 @@ final class UserStacksTest extends TestCase
         $this->actAs(TestActors::user(7));
 
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(UserStacks::class)->push($this->target, new StateReference('test.switched_off', NoSubject::None)),
+            fn () => $this->app->make(UserStacks::class)->push(
+                $this->target,
+                new StateReference('test.switched_off', NoSubject::None),
+            ),
         );
 
         $this->assertSame(['hooks.ready'], $this->storedTypeKeys());
@@ -114,7 +127,10 @@ final class UserStacksTest extends TestCase
     private function pushInTransaction(StackTarget $target): void
     {
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(UserStacks::class)->push($target, new StateReference('notes.writing', NoSubject::None)),
+            fn () => $this->app->make(UserStacks::class)->push(
+                $target,
+                new StateReference('notes.writing', NoSubject::None),
+            ),
         );
     }
 
@@ -123,14 +139,21 @@ final class UserStacksTest extends TestCase
      */
     private function actAsAgent(string $agentId): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestLaunchAuthority::forAgent($agentId),
+        );
     }
 
     private function launch(): LaunchedAgent
     {
         $agent = Agent::named('Test agent', 'main-agent');
 
-        return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(
+            $agent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
     }
 
     private function targetOf(LaunchedAgent $launched): StackTarget

@@ -92,7 +92,10 @@ final class SkillStatusTest extends TestCase
         $own = $this->publish($this->launchSession('Main', 'main-agent'), 'First text.');
         $other = $this->publish($this->launchSession('Helper', 'writing-helper'), 'Second text.');
         $agentId = AgentSession::byId($own->session_id)->agent_id;
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestLaunchAuthority::forAgent($agentId),
+        );
 
         $status = $this->app->make(SkillStatusResolver::class)->status();
 

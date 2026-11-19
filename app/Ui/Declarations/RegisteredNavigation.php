@@ -34,7 +34,11 @@ final readonly class RegisteredNavigation
     {
         $key = $owner->fullKey('navigation', $item->key);
 
-        $namedClasses = [NavigationChildren::class => $item->childrenResolver, CountResolver::class => $item->count, VisibilityCheck::class => $item->visibility];
+        $namedClasses = [
+            NavigationChildren::class => $item->childrenResolver,
+            CountResolver::class => $item->count,
+            VisibilityCheck::class => $item->visibility,
+        ];
 
         foreach (array_filter($namedClasses) as $interface => $className) {
             $owner->checkImplements($key, $className, $interface);
@@ -62,8 +66,12 @@ final readonly class RegisteredNavigation
     /**
      * @param  array<string, RegisteredPage>  $pages
      */
-    private static function checkedPage(DomainUi $owner, string $key, NavigationItem $item, array $pages): RegisteredPage|null
-    {
+    private static function checkedPage(
+        DomainUi $owner,
+        string $key,
+        NavigationItem $item,
+        array $pages,
+    ): RegisteredPage|null {
         if ($item->page === null) {
             return null;
         }

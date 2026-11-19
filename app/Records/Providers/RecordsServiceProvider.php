@@ -20,7 +20,10 @@ final class RecordsServiceProvider extends ServiceProvider
 {
     public function boot(PolicyCatalogue $policies): void
     {
-        $policies->register('Core', new PolicyRegistration(Link::class, RecordLinkPolicy::class, RecordLinkAbility::class));
+        $policies->register(
+            'Core',
+            new PolicyRegistration(Link::class, RecordLinkPolicy::class, RecordLinkAbility::class),
+        );
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/links.php');
 
         if ($this->app->runningInConsole()) {

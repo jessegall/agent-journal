@@ -19,7 +19,11 @@ final class EventPlacementTest extends TestCase
 {
     public function test_the_exports_list_and_not_the_folder_decides_which_event_is_public(): void
     {
-        $checked = Exports::check('Fixture', 'Tests\\Fixtures\\ExportedEvents', ExportList::make()->events(ReportReady::class)->build());
+        $checked = Exports::check(
+            'Fixture',
+            'Tests\\Fixtures\\ExportedEvents',
+            ExportList::make()->events(ReportReady::class)->build(),
+        );
 
         $this->assertSame([ReportReady::class], $checked->events);
         $this->assertNotContains(DraftSaved::class, $checked->events);

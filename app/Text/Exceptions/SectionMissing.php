@@ -27,11 +27,15 @@ final class SectionMissing extends InvalidArgumentException implements CommandRe
      */
     public static function ambiguous(string $heading, array $numbers): self
     {
-        return new self(count($numbers)." sections are headed {$heading} (sections ".implode(', ', $numbers).'); name the section by its number.');
+        return new self(
+            count($numbers)." sections are headed {$heading} (sections ".implode(', ', $numbers).'); name the section by its number.',
+        );
     }
 
     public static function levelChanged(int $number): self
     {
-        return new self("The new text of section {$number} starts with a heading of another level; keep its level or edit the outline.");
+        return new self(
+            "The new text of section {$number} starts with a heading of another level; keep its level or edit the outline.",
+        );
     }
 }

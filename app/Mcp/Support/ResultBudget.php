@@ -39,12 +39,16 @@ final readonly class ResultBudget
     public function fit(ToolResult $result): ResponseFactory
     {
         if (! $this->payloadFits($result->payload)) {
-            throw ResultTooLarge::for('payload', self::payloadBytes($result->payload), self::RESULT_BYTES - self::RECOVERY_BYTES);
+            throw ResultTooLarge::for('payload', self::payloadBytes(
+                $result->payload,
+            ), self::RESULT_BYTES - self::RECOVERY_BYTES);
         }
 
         $structured = $result->structuredContent();
         $text = json_encode($structured, self::JSON_FLAGS);
-        $resultBytes = strlen(json_encode(['content' => [['type' => 'text', 'text' => $text]], 'isError' => false, 'structuredContent' => $structured], self::JSON_FLAGS));
+        $resultBytes = strlen(
+            json_encode(['content' => [['type' => 'text', 'text' => $text]], 'isError' => false, 'structuredContent' => $structured], self::JSON_FLAGS),
+        );
 
         if ($resultBytes > self::RESULT_BYTES) {
             throw ResultTooLarge::for('whole', $resultBytes, self::RESULT_BYTES);

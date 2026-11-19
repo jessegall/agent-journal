@@ -77,8 +77,12 @@ final class Rule extends Model implements Numbered, ReadableModel
      * A rule proposed with its reason, the rule it would replace if any, and who proposed it; it holds only once the
      * user approves it.
      */
-    public static function proposed(string $text, string $reason, string|null $replacesRuleId, ActorContext $proposer): self
-    {
+    public static function proposed(
+        string $text,
+        string $reason,
+        string|null $replacesRuleId,
+        ActorContext $proposer,
+    ): self {
         $rule = new self([
             'text' => $text,
             'reason' => $reason,
@@ -107,7 +111,10 @@ final class Rule extends Model implements Numbered, ReadableModel
      */
     public function approveBy(ActorIdentity $approver): void
     {
-        $proposer = $this->proposer_type === null ? null : new ActorIdentity($this->proposer_type, (string) $this->proposer_id);
+        $proposer = $this->proposer_type === null ? null : new ActorIdentity(
+            $this->proposer_type,
+            (string) $this->proposer_id,
+        );
 
         if ($proposer !== null && $proposer->isSameAs($approver)) {
             throw RuleSelfApproval::forRule();

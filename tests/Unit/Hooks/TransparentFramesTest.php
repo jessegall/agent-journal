@@ -150,7 +150,13 @@ final class TransparentFramesTest extends TestCase
 
     private function ready(): Frame
     {
-        return new Frame('ready', $this->reference('ready'), new ReadyState(new FixedFileEditPermission()), CarbonImmutable::now(), bottom: true);
+        return new Frame(
+            'ready',
+            $this->reference('ready'),
+            new ReadyState(new FixedFileEditPermission()),
+            CarbonImmutable::now(),
+            bottom: true,
+        );
     }
 
     private function plan(bool $cancelled = false): Frame

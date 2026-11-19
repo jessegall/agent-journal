@@ -50,19 +50,28 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         }
 
         $record = SettingsRecord::sharedRuntimeForOwner($owner);
-        $document = $record->map(fn (SettingsRecord $found) => $found->document)->getOrCall(SettingsDocument::empty(...));
+        $document = $record->map(
+            fn (SettingsRecord $found) => $found->document,
+        )->getOrCall(SettingsDocument::empty(...));
 
         return SettingsCatalogueData::from([
             'owner' => $owner,
             'title' => self::TITLE,
             'revision' => $record->map(fn (SettingsRecord $found) => $found->revision)->getOrElse(0),
-            'groups' => array_map(fn (GroupDeclaration $group) => $this->group($owner, $group, $document), $this->registry->definition($owner)->groups()),
+            'groups' => array_map(
+                fn (GroupDeclaration $group) => $this->group($owner, $group, $document),
+                $this->registry->definition($owner)->groups(),
+            ),
         ]);
     }
 
     private function group(string $owner, GroupDeclaration $group, SettingsDocument $document): SettingGroupData
     {
-        $state = $group instanceof ToggleGroup ? $this->toggleState($owner, $group, $document) : GroupAvailability::Always;
+        $state = $group instanceof ToggleGroup ? $this->toggleState(
+            $owner,
+            $group,
+            $document,
+        ) : GroupAvailability::Always;
         $availability = $group instanceof ToggleGroup
             ? ToggleGroupAvailabilityData::from(['state' => $state, 'defaultEnabled' => $group->defaultEnabled])
             : PlainGroupAvailabilityData::from([]);
@@ -71,7 +80,10 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
             'identity' => $this->identity($owner, $group->key()),
             'label' => $group->label(),
             'availability' => $availability,
-            'settings' => array_map(fn (Setting $setting) => $this->setting($owner, $setting, $state, $document), $group->settings()),
+            'settings' => array_map(
+                fn (Setting $setting) => $this->setting($owner, $setting, $state, $document),
+                $group->settings(),
+            ),
         ]);
     }
 
@@ -91,8 +103,12 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
         return $enabled ? GroupAvailability::Enabled : GroupAvailability::Disabled;
     }
 
-    private function setting(string $owner, Setting $setting, GroupAvailability $groupState, SettingsDocument $document): SettingData
-    {
+    private function setting(
+        string $owner,
+        Setting $setting,
+        GroupAvailability $groupState,
+        SettingsDocument $document,
+    ): SettingData {
         $stored = $document->setting($setting->key());
 
         return SettingData::from([
@@ -107,7 +123,9 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
             },
             'default' => $setting->catalogueValue($setting->defaultValue()),
             'constraints' => $setting->catalogueConstraints(),
-            'configured' => $stored->map(fn (EncodedSetting $entry) => $this->configured($owner, $setting, $entry))->getOrCall(Optional::create(...)),
+            'configured' => $stored->map(
+                fn (EncodedSetting $entry) => $this->configured($owner, $setting, $entry),
+            )->getOrCall(Optional::create(...)),
         ]);
     }
 

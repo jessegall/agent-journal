@@ -18,6 +18,8 @@ final class SettingReferenceInvalid extends InvalidArgumentException
 
     public static function badKey(string $owner): self
     {
-        return new self("A settings reference of {$owner} has a key that is not lowercase letters, digits and underscores starting with a letter.");
+        return new self(
+            "A settings reference of {$owner} has a key that is not lowercase letters, digits and underscores starting with a letter.",
+        );
     }
 }

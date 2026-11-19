@@ -31,7 +31,9 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
 
     public function mayDisclose(RecordIdentity $record): bool
     {
-        return $record->type === Document::LINK_TYPE && Document::query()->sharedPublished()->whereKey($record->id)->exists();
+        return $record->type === Document::LINK_TYPE && Document::query()->sharedPublished()->whereKey(
+            $record->id,
+        )->exists();
     }
 
     /**
@@ -50,7 +52,10 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
 
         $budget->chargeText($bytes);
 
-        return new SharedContent($document->shareCard(), (string) DocumentRevision::query()->whereKey($revisionId)->value('body'));
+        return new SharedContent(
+            $document->shareCard(),
+            (string) DocumentRevision::query()->whereKey($revisionId)->value('body'),
+        );
     }
 
     private function linkType(): string
@@ -60,7 +65,9 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
 
     private function cardsOf(array $ids): array
     {
-        return array_values($this->cardQuery($ids)->get()->map(fn (Document $document) => $document->shareCard())->all());
+        return array_values(
+            $this->cardQuery($ids)->get()->map(fn (Document $document) => $document->shareCard())->all(),
+        );
     }
 
     /**
@@ -71,6 +78,8 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
      */
     private function cardQuery(array $ids): ReadBuilder
     {
-        return Document::query()->sharedPublished()->with(['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()])->whereKey($ids)->readLimit(count($ids));
+        return Document::query()->sharedPublished()->with(
+            ['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()],
+        )->whereKey($ids)->readLimit(count($ids));
     }
 }

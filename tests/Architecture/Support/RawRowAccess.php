@@ -26,7 +26,20 @@ final readonly class RawRowAccess implements FileScan
     /**
      * The DB facade methods that read or write rows.
      */
-    private const array ROW_METHODS = ['table', 'select', 'selectone', 'scalar', 'cursor', 'insert', 'update', 'delete', 'statement', 'unprepared', 'affectingstatement', 'query'];
+    private const array ROW_METHODS = [
+        'table',
+        'select',
+        'selectone',
+        'scalar',
+        'cursor',
+        'insert',
+        'update',
+        'delete',
+        'statement',
+        'unprepared',
+        'affectingstatement',
+        'query',
+    ];
 
     public function key(): string
     {

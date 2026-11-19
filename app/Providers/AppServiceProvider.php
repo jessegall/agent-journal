@@ -38,7 +38,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $database = DB::connection()->getDatabaseName();
 
-        DB::prohibitDestructiveCommands($this->app->environment('testing') && ! str_starts_with($database, 'journal_hooks_test'));
+        DB::prohibitDestructiveCommands(
+            $this->app->environment('testing') && ! str_starts_with($database, 'journal_hooks_test'),
+        );
     }
 
     /**

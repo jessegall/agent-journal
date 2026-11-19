@@ -64,8 +64,12 @@ final class AssignmentStoreTest extends TestCase
 
     public function test_an_unheld_record_gets_one_holder_and_a_second_assign_finds_it(): void
     {
-        $first = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder));
-        $second = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->reviewer));
+        $first = $this->inTransaction(
+            fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder),
+        );
+        $second = $this->inTransaction(
+            fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->reviewer),
+        );
 
         $this->assertTrue($second->reference->isSameAs($first->reference));
         $this->assertSame(1, AssignmentRecord::query()->count());
@@ -73,13 +77,18 @@ final class AssignmentStoreTest extends TestCase
 
     public function test_a_reassignment_back_to_the_first_holder_does_not_match_the_first_reference(): void
     {
-        $first = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder));
+        $first = $this->inTransaction(
+            fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder),
+        );
         $toReviewer = $this->inTransaction(fn (AssignmentStore $store) => $store->replace($first, $this->reviewer));
         $back = $this->inTransaction(fn (AssignmentStore $store) => $store->replace($toReviewer, $this->builder));
 
         $this->assertTrue($back->holder()->isSameAs($first->holder()));
         $this->assertFalse($back->reference->isSameAs($first->reference));
-        $this->assertSame($back->reference->id, $this->inTransaction(fn (AssignmentStore $store) => $store->lockCurrent($this->task)->get()->reference->id));
+        $this->assertSame(
+            $back->reference->id,
+            $this->inTransaction(fn (AssignmentStore $store) => $store->lockCurrent($this->task)->get()->reference->id),
+        );
     }
 
     public function test_releasing_an_actor_removes_only_its_rows_and_reports_each_change(): void
@@ -87,7 +96,9 @@ final class AssignmentStoreTest extends TestCase
         $plan = TestActors::record('plans.plan', 3);
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder));
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($plan, $this->builder));
-        $kept = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld(TestActors::record('tasks.task', 13), $this->reviewer));
+        $kept = $this->inTransaction(
+            fn (AssignmentStore $store) => $store->assignIfUnheld(TestActors::record('tasks.task', 13), $this->reviewer),
+        );
 
         $result = $this->inTransaction(fn (AssignmentStore $store) => $store->releaseAll($this->builder));
 
@@ -98,10 +109,16 @@ final class AssignmentStoreTest extends TestCase
 
     public function test_the_store_refuses_work_outside_a_transaction_and_the_transaction_refuses_another_isolation(): void
     {
-        $this->assertThrows(fn () => $this->app->make(AssignmentStore::class)->lockCurrent($this->task), AssignmentTransactionRequired::class);
+        $this->assertThrows(
+            fn () => $this->app->make(AssignmentStore::class)->lockCurrent($this->task),
+            AssignmentTransactionRequired::class,
+        );
 
         DB::transaction(function (): void {
-            $this->assertThrows(fn () => $this->app->make(AssignmentTransaction::class)->run(fn () => true), AssignmentTransactionRequired::class);
+            $this->assertThrows(
+                fn () => $this->app->make(AssignmentTransaction::class)->run(fn () => true),
+                AssignmentTransactionRequired::class,
+            );
         });
     }
 
@@ -116,7 +133,9 @@ final class AssignmentStoreTest extends TestCase
             $store->lockCurrent(TestActors::record('tasks.task', 99));
 
             if ($attempts === 1) {
-                $other->table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->reviewer->id, 'created_at' => now(), 'updated_at' => now()]);
+                $other->table('assignments')->insert(
+                    ['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->reviewer->id, 'created_at' => now(), 'updated_at' => now()],
+                );
             }
 
             return $store->assignIfUnheld($this->task, $this->builder);
@@ -163,13 +182,18 @@ final class AssignmentStoreTest extends TestCase
      */
     private function inTransaction(\Closure $work): mixed
     {
-        return $this->app->make(AssignmentTransaction::class)->run(fn () => $work($this->app->make(AssignmentStore::class)));
+        return $this->app->make(AssignmentTransaction::class)->run(
+            fn () => $work($this->app->make(AssignmentStore::class)),
+        );
     }
 
     private function otherConnection(): Connection
     {
         $config = $this->app->make('config');
-        $config->set('database.connections.assignments_other', $config->get('database.connections.'.$config->get('database.default')));
+        $config->set(
+            'database.connections.assignments_other',
+            $config->get('database.connections.'.$config->get('database.default')),
+        );
 
         return DB::connection('assignments_other');
     }

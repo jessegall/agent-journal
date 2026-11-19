@@ -53,10 +53,16 @@ final class HookCompactionTest extends TestCase
     {
         $context = json_decode($this->compact('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertContains('Rule '.Rule::query()->where('text', 'No phase waits on the user.')->value('id').': No phase waits on the user.', $context);
+        $this->assertContains(
+            'Rule '.Rule::query()->where('text', 'No phase waits on the user.')->value('id').': No phase waits on the user.',
+            $context,
+        );
         $this->assertContains('Memory: Use plain words.', $context);
         $this->assertContains('Memory: Question 10 is still open.', $context);
-        $this->assertSame([], array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))));
+        $this->assertSame(
+            [],
+            array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))),
+        );
         $this->assertContains("Sequence run {$this->run->number} is on step 1: Read the brief.", $context);
     }
 
@@ -106,10 +112,23 @@ final class HookCompactionTest extends TestCase
     private function compact(string $callId): string
     {
         $this->callAs($callId, hash('sha256', $callId));
-        $compaction = new ContextCompacted(TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)), new CompactionDetails($callId));
-        $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
+        $compaction = new ContextCompacted(
+            TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)),
+            new CompactionDetails($callId),
+        );
+        $capabilities = new ProgramCapabilities(
+            'Test program',
+            'compaction context',
+            ['onCompaction'],
+            RewriteSupport::WithoutApproval,
+        );
 
-        $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0));
+        $reply = $this->machine()->answer(
+            $compaction,
+            $capabilities,
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0),
+        );
 
         return $reply->stdout;
     }

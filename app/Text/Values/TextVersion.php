@@ -15,14 +15,24 @@ final readonly class TextVersion
     /**
      * @param  list<Section>  $sections
      */
-    private function __construct(public string $id, public string $label, public string $text, public array $sections) {}
+    private function __construct(
+        public string $id,
+        public string $label,
+        public string $text,
+        public array $sections,
+    ) {}
 
     /**
      * @param  array{id: string, label: string, text: string, sections: list<Section>}  $fields
      */
     public static function from(array $fields): self
     {
-        return new self($fields['id'], $fields['label'], str_replace(["\r\n", "\r"], "\n", $fields['text']), $fields['sections']);
+        return new self(
+            $fields['id'],
+            $fields['label'],
+            str_replace(["\r\n", "\r"], "\n", $fields['text']),
+            $fields['sections'],
+        );
     }
 
     /**

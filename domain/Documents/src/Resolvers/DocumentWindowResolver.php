@@ -22,7 +22,14 @@ use Domain\Documents\Http\Requests\RecordPageRequest;
  */
 final readonly class DocumentWindowResolver implements PageResolver
 {
-    public function __construct(private RecordPageRequest $request, private DocumentResolver $documents, private DraftResolver $drafts, private CommentResolver $comments, private RecordResolver $records, private ShareStatusResolver $shares) {}
+    public function __construct(
+        private RecordPageRequest $request,
+        private DocumentResolver $documents,
+        private DraftResolver $drafts,
+        private CommentResolver $comments,
+        private RecordResolver $records,
+        private ShareStatusResolver $shares,
+    ) {}
 
     public function read(): DocumentPageData
     {
@@ -31,7 +38,13 @@ final readonly class DocumentWindowResolver implements PageResolver
 
         return DocumentPageData::from([
             'number' => (string) $number,
-            'record' => RecordPageData::fromDocumentView($this->documents->show($number), $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)), $this->documents->inspect($number)->settlements, $this->documents->links($number), $this->shares->isPubliclyShared($identity)),
+            'record' => RecordPageData::fromDocumentView(
+                $this->documents->show($number),
+                $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)),
+                $this->documents->inspect($number)->settlements,
+                $this->documents->links($number),
+                $this->shares->isPubliclyShared($identity),
+            ),
             'editing' => $this->drafts->stateOf($number),
             'revisions' => $this->documents->revisions($number, 1),
         ]);

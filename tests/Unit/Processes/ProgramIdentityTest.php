@@ -54,7 +54,10 @@ final class ProgramIdentityTest extends TestCase
         $this->assertSame('php', $this->program('php8.3 artisan', [$php])->family);
         $this->assertSame('php8.4', $this->program('php8.4 artisan', [$php])->family);
         $this->assertSame(['php'], new ProgramNames()->proposalHints($this->program('php8.4 artisan', [$php]), [$php]));
-        $this->assertSame('something-old', $this->program('something-old run', [new ProgramSpellings('something')])->family);
+        $this->assertSame(
+            'something-old',
+            $this->program('something-old run', [new ProgramSpellings('something')])->family,
+        );
     }
 
     public function test_a_word_known_only_at_run_time_is_an_unresolved_executable(): void
@@ -86,13 +89,22 @@ final class ProgramIdentityTest extends TestCase
         $root = sys_get_temp_dir().'/program-identity-'.getmypid();
         @mkdir("{$root}/bin", 0777, true);
         file_put_contents("{$root}/bin/check", "#!/bin/sh\necho ok\n");
-        $binding = ExecutableBinding::projectContent('check', 'bin/check', (string) hash_file('sha256', "{$root}/bin/check"), 1);
+        $binding = ExecutableBinding::projectContent(
+            'check',
+            'bin/check',
+            (string) hash_file('sha256', "{$root}/bin/check"),
+            1,
+        );
         $context = new ExecutionContext(ShellDialect::Bash, $root, $root);
 
         try {
-            $this->assertTrue(new ExecutableCheck()->verify($this->program('./bin/check'), $binding, $context)->isTrusted);
+            $this->assertTrue(
+                new ExecutableCheck()->verify($this->program('./bin/check'), $binding, $context)->isTrusted,
+            );
             file_put_contents("{$root}/bin/check", "#!/bin/sh\nrm -rf /\n");
-            $this->assertFalse(new ExecutableCheck()->verify($this->program('./bin/check'), $binding, $context)->isTrusted);
+            $this->assertFalse(
+                new ExecutableCheck()->verify($this->program('./bin/check'), $binding, $context)->isTrusted,
+            );
         } finally {
             @unlink("{$root}/bin/check");
             @rmdir("{$root}/bin");

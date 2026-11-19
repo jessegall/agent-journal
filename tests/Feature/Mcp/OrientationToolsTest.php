@@ -27,7 +27,16 @@ final class OrientationToolsTest extends TestCase
     use SendsMcpFrames;
     use StartsAgentRequests;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'tasks', 'plans', 'assignments', 'agent_stacks'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'tasks',
+        'plans',
+        'assignments',
+        'agent_stacks',
+    ];
 
     private TestLaunch $caller;
 
@@ -45,10 +54,16 @@ final class OrientationToolsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 
         foreach (['One', 'Two', 'Three'] as $title) {
-            $writer->assign(Task::factory()->create(['title' => $title])->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
+            $writer->assign(
+                Task::factory()->create(['title' => $title])->assignmentIdentity(),
+                AssigneeIdentity::of($this->caller->agent),
+            );
         }
 
-        $writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), AssigneeIdentity::of($this->other->agent));
+        $writer->assign(
+            Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(),
+            AssigneeIdentity::of($this->other->agent),
+        );
     }
 
     public function test_overview_read_counts_only_the_callers_held_tasks_with_a_next_action_to_tasks_assigned(): void
@@ -64,7 +79,10 @@ final class OrientationToolsTest extends TestCase
 
     public function test_capabilities_read_reports_three_separate_version_values(): void
     {
-        $result = $this->callTool('capabilities_read', ['HTTP_MCP_PROTOCOL_VERSION' => '2025-11-25'])->json('result.structuredContent');
+        $result = $this->callTool(
+            'capabilities_read',
+            ['HTTP_MCP_PROTOCOL_VERSION' => '2025-11-25'],
+        )->json('result.structuredContent');
 
         $this->assertSame(CapabilitiesResolver::CONTRACT_VERSION, $result['contract_version']);
         $this->assertIsString($result['server_build']);
@@ -76,7 +94,11 @@ final class OrientationToolsTest extends TestCase
     public function test_the_overview_resource_gives_the_same_content(): void
     {
         $tool = $this->callTool('overview_read')->json('result.structuredContent');
-        $resource = $this->sendMcp($this->caller, 'resources/read', ['uri' => 'journal://v1/overview'])->assertOk()->json('result.contents.0');
+        $resource = $this->sendMcp(
+            $this->caller,
+            'resources/read',
+            ['uri' => 'journal://v1/overview'],
+        )->assertOk()->json('result.contents.0');
 
         $this->assertSame('application/json', $resource['mimeType']);
         $this->assertSame($tool, json_decode($resource['text'], true));
@@ -84,7 +106,11 @@ final class OrientationToolsTest extends TestCase
 
     public function test_both_descriptors_carry_always_load_and_an_output_schema(): void
     {
-        $tools = array_column($this->sendMcp($this->caller, 'tools/list')->assertOk()->json('result.tools'), null, 'name');
+        $tools = array_column(
+            $this->sendMcp($this->caller, 'tools/list')->assertOk()->json('result.tools'),
+            null,
+            'name',
+        );
 
         foreach (['overview_read', 'capabilities_read'] as $name) {
             $this->assertTrue($tools[$name]['_meta']['anthropic/alwaysLoad']);

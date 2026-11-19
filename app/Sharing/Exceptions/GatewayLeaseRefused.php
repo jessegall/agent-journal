@@ -20,12 +20,16 @@ final class GatewayLeaseRefused extends RuntimeException implements CodedRefusal
 
     public static function forOperation(string $operationId): self
     {
-        return new self("Gateway operation {$operationId} is not held under this run, endpoint version and lease; its outcome is ignored.");
+        return new self(
+            "Gateway operation {$operationId} is not held under this run, endpoint version and lease; its outcome is ignored.",
+        );
     }
 
     public static function forEndpoint(string $configurationId, int $endpointVersion): self
     {
-        return new self("Endpoint version {$endpointVersion} of configuration {$configurationId} is not held by this run.");
+        return new self(
+            "Endpoint version {$endpointVersion} of configuration {$configurationId} is not held by this run.",
+        );
     }
 
     protected function status(): int

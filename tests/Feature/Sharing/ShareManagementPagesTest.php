@@ -37,12 +37,35 @@ use Tests\TestCase;
  * only through the reveal action, update its members, retry a failed share and revoke it; every write needs its
  * Idempotency-Key, and anyone else sees none of it.
  */
-#[TimeLimit(seconds: 10, reason: 'It commits a document and a plan through the bus, renders pages and empties nineteen tables around each test.')]
+#[TimeLimit(
+    seconds: 10,
+    reason: 'It commits a document and a plan through the bus, renders pages and empties nineteen tables around each test.',
+)]
 final class ShareManagementPagesTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_previews', 'share_gateway_configurations', 'share_installations', 'users', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'phases', 'plans', 'number_groups'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_previews',
+        'share_gateway_configurations',
+        'share_installations',
+        'users',
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'phases',
+        'plans',
+        'number_groups',
+    ];
 
     private User $owner;
 
@@ -56,7 +79,10 @@ final class ShareManagementPagesTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
@@ -71,7 +97,9 @@ final class ShareManagementPagesTest extends TestCase
     {
         $share = $this->createShare();
 
-        $list = $this->actingAs($this->owner)->get('/sharing')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $list = $this->actingAs($this->owner)->get('/sharing')->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page
             ->component('sharing/SharesWindow')
             ->where('page.data.rows.0.id', $share->id)
             ->where('page.data.rows.0.state', 'pending')
@@ -79,10 +107,12 @@ final class ShareManagementPagesTest extends TestCase
         $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) $list->getContent());
 
         $this->activate($share);
-        $detail = $this->actingAs($this->owner)->get("/sharing/shares/{$share->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('sharing/ShareWindow')
-            ->where('page.data.members.0.targetId', $this->document->id)
-            ->where('page.data.mayReveal', true));
+        $detail = $this->actingAs($this->owner)->get(
+            "/sharing/shares/{$share->id}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->component('sharing/ShareWindow')
+                    ->where('page.data.members.0.targetId', $this->document->id)
+                    ->where('page.data.mayReveal', true));
         $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) $detail->getContent());
 
         $this->actingAs($this->owner)->postJson("/sharing/shares/{$share->id}/link")
@@ -108,7 +138,11 @@ final class ShareManagementPagesTest extends TestCase
         $this->savePreview([]);
         $preview = SharePreview::query()->whereNull('consumed_at')->sole();
 
-        $this->write('post', "/sharing/shares/{$share->id}/scope", ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum])->assertStatus(303);
+        $this->write(
+            'post',
+            "/sharing/shares/{$share->id}/scope",
+            ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum],
+        )->assertStatus(303);
         $this->assertSame(Share::FIRST_SCOPE_VERSION + 1, Share::query()->findOrFail($share->id)->scope_version);
 
         $failed = Share::query()->findOrFail($share->id);
@@ -124,13 +158,23 @@ final class ShareManagementPagesTest extends TestCase
 
     public function test_the_owner_approves_a_proposal_from_a_saved_preview(): void
     {
-        $proposal = Share::propose($this->plan->shareIdentity(), new ActorIdentity(ActorType::Agent, $this->owner->id), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $proposal = Share::propose(
+            $this->plan->shareIdentity(),
+            new ActorIdentity(ActorType::Agent, $this->owner->id),
+            CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+        );
         $this->savePreview();
 
-        $this->actingAs($this->owner)->get($this->rootPath())->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get($this->rootPath())->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page
             ->where('page.data.openProposals.0.id', $proposal->id));
         $preview = SharePreview::query()->sole();
-        $this->write('post', "/sharing/shares/{$proposal->id}/approval", ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum])
+        $this->write(
+            'post',
+            "/sharing/shares/{$proposal->id}/approval",
+            ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum],
+        )
             ->assertRedirect("/sharing/shares/{$proposal->id}");
 
         $this->assertSame(ShareState::Pending, Share::query()->findOrFail($proposal->id)->state);
@@ -141,18 +185,28 @@ final class ShareManagementPagesTest extends TestCase
         $share = $this->createShare();
 
         for ($index = 0; $index < 26; $index++) {
-            Share::propose($this->plan->shareIdentity(), new ActorIdentity(ActorType::Agent, $this->owner->id), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+            Share::propose(
+                $this->plan->shareIdentity(),
+                new ActorIdentity(ActorType::Agent, $this->owner->id),
+                CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+            );
         }
 
-        $this->actingAs($this->owner)->get('/sharing?state=pending')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get('/sharing?state=pending')->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page
             ->has('page.data.rows', 1)
             ->where('page.data.rows.0.id', $share->id));
         $first = $this->actingAs($this->owner)->get('/sharing?state=proposed')->assertOk();
-        $first->assertInertia(fn (AssertableInertia $page) => $page->has('page.data.rows', 25)->whereType('page.data.nextAfter', 'string'));
+        $first->assertInertia(
+            fn (AssertableInertia $page) => $page->has('page.data.rows', 25)->whereType('page.data.nextAfter', 'string'),
+        );
         $after = $first->viewData('page')['props']['page']['data']['nextAfter'];
-        $this->actingAs($this->owner)->get("/sharing?state=proposed&after={$after}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.rows', 1)
-            ->where('page.data.nextAfter', null));
+        $this->actingAs($this->owner)->get(
+            "/sharing?state=proposed&after={$after}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->has('page.data.rows', 1)
+                    ->where('page.data.nextAfter', null));
     }
 
     public function test_another_user_sees_no_share_and_changes_nothing(): void
@@ -163,7 +217,9 @@ final class ShareManagementPagesTest extends TestCase
         $this->assertFalse($this->actingAs($other)->get('/sharing')->isOk());
         $this->assertFalse($this->actingAs($other)->get("/sharing/shares/{$share->id}")->isOk());
         $this->assertFalse($this->actingAs($other)->postJson("/sharing/shares/{$share->id}/link")->isOk());
-        $this->assertFalse($this->actingAs($other)->deleteJson("/sharing/shares/{$share->id}", [], ['Idempotency-Key' => '01JD8X0G9M3QZ6V4K2OTHER001'])->isSuccessful());
+        $this->assertFalse(
+            $this->actingAs($other)->deleteJson("/sharing/shares/{$share->id}", [], ['Idempotency-Key' => '01JD8X0G9M3QZ6V4K2OTHER001'])->isSuccessful(),
+        );
         $this->assertSame(ShareState::Pending, Share::query()->findOrFail($share->id)->state);
     }
 
@@ -171,7 +227,11 @@ final class ShareManagementPagesTest extends TestCase
     {
         $this->savePreview([$this->document->id]);
         $preview = SharePreview::query()->whereNull('consumed_at')->sole();
-        $this->write('post', $this->rootPath().'/shares', ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum, 'minutes' => 60])->assertStatus(303);
+        $this->write(
+            'post',
+            $this->rootPath().'/shares',
+            ['previewId' => $preview->id, 'previewChecksum' => $preview->checksum, 'minutes' => 60],
+        )->assertStatus(303);
 
         return Share::query()->sole();
     }
@@ -181,7 +241,10 @@ final class ShareManagementPagesTest extends TestCase
      */
     private function savePreview(array $selected = []): void
     {
-        $this->actingAs($this->owner)->post($this->rootPath().'/previews', ['selected' => $selected])->assertStatus(303);
+        $this->actingAs($this->owner)->post(
+            $this->rootPath().'/previews',
+            ['selected' => $selected],
+        )->assertStatus(303);
     }
 
     /**

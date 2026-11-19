@@ -79,6 +79,10 @@ final class RetainedPage extends Model implements ReadableModel
      */
     public function prunable(): Builder
     {
-        return self::query()->withoutGlobalScope(AgentSessionScope::class)->where('expires_at', '<', CarbonImmutable::now());
+        return self::query()->withoutGlobalScope(AgentSessionScope::class)->where(
+            'expires_at',
+            '<',
+            CarbonImmutable::now(),
+        );
     }
 }

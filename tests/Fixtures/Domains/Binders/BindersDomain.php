@@ -30,9 +30,24 @@ final class BindersDomain extends Domain implements ProvidesShareRecords
     {
         return [
             new ShareRecordRegistration('binders.binder', Binder::class, BinderShareProvider::class, []),
-            new ShareRecordRegistration('binders.sheet', BinderPage::class, BinderShareProvider::class, ['share-linked-record']),
-            new ShareRecordRegistration('binders.card', BinderPage::class, BinderShareProvider::class, ['share-linked-record']),
-            new ShareRecordRegistration('binders.tab', BinderPage::class, BinderShareProvider::class, ['share-linked-record']),
+            new ShareRecordRegistration(
+'binders.sheet',
+ BinderPage::class,
+ BinderShareProvider::class,
+ ['share-linked-record'],
+),
+            new ShareRecordRegistration(
+'binders.card',
+ BinderPage::class,
+ BinderShareProvider::class,
+ ['share-linked-record'],
+),
+            new ShareRecordRegistration(
+'binders.tab',
+ BinderPage::class,
+ BinderShareProvider::class,
+ ['share-linked-record'],
+),
             new ShareRecordRegistration('binders.memo', BinderPage::class, BinderShareProvider::class, []),
         ];
     }

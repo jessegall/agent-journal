@@ -50,8 +50,12 @@ final readonly class AgentStateMachine
     /**
      * @param  Closure(HookAnswer): ProgramReply  $render  the program adapter's reply to the final answer
      */
-    public function answer(HookInput $input, ProgramCapabilities $capabilities, OperationDeadline $deadline, Closure $render): ProgramReply
-    {
+    public function answer(
+        HookInput $input,
+        ProgramCapabilities $capabilities,
+        OperationDeadline $deadline,
+        Closure $render,
+    ): ProgramReply {
         $capabilities->checkSupports($input->methodName());
         $identity = $this->access->hookIdentity();
 
@@ -87,7 +91,11 @@ final readonly class AgentStateMachine
 
                 $row->saveFrames($answer->stack->records(), $this->types->ticking());
                 $call = new HookCall();
-                $call->recordFor($identity, $reply->recordedAs($answer->decision->answerType()), RecordedSteps::of($answer->steps));
+                $call->recordFor(
+                    $identity,
+                    $reply->recordedAs($answer->decision->answerType()),
+                    RecordedSteps::of($answer->steps),
+                );
                 $row->linkTo($call);
 
                 return $reply;

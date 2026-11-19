@@ -29,7 +29,11 @@ final readonly class ReportDriverTurnHandler implements CommandHandler
 
         $activity = $command->finished ? RuntimeActivity::Idle : RuntimeActivity::Running;
         if (! $runtime->recordObservation($activity, HoldReason::None, $command->processGeneration, $now)) {
-            throw HostReportRefused::staleGeneration($runtime->id, $command->processGeneration, $runtime->process_generation);
+            throw HostReportRefused::staleGeneration(
+                $runtime->id,
+                $command->processGeneration,
+                $runtime->process_generation,
+            );
         }
         $runtime->observeSettings($command->model, $command->effort, $now);
 

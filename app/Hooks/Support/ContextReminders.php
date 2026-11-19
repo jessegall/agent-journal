@@ -56,6 +56,9 @@ final class ContextReminders implements ReminderContribution
             $left -= mb_strlen($reminder);
         }
 
-        return $omitted === 0 ? $given : [...$given, "{$omitted} more reminders did not fit this context; read your memories with journal memory list."];
+        return $omitted === 0 ? $given : [
+            ...$given,
+            "{$omitted} more reminders did not fit this context; read your memories with journal memory list.",
+        ];
     }
 }

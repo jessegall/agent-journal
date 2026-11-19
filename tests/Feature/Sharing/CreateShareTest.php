@@ -88,20 +88,36 @@ final class CreateShareTest extends TestCase
         $this->assertSame($share->number, $summary->number);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $share->scope_version);
         $this->assertSame([TestIds::of(101)], ShareMember::query()->readAll('one member')->pluck('target_id')->all());
-        $this->assertSame(GatewayOperationType::Open, ShareGatewayOperation::query()->readAll('one operation')->sole()->type);
+        $this->assertSame(
+            GatewayOperationType::Open,
+            ShareGatewayOperation::query()->readAll('one operation')->sole()->type,
+        );
         $this->assertSame(ShareAuditType::Created, ShareAudit::query()->readAll('one audit')->sole()->type);
         $this->assertTrue(SharePreview::query()->readAll('one preview')->sole()->consumed_at !== null);
         $this->assertSame(ShareToken::digestOf((string) $share->token_ciphertext), $share->token_digest);
-        $this->assertEqualsWithDelta(CarbonImmutable::now()->addMinutes(ShareDuration::STANDARD_MINUTES)->getTimestamp(), $share->expires_at->getTimestamp(), 5);
+        $this->assertEqualsWithDelta(
+            CarbonImmutable::now()->addMinutes(ShareDuration::STANDARD_MINUTES)->getTimestamp(),
+            $share->expires_at->getTimestamp(),
+            5,
+        );
 
         $links = $this->app->make(ShareLinkResolver::class);
-        $this->assertTrue($links->linkFor(TestActors::user(9), $share->id)->isEmpty(), 'A pending share has no address yet.');
+        $this->assertTrue(
+            $links->linkFor(TestActors::user(9), $share->id)->isEmpty(),
+            'A pending share has no address yet.',
+        );
 
         $share->state = ShareState::Active;
         $share->save();
 
-        $this->assertSame(FakeShareGateway::PUBLIC_ORIGIN.'/s/'.$share->token_ciphertext, $links->linkFor(TestActors::user(9), $share->id)->get());
-        $this->assertTrue($links->linkFor(TestActors::user(8), $share->id)->isEmpty(), 'Only the owner reads the address.');
+        $this->assertSame(
+            FakeShareGateway::PUBLIC_ORIGIN.'/s/'.$share->token_ciphertext,
+            $links->linkFor(TestActors::user(9), $share->id)->get(),
+        );
+        $this->assertTrue(
+            $links->linkFor(TestActors::user(8), $share->id)->isEmpty(),
+            'Only the owner reads the address.',
+        );
     }
 
     public function test_the_answer_and_the_receipt_hold_no_token_or_address(): void
@@ -111,7 +127,10 @@ final class CreateShareTest extends TestCase
         $receipt = CommandReceipt::query()->sole();
 
         $this->assertStringNotContainsString($token, (string) json_encode($receipt->getAttributes()));
-        $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) json_encode($receipt->getAttributes()));
+        $this->assertStringNotContainsString(
+            FakeShareGateway::PUBLIC_ORIGIN,
+            (string) json_encode($receipt->getAttributes()),
+        );
         $this->assertSame(['shareId', 'number', 'state'], array_keys(get_object_vars($summary)));
     }
 
@@ -130,7 +149,10 @@ final class CreateShareTest extends TestCase
     {
         $saved = $this->preview([]);
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new CreateShare($saved->previewId, $saved->checksum, 60, self::KEY)), RequestKeyMissing::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new CreateShare($saved->previewId, $saved->checksum, 60, self::KEY)),
+            RequestKeyMissing::class,
+        );
         $this->assertSame(0, Share::query()->count());
     }
 
@@ -139,8 +161,16 @@ final class CreateShareTest extends TestCase
         $short = $this->create($this->preview([]), 1, '01JD8X0G9M3QZ6V4K2CREATE02');
         $long = $this->create($this->preview([]), 43_200, '01JD8X0G9M3QZ6V4K2CREATE03');
 
-        $this->assertEqualsWithDelta(CarbonImmutable::now()->addMinute()->getTimestamp(), Share::query()->findOrFail($short->shareId)->expires_at->getTimestamp(), 5);
-        $this->assertEqualsWithDelta(CarbonImmutable::now()->addDays(30)->getTimestamp(), Share::query()->findOrFail($long->shareId)->expires_at->getTimestamp(), 5);
+        $this->assertEqualsWithDelta(
+            CarbonImmutable::now()->addMinute()->getTimestamp(),
+            Share::query()->findOrFail($short->shareId)->expires_at->getTimestamp(),
+            5,
+        );
+        $this->assertEqualsWithDelta(
+            CarbonImmutable::now()->addDays(30)->getTimestamp(),
+            Share::query()->findOrFail($long->shareId)->expires_at->getTimestamp(),
+            5,
+        );
     }
 
     public function test_a_duration_outside_one_minute_to_thirty_days_is_refused_with_no_rows_left(): void
@@ -148,7 +178,10 @@ final class CreateShareTest extends TestCase
         foreach ([0, 43_201] as $index => $minutes) {
             $saved = $this->preview([TestIds::of(101)]);
 
-            $this->assertThrows(fn () => $this->create($saved, $minutes, "01JD8X0G9M3QZ6V4K2REFUSE0{$index}"), ShareDurationInvalid::class);
+            $this->assertThrows(
+                fn () => $this->create($saved, $minutes, "01JD8X0G9M3QZ6V4K2REFUSE0{$index}"),
+                ShareDurationInvalid::class,
+            );
         }
 
         $this->assertSame(0, Share::query()->count());
@@ -163,7 +196,11 @@ final class CreateShareTest extends TestCase
         $saved = $this->preview([]);
         $this->create($saved);
 
-        $this->assertThrows(fn () => $this->create($saved, ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2CREATE04'), SharePreviewRefused::class, 'used already');
+        $this->assertThrows(
+            fn () => $this->create($saved, ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2CREATE04'),
+            SharePreviewRefused::class,
+            'used already',
+        );
     }
 
     public function test_the_hundred_and_first_live_share_is_refused(): void
@@ -182,7 +219,13 @@ final class CreateShareTest extends TestCase
     public function test_an_expired_share_whose_state_has_not_caught_up_does_not_count(): void
     {
         for ($index = 0; $index < Share::MOST_LIVE; $index++) {
-            Share::grant(TestActors::record('binders.binder', 1000 + $index), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->subMinute());
+            Share::grant(
+                TestActors::record('binders.binder', 1000 + $index),
+                TestIds::of(9),
+                $this->configuration,
+                ShareToken::generate(),
+                CarbonImmutable::now()->subMinute(),
+            );
         }
 
         $this->assertSame(ShareState::Pending, $this->create($this->preview([]))->state);
@@ -193,13 +236,20 @@ final class CreateShareTest extends TestCase
      */
     private function preview(array $selectedIds): SavedSharePreview
     {
-        return $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->root->type, $this->root->id, $selectedIds, $this->configuration->id));
+        return $this->app->make(CommandBus::class)->run(
+            new SaveSharePreview($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),
+        );
     }
 
-    private function create(SavedSharePreview $saved, int $minutes = ShareDuration::STANDARD_MINUTES, string $key = self::KEY): ShareSummary
-    {
+    private function create(
+        SavedSharePreview $saved,
+        int $minutes = ShareDuration::STANDARD_MINUTES,
+        string $key = self::KEY,
+    ): ShareSummary {
         $this->app->make(RequestKey::class)->set($key);
 
-        return $this->app->make(CommandBus::class)->run(new CreateShare($saved->previewId, $saved->checksum, $minutes, $key));
+        return $this->app->make(CommandBus::class)->run(
+            new CreateShare($saved->previewId, $saved->checksum, $minutes, $key),
+        );
     }
 }

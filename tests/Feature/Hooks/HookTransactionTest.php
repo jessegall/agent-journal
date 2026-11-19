@@ -32,13 +32,21 @@ final class HookTransactionTest extends TestCase
     public function test_a_hook_waiting_on_a_held_stack_lock_times_out_and_keeps_nothing(): void
     {
         $config = $this->app->make('config');
-        $config->set('database.connections.hooks_holder', $config->get('database.connections.'.$config->get('database.default')));
+        $config->set(
+            'database.connections.hooks_holder',
+            $config->get('database.connections.'.$config->get('database.default')),
+        );
         $holder = DB::connection('hooks_holder');
         $holder->beginTransaction();
         $holder->table('agent_stacks')->lockForUpdate()->get();
 
         try {
-            $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(300), fn (HookAnswer $answer) => ProgramReplies::stop($answer));
+            $this->machine()->answer(
+                $this->stop(),
+                $this->capabilities(),
+                new OperationDeadline(300),
+                fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+            );
             $this->fail('The hook did not time out on the held lock.');
         } catch (StackLockTimedOut $timedOut) {
             $this->assertInstanceOf(StackLockTimedOut::class, $timedOut);
@@ -57,7 +65,12 @@ final class HookTransactionTest extends TestCase
         try {
             $this->waitForLine($process['stdout'], 'locked');
 
-            $reply = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(5000), fn (HookAnswer $answer) => ProgramReplies::stop($answer));
+            $reply = $this->machine()->answer(
+                $this->stop(),
+                $this->capabilities(),
+                new OperationDeadline(5000),
+                fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+            );
         } finally {
             $this->assertSame("saw the hook waiting\ncommitted\n", stream_get_contents($process['stdout']));
             proc_close($process['handle']);
@@ -75,7 +88,9 @@ final class HookTransactionTest extends TestCase
      */
     private function startLockHolder(int $taskNumber): array
     {
-        $connection = $this->app->make('config')->get('database.connections.'.$this->app->make('config')->get('database.default'));
+        $connection = $this->app->make('config')->get(
+            'database.connections.'.$this->app->make('config')->get('database.default'),
+        );
         $environment = [
             ...getenv(),
             'LOCK_DB_HOST' => (string) $connection['host'],
@@ -88,7 +103,13 @@ final class HookTransactionTest extends TestCase
             'LOCK_TASK_NUMBER' => (string) $taskNumber,
         ];
 
-        $handle = proc_open([PHP_BINARY, base_path('tests/bin/hold-stack-lock.php')], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, base_path(), $environment);
+        $handle = proc_open(
+            [PHP_BINARY, base_path('tests/bin/hold-stack-lock.php')],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $pipes,
+            base_path(),
+            $environment,
+        );
 
         if ($handle === false) {
             throw TestFailure::lockHolderDidNotStart();
@@ -111,20 +132,36 @@ final class HookTransactionTest extends TestCase
 
     public function test_a_replayed_session_start_with_a_changed_program_session_id_keeps_the_first_mapping(): void
     {
-        $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);
+        $capabilities = new ProgramCapabilities(
+            'Test program',
+            'session starts',
+            ['onSessionStart'],
+            RewriteSupport::WithoutApproval,
+        );
 
         $this->answerSessionStart('vendor-1', $capabilities);
         $this->answerSessionStart('vendor-2', $capabilities);
 
-        $this->assertSame('vendor-1', AgentSession::query()->with('currentConversation')->findOrFail($this->target->sessionId)->currentConversation?->native_id);
+        $this->assertSame(
+            'vendor-1',
+            AgentSession::query()->with('currentConversation')->findOrFail($this->target->sessionId)->currentConversation?->native_id,
+        );
         $this->assertSame(1, HookCall::query()->count());
     }
 
     private function answerSessionStart(string $vendorSessionId, ProgramCapabilities $capabilities): void
     {
         $this->callAs('call-start', hash('sha256', 'call-start'));
-        $start = new SessionStarted(TestActors::hookIdentity(1, 10, 'call-start', hash('sha256', 'call-start')), new SessionStartDetails($vendorSessionId, SessionStartSource::Startup));
+        $start = new SessionStarted(
+            TestActors::hookIdentity(1, 10, 'call-start', hash('sha256', 'call-start')),
+            new SessionStartDetails($vendorSessionId, SessionStartSource::Startup),
+        );
 
-        $this->machine()->answer($start, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply('{}', '', 0));
+        $this->machine()->answer(
+            $start,
+            $capabilities,
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => new ProgramReply('{}', '', 0),
+        );
     }
 }

@@ -98,7 +98,10 @@ final class DocblockAndStringScanTest extends TestCase
 
     public function test_a_sentence_is_no_name(): void
     {
-        $names = array_map(fn (NameUse $use) => $use->name, StringScan::of($this->fixture('StringNames'), $this->roots()));
+        $names = array_map(
+            fn (NameUse $use) => $use->name,
+            StringScan::of($this->fixture('StringNames'), $this->roots()),
+        );
 
         $this->assertNotContains('your tasks are done', $names);
         $this->assertCount(9, $names);
@@ -107,7 +110,10 @@ final class DocblockAndStringScanTest extends TestCase
     public function test_the_project_roots_come_from_composer(): void
     {
         $namespaces = $this->roots()->namespaces;
-        $domains = array_map(fn (string $package) => 'Domain\\'.basename($package).'\\', glob(dirname(__DIR__, 2).'/domain/*', GLOB_ONLYDIR) ?: []);
+        $domains = array_map(
+            fn (string $package) => 'Domain\\'.basename($package).'\\',
+            glob(dirname(__DIR__, 2).'/domain/*', GLOB_ONLYDIR) ?: [],
+        );
 
         foreach (['App\\', 'Tests\\', 'Database\\Factories\\', ...$domains] as $root) {
             $this->assertContains($root, $namespaces);

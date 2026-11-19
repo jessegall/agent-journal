@@ -52,7 +52,10 @@ final readonly class CommandOwner
     {
         if ($this->name === self::CORE) {
             // Core keeps each area's commands in that area, such as App\Assignments\Commands.
-            return preg_match('/^'.preg_quote($this->namespace, '/').'\\\\\w+\\\\'.preg_quote($folder, '/').'\\\\/', $class) === 1;
+            return preg_match(
+                '/^'.preg_quote($this->namespace, '/').'\\\\\w+\\\\'.preg_quote($folder, '/').'\\\\/',
+                $class,
+            ) === 1;
         }
 
         return str_starts_with($class, "{$this->namespace}\\{$folder}\\");

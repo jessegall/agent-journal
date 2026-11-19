@@ -20,7 +20,10 @@ final readonly class RetireSkillHandler implements CommandHandler
     public function handle(RetireSkill $command): SkillRevisionResult
     {
 
-        return $this->writes->once($command->requestId, hash('sha256', "retire|{$command->skillId}|{$command->expectedRevision}"), function () use ($command) {
+        return $this->writes->once($command->requestId, hash(
+            'sha256',
+            "retire|{$command->skillId}|{$command->expectedRevision}",
+        ), function () use ($command) {
             $skill = Skill::lockVisible($command->skillId, SkillContextResolver::ENVIRONMENT);
             $skill->checkWritableAt($command->expectedRevision);
 

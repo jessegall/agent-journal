@@ -25,7 +25,9 @@ final readonly class PlanAssignmentProvider implements AssignableProvider
     {
         $this->actors->actor();
 
-        return Plan::query()->whereKey($record->id)->lock('for key share')->first() ?? throw RecordUnavailable::for($record);
+        return Plan::query()->whereKey(
+            $record->id,
+        )->lock('for key share')->first() ?? throw RecordUnavailable::for($record);
     }
 
     /**
@@ -35,7 +37,9 @@ final readonly class PlanAssignmentProvider implements AssignableProvider
     public function visibleRecords(array $records): array
     {
         $this->actors->actor();
-        $found = Plan::query()->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))->readLimit(count($records))->pluck('id')->all();
+        $found = Plan::query()->whereKey(
+            array_map(fn (RecordIdentity $record) => $record->id, $records),
+        )->readLimit(count($records))->pluck('id')->all();
 
         return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $found, true)));
     }

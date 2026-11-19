@@ -25,7 +25,10 @@ trait StartsAgentRequests
             new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestLaunchAuthority::forAgent($agentId),
+        );
     }
 
     /**

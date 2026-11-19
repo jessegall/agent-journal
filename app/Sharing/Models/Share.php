@@ -62,7 +62,9 @@ use PhpOption\Option;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['state', 'root_type', 'root_id', 'owner_user_id', 'configuration_version', 'scope_version', 'expires_at', 'terminal_at'])]
+#[Fillable(
+    ['state', 'root_type', 'root_id', 'owner_user_id', 'configuration_version', 'scope_version', 'expires_at', 'terminal_at'],
+)]
 #[Hidden(['token_digest', 'token_ciphertext'])]
 final class Share extends Model implements Numbered, ReadableModel
 {
@@ -128,8 +130,13 @@ final class Share extends Model implements Numbered, ReadableModel
      * The owner's grant to share the root under a gateway configuration with a new token, at its first scope version,
      * waiting for its gateway.
      */
-    public static function grant(RecordIdentity $root, string $ownerUserId, ShareGatewayConfiguration $configuration, ShareToken $token, CarbonImmutable $expiresAt): self
-    {
+    public static function grant(
+        RecordIdentity $root,
+        string $ownerUserId,
+        ShareGatewayConfiguration $configuration,
+        ShareToken $token,
+        CarbonImmutable $expiresAt,
+    ): self {
         $share = self::forRoot($root, ShareState::Pending, $expiresAt);
         $share->owner_user_id = $ownerUserId;
         $share->scope_version = self::FIRST_SCOPE_VERSION;
@@ -146,8 +153,12 @@ final class Share extends Model implements Numbered, ReadableModel
      * Turns the proposal into the owner's grant under a gateway configuration with a new token, at its first scope
      * version and with its own deadline, waiting for its gateway.
      */
-    public function approveAs(string $ownerUserId, ShareGatewayConfiguration $configuration, ShareToken $token, CarbonImmutable $expiresAt): void
-    {
+    public function approveAs(
+        string $ownerUserId,
+        ShareGatewayConfiguration $configuration,
+        ShareToken $token,
+        CarbonImmutable $expiresAt,
+    ): void {
         $this->state = ShareState::Pending;
         $this->owner_user_id = $ownerUserId;
         $this->scope_version = self::FIRST_SCOPE_VERSION;
@@ -177,7 +188,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockPastDeadline(int $most): array
     {
-        return array_values(self::query()->pastDeadline()->orderBy('id')->lockForUpdate()->readLimit($most)->get()->all());
+        return array_values(
+            self::query()->pastDeadline()->orderBy('id')->lockForUpdate()->readLimit($most)->get()->all(),
+        );
     }
 
     /**
@@ -274,7 +287,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockAwaitingGatewayOf(string $configurationId): array
     {
-        return array_values(self::query()->servedBy($configurationId)->awaitingGateway()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
+        return array_values(
+            self::query()->servedBy($configurationId)->awaitingGateway()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
+        );
     }
 
     /**
@@ -308,7 +323,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function configurationsToReopen(): array
     {
-        return array_values(array_unique(array_map(strval(...), self::query()->liveNow()->whereNotNull('share_gateway_configuration_id')->readLimit(self::MOST_LIVE)->pluck('share_gateway_configuration_id')->all())));
+        return array_values(
+            array_unique(array_map(strval(...), self::query()->liveNow()->whereNotNull('share_gateway_configuration_id')->readLimit(self::MOST_LIVE)->pluck('share_gateway_configuration_id')->all())),
+        );
     }
 
     /**
@@ -319,7 +336,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function unendedOf(string $configurationId): array
     {
-        return array_values(self::query()->servedBy($configurationId)->unended()->orderBy('id')->readLimit(self::MOST_LIVE)->get()->all());
+        return array_values(
+            self::query()->servedBy($configurationId)->unended()->orderBy('id')->readLimit(self::MOST_LIVE)->get()->all(),
+        );
     }
 
     /**
@@ -329,7 +348,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockUnendedOf(string $configurationId): array
     {
-        return array_values(self::query()->servedBy($configurationId)->unended()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
+        return array_values(
+            self::query()->servedBy($configurationId)->unended()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
+        );
     }
 
     /**
@@ -339,7 +360,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockPendingOf(string $configurationId): array
     {
-        return array_values(self::query()->servedBy($configurationId)->inState(ShareState::Pending)->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
+        return array_values(
+            self::query()->servedBy($configurationId)->inState(ShareState::Pending)->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
+        );
     }
 
     /**
@@ -393,7 +416,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function proposedBy(ActorIdentity $requester): array
     {
-        return array_values(self::query()->requestedBy($requester)->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all());
+        return array_values(
+            self::query()->requestedBy($requester)->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all(),
+        );
     }
 
     /**
@@ -414,7 +439,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function liveScopeVersions(array $ids): array
     {
-        return self::query()->whereKey($ids)->liveNow()->readLimit(count($ids))->pluck('scope_version', 'id')->map(fn (mixed $version) => (int) $version)->all();
+        return self::query()->whereKey($ids)->liveNow()->readLimit(count($ids))->pluck('scope_version', 'id')->map(
+            fn (mixed $version) => (int) $version,
+        )->all();
     }
 
     /**
@@ -438,7 +465,10 @@ final class Share extends Model implements Numbered, ReadableModel
         $query->when($filters->state, fn (Builder $query, ShareState $state) => $query->inState($state));
         $query->when($filters->rootType, fn (Builder $query, string $type) => $query->ofRootType($type));
         $query->when($filters->configurationId, fn (Builder $query, string $id) => $query->servedBy($id));
-        $query->when($filters->expiresBefore, fn (Builder $query, CarbonImmutable $deadline) => $query->expiringBefore($deadline));
+        $query->when(
+            $filters->expiresBefore,
+            fn (Builder $query, CarbonImmutable $deadline) => $query->expiringBefore($deadline),
+        );
         $query->when($filters->after, fn (Builder $query, string $id) => $query->olderThan($id));
 
         return array_values($query->readLimit($rows + 1)->get()->all());
@@ -461,7 +491,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function openProposalsFor(RecordIdentity $root): array
     {
-        return array_values(self::query()->ofRoot($root)->proposedNow()->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all());
+        return array_values(
+            self::query()->ofRoot($root)->proposedNow()->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all(),
+        );
     }
 
     /**
@@ -482,7 +514,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function forTokenDigest(string $digest): Option
     {
-        return Option::fromValue(self::query()->openedByDigest($digest)->first(['id', 'state', 'scope_version', 'expires_at']));
+        return Option::fromValue(
+            self::query()->openedByDigest($digest)->first(['id', 'state', 'scope_version', 'expires_at']),
+        );
     }
 
     /**
@@ -514,7 +548,9 @@ final class Share extends Model implements Numbered, ReadableModel
             return None::create();
         }
 
-        return Option::fromValue(ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->shareUrl($this->token_ciphertext));
+        return Option::fromValue(
+            ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->shareUrl($this->token_ciphertext),
+        );
     }
 
     /**
@@ -522,7 +558,13 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public function fact(): ShareFact
     {
-        return new ShareFact($this->id, $this->share_gateway_configuration_id, $this->state, $this->scope_version, CarbonImmutable::now());
+        return new ShareFact(
+            $this->id,
+            $this->share_gateway_configuration_id,
+            $this->state,
+            $this->scope_version,
+            CarbonImmutable::now(),
+        );
     }
 
     /**
@@ -571,7 +613,10 @@ final class Share extends Model implements Numbered, ReadableModel
     #[Scope]
     protected function awaitingGateway(Builder $query): void
     {
-        $query->whereIn('state', [ShareState::Pending->value, ShareState::Failed->value])->where('expires_at', '>', CarbonImmutable::now());
+        $query->whereIn(
+            'state',
+            [ShareState::Pending->value, ShareState::Failed->value],
+        )->where('expires_at', '>', CarbonImmutable::now());
     }
 
     /**
@@ -617,7 +662,10 @@ final class Share extends Model implements Numbered, ReadableModel
     protected function pastDeadline(Builder $query): void
     {
         $open = [ShareState::Proposed, ...ShareState::liveStates()];
-        $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, $open))->where('expires_at', '<=', CarbonImmutable::now());
+        $query->whereIn(
+            'state',
+            array_map(fn (ShareState $state) => $state->value, $open),
+        )->where('expires_at', '<=', CarbonImmutable::now());
     }
 
     /**
@@ -662,7 +710,10 @@ final class Share extends Model implements Numbered, ReadableModel
     #[Scope]
     protected function liveNow(Builder $query): void
     {
-        $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()))->where('expires_at', '>', CarbonImmutable::now());
+        $query->whereIn(
+            'state',
+            array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()),
+        )->where('expires_at', '>', CarbonImmutable::now());
     }
 
     /**

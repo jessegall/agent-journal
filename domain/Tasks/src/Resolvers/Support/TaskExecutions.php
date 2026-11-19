@@ -30,7 +30,9 @@ final readonly class TaskExecutions
     public function of(Collection $tasks): array
     {
         $runs = array_filter($tasks->mapWithKeys(fn (Task $task) => [$task->id => $task->currentRun()])->all());
-        $holders = $this->claims->holdersOf(array_values(array_map(fn (TaskRun $run) => $run->assignmentIdentity(), $runs)));
+        $holders = $this->claims->holdersOf(
+            array_values(array_map(fn (TaskRun $run) => $run->assignmentIdentity(), $runs)),
+        );
         $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter(), $runs);
         $labels = $this->labels->labelsFor(array_values($runners));
 

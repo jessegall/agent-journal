@@ -26,21 +26,51 @@ trait BuildsTickingStacks
     /**
      * @param  list<string>  $subjects  one ticking frame per subject, its frame id the subject itself
      */
-    private function tickingStack(string $tickingType, array $subjects, CarbonImmutable $enteredAt, string $plainType = 'test.plain'): AgentStackRow
-    {
+    private function tickingStack(
+        string $tickingType,
+        array $subjects,
+        CarbonImmutable $enteredAt,
+        string $plainType = 'test.plain',
+    ): AgentStackRow {
         $agent = Agent::named('Ticking agent', 'main-agent');
-        $session = $this->app->make(AgentSessions::class)->start($agent, TestSelections::of(), TestSelections::requestId());
+        $session = $this->app->make(AgentSessions::class)->start(
+            $agent,
+            TestSelections::of(),
+            TestSelections::requestId(),
+        );
         $records = [
-            new FrameRecord("{$session->id}-ready", new StateReference('hooks.ready', NoSubject::None), true, 1, $enteredAt),
-            new FrameRecord("{$session->id}-plain", new StateReference($plainType, NoSubject::None), false, 1, $enteredAt),
+            new FrameRecord(
+                "{$session->id}-ready",
+                new StateReference('hooks.ready', NoSubject::None),
+                true,
+                1,
+                $enteredAt,
+            ),
+            new FrameRecord(
+                "{$session->id}-plain",
+                new StateReference($plainType, NoSubject::None),
+                false,
+                1,
+                $enteredAt,
+            ),
         ];
 
         foreach ($subjects as $subject) {
-            $records[] = new FrameRecord($subject, new StateReference($tickingType, new SubjectReference($subject, 1)), false, 1, $enteredAt);
+            $records[] = new FrameRecord(
+                $subject,
+                new StateReference($tickingType, new SubjectReference($subject, 1)),
+                false,
+                1,
+                $enteredAt,
+            );
         }
 
         $row = new AgentStackRow();
-        $row->startFor(new StackTarget($agent->id, $session->id), new FrameRecords($records), $this->app->make(StateTypes::class)->ticking());
+        $row->startFor(
+            new StackTarget($agent->id, $session->id),
+            new FrameRecords($records),
+            $this->app->make(StateTypes::class)->ticking(),
+        );
 
         return $row;
     }

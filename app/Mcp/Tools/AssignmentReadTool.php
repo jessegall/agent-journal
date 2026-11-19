@@ -46,7 +46,9 @@ final class AssignmentReadTool extends JournalReadTool
         return ToolResult::ok([
             'record_type' => $record->type,
             'record_id' => $record->id,
-            'holder' => $holders->forRecord($record)->map(fn (AssignmentHolder $holder): array => AssignmentData::ofHolder($holder)->toArray())->getOrElse(null),
+            'holder' => $holders->forRecord($record)->map(
+                fn (AssignmentHolder $holder): array => AssignmentData::ofHolder($holder)->toArray(),
+            )->getOrElse(null),
         ], []);
     }
 }

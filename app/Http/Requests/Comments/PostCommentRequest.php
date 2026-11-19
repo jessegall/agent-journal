@@ -19,7 +19,15 @@ use Illuminate\Validation\Validator;
  */
 final class PostCommentRequest extends RecordTargetRequest
 {
-    private const array ANCHOR_FIELDS = ['version', 'section', 'first_line', 'last_line', 'quote', 'start_offset', 'end_offset'];
+    private const array ANCHOR_FIELDS = [
+        'version',
+        'section',
+        'first_line',
+        'last_line',
+        'quote',
+        'start_offset',
+        'end_offset',
+    ];
 
     /**
      * The exact anchor fields each kind of place is given with.
@@ -59,7 +67,10 @@ final class PostCommentRequest extends RecordTargetRequest
     {
         return [function (Validator $validator): void {
             if ($this->givenAnchorFields() !== [] && ! in_array($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true)) {
-                $validator->errors()->add('version', 'Point at the whole record (no place), or at one section, one span of lines, or one quote with its version.');
+                $validator->errors()->add(
+                    'version',
+                    'Point at the whole record (no place), or at one section, one span of lines, or one quote with its version.',
+                );
             }
         }];
     }
@@ -86,7 +97,12 @@ final class PostCommentRequest extends RecordTargetRequest
             return new PostComment($target, $this->body(), $this->submissionKey());
         }
 
-        return new PostTextComment($target, $this->body(), $this->range(TextAnchorType::from((string) array_search($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true))), $this->submissionKey());
+        return new PostTextComment(
+            $target,
+            $this->body(),
+            $this->range(TextAnchorType::from((string) array_search($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true))),
+            $this->submissionKey(),
+        );
     }
 
     private function range(TextAnchorType $type): TextRange
@@ -95,8 +111,19 @@ final class PostCommentRequest extends RecordTargetRequest
 
         return match ($type) {
             TextAnchorType::Section => TextRange::section($version, $this->integer('section')),
-            TextAnchorType::Lines => TextRange::lines($version, $this->integer('first_line'), $this->integer('last_line')),
-            TextAnchorType::Quote => TextRange::quote($version, $this->integer('first_line'), $this->integer('last_line'), $this->string('quote')->toString(), $this->integer('start_offset'), $this->integer('end_offset')),
+            TextAnchorType::Lines => TextRange::lines(
+                $version,
+                $this->integer('first_line'),
+                $this->integer('last_line'),
+            ),
+            TextAnchorType::Quote => TextRange::quote(
+                $version,
+                $this->integer('first_line'),
+                $this->integer('last_line'),
+                $this->string('quote')->toString(),
+                $this->integer('start_offset'),
+                $this->integer('end_offset'),
+            ),
         };
     }
 

@@ -30,6 +30,9 @@ final readonly class ExecutionPlanner
             throw ExecutionPlanRefused::unknown();
         }
 
-        return new ExecutionPlan(new PlanBuilder($tree, $this->syntax, [])->root(), hash('sha256', $tree->dialect->value."\0".$tree->source));
+        return new ExecutionPlan(
+            new PlanBuilder($tree, $this->syntax, [])->root(),
+            hash('sha256', $tree->dialect->value."\0".$tree->source),
+        );
     }
 }

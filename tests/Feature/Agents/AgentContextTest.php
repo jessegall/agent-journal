@@ -79,7 +79,10 @@ final class AgentContextTest extends TestCase
     public function test_an_unknown_credential_is_refused(): void
     {
         $launch = TestLaunch::start();
-        $headers = [...$launch->serverHeaders(self::BODY, target: '/testing/agent-context'), 'HTTP_AUTHORIZATION' => 'Bearer not-a-token'];
+        $headers = [
+            ...$launch->serverHeaders(self::BODY, target: '/testing/agent-context'),
+            'HTTP_AUTHORIZATION' => 'Bearer not-a-token',
+        ];
 
         $this->call('POST', '/testing/agent-context', server: $headers, content: self::BODY)->assertUnauthorized();
     }
@@ -104,7 +107,12 @@ final class AgentContextTest extends TestCase
     {
         $launch = TestLaunch::start();
 
-        $child = $this->app->make(AgentSessions::class)->start($launch->agent, TestSelections::of(), TestSelections::requestId(), $launch->session);
+        $child = $this->app->make(AgentSessions::class)->start(
+            $launch->agent,
+            TestSelections::of(),
+            TestSelections::requestId(),
+            $launch->session,
+        );
 
         $this->assertSame($launch->session->id, $child->parent_session_id);
     }
@@ -134,6 +142,11 @@ final class AgentContextTest extends TestCase
      */
     private function callAs(TestLaunch $launch): TestResponse
     {
-        return $this->call('POST', '/testing/agent-context', server: $launch->serverHeaders(self::BODY, target: '/testing/agent-context'), content: self::BODY);
+        return $this->call(
+            'POST',
+            '/testing/agent-context',
+            server: $launch->serverHeaders(self::BODY, target: '/testing/agent-context'),
+            content: self::BODY,
+        );
     }
 }

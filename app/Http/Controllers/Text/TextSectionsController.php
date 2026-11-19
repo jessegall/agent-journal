@@ -16,6 +16,8 @@ final readonly class TextSectionsController
 {
     public function __invoke(TextSectionsRequest $request, TextResolver $text, RecordResolver $records): JsonResponse
     {
-        return new JsonResponse($text->sections($request->target($records), $request->version(), $request->afterSection(), $request->pageSize()));
+        return new JsonResponse(
+            $text->sections($request->target($records), $request->version(), $request->afterSection(), $request->pageSize()),
+        );
     }
 }

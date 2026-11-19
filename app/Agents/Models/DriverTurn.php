@@ -27,7 +27,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable $started_at
  * @property CarbonImmutable|null $finished_at
  */
-#[Fillable(['agent_runtime_id', 'process_generation', 'native_prompt_id', 'observed_model', 'observed_effort', 'started_at'])]
+#[Fillable(
+    ['agent_runtime_id', 'process_generation', 'native_prompt_id', 'observed_model', 'observed_effort', 'started_at'],
+)]
 final class DriverTurn extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -57,9 +59,17 @@ final class DriverTurn extends Model implements ReadableModel
      * The turn of this native prompt in this process generation, recorded the first time it is seen; a repeated
      * report finds the same turn. The caller's transaction holds the runtime's lock, so two reports never race.
      */
-    public static function recordStart(string $runtimeId, int $processGeneration, string $nativePromptId, CarbonImmutable $startedAt): self
-    {
-        $key = ['agent_runtime_id' => $runtimeId, 'process_generation' => $processGeneration, 'native_prompt_id' => $nativePromptId];
+    public static function recordStart(
+        string $runtimeId,
+        int $processGeneration,
+        string $nativePromptId,
+        CarbonImmutable $startedAt,
+    ): self {
+        $key = [
+            'agent_runtime_id' => $runtimeId,
+            'process_generation' => $processGeneration,
+            'native_prompt_id' => $nativePromptId,
+        ];
 
         return self::query()->where($key)->first() ?? self::query()->create([...$key, 'started_at' => $startedAt]);
     }

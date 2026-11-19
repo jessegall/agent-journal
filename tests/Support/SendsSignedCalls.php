@@ -26,7 +26,12 @@ trait SendsSignedCalls
         $this->app->forgetScopedInstances();
         $content = json_encode((object) $body) ?: '{}';
 
-        return $this->call('POST', $path, server: $launch->serverHeaders($content, 'call-'.bin2hex(random_bytes(4)), target: $path), content: $content);
+        return $this->call(
+            'POST',
+            $path,
+            server: $launch->serverHeaders($content, 'call-'.bin2hex(random_bytes(4)), target: $path),
+            content: $content,
+        );
     }
 
     /**
@@ -45,7 +50,12 @@ trait SendsSignedCalls
 
             $this->app->make(CurrentActorSetter::class)->clear();
             $this->app->forgetScopedInstances();
-            $response = $this->call('POST', (string) parse_url($request->url(), PHP_URL_PATH), server: $server, content: $request->body());
+            $response = $this->call(
+                'POST',
+                (string) parse_url($request->url(), PHP_URL_PATH),
+                server: $server,
+                content: $request->body(),
+            );
 
             return Http::response((string) $response->getContent(), $response->getStatusCode());
         });

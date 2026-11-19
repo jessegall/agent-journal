@@ -27,7 +27,18 @@ final class WorkListToolsTest extends TestCase
     use SendsMcpFrames;
     use StartsAgentRequests;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'tasks', 'plans', 'phases', 'assignments', 'agent_stacks', 'core_mcp_retained_pages'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'tasks',
+        'plans',
+        'phases',
+        'assignments',
+        'agent_stacks',
+        'core_mcp_retained_pages',
+    ];
 
     private TestLaunch $caller;
 
@@ -50,16 +61,28 @@ final class WorkListToolsTest extends TestCase
 
         foreach (['Write the tool', 'Test the tool'] as $title) {
             $task = Task::factory()->create(['title' => $title]);
-            $references[$task->id] = $this->writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent))->outcomes[0]->current->reference->id;
+            $references[$task->id] = $this->writer->assign(
+                $task->assignmentIdentity(),
+                AssigneeIdentity::of($this->caller->agent),
+            )->outcomes[0]->current->reference->id;
         }
 
         $other = TestLaunch::start();
-        $this->writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), AssigneeIdentity::of($other->agent));
+        $this->writer->assign(
+            Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(),
+            AssigneeIdentity::of($other->agent),
+        );
 
-        $result = $this->callMcpTool($this->caller, 'tasks_assigned')->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        $result = $this->callMcpTool(
+            $this->caller,
+            'tasks_assigned',
+        )->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
         $this->assertSame(2, $result['total']);
-        $this->assertEquals($references, array_combine(array_column($result['cards'], 'id'), array_column(array_column($result['cards'], 'holder'), 'reference')));
+        $this->assertEquals(
+            $references,
+            array_combine(array_column($result['cards'], 'id'), array_column(array_column($result['cards'], 'holder'), 'reference')),
+        );
         $this->assertSame([], $result['next_actions']);
     }
 
@@ -111,7 +134,11 @@ final class WorkListToolsTest extends TestCase
         $next = $first['next_actions'];
 
         while ($next !== []) {
-            $page = $this->callMcpTool($this->caller, 'tasks_assigned', $next[0]['arguments'])->assertJsonPath('result.isError', false)->json('result.structuredContent');
+            $page = $this->callMcpTool(
+                $this->caller,
+                'tasks_assigned',
+                $next[0]['arguments'],
+            )->assertJsonPath('result.isError', false)->json('result.structuredContent');
             $seen = [...$seen, ...array_column($page['cards'], 'id')];
             $next = $page['next_actions'];
         }

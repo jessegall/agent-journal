@@ -33,7 +33,13 @@ final class IsolationTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['document_closes', 'document_drafts', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'document_closes',
+        'document_drafts',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     public function test_a_second_request_in_the_same_worker_sees_no_draft_text_of_the_first(): void
     {
@@ -53,9 +59,15 @@ final class IsolationTest extends TestCase
     public function test_no_create_command_takes_an_author(): void
     {
         foreach ([CreateDocument::class] as $command) {
-            $parameters = array_map(fn ($parameter) => $parameter->getName(), new ReflectionClass($command)->getConstructor()?->getParameters() ?? []);
+            $parameters = array_map(
+                fn ($parameter) => $parameter->getName(),
+                new ReflectionClass($command)->getConstructor()?->getParameters() ?? [],
+            );
 
-            $this->assertSame([], array_values(array_filter($parameters, fn (string $name) => preg_match('/author|creator|actor/i', $name) === 1)));
+            $this->assertSame(
+                [],
+                array_values(array_filter($parameters, fn (string $name) => preg_match('/author|creator|actor/i', $name) === 1)),
+            );
         }
 
         $this->actAsUser(3);
@@ -67,7 +79,9 @@ final class IsolationTest extends TestCase
     {
         $this->actAsUser(1);
         $announced = [];
-        $this->app->make(Dispatcher::class)->listen(DocumentCreated::class, function (DocumentCreated $event) use (&$announced): void {
+        $this->app->make(Dispatcher::class)->listen(DocumentCreated::class, function (
+            DocumentCreated $event,
+        ) use (&$announced): void {
             $announced[] = $event->number;
         });
 
@@ -81,7 +95,10 @@ final class IsolationTest extends TestCase
 
     private function actAsUser(int $user): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of($user)),
+            new OwnerAuthority('test'),
+        );
     }
 
     private function bus(): CommandBus

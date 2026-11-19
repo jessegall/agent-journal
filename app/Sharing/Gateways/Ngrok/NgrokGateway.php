@@ -69,7 +69,9 @@ final readonly class NgrokGateway implements ShareGateway
             $problems[] = "The journal's ngrok configuration folder does not exist.";
         }
 
-        $version = $this->processes->newPendingProcess()->timeout(self::VERSION_SECONDS)->env(['HOME' => $this->configFolder])->run([$this->binary, 'version'])->output();
+        $version = $this->processes->newPendingProcess()->timeout(self::VERSION_SECONDS)->env(
+            ['HOME' => $this->configFolder],
+        )->run([$this->binary, 'version'])->output();
 
         if (! str_contains($version, $settings->executableVersion)) {
             $problems[] = "The ngrok program is not version {$settings->executableVersion}.";
@@ -96,7 +98,12 @@ final readonly class NgrokGateway implements ShareGateway
         $child = $this->processes->newPendingProcess()->timeout(0)->env(['HOME' => $this->configFolder])
             ->start([$this->binary, 'http', $upstream, "--url={$settings->publicOrigin}", "--config={$configFile}", '--log=false']);
 
-        return $this->launches->open(self::KEY, $operation, $child, fn () => $this->endpointFor($upstream, $settings->publicOrigin));
+        return $this->launches->open(
+            self::KEY,
+            $operation,
+            $child,
+            fn () => $this->endpointFor($upstream, $settings->publicOrigin),
+        );
     }
 
     public function health(GatewayEndpoint $endpoint): GatewayHealth
@@ -118,7 +125,9 @@ final readonly class NgrokGateway implements ShareGateway
     private function endpointFor(string $upstream, string $publicOrigin): GatewayAddressCheck
     {
         try {
-            $tunnels = $this->http->timeout(2)->get("http://127.0.0.1:{$this->controlPort}/api/tunnels")->collect('tunnels');
+            $tunnels = $this->http->timeout(2)->get(
+                "http://127.0.0.1:{$this->controlPort}/api/tunnels",
+            )->collect('tunnels');
         } catch (ConnectionException) {
             return GatewayAddressCheck::Waiting;
         }

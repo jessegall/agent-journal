@@ -25,6 +25,8 @@ final class NotesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links): void
     {
-        $links->register([Note::LINK_TYPE => Note::class, NotePage::LINK_TYPE => NotePage::class, NoteSnapshot::LINK_TYPE => NoteSnapshot::class]);
+        $links->register(
+[Note::LINK_TYPE => Note::class, NotePage::LINK_TYPE => NotePage::class, NoteSnapshot::LINK_TYPE => NoteSnapshot::class],
+);
     }
 }

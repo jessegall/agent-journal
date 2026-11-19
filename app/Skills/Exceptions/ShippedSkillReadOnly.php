@@ -13,7 +13,9 @@ final class ShippedSkillReadOnly extends RuntimeException implements CodedRefusa
 {
     public static function for(string $key): self
     {
-        return new self("The skill {$key} ships with the journal and cannot be edited; copy it to a user- key and edit the copy.");
+        return new self(
+            "The skill {$key} ships with the journal and cannot be edited; copy it to a user- key and edit the copy.",
+        );
     }
 
     public function refusalCode(): RefusalCode

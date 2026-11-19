@@ -42,7 +42,10 @@ final readonly class ShareScope
 
             $card = $budget->run(fn () => $provider->preview(new ShareSelection($root, []), $budget));
 
-            $linked = ScopedReadMeter::ofCurrentScope()->withinSchedule('share scope batches', fn () => $this->linkedFrom($root, $budget));
+            $linked = ScopedReadMeter::ofCurrentScope()->withinSchedule(
+                'share scope batches',
+                fn () => $this->linkedFrom($root, $budget),
+            );
 
             return new ShareCandidates($card, $linked);
         } catch (ShareBudgetExceeded $exceeded) {
@@ -96,9 +99,15 @@ final readonly class ShareScope
      *
      * @throws ShareBudgetExceeded
      */
-    private function candidatesOf(RecordIdentity $source, array $capabilities, MeteredShareBudget $budget, array $seen): array
-    {
-        $links = $budget->run(fn () => Link::query()->touchingKey($source->type, $source->id)->orderBy('id')->readLimit($budget->mostLinks + 1)->get());
+    private function candidatesOf(
+        RecordIdentity $source,
+        array $capabilities,
+        MeteredShareBudget $budget,
+        array $seen,
+    ): array {
+        $links = $budget->run(
+            fn () => Link::query()->touchingKey($source->type, $source->id)->orderBy('id')->readLimit($budget->mostLinks + 1)->get(),
+        );
         $budget->chargeLinks($links->count());
         $budget->chargeRecords($links->count());
         $linkOfTarget = [];
@@ -137,8 +146,12 @@ final readonly class ShareScope
      *
      * @throws ShareBudgetExceeded
      */
-    private function eligibleCards(RecordIdentity $source, string $type, array $targets, MeteredShareBudget $budget): array
-    {
+    private function eligibleCards(
+        RecordIdentity $source,
+        string $type,
+        array $targets,
+        MeteredShareBudget $budget,
+    ): array {
         $provider = $this->records->provider($type);
         $cards = [];
         $continuation = null;

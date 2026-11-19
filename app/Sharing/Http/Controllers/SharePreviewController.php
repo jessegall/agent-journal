@@ -16,8 +16,12 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SharePreviewController
 {
-    public function __invoke(SaveSharePreviewRequest $request, RecordResolver $records, CommandBus $commands, Redirector $redirect): RedirectResponse
-    {
+    public function __invoke(
+        SaveSharePreviewRequest $request,
+        RecordResolver $records,
+        CommandBus $commands,
+        Redirector $redirect,
+    ): RedirectResponse {
         $root = $request->shareRoot($records);
         $commands->run(new SaveSharePreview($root->type, $root->id, $request->selectedIds()));
 

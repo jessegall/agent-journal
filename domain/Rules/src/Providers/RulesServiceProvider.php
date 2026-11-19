@@ -23,8 +23,13 @@ final class RulesServiceProvider extends ServiceProvider
     {
         // A missing rule is not found; a rule no longer proposed is a review error on the review buttons.
         if ($exceptions instanceof Handler) {
-            $exceptions->map(RuleMissing::class, fn (RuleMissing $missing) => new NotFoundHttpException(previous: $missing));
-            $exceptions->renderable(fn (RuleNotProposed $settled) => $this->app->make(Redirector::class)->back(303)->withErrors(['review' => $settled->getMessage()]));
+            $exceptions->map(
+                RuleMissing::class,
+                fn (RuleMissing $missing) => new NotFoundHttpException(previous: $missing),
+            );
+            $exceptions->renderable(
+                fn (RuleNotProposed $settled) => $this->app->make(Redirector::class)->back(303)->withErrors(['review' => $settled->getMessage()]),
+            );
         }
 
         $links->register([

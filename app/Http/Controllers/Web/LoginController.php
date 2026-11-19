@@ -25,7 +25,10 @@ final readonly class LoginController
 
     public function __invoke(): Response
     {
-        return $this->inertia->render(LoginPage::COMPONENT, ['page' => fn () => LoginPage::startingWith($this->startingInput())]);
+        return $this->inertia->render(
+            LoginPage::COMPONENT,
+            ['page' => fn () => LoginPage::startingWith($this->startingInput())],
+        );
     }
 
     /**
@@ -37,6 +40,9 @@ final readonly class LoginController
             return LoginInput::blank();
         }
 
-        return LoginInput::filledWith($this->config->string('web.local_sign_in.email'), $this->config->string('web.local_sign_in.password'));
+        return LoginInput::filledWith(
+            $this->config->string('web.local_sign_in.email'),
+            $this->config->string('web.local_sign_in.password'),
+        );
     }
 }

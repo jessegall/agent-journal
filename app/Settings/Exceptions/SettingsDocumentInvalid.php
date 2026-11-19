@@ -24,16 +24,22 @@ final class SettingsDocumentInvalid extends RuntimeException
 
     public static function wrongEnvelope(string $owner): self
     {
-        return new self("The settings document of {$owner} is not an object holding exactly a settings list and a toggles list.");
+        return new self(
+            "The settings document of {$owner} is not an object holding exactly a settings list and a toggles list.",
+        );
     }
 
     public static function malformedEntry(string $owner, string $list, int $position): self
     {
-        return new self("Entry {$position} of the {$list} list in the settings document of {$owner} is not an object holding exactly a valid key and a value.");
+        return new self(
+            "Entry {$position} of the {$list} list in the settings document of {$owner} is not an object holding exactly a valid key and a value.",
+        );
     }
 
     public static function duplicateKey(string $owner, string $list, int $position): self
     {
-        return new self("Entry {$position} of the {$list} list in the settings document of {$owner} repeats the key of an earlier entry.");
+        return new self(
+            "Entry {$position} of the {$list} list in the settings document of {$owner} repeats the key of an earlier entry.",
+        );
     }
 }

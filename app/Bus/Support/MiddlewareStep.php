@@ -35,7 +35,9 @@ final readonly class MiddlewareStep
         $name = $this->entry->middlewareClass();
         $record = new ContinuationRecord();
 
-        $result = $this->middleware->handle($call, function (CommandCall $passed) use ($call, $next, $name, $record): mixed {
+        $result = $this->middleware->handle($call, function (
+            CommandCall $passed,
+        ) use ($call, $next, $name, $record): mixed {
             if ($record->called) {
                 throw ContinuationCalledTwice::by($name);
             }

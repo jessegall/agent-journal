@@ -31,12 +31,28 @@ use Tests\TestCase;
  * Whether a record is public now: the root of a live, unexpired share or an approved member of its current scope; the
  * document page reminds the owner that a comment there will be public only then.
  */
-#[TimeLimit(seconds: 5, reason: 'It commits a document through the bus and renders a page, and empties twelve tables around each test.')]
+#[TimeLimit(
+    seconds: 5,
+    reason: 'It commits a document through the bus and renders a page, and empties twelve tables around each test.',
+)]
 final class ShareStatusTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['users', 'share_members', 'shares', 'share_gateway_configurations', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'users',
+        'share_members',
+        'shares',
+        'share_gateway_configurations',
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     private User $owner;
 
@@ -50,11 +66,16 @@ final class ShareStatusTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
+        $this->configuration = ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
+        );
     }
 
     public function test_a_root_or_approved_member_of_a_live_share_is_public_and_an_expired_one_is_not(): void
@@ -64,12 +85,28 @@ final class ShareStatusTest extends TestCase
 
         $this->assertFalse($status->isPubliclyShared($this->document->shareIdentity()));
 
-        $expired = Share::grant($this->document->shareIdentity(), $this->owner->id, $this->configuration, ShareToken::generate(), CarbonImmutable::now()->subMinute());
+        $expired = Share::grant(
+            $this->document->shareIdentity(),
+            $this->owner->id,
+            $this->configuration,
+            ShareToken::generate(),
+            CarbonImmutable::now()->subMinute(),
+        );
 
         $this->assertFalse($status->isPubliclyShared($expired->root()));
 
-        $share = Share::grant($root, $this->owner->id, $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDays(7));
-        ShareMember::approve($share, $root, new ShareSelectedTarget($this->document->shareIdentity(), TestIds::of(6), '1'));
+        $share = Share::grant(
+            $root,
+            $this->owner->id,
+            $this->configuration,
+            ShareToken::generate(),
+            CarbonImmutable::now()->addDays(7),
+        );
+        ShareMember::approve(
+            $share,
+            $root,
+            new ShareSelectedTarget($this->document->shareIdentity(), TestIds::of(6), '1'),
+        );
 
         $this->assertTrue($status->isPubliclyShared($root));
         $this->assertTrue($status->isPubliclyShared($this->document->shareIdentity()));
@@ -77,10 +114,20 @@ final class ShareStatusTest extends TestCase
 
     public function test_the_document_page_reminds_the_owner_only_while_it_is_shared(): void
     {
-        $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('page.data.record.publiclyShared', false));
+        $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
+            fn (AssertableInertia $page) => $page->where('page.data.record.publiclyShared', false),
+        );
 
-        Share::grant($this->document->shareIdentity(), $this->owner->id, $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDays(7));
+        Share::grant(
+            $this->document->shareIdentity(),
+            $this->owner->id,
+            $this->configuration,
+            ShareToken::generate(),
+            CarbonImmutable::now()->addDays(7),
+        );
 
-        $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page->where('page.data.record.publiclyShared', true));
+        $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(
+            fn (AssertableInertia $page) => $page->where('page.data.record.publiclyShared', true),
+        );
     }
 }

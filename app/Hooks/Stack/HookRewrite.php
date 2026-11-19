@@ -24,7 +24,9 @@ final readonly class HookRewrite
             return $first;
         }
 
-        $replacement = $input->replacedBy($this->parser->parse($first->decision->replacementLine(), $input->command->dialect));
+        $replacement = $input->replacedBy(
+            $this->parser->parse($first->decision->replacementLine(), $input->command->dialect),
+        );
         $second = $first->stack->answer($replacement);
 
         if ($second->isRewrite()) {

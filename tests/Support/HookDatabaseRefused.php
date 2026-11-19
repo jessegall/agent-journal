@@ -23,11 +23,15 @@ final class HookDatabaseRefused extends LogicException
 
     public static function baseDatabaseInWorker(string $selected, string $expected): self
     {
-        return new self("The hook tests selected the database {$selected}, not {$expected}: this parallel worker kept the shared database, so run the tests through \"php artisan test --parallel\", which gives each worker its own.");
+        return new self(
+            "The hook tests selected the database {$selected}, not {$expected}: this parallel worker kept the shared database, so run the tests through \"php artisan test --parallel\", which gives each worker its own.",
+        );
     }
 
     public static function baseDatabaseMissing(string $name): self
     {
-        return new self("The base test database {$name} does not exist: create it once with scripts/prepare-hook-test-database.sh.");
+        return new self(
+            "The base test database {$name} does not exist: create it once with scripts/prepare-hook-test-database.sh.",
+        );
     }
 }

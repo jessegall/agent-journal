@@ -58,13 +58,25 @@ final class HookInputs
         $hook = new HookIdentity('01jd8x0g9m3qz6v4k2t7r5w1ca', '01jd8x0g9m3qz6v4k2t7r5w1cb', 'hook-1', 'digest');
 
         return [
-            'session start' => new SessionStarted($hook, new SessionStartDetails('vendor-1', SessionStartSource::Startup)),
+            'session start' => new SessionStarted(
+$hook,
+ new SessionStartDetails('vendor-1', SessionStartSource::Startup),
+),
             'prompt' => new PromptSubmitted($hook, new PromptDetails('prompt-1', 'Build the plan.', 'prompt-1')),
-            'shell command' => new ShellCommandRequested($hook, new ShellCommand('composer test', ShellDialect::Bash, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification)])),
-            'file edit' => new FileEditRequested($hook, new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)])),
+            'shell command' => new ShellCommandRequested(
+$hook,
+ new ShellCommand('composer test', ShellDialect::Bash, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification)]),
+),
+            'file edit' => new FileEditRequested(
+$hook,
+ new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)]),
+),
             'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
-            'tool finished' => new ToolFinished($hook, new ToolResult('Bash', ToolOutcome::Succeeded, ['command' => 'ls'])),
+            'tool finished' => new ToolFinished(
+$hook,
+ new ToolResult('Bash', ToolOutcome::Succeeded, ['command' => 'ls']),
+),
             'session end' => new SessionEnded($hook, new SessionEndDetails(SessionEndReason::Exit)),
         ];
     }

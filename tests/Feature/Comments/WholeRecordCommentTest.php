@@ -68,7 +68,9 @@ final class WholeRecordCommentTest extends TestCase
 
     public function test_a_comment_on_the_whole_note_is_listed_and_leads_to_the_note(): void
     {
-        $commentId = $this->app->make(CommandBus::class)->run(new PostComment($this->target(), 'Is this still open?', (string) Str::uuid()));
+        $commentId = $this->app->make(CommandBus::class)->run(
+            new PostComment($this->target(), 'Is this still open?', (string) Str::uuid()),
+        );
 
         $items = $this->app->make(CommentResolver::class)->list($this->target(), new Page())->items;
         $location = $this->app->make(CommentResolver::class)->location($this->target(), $commentId);
@@ -84,7 +86,9 @@ final class WholeRecordCommentTest extends TestCase
         $this->expectException(TargetHasNoText::class);
 
         try {
-            $this->app->make(CommandBus::class)->run(new PostTextComment($this->target(), 'Which line?', TextRange::lines('1', 1, 1), (string) Str::uuid()));
+            $this->app->make(CommandBus::class)->run(
+                new PostTextComment($this->target(), 'Which line?', TextRange::lines('1', 1, 1), (string) Str::uuid()),
+            );
         } finally {
             $this->assertSame(0, Comment::query()->count());
         }
@@ -143,14 +147,23 @@ final class WholeRecordCommentTest extends TestCase
 
     public function test_comment_cards_come_in_one_batch_and_hide_comments_on_unreadable_records(): void
     {
-        $ids = array_map(fn (int $index) => $this->app->make(CommandBus::class)->run(new PostComment($this->target(), "Comment {$index}.", (string) Str::uuid())), range(1, 3));
-        $wanted = [...array_map(fn (string $id) => new RecordIdentity(Comment::LINK_TYPE, $id), $ids), new RecordIdentity(Comment::LINK_TYPE, strtolower((string) Str::ulid()))];
+        $ids = array_map(
+            fn (int $index) => $this->app->make(CommandBus::class)->run(new PostComment($this->target(), "Comment {$index}.", (string) Str::uuid())),
+            range(1, 3),
+        );
+        $wanted = [
+            ...array_map(fn (string $id) => new RecordIdentity(Comment::LINK_TYPE, $id), $ids),
+            new RecordIdentity(Comment::LINK_TYPE, strtolower((string) Str::ulid())),
+        ];
 
         DB::enableQueryLog();
         $cards = $this->app->make(RecordResolver::class)->visibleCards($wanted);
         $queries = count(DB::getQueryLog());
 
-        $this->assertSame(array_fill(0, 3, "comment on note {$this->note->number}"), array_map(fn ($card) => $card->label, $cards));
+        $this->assertSame(
+            array_fill(0, 3, "comment on note {$this->note->number}"),
+            array_map(fn ($card) => $card->label, $cards),
+        );
         $this->assertSame('Comment 1.', $cards[0]->abstract);
         $this->assertLessThanOrEqual(4, $queries);
     }

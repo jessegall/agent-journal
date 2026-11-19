@@ -28,7 +28,9 @@ final readonly class RedirectFacts
      */
     public function factsOf(ShellNode $node): array
     {
-        return array_merge(...array_map(fn (Redirect $redirect) => $this->factsOfRedirect($node, $redirect), $node->redirects));
+        return array_merge(
+            ...array_map(fn (Redirect $redirect) => $this->factsOfRedirect($node, $redirect), $node->redirects),
+        );
     }
 
     /**
@@ -40,9 +42,17 @@ final readonly class RedirectFacts
         foreach ($node->redirects as $redirect) {
             $endpoint = $this->endpoint($redirect);
             if ($endpoint === null && $this->touchesFiles($redirect)) {
-                $unresolved[] = new UnresolvedFact(UnresolvedType::DynamicWord, $node->id, 'A redirect target is only known when the command runs.');
+                $unresolved[] = new UnresolvedFact(
+                    UnresolvedType::DynamicWord,
+                    $node->id,
+                    'A redirect target is only known when the command runs.',
+                );
             } elseif ($endpoint !== null && $this->isUnknownDevice($endpoint)) {
-                $unresolved[] = new UnresolvedFact(UnresolvedType::UnsupportedSyntax, $node->id, "The redirect endpoint {$endpoint} is a special file with unknown effects.");
+                $unresolved[] = new UnresolvedFact(
+                    UnresolvedType::UnsupportedSyntax,
+                    $node->id,
+                    "The redirect endpoint {$endpoint} is a special file with unknown effects.",
+                );
             }
         }
 
@@ -59,10 +69,15 @@ final readonly class RedirectFacts
             return [];
         }
         if (str_starts_with($endpoint, '/dev/tcp/') || str_starts_with($endpoint, '/dev/udp/')) {
-            return [new ClassFact(CommandClass::Network, $node->id, new SyntaxOrigin('redirect'), "The redirect to {$endpoint} opens a network connection.")];
+            return [
+                new ClassFact(CommandClass::Network, $node->id, new SyntaxOrigin('redirect'), "The redirect to {$endpoint} opens a network connection."),
+            ];
         }
 
-        return array_map(fn (CommandClass $class) => new ClassFact($class, $node->id, new SyntaxOrigin('redirect'), "The {$redirect->type->value} redirect uses {$endpoint}."), $this->classesOf($redirect->type));
+        return array_map(
+            fn (CommandClass $class) => new ClassFact($class, $node->id, new SyntaxOrigin('redirect'), "The {$redirect->type->value} redirect uses {$endpoint}."),
+            $this->classesOf($redirect->type),
+        );
     }
 
     /**
@@ -98,6 +113,9 @@ final readonly class RedirectFacts
 
     private function isUnknownDevice(string $endpoint): bool
     {
-        return str_starts_with($endpoint, '/dev/') && ! $this->isHarmless($endpoint) && ! str_starts_with($endpoint, '/dev/tcp/') && ! str_starts_with($endpoint, '/dev/udp/');
+        return str_starts_with($endpoint, '/dev/') && ! $this->isHarmless($endpoint) && ! str_starts_with(
+            $endpoint,
+            '/dev/tcp/',
+        ) && ! str_starts_with($endpoint, '/dev/udp/');
     }
 }

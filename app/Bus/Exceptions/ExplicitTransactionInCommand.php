@@ -10,6 +10,8 @@ final class ExplicitTransactionInCommand extends RuntimeException
 {
     public static function for(string $command): self
     {
-        return new self("A transaction was opened while {$command} ran; the bus opens the transaction, so take that call out.");
+        return new self(
+            "A transaction was opened while {$command} ran; the bus opens the transaction, so take that call out.",
+        );
     }
 }

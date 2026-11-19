@@ -18,7 +18,20 @@ final readonly class ToolArguments
     /**
      * The first-page arguments a continuation replaces; it carries their values itself.
      */
-    private const array FIRST_PAGE_FILTERS = ['page', 'per_page', 'after_id', 'limit', 'search', 'states', 'view', 'section', 'line_start', 'line_end', 'character_offset', 'revision'];
+    private const array FIRST_PAGE_FILTERS = [
+        'page',
+        'per_page',
+        'after_id',
+        'limit',
+        'search',
+        'states',
+        'view',
+        'section',
+        'line_start',
+        'line_end',
+        'character_offset',
+        'revision',
+    ];
 
     /**
      * @param  array<string, mixed>  $arguments

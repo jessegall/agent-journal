@@ -51,8 +51,14 @@ final class UserHeartbeatTest extends TestCase
         $now = $this->app->make(DatabaseClock::class)->now()->startOfSecond();
         UserPresence::recordFor($this->owner->id, $now);
 
-        $this->assertSame(1, UserPresence::query()->freshAt($now->addSeconds($window->presenceSeconds - 1), $window)->count());
-        $this->assertSame(0, UserPresence::query()->freshAt($now->addSeconds($window->presenceSeconds), $window)->count());
+        $this->assertSame(
+            1,
+            UserPresence::query()->freshAt($now->addSeconds($window->presenceSeconds - 1), $window)->count(),
+        );
+        $this->assertSame(
+            0,
+            UserPresence::query()->freshAt($now->addSeconds($window->presenceSeconds), $window)->count(),
+        );
     }
 
     public function test_the_presence_table_indexes_its_beat(): void

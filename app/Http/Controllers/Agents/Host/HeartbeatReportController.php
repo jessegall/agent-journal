@@ -17,7 +17,9 @@ final readonly class HeartbeatReportController
 {
     public function __invoke(RuntimeLivenessReportData $report, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportRuntimeHeartbeat($host->hostId, $report->runtimeId, $report->processGeneration, $report->evidence));
+        $commands->run(
+            new ReportRuntimeHeartbeat($host->hostId, $report->runtimeId, $report->processGeneration, $report->evidence),
+        );
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

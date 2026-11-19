@@ -18,7 +18,11 @@ final class AssignmentDenied extends RuntimeException implements CodedRefusal, C
 
     public static function forCaller(ActorIdentity $caller, Throwable|null $previous = null): self
     {
-        return new self("Only the owner or a main agent may give out work; {$caller->type->value} {$caller->id} may not.", 0, $previous);
+        return new self(
+            "Only the owner or a main agent may give out work; {$caller->type->value} {$caller->id} may not.",
+            0,
+            $previous,
+        );
     }
 
     protected function status(): int

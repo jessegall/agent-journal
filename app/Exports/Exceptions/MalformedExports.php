@@ -14,7 +14,9 @@ final class MalformedExports extends InvalidArgumentException
 {
     public static function emptyName(string $list, int $position): self
     {
-        return new self("The {$list} exports hold an empty name at position {$position}; name the class or remove the entry.");
+        return new self(
+            "The {$list} exports hold an empty name at position {$position}; name the class or remove the entry.",
+        );
     }
 
     public static function keyedList(string $list): self
@@ -24,6 +26,8 @@ final class MalformedExports extends InvalidArgumentException
 
     public static function listedTwice(string $name, string $firstList, string $secondList): self
     {
-        return new self("{$name} is exported in {$firstList} and again in {$secondList}; export each class in one list, once.");
+        return new self(
+            "{$name} is exported in {$firstList} and again in {$secondList}; export each class in one list, once.",
+        );
     }
 }

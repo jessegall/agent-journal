@@ -18,12 +18,20 @@ use App\Settings\Values\SettingsChange;
  */
 final readonly class SetBooleanSettingHandler implements CommandHandler
 {
-    public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
+    public function __construct(
+        private SettingTargets $targets,
+        private SettingCodec $codec,
+        private SettingsWriter $writer,
+    ) {}
 
     public function handle(SetBooleanSetting $command): SettingsChange
     {
         $setting = $this->targets->setting($command->setting, BooleanSetting::class, SettingType::Boolean);
 
-        return $this->writer->setValue($setting, $this->codec->encodeBoolean($command->value), $command->expectedRevision);
+        return $this->writer->setValue(
+            $setting,
+            $this->codec->encodeBoolean($command->value),
+            $command->expectedRevision,
+        );
     }
 }

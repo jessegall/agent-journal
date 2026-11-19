@@ -21,7 +21,9 @@ final class GatewaySecretRefused extends InvalidArgumentException implements Cod
     {
         $shown = mb_strimwidth($reference, 0, 40, '...');
 
-        return new self("A secret reference is lower-case letters, digits, dashes and underscores; {$shown} is not one.");
+        return new self(
+            "A secret reference is lower-case letters, digits, dashes and underscores; {$shown} is not one.",
+        );
     }
 
     public static function missing(string $reference): self

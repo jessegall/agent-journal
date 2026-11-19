@@ -53,7 +53,10 @@ final class AwaitingSkillsStateTest extends TestCase
     public function test_a_file_change_is_held_with_the_reason_while_the_set_waits(PublicationState $state): void
     {
         $awaiting = new AwaitingSkillsState($state);
-        $edit = new FileEditRequested($this->hook(), new FileChanges([new FileChange('app/Thing.php', FileOperation::Edit)]));
+        $edit = new FileEditRequested(
+            $this->hook(),
+            new FileChanges([new FileChange('app/Thing.php', FileOperation::Edit)]),
+        );
         $write = new ShellCommandRequested($this->hook(), self::command('tee', CommandEffect::ChangesFiles));
 
         $this->assertInstanceOf(Denied::class, $awaiting->onFileEdit($edit)->answer);

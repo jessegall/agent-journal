@@ -24,7 +24,9 @@ final class LinkableTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(LinkTypeRegistry::class)->register(['fixtures.note' => Note::class, 'fixtures.label' => Label::class]);
+        $this->app->make(LinkTypeRegistry::class)->register(
+            ['fixtures.note' => Note::class, 'fixtures.label' => Label::class],
+        );
         Schema::create('notes', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('owner');
@@ -60,7 +62,10 @@ final class LinkableTest extends TestCase
         $label->linkTo($note);
 
         $this->assertSame(1, Link::query()->count());
-        $this->assertSame(['fixtures.note', 'fixtures.label'], [Link::query()->sole()->source_type, Link::query()->sole()->target_type]);
+        $this->assertSame(
+            ['fixtures.note', 'fixtures.label'],
+            [Link::query()->sole()->source_type, Link::query()->sole()->target_type],
+        );
     }
 
     public function test_the_table_refuses_a_second_row_for_the_same_link(): void
@@ -128,7 +133,12 @@ final class LinkableTest extends TestCase
      */
     private function insertRawLink(Model $source, Model $target): void
     {
-        Link::recorded($source->getMorphClass(), (string) $source->getKey(), $target->getMorphClass(), (string) $target->getKey());
+        Link::recorded(
+            $source->getMorphClass(),
+            (string) $source->getKey(),
+            $target->getMorphClass(),
+            (string) $target->getKey(),
+        );
     }
 
     public function test_a_link_name_registered_for_another_model_is_refused(): void

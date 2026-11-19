@@ -40,7 +40,10 @@ final class ConditionTreeTest extends TestCase
 
     public function test_the_php_condition_and_the_section_6_json_agree_for_the_same_context(): void
     {
-        $php = Conditions::all(Conditions::profiles(ProfileKey::from('journal-reviewer')), Conditions::programs(ProgramKey::from('codex')));
+        $php = Conditions::all(
+            Conditions::profiles(ProfileKey::from('journal-reviewer')),
+            Conditions::programs(ProgramKey::from('codex')),
+        );
         $json = $this->tree()->fromJson(self::SECTION_6_JSON);
 
         $this->assertSame(json_decode(self::SECTION_6_JSON, true), $php->toArray());
@@ -55,11 +58,26 @@ final class ConditionTreeTest extends TestCase
 
     public function test_abilities_read_the_pinned_profiles_grants_and_agent_types_read_its_type(): void
     {
-        $this->assertSame(ConditionOutcome::Match, Conditions::dispatchesWork()->evaluate($this->mainAgentOn('codex'))->outcome);
-        $this->assertSame(ConditionOutcome::NoMatch, Conditions::dispatchesWork()->evaluate($this->reviewerOn('codex'))->outcome);
-        $this->assertSame(ConditionOutcome::Match, Conditions::profileBases(ProfileBase::readOnlyHelper())->evaluate($this->reviewerOn('codex'))->outcome);
-        $this->assertSame(ConditionOutcome::NoMatch, Conditions::profileBases(ProfileBase::writingHelper())->evaluate($this->reviewerOn('codex'))->outcome);
-        $this->assertSame('profile-free', Conditions::profiles(ProfileKey::from('journal-reviewer'))->evaluate($this->profileFreeOn('codex'))->reason);
+        $this->assertSame(
+            ConditionOutcome::Match,
+            Conditions::dispatchesWork()->evaluate($this->mainAgentOn('codex'))->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::NoMatch,
+            Conditions::dispatchesWork()->evaluate($this->reviewerOn('codex'))->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::Match,
+            Conditions::profileBases(ProfileBase::readOnlyHelper())->evaluate($this->reviewerOn('codex'))->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::NoMatch,
+            Conditions::profileBases(ProfileBase::writingHelper())->evaluate($this->reviewerOn('codex'))->outcome,
+        );
+        $this->assertSame(
+            'profile-free',
+            Conditions::profiles(ProfileKey::from('journal-reviewer'))->evaluate($this->profileFreeOn('codex'))->reason,
+        );
     }
 
     public function test_an_unavailable_fact_stays_unavailable_through_not_and_groups(): void
@@ -68,17 +86,40 @@ final class ConditionTreeTest extends TestCase
         $providers = Conditions::providers(ProviderKey::from('openai'));
 
         $this->assertSame(ConditionOutcome::Unavailable, $providers->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::Unavailable, Conditions::not($providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::Unavailable, Conditions::all(Conditions::everyone(), $providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::NoMatch, Conditions::all(Conditions::dispatchesWork(), $providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::Match, Conditions::any(Conditions::everyone(), $providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::Unavailable, Conditions::any(Conditions::dispatchesWork(), $providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::Match, Conditions::not(Conditions::dispatchesWork())->evaluate($unknownProvider)->outcome);
+        $this->assertSame(
+            ConditionOutcome::Unavailable,
+            Conditions::not($providers)->evaluate($unknownProvider)->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::Unavailable,
+            Conditions::all(Conditions::everyone(), $providers)->evaluate($unknownProvider)->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::NoMatch,
+            Conditions::all(Conditions::dispatchesWork(), $providers)->evaluate($unknownProvider)->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::Match,
+            Conditions::any(Conditions::everyone(), $providers)->evaluate($unknownProvider)->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::Unavailable,
+            Conditions::any(Conditions::dispatchesWork(), $providers)->evaluate($unknownProvider)->outcome,
+        );
+        $this->assertSame(
+            ConditionOutcome::Match,
+            Conditions::not(Conditions::dispatchesWork())->evaluate($unknownProvider)->outcome,
+        );
     }
 
     public function test_an_unregistered_named_condition_is_unavailable_and_keeps_its_source(): void
     {
-        $wire = ['type' => 'named', 'version' => 2, 'key' => 'plans.active-plan', 'parameters' => ['state' => 'started']];
+        $wire = [
+            'type' => 'named',
+            'version' => 2,
+            'key' => 'plans.active-plan',
+            'parameters' => ['state' => 'started'],
+        ];
         $named = $this->tree()->hydrate($wire);
 
         $this->assertSame(ConditionOutcome::Unavailable, $named->evaluate($this->reviewerOn('codex'))->outcome);
@@ -91,18 +132,48 @@ final class ConditionTreeTest extends TestCase
      */
     public static function malformedTrees(): iterable
     {
-        yield 'empty any' => [['type' => 'any', 'version' => 1, 'children' => []], 'condition.children needs at least one condition'];
-        yield 'not with two children' => [['type' => 'not', 'version' => 1, 'children' => [['type' => 'everyone', 'version' => 1], ['type' => 'everyone', 'version' => 1]]], 'condition.children needs exactly one condition'];
-        yield 'unknown type' => [['type' => 'sometimes', 'version' => 1], 'condition.type names the unknown type sometimes'];
+        yield 'empty any' => [
+            ['type' => 'any', 'version' => 1, 'children' => []],
+            'condition.children needs at least one condition',
+        ];
+        yield 'not with two children' => [
+            ['type' => 'not', 'version' => 1, 'children' => [['type' => 'everyone', 'version' => 1], ['type' => 'everyone', 'version' => 1]]],
+            'condition.children needs exactly one condition',
+        ];
+        yield 'unknown type' => [
+            ['type' => 'sometimes', 'version' => 1],
+            'condition.type names the unknown type sometimes',
+        ];
         yield 'unknown version' => [['type' => 'everyone', 'version' => 2], 'condition.version is 2'];
-        yield 'empty keys' => [['type' => 'programs', 'version' => 1, 'keys' => []], 'condition.keys needs at least one key'];
-        yield 'wrong key type' => [['type' => 'profiles', 'version' => 1, 'keys' => [7]], 'condition.keys[0] is not text'];
-        yield 'invalid agent type' => [['type' => 'profile-bases', 'version' => 1, 'keys' => ['worker']], 'condition.keys holds a key that is not valid'];
-        yield 'extra field' => [['type' => 'everyone', 'version' => 1, 'keys' => ['x']], 'condition.keys is not a field of this type'];
-        yield 'nested field' => [['type' => 'all', 'version' => 1, 'children' => [['type' => 'profiles', 'version' => 1]]], 'condition.children[0].keys needs at least one key'];
+        yield 'empty keys' => [
+            ['type' => 'programs', 'version' => 1, 'keys' => []],
+            'condition.keys needs at least one key',
+        ];
+        yield 'wrong key type' => [
+            ['type' => 'profiles', 'version' => 1, 'keys' => [7]],
+            'condition.keys[0] is not text',
+        ];
+        yield 'invalid agent type' => [
+            ['type' => 'profile-bases', 'version' => 1, 'keys' => ['worker']],
+            'condition.keys holds a key that is not valid',
+        ];
+        yield 'extra field' => [
+            ['type' => 'everyone', 'version' => 1, 'keys' => ['x']],
+            'condition.keys is not a field of this type',
+        ];
+        yield 'nested field' => [
+            ['type' => 'all', 'version' => 1, 'children' => [['type' => 'profiles', 'version' => 1]]],
+            'condition.children[0].keys needs at least one key',
+        ];
         yield '17 deep' => [self::nested(17), 'nested deeper than 16 levels'];
-        yield '257 nodes' => [['type' => 'any', 'version' => 1, 'children' => array_fill(0, 256, ['type' => 'everyone', 'version' => 1])], 'more than 256 nodes'];
-        yield 'large parameters' => [['type' => 'named', 'version' => 1, 'key' => 'notes.big', 'parameters' => ['text' => str_repeat('a', 32_768)]], 'more than 32768 bytes'];
+        yield '257 nodes' => [
+            ['type' => 'any', 'version' => 1, 'children' => array_fill(0, 256, ['type' => 'everyone', 'version' => 1])],
+            'more than 256 nodes',
+        ];
+        yield 'large parameters' => [
+            ['type' => 'named', 'version' => 1, 'key' => 'notes.big', 'parameters' => ['text' => str_repeat('a', 32_768)]],
+            'more than 32768 bytes',
+        ];
     }
 
     #[DataProvider('malformedTrees')]
@@ -116,7 +187,10 @@ final class ConditionTreeTest extends TestCase
 
     public function test_a_16_deep_tree_is_accepted(): void
     {
-        $this->assertSame(ConditionOutcome::Match, $this->tree()->hydrate(self::nested(16))->evaluate($this->mainAgentOn('codex'))->outcome);
+        $this->assertSame(
+            ConditionOutcome::Match,
+            $this->tree()->hydrate(self::nested(16))->evaluate($this->mainAgentOn('codex'))->outcome,
+        );
     }
 
     /**
@@ -171,7 +245,14 @@ final class ConditionTreeTest extends TestCase
             'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
-        return new SkillContext(TestActors::agentIdentity(2), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from($program), $provider === null ? null : ProviderKey::from($provider));
+        return new SkillContext(
+            TestActors::agentIdentity(2),
+            TestIds::of(3),
+            'main',
+            LaunchProfile::of($snapshot),
+            ProgramKey::from($program),
+            $provider === null ? null : ProviderKey::from($provider),
+        );
     }
 
     private function mainAgentOn(string $program): SkillContext

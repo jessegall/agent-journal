@@ -25,28 +25,138 @@ final readonly class FileRules
     public function all(): array
     {
         $write = CommandClassSet::of(CommandClass::Write);
-        $sedOptions = [OptionGrammar::valued(OperandType::Pattern, '-e', '--expression'), ...$this->flags('-n', '-E', '-r', '-s', '-u', '-z', '--quiet', '--silent', '--regexp-extended')];
+        $sedOptions = [
+            OptionGrammar::valued(OperandType::Pattern, '-e', '--expression'),
+            ...$this->flags('-n', '-E', '-r', '-s', '-u', '-z', '--quiet', '--silent', '--regexp-extended'),
+        ];
 
         return [
-            $this->rule('cp', $this->paths(), CommandClassSet::of(CommandClass::Read, CommandClass::Write), '-r', '-R', '-a', '-f', '-i', '-n', '-p', '-v', '-u', '-L', '-P', '--recursive', '--force', '--archive'),
-            $this->rule('mv', $this->paths(), CommandClassSet::of(CommandClass::Read, CommandClass::Write, CommandClass::Delete), '-f', '-i', '-n', '-v', '-u', '--force'),
-            $this->rule('mkdir', $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-m', '--mode')), $write, '-p', '-v', '--parents'),
-            $this->rule('touch', $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-t'), OptionGrammar::valued(OperandType::Text, '-d', '--date'), OptionGrammar::valued(OperandType::Path, '-r', '--reference')), $write, '-a', '-m', '-c'),
-            $this->rule('chmod', ArgumentGrammar::operands(OperandType::Text, OperandType::Path)->repeating()->endingOptionsAtDoubleDash(), $write, '-R', '-v', '-f', '--recursive'),
+            $this->rule(
+                'cp',
+                $this->paths(),
+                CommandClassSet::of(CommandClass::Read, CommandClass::Write),
+                '-r',
+                '-R',
+                '-a',
+                '-f',
+                '-i',
+                '-n',
+                '-p',
+                '-v',
+                '-u',
+                '-L',
+                '-P',
+                '--recursive',
+                '--force',
+                '--archive',
+            ),
+            $this->rule(
+                'mv',
+                $this->paths(),
+                CommandClassSet::of(CommandClass::Read, CommandClass::Write, CommandClass::Delete),
+                '-f',
+                '-i',
+                '-n',
+                '-v',
+                '-u',
+                '--force',
+            ),
+            $this->rule(
+                'mkdir',
+                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-m', '--mode')),
+                $write,
+                '-p',
+                '-v',
+                '--parents',
+            ),
+            $this->rule(
+                'touch',
+                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-t'), OptionGrammar::valued(OperandType::Text, '-d', '--date'), OptionGrammar::valued(OperandType::Path, '-r', '--reference')),
+                $write,
+                '-a',
+                '-m',
+                '-c',
+            ),
+            $this->rule(
+                'chmod',
+                ArgumentGrammar::operands(OperandType::Text, OperandType::Path)->repeating()->endingOptionsAtDoubleDash(),
+                $write,
+                '-R',
+                '-v',
+                '-f',
+                '--recursive',
+            ),
             $this->rule('ln', $this->paths(), $write, '-s', '-f', '-n', '-v', '-r', '-sf', '--symbolic', '--force'),
-            $this->rule('truncate', $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-s', '--size')), $write, '-c', '--no-create'),
+            $this->rule(
+                'truncate',
+                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-s', '--size')),
+                $write,
+                '-c',
+                '--no-create',
+            ),
             $this->rule('tee', $this->paths(), $write, '-a', '-i', '--append'),
-            $this->rule('rm', $this->paths(), CommandClassSet::of(CommandClass::Delete), '-r', '-R', '-f', '-i', '-v', '-d', '-I', '--recursive', '--force', '--dir', '--verbose'),
-            $this->rule('rmdir', $this->paths(), CommandClassSet::of(CommandClass::Delete), '-p', '-v', '--parents', '--ignore-fail-on-non-empty'),
-            CommandRule::forProgram('core.php.artisan-config-clear', new ProgramSpellings('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5']), ['artisan', 'config:clear'], ArgumentGrammar::options(['--ansi', '--no-ansi']), CommandClassSet::of(CommandClass::Delete)),
-            CommandRule::forProgram('core.sed.print', new ProgramSpellings('sed'), [], ArgumentGrammar::operands(OperandType::Pattern, OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions), CommandClassSet::of(CommandClass::Read)),
-            CommandRule::forProgram('core.sed.in-place', new ProgramSpellings('sed'), [], ArgumentGrammar::optionWithOperands('-i', OperandType::Pattern, OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions), CommandClassSet::of(CommandClass::Read, CommandClass::Edit)),
+            $this->rule(
+                'rm',
+                $this->paths(),
+                CommandClassSet::of(CommandClass::Delete),
+                '-r',
+                '-R',
+                '-f',
+                '-i',
+                '-v',
+                '-d',
+                '-I',
+                '--recursive',
+                '--force',
+                '--dir',
+                '--verbose',
+            ),
+            $this->rule(
+                'rmdir',
+                $this->paths(),
+                CommandClassSet::of(CommandClass::Delete),
+                '-p',
+                '-v',
+                '--parents',
+                '--ignore-fail-on-non-empty',
+            ),
+            CommandRule::forProgram(
+                'core.php.artisan-config-clear',
+                new ProgramSpellings('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5']),
+                ['artisan', 'config:clear'],
+                ArgumentGrammar::options(['--ansi', '--no-ansi']),
+                CommandClassSet::of(CommandClass::Delete),
+            ),
+            CommandRule::forProgram(
+                'core.sed.print',
+                new ProgramSpellings('sed'),
+                [],
+                ArgumentGrammar::operands(OperandType::Pattern, OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions),
+                CommandClassSet::of(CommandClass::Read),
+            ),
+            CommandRule::forProgram(
+                'core.sed.in-place',
+                new ProgramSpellings('sed'),
+                [],
+                ArgumentGrammar::optionWithOperands('-i', OperandType::Pattern, OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions),
+                CommandClassSet::of(CommandClass::Read, CommandClass::Edit),
+            ),
         ];
     }
 
-    private function rule(string $program, ArgumentGrammar $arguments, CommandClassSet $classes, string ...$flags): CommandRule
-    {
-        return CommandRule::forProgram("core.{$program}", new ProgramSpellings($program), [], $arguments->withOptions(...$this->flags(...$flags)), $classes);
+    private function rule(
+        string $program,
+        ArgumentGrammar $arguments,
+        CommandClassSet $classes,
+        string ...$flags,
+    ): CommandRule {
+        return CommandRule::forProgram(
+            "core.{$program}",
+            new ProgramSpellings($program),
+            [],
+            $arguments->withOptions(...$this->flags(...$flags)),
+            $classes,
+        );
     }
 
     private function paths(): ArgumentGrammar

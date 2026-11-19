@@ -39,7 +39,10 @@ final readonly class PolicyRegistration
     {
         $withheld = $coordinator ? $this->ownerOnly : [...$this->ownerOnly, ...$this->coordinatorOnly];
 
-        $granted = array_filter($this->abilities::cases(), fn (BackedEnum $ability) => ! in_array($ability, $withheld, true));
+        $granted = array_filter(
+            $this->abilities::cases(),
+            fn (BackedEnum $ability) => ! in_array($ability, $withheld, true),
+        );
 
         return array_values($granted);
     }

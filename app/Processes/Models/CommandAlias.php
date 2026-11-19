@@ -48,8 +48,12 @@ final class CommandAlias extends Model implements ReadableModel
      */
     public static function record(string $projectKey, string $name, string $line, array $arguments = []): self
     {
-        $alias = self::query()->named($name, $projectKey)->first() ?? new self(['project_key' => $projectKey, 'name' => $name, 'revision' => 0]);
-        $alias->fill(['line' => $line, 'argument_grammar' => $arguments, 'body_digest' => hash('sha256', $line), 'revision' => $alias->revision + 1])->save();
+        $alias = self::query()->named($name, $projectKey)->first() ?? new self(
+            ['project_key' => $projectKey, 'name' => $name, 'revision' => 0],
+        );
+        $alias->fill(
+            ['line' => $line, 'argument_grammar' => $arguments, 'body_digest' => hash('sha256', $line), 'revision' => $alias->revision + 1],
+        )->save();
 
         return $alias;
     }
@@ -68,6 +72,13 @@ final class CommandAlias extends Model implements ReadableModel
      */
     public function lookup(): AliasLookup
     {
-        return AliasLookup::found($this->id, $this->name, $this->line, $this->revision, $this->body_digest, $this->argument_grammar);
+        return AliasLookup::found(
+            $this->id,
+            $this->name,
+            $this->line,
+            $this->revision,
+            $this->body_digest,
+            $this->argument_grammar,
+        );
     }
 }

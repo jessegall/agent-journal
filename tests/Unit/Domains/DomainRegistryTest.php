@@ -116,7 +116,9 @@ final class DomainRegistryTest extends TestCase
     public function test_every_installed_domain_but_access_can_be_switched_off(): void
     {
         $registry = DomainRegistry::from(require dirname(__DIR__, 3).'/bootstrap/domains.php');
-        $alwaysOn = array_values(array_map(fn (DomainEntry $entry) => $entry->name, array_filter($registry->all(), fn (DomainEntry $entry) => ! $entry->canDisable())));
+        $alwaysOn = array_values(
+            array_map(fn (DomainEntry $entry) => $entry->name, array_filter($registry->all(), fn (DomainEntry $entry) => ! $entry->canDisable())),
+        );
 
         $this->assertSame(['Access'], $alwaysOn);
     }

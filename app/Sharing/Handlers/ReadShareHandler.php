@@ -125,7 +125,15 @@ final readonly class ReadShareHandler implements CommandHandler
         $body = $command->head ? '' : $content->body;
         $budget->chargeRendered(strlen($body) + strlen($content->card->title));
 
-        return new SharedPage(true, $content->card->title, $content->card->publicationVersion, $body, $linked, $children, $next);
+        return new SharedPage(
+            true,
+            $content->card->title,
+            $content->card->publicationVersion,
+            $body,
+            $linked,
+            $children,
+            $next,
+        );
     }
 
     /**
@@ -143,7 +151,9 @@ final readonly class ReadShareHandler implements CommandHandler
             }
 
             $provider = $this->records->provider($type);
-            $page = $budget->run(fn () => $provider->readTargets(new ShareTargetRead([$target], $targets, null), $budget));
+            $page = $budget->run(
+                fn () => $provider->readTargets(new ShareTargetRead([$target], $targets, null), $budget),
+            );
             array_push($items, ...array_map(SharedPageItem::fromCard(...), $page->eligible));
         }
 
@@ -157,20 +167,38 @@ final readonly class ReadShareHandler implements CommandHandler
      *
      * @throws ShareReadRefused
      */
-    private function childrenOf(Share $share, RecordIdentity $target, ShareReadPath $path, string|null $cursor, ShareBudget $budget): array
-    {
-        $owned = array_values(array_filter($this->records->relations($target->type)->relations, fn ($relation) => $relation->type === ShareRelationType::Owned));
+    private function childrenOf(
+        Share $share,
+        RecordIdentity $target,
+        ShareReadPath $path,
+        string|null $cursor,
+        ShareBudget $budget,
+    ): array {
+        $owned = array_values(
+            array_filter($this->records->relations($target->type)->relations, fn ($relation) => $relation->type === ShareRelationType::Owned),
+        );
 
         if ($owned === []) {
             return [[], null];
         }
 
         $relation = $owned[0]->name;
-        $place = new ShareCursor($share->id, $share->scope_version, $path->text, $relation, ShareCursor::ORDER_WRITTEN_THEN_ID, '');
+        $place = new ShareCursor(
+            $share->id,
+            $share->scope_version,
+            $path->text,
+            $relation,
+            ShareCursor::ORDER_WRITTEN_THEN_ID,
+            '',
+        );
         $continuation = $cursor === null ? null : $this->cursors->read($cursor, $place)->continuation;
         $provider = $this->records->provider($target->type);
-        $page = $budget->run(fn () => $provider->readRelated(new ShareRelationRead($target, $relation, self::CHILDREN_PAGE, $continuation), $budget));
-        $next = $page->continuation === null ? null : $this->cursors->write(new ShareCursor($share->id, $share->scope_version, $path->text, $relation, ShareCursor::ORDER_WRITTEN_THEN_ID, $page->continuation));
+        $page = $budget->run(
+            fn () => $provider->readRelated(new ShareRelationRead($target, $relation, self::CHILDREN_PAGE, $continuation), $budget),
+        );
+        $next = $page->continuation === null ? null : $this->cursors->write(
+            new ShareCursor($share->id, $share->scope_version, $path->text, $relation, ShareCursor::ORDER_WRITTEN_THEN_ID, $page->continuation),
+        );
 
         return [array_map(SharedPageItem::fromCard(...), $page->eligible), $next];
     }

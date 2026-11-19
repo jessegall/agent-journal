@@ -58,7 +58,10 @@ final class TaskAssignerTest extends TestCase
         $this->hold($this->task(TaskState::Finished), $this->builder);
         $this->hold($this->task(TaskState::Open), $this->reviewer);
 
-        $this->assertSame(2, $this->app->make(ActiveTaskAssignments::class)->countFor(AssigneeIdentity::ofActorIdentity($this->builder)));
+        $this->assertSame(
+            2,
+            $this->app->make(ActiveTaskAssignments::class)->countFor(AssigneeIdentity::ofActorIdentity($this->builder)),
+        );
     }
 
     public function test_an_all_pool_gives_the_lowest_id_open_task_nobody_holds(): void

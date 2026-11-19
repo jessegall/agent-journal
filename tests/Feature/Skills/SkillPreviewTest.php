@@ -68,7 +68,10 @@ final class SkillPreviewTest extends TestCase
 
     public function test_an_everyone_skill_says_it_reaches_everyone_and_one_agent_shows_its_selection(): void
     {
-        $this->artisan('skill:preview', ['key' => 'journal-skills'])->expectsOutputToContain('everyone in the authorized installation scope')->assertSuccessful();
+        $this->artisan(
+            'skill:preview',
+            ['key' => 'journal-skills'],
+        )->expectsOutputToContain('everyone in the authorized installation scope')->assertSuccessful();
 
         Artisan::call('skill:preview', ['key' => 'journal-plans', '--agent' => $this->reviewer->id, '--json' => true]);
         $answer = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
@@ -80,7 +83,10 @@ final class SkillPreviewTest extends TestCase
 
     public function test_an_unknown_key_is_named(): void
     {
-        $this->artisan('skill:preview', ['key' => 'journal-nothing'])->expectsOutputToContain('There is no skill journal-nothing.')->assertFailed();
+        $this->artisan(
+            'skill:preview',
+            ['key' => 'journal-nothing'],
+        )->expectsOutputToContain('There is no skill journal-nothing.')->assertFailed();
     }
 
     /**
@@ -88,13 +94,20 @@ final class SkillPreviewTest extends TestCase
      */
     private function rowCounts(): array
     {
-        return [Agent::query()->count(), AgentSession::query()->count(), Profile::query()->count(), ProfileRevision::query()->count()];
+        return [
+            Agent::query()->count(),
+            AgentSession::query()->count(),
+            Profile::query()->count(),
+            ProfileRevision::query()->count(),
+        ];
     }
 
     private function launch(string $name, string $profileKey, int|null $profileRevision): Agent
     {
         $agent = Agent::named($name, $profileKey);
-        $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer', 'profile_revision' => $profileRevision ?? 1]);
+        $session = new AgentSession(
+            [...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer', 'profile_revision' => $profileRevision ?? 1],
+        );
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
         $session->save();

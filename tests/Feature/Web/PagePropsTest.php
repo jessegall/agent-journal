@@ -116,7 +116,10 @@ final class PagePropsTest extends TestCase
      */
     private function pageProps(string $url): array
     {
-        return $this->app->make(PageProps::class)->forPage($this->app->make(UiDeclarations::class)->page('shelf.shelves'), DeclaredPageRequest::create($url));
+        return $this->app->make(PageProps::class)->forPage(
+            $this->app->make(UiDeclarations::class)->page('shelf.shelves'),
+            DeclaredPageRequest::create($url),
+        );
     }
 
     private function declarations(): UiDeclarations
@@ -132,9 +135,23 @@ final class PagePropsTest extends TestCase
                 ->at('{shelf}')
                 ->inInspector(),
         ], sections: [
-            Section::make('broken', 'Broken', 'shelf.aside', SlotContextType::Nothing, BrokenResolver::class, 'Aside.vue'),
+            Section::make(
+                'broken',
+                'Broken',
+                'shelf.aside',
+                SlotContextType::Nothing,
+                BrokenResolver::class,
+                'Aside.vue',
+            ),
             Section::make('notes', 'Notes', 'shelf.aside', SlotContextType::Nothing, NotesResolver::class, 'Aside.vue'),
-            Section::make('secret', 'Secret', 'shelf.aside', SlotContextType::Nothing, NotesResolver::class, 'Aside.vue')
+            Section::make(
+                'secret',
+                'Secret',
+                'shelf.aside',
+                SlotContextType::Nothing,
+                NotesResolver::class,
+                'Aside.vue',
+            )
                 ->visibleWhen(NobodySees::class),
         ]);
 

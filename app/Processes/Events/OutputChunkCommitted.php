@@ -11,5 +11,10 @@ use App\Contracts\Event;
  */
 final readonly class OutputChunkCommitted implements Event
 {
-    public function __construct(public string $partRunId, public string $stream, public int $offset, public int $length) {}
+    public function __construct(
+        public string $partRunId,
+        public string $stream,
+        public int $offset,
+        public int $length,
+    ) {}
 }

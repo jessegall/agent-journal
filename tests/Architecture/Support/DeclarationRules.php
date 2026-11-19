@@ -39,7 +39,14 @@ final readonly class DeclarationRules
                 }
 
                 if (preg_match('/^'.preg_quote($root, '/').'\\\\(\w+)\\\\\1Domain$/', $name) !== 1) {
-                    $violations[] = new Violation($path, (int) $reflection->getStartLine(), $name, 'none', 'none', ViolationType::MisnamedDomainClass);
+                    $violations[] = new Violation(
+                        $path,
+                        (int) $reflection->getStartLine(),
+                        $name,
+                        'none',
+                        'none',
+                        ViolationType::MisnamedDomainClass,
+                    );
                 }
             }
         }
@@ -90,7 +97,14 @@ final readonly class DeclarationRules
             $owner = array_find($this->entries, fn (DomainEntry $entry) => $entry->ownsName($use->name));
 
             if ($owner !== null) {
-                $violations[] = new Violation($use->file, $use->line, $use->name, 'starter kit', $owner->name, ViolationType::StarterKitUsesDomain);
+                $violations[] = new Violation(
+                    $use->file,
+                    $use->line,
+                    $use->name,
+                    'starter kit',
+                    $owner->name,
+                    ViolationType::StarterKitUsesDomain,
+                );
             }
         }
 
@@ -112,7 +126,14 @@ final readonly class DeclarationRules
                     $name = $namespace['name'] === '' ? 'the global namespace' : $namespace['name'];
 
                     if (! $entry->ownsName($name.'\\')) {
-                        $violations[] = new Violation($path, $namespace['line'], $name, $entry->name, $entry->namespace, ViolationType::NamespaceOutsideDomain);
+                        $violations[] = new Violation(
+                            $path,
+                            $namespace['line'],
+                            $name,
+                            $entry->name,
+                            $entry->namespace,
+                            ViolationType::NamespaceOutsideDomain,
+                        );
                     }
                 }
             }
@@ -137,7 +158,14 @@ final readonly class DeclarationRules
             }
 
             if (! in_array(substr($path, strlen($sharedFolder) + 1), $fixedFiles, true)) {
-                $violations[] = new Violation($path, 1, $path, 'App\Domain', 'App\Domain', ViolationType::SharedPlaceFile);
+                $violations[] = new Violation(
+                    $path,
+                    1,
+                    $path,
+                    'App\Domain',
+                    'App\Domain',
+                    ViolationType::SharedPlaceFile,
+                );
             }
         }
 

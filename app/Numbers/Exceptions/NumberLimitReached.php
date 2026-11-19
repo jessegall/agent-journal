@@ -14,6 +14,8 @@ final class NumberLimitReached extends RuntimeException
 {
     public static function for(NumberGroup $group): self
     {
-        return new self("The number group for {$group->record_type} of {$group->holder_type} {$group->holder_id} has handed out its last number.");
+        return new self(
+            "The number group for {$group->record_type} of {$group->holder_type} {$group->holder_id} has handed out its last number.",
+        );
     }
 }

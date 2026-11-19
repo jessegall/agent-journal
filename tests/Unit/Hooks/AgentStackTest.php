@@ -73,11 +73,18 @@ final class AgentStackTest extends TestCase
     public function test_a_pushed_sequence_answers_the_next_stop_before_the_task(): void
     {
         $factory = new InMemoryStateFactory([
-            'sequences.following' => fn () => new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running)),
+            'sequences.following' => fn () => new FollowingSequenceState(
+                new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running),
+            ),
         ]);
         $stack = new AgentStack([
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
+            new Frame(
+                'task-42',
+                $this->reference('tasks.working', '42'),
+                new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)),
+                CarbonImmutable::now(),
+            ),
         ], $factory);
 
         $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
@@ -105,7 +112,11 @@ final class AgentStackTest extends TestCase
     public function test_no_state_below_the_answering_state_is_asked(): void
     {
         $below = ScriptedState::delegating();
-        $stack = $this->stack($this->ready(), $this->frame('below', $below), $this->frame('top', new ScriptedState(Decision::deny('Not now.'))));
+        $stack = $this->stack(
+            $this->ready(),
+            $this->frame('below', $below),
+            $this->frame('top', new ScriptedState(Decision::deny('Not now.'))),
+        );
 
         $answer = $stack->answer(HookInputs::all()['prompt']);
 
@@ -148,7 +159,9 @@ final class AgentStackTest extends TestCase
     public function test_a_finished_bottom_state_stays_when_the_exposed_frames_are_popped(): void
     {
         $bottom = new ScriptedState(Decision::allow(), finished: true);
-        $stack = $this->stack(new Frame('ready', $this->reference('ready'), $bottom, CarbonImmutable::now(), bottom: true));
+        $stack = $this->stack(
+            new Frame('ready', $this->reference('ready'), $bottom, CarbonImmutable::now(), bottom: true),
+        );
 
         $this->assertSame(['ready'], $stack->withoutExposedInactive()->frameIds());
     }
@@ -294,7 +307,12 @@ final class AgentStackTest extends TestCase
         $switchedOff = new SwitchableState(false);
         $stack = $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
+            new Frame(
+                'task-42',
+                $this->reference('tasks.working', '42'),
+                new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)),
+                CarbonImmutable::now(),
+            ),
             $this->frame('review', $switchedOff),
         );
 
@@ -307,7 +325,12 @@ final class AgentStackTest extends TestCase
         $stack = $this->stack(
             $this->ready(),
             $this->frame('review', new SwitchableState(false)),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
+            new Frame(
+                'task-42',
+                $this->reference('tasks.working', '42'),
+                new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)),
+                CarbonImmutable::now(),
+            ),
             $this->frame('notes', new SwitchableState(true)),
             $this->answeringFrame(false),
         );
@@ -319,7 +342,12 @@ final class AgentStackTest extends TestCase
     {
         return $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState)), CarbonImmutable::now()),
+            new Frame(
+                'task-42',
+                $this->reference('tasks.working', '42'),
+                new WorkingOnTaskState(new TaskWork(42, 1, $taskState)),
+                CarbonImmutable::now(),
+            ),
             $this->answeringFrame($messageWaits),
         );
     }
@@ -331,7 +359,13 @@ final class AgentStackTest extends TestCase
 
     private function ready(): Frame
     {
-        return new Frame('ready', $this->reference('ready'), new ReadyState(new FixedFileEditPermission()), CarbonImmutable::now(), bottom: true);
+        return new Frame(
+            'ready',
+            $this->reference('ready'),
+            new ReadyState(new FixedFileEditPermission()),
+            CarbonImmutable::now(),
+            bottom: true,
+        );
     }
 
     private function frame(string $id, AgentState $state): Frame
@@ -371,6 +405,11 @@ final class AgentStackTest extends TestCase
     {
         $reference = $this->reference('communication.answering', '95');
 
-        return new Frame('message-95', $reference, new AnsweringMessageState('95', $messageWaits), CarbonImmutable::now());
+        return new Frame(
+            'message-95',
+            $reference,
+            new AnsweringMessageState('95', $messageWaits),
+            CarbonImmutable::now(),
+        );
     }
 }

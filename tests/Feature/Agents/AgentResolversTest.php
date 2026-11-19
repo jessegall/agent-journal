@@ -31,7 +31,14 @@ final class AgentResolversTest extends TestCase
     use ActsAsActors;
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links'];
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+    ];
 
     private Agent $builder;
 
@@ -50,10 +57,22 @@ final class AgentResolversTest extends TestCase
         $this->builder = Agent::named('Builder', 'main-agent');
         $this->reviewer = Agent::named('Reviewer', 'main-agent');
         $launch = $this->app->make(LaunchSessions::class);
-        $this->running = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;
-        $this->ended = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->running = $launch->launch(
+            $this->builder,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
+        $this->ended = $launch->launch(
+            $this->builder,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
         $this->ended->endAt(CarbonImmutable::now());
-        $this->reviewing = $launch->launch($this->reviewer, TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->reviewing = $launch->launch(
+            $this->reviewer,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
     }
 
     public function test_the_user_sees_every_running_session_with_its_agent_name(): void
@@ -62,7 +81,10 @@ final class AgentResolversTest extends TestCase
 
         $this->assertSame(
             [[$this->running->id, 'Builder'], [$this->reviewing->id, 'Reviewer']],
-            array_map(fn (SessionOption $option) => [$option->sessionId, $option->agentName], $this->sessions()->active()),
+            array_map(
+                fn (SessionOption $option) => [$option->sessionId, $option->agentName],
+                $this->sessions()->active(),
+            ),
         );
     }
 
@@ -70,7 +92,10 @@ final class AgentResolversTest extends TestCase
     {
         $this->actAsAgent($this->reviewer->id);
 
-        $this->assertSame([$this->reviewing->id], array_map(fn (SessionOption $option) => $option->sessionId, $this->sessions()->active()));
+        $this->assertSame(
+            [$this->reviewing->id],
+            array_map(fn (SessionOption $option) => $option->sessionId, $this->sessions()->active()),
+        );
     }
 
     public function test_a_running_session_gives_its_stack_target(): void
@@ -91,7 +116,10 @@ final class AgentResolversTest extends TestCase
                 $this->sessions()->requireActive($sessionId);
                 $this->fail("Session {$sessionId} was not refused.");
             } catch (StackTargetRefused $refused) {
-                $this->assertSame("This request may not change the stack of session {$sessionId}.", $refused->getMessage());
+                $this->assertSame(
+                    "This request may not change the stack of session {$sessionId}.",
+                    $refused->getMessage(),
+                );
             }
         }
     }
@@ -99,12 +127,23 @@ final class AgentResolversTest extends TestCase
     public function test_labels_cover_the_visible_agents_and_leave_out_the_rest(): void
     {
         $this->actAs(TestActors::user(7));
-        $labels = $this->app->make(AgentResolver::class)->labelsFor([$this->builder->id, TestIds::of(999999), $this->reviewer->id]);
-        $this->assertSame(['Builder', 'Reviewer'], [$labels[$this->builder->id]->name, $labels[$this->reviewer->id]->name]);
+        $labels = $this->app->make(AgentResolver::class)->labelsFor(
+            [$this->builder->id, TestIds::of(999999), $this->reviewer->id],
+        );
+        $this->assertSame(
+            ['Builder', 'Reviewer'],
+            [$labels[$this->builder->id]->name, $labels[$this->reviewer->id]->name],
+        );
         $this->assertArrayNotHasKey(TestIds::of(999999), $labels);
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->reviewer->id), TestLaunchAuthority::forAgent($this->reviewer->id));
-        $this->assertSame([$this->reviewer->id], array_keys($this->app->make(AgentResolver::class)->labelsFor([$this->builder->id, $this->reviewer->id])));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($this->reviewer->id),
+            TestLaunchAuthority::forAgent($this->reviewer->id),
+        );
+        $this->assertSame(
+            [$this->reviewer->id],
+            array_keys($this->app->make(AgentResolver::class)->labelsFor([$this->builder->id, $this->reviewer->id])),
+        );
     }
 
     public function test_without_an_actor_nothing_is_read(): void
@@ -119,7 +158,10 @@ final class AgentResolversTest extends TestCase
      */
     private function actAsAgent(string $agentId): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestLaunchAuthority::forAgent($agentId),
+        );
     }
 
     private function sessions(): SessionResolver

@@ -10,6 +10,8 @@ final class CommandRetryExhausted extends RuntimeException
 {
     public static function for(string $command, int $attempts): self
     {
-        return new self("The command {$command} kept meeting conflicting work and gave up after {$attempts} attempts; try it again.");
+        return new self(
+            "The command {$command} kept meeting conflicting work and gave up after {$attempts} attempts; try it again.",
+        );
     }
 }

@@ -48,7 +48,10 @@ final class DomainSwitchPagesTest extends TestCase
         });
 
         $items = $this->inertia('/rules')->assertOk()->json('props.navigation.items');
-        $counts = $this->inertia('/rules', ['X-Inertia-Partial-Component' => 'rules/RulesWindow', 'X-Inertia-Partial-Data' => 'navigationCounts'])->assertOk()->json('props.navigationCounts.counts');
+        $counts = $this->inertia(
+            '/rules',
+            ['X-Inertia-Partial-Component' => 'rules/RulesWindow', 'X-Inertia-Partial-Data' => 'navigationCounts'],
+        )->assertOk()->json('props.navigationCounts.counts');
 
         $this->assertNotContains('plans.list', array_column($items, 'key'));
         $this->assertContains('rules.list', array_column($items, 'key'));
@@ -58,7 +61,9 @@ final class DomainSwitchPagesTest extends TestCase
 
     public function test_a_section_of_a_switched_off_domain_is_left_out_even_on_a_forged_partial_request(): void
     {
-        $section = collect($this->app->make(UiDeclarations::class)->sections())->first(fn (RegisteredSection $found) => $found->owner->name === 'Plans');
+        $section = collect($this->app->make(UiDeclarations::class)->sections())->first(
+            fn (RegisteredSection $found) => $found->owner->name === 'Plans',
+        );
         $this->assertInstanceOf(RegisteredSection::class, $section);
         $this->switchPlansOff();
         $sectionRead = false;
@@ -77,7 +82,10 @@ final class DomainSwitchPagesTest extends TestCase
     public function test_with_the_domain_on_its_page_and_navigation_show_again(): void
     {
         $this->inertia('/plans')->assertOk();
-        $this->assertContains('plans.list', array_column($this->inertia('/rules')->json('props.navigation.items'), 'key'));
+        $this->assertContains(
+            'plans.list',
+            array_column($this->inertia('/rules')->json('props.navigation.items'), 'key'),
+        );
     }
 
     /**
@@ -89,7 +97,9 @@ final class DomainSwitchPagesTest extends TestCase
     {
         return $this->actingAs($this->owner)->get($uri, [
             'X-Inertia' => 'true',
-            'X-Inertia-Version' => (string) $this->app->make(HandleInertiaRequests::class)->version(Request::create($uri)),
+            'X-Inertia-Version' => (string) $this->app->make(
+                HandleInertiaRequests::class,
+            )->version(Request::create($uri)),
             ...$headers,
         ]);
     }

@@ -29,7 +29,10 @@ final readonly class DriverRequests
         $runtime = $this->lockedRuntime($target);
         $digest = $payload->digestFor($operation->value);
 
-        $existing = DriverRequest::query()->where('agent_runtime_id', $runtime->id)->where('idempotency_key', $idempotencyKey)->first();
+        $existing = DriverRequest::query()->where('agent_runtime_id', $runtime->id)->where(
+            'idempotency_key',
+            $idempotencyKey,
+        )->first();
         if ($existing !== null) {
             return $existing->payload_digest === $digest ? $existing : throw DriverRequestRefused::keyConflict($idempotencyKey);
         }

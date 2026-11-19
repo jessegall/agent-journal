@@ -81,7 +81,12 @@ final class MessageConcurrencyTest extends MessagingTestCase
         $seat = DeskSeat::query()->ofDesk($this->desk)->sole();
         $this->assertCount(1, $this->claimsOn($questionId));
 
-        $change = new SeatChange($this->desk->id, $seat->id, $this->seatReferenceOf($seat), $this->actorOf($this->reviewer));
+        $change = new SeatChange(
+            $this->desk->id,
+            $seat->id,
+            $this->seatReferenceOf($seat),
+            $this->actorOf($this->reviewer),
+        );
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(SeatingWriter::class)->replace($change),
         );

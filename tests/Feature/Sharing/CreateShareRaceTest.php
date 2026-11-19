@@ -44,7 +44,17 @@ final class CreateShareRaceTest extends TestCase
     use CommitsHookRows, RegistersShareDomains;
     use StartsAgentRequests;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_previews', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_previews',
+        'share_gateway_endpoints',
+        'share_gateway_configurations',
+        'share_installations',
+    ];
 
     public function test_two_creations_for_the_last_slot_on_two_configurations_admit_one(): void
     {
@@ -61,7 +71,9 @@ final class CreateShareRaceTest extends TestCase
 
         DB::transaction(fn () => ShareInstallation::lockForAdmission());
         $this->startTestUserRequest(9);
-        $saved = $this->app->make(CommandBus::class)->run(new SaveSharePreview('binders.binder', TestIds::of(1), [], $second->id));
+        $saved = $this->app->make(CommandBus::class)->run(
+            new SaveSharePreview('binders.binder', TestIds::of(1), [], $second->id),
+        );
 
         config(['database.connections.second_creator' => config('database.connections.'.config('database.default'))]);
         $secondCreator = DB::connection('second_creator');
@@ -93,7 +105,9 @@ final class CreateShareRaceTest extends TestCase
         $this->app->forgetScopedInstances();
         $this->startTestUserRequest(9);
         $this->app->make(RequestKey::class)->set($key);
-        $summary = $this->app->make(CommandBus::class)->run(new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key));
+        $summary = $this->app->make(CommandBus::class)->run(
+            new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
+        );
 
         return Share::query()->findOrFail($summary->shareId);
     }

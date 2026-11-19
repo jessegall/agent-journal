@@ -29,8 +29,12 @@ final readonly class GatewayLaunches
      *
      * @throws GatewayOpenFailed
      */
-    public function open(string $gatewayKey, GatewayOperation $operation, InvokedProcess $child, Closure $look): GatewayEndpoint
-    {
+    public function open(
+        string $gatewayKey,
+        GatewayOperation $operation,
+        InvokedProcess $child,
+        Closure $look,
+    ): GatewayEndpoint {
         $deadline = time() + self::CONNECT_SECONDS;
         $seen = $look($child);
 
@@ -46,7 +50,10 @@ final readonly class GatewayLaunches
         if ($seen !== GatewayAddressCheck::Confirmed) {
             $this->children->end($child);
 
-            throw $seen === GatewayAddressCheck::Unexpected ? GatewayOpenFailed::unexpectedAddress($gatewayKey) : GatewayOpenFailed::noAddressInTime($gatewayKey, self::CONNECT_SECONDS);
+            throw $seen === GatewayAddressCheck::Unexpected ? GatewayOpenFailed::unexpectedAddress($gatewayKey) : GatewayOpenFailed::noAddressInTime(
+                $gatewayKey,
+                self::CONNECT_SECONDS,
+            );
         }
 
         $endpoint = GatewayEndpoint::forOperation($operation);

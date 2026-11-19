@@ -46,7 +46,9 @@ final class NgrokGatewayTest extends TestCase
             'sharing.rate_limit_store' => 'array',
         ]);
         $this->processes = new Processes();
-        $this->processes->fake(['*version*' => 'ngrok version 3.20.0', '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(3)]);
+        $this->processes->fake(
+            ['*version*' => 'ngrok version 3.20.0', '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(3)],
+        );
         $this->app->instance(Processes::class, $this->processes);
         $this->http = new HttpClient();
         $this->app->instance(HttpClient::class, $this->http);
@@ -62,19 +64,35 @@ final class NgrokGatewayTest extends TestCase
         $endpoint = $this->gateway()->open($this->operation(self::ORIGIN));
 
         $this->assertSame(self::ORIGIN, $endpoint->publicOrigin);
-        $this->assertStringContainsString('authtoken: "fixture-token"', (string) file_get_contents($this->folder.'/config/ngrok.yml'));
-        $this->assertStringContainsString('web_addr: 127.0.0.1:4041', (string) file_get_contents($this->folder.'/config/ngrok.yml'));
+        $this->assertStringContainsString(
+            'authtoken: "fixture-token"',
+            (string) file_get_contents($this->folder.'/config/ngrok.yml'),
+        );
+        $this->assertStringContainsString(
+            'web_addr: 127.0.0.1:4041',
+            (string) file_get_contents($this->folder.'/config/ngrok.yml'),
+        );
     }
 
     public function test_a_random_ngrok_address_and_an_unexpected_upstream_are_refused(): void
     {
-        $this->controlApiAnswers([['public_url' => 'https://random-words.ngrok-free.app', 'config' => ['addr' => 'http://127.0.0.1:8090']]]);
+        $this->controlApiAnswers(
+            [['public_url' => 'https://random-words.ngrok-free.app', 'config' => ['addr' => 'http://127.0.0.1:8090']]],
+        );
 
-        $this->assertThrows(fn () => $this->gateway()->open($this->operation(self::ORIGIN)), GatewayOpenFailed::class, 'other than its fixed public origin');
+        $this->assertThrows(
+            fn () => $this->gateway()->open($this->operation(self::ORIGIN)),
+            GatewayOpenFailed::class,
+            'other than its fixed public origin',
+        );
 
         $this->controlApiAnswers([['public_url' => self::ORIGIN, 'config' => ['addr' => 'http://127.0.0.1:3000']]]);
 
-        $this->assertThrows(fn () => $this->gateway()->open($this->operation(self::ORIGIN)), GatewayOpenFailed::class, 'other than its fixed public origin');
+        $this->assertThrows(
+            fn () => $this->gateway()->open($this->operation(self::ORIGIN)),
+            GatewayOpenFailed::class,
+            'other than its fixed public origin',
+        );
     }
 
     public function test_readiness_refuses_a_missing_fixed_address_and_authtoken(): void
@@ -106,6 +124,13 @@ final class NgrokGatewayTest extends TestCase
 
     private function operation(string $origin): GatewayOperation
     {
-        return new GatewayOperation('operation-1', 'run-1', 1, 'lease', time() + 90, new GatewayConfiguration('configuration-1', 1, new GatewaySettings('ngrok', '3.20.0', 'ngrok.com', $origin, 8090, ['ngrok-authtoken'])));
+        return new GatewayOperation(
+            'operation-1',
+            'run-1',
+            1,
+            'lease',
+            time() + 90,
+            new GatewayConfiguration('configuration-1', 1, new GatewaySettings('ngrok', '3.20.0', 'ngrok.com', $origin, 8090, ['ngrok-authtoken'])),
+        );
     }
 }

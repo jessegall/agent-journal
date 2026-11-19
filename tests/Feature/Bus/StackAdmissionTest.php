@@ -32,7 +32,11 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->installCommandModules();
         $this->app->instance(OperationDeadline::class, new OperationDeadline(300));
         $databases = $this->app->make(DatabaseManager::class);
-        $this->holder = $databases->connectUsing('stack-holder', $this->app->make('config')->array('database.connections.'.$databases->getDefaultConnection()), true);
+        $this->holder = $databases->connectUsing(
+            'stack-holder',
+            $this->app->make('config')->array('database.connections.'.$databases->getDefaultConnection()),
+            true,
+        );
     }
 
     protected function tearDown(): void
@@ -48,14 +52,21 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->hold(2);
         $this->startTestAgentRequest(1, 2);
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new WriteNote('waits')), StackLockTimedOut::class, 'busy with another operation');
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new WriteNote('waits')),
+            StackLockTimedOut::class,
+            'busy with another operation',
+        );
         $this->assertSame(0, $this->rowCount());
     }
 
     public function test_the_next_command_of_the_session_runs_once_the_stack_is_given_back(): void
     {
         $this->hold(2);
-        $this->holder->select('SELECT pg_advisory_unlock(?, hashtext(?))', [AdvisoryStackAdmission::NAMESPACE, TestIds::of(2)]);
+        $this->holder->select(
+            'SELECT pg_advisory_unlock(?, hashtext(?))',
+            [AdvisoryStackAdmission::NAMESPACE, TestIds::of(2)],
+        );
         $this->startTestAgentRequest(1, 2);
 
         $id = $this->app->make(CommandBus::class)->run(new WriteNote('after'));
@@ -87,7 +98,10 @@ final class StackAdmissionTest extends CommandBusTestCase
     {
         $this->startTestAgentRequest(1, 2);
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RefuseNote('refused')), CommandRefused::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new RefuseNote('refused')),
+            CommandRefused::class,
+        );
 
         $this->assertTrue($this->canTake(2));
     }
@@ -105,13 +119,19 @@ final class StackAdmissionTest extends CommandBusTestCase
     private function hold(int $sessionIdNumber): void
     {
         $sessionId = TestIds::of($sessionIdNumber);
-        $this->holder->select('SELECT pg_advisory_lock(?, hashtext(?))', [AdvisoryStackAdmission::NAMESPACE, $sessionId]);
+        $this->holder->select(
+            'SELECT pg_advisory_lock(?, hashtext(?))',
+            [AdvisoryStackAdmission::NAMESPACE, $sessionId],
+        );
     }
 
     private function canTake(int $sessionIdNumber): bool
     {
         $sessionId = TestIds::of($sessionIdNumber);
-        $taken = $this->holder->selectOne('SELECT pg_try_advisory_lock(?, hashtext(?)) AS taken', [AdvisoryStackAdmission::NAMESPACE, $sessionId])->taken;
+        $taken = $this->holder->selectOne(
+            'SELECT pg_try_advisory_lock(?, hashtext(?)) AS taken',
+            [AdvisoryStackAdmission::NAMESPACE, $sessionId],
+        )->taken;
         $this->holder->select('SELECT pg_advisory_unlock_all()');
 
         return $taken === true;

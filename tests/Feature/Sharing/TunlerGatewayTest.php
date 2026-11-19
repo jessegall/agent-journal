@@ -60,11 +60,15 @@ final class TunlerGatewayTest extends TestCase
 
     public function test_readiness_names_each_missing_piece_and_is_ready_when_all_are_there(): void
     {
-        $this->processes->fake(['*version*' => 'tunler 1.4.0', '*status*' => '{"logged_in": true, "auth_ok": true, "host": "example.test"}']);
+        $this->processes->fake(
+            ['*version*' => 'tunler 1.4.0', '*status*' => '{"logged_in": true, "auth_ok": true, "host": "example.test"}'],
+        );
 
         $this->assertTrue($this->gateway()->readiness($this->configuration())->isReady());
 
-        $this->processes->fake(['*version*' => 'tunler 1.3.9', '*status*' => '{"logged_in": false, "host": "other.test"}']);
+        $this->processes->fake(
+            ['*version*' => 'tunler 1.3.9', '*status*' => '{"logged_in": false, "host": "other.test"}'],
+        );
         config(['sharing.tunler.subdomain' => null]);
 
         $this->assertSame([
@@ -76,25 +80,38 @@ final class TunlerGatewayTest extends TestCase
 
         config(['sharing.tunler.binary' => $this->folder.'/missing']);
 
-        $this->assertSame(['The tunler program is not installed at its pinned path.'], $this->gateway()->readiness($this->configuration())->problems);
+        $this->assertSame(
+            ['The tunler program is not installed at its pinned path.'],
+            $this->gateway()->readiness($this->configuration())->problems,
+        );
     }
 
     public function test_opening_accepts_the_configured_origin_from_the_launch_line(): void
     {
-        $this->processes->fake(['*--domain=docs*' => $this->processes->describe()->output('connecting')->output('tunnel up: '.self::ORIGIN.' -> localhost:8090')->iterations(2)]);
+        $this->processes->fake(
+            ['*--domain=docs*' => $this->processes->describe()->output('connecting')->output('tunnel up: '.self::ORIGIN.' -> localhost:8090')->iterations(2)],
+        );
 
         $endpoint = $this->gateway()->open($this->operation());
 
         $this->assertSame([self::ORIGIN, 'run-1:1'], [$endpoint->publicOrigin, $endpoint->processReference]);
-        $this->processes->assertRan(fn ($process) => str_contains(implode(' ', (array) $process->command), '8090 --domain=docs --inspect=0'));
+        $this->processes->assertRan(
+            fn ($process) => str_contains(implode(' ', (array) $process->command), '8090 --domain=docs --inspect=0'),
+        );
     }
 
     public function test_opening_refuses_another_host_and_plain_http(): void
     {
         foreach (['https://evil.example.test', 'http://docs.example.test', 'https://docs.example.test:8443'] as $address) {
-            $this->processes->fake(['*--domain=docs*' => $this->processes->describe()->output("tunnel up: {$address} -> localhost:8090")->iterations(1)]);
+            $this->processes->fake(
+                ['*--domain=docs*' => $this->processes->describe()->output("tunnel up: {$address} -> localhost:8090")->iterations(1)],
+            );
 
-            $this->assertThrows(fn () => $this->gateway()->open($this->operation()), GatewayOpenFailed::class, 'other than its fixed public origin');
+            $this->assertThrows(
+                fn () => $this->gateway()->open($this->operation()),
+                GatewayOpenFailed::class,
+                'other than its fixed public origin',
+            );
         }
     }
 
@@ -110,7 +127,9 @@ final class TunlerGatewayTest extends TestCase
         $this->app->instance(HttpClient::class, $this->http);
 
         $this->assertSame(['The public origin redirected the probe.'], $this->gateway()->health($endpoint)->problems);
-        $this->assertFalse($this->gateway()->health(new GatewayEndpoint('run-1', 1, 'http://docs.example.test', 'run-1:1'))->isHealthy());
+        $this->assertFalse(
+            $this->gateway()->health(new GatewayEndpoint('run-1', 1, 'http://docs.example.test', 'run-1:1'))->isHealthy(),
+        );
     }
 
     private function gateway(): TunlerGateway
@@ -120,7 +139,11 @@ final class TunlerGatewayTest extends TestCase
 
     private function configuration(): GatewayConfiguration
     {
-        return new GatewayConfiguration('configuration-1', 1, new GatewaySettings('tunler', '1.4.0', 'example.test', self::ORIGIN, 8090, []));
+        return new GatewayConfiguration(
+            'configuration-1',
+            1,
+            new GatewaySettings('tunler', '1.4.0', 'example.test', self::ORIGIN, 8090, []),
+        );
     }
 
     private function operation(): GatewayOperation

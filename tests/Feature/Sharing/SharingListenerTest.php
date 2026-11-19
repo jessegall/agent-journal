@@ -34,12 +34,28 @@ use Tests\TestCase;
  * every other route are refused; reads are limited per share and invalid links in all, never holding a valid link;
  * a failure shows the fixed page even with debugging on.
  */
-#[TimeLimit(seconds: 5, reason: 'It boots the share-only application, commits real reads and empties twelve tables around each test.')]
+#[TimeLimit(
+    seconds: 5,
+    reason: 'It boots the share-only application, commits real reads and empties twelve tables around each test.',
+)]
 final class SharingListenerTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['share_audits', 'share_members', 'shares', 'share_gateway_configurations', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'share_audits',
+        'share_members',
+        'shares',
+        'share_gateway_configurations',
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     private string $token;
 
@@ -63,7 +79,9 @@ final class SharingListenerTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
-        $configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
+        $configuration = ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
+        );
         $this->configuration = $configuration;
         $this->token = $this->activeShareOf(Document::query()->sole()->shareIdentity());
     }
@@ -77,7 +95,10 @@ final class SharingListenerTest extends TestCase
         $response->assertHeader('Referrer-Policy', 'no-referrer');
         $response->assertHeader('X-Frame-Options', 'DENY');
         $response->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
-        $this->assertStringContainsString("default-src 'none'", (string) $response->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString(
+            "default-src 'none'",
+            (string) $response->headers->get('Content-Security-Policy'),
+        );
         $this->assertSame([], $response->headers->getCookies());
     }
 
@@ -133,7 +154,9 @@ final class SharingListenerTest extends TestCase
     public function test_a_script_and_a_javascript_link_render_inert_and_only_manifest_files_are_served(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Tricks', 'Inert', "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) [other](/s/elsewhere)\n"));
+        $this->app->make(CommandBus::class)->run(
+            new CreateDocument('Tricks', 'Inert', "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) [other](/s/elsewhere)\n"),
+        );
         $this->app->make(CurrentActorSetter::class)->clear();
         $token = $this->activeShareOf(Document::query()->where('number', 2)->sole()->shareIdentity());
 

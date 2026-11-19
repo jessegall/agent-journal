@@ -26,7 +26,13 @@ final class TaskExecutionData extends Data
 
     public static function fromExecution(TaskExecution $execution): self
     {
-        return new self($execution->actorType, $execution->actorId, $execution->actorLabel, $execution->runNumber, $execution->workState);
+        return new self(
+            $execution->actorType,
+            $execution->actorId,
+            $execution->actorLabel,
+            $execution->runNumber,
+            $execution->workState,
+        );
     }
 
     /**

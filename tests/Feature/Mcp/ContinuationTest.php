@@ -40,10 +40,17 @@ final class ContinuationTest extends TestCase
         $this->actAs($this->context('session-a'));
         $continuations = $this->app->make(Continuations::class);
 
-        $continuation = $continuations->open($continuations->issue(new Continuation('docs_read', '16', ['view' => 'body'], 33, characterOffset: 3072, revision: 2)), 'docs_read', '16');
+        $continuation = $continuations->open(
+            $continuations->issue(new Continuation('docs_read', '16', ['view' => 'body'], 33, characterOffset: 3072, revision: 2)),
+            'docs_read',
+            '16',
+        );
 
         $this->assertSame(['view' => 'body'], $continuation->filters);
-        $this->assertSame([33, 3072, 2], [$continuation->offset, $continuation->characterOffset, $continuation->revision]);
+        $this->assertSame(
+            [33, 3072, 2],
+            [$continuation->offset, $continuation->characterOffset, $continuation->revision],
+        );
     }
 
     public function test_a_cursor_from_session_a_is_refused_in_session_b(): void
@@ -106,9 +113,16 @@ final class ContinuationTest extends TestCase
         $references = array_map(fn (int $number): string => "task-{$number}", range(1, 20));
         $retained = $pages->keep($references);
 
-        $entries = $pages->resolve($retained, 7, fn (array $omitted): array => array_combine($omitted, array_map(strtoupper(...), $omitted)));
+        $entries = $pages->resolve(
+            $retained,
+            7,
+            fn (array $omitted): array => array_combine($omitted, array_map(strtoupper(...), $omitted)),
+        );
 
-        $this->assertSame(array_map(fn (int $number): string => "TASK-{$number}", range(8, 20)), array_values($entries->entries));
+        $this->assertSame(
+            array_map(fn (int $number): string => "TASK-{$number}", range(8, 20)),
+            array_values($entries->entries),
+        );
         $this->assertSame(7, $entries->offsets['task-8']);
         $this->assertSame(0, $entries->unavailableCount);
     }
@@ -164,7 +178,11 @@ final class ContinuationTest extends TestCase
 
     public function test_a_continuation_sent_with_a_first_page_filter_is_invalid_input(): void
     {
-        $arguments = ToolArguments::read('tasks_assigned', new Request(['continuation' => 'cursor', 'page' => 2]), ['continuation', 'page']);
+        $arguments = ToolArguments::read(
+            'tasks_assigned',
+            new Request(['continuation' => 'cursor', 'page' => 2]),
+            ['continuation', 'page'],
+        );
 
         $this->expectExceptionObject(ContinuationInvalid::withFilters('page'));
 
@@ -178,7 +196,12 @@ final class ContinuationTest extends TestCase
     {
         $sessionId = $session === 'session-a' ? self::SESSION_A : self::SESSION_B;
 
-        return new AgentContext(self::AGENT, $sessionId, new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null);
+        return new AgentContext(
+            self::AGENT,
+            $sessionId,
+            new SignedCall('call-1', CarbonImmutable::now(), 'digest'),
+            null,
+        );
     }
 
     private function actAs(AgentContext $context): void

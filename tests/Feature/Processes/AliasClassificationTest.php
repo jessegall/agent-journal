@@ -27,7 +27,9 @@ final class AliasClassificationTest extends TestCase
 
     public function test_the_table_keeps_revision_digest_arguments_and_project(): void
     {
-        $this->assertTrue(Schema::hasColumns('command_aliases', ['project_key', 'revision', 'body_digest', 'argument_grammar']));
+        $this->assertTrue(
+            Schema::hasColumns('command_aliases', ['project_key', 'revision', 'body_digest', 'argument_grammar']),
+        );
     }
 
     public function test_an_alias_shows_its_body_id_revision_and_purpose(): void
@@ -40,7 +42,10 @@ final class AliasClassificationTest extends TestCase
         $this->assertSame(2, $alias->revision);
         $this->assertSame(CommandType::Verification, $classification->parts[0]->purpose);
         $this->assertTrue($classification->requiredClasses()->contains(CommandClass::Verification));
-        $this->assertStringContainsString("alias:checks#{$alias->id}@2", $classification->facts()[0]->origin->reference());
+        $this->assertStringContainsString(
+            "alias:checks#{$alias->id}@2",
+            $classification->facts()[0]->origin->reference(),
+        );
     }
 
     public function test_two_aliases_that_run_each_other_name_both(): void
@@ -51,7 +56,10 @@ final class AliasClassificationTest extends TestCase
         $classification = $this->classify('journal run first');
 
         $this->assertFalse($classification->isKnown());
-        $this->assertStringContainsString("{$first->id}, {$second->id}, {$first->id}", $classification->unresolved()[0]->reason);
+        $this->assertStringContainsString(
+            "{$first->id}, {$second->id}, {$first->id}",
+            $classification->unresolved()[0]->reason,
+        );
     }
 
     public function test_an_alias_whose_body_is_unknown_stays_unknown(): void
@@ -88,6 +96,9 @@ final class AliasClassificationTest extends TestCase
 
     private function classify(string $line): Classification
     {
-        return $this->app->make(CommandClassifier::class)->classify($this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash), $this->context());
+        return $this->app->make(CommandClassifier::class)->classify(
+            $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash),
+            $this->context(),
+        );
     }
 }

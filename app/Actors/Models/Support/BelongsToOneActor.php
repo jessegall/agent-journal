@@ -65,7 +65,10 @@ trait BelongsToOneActor
     #[Scope]
     protected function ownedBy(Builder $query, ActorIdentity $actor): void
     {
-        $query->withoutGlobalScope(static::ownerScope())->where($query->qualifyColumn('actor_type'), $actor->type->value)->where($query->qualifyColumn('actor_id'), $actor->id);
+        $query->withoutGlobalScope(static::ownerScope())->where(
+            $query->qualifyColumn('actor_type'),
+            $actor->type->value,
+        )->where($query->qualifyColumn('actor_id'), $actor->id);
     }
 
     /**

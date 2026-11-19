@@ -42,8 +42,12 @@ final class ReadsServiceProvider extends ServiceProvider
         $this->app->singleton(SelfMeasuredCommands::class);
     }
 
-    public function boot(DatabaseManager $databases, Dispatcher $events, Repository $config, SelfMeasuredCommands $selfMeasured): void
-    {
+    public function boot(
+        DatabaseManager $databases,
+        Dispatcher $events,
+        Repository $config,
+        SelfMeasuredCommands $selfMeasured,
+    ): void {
         $defaultLimit = (int) $config->get('reads.default_limit');
         $pageMax = (int) $config->get('reads.page_max');
 
@@ -63,14 +67,35 @@ final class ReadsServiceProvider extends ServiceProvider
             self::countQueriesOn($connection);
         }
 
-        $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::countQueriesOn($event->connection));
-        $events->listen(QueryExecuted::class, static fn () => ScopedReadMeter::ofCurrentScope()->recordCompletedQuery());
-        $events->listen(CommandStarting::class, static fn (CommandStarting $starting) => $selfMeasured->has($starting->command) ? null : ScopedReadMeter::ofCurrentScope()->begin());
-        $events->listen(CommandFinished::class, static fn (CommandFinished $finished) => $selfMeasured->has($finished->command) ? null : self::endEntry("artisan {$finished->command}"));
+        $events->listen(
+            ConnectionEstablished::class,
+            static fn (ConnectionEstablished $event) => self::countQueriesOn($event->connection),
+        );
+        $events->listen(
+            QueryExecuted::class,
+            static fn () => ScopedReadMeter::ofCurrentScope()->recordCompletedQuery(),
+        );
+        $events->listen(
+            CommandStarting::class,
+            static fn (CommandStarting $starting) => $selfMeasured->has($starting->command) ? null : ScopedReadMeter::ofCurrentScope()->begin(),
+        );
+        $events->listen(
+            CommandFinished::class,
+            static fn (CommandFinished $finished) => $selfMeasured->has($finished->command) ? null : self::endEntry("artisan {$finished->command}"),
+        );
         $events->listen(JobProcessing::class, static fn () => ScopedReadMeter::ofCurrentScope()->begin());
-        $events->listen(JobProcessed::class, static fn (JobProcessed $processed) => self::endEntry("job {$processed->job->resolveName()}"));
-        $events->listen(JobFailed::class, static fn (JobFailed $failed) => self::endEntry("job {$failed->job->resolveName()}"));
-        $events->listen('eloquent.retrieved: *', static fn (string $event, array $models) => ScopedReadMeter::ofCurrentScope()->recordModel($models[0]::class));
+        $events->listen(
+            JobProcessed::class,
+            static fn (JobProcessed $processed) => self::endEntry("job {$processed->job->resolveName()}"),
+        );
+        $events->listen(
+            JobFailed::class,
+            static fn (JobFailed $failed) => self::endEntry("job {$failed->job->resolveName()}"),
+        );
+        $events->listen(
+            'eloquent.retrieved: *',
+            static fn (string $event, array $models) => ScopedReadMeter::ofCurrentScope()->recordModel($models[0]::class),
+        );
     }
 
     private static function endEntry(string $label): void
@@ -80,7 +105,9 @@ final class ReadsServiceProvider extends ServiceProvider
 
     private static function countQueriesOn(Connection $connection): void
     {
-        $connection->beforeExecuting(static fn (string $query, array $bindings, Connection $on) => ScopedReadMeter::ofCurrentScope()->recordQuery((string) $on->getName(), ! self::onlyReads($query), $query));
+        $connection->beforeExecuting(
+            static fn (string $query, array $bindings, Connection $on) => ScopedReadMeter::ofCurrentScope()->recordQuery((string) $on->getName(), ! self::onlyReads($query), $query),
+        );
     }
 
     /**
@@ -88,6 +115,9 @@ final class ReadsServiceProvider extends ServiceProvider
      */
     private static function onlyReads(string $query): bool
     {
-        return preg_match('/^\\s*(select|with|show|explain)\\b/i', $query) === 1 && preg_match('/\\b(insert|update|delete)\\b/i', $query) !== 1;
+        return preg_match(
+            '/^\\s*(select|with|show|explain)\\b/i',
+            $query,
+        ) === 1 && preg_match('/\\b(insert|update|delete)\\b/i', $query) !== 1;
     }
 }

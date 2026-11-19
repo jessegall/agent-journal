@@ -28,14 +28,18 @@ final readonly class PagePropTypes
     public function pageProps(): array
     {
         $props = [];
-        $inspectors = $this->resultOf(array_values(array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Inspector)));
+        $inspectors = $this->resultOf(
+            array_values(array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Inspector)),
+        );
 
         foreach ($this->declarations->pages() as $page) {
             $members = ['page: WindowResult<'.$this->dataName($page->resolver->dataClass).'>'];
 
             foreach ($this->declarations->sections() as $section) {
                 if ($section->host->key === $page->key) {
-                    $members[] = "{$section->propName}?: WindowResult<".$this->dataName($section->resolver->dataClass).'> | null';
+                    $members[] = "{$section->propName}?: WindowResult<".$this->dataName(
+                        $section->resolver->dataClass,
+                    ).'> | null';
                 }
             }
 
@@ -57,8 +61,13 @@ final readonly class PagePropTypes
     public function windowProps(): array
     {
         return array_values(array_map(
-            fn (RegisteredPage $page) => "{$page->propName}?: WindowResult<".$this->dataName($page->resolver->dataClass).'>',
-            array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Page),
+            fn (RegisteredPage $page) => "{$page->propName}?: WindowResult<".$this->dataName(
+                $page->resolver->dataClass,
+            ).'>',
+            array_filter(
+                $this->declarations->pages(),
+                fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Page,
+            ),
         ));
     }
 
@@ -72,7 +81,9 @@ final readonly class PagePropTypes
         $imports = [];
 
         foreach ([...$this->declarations->pages(), ...$this->declarations->sections()] as $declaration) {
-            $imports[$this->owners->ownerOf($declaration->resolver->dataClass)][] = $this->dataName($declaration->resolver->dataClass);
+            $imports[$this->owners->ownerOf(
+                $declaration->resolver->dataClass,
+            )][] = $this->dataName($declaration->resolver->dataClass);
         }
 
         ksort($imports);
@@ -106,7 +117,9 @@ final readonly class PagePropTypes
      */
     private function resultOf(array $pages): string|null
     {
-        $names = array_values(array_unique(array_map(fn (RegisteredPage $page) => $this->dataName($page->resolver->dataClass), $pages)));
+        $names = array_values(
+            array_unique(array_map(fn (RegisteredPage $page) => $this->dataName($page->resolver->dataClass), $pages)),
+        );
 
         return $names === [] ? null : implode(' | ', $names);
     }

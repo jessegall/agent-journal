@@ -57,7 +57,10 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_tasks_count_progress_by_id_including_none(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
         $done = $this->task('Done');
         $done->finish();
         $started = $this->task('Started');

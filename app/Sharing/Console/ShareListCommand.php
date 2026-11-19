@@ -30,7 +30,10 @@ final class ShareListCommand extends Command
         $found = Share::listPage(new ShareListFilters($state, null, null, null, $after), self::ROWS);
         $rows = array_slice($found, 0, self::ROWS);
 
-        $this->table(['Id', 'Number', 'State', 'Record', 'Expires'], array_map(fn (Share $share) => [$share->id, $share->number, $share->state->value, "{$share->root_type} {$share->root_id}", $share->expires_at->toIso8601String()], $rows));
+        $this->table(
+            ['Id', 'Number', 'State', 'Record', 'Expires'],
+            array_map(fn (Share $share) => [$share->id, $share->number, $share->state->value, "{$share->root_type} {$share->root_id}", $share->expires_at->toIso8601String()], $rows),
+        );
 
         if (count($found) > self::ROWS && $rows !== []) {
             $this->line('More: --after='.$rows[array_key_last($rows)]->id);

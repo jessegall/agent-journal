@@ -16,7 +16,9 @@ final class SkillPublicationStale extends RuntimeException implements CodedRefus
 {
     public static function for(int $fence, int $current): self
     {
-        return new self("This worker holds fence {$fence}, but the publication is at fence {$current}; a newer worker owns it.");
+        return new self(
+            "This worker holds fence {$fence}, but the publication is at fence {$current}; a newer worker owns it.",
+        );
     }
 
     public function refusalCode(): RefusalCode

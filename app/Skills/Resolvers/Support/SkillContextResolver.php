@@ -44,7 +44,11 @@ final readonly class SkillContextResolver
     {
         $session = AgentSession::byId($this->session->sessionId());
 
-        return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session, $this->profileOf($session));
+        return $this->contextOf(
+            Agent::query()->whereKey($session->agent_id)->firstOrFail(),
+            $session,
+            $this->profileOf($session),
+        );
     }
 
     /**
@@ -84,7 +88,11 @@ final readonly class SkillContextResolver
      */
     public function forSession(AgentSession $session): SkillContext
     {
-        return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session, $this->profileOf($session));
+        return $this->contextOf(
+            Agent::query()->whereKey($session->agent_id)->firstOrFail(),
+            $session,
+            $this->profileOf($session),
+        );
     }
 
     /**

@@ -46,7 +46,9 @@ final class RuleProposalRefused extends RuntimeException implements CodedRefusal
 
     public static function stale(string $id, int $expected, int $current): self
     {
-        return new self("Proposal {$id} is at revision {$current}, not {$expected}; read it again and revise that one.");
+        return new self(
+            "Proposal {$id} is at revision {$current}, not {$expected}; read it again and revise that one.",
+        );
     }
 
     public static function outsideProject(string $ruleId): self

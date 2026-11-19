@@ -107,7 +107,15 @@ use Domain\Documents\Resolvers\RevisionWindowResolver;
 use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\ReportShareProvider;
 
-final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesShareRecords
+final class DocumentsDomain extends Domain implements
+    ProvidesCommands,
+    ProvidesLinkRecords,
+    ProvidesNavigation,
+    ProvidesNumberedModels,
+    ProvidesPages,
+    ProvidesPolicies,
+    ProvidesSections,
+    ProvidesShareRecords
 {
     use HasLinkRecords, HasNumberedModels;
 
@@ -126,17 +134,78 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordSettled::class)
+            ->events(
+                DocumentCreated::class,
+                ReportFiled::class,
+                DocumentOpened::class,
+                DocumentDraftSaved::class,
+                DocumentClosed::class,
+                DocumentPublished::class,
+                RecordSettled::class,
+            )
             ->contracts(DraftResolver::class, DocumentResolver::class, ReportResolver::class)
-            ->values(DockCard::class, DockData::class, CloseCard::class, RecordInspection::class, SettlementCard::class, RevisionPageData::class, RecordText::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
-            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class)
-            ->exceptions(SettlementDenied::class, StaleRead::class, DraftMissing::class, DraftHeld::class, DraftConflict::class, DocumentMissing::class, ReportMissing::class)
+            ->values(
+                DockCard::class,
+                DockData::class,
+                CloseCard::class,
+                RecordInspection::class,
+                SettlementCard::class,
+                RevisionPageData::class,
+                RecordText::class,
+                EditingState::class,
+                DraftState::class,
+                DocumentPageData::class,
+                RecordPageData::class,
+                DraftView::class,
+                RevisionCard::class,
+                RevisionView::class,
+                DraftReference::class,
+                DraftTarget::class,
+                CloseResult::class,
+                CloseCause::class,
+                CreatedRecord::class,
+                AttentionState::class,
+                AttentionFilter::class,
+                DocumentFilters::class,
+                DocumentCard::class,
+                DocumentView::class,
+                DocumentList::class,
+                ReportCard::class,
+                ReportView::class,
+                ReportList::class,
+            )
+            ->commands(
+                CreateDocument::class,
+                CreateReport::class,
+                OpenDocument::class,
+                ReplaceDocumentBody::class,
+                ReplaceDocumentSection::class,
+                ReplaceDocumentText::class,
+                ChangeDocumentDetails::class,
+                CloseDocument::class,
+                SettleDocument::class,
+                SettleReport::class,
+                RecoverDocument::class,
+            )
+            ->exceptions(
+                SettlementDenied::class,
+                StaleRead::class,
+                DraftMissing::class,
+                DraftHeld::class,
+                DraftConflict::class,
+                DocumentMissing::class,
+                ReportMissing::class,
+            )
             ->build();
     }
 
     public function numberedModels(): array
     {
-        return [NumberedModel::global(Document::class), NumberedModel::within(DocumentRevision::class, Document::class), NumberedModel::global(Report::class)];
+        return [
+            NumberedModel::global(Document::class),
+            NumberedModel::within(DocumentRevision::class, Document::class),
+            NumberedModel::global(Report::class),
+        ];
     }
 
     public function linkRecords(): array
@@ -150,8 +219,18 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function shareRecords(): array
     {
         return [
-            new ShareRecordRegistration(Document::LINK_TYPE, Document::class, DocumentShareProvider::class, [self::SHARE_LINKED_RECORD]),
-            new ShareRecordRegistration(Report::LINK_TYPE, Report::class, ReportShareProvider::class, [self::SHARE_LINKED_RECORD]),
+            new ShareRecordRegistration(
+                Document::LINK_TYPE,
+                Document::class,
+                DocumentShareProvider::class,
+                [self::SHARE_LINKED_RECORD],
+            ),
+            new ShareRecordRegistration(
+                Report::LINK_TYPE,
+                Report::class,
+                ReportShareProvider::class,
+                [self::SHARE_LINKED_RECORD],
+            ),
         ];
     }
 

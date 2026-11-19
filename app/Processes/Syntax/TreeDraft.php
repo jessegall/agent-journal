@@ -151,7 +151,10 @@ final class TreeDraft
             $nodes[$id] = $node->finished($id);
         }
         $outcome = $this->unsupportedReason === null ? ParseOutcome::Complete : ParseOutcome::Unsupported;
-        $diagnostic = $this->unsupportedReason === null ? null : new TreeDiagnostic($this->unsupportedAt, $this->unsupportedReason);
+        $diagnostic = $this->unsupportedReason === null ? null : new TreeDiagnostic(
+            $this->unsupportedAt,
+            $this->unsupportedReason,
+        );
 
         return new ShellTree($this->line, $this->dialect, $outcome, $nodes, $root, $diagnostic);
     }

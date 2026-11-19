@@ -79,7 +79,11 @@ final class CoreCommandsTest extends CommandBusTestCase
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));
-            $this->assertSame(! in_array($command, CoreCommands::privateCommands(), true), $registry->isExported($command), $command);
+            $this->assertSame(
+                ! in_array($command, CoreCommands::privateCommands(), true),
+                $registry->isExported($command),
+                $command,
+            );
         }
 
         $this->assertSame([
@@ -138,7 +142,9 @@ final class CoreCommandsTest extends CommandBusTestCase
             RecordAll::class,
             array_map(fn ($entry) => $entry->middlewareClass(), $registry->middlewareFor($command)),
             true,
-        ) && count(array_filter($registry->middlewareFor($command), fn ($entry) => $entry->middlewareClass() === RecordAll::class)) === 2));
+        ) && count(
+            array_filter($registry->middlewareFor($command), fn ($entry) => $entry->middlewareClass() === RecordAll::class),
+        ) === 2));
 
         sort($covered);
         $expected = CoreCommands::commands();

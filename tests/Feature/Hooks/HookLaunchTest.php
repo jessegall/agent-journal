@@ -47,15 +47,35 @@ final class HookLaunchTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links', 'program_conversations', 'conversation_visits', 'process_events', 'part_runs', 'process_runs', 'command_requests'];
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'tasks',
+        'links',
+        'program_conversations',
+        'conversation_visits',
+        'process_events',
+        'part_runs',
+        'process_runs',
+        'command_requests',
+    ];
 
     public function test_the_isolated_settings_hold_only_the_journal_hooks_and_turn_off_the_child_tool(): void
     {
         $settings = json_decode($this->launch('main-agent')->settings, true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame(['hooks', 'permissions'], array_keys($settings));
-        $this->assertSame(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'], array_keys($settings['hooks']));
-        $this->assertSame([['hooks' => [['type' => 'command', 'command' => 'journal-hook claude-code']]]], $settings['hooks']['Stop']);
+        $this->assertSame(
+            ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'],
+            array_keys($settings['hooks']),
+        );
+        $this->assertSame(
+            [['hooks' => [['type' => 'command', 'command' => 'journal-hook claude-code']]]],
+            $settings['hooks']['Stop'],
+        );
         $this->assertSame(['deny' => HookProgram::ClaudeCode->nativeChildTools()], $settings['permissions']);
     }
 
@@ -67,7 +87,10 @@ final class HookLaunchTest extends TestCase
         $this->assertNotSame($first->session->id, $second->session->id);
         $this->assertNotSame($first->token, $second->token);
         $this->assertSame('claude-code', $first->session->fresh()?->program);
-        $this->assertSame($second->session->id, $this->app->make(CredentialLookup::class)->sessionFor($second->token)->id);
+        $this->assertSame(
+            $second->session->id,
+            $this->app->make(CredentialLookup::class)->sessionFor($second->token)->id,
+        );
         $this->assertSame(['hooks.ready'], $this->bottomOf($first));
         $this->assertSame(['hooks.ready'], $this->bottomOf($second));
     }
@@ -105,9 +128,15 @@ final class HookLaunchTest extends TestCase
         $visits->entered($launched->session->id, 'program-session-2', 'call-2', CarbonImmutable::now());
 
         $this->assertSame(1, AgentSession::query()->count());
-        $this->assertSame('program-session-2', $launched->session->fresh(['currentConversation'])?->currentConversation?->native_id);
+        $this->assertSame(
+            'program-session-2',
+            $launched->session->fresh(['currentConversation'])?->currentConversation?->native_id,
+        );
         $this->assertSame($framesBefore, $this->bottomOf($launched));
-        $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
+        $this->assertSame(
+            $launched->session->id,
+            $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id,
+        );
     }
 
     public function test_a_child_has_its_own_stack_so_its_stop_does_not_answer_for_the_parent(): void
@@ -117,7 +146,12 @@ final class HookLaunchTest extends TestCase
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
         $childAgent = Agent::named('Helper', 'read-only-helper');
 
-        $child = $this->app->make(LaunchSessions::class)->launch($childAgent, TestSelections::of('claude-code'), TestSelections::requestId(), $parent->session);
+        $child = $this->app->make(LaunchSessions::class)->launch(
+            $childAgent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+            $parent->session,
+        );
 
         $this->assertSame($parent->session->id, $child->session->fresh()?->parent_session_id);
         $this->assertSame('{}', $this->stopAs($child, 'call-1'));
@@ -130,7 +164,10 @@ final class HookLaunchTest extends TestCase
 
         $this->app->make(LaunchSessions::class)->end($launched->session);
 
-        $this->assertSame(StackStatus::Closed, AgentStackRow::query()->authorizedFor($this->targetOf($launched))->sole()->status);
+        $this->assertSame(
+            StackStatus::Closed,
+            AgentStackRow::query()->authorizedFor($this->targetOf($launched))->sole()->status,
+        );
         $this->expectException(CredentialRejected::class);
         $this->app->make(CredentialLookup::class)->sessionFor($launched->token);
     }
@@ -139,7 +176,11 @@ final class HookLaunchTest extends TestCase
     {
         $agent = Agent::named('Test agent', $profileKey);
 
-        return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of($program), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(
+            $agent,
+            TestSelections::of($program),
+            TestSelections::requestId(),
+        );
     }
 
     /**
@@ -156,10 +197,23 @@ final class HookLaunchTest extends TestCase
     private function stopAs(LaunchedAgent $launched, string $callId): string
     {
         return $this->as($launched, function () use ($launched, $callId): string {
-            $stop = new StopRequested(new HookIdentity($launched->session->agent_id, $launched->session->id, $callId, hash('sha256', $callId)), new StopDetails('turn-1', false));
-            $capabilities = new ProgramCapabilities('Test program', 'stop replies', ['onStop'], RewriteSupport::WithoutApproval);
+            $stop = new StopRequested(
+                new HookIdentity($launched->session->agent_id, $launched->session->id, $callId, hash('sha256', $callId)),
+                new StopDetails('turn-1', false),
+            );
+            $capabilities = new ProgramCapabilities(
+                'Test program',
+                'stop replies',
+                ['onStop'],
+                RewriteSupport::WithoutApproval,
+            );
 
-            return $this->app->make(AgentStateMachine::class)->answer($stop, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::stop($answer))->stdout;
+            return $this->app->make(AgentStateMachine::class)->answer(
+                $stop,
+                $capabilities,
+                new OperationDeadline(3000),
+                fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+            )->stdout;
         }, $callId);
     }
 
@@ -178,7 +232,10 @@ final class HookLaunchTest extends TestCase
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), TestLaunchAuthority::forAgent($launched->session->agent_id));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($launched->session->agent_id),
+            TestLaunchAuthority::forAgent($launched->session->agent_id),
+        );
 
         try {
             return $work();

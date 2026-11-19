@@ -56,7 +56,10 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
             ?? throw ActorNotAllowed::withoutStoredAuthority('agent without a live session');
 
         try {
-            $profile = $this->profiles->admittedPin(ProfileKey::from($session->profile_key), $session->profile_revision);
+            $profile = $this->profiles->admittedPin(
+                ProfileKey::from($session->profile_key),
+                $session->profile_revision,
+            );
         } catch (ProfileRetired|ProfileMissing) {
             throw ActorNotAllowed::withoutStoredAuthority('agent whose profile is no longer admitted');
         }

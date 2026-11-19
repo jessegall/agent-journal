@@ -18,6 +18,8 @@ final class McpToolNameInvalid extends LogicException
 
     public static function notSnakeCase(string $className, string $name): self
     {
-        return new self("The MCP tool {$className} is named {$name}; a tool name is snake_case, such as tasks_assigned.");
+        return new self(
+            "The MCP tool {$className} is named {$name}; a tool name is snake_case, such as tasks_assigned.",
+        );
     }
 }

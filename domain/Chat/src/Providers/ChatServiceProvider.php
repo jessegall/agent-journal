@@ -19,7 +19,9 @@ final class ChatServiceProvider extends ServiceProvider
     {
         // A session that can no longer take a message is a form error on the composer, not a failure.
         if ($exceptions instanceof Handler) {
-            $exceptions->renderable(fn (StackTargetRefused $refused) => $this->app->make(Redirector::class)->back(303)->withErrors(['session' => 'This agent session cannot take a message now.']));
+            $exceptions->renderable(
+                fn (StackTargetRefused $refused) => $this->app->make(Redirector::class)->back(303)->withErrors(['session' => 'This agent session cannot take a message now.']),
+            );
         }
     }
 }

@@ -77,7 +77,11 @@ final class ScanCache
 
     private static function cacheFileFor(FileScan $scan): string
     {
-        return dirname(__DIR__, 3).'/storage/framework/testing/scan-cache/'.preg_replace('/[^a-z0-9_.-]+/i', '-', $scan->key()).'.cache';
+        return dirname(__DIR__, 3).'/storage/framework/testing/scan-cache/'.preg_replace(
+            '/[^a-z0-9_.-]+/i',
+            '-',
+            $scan->key(),
+        ).'.cache';
     }
 
     /**

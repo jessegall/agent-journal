@@ -27,8 +27,14 @@ final class SettingRegistryTest extends TestCase
         $library = new LibrarySettings();
         $registry = SettingRegistry::from(['Core' => $core, 'Library' => $library]);
 
-        $this->assertSame(['Core', 'display_name'], [$registry->ownerOf($core->displayName)->owner, $registry->ownerOf($core->displayName)->key]);
-        $this->assertSame(['Library', 'greeting'], [$registry->ownerOf($library->greeting)->owner, $registry->ownerOf($library->greeting)->key]);
+        $this->assertSame(
+            ['Core', 'display_name'],
+            [$registry->ownerOf($core->displayName)->owner, $registry->ownerOf($core->displayName)->key],
+        );
+        $this->assertSame(
+            ['Library', 'greeting'],
+            [$registry->ownerOf($library->greeting)->owner, $registry->ownerOf($library->greeting)->key],
+        );
         $this->assertSame('desk', $registry->ownerOf($library->desk)->key);
         $this->assertSame($library, $registry->definition('Library'));
     }
@@ -87,7 +93,9 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('library');
 
-        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new LibrarySettings(), 'library' => new SettingsList([])]);
+        SettingRegistry::from(
+            ['Core' => new CoreSettings(), 'Library' => new LibrarySettings(), 'library' => new SettingsList([])],
+        );
     }
 
     public function test_one_definition_class_for_two_owners_is_refused(): void
@@ -95,7 +103,9 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('Shelves');
 
-        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new LibrarySettings(), 'Shelves' => new LibrarySettings()]);
+        SettingRegistry::from(
+            ['Core' => new CoreSettings(), 'Library' => new LibrarySettings(), 'Shelves' => new LibrarySettings()],
+        );
     }
 
     public function test_a_key_in_two_groups_is_refused_with_owner_and_key(): void
@@ -122,11 +132,16 @@ final class SettingRegistryTest extends TestCase
 
     public function test_settings_past_the_limit_per_owner_are_refused(): void
     {
-        $settings = array_map(fn (int $number) => StringSetting::make("setting_{$number}", 'Setting', ''), range(1, SettingRegistry::SETTINGS_PER_OWNER + 1));
+        $settings = array_map(
+            fn (int $number) => StringSetting::make("setting_{$number}", 'Setting', ''),
+            range(1, SettingRegistry::SETTINGS_PER_OWNER + 1),
+        );
 
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('Library declares more than '.SettingRegistry::SETTINGS_PER_OWNER.' settings');
 
-        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([SettingGroup::make('many', 'Many', $settings)])]);
+        SettingRegistry::from(
+            ['Core' => new CoreSettings(), 'Library' => new SettingsList([SettingGroup::make('many', 'Many', $settings)])],
+        );
     }
 }

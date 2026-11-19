@@ -26,7 +26,9 @@ final readonly class JournalRoutes
     {
         $routes = [];
         foreach ($commands as $name => $command) {
-            $attributes = $command instanceof Command ? new ReflectionClass($command)->getAttributes(JournalRoute::class) : [];
+            $attributes = $command instanceof Command ? new ReflectionClass($command)->getAttributes(
+                JournalRoute::class,
+            ) : [];
             if ($attributes !== []) {
                 $routes[$name] = $attributes[0]->newInstance();
             }

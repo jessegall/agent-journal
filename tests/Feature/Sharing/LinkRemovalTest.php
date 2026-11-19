@@ -47,9 +47,21 @@ final class LinkRemovalTest extends TestCase
         $this->target = Agent::named('Target', 'read-only-helper');
         $this->source->linkTo($this->target);
         $link = Link::query()->between($this->source, $this->target)->sole();
-        $configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
-        $share = Share::grant($this->identityOf($this->source), TestIds::of(9), $configuration, ShareToken::generate(), CarbonImmutable::now()->addDays(7));
-        $this->member = ShareMember::approve($share, $this->identityOf($this->source), new ShareSelectedTarget($this->identityOf($this->target), $link->id, '1'));
+        $configuration = ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
+        );
+        $share = Share::grant(
+            $this->identityOf($this->source),
+            TestIds::of(9),
+            $configuration,
+            ShareToken::generate(),
+            CarbonImmutable::now()->addDays(7),
+        );
+        $this->member = ShareMember::approve(
+            $share,
+            $this->identityOf($this->source),
+            new ShareSelectedTarget($this->identityOf($this->target), $link->id, '1'),
+        );
     }
 
     public function test_removing_the_link_ends_its_approval_in_the_same_transaction(): void
@@ -87,9 +99,20 @@ final class LinkRemovalTest extends TestCase
     public function test_a_candidate_whose_link_is_not_approved_is_not_shared_yet(): void
     {
         $share = Share::query()->findOrFail($this->member->share_id);
-        $approved = new ShareLinkedCandidate(new ShareRecordCard($this->identityOf($this->target), 'Target', '1'), $this->identityOf($this->source), $this->member->link_id);
-        $other = new ShareLinkedCandidate(new ShareRecordCard(TestActors::record('core.agent', 3), 'Other', '1'), $this->identityOf($this->source), TestIds::of(4));
-        $candidates = new ShareCandidates(new ShareRecordCard($this->identityOf($this->source), 'Source', '1'), [$approved, $other]);
+        $approved = new ShareLinkedCandidate(
+            new ShareRecordCard($this->identityOf($this->target), 'Target', '1'),
+            $this->identityOf($this->source),
+            $this->member->link_id,
+        );
+        $other = new ShareLinkedCandidate(
+            new ShareRecordCard(TestActors::record('core.agent', 3), 'Other', '1'),
+            $this->identityOf($this->source),
+            TestIds::of(4),
+        );
+        $candidates = new ShareCandidates(
+            new ShareRecordCard($this->identityOf($this->source), 'Source', '1'),
+            [$approved, $other],
+        );
 
         $this->assertSame([$other], $candidates->notSharedYet(ShareMember::approvedLinkIdsOf($share)));
     }

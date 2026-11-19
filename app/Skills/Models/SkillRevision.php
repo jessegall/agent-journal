@@ -42,7 +42,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $input_digest
  * @property CarbonImmutable $created_at
  */
-#[Fillable(['skill_id', 'revision', 'name', 'description', 'sections', 'condition', 'condition_version', 'author_type', 'author_id', 'source_key', 'source_digest', 'input_digest'])]
+#[Fillable(
+    ['skill_id', 'revision', 'name', 'description', 'sections', 'condition', 'condition_version', 'author_type', 'author_id', 'source_key', 'source_digest', 'input_digest'],
+)]
 final class SkillRevision extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -80,8 +82,14 @@ final class SkillRevision extends Model implements ReadableModel
      * Appends the draft as the skill's next revision, numbered after every earlier one; the caller holds the skill's
      * lock, so two revisions never take one number.
      */
-    public static function appendTo(Skill $skill, SkillDraft $draft, SkillCondition $condition, ActorIdentity $author, string|null $sourceKey, string|null $sourceDigest): self
-    {
+    public static function appendTo(
+        Skill $skill,
+        SkillDraft $draft,
+        SkillCondition $condition,
+        ActorIdentity $author,
+        string|null $sourceKey,
+        string|null $sourceDigest,
+    ): self {
         $latest = self::query()->ofSkill($skill)->max('revision');
 
         return self::query()->create([
@@ -153,7 +161,10 @@ final class SkillRevision extends Model implements ReadableModel
         return new SkillDraft(
             $this->name,
             $this->description,
-            array_map(fn (SkillSection $section) => new SectionDraft($section->key, $section->heading, $section->storedText()), $this->sections),
+            array_map(
+                fn (SkillSection $section) => new SectionDraft($section->key, $section->heading, $section->storedText()),
+                $this->sections,
+            ),
             json_encode($this->condition, JSON_THROW_ON_ERROR),
         );
     }

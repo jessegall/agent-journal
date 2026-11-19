@@ -37,8 +37,14 @@ final readonly class TextRange
         return new self($version, TextAnchorType::Lines, 0, $firstLine, $lastLine, '', 0, 0);
     }
 
-    public static function quote(string $version, int $firstLine, int $lastLine, string $quote, int $startOffset, int $endOffset): self
-    {
+    public static function quote(
+        string $version,
+        int $firstLine,
+        int $lastLine,
+        string $quote,
+        int $startOffset,
+        int $endOffset,
+    ): self {
         return new self($version, TextAnchorType::Quote, 0, $firstLine, $lastLine, $quote, $startOffset, $endOffset);
     }
 

@@ -64,6 +64,10 @@ final readonly class ReceiptCaller
      */
     public function columns(): array
     {
-        return ['author_type' => $this->actor->type->value, 'author_id' => $this->actor->id, 'session_id' => $this->sessionId];
+        return [
+            'author_type' => $this->actor->type->value,
+            'author_id' => $this->actor->id,
+            'session_id' => $this->sessionId,
+        ];
     }
 }

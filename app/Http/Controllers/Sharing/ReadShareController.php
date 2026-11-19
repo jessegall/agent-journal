@@ -24,12 +24,22 @@ use Illuminate\Http\Response;
  */
 final readonly class ReadShareController
 {
-    public function __invoke(ReadShareRequest $request, ReadPermits $permits, ShareReadLimits $limits, EntryDispatchers $dispatchers, SharedPageResponses $responses): Response
-    {
+    public function __invoke(
+        ReadShareRequest $request,
+        ReadPermits $permits,
+        ShareReadLimits $limits,
+        EntryDispatchers $dispatchers,
+        SharedPageResponses $responses,
+    ): Response {
         try {
             $permit = $this->issue($request, $permits, $limits);
             $limits->admitRead($permit->shareId);
-            $read = new ReadShare($permit->reference, $request->sharePath(), $request->cursor(), $request->wantsHeadOnly());
+            $read = new ReadShare(
+                $permit->reference,
+                $request->sharePath(),
+                $request->cursor(),
+                $request->wantsHeadOnly(),
+            );
             $page = $dispatchers->runAsJournal(CommandEntry::ShareGateway, 'share read', $read);
         } finally {
             $permits->clear();

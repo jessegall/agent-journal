@@ -25,7 +25,10 @@ final class DomainImportsTest extends TestCase
         $this->makeTemporaryFolder('domain-imports');
         File::ensureDirectoryExists("{$this->root}/plans/js");
         File::ensureDirectoryExists("{$this->root}/rules/js");
-        File::put("{$this->root}/roots.json", (string) json_encode(['owners' => ['plans' => 'plans/js', 'rules' => 'rules/js']]));
+        File::put(
+            "{$this->root}/roots.json",
+            (string) json_encode(['owners' => ['plans' => 'plans/js', 'rules' => 'rules/js']]),
+        );
         File::put("{$this->root}/rules/js/RulesView.vue", "<template><div /></template>\n");
     }
 
@@ -68,7 +71,10 @@ final class DomainImportsTest extends TestCase
 
     private function check(): Process
     {
-        $process = new Process(['node', base_path('scripts/check-domain-imports.mjs'), "{$this->root}/roots.json", $this->root], base_path());
+        $process = new Process(
+            ['node', base_path('scripts/check-domain-imports.mjs'), "{$this->root}/roots.json", $this->root],
+            base_path(),
+        );
         $process->run();
 
         return $process;

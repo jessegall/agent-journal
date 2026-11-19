@@ -58,7 +58,10 @@ final class SharingModelsTest extends TestCase
         $endpoint = ShareGatewayEndpoint::openFor($configuration, 1, 'run-1');
         $operation = ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
 
-        $this->assertEquals($configuration->settings, ShareGatewayConfiguration::query()->findOrFail($configuration->id)->settings);
+        $this->assertEquals(
+            $configuration->settings,
+            ShareGatewayConfiguration::query()->findOrFail($configuration->id)->settings,
+        );
         $this->assertSame('press', $configuration->toConfiguration()->settings->gatewayKey);
         $this->assertSame('https://share.example.test', $endpoint->public_origin);
         $this->assertSame(GatewayEndpointState::Opening, $endpoint->fresh()?->state);
@@ -83,7 +86,13 @@ final class SharingModelsTest extends TestCase
     public function test_a_share_never_serializes_its_token_and_stores_it_encrypted(): void
     {
         $token = ShareToken::generate();
-        $share = Share::grant($this->root(), TestIds::of(9), $this->configuration(), $token, CarbonImmutable::now()->addDays(7));
+        $share = Share::grant(
+            $this->root(),
+            TestIds::of(9),
+            $this->configuration(),
+            $token,
+            CarbonImmutable::now()->addDays(7),
+        );
         $stored = Share::query()->findOrFail($share->id);
 
         $this->assertSame(ShareState::Pending, $stored->state);
@@ -98,9 +107,17 @@ final class SharingModelsTest extends TestCase
     public function test_a_proposal_member_and_audit_are_made_through_their_methods(): void
     {
         $proposal = Share::propose($this->root(), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(7));
-        $member = ShareMember::approve($proposal, $this->root(), new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1'));
+        $member = ShareMember::approve(
+            $proposal,
+            $this->root(),
+            new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1'),
+        );
         $audit = ShareAudit::recordFor($proposal, ShareAuditType::Created, TestActors::agentIdentity(5), null);
-        $change = ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, TestActors::userIdentity(9), 'disabled');
+        $change = ShareAudit::recordForInstallation(
+            ShareAuditType::GatewayChanged,
+            TestActors::userIdentity(9),
+            'disabled',
+        );
 
         $this->assertSame(ShareState::Proposed, $proposal->fresh()?->state);
         $this->assertNull($proposal->token_digest);
@@ -118,6 +135,8 @@ final class SharingModelsTest extends TestCase
 
     private function configuration(): ShareGatewayConfiguration
     {
-        return ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, ['press-login']));
+        return ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, ['press-login']),
+        );
     }
 }

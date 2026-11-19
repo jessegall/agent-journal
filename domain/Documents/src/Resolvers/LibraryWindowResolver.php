@@ -17,7 +17,11 @@ final readonly class LibraryWindowResolver implements PageResolver
 {
     public const string SHARING_NOTICE = 'Documents and reports are shared with every agent and user of this journal; linked private records stay private.';
 
-    public function __construct(private DocumentResolver $documents, private ReportResolver $reports, private ListRecordsRequest $request) {}
+    public function __construct(
+        private DocumentResolver $documents,
+        private ReportResolver $reports,
+        private ListRecordsRequest $request,
+    ) {}
 
     public function read(): LibraryData
     {

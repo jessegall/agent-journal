@@ -20,6 +20,10 @@ final readonly class DisableSettingGroupHandler implements CommandHandler
     public function handle(DisableSettingGroup $command): SettingsChange
     {
 
-        return $this->writer->setToggle($this->targets->toggleGroup($command->group), false, $command->expectedRevision);
+        return $this->writer->setToggle(
+            $this->targets->toggleGroup($command->group),
+            false,
+            $command->expectedRevision,
+        );
     }
 }

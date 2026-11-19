@@ -40,8 +40,14 @@ final readonly class BuiltinSteps
             'pwd' => new BuiltinResult(0, $context, $context->workingFolder."\n"),
             'true', ':' => new BuiltinResult(0, $context),
             'false' => new BuiltinResult(1, $context),
-            'export' => new BuiltinResult(0, $context->withEnvironment([...$context->environment, ...$this->assignmentsIn($arguments)])),
-            'unset' => new BuiltinResult(0, $context->withEnvironment(array_diff_key($context->environment, array_flip($arguments)))),
+            'export' => new BuiltinResult(
+                0,
+                $context->withEnvironment([...$context->environment, ...$this->assignmentsIn($arguments)]),
+            ),
+            'unset' => new BuiltinResult(
+                0,
+                $context->withEnvironment(array_diff_key($context->environment, array_flip($arguments))),
+            ),
             'echo' => new BuiltinResult(0, $context, $this->echoed($arguments)),
             'printf' => new BuiltinResult(0, $context, $this->printed(...$arguments)),
             default => throw SupervisorRefused::unsupportedBuiltin($name, 'it has no adapter'),

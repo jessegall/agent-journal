@@ -126,7 +126,10 @@ final class StackRestorerTest extends TestCase
         $this->expectException(StateTypeUnknown::class);
 
         $this->restorer->restore(
-            $this->records($this->bottom(), new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now())),
+            $this->records(
+                $this->bottom(),
+                new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now()),
+            ),
         );
     }
 
@@ -151,11 +154,23 @@ final class StackRestorerTest extends TestCase
         $events = new Dispatcher();
         $events->listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
             $event->registry->register('tasks.working', $this->tasks);
-            $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false)));
+            $event->registry->register(
+                'test.switched_off',
+                new ClosureStateLoader(fn () => new SwitchableState(false)),
+            );
         });
         $types = new StateTypes($events, FixedFileEditPermission::loader());
-        $restorer = new StackRestorer($types, new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))));
-        $switchedOff = new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 1, CarbonImmutable::now());
+        $restorer = new StackRestorer(
+            $types,
+            new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
+        );
+        $switchedOff = new FrameRecord(
+            'review',
+            new StateReference('test.switched_off', NoSubject::None),
+            false,
+            1,
+            CarbonImmutable::now(),
+        );
 
         $stack = $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42), $switchedOff));
 
@@ -164,7 +179,9 @@ final class StackRestorerTest extends TestCase
 
         $this->expectException(StateSchemaUnknown::class);
 
-        $restorer->restore($this->records($this->bottom(), new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 2, CarbonImmutable::now())));
+        $restorer->restore(
+            $this->records($this->bottom(), new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 2, CarbonImmutable::now())),
+        );
     }
 
     public function test_a_frame_of_a_switched_off_type_is_restored_reports_off_and_leaves_on_request(): void
@@ -200,9 +217,14 @@ final class StackRestorerTest extends TestCase
             $event->registry->register('plans.working', $switchedOffType);
         });
         $types = new StateTypes($events, FixedFileEditPermission::loader());
-        $restorer = new StackRestorer($types, new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))));
+        $restorer = new StackRestorer(
+            $types,
+            new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
+        );
 
-        $stack = $restorer->restore($this->records($this->bottom(), new FrameRecord('plan-7', new StateReference('plans.working', NoSubject::None), false, 1, CarbonImmutable::now())));
+        $stack = $restorer->restore(
+            $this->records($this->bottom(), new FrameRecord('plan-7', new StateReference('plans.working', NoSubject::None), false, 1, CarbonImmutable::now())),
+        );
 
         $this->assertSame(1, $loaded);
         $this->assertSame([true, false], array_map(fn ($frame) => $frame->isEnabled(), $stack->frames()));
@@ -212,10 +234,16 @@ final class StackRestorerTest extends TestCase
     private function restorerWith(InMemoryTaskLoader $tasks, bool $mayEditFiles = true): StackRestorer
     {
         $events = new Dispatcher();
-        $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
+        $events->listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks),
+        );
         $types = new StateTypes($events, FixedFileEditPermission::loader($mayEditFiles));
 
-        return new StackRestorer($types, new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))));
+        return new StackRestorer(
+            $types,
+            new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
+        );
     }
 
     private function records(FrameRecord ...$records): FrameRecords
@@ -230,6 +258,12 @@ final class StackRestorerTest extends TestCase
 
     private function task(string $id, int $number): FrameRecord
     {
-        return new FrameRecord($id, new StateReference('tasks.working', new SubjectReference((string) $number, 1)), false, 1, CarbonImmutable::now());
+        return new FrameRecord(
+            $id,
+            new StateReference('tasks.working', new SubjectReference((string) $number, 1)),
+            false,
+            1,
+            CarbonImmutable::now(),
+        );
     }
 }

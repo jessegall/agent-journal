@@ -24,7 +24,11 @@ final readonly class ProgramFixture
 
     public static function load(string $folder): self
     {
-        $read = fn (string $file): array => json_decode((string) file_get_contents(dirname(__DIR__)."/Fixtures/Hooks/{$folder}/{$file}"), true, flags: JSON_THROW_ON_ERROR);
+        $read = fn (string $file): array => json_decode(
+            (string) file_get_contents(dirname(__DIR__)."/Fixtures/Hooks/{$folder}/{$file}"),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
         $hooks = $read('hooks.json');
         $capabilities = $read('capabilities.json');
 

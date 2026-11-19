@@ -110,7 +110,10 @@ final class AssignmentFactsTest extends TestCase
 
     public function test_a_failing_listener_cannot_undo_the_committed_assignment(): void
     {
-        $this->app->make('events')->listen(AssignmentsChanged::class, fn () => throw SimulatedFailure::of('The listener broke.'));
+        $this->app->make('events')->listen(
+            AssignmentsChanged::class,
+            fn () => throw SimulatedFailure::of('The listener broke.'),
+        );
 
         $this->assertThrows(fn () => $this->writer()->assign($this->task, $this->helper), RuntimeException::class);
 

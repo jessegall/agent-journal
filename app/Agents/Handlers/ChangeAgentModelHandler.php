@@ -15,6 +15,11 @@ final readonly class ChangeAgentModelHandler implements CommandHandler
 
     public function handle(ChangeAgentModel $command): DriverReceipt
     {
-        return $this->settings->accept($command->target(), $command->idempotencyKey, $command->model, null)[0]->receipt();
+        return $this->settings->accept(
+            $command->target(),
+            $command->idempotencyKey,
+            $command->model,
+            null,
+        )[0]->receipt();
     }
 }

@@ -63,8 +63,14 @@ final class CommandRequestTest extends TestCase
     {
         $first = $this->open('agent-1', '/projects/acme');
 
-        $this->assertThrows(fn () => $this->runAs('agent-2', new WithdrawCommandRequest($first)), RequestTransitionRefused::class);
-        $this->assertThrows(fn () => CommandRequest::query()->findOrFail($first)->approve(), RequestTransitionRefused::class);
+        $this->assertThrows(
+            fn () => $this->runAs('agent-2', new WithdrawCommandRequest($first)),
+            RequestTransitionRefused::class,
+        );
+        $this->assertThrows(
+            fn () => CommandRequest::query()->findOrFail($first)->approve(),
+            RequestTransitionRefused::class,
+        );
     }
 
     public function test_a_fresh_read_gives_the_same_state_and_next_step(): void
@@ -79,13 +85,19 @@ final class CommandRequestTest extends TestCase
 
     private function open(string $agentId, string $folder): string
     {
-        return $this->runAs($agentId, new OpenCommandRequest('acme verify', str_repeat('a', 64), 'acme verify --all', $folder, RequestHoldReason::UnknownCommand));
+        return $this->runAs(
+            $agentId,
+            new OpenCommandRequest('acme verify', str_repeat('a', 64), 'acme verify --all', $folder, RequestHoldReason::UnknownCommand),
+        );
     }
 
     private function runAs(string $agentId, object $command): string
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestLaunchAuthority::forAgent($agentId),
+        );
 
         return $this->app->make(CommandBus::class)->run($command);
     }

@@ -34,7 +34,10 @@ final class McpCatalogueTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null),
+        );
     }
 
     public function test_a_domain_tool_appears_in_tools_list(): void
@@ -58,7 +61,9 @@ final class McpCatalogueTest extends TestCase
         $catalogue->registerTool(LedgerReadTool::class);
 
         $this->expectException(McpToolNameTaken::class);
-        $this->expectExceptionMessage('The MCP tool name ledger_read is declared by both '.LedgerReadTool::class.' and '.SecondLedgerReadTool::class.'.');
+        $this->expectExceptionMessage(
+            'The MCP tool name ledger_read is declared by both '.LedgerReadTool::class.' and '.SecondLedgerReadTool::class.'.',
+        );
 
         $catalogue->registerTool(SecondLedgerReadTool::class);
     }

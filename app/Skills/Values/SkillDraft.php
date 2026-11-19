@@ -29,7 +29,10 @@ final readonly class SkillDraft
         return hash('sha256', (string) json_encode([
             $this->name,
             $this->description,
-            array_map(fn (SectionDraft $section) => [$section->key, $section->heading, $section->markdown], $this->sections),
+            array_map(
+                fn (SectionDraft $section) => [$section->key, $section->heading, $section->markdown],
+                $this->sections,
+            ),
             $this->condition,
         ], JSON_THROW_ON_ERROR));
     }

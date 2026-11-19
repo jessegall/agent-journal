@@ -33,7 +33,10 @@ final class ShellLexerTest extends TestCase
     {
         $line = $this->lex('git log | grep fix && wc -l > out.log 2>&1; true');
 
-        $this->assertSame([TokenType::Word, TokenType::Word, TokenType::Pipe, TokenType::Word, TokenType::Word, TokenType::AndIf, TokenType::Word, TokenType::Word, TokenType::Redirect, TokenType::Word, TokenType::Redirect, TokenType::Word, TokenType::Semicolon, TokenType::Word], $this->types($line));
+        $this->assertSame(
+            [TokenType::Word, TokenType::Word, TokenType::Pipe, TokenType::Word, TokenType::Word, TokenType::AndIf, TokenType::Word, TokenType::Word, TokenType::Redirect, TokenType::Word, TokenType::Redirect, TokenType::Word, TokenType::Semicolon, TokenType::Word],
+            $this->types($line),
+        );
         $this->assertSame(RedirectType::Output, $line->tokens[8]->redirect);
         $this->assertSame(2, $line->tokens[10]->descriptor);
         $this->assertSame(RedirectType::DuplicateOutput, $line->tokens[10]->redirect);
@@ -51,7 +54,10 @@ final class ShellLexerTest extends TestCase
     {
         $line = $this->lex("echo '\$(rm a)'");
 
-        $this->assertSame([WordSegmentType::SingleQuoted], array_map(fn ($segment) => $segment->type, $line->tokens[1]->word->segments ?? []));
+        $this->assertSame(
+            [WordSegmentType::SingleQuoted],
+            array_map(fn ($segment) => $segment->type, $line->tokens[1]->word->segments ?? []),
+        );
     }
 
     public function test_an_empty_quoted_argument_survives(): void

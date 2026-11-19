@@ -19,7 +19,25 @@ final class ExplicitTransactionTest extends TestCase
     /**
      * The folders judged: the test modules now; each later phase adds the owner it moves.
      */
-    public const array CHECKED = ['app/Agents/Handlers', 'app/Assignments/Handlers', 'app/Bus', 'app/Records', 'app/Sharing', 'domain/Access/src', 'domain/Chat/src', 'domain/Documents/src', 'domain/Memory/src', 'domain/Plans/src', 'app/Processes', 'app/Profiles', 'domain/Reminders/src', 'domain/Rules/src', 'domain/Sequences/src', 'domain/Tasks/src', 'tests/Fixtures/Modules'];
+    public const array CHECKED = [
+        'app/Agents/Handlers',
+        'app/Assignments/Handlers',
+        'app/Bus',
+        'app/Records',
+        'app/Sharing',
+        'domain/Access/src',
+        'domain/Chat/src',
+        'domain/Documents/src',
+        'domain/Memory/src',
+        'domain/Plans/src',
+        'app/Processes',
+        'app/Profiles',
+        'domain/Reminders/src',
+        'domain/Rules/src',
+        'domain/Sequences/src',
+        'domain/Tasks/src',
+        'tests/Fixtures/Modules',
+    ];
 
     private const array TRANSACTION_CALLS = ['transaction', 'beginTransaction', 'commit', 'rollBack'];
 
@@ -39,7 +57,10 @@ final class ExplicitTransactionTest extends TestCase
 
     public function test_an_explicit_transaction_in_a_checked_folder_is_named(): void
     {
-        $this->assertSame(['tests/Fixtures/Bus/Bypass/OpensTransaction.php:14 calls transaction'], $this->transactionsIn(['tests/Fixtures/Bus/Bypass']));
+        $this->assertSame(
+            ['tests/Fixtures/Bus/Bypass/OpensTransaction.php:14 calls transaction'],
+            $this->transactionsIn(['tests/Fixtures/Bus/Bypass']),
+        );
     }
 
     /**

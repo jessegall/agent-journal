@@ -28,6 +28,9 @@ final class TextReading
 
         $end = $selection->lastLine ?? '';
 
-        return [...$read, 'continuation' => "--lines {$part->nextLine}-{$end} --at-revision {$version}".($selection->bullets ? ' --bullets' : '').($selection->words !== null ? " --grep \"{$selection->words}\"" : '')];
+        return [
+            ...$read,
+            'continuation' => "--lines {$part->nextLine}-{$end} --at-revision {$version}".($selection->bullets ? ' --bullets' : '').($selection->words !== null ? " --grep \"{$selection->words}\"" : ''),
+        ];
     }
 }

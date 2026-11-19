@@ -156,7 +156,9 @@ final class DomainDeclarationTest extends TestCase
         $this->assertSame([
             'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be Domain\<Name>\<Name>Domain',
             'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be Domain\<Name>\<Name>Domain',
-        ], $this->reasons($this->rules($this->registry())->misnamedDomainClasses($files, 'Tests\Fixtures\Declarations')));
+        ], $this->reasons(
+            $this->rules($this->registry())->misnamedDomainClasses($files, 'Tests\Fixtures\Declarations'),
+        ));
     }
 
     public function test_a_file_outside_domains_and_not_on_the_starter_kit_list_fails(): void
@@ -164,9 +166,16 @@ final class DomainDeclarationTest extends TestCase
         $listed = $this->fixture('App/Http/Listed.php');
         $files = DomainFiles::in([$this->fixture('App')]);
 
-        $violations = $this->rules($this->registry())->filesOutsideDomains($files, [$this->fixture('Shared')], [$listed]);
+        $violations = $this->rules($this->registry())->filesOutsideDomains(
+            $files,
+            [$this->fixture('Shared')],
+            [$listed],
+        );
 
-        $this->assertSame([$this->fixture('App/Http/NewController.php')], array_map(fn (Violation $violation) => $violation->file, $violations));
+        $this->assertSame(
+            [$this->fixture('App/Http/NewController.php')],
+            array_map(fn (Violation $violation) => $violation->file, $violations),
+        );
     }
 
     public function test_starter_kit_code_may_use_no_domain(): void
@@ -191,7 +200,10 @@ final class DomainDeclarationTest extends TestCase
     {
         $violations = $this->rules($this->registry())->extraSharedFiles($this->fixture('Shared'), ['Fixed.php']);
 
-        $this->assertSame([$this->fixture('Shared/Exceptions/SharedHelper.php')], array_map(fn (Violation $violation) => $violation->file, $violations));
+        $this->assertSame(
+            [$this->fixture('Shared/Exceptions/SharedHelper.php')],
+            array_map(fn (Violation $violation) => $violation->file, $violations),
+        );
     }
 
     /**

@@ -62,7 +62,12 @@ final class PruneShareAuditTest extends TestCase
 
     private function audit(Share $share, ShareAuditType $type): void
     {
-        ShareAudit::recordFor($share, $type, $type->isRead() ? ActorIdentity::system() : TestActors::userIdentity(9), null);
+        ShareAudit::recordFor(
+            $share,
+            $type,
+            $type->isRead() ? ActorIdentity::system() : TestActors::userIdentity(9),
+            null,
+        );
     }
 
     private function prune(): AuditPruning

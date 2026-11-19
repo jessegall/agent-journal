@@ -60,9 +60,18 @@ final class HooksServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('hooks.closed_stack_days'),
         ));
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
-        $this->app->singleton(OperationDeadline::class, fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')));
-        $this->app->singleton(ContextBudget::class, fn () => new ContextBudget($this->app->make('config')->integer('hooks.context_budget_characters')));
-        $this->app->singleton(HookRetryWindow::class, fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')));
+        $this->app->singleton(
+            OperationDeadline::class,
+            fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')),
+        );
+        $this->app->singleton(
+            ContextBudget::class,
+            fn () => new ContextBudget($this->app->make('config')->integer('hooks.context_budget_characters')),
+        );
+        $this->app->singleton(
+            HookRetryWindow::class,
+            fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')),
+        );
     }
 
     public function boot(Dispatcher $events, ActorProviderRegistration $actors): void
@@ -70,7 +79,10 @@ final class HooksServiceProvider extends ServiceProvider
         $actors->registerWorkStack(ActorType::Agent, AgentWorkStack::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/hooks.php');
         $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
-        $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily());
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily(),
+        );
 
         $scope = new AgentSessionScope(
             static fn () => Container::getInstance()->make(ActorVisibility::class),

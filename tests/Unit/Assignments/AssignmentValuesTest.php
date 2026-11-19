@@ -62,7 +62,10 @@ final class AssignmentValuesTest extends TestCase
         $root = TestActors::record('plans.plan', 3);
         $task = TestActors::record('tasks.task', 12);
 
-        $group = new AssignmentGroup($root, [$task, TestActors::record('plans.plan', 3), TestActors::record('tasks.task', 12)]);
+        $group = new AssignmentGroup(
+            $root,
+            [$task, TestActors::record('plans.plan', 3), TestActors::record('tasks.task', 12)],
+        );
 
         $this->assertSame([$root, $task], $group->records);
     }
@@ -97,7 +100,10 @@ final class AssignmentValuesTest extends TestCase
     public function test_a_set_finds_a_records_assignment_or_answers_none(): void
     {
         $task = TestActors::record('tasks.task', 12);
-        $assignment = new Assignment($task, new AssignmentReference(TestIds::of(42), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7))));
+        $assignment = new Assignment(
+            $task,
+            new AssignmentReference(TestIds::of(42), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7))),
+        );
         $set = new AssignmentSet([$assignment]);
 
         $this->assertSame($assignment, $set->forRecord(TestActors::record('tasks.task', 12))->get());

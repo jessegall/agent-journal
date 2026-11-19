@@ -32,14 +32,23 @@ final class OutputPolicyTest extends TestCase
 
     public function test_a_piped_check_loses_its_status_and_pipefail_waives_nothing(): void
     {
-        $this->assertStringContainsString('exit status', $this->verdict('vendor/bin/phpstan analyse | grep error')->reasons()[0]);
+        $this->assertStringContainsString(
+            'exit status',
+            $this->verdict('vendor/bin/phpstan analyse | grep error')->reasons()[0],
+        );
         $this->assertFalse($this->verdict('set -o pipefail; vue-tsc --noEmit | cut -c1-80')->isAllowed());
     }
 
     public function test_redirects_around_a_check_are_refused_and_name_the_stream(): void
     {
-        $this->assertSame('php artisan test', $this->verdict('{ php artisan test; } > result.log')->hidden[0]->correction);
-        $this->assertStringContainsString('standard error', $this->verdict('php artisan test 2>/dev/null')->reasons()[0]);
+        $this->assertSame(
+            'php artisan test',
+            $this->verdict('{ php artisan test; } > result.log')->hidden[0]->correction,
+        );
+        $this->assertStringContainsString(
+            'standard error',
+            $this->verdict('php artisan test 2>/dev/null')->reasons()[0],
+        );
     }
 
     public function test_an_ordinary_pipeline_passes(): void
@@ -50,7 +59,10 @@ final class OutputPolicyTest extends TestCase
     private function verdict(string $line): OutputVerdict
     {
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
-        $classification = $this->app->make(CommandClassifier::class)->classify($tree, new ExecutionContext(ShellDialect::Bash, base_path(), base_path()));
+        $classification = $this->app->make(CommandClassifier::class)->classify(
+            $tree,
+            new ExecutionContext(ShellDialect::Bash, base_path(), base_path()),
+        );
 
         return $this->app->make(OutputPolicy::class)->check($classification);
     }

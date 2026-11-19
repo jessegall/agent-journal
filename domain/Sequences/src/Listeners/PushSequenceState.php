@@ -22,6 +22,9 @@ final readonly class PushSequenceState implements Listener
 
     public function handle(SequenceStarted $event): void
     {
-        $this->stacks->push($event->target, FollowingSequenceStateReference::forRun($this->runs->followedBy($event->target, $event->runId)));
+        $this->stacks->push(
+            $event->target,
+            FollowingSequenceStateReference::forRun($this->runs->followedBy($event->target, $event->runId)),
+        );
     }
 }

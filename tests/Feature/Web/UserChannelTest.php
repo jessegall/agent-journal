@@ -36,7 +36,10 @@ final class UserChannelTest extends TestCase
 
     public function test_the_channel_sign_in_needs_a_signed_in_user(): void
     {
-        $this->post('/broadcasting/auth', ['channel_name' => 'private-'.UserChannel::nameFor($this->owner->id), 'socket_id' => '1.1'])
+        $this->post(
+            '/broadcasting/auth',
+            ['channel_name' => 'private-'.UserChannel::nameFor($this->owner->id), 'socket_id' => '1.1'],
+        )
             ->assertRedirect('/login');
     }
 }

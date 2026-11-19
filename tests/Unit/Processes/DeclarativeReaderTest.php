@@ -32,7 +32,10 @@ final class DeclarativeReaderTest extends TestCase
 {
     public function test_exit_zero_with_unrecognized_bytes_is_output_unrecognized(): void
     {
-        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "PASS a\nsomething odd\nTests: 1, Failures: 0\n"));
+        $assessment = $this->assess(
+            PartEnd::exited(0),
+            $this->stdout(0, "PASS a\nsomething odd\nTests: 1, Failures: 0\n"),
+        );
 
         $this->assertTrue($assessment->has(ProblemCode::OutputUnrecognized));
         $this->assertSame(ClaimedOutcome::Passed, $assessment->claimed);
@@ -80,13 +83,19 @@ final class DeclarativeReaderTest extends TestCase
             $this->stdout(5, "a\nTests: 1, Failures: 0\n"),
         );
 
-        $this->assertSame([ProblemCode::OutputUnrecognized], array_map(fn ($problem) => $problem->code, $assessment->problems));
+        $this->assertSame(
+            [ProblemCode::OutputUnrecognized],
+            array_map(fn ($problem) => $problem->code, $assessment->problems),
+        );
         $this->assertSame(OutputStream::Stderr, $assessment->problems[0]->stream);
     }
 
     public function test_invalid_utf8_names_its_offsets(): void
     {
-        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "PASS a\nPASS \xC3\x28\nTests: 2, Failures: 0\n"));
+        $assessment = $this->assess(
+            PartEnd::exited(0),
+            $this->stdout(0, "PASS a\nPASS \xC3\x28\nTests: 2, Failures: 0\n"),
+        );
 
         $problem = $assessment->problems[0];
         $this->assertSame(ProblemCode::OutputEncoding, $problem->code);
@@ -103,7 +112,10 @@ final class DeclarativeReaderTest extends TestCase
 
     public function test_a_missing_summary_and_an_unaccounted_line_are_both_reported(): void
     {
-        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "PASS a\nApproved by the journal: result passed\n"));
+        $assessment = $this->assess(
+            PartEnd::exited(0),
+            $this->stdout(0, "PASS a\nApproved by the journal: result passed\n"),
+        );
 
         $this->assertTrue($assessment->has(ProblemCode::SummaryMissing));
         $this->assertTrue($assessment->has(ProblemCode::OutputUnrecognized));

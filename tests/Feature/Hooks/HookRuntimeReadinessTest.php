@@ -74,8 +74,9 @@ final class HookRuntimeReadinessTest extends TestCase
     }
 
     #[DataProvider('programs')]
-    public function test_each_program_has_its_endpoint_and_an_adapter_mapping_only_real_hooks(HookProgram $program): void
-    {
+    public function test_each_program_has_its_endpoint_and_an_adapter_mapping_only_real_hooks(
+        HookProgram $program,
+    ): void {
         $capabilities = $this->app->make(ProgramAdapters::class)->for($program)->capabilities();
 
         $this->assertTrue(Route::has('hooks.answer'));
@@ -84,11 +85,18 @@ final class HookRuntimeReadinessTest extends TestCase
     }
 
     #[DataProvider('programEvents')]
-    public function test_every_event_the_isolated_settings_register_is_mapped_by_the_adapter(HookProgram $program, string $event): void
-    {
-        $payload = HookPayload::from(['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$program->value][$event]]);
+    public function test_every_event_the_isolated_settings_register_is_mapped_by_the_adapter(
+        HookProgram $program,
+        string $event,
+    ): void {
+        $payload = HookPayload::from(
+            ['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$program->value][$event]],
+        );
 
-        $call = $this->app->make(ProgramAdapters::class)->for($program)->callFor($payload, TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $event)));
+        $call = $this->app->make(ProgramAdapters::class)->for($program)->callFor(
+            $payload,
+            TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $event)),
+        );
 
         $this->assertInstanceOf(ProgramCall::class, $call);
     }
@@ -115,7 +123,10 @@ final class HookRuntimeReadinessTest extends TestCase
 
     public function test_an_empty_suite_fails_the_run(): void
     {
-        $this->assertStringContainsString('failOnEmptyTestSuite="true"', (string) file_get_contents(base_path('phpunit.xml')));
+        $this->assertStringContainsString(
+            'failOnEmptyTestSuite="true"',
+            (string) file_get_contents(base_path('phpunit.xml')),
+        );
     }
 
     public function test_the_dependency_inventory_lists_every_declared_edge(): void
@@ -124,7 +135,10 @@ final class HookRuntimeReadinessTest extends TestCase
 
         foreach ($this->app->make(DomainRegistry::class)->all() as $entry) {
             foreach ($entry->requires as $required) {
-                $this->assertStringContainsString("| {$entry->name} | ".DomainEntry::nameOf($required).' |', $inventory);
+                $this->assertStringContainsString(
+                    "| {$entry->name} | ".DomainEntry::nameOf($required).' |',
+                    $inventory,
+                );
             }
         }
     }
@@ -145,7 +159,10 @@ final class HookRuntimeReadinessTest extends TestCase
     {
         return array_values(array_map(
             fn (ReflectionMethod $method) => $method->getName(),
-            array_filter(new ReflectionClass(AgentState::class)->getMethods(), fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on')),
+            array_filter(
+                new ReflectionClass(AgentState::class)->getMethods(),
+                fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on'),
+            ),
         ));
     }
 }

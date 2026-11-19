@@ -48,7 +48,16 @@ final class AgentRetirementTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'assignments'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'tasks',
+        'assignments',
+    ];
 
     private User $owner;
 
@@ -69,10 +78,20 @@ final class AgentRetirementTest extends TestCase
 
     public function test_the_owner_retires_an_agent_releasing_its_work_and_ending_its_sessions(): void
     {
-        $session = $this->app->make(LaunchSessions::class)->launch($this->helper, TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(
+            $this->helper,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign(Task::factory()->create(['title' => 'One'])->assignmentIdentity(), AssigneeIdentity::of($this->helper));
-        $writer->assign(Task::factory()->create(['title' => 'Two'])->assignmentIdentity(), AssigneeIdentity::of($this->helper));
+        $writer->assign(
+            Task::factory()->create(['title' => 'One'])->assignmentIdentity(),
+            AssigneeIdentity::of($this->helper),
+        );
+        $writer->assign(
+            Task::factory()->create(['title' => 'Two'])->assignmentIdentity(),
+            AssigneeIdentity::of($this->helper),
+        );
 
         $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
 
@@ -87,10 +106,16 @@ final class AgentRetirementTest extends TestCase
     public function test_a_main_agent_retires_a_helper_but_not_itself_and_a_helper_retires_nobody(): void
     {
         $this->startRequestAs($this->helper->id, TestIds::of(2));
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)), ActorNotAllowed::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)),
+            ActorNotAllowed::class,
+        );
 
         $this->startRequestAs($this->main->id, TestIds::of(1));
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)), AgentRetirementDenied::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)),
+            AgentRetirementDenied::class,
+        );
         $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
 
         $this->assertTrue($this->helper->refresh()->isRetired());
@@ -100,7 +125,10 @@ final class AgentRetirementTest extends TestCase
     public function test_retirement_refuses_to_join_a_transaction_the_bus_did_not_open(): void
     {
         DB::transaction(function (): void {
-            $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id)), CommandTransactionMismatch::class);
+            $this->assertThrows(
+                fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id)),
+                CommandTransactionMismatch::class,
+            );
         });
 
         $this->assertFalse($this->helper->refresh()->isRetired());
@@ -128,17 +156,34 @@ final class AgentRetirementTest extends TestCase
 
     public function test_a_retired_agent_cannot_be_launched_and_its_credential_is_refused(): void
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch($this->helper, TestSelections::of('claude-code'), TestSelections::requestId());
+        $launched = $this->app->make(LaunchSessions::class)->launch(
+            $this->helper,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
         Agent::query()->whereKey($this->helper->id)->update(['retired_at' => now()]);
 
-        $this->assertThrows(fn () => $this->app->make(LaunchSessions::class)->launch($this->helper->refresh(), TestSelections::of('claude-code'), TestSelections::requestId()), LaunchRefused::class);
-        $this->assertThrows(fn () => $this->app->make(CredentialLookup::class)->sessionFor($launched->token), CredentialRejected::class);
+        $this->assertThrows(
+            fn () => $this->app->make(LaunchSessions::class)->launch($this->helper->refresh(), TestSelections::of('claude-code'), TestSelections::requestId()),
+            LaunchRefused::class,
+        );
+        $this->assertThrows(
+            fn () => $this->app->make(CredentialLookup::class)->sessionFor($launched->token),
+            CredentialRejected::class,
+        );
     }
 
     public function test_ending_a_session_keeps_the_agents_work(): void
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch($this->helper, TestSelections::of('claude-code'), TestSelections::requestId());
-        $this->app->make(AssignmentWriterInTransaction::class)->assign(Task::factory()->create(['title' => 'Kept'])->assignmentIdentity(), AssigneeIdentity::of($this->helper));
+        $launched = $this->app->make(LaunchSessions::class)->launch(
+            $this->helper,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
+        $this->app->make(AssignmentWriterInTransaction::class)->assign(
+            Task::factory()->create(['title' => 'Kept'])->assignmentIdentity(),
+            AssigneeIdentity::of($this->helper),
+        );
 
         $this->app->make(LaunchSessions::class)->end($launched->session);
 
@@ -176,7 +221,11 @@ final class AgentRetirementTest extends TestCase
     {
         DB::reconnect();
         DB::transaction(function () use ($parent): void {
-            $session = $this->app->make(AgentSessions::class)->start($this->helper, TestSelections::of(), TestSelections::requestId());
+            $session = $this->app->make(AgentSessions::class)->start(
+                $this->helper,
+                TestSelections::of(),
+                TestSelections::requestId(),
+            );
             $this->app->make(LaunchCredentials::class)->issue($session);
             $this->holdUntilTheRetirementWaits($parent);
         });
@@ -196,7 +245,9 @@ final class AgentRetirementTest extends TestCase
         DB::reconnect();
         DB::transaction(function () use ($taskId, $parent): void {
             DB::select('SELECT id FROM agents WHERE id = ? FOR SHARE', [$this->helper->id]);
-            DB::table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_type' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('assignments')->insert(
+                ['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_type' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()],
+            );
             $this->holdUntilTheRetirementWaits($parent);
         });
         DB::disconnect();

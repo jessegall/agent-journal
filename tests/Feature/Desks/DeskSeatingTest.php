@@ -33,7 +33,15 @@ final class DeskSeatingTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
-    private const array TABLES = ['users', 'agents', 'inboxes', 'desks', 'desk_seats', 'assignments', 'command_receipts'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'inboxes',
+        'desks',
+        'desk_seats',
+        'assignments',
+        'command_receipts',
+    ];
 
     private ActorIdentity $builder;
 

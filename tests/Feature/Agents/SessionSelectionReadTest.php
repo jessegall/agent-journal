@@ -38,8 +38,17 @@ final class SessionSelectionReadTest extends TestCase
         parent::setUp();
 
         $agent = Agent::named('Researcher', 'read-only-helper');
-        $selection = SelectedProgram::resolve(null, ModelSelection::fromInput('default'), new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []), null);
-        $this->session = $this->app->make(LaunchSessions::class)->launch($agent, $selection, TestSelections::requestId())->session;
+        $selection = SelectedProgram::resolve(
+            null,
+            ModelSelection::fromInput('default'),
+            new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []),
+            null,
+        );
+        $this->session = $this->app->make(LaunchSessions::class)->launch(
+            $agent,
+            $selection,
+            TestSelections::requestId(),
+        )->session;
         $this->startRequestAs($agent->id, $this->session->id);
     }
 
@@ -47,8 +56,14 @@ final class SessionSelectionReadTest extends TestCase
     {
         $option = $this->app->make(SessionResolver::class)->active()[0];
 
-        $this->assertSame([HookProgram::ClaudeCode, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null], [$option->selection->program, $option->selection->model, $option->selection->requested->type, $option->selection->requested->model]);
-        $this->assertSame([ProgramSourceType::Profile, 'journal-researcher', 4], [$option->selection->source->programSource, $option->selection->source->profileKey, $option->selection->source->profileRevision]);
+        $this->assertSame(
+            [HookProgram::ClaudeCode, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null],
+            [$option->selection->program, $option->selection->model, $option->selection->requested->type, $option->selection->requested->model],
+        );
+        $this->assertSame(
+            [ProgramSourceType::Profile, 'journal-researcher', 4],
+            [$option->selection->source->programSource, $option->selection->source->profileKey, $option->selection->source->profileRevision],
+        );
         $this->assertSame(LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED, $option->actualModel);
         $this->assertSame([null, 0], [$option->conversationNativeId, $option->visitCount]);
     }

@@ -26,7 +26,9 @@ final readonly class CancelDriverRequestHandler implements CommandHandler
         $request->cancel();
 
         if ($request->changesASetting()) {
-            AgentRuntime::query()->lockForUpdate()->findOrFail($request->agent_runtime_id)->recomputeRequestedSettings();
+            AgentRuntime::query()->lockForUpdate()->findOrFail(
+                $request->agent_runtime_id,
+            )->recomputeRequestedSettings();
         }
 
         return $this->recovery->record($request, RecoveryAction::Cancelled, $command->reason);

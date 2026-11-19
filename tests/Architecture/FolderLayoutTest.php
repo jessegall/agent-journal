@@ -39,12 +39,20 @@ final class FolderLayoutTest extends TestCase
             }
         }
 
-        $this->assertSame([], $loose, "These classes sit loose at a domain or Core area root; move each into the folder of its type, or that area's Support folder.");
+        $this->assertSame(
+            [],
+            $loose,
+            "These classes sit loose at a domain or Core area root; move each into the folder of its type, or that area's Support folder.",
+        );
     }
 
     public function test_no_domain_keeps_an_actions_folder_but_access(): void
     {
-        $this->assertSame([], self::actionsFoldersIn(base_path('domain')), 'A domain write is a command with a handler (doc 19); only Access keeps the Actions Fortify calls.');
+        $this->assertSame(
+            [],
+            self::actionsFoldersIn(base_path('domain')),
+            'A domain write is a command with a handler (doc 19); only Access keeps the Actions Fortify calls.',
+        );
     }
 
     public function test_an_actions_folder_in_a_domain_is_named(): void
@@ -69,7 +77,10 @@ final class FolderLayoutTest extends TestCase
      */
     private static function actionsFoldersIn(string $packages): array
     {
-        $folders = array_map(fn (string $folder) => substr($folder, strlen($packages) + 1), glob("{$packages}/*/src/Actions", GLOB_ONLYDIR) ?: []);
+        $folders = array_map(
+            fn (string $folder) => substr($folder, strlen($packages) + 1),
+            glob("{$packages}/*/src/Actions", GLOB_ONLYDIR) ?: [],
+        );
 
         return array_values(array_filter($folders, fn (string $folder) => $folder !== 'Access/src/Actions'));
     }
@@ -86,7 +97,11 @@ final class FolderLayoutTest extends TestCase
             }
         }
 
-        $this->assertSame([], $misplaced, 'These enums sit outside an Enums folder; move each into the Enums folder of its domain or Core area.');
+        $this->assertSame(
+            [],
+            $misplaced,
+            'These enums sit outside an Enums folder; move each into the Enums folder of its domain or Core area.',
+        );
     }
 
     public function test_every_type_folder_holds_only_its_own_type(): void
@@ -106,7 +121,10 @@ final class FolderLayoutTest extends TestCase
                 $misfit = $type->requirementNotMetBy(new ReflectionClass($name));
 
                 if ($misfit !== null) {
-                    $misfits[] = substr($file, strlen(base_path()) + 1)." is not {$misfit}; move it to ".basename(dirname($file)).'/Support';
+                    $misfits[] = substr(
+                        $file,
+                        strlen(base_path()) + 1,
+                    )." is not {$misfit}; move it to ".basename(dirname($file)).'/Support';
                 }
             }
         }

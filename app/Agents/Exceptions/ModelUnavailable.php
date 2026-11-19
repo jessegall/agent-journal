@@ -15,7 +15,9 @@ final class ModelUnavailable extends InvalidArgumentException implements Command
 {
     public static function for(string $model, string $program): self
     {
-        return new self("Model {$model} is not allowed for {$program} with this profile. Name an allowed model. Nothing was launched.");
+        return new self(
+            "Model {$model} is not allowed for {$program} with this profile. Name an allowed model. Nothing was launched.",
+        );
     }
 
     public function reason(): LaunchRefusalType

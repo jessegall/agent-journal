@@ -94,7 +94,10 @@ final class HookScopeTest extends TestCase
         $this->startTestAgentRequest(1, 10);
         $store = $this->app->make(ActorStore::class);
 
-        $this->assertSame([[], []], $store->actAsSystem('test', fn () => [$this->visibleStacks(), $this->visibleCalls()]));
+        $this->assertSame(
+            [[], []],
+            $store->actAsSystem('test', fn () => [$this->visibleStacks(), $this->visibleCalls()]),
+        );
         $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
     }
 
@@ -102,7 +105,10 @@ final class HookScopeTest extends TestCase
     {
         $this->startTestAgentRequest(1, 10);
         $store = $this->app->make(ActorStore::class);
-        $scope = new AgentScope(fn (): ActorVisibility => $this->app->make(ActorVisibility::class), fn (): AgentContext => $this->app->make(AgentContext::class));
+        $scope = new AgentScope(
+            fn (): ActorVisibility => $this->app->make(ActorVisibility::class),
+            fn (): AgentContext => $this->app->make(AgentContext::class),
+        );
 
         $query = AgentStackRow::query()->withoutGlobalScopes();
         $store->actAsSystem('test', fn () => $scope->apply($query, new AgentStackRow()));
@@ -138,7 +144,13 @@ final class HookScopeTest extends TestCase
     private function storeFor(StackTarget $target): void
     {
         new AgentStackRow()->startFor($target, new FrameRecords([
-            new FrameRecord('ready', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now()),
+            new FrameRecord(
+                'ready',
+                new StateReference('hooks.ready', NoSubject::None),
+                true,
+                1,
+                CarbonImmutable::now(),
+            ),
         ]), new TickingTypes([]));
         new HookCall()->recordFor(
             new HookIdentity($target->agentId, $target->sessionId, 'hook-1', str_repeat('a', 64)),
@@ -152,7 +164,9 @@ final class HookScopeTest extends TestCase
      */
     private function visibleStacks(): array
     {
-        return AgentStackRow::query()->get()->map(fn (AgentStackRow $row) => [$row->agent_id, $row->session_id])->values()->all();
+        return AgentStackRow::query()->get()->map(
+            fn (AgentStackRow $row) => [$row->agent_id, $row->session_id],
+        )->values()->all();
     }
 
     /**
@@ -160,6 +174,8 @@ final class HookScopeTest extends TestCase
      */
     private function visibleCalls(): array
     {
-        return HookCall::query()->get()->map(fn (HookCall $call) => [$call->agent_id, $call->session_id])->values()->all();
+        return HookCall::query()->get()->map(
+            fn (HookCall $call) => [$call->agent_id, $call->session_id],
+        )->values()->all();
     }
 }

@@ -35,11 +35,18 @@ final readonly class LaunchSessions
      * Starts a session with its credential, and, with a runtime intent, its runtime in Starting and the first delivery,
      * all in one launch transaction (doc 40, section 11).
      */
-    public function launch(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null, RuntimeIntent|null $intent = null): LaunchedAgent
-    {
+    public function launch(
+        Agent $agent,
+        SelectedProgram $selection,
+        string $requestId,
+        AgentSession|null $parent = null,
+        RuntimeIntent|null $intent = null,
+    ): LaunchedAgent {
         $settings = $this->settingsFor($selection);
 
-        return $this->transaction->run(fn () => $this->start($agent, $selection, $requestId, $parent, $settings, $intent));
+        return $this->transaction->run(
+            fn () => $this->start($agent, $selection, $requestId, $parent, $settings, $intent),
+        );
     }
 
     /**
@@ -47,8 +54,12 @@ final readonly class LaunchSessions
      *
      * @throws LaunchRefused
      */
-    public function launchInTransaction(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null): LaunchedAgent
-    {
+    public function launchInTransaction(
+        Agent $agent,
+        SelectedProgram $selection,
+        string $requestId,
+        AgentSession|null $parent = null,
+    ): LaunchedAgent {
         return $this->start($agent, $selection, $requestId, $parent, $this->settingsFor($selection), null);
     }
 
@@ -71,15 +82,28 @@ final readonly class LaunchSessions
     /**
      * @throws LaunchRefused
      */
-    private function start(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent, IsolatedHookSettings $settings, RuntimeIntent|null $intent): LaunchedAgent
-    {
+    private function start(
+        Agent $agent,
+        SelectedProgram $selection,
+        string $requestId,
+        AgentSession|null $parent,
+        IsolatedHookSettings $settings,
+        RuntimeIntent|null $intent,
+    ): LaunchedAgent {
         $session = $this->sessions->start($agent, $selection, $requestId, $parent);
         $token = $this->credentials->issue($session);
         [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 
         $this->events->dispatch(new LaunchStarted($agent->id, $session->id));
 
-        return new LaunchedAgent($session, $token, $settings->content(), $selection->program->modelArguments($selection->model), $runtime, $firstRequest);
+        return new LaunchedAgent(
+            $session,
+            $token,
+            $settings->content(),
+            $selection->program->modelArguments($selection->model),
+            $runtime,
+            $firstRequest,
+        );
     }
 
     public function end(AgentSession $session): void

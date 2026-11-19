@@ -23,7 +23,12 @@ final readonly class GatewayEndpoint
      */
     public static function forOperation(GatewayOperation $operation): self
     {
-        return new self($operation->runId, $operation->endpointVersion, $operation->settings()->publicOrigin, self::referenceOf($operation->runId, $operation->endpointVersion));
+        return new self(
+            $operation->runId,
+            $operation->endpointVersion,
+            $operation->settings()->publicOrigin,
+            self::referenceOf($operation->runId, $operation->endpointVersion),
+        );
     }
 
     /**

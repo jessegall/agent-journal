@@ -49,14 +49,19 @@ final readonly class OperationsResolver
             'request_key' => $operation->requestKey,
             'command' => $operation->command,
             'state' => $operation->state->value,
-            'refusal' => $operation->refusalCode === null ? null : ['code' => $operation->refusalCode->value, 'message' => $operation->refusalMessage],
+            'refusal' => $operation->refusalCode === null ? null : [
+                'code' => $operation->refusalCode->value,
+                'message' => $operation->refusalMessage,
+            ],
             'result' => $result,
             'outcome_count' => count($outcomes),
             'outcome_offset' => $offset,
             'outcomes' => array_slice($outcomes, $offset, self::OUTCOMES_PER_PAGE),
         ], $next < count($outcomes) ? [new NextAction(self::TOOL, [
             'request_key' => $operation->requestKey,
-            'continuation' => $this->continuations->issue(new Continuation(self::TOOL, $operation->requestKey, [], $next)),
+            'continuation' => $this->continuations->issue(
+                new Continuation(self::TOOL, $operation->requestKey, [], $next),
+            ),
         ])] : []);
     }
 }

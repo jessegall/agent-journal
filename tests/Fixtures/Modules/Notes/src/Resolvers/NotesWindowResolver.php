@@ -15,6 +15,8 @@ final readonly class NotesWindowResolver implements PageResolver
 {
     public function read(): NotesPageData
     {
-        return NotesPageData::from(['texts' => array_values(Note::query()->forActor()->latest('id')->pluck('text')->all())]);
+        return NotesPageData::from(
+['texts' => array_values(Note::query()->forActor()->latest('id')->pluck('text')->all())],
+);
     }
 }

@@ -25,8 +25,12 @@ final readonly class AgentSessions
     /**
      * @throws LaunchRefused
      */
-    public function start(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null): AgentSession
-    {
+    public function start(
+        Agent $agent,
+        SelectedProgram $selection,
+        string $requestId,
+        AgentSession|null $parent = null,
+    ): AgentSession {
         try {
             $this->lifecycle->lockShared($agent->id);
         } catch (AgentNotAvailable $retired) {

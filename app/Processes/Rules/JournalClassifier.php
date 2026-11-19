@@ -34,19 +34,39 @@ final readonly class JournalClassifier implements ProgramClassifier
     /**
      * @param  list<Word>  $words
      */
-    public function classify(array $words, int $node, ProgramIdentity $program, ExecutionContext $context): PartClassification
-    {
+    public function classify(
+        array $words,
+        int $node,
+        ProgramIdentity $program,
+        ExecutionContext $context,
+    ): PartClassification {
         if (! $this->isTrusted($program, $context)) {
-            return $this->unresolved($node, $program, UnresolvedType::UnresolvedExecutable, "{$program->original} is not this installation's journal.");
+            return $this->unresolved(
+                $node,
+                $program,
+                UnresolvedType::UnresolvedExecutable,
+                "{$program->original} is not this installation's journal.",
+            );
         }
-        $name = implode(':', array_map(fn (Word $word): string => (string) $word->literal(), array_slice($words, 1, 2)));
+        $name = implode(
+            ':',
+            array_map(fn (Word $word): string => (string) $word->literal(), array_slice($words, 1, 2)),
+        );
         $route = $this->routes->routeOf($name);
         if ($route === []) {
-            return $this->unresolved($node, $program, UnresolvedType::UnknownSubcommand, "journal has no route {$name}; the registered routes are listed by journal --help.");
+            return $this->unresolved(
+                $node,
+                $program,
+                UnresolvedType::UnknownSubcommand,
+                "journal has no route {$name}; the registered routes are listed by journal --help.",
+            );
         }
         $origin = new RuleOrigin("core.journal.{$name}", 1);
         $classes = $route[0]->classes();
-        $facts = array_map(fn (CommandClass $class) => new ClassFact($class, $node, $origin, "The journal route {$name} does it."), $classes);
+        $facts = array_map(
+            fn (CommandClass $class) => new ClassFact($class, $node, $origin, "The journal route {$name} does it."),
+            $classes,
+        );
 
         return new PartClassification($node, $facts, [], CommandType::Ordinary, $program);
     }
@@ -59,13 +79,26 @@ final readonly class JournalClassifier implements ProgramClassifier
         if (! str_contains($program->original, '/')) {
             return true;
         }
-        $written = str_starts_with($program->original, '/') ? $program->original : rtrim($context->workingFolder, '/').'/'.$program->original;
+        $written = str_starts_with($program->original, '/') ? $program->original : rtrim(
+            $context->workingFolder,
+            '/',
+        ).'/'.$program->original;
 
         return realpath($written) !== false && realpath($written) === realpath($this->trustedExecutable);
     }
 
-    private function unresolved(int $node, ProgramIdentity $program, UnresolvedType $type, string $reason): PartClassification
-    {
-        return new PartClassification($node, [], [new UnresolvedFact($type, $node, $reason)], CommandType::Unknown, $program);
+    private function unresolved(
+        int $node,
+        ProgramIdentity $program,
+        UnresolvedType $type,
+        string $reason,
+    ): PartClassification {
+        return new PartClassification(
+            $node,
+            [],
+            [new UnresolvedFact($type, $node, $reason)],
+            CommandType::Unknown,
+            $program,
+        );
     }
 }

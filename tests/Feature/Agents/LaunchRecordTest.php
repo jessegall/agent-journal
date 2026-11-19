@@ -40,25 +40,77 @@ final class LaunchRecordTest extends TestCase
 
     public function test_both_tables_have_the_selection_and_request_columns(): void
     {
-        $this->assertTrue(Schema::hasColumns('agent_sessions', ['model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'launch_request_id']));
-        $this->assertTrue(Schema::hasColumns('launch_records', ['request_id', 'agent_id', 'actor_type', 'actor_id', 'program', 'model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'origin_type', 'owner_reference', 'context_reference', 'conversation_mode', 'payload_digest', 'disposition', 'session_id', 'reply_inbox_id']));
+        $this->assertTrue(Schema::hasColumns('agent_sessions', [
+            'model',
+            'requested_model_type',
+            'requested_model',
+            'program_source',
+            'profile_key',
+            'profile_revision',
+            'launch_request_id',
+        ]));
+        $this->assertTrue(Schema::hasColumns('launch_records', [
+            'request_id',
+            'agent_id',
+            'actor_type',
+            'actor_id',
+            'program',
+            'model',
+            'requested_model_type',
+            'requested_model',
+            'program_source',
+            'profile_key',
+            'profile_revision',
+            'origin_type',
+            'owner_reference',
+            'context_reference',
+            'conversation_mode',
+            'payload_digest',
+            'disposition',
+            'session_id',
+            'reply_inbox_id',
+        ]));
     }
 
     public function test_a_session_shows_the_requested_default_apart_from_the_resolved_model(): void
     {
-        $selection = SelectedProgram::resolve(null, ModelSelection::fromInput('default'), new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []), null);
+        $selection = SelectedProgram::resolve(
+            null,
+            ModelSelection::fromInput('default'),
+            new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []),
+            null,
+        );
         $requestId = TestSelections::requestId();
 
-        $session = $this->app->make(LaunchSessions::class)->launch($this->agent('Researcher'), $selection, $requestId)->session->refresh();
+        $session = $this->app->make(LaunchSessions::class)->launch(
+            $this->agent('Researcher'),
+            $selection,
+            $requestId,
+        )->session->refresh();
 
-        $this->assertSame([ModelSelectionType::ProfileDefault, null, 'claude-sonnet-5-5', $requestId], [$session->requested_model_type, $session->requested_model, $session->model, $session->launch_request_id]);
-        $this->assertSame([HookProgram::ClaudeCode, 'claude-sonnet-5-5', 'journal-researcher', 4], [$session->selection()->program, $session->selection()->model, $session->selection()->source->profileKey, $session->selection()->source->profileRevision]);
+        $this->assertSame(
+            [ModelSelectionType::ProfileDefault, null, 'claude-sonnet-5-5', $requestId],
+            [$session->requested_model_type, $session->requested_model, $session->model, $session->launch_request_id],
+        );
+        $this->assertSame(
+            [HookProgram::ClaudeCode, 'claude-sonnet-5-5', 'journal-researcher', 4],
+            [
+                $session->selection()->program,
+                $session->selection()->model,
+                $session->selection()->source->profileKey,
+                $session->selection()->source->profileRevision,
+            ],
+        );
         $this->assertSame(ModelSelectionType::ProfileDefault, $session->selection()->requested->type);
     }
 
     public function test_a_session_never_takes_a_second_selection(): void
     {
-        $session = $this->app->make(LaunchSessions::class)->launch($this->agent('Builder'), TestSelections::of(), TestSelections::requestId())->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(
+            $this->agent('Builder'),
+            TestSelections::of(),
+            TestSelections::requestId(),
+        )->session;
 
         $this->expectException(SessionSelectionFixed::class);
 
@@ -80,23 +132,35 @@ final class LaunchRecordTest extends TestCase
 
         $this->expectException(LaunchRequestConflict::class);
 
-        LaunchRecord::accept($this->request($agent, $request->requestId, ModelSelection::named('claude-sonnet-5-5')), $requester, None::create());
+        $changed = $this->request($agent, $request->requestId, ModelSelection::named('claude-sonnet-5-5'));
+
+        LaunchRecord::accept($changed, $requester, None::create());
     }
 
     public function test_an_agent_reads_its_own_record_and_not_another_agents(): void
     {
         $own = $this->agent('Own');
         $other = $this->agent('Other');
-        $ownRequest = $this->request($own, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'), 'helpers.job 7');
+        $ownRequest = $this->request(
+            $own,
+            TestSelections::requestId(),
+            ModelSelection::named('claude-opus-5-5'),
+            'helpers.job 7',
+        );
         $otherRequest = $this->request($other, TestSelections::requestId(), ModelSelection::named('claude-opus-5-5'));
         LaunchRecord::accept($ownRequest, ActorIdentity::system(), None::create());
         LaunchRecord::accept($otherRequest, ActorIdentity::system(), None::create());
-        $session = $this->app->make(LaunchSessions::class)->launch($own, TestSelections::of(), TestSelections::requestId())->session;
+        $session = $this->app->make(LaunchSessions::class)
+            ->launch($own, TestSelections::of(), TestSelections::requestId())
+            ->session;
         $this->startRequestAs($own->id, $session->id);
         $resolver = $this->app->make(LaunchRecordResolver::class);
 
         $this->assertSame($own->id, $resolver->own($ownRequest->requestId)->agentId);
-        $this->assertSame([$ownRequest->requestId], array_map(fn ($record) => $record->requestId, $resolver->forOwnerReference('helpers.job 7')));
+        $this->assertSame(
+            [$ownRequest->requestId],
+            array_map(fn ($record) => $record->requestId, $resolver->forOwnerReference('helpers.job 7')),
+        );
 
         $this->expectException(LaunchRecordMissing::class);
 
@@ -108,10 +172,24 @@ final class LaunchRecordTest extends TestCase
         return Agent::named($name, 'main-agent');
     }
 
-    private function request(Agent $agent, string $requestId, ModelSelection $model, string|null $owner = null): LaunchRequest
-    {
+    private function request(
+        Agent $agent,
+        string $requestId,
+        ModelSelection $model,
+        string|null $owner = null,
+    ): LaunchRequest {
         $origin = $owner === null ? LaunchOriginType::MainLaunch : LaunchOriginType::OwnerRequest;
 
-        return new LaunchRequest($requestId, $agent->id, SelectedProgram::resolve('claude-code', $model, null, null), $origin, $owner, null, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
+        return new LaunchRequest(
+            $requestId,
+            $agent->id,
+            SelectedProgram::resolve('claude-code', $model, null, null),
+            $origin,
+            $owner,
+            null,
+            ConversationModeType::New,
+            null,
+            LaunchPolicy::withoutProfile(TestSelections::onHost()),
+        );
     }
 }

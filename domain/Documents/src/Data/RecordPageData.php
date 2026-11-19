@@ -43,8 +43,13 @@ final class RecordPageData extends Data
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
      */
-    public static function fromDocumentView(DocumentView $document, CommentList $comments, array $settlements, array $links, bool $publiclyShared): self
-    {
+    public static function fromDocumentView(
+        DocumentView $document,
+        CommentList $comments,
+        array $settlements,
+        array $links,
+        bool $publiclyShared,
+    ): self {
         return self::from([
             'label' => "doc {$document->number}",
             'title' => $document->title,
@@ -64,8 +69,13 @@ final class RecordPageData extends Data
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
      */
-    public static function fromReportView(ReportView $report, CommentList $comments, array $settlements, array $links, bool $publiclyShared): self
-    {
+    public static function fromReportView(
+        ReportView $report,
+        CommentList $comments,
+        array $settlements,
+        array $links,
+        bool $publiclyShared,
+    ): self {
         return self::from([
             'label' => "report {$report->number}",
             'title' => $report->title,

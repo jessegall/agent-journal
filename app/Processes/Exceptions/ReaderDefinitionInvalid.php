@@ -19,7 +19,9 @@ final class ReaderDefinitionInvalid extends InvalidArgumentException implements 
 
     public static function placeholder(string $placeholder): self
     {
-        return new self("The placeholder '{$placeholder}' is not of the form {name:int}, {name:word}, {name:rest} or {name:text}.");
+        return new self(
+            "The placeholder '{$placeholder}' is not of the form {name:int}, {name:word}, {name:rest} or {name:text}.",
+        );
     }
 
     public static function limit(string $limit, int $value): self

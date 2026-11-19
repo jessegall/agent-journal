@@ -17,10 +17,15 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class MakeShareGatewayDefaultController
 {
-    public function __invoke(GatewayActionRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
-    {
+    public function __invoke(
+        GatewayActionRequest $request,
+        CommandBus $commands,
+        Redirector $redirect,
+    ): RedirectResponse {
         $settings = ShareGatewayConfiguration::usable($request->configurationId())->settings;
-        $commands->run(new ConfigureShareGateway($settings->gatewayKey, $settings->executableVersion, $settings->providerHost, $settings->publicOrigin, $settings->listenerPort, $settings->secretReferences, true, $request->requestKey()));
+        $commands->run(
+            new ConfigureShareGateway($settings->gatewayKey, $settings->executableVersion, $settings->providerHost, $settings->publicOrigin, $settings->listenerPort, $settings->secretReferences, true, $request->requestKey()),
+        );
 
         return $redirect->back(303);
     }

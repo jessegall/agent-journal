@@ -42,7 +42,10 @@ final readonly class AreaCycles
     {
         $edges = [];
 
-        $namesOfFile = ScanCache::findingsInFolders(new NamesUsed(), [$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []]);
+        $namesOfFile = ScanCache::findingsInFolders(
+            new NamesUsed(),
+            [$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []],
+        );
 
         foreach ($namesOfFile as $path => $names) {
             $user = self::areaOfFile($path, $appFolder, $domainFolder);
@@ -55,7 +58,10 @@ final readonly class AreaCycles
                 $used = self::areaOfName($use->name);
 
                 if ($used !== null && $used !== $user && ! isset($edges[$user][$used])) {
-                    $edges[$user][$used] = substr($path, strlen(dirname($appFolder)) + 1).":{$use->line} uses {$use->name}";
+                    $edges[$user][$used] = substr(
+                        $path,
+                        strlen(dirname($appFolder)) + 1,
+                    ).":{$use->line} uses {$use->name}";
                 }
             }
         }
@@ -112,7 +118,9 @@ final readonly class AreaCycles
         $onStack = [];
         $groups = [];
 
-        $visit = function (string $area) use (&$visit, &$index, &$indexes, &$lowest, &$stack, &$onStack, &$groups): void {
+        $visit = function (
+            string $area,
+        ) use (&$visit, &$index, &$indexes, &$lowest, &$stack, &$onStack, &$groups): void {
             $indexes[$area] = $lowest[$area] = $index++;
             $stack[] = $area;
             $onStack[$area] = true;

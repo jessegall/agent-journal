@@ -32,7 +32,12 @@ use PhpOption\Option;
  * The actor provider of each actor type, registered once at boot; a provider is built per call, from the asking
  * request's container, so nothing found outlives the request.
  */
-final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistration, ActorResolver, ActorVisibility, WorkStacks
+final class ActorProviderRegistry implements
+    ActorLabels,
+    ActorProviderRegistration,
+    ActorResolver,
+    ActorVisibility,
+    WorkStacks
 {
     /**
      * @var Registry<class-string<ActorProvider>>

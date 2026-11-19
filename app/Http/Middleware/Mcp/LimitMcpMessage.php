@@ -26,13 +26,19 @@ final readonly class LimitMcpMessage
         $body = $request->getContent();
 
         if (strlen($body) > self::MAX_BYTES) {
-            return new JsonResponse(['message' => 'The message is larger than '.self::MAX_BYTES.' bytes.'], Response::HTTP_REQUEST_ENTITY_TOO_LARGE);
+            return new JsonResponse(
+                ['message' => 'The message is larger than '.self::MAX_BYTES.' bytes.'],
+                Response::HTTP_REQUEST_ENTITY_TOO_LARGE,
+            );
         }
 
         json_decode($body, true, self::MAX_DEPTH);
 
         if (json_last_error() === JSON_ERROR_DEPTH) {
-            return new JsonResponse(['message' => 'The message is nested deeper than '.self::MAX_DEPTH.' levels.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(
+                ['message' => 'The message is nested deeper than '.self::MAX_DEPTH.' levels.'],
+                Response::HTTP_BAD_REQUEST,
+            );
         }
 
         return $next($request);

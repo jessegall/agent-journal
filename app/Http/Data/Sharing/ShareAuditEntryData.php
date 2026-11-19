@@ -28,6 +28,13 @@ final class ShareAuditEntryData extends Data
 
     public static function fromEntry(ShareAuditEntry $entry): self
     {
-        return new self($entry->id, $entry->type, $entry->occurredAt->toIso8601String(), $entry->reasonCode, $entry->actor, $entry->type->isRead());
+        return new self(
+            $entry->id,
+            $entry->type,
+            $entry->occurredAt->toIso8601String(),
+            $entry->reasonCode,
+            $entry->actor,
+            $entry->type->isRead(),
+        );
     }
 }

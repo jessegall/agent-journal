@@ -39,8 +39,14 @@ final class Section
      * @param  string  $slot  the slot's full key, such as plans.inspector
      * @param  class-string<SectionResolver>  $resolver
      */
-    public static function make(string $key, string $title, string $slot, SlotContextType $takes, string $resolver, string $component): self
-    {
+    public static function make(
+        string $key,
+        string $title,
+        string $slot,
+        SlotContextType $takes,
+        string $resolver,
+        string $component,
+    ): self {
         if (preg_match('/^[a-z0-9-]+\.[a-z0-9-]+$/', $slot) !== 1) {
             throw InvalidSectionDeclaration::slotNotFullKey($key, $slot);
         }

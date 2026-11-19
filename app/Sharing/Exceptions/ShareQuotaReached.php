@@ -19,12 +19,16 @@ final class ShareQuotaReached extends RuntimeException implements CodedRefusal, 
 
     public static function at(int $most): self
     {
-        return new self("The journal already holds {$most} live shares; revoke one or let one expire before sharing another.");
+        return new self(
+            "The journal already holds {$most} live shares; revoke one or let one expire before sharing another.",
+        );
     }
 
     public static function forProposals(int $most): self
     {
-        return new self("The journal already holds {$most} open share proposals; ask the owner to approve or dismiss some first.");
+        return new self(
+            "The journal already holds {$most} open share proposals; ask the owner to approve or dismiss some first.",
+        );
     }
 
     protected function status(): int

@@ -80,8 +80,15 @@ final readonly class UiDeclarations
                 $sections[$registered->key] = $registered;
             }
 
-            $roots = array_map(fn (NavigationItem $item) => RegisteredNavigation::of($owner, $item, $pages), $owner->navigation);
-            self::refuseRepeatedKeys($owner, 'navigation', array_merge([], ...array_map(fn (RegisteredNavigation $root) => $root->keys(), $roots)));
+            $roots = array_map(
+                fn (NavigationItem $item) => RegisteredNavigation::of($owner, $item, $pages),
+                $owner->navigation,
+            );
+            self::refuseRepeatedKeys(
+                $owner,
+                'navigation',
+                array_merge([], ...array_map(fn (RegisteredNavigation $root) => $root->keys(), $roots)),
+            );
             $navigation = [...$navigation, ...$roots];
         }
 
@@ -188,8 +195,15 @@ final readonly class UiDeclarations
             }
         }
 
-        $children = array_map(fn (NavigationItem $item) => RegisteredNavigation::of($parent->owner, $item, $this->pages), $items);
-        self::refuseRepeatedKeys($parent->owner, 'navigation', array_merge([], ...array_map(fn (RegisteredNavigation $child) => $child->keys(), $children)));
+        $children = array_map(
+            fn (NavigationItem $item) => RegisteredNavigation::of($parent->owner, $item, $this->pages),
+            $items,
+        );
+        self::refuseRepeatedKeys(
+            $parent->owner,
+            'navigation',
+            array_merge([], ...array_map(fn (RegisteredNavigation $child) => $child->keys(), $children)),
+        );
 
         return $children;
     }
@@ -246,7 +260,11 @@ final readonly class UiDeclarations
                 throw UiRouteConflict::nameRepeated($action->routeName);
             }
 
-            $routes[] = [$action->routeName, $action->action->method->value, $action->owner->key.'/'.$action->path->shape()];
+            $routes[] = [
+                $action->routeName,
+                $action->action->method->value,
+                $action->owner->key.'/'.$action->path->shape(),
+            ];
         }
 
         $seen = [];

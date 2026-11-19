@@ -33,8 +33,13 @@ final readonly class ResolverDefinition
      * @param  class-string  $interface  PageResolver or SectionResolver
      * @param  class-string<Data>  $dataClass
      */
-    public static function of(DomainUi $owner, string $declaration, string $resolver, string $interface, string $dataClass): self
-    {
+    public static function of(
+        DomainUi $owner,
+        string $declaration,
+        string $resolver,
+        string $interface,
+        string $dataClass,
+    ): self {
         $owner->checkImplements($declaration, $resolver, $interface);
 
         $constructor = new ReflectionClass($resolver)->getConstructor();

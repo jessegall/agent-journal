@@ -57,18 +57,31 @@ final class ProcessChannelTest extends TestCase
         $run = $this->admit("printf '{\"part\":\"ended\"}' && echo done");
 
         $this->artisan('process:run', ['--admission' => $run->id])->expectsOutputToContain('done')->assertExitCode(0);
-        $this->artisan('process:run', ['--admission' => $run->id])->expectsOutputToContain('already started')->assertExitCode(0);
+        $this->artisan(
+            'process:run',
+            ['--admission' => $run->id],
+        )->expectsOutputToContain('already started')->assertExitCode(0);
 
         $parts = PartRun::query()->where('process_run_id', $run->id)->orderBy('syntax_node')->get();
         $this->assertCount(2, $parts);
-        $this->assertSame([LifecycleState::Ended, LifecycleState::Ended], $parts->map(fn (PartRun $part) => $part->lifecycle)->all());
-        $this->assertSame(0, ProcessEvent::query()->where('process_run_id', $run->id)->where('type', ProcessEvent::OPERATIONAL_ERROR)->count());
+        $this->assertSame(
+            [LifecycleState::Ended, LifecycleState::Ended],
+            $parts->map(fn (PartRun $part) => $part->lifecycle)->all(),
+        );
+        $this->assertSame(
+            0,
+            ProcessEvent::query()->where('process_run_id', $run->id)->where('type', ProcessEvent::OPERATIONAL_ERROR)->count(),
+        );
     }
 
     public function test_replaying_the_spool_changes_nothing_and_a_lost_connection_is_made_up(): void
     {
         $run = $this->admit('echo hi');
-        $eventKey = (string) $this->signed($this->launch, "/agent/processes/admissions/{$run->id}", ['request_key' => 'channel-1'])->json('event_key');
+        $eventKey = (string) $this->signed(
+            $this->launch,
+            "/agent/processes/admissions/{$run->id}",
+            ['request_key' => 'channel-1'],
+        )->json('event_key');
         $calls = new RecordedCalls();
         $events = new ChannelRunEvents(new ProcessCalls($calls), $run->id, $eventKey, $this->folder.'/spool');
         $part = new PartKey(1, 1, 'echo');
@@ -80,15 +93,24 @@ final class ProcessChannelTest extends TestCase
         $events->flush();
 
         $this->assertSame(2, ProcessEvent::query()->where('process_run_id', $run->id)->count());
-        $this->assertSame(LifecycleState::Running, PartRun::query()->where('process_run_id', $run->id)->firstOrFail()->lifecycle);
+        $this->assertSame(
+            LifecycleState::Running,
+            PartRun::query()->where('process_run_id', $run->id)->firstOrFail()->lifecycle,
+        );
     }
 
     private function admit(string $line): ProcessRun
     {
         $context = new ExecutionContext(ShellDialect::Bash, $this->folder, $this->folder);
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
-        $plan = $this->app->make(ExecutionPlanner::class)->plan($tree, $this->app->make(CommandClassifier::class)->classify($tree, $context));
+        $plan = $this->app->make(ExecutionPlanner::class)->plan(
+            $tree,
+            $this->app->make(CommandClassifier::class)->classify($tree, $context),
+        );
 
-        return ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), TestRunAdmissions::of(line: $line, plan: $plan, workingFolder: $this->folder));
+        return ProcessRun::admit(
+            new ActorIdentity(ActorType::Agent, $this->launch->agent->id),
+            TestRunAdmissions::of(line: $line, plan: $plan, workingFolder: $this->folder),
+        );
     }
 }

@@ -31,7 +31,9 @@ final class SkillRestoreCommand extends Command
             $console->actAsOwner();
             $skill = $console->stored((string) $this->argument('number'));
 
-            return $console->savedLines($commands->run(new RestoreSkill($skill->id, (int) $this->option('revision'), (int) $this->option('expected-revision'), $requestId)));
+            return $console->savedLines(
+                $commands->run(new RestoreSkill($skill->id, (int) $this->option('revision'), (int) $this->option('expected-revision'), $requestId)),
+            );
         });
     }
 }

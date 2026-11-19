@@ -34,8 +34,13 @@ final readonly class StringSetting implements Setting
     /**
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, string $default, int $minimumLength = 0, int $maximumLength = self::LONGEST): self
-    {
+    public static function make(
+        string $key,
+        string $label,
+        string $default,
+        int $minimumLength = 0,
+        int $maximumLength = self::LONGEST,
+    ): self {
         SettingKey::require($key, $label);
 
         if ($minimumLength < 0 || $maximumLength > self::LONGEST || $minimumLength > $maximumLength) {
@@ -71,7 +76,10 @@ final readonly class StringSetting implements Setting
      */
     public function accepts(string $value): bool
     {
-        return mb_check_encoding($value, 'UTF-8') && strlen($value) >= $this->minimumLength && strlen($value) <= $this->maximumLength;
+        return mb_check_encoding(
+            $value,
+            'UTF-8',
+        ) && strlen($value) >= $this->minimumLength && strlen($value) <= $this->maximumLength;
     }
 
     public function defaultValue(): string
@@ -86,6 +94,8 @@ final readonly class StringSetting implements Setting
 
     public function catalogueConstraints(): CatalogueConstraints|Optional
     {
-        return StringConstraintsData::from(['minimumLength' => $this->minimumLength, 'maximumLength' => $this->maximumLength]);
+        return StringConstraintsData::from(
+            ['minimumLength' => $this->minimumLength, 'maximumLength' => $this->maximumLength],
+        );
     }
 }

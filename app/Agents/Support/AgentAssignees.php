@@ -80,7 +80,9 @@ final readonly class AgentAssignees implements AssigneeProvider
         $shown = $agents->take($page->limit);
 
         return new AssigneeList(
-            array_values($shown->map(fn (Agent $agent) => new AssigneeName(AssigneeIdentity::of($agent), $agent->name))->all()),
+            array_values(
+                $shown->map(fn (Agent $agent) => new AssigneeName(AssigneeIdentity::of($agent), $agent->name))->all(),
+            ),
             $agents->count() > $page->limit ? $shown->last()?->id : null,
         );
     }

@@ -46,7 +46,10 @@ final class UiManifestTest extends TestCase
 
         $this->assertStringContainsString("'library/Index': () => import('", $components);
         $this->assertStringContainsString("'shelf/Index': () => import('", $components);
-        $this->assertStringContainsString("'Login': () => import('../../../resources/js/pages/Login.vue')", $components);
+        $this->assertStringContainsString(
+            "'Login': () => import('../../../resources/js/pages/Login.vue')",
+            $components,
+        );
         $this->assertStringContainsString('tests/Fixtures/UiDeclarations/Shelf/Resources/js/Index.vue', $components);
 
         foreach (['resources/js/generated/ui-manifest.ts', 'tsconfig.domains.json', 'vite.domains.ts', 'resources/css/generated/domain-sources.css'] as $file) {
@@ -56,7 +59,10 @@ final class UiManifestTest extends TestCase
         $config = json_decode(File::get("{$this->root}/tsconfig.domains.json"), true);
         $this->assertArrayHasKey('@domain/shelf/*', $config['compilerOptions']['paths']);
         $this->assertContains('resources/js/**/*.vue', $config['include']);
-        $this->assertSame(['Login', 'library/Index', 'shelf/Index'], array_keys(require "{$this->root}/bootstrap/cache/ui-components.php"));
+        $this->assertSame(
+            ['Login', 'library/Index', 'shelf/Index'],
+            array_keys(require "{$this->root}/bootstrap/cache/ui-components.php"),
+        );
         $this->assertSame([], glob("{$this->root}/**/*.tmp") ?: []);
     }
 
@@ -65,9 +71,15 @@ final class UiManifestTest extends TestCase
         $this->manifest([$this->library(), $this->shelf()])->write($this->root);
         $this->manifest([$this->library()])->write($this->root);
 
-        $this->assertStringNotContainsString('shelf/', File::get("{$this->root}/resources/js/generated/ui-manifest.ts"));
+        $this->assertStringNotContainsString(
+            'shelf/',
+            File::get("{$this->root}/resources/js/generated/ui-manifest.ts"),
+        );
         $this->assertStringNotContainsString('@domain/shelf', File::get("{$this->root}/vite.domains.ts"));
-        $this->assertStringNotContainsString('Shelf', File::get("{$this->root}/resources/css/generated/domain-sources.css"));
+        $this->assertStringNotContainsString(
+            'Shelf',
+            File::get("{$this->root}/resources/css/generated/domain-sources.css"),
+        );
     }
 
     public function test_each_page_gets_props_typed_with_its_readers_data_and_a_component_check(): void
@@ -78,11 +90,20 @@ final class UiManifestTest extends TestCase
 
         $this->assertStringContainsString("export type WindowResult<T> = { state: 'ready'; data: T }", $props);
         $this->assertStringContainsString("import type { RecentNotesData } from './shared';", $props);
-        $this->assertStringContainsString("export type LibraryIndexPageProps = {\n    page: WindowResult<RecentNotesData>;", $props);
+        $this->assertStringContainsString(
+            "export type LibraryIndexPageProps = {\n    page: WindowResult<RecentNotesData>;",
+            $props,
+        );
         $this->assertStringContainsString('window_shelf_index?: WindowResult<RecentNotesData>;', $props);
-        $this->assertStringContainsString("export const accepts_shelf_index: Accepts<{ data: RecentNotesData }, typeof import('", $checks);
+        $this->assertStringContainsString(
+            "export const accepts_shelf_index: Accepts<{ data: RecentNotesData }, typeof import('",
+            $checks,
+        );
         $this->assertStringContainsString("import type { RecentNotesData } from './types/page-props';", $checks);
-        $this->assertStringContainsString("'library/Index',", File::get("{$this->root}/resources/js/generated/ui-manifest.ts"));
+        $this->assertStringContainsString(
+            "'library/Index',",
+            File::get("{$this->root}/resources/js/generated/ui-manifest.ts"),
+        );
         $this->assertStringContainsString("Shelf/Resources/js/Index.vue').default> = true;", $checks);
     }
 
@@ -103,7 +124,11 @@ final class UiManifestTest extends TestCase
     {
         $declarations = UiDeclarations::check($domains);
 
-        return new UiManifest($declarations, $this->app->make('view'), new PagePropTypes($declarations, TypeOwners::of($this->app->make(DomainRegistry::class), $declarations)));
+        return new UiManifest(
+            $declarations,
+            $this->app->make('view'),
+            new PagePropTypes($declarations, TypeOwners::of($this->app->make(DomainRegistry::class), $declarations)),
+        );
     }
 
     private function library(): DomainUi
