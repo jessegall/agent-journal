@@ -29,7 +29,7 @@ final class ClaudeNativeEvidenceTest extends TestCase
     protected function tearDown(): void
     {
         foreach (['a', 'b'] as $name) {
-            @unlink("{$this->accounts}/{$name}/signed-in");
+            array_map(unlink(...), glob("{$this->accounts}/{$name}/*") ?: []);
             rmdir("{$this->accounts}/{$name}");
         }
 
@@ -62,7 +62,7 @@ final class ClaudeNativeEvidenceTest extends TestCase
         file_put_contents("{$this->accounts}/a/signed-in", 'first@example.test');
         file_put_contents("{$this->accounts}/b/signed-in", 'second@example.test');
 
-        $output = $this->output([
+        $output = $this->procedureOutput([
             "--accounts-root={$this->accounts}",
             "--account-a={$this->accounts}/a",
             "--account-b={$this->accounts}/b",
@@ -78,7 +78,7 @@ final class ClaudeNativeEvidenceTest extends TestCase
 
     public function test_an_account_outside_the_journal_accounts_folder_is_refused(): void
     {
-        $output = $this->output(["--accounts-root={$this->accounts}/a", "--account-a={$this->accounts}/b"], 255);
+        $output = $this->procedureOutput(["--accounts-root={$this->accounts}/a", "--account-a={$this->accounts}/b"], 255);
 
         $this->assertStringNotContainsString('"items"', $output);
     }
@@ -89,13 +89,13 @@ final class ClaudeNativeEvidenceTest extends TestCase
      */
     private function evidenceOf(array $options): array
     {
-        return json_decode($this->output($options), true, flags: JSON_THROW_ON_ERROR);
+        return json_decode($this->procedureOutput($options), true, flags: JSON_THROW_ON_ERROR);
     }
 
     /**
      * @param  list<string>  $options
      */
-    private function output(array $options, int $expectedExit = 0): string
+    private function procedureOutput(array $options, int $expectedExit = 0): string
     {
         $command = [PHP_BINARY, __DIR__.'/../../../tools/accounts/check-claude.php', '--program='.self::FAKE_PROGRAM];
         $process = proc_open([...$command, ...$options], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);

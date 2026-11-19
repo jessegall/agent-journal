@@ -27,8 +27,7 @@ final class CodexNativeEvidenceTest extends TestCase
 
     protected function tearDown(): void
     {
-        @unlink("{$this->accounts}/a/auth.json");
-        @unlink("{$this->accounts}/a/config.toml");
+        array_map(unlink(...), glob("{$this->accounts}/a/*") ?: []);
         rmdir("{$this->accounts}/a");
         rmdir($this->accounts);
         parent::tearDown();
@@ -58,7 +57,7 @@ final class CodexNativeEvidenceTest extends TestCase
         file_put_contents("{$this->accounts}/a/auth.json", '{"tokens":"fake-secret-token"}');
         file_put_contents("{$this->accounts}/a/config.toml", "cli_auth_credentials_store = \"file\"\n");
 
-        $output = $this->output(["--accounts-root={$this->accounts}", "--account-a={$this->accounts}/a"]);
+        $output = $this->procedureOutput(["--accounts-root={$this->accounts}", "--account-a={$this->accounts}/a"]);
         $results = array_column(json_decode($output, true, flags: JSON_THROW_ON_ERROR)['items'], 'result', 'item');
 
         $this->assertSame('pass', $results['account-a-signed-in']);
@@ -75,13 +74,13 @@ final class CodexNativeEvidenceTest extends TestCase
      */
     private function evidenceOf(array $options): array
     {
-        return json_decode($this->output($options), true, flags: JSON_THROW_ON_ERROR);
+        return json_decode($this->procedureOutput($options), true, flags: JSON_THROW_ON_ERROR);
     }
 
     /**
      * @param  list<string>  $options
      */
-    private function output(array $options): string
+    private function procedureOutput(array $options): string
     {
         $command = [PHP_BINARY, __DIR__.'/../../../tools/accounts/check-codex.php', '--program='.self::FAKE_PROGRAM];
         $process = proc_open([...$command, ...$options], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
