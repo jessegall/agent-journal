@@ -34,7 +34,7 @@ PASSED_COUNT = re.compile(r"\b(\d+) passed\b")
 
 
 class TestTurns:
-    """The test budget: a worker's turn to run tests is a row, started through the shell runner in the worker's own worktree as soon as fewer runs go than the budget allows and it is first of those that wait, else it waits in order; one that would wait when the waiting cap is full is refused, and while a restart of its journal waits none starts: the turn is taken out and refused, so the restart never waits on a run started after it was asked. A run past the time limit is stopped and reported to its worker as timed out; a worker that ends takes out its turns, waiting or running; turns waiting at a restart start again in order. Its result is what the project's reader for the command picks, and the turn ends when the run does, or, for a run moved to the background, when its output ends; either way how the run ended is kept on its worker, its failed runs in a row counted and a passed one ending the count. A run the shell runner moved to the background is waited for until the foreground limit has passed since it began, so a turn's result is handed back in the foreground."""
+    """The test budget: a worker's turn to run tests is a row, started through the shell runner in the worker's own worktree as soon as fewer runs go than the budget allows and it is first of those that wait, else it waits in order; one that would wait when the waiting cap is full is refused, and while a restart of its journal waits none starts: the turn is taken out and refused, so the restart never waits on a run started after it was asked. A run past the time limit is stopped and reported to its worker as timed out; a worker that ends takes out its turns, waiting or running; a worker holds one turn at a time, and its clock-out, instead of being refused, waits for the turn the worker holds to end and then opens its own; turns waiting at a restart start again in order. Its result is what the project's reader for the command picks, and the turn ends when the run does, or, for a run moved to the background, when its output ends; either way how the run ended is kept on its worker, its failed runs in a row counted and a passed one ending the count. A run the shell runner moved to the background is waited for until the foreground limit has passed since it began, so a turn's result is handed back in the foreground."""
 
     __test__ = False
 
@@ -78,7 +78,7 @@ class TestTurns:
 
     def checked(self, worker: Worker, ids: str, caller: Caller) -> tuple[TestTurn, str]:
         folder = str(self.branch.place(worker))
-        turn = self.open_turn(worker, ids, f"{self.command(folder)} {ids}", folder)
+        turn = self.turn_after_own(worker, ids, f"{self.command(folder)} {ids}", folder)
         if not self.waited(turn):
             raise Rejection("your test run was taken back before it ran: clock out again")
         self.turns.save(self.turns.find(turn.id).with_run_event(self.time_source.seconds()), Actor.system())
@@ -116,12 +116,31 @@ class TestTurns:
 
     def open_turn(self, worker: Worker, ids: str, command: str, folder: str) -> TestTurn:
         with self.lock:
-            waiting, cap = self.turns.waiting(), self.waiting_cap()
-            if any(turn.worker == worker.id for turn in [*waiting, *self.running()]):
+            if self.holds_a_turn(worker):
                 raise Rejection(f"worker {worker.id}, {worker.name}, has a turn open already: ask for the next once its result is back")
-            if (waiting or len(self.running()) >= self.budget()) and cap is not None and len(waiting) >= cap:
-                raise Rejection(f"{len(waiting)} turns already wait for a test run: ask again once one has run")
-            return self.turns.save(TestTurn(environment_id=worker.environment_id, worker=worker.id, ids=ids, command=command, folder=folder), Actor.worker(worker.id))
+            return self.added_turn(worker, ids, command, folder)
+
+    def turn_after_own(self, worker: Worker, ids: str, command: str, folder: str) -> TestTurn:
+        """The worker's turn, opened once the turn it holds already has ended, the lock free while it waits and refused while a restart of its journal waits."""
+        while True:
+            with self.lock:
+                if not self.holds_a_turn(worker):
+                    return self.added_turn(worker, ids, command, folder)
+            if self.restarts.is_waiting(worker.environment_id):
+                raise Rejection(RESTART_HOLD)
+            time.sleep(POLL_SECONDS)
+
+    def holds_a_turn(self, worker: Worker) -> bool:
+        return self.held_turn(worker) is not None
+
+    def held_turn(self, worker: Worker) -> TestTurn | None:
+        return next((turn for turn in [*self.turns.waiting(), *self.running()] if turn.worker == worker.id), None)
+
+    def added_turn(self, worker: Worker, ids: str, command: str, folder: str) -> TestTurn:
+        waiting, cap = self.turns.waiting(), self.waiting_cap()
+        if (waiting or len(self.running()) >= self.budget()) and cap is not None and len(waiting) >= cap:
+            raise Rejection(f"{len(waiting)} turns already wait for a test run: ask again once one has run")
+        return self.turns.save(TestTurn(environment_id=worker.environment_id, worker=worker.id, ids=ids, command=command, folder=folder), Actor.worker(worker.id))
 
     def waited(self, turn: TestTurn) -> bool:
         while True:
