@@ -68,6 +68,12 @@ final readonly class CodexSignIn implements SignInProtocol
         return new SignInVerification($isSignedIn, null, in_array($status->exitCode(), [0, 1], true));
     }
 
+    public function signOut(string $directory): void
+    {
+        PrivateAccountProcess::start([$this->program(), 'logout'], $this->environment($directory), $directory)
+            ->finish();
+    }
+
     /**
      * The address and code the person enters to approve the sign-in, from the program's answer to the start; none
      * until it answered.

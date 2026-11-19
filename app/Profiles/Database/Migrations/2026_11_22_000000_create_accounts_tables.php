@@ -24,6 +24,8 @@ return new class extends Migration
             $table->ulid('live_writer_attempt_id')->nullable();
             $table->ulid('operation_id')->nullable();
             $table->boolean('cleanup_pending')->default(false);
+            $table->boolean('cleanup_released')->default(false);
+            $table->boolean('store_removed')->default(false);
             $table->unsignedBigInteger('check_requested_generation')->nullable();
             $table->timestampTz('checked_at')->nullable();
             $table->timestampsTz();
@@ -54,6 +56,7 @@ return new class extends Migration
             $table->string('login_reference')->nullable();
             $table->boolean('cleanup_pending')->default(false);
             $table->boolean('waits_for_uses')->default(false);
+            $table->boolean('store_removed')->default(false);
             $table->timestampTz('expires_at');
             $table->timestampsTz();
 

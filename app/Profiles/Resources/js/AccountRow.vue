@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { AccountRowData } from '@generated/types/accounts';
-import { rename } from '@generated/routes/accounts';
+import { remove, rename } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
+import ConfirmAction from '@kit/ConfirmAction';
 import StateBadge from '@kit/StateBadge';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
@@ -18,6 +19,11 @@ const props = defineProps<{ account: AccountRowData; isChosen: boolean }>();
 
 const naming = useForm({ label: props.account.label });
 const isRenaming = ref(false);
+const removing = useForm({});
+
+function removeAccount(): void {
+    removing.submit(remove({ account: props.account.id }), { preserveScroll: true, ...formSendingHooks() });
+}
 
 function saveName(): void {
     naming.submit(rename({ account: props.account.id }), {
@@ -54,6 +60,13 @@ function saveName(): void {
                     @click="isRenaming = true"
                     >Rename</Button
                 >
+                <ConfirmAction
+                    label="Remove"
+                    question="Remove this account? It signs out and its folder is deleted once its work has ended."
+                    confirm-label="Remove"
+                    :pending="removing.processing"
+                    @confirm="removeAccount"
+                />
             </div>
         </div>
         <p v-if="account.identity" class="text-small text-text-3">

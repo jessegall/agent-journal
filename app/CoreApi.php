@@ -673,6 +673,7 @@ use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\MaintainAccount;
+use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Commands\SubmitSignInCode;
@@ -1671,6 +1672,7 @@ final class CoreApi
                 DismissAccountNotice::class,
                 BeginSignIn::class,
                 BeginSignInAgain::class,
+                RemoveAccount::class,
                 CancelSignIn::class,
                 SubmitSignInCode::class,
                 HoldAccountUses::class,

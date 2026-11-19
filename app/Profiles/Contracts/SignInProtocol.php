@@ -38,4 +38,9 @@ interface SignInProtocol
      * The program's own check of the folder, run after its sign-in process ended.
      */
     public function verify(string $directory): SignInVerification;
+
+    /**
+     * Signs the folder's account out with the program's own command, so its sign-in store forgets it.
+     */
+    public function signOut(string $directory): void;
 }

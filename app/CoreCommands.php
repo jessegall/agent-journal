@@ -112,7 +112,10 @@ use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Commands\ClaimAccountCheck;
+use App\Profiles\Commands\ClaimCleanup;
 use App\Profiles\Commands\ClaimSignIn;
+use App\Profiles\Commands\CleanAccount;
+use App\Profiles\Commands\CleanSignInAttempt;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\ExpireSignInAttempt;
@@ -122,7 +125,9 @@ use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\PublishSignInChallenge;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\RecordAccountFailure;
+use App\Profiles\Commands\ReleaseAccountRemoval;
 use App\Profiles\Commands\ReleaseSignInAgain;
+use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Commands\RevokeProfiles;
@@ -281,6 +286,7 @@ final class CoreCommands
             DismissAccountNotice::class,
             BeginSignIn::class,
             BeginSignInAgain::class,
+            RemoveAccount::class,
             CancelSignIn::class,
             SubmitSignInCode::class,
             PublishSignInChallenge::class,
@@ -292,6 +298,10 @@ final class CoreCommands
             ReportSignIn::class,
             CompleteSignIn::class,
             ExpireSignInAttempt::class,
+            ReleaseAccountRemoval::class,
+            ClaimCleanup::class,
+            CleanAccount::class,
+            CleanSignInAttempt::class,
             ReleaseSignInAgain::class,
             ReconcileAccounts::class,
             ProposeCommandRule::class,
@@ -372,6 +382,10 @@ final class CoreCommands
             ReportSignIn::class,
             CompleteSignIn::class,
             ExpireSignInAttempt::class,
+            ReleaseAccountRemoval::class,
+            ClaimCleanup::class,
+            CleanAccount::class,
+            CleanSignInAttempt::class,
             ReleaseSignInAgain::class,
             ReconcileAccounts::class,
             MarkRunsStale::class,

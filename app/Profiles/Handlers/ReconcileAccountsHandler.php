@@ -8,7 +8,9 @@ use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\ReconcileAccounts;
+use App\Profiles\Commands\ReleaseAccountRemoval;
 use App\Profiles\Commands\ReleaseSignInAgain;
+use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
 use Carbon\CarbonImmutable;
 
@@ -31,6 +33,10 @@ final readonly class ReconcileAccountsHandler implements CommandHandler
 
         foreach (SignInAttempt::waitingForUsesIds(self::BATCH) as $attemptId) {
             $this->commands->run(new ReleaseSignInAgain($attemptId));
+        }
+
+        foreach (Account::waitingForCleanupIds(self::BATCH) as $accountId) {
+            $this->commands->run(new ReleaseAccountRemoval($accountId));
         }
 
         return $expired;

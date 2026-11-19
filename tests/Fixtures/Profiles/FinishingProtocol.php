@@ -33,6 +33,11 @@ final readonly class FinishingProtocol implements SignInProtocol
 
     public function verify(string $directory): SignInVerification
     {
-        return new SignInVerification(true, 'work@example.test');
+        return new SignInVerification(! is_file($directory.'/signed-out'), 'work@example.test');
+    }
+
+    public function signOut(string $directory): void
+    {
+        touch($directory.'/signed-out');
     }
 }

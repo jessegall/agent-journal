@@ -7,9 +7,12 @@ namespace App\Profiles\Support;
 use App\AgentRequests\Support\SignedCall;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\AccountCheckResult;
+use App\Profiles\Enums\CleanupTarget;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Values\ClaimedAccountCheck;
+use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
+use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Factory;
@@ -87,6 +90,37 @@ final readonly class SignedSignInHost implements SignInHost
     {
         $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $result->value]);
         $this->send("/host/accounts/{$claimed->accountId}/check", $body);
+    }
+
+    public function claimCleanup(): ClaimedCleanup|null
+    {
+        $response = $this->send('/host/accounts/cleanups/claim', '');
+
+        if ($response->status() === 204) {
+            return null;
+        }
+
+        return new ClaimedCleanup(
+            CleanupTarget::from((string) $response->json('target')),
+            (string) $response->json('id'),
+            (string) $response->json('program'),
+            (string) $response->json('directory'),
+            (int) $response->json('generation'),
+            (bool) $response->json('store_removed'),
+        );
+    }
+
+    public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void
+    {
+        $body = (string) json_encode([
+            'generation' => $claimed->generation,
+            'store_removed' => $progress->isStoreRemoved,
+            'directory_removed' => $progress->isDirectoryRemoved,
+        ]);
+        $path = $claimed->target === CleanupTarget::Account
+            ? "/host/accounts/{$claimed->id}/cleanup"
+            : "/host/sign-ins/{$claimed->id}/cleanup";
+        $this->send($path, $body);
     }
 
     private function send(string $path, string $body): Response

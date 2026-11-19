@@ -10,6 +10,7 @@ use App\Profiles\Enums\SignInType;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Models\Support\HumanAccounts;
 use App\Profiles\Values\AccountLabel;
+use App\Profiles\Values\CleanupProgress;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -39,6 +40,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $login_reference
  * @property bool $cleanup_pending
  * @property bool $waits_for_uses
+ * @property bool $store_removed
  * @property CarbonImmutable $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -66,6 +68,7 @@ final class SignInAttempt extends Model implements ReadableModel
             'generation' => 'integer',
             'cleanup_pending' => 'boolean',
             'waits_for_uses' => 'boolean',
+            'store_removed' => 'boolean',
             'expires_at' => 'immutable_datetime',
         ];
     }
@@ -307,6 +310,44 @@ final class SignInAttempt extends Model implements ReadableModel
         if ($this->account_id !== null) {
             Account::lockedForJournal($this->account_id)->endSignInAgain($this);
         }
+    }
+
+    /**
+     * The ended attempt whose new account's folder a host has still to clean; an attempt for a saved account never
+     * owes more than its own traces, so it is never handed out.
+     */
+    public static function nextToClean(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->where('cleanup_pending', true)
+            ->whereNull('account_id')
+            ->whereNotNull('directory')
+            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->orderBy('updated_at')
+            ->first();
+    }
+
+    /**
+     * Applies what a host proved of the attempt's cleanup: its store's proof is kept, and the cleanup ends only once
+     * the folder is gone too. A completed attempt's folder belongs to its account and is never cleaned here.
+     */
+    public function applyCleanup(CleanupProgress $progress): bool
+    {
+        if (! $this->cleanup_pending || $this->state === SignInState::Complete) {
+            return false;
+        }
+
+        $this->store_removed = $this->store_removed || $progress->isStoreRemoved;
+
+        if ($this->store_removed && $progress->isDirectoryRemoved) {
+            $this->cleanup_pending = false;
+            $this->directory = null;
+        }
+
+        $this->save();
+
+        return ! $this->cleanup_pending;
     }
 
     /**

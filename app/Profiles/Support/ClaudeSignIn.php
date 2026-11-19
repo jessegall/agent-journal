@@ -67,6 +67,12 @@ final readonly class ClaudeSignIn implements SignInProtocol
         return new SignInVerification($isSignedIn, $identity, is_array($decoded));
     }
 
+    public function signOut(string $directory): void
+    {
+        PrivateAccountProcess::start([$this->program(), 'auth', 'logout'], $this->environment($directory), $directory)
+            ->finish();
+    }
+
     /**
      * The address the person opens to approve the sign-in, as the program printed it; none until it did.
      */

@@ -8,7 +8,9 @@ use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Values\ClaimedAccountCheck;
+use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
+use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInChallenge;
 
 /**
@@ -51,6 +53,25 @@ final class RecordingSignInHost implements SignInHost
     public array $checks = [];
 
     public ClaimedAccountCheck|null $nextCheck = null;
+
+    /**
+     * @var list<CleanupProgress>
+     */
+    public array $cleanups = [];
+
+    public ClaimedCleanup|null $nextCleanup = null;
+
+    public function claimCleanup(): ClaimedCleanup|null
+    {
+        [$claimed, $this->nextCleanup] = [$this->nextCleanup, null];
+
+        return $claimed;
+    }
+
+    public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void
+    {
+        $this->cleanups[] = $progress;
+    }
 
     public function claimCheck(): ClaimedAccountCheck|null
     {

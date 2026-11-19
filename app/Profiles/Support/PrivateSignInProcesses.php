@@ -9,9 +9,12 @@ use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Exceptions\SignInProtocolMissing;
+use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
+use App\Profiles\Values\CleanupProgress;
 use Carbon\CarbonImmutable;
 use Closure;
+use Illuminate\Filesystem\Filesystem;
 
 /**
  * The host's sign-in runner: takes one sign-in, makes its private folder, runs the program's own sign-in until it
@@ -88,6 +91,48 @@ final readonly class PrivateSignInProcesses
         $this->host->reportCheck($claimed, $result);
 
         return true;
+    }
+
+    /**
+     * Runs the next cleanup: the program signs the folder out and its own certain check must show no sign-in left
+     * before the folder is deleted; each proof is reported on its own, and a failed step is tried again later.
+     */
+    public function cleanNext(): bool
+    {
+        $claimed = $this->host->claimCleanup();
+
+        if ($claimed === null) {
+            return false;
+        }
+
+        $isStoreRemoved = $claimed->isStoreRemoved || $this->removeStore($claimed);
+        $isDirectoryRemoved = $isStoreRemoved && $this->removeDirectory($claimed->directory);
+        $this->host->reportCleanup($claimed, new CleanupProgress($isStoreRemoved, $isDirectoryRemoved));
+
+        return true;
+    }
+
+    private function removeStore(ClaimedCleanup $claimed): bool
+    {
+        try {
+            $protocol = $this->protocols->for($claimed->program);
+        } catch (SignInProtocolMissing) {
+            return false;
+        }
+
+        $protocol->signOut($claimed->directory);
+        $verification = $protocol->verify($claimed->directory);
+
+        return $verification->isCertain && ! $verification->isSignedIn;
+    }
+
+    private function removeDirectory(string $directory): bool
+    {
+        if (is_dir($directory) && ! is_link($directory)) {
+            new Filesystem()->deleteDirectory($directory);
+        }
+
+        return ! file_exists($directory);
     }
 
     private function waitForEnd(SignInProtocol $protocol, PrivateAccountProcess $process, ClaimedSignIn $claimed): void

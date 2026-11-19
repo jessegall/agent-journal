@@ -14,6 +14,7 @@ use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Support\HumanAccounts;
 use App\Profiles\Values\AccountLabel;
+use App\Profiles\Values\CleanupProgress;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * One saved Claude Code or Codex account: its program, the name its owner gave it, its state and the private folder
@@ -44,6 +46,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $live_writer_attempt_id
  * @property string|null $operation_id
  * @property bool $cleanup_pending
+ * @property bool $cleanup_released
+ * @property bool $store_removed
  * @property int|null $check_requested_generation
  * @property CarbonImmutable|null $checked_at
  * @property Carbon|null $created_at
@@ -71,6 +75,8 @@ final class Account extends Model implements ReadableModel
             'maintenance' => 'boolean',
             'sign_in_generation' => 'integer',
             'cleanup_pending' => 'boolean',
+            'cleanup_released' => 'boolean',
+            'store_removed' => 'boolean',
             'check_requested_generation' => 'integer',
             'checked_at' => 'immutable_datetime',
         ];
@@ -423,20 +429,94 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
-     * Holds the account for removal: no new launch starts on it and every older report is out of date.
+     * Holds the account for removal as one operation: no new launch starts on it, no writer holds its folder and
+     * every older report, check or cancellation is out of date.
      */
     public function beginRemoval(): void
     {
         $this->state = AccountState::Removing;
         $this->maintenance = true;
         $this->cleanup_pending = true;
+        $this->cleanup_released = false;
+        $this->store_removed = false;
+        $this->live_writer_attempt_id = null;
+        $this->check_requested_generation = null;
+        $this->operation_id = strtolower((string) Str::ulid());
         $this->sign_in_generation++;
         $this->save();
     }
 
+    public function isBeingRemoved(): bool
+    {
+        return in_array($this->state, [AccountState::Removing, AccountState::Removed], true);
+    }
+
     /**
-     * Ends the removal once the processes are gone and the program's store and folder are deleted; the row and its
-     * label stay for history.
+     * Every process on the account ended: a host may now sign it out and delete its folder.
+     */
+    public function releaseCleanup(): void
+    {
+        $this->cleanup_released = true;
+        $this->save();
+    }
+
+    /**
+     * Applies what a host proved of the cleanup made in the given generation: the store's proof is kept even when the
+     * folder is not yet gone, and the removal ends only with both. A report of another generation changes nothing.
+     */
+    public function applyCleanup(int $generation, CleanupProgress $progress): bool
+    {
+        if (! $this->isGeneration($generation) || $this->state !== AccountState::Removing) {
+            return false;
+        }
+
+        $this->store_removed = $this->store_removed || $progress->isStoreRemoved;
+        $this->save();
+
+        if (! $this->store_removed || ! $progress->isDirectoryRemoved) {
+            return false;
+        }
+
+        $this->finishRemoval();
+
+        return true;
+    }
+
+    /**
+     * The removed accounts whose processes are all gone and whose sign-in or folder a host has still to clean.
+     */
+    public static function nextToClean(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->where('state', AccountState::Removing->value)
+            ->where('cleanup_released', true)
+            ->whereNotNull('directory')
+            ->orderBy('updated_at')
+            ->first();
+    }
+
+    /**
+     * The accounts being removed that still wait for their processes to end.
+     *
+     * @return list<string>
+     */
+    public static function waitingForCleanupIds(int $limit): array
+    {
+        $ids = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->where('state', AccountState::Removing->value)
+            ->where('cleanup_released', false)
+            ->orderBy('updated_at')
+            ->readLimit($limit)
+            ->pluck('id');
+
+        return array_values(array_map(strval(...), $ids->all()));
+    }
+
+    /**
+     * Ends the removal once the processes are gone and the program's store and folder are deleted; the row, its link
+     * and its label stay for history.
      */
     public function finishRemoval(): void
     {
