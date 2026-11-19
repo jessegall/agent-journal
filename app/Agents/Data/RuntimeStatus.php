@@ -18,6 +18,7 @@ final class RuntimeStatus extends Data
 {
     public function __construct(
         public readonly string $runtimeId,
+        public readonly string $agentId,
         public readonly string $sessionId,
         public readonly string $program,
         public readonly RuntimeActivity $activity,
@@ -27,6 +28,6 @@ final class RuntimeStatus extends Data
         public readonly int|null $observationAgeSeconds,
         public readonly bool $isStale,
         public readonly int $processGeneration,
+        public readonly bool $canReleaseHold,
     ) {}
-
 }

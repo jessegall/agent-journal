@@ -236,6 +236,7 @@ final class AgentRuntime extends Model implements ReadableModel
 
         return RuntimeStatus::from([
             'runtimeId' => $this->id,
+            'agentId' => $this->session->agent_id,
             'sessionId' => $this->agent_session_id,
             'program' => $this->program,
             'activity' => $this->activity,
@@ -250,6 +251,7 @@ final class AgentRuntime extends Model implements ReadableModel
             'observationAgeSeconds' => $this->observationAge($now),
             'isStale' => $this->isStale($now),
             'processGeneration' => $this->process_generation,
+            'canReleaseHold' => $this->canReleaseHold(),
         ]);
     }
 

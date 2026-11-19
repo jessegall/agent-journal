@@ -10,6 +10,9 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Enums\DriverType;
+use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\RequestOutcome;
+use App\Agents\Enums\RequestProgress;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
@@ -25,7 +28,8 @@ use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
- * The read-only runtime status page: every runtime with its activity, settings and requests, with Chat switched off.
+ * The runtime status page: every runtime with its activity, settings and requests, with Chat switched off, and the
+ * owner's recovery buttons that run the recovery commands.
  */
 final class RuntimesPageTest extends TestCase
 {
@@ -58,6 +62,68 @@ final class RuntimesPageTest extends TestCase
 
         $this->assertSame($requests, DriverRequest::query()->count());
         $this->assertSame(1, AgentRuntime::query()->count());
+    }
+
+    public function test_a_failed_request_is_retried_from_the_page_and_the_page_shows_the_new_state(): void
+    {
+        $this->switchChatOff();
+        $this->openRuntime();
+        $request = DriverRequest::query()->orderBy('sequence')->firstOrFail();
+        $request->fail(RequestOutcome::EntryUnavailable);
+        $request->refresh();
+
+        $this->actingAs($this->owner)->get('/web/runtimes')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.runtimes.0.requests.0.canRetry', true)
+            ->where('page.data.runtimes.0.requests.0.rowVersion', $request->row_version));
+
+        $this->actingAs($this->owner)
+            ->post("/web/runtimes/requests/{$request->id}/retry", [
+                'reason' => 'the entry is back',
+                'rowVersion' => $request->row_version,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(RequestProgress::Accepted, $request->fresh()?->progress);
+    }
+
+    public function test_a_refused_recovery_is_shown_on_the_page(): void
+    {
+        $this->switchChatOff();
+        $this->openRuntime();
+        $request = DriverRequest::query()->orderBy('sequence')->firstOrFail();
+        $request->fail(RequestOutcome::EntryUnavailable);
+        $request->refresh();
+
+        $this->actingAs($this->owner)
+            ->post("/web/runtimes/requests/{$request->id}/retry", [
+                'reason' => 'the entry is back',
+                'rowVersion' => $request->row_version + 1,
+            ])
+            ->assertSessionHasErrors('review');
+
+        $this->assertSame(RequestProgress::Failed, $request->fresh()?->progress);
+    }
+
+    public function test_an_interrupt_is_released_from_the_page(): void
+    {
+        $this->switchChatOff();
+        $this->openRuntime();
+        $runtime = AgentRuntime::query()->firstOrFail();
+        $runtime->hold_reason = HoldReason::Interrupted;
+        $runtime->save();
+
+        $this->actingAs($this->owner)->get('/web/runtimes')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.runtimes.0.status.canReleaseHold', true));
+
+        $this->actingAs($this->owner)
+            ->post("/web/runtimes/{$runtime->agent_session_id}/release-hold", [
+                'reason' => 'go on',
+                'agentId' => $runtime->session->agent_id,
+                'hold' => HoldReason::Interrupted->value,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(HoldReason::None, $runtime->fresh()?->hold_reason);
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void
