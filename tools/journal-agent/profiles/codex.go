@@ -119,8 +119,8 @@ func skillsSwitchedOff(folders ...string) string {
 	return "skills.config=[" + strings.Join(entries, ", ") + "]"
 }
 
-// Environment points Codex at the isolated home and drops inherited Codex variables; the login is a link in the isolated home,
-// never a copy.
+// Environment points Codex at the isolated home and drops inherited Codex variables. The isolated home holds no
+// sign-in: a start signs in only through the saved account the journal prepared for it.
 func (Codex) Environment(inherited []string, start contracts.Start) []string {
 	kept := make([]string, 0, len(inherited)+1)
 
@@ -152,15 +152,7 @@ func (Codex) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile, err
 		files = append(files, contracts.SettingsFile{Name: "hooks.json", Content: hooks})
 	}
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-
-	return append(files,
-		contracts.SettingsFile{Name: "config.toml", Content: []byte(config.String())},
-		contracts.SettingsFile{Name: "auth.json", LinkTo: filepath.Join(home, ".codex", "auth.json")},
-	), nil
+	return append(files, contracts.SettingsFile{Name: "config.toml", Content: []byte(config.String())}), nil
 }
 
 func (Codex) RejectContrary(extraArguments []string) error {

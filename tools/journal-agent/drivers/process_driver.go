@@ -191,9 +191,6 @@ func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, e
 		return nil, err
 	}
 	for _, file := range files {
-		if file.LinkTo != "" {
-			continue
-		}
 		if err := os.WriteFile(filepath.Join(start.SettingsFolder, file.Name), file.Content, 0o600); err != nil {
 			return nil, err
 		}

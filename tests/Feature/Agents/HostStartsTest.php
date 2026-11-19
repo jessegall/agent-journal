@@ -118,6 +118,17 @@ final class HostStartsTest extends TestCase
         );
     }
 
+    public function test_another_host_cannot_claim_the_start_of_a_runtime_assigned_elsewhere(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $other = $this->enrollHost();
+
+        $this->signed($other, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])->assertForbidden();
+
+        $start = ProcessStart::query()->withoutGlobalScopes()->sole();
+        $this->assertSame([ProcessStartState::Pending, null], [$start->state, $start->host_id]);
+    }
+
     public function test_the_host_claims_a_start_once_and_reports_its_execution_and_exit(): void
     {
         [$host, $opened] = $this->openRuntime();

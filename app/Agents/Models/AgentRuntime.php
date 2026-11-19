@@ -409,6 +409,11 @@ final class AgentRuntime extends Model implements ReadableModel
             || $this->activity === RuntimeActivity::HostUnavailable;
     }
 
+    public function isAssignedTo(string $hostId): bool
+    {
+        return $this->host_id === $hostId;
+    }
+
     public function isAtGeneration(int $processGeneration): bool
     {
         return $this->process_generation === $processGeneration;

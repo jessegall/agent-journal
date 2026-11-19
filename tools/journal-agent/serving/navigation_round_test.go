@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"journal-agent/client"
+	"journal-agent/host"
 	"journal-agent/keyscripts"
 )
 
@@ -52,7 +53,7 @@ func navigateClaim(id string, sequence int) client.ClaimedRequest {
 // heldLoop is a loop whose runtime is held for a navigation, as a stalled key script leaves it.
 func heldLoop(runtime Runtime) (*Loop, *fakeJournal) {
 	journal := &fakeJournal{}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	live, _ := loop.runtimeOf(context.Background(), "runtime")
 	loop.holdRuntime(live)
 
@@ -98,7 +99,7 @@ func TestAStalledRuntimeBlocksNeitherAnotherRuntimeNorAStop(t *testing.T) {
 	stalled := &roundRuntime{}
 	other := &fakeRuntime{}
 	journal := &fakeJournal{}
-	loop := NewLoop(journal, func(runtimeID string, _ client.Grant) (Runtime, error) {
+	loop := NewLoop(journal, grantedPreparer{journal}, func(runtimeID string, _ host.PreparedStart) (Runtime, error) {
 		if runtimeID == "stalled" {
 			return stalled, nil
 		}

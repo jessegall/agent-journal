@@ -356,17 +356,9 @@ func profiledCommand(profile contracts.ProgramProfile, mode contracts.Mode, out,
 	return append([]string{profile.Program()}, arguments...), start, nil
 }
 
-// writeSettingsFile writes one isolated settings file, or links it when it is a login the person already holds.
+// writeSettingsFile writes one isolated settings file.
 func writeSettingsFile(folder string, file contracts.SettingsFile) error {
-	path := filepath.Join(folder, file.Name)
-
-	if file.LinkTo == "" {
-		return os.WriteFile(path, file.Content, 0o644)
-	}
-
-	os.Remove(path)
-
-	return os.Symlink(file.LinkTo, path)
+	return os.WriteFile(filepath.Join(folder, file.Name), file.Content, 0o644)
 }
 
 // captureHook appends one hook payload, with the time it arrived, to the capture file and answers the program with

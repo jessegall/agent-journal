@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"journal-agent/client"
+	"journal-agent/host"
 	"journal-agent/drivers/contracts"
 	"journal-agent/keyscripts"
 	"journal-agent/screen"
@@ -113,7 +114,7 @@ func (journal *fakeJournal) reportsOf(requestID string) []client.RequestReport {
 func TestAKeyScriptRunsOnceAwayFromTakeAndReportsEachStep(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := newScriptRuntime()
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
 	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
 	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 3 })
@@ -145,7 +146,7 @@ func TestAFinishedRunThatProvesNothingIsUnconfirmedAndAFailedStepIsScriptFailed(
 	for outcome, want := range ends {
 		journal := &fakeJournal{}
 		runtime := newScriptRuntime()
-		loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+		loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 		runtime.release <- keyscripts.Result{Outcome: outcome, Step: 2}
 
 		loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
@@ -161,7 +162,7 @@ func TestAFinishedRunThatProvesNothingIsUnconfirmedAndAFailedStepIsScriptFailed(
 func TestAResumedAttemptStartsAtItsStoppedStep(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := newScriptRuntime()
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	stopped := 2
 
 	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", &stopped)})
@@ -179,7 +180,7 @@ func TestAResumedAttemptStartsAtItsStoppedStep(t *testing.T) {
 func TestAStopIsTakenWhileAScriptWaitsForItsScreen(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := newScriptRuntime()
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
 	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 3 })
 
@@ -196,7 +197,7 @@ func navigationLoop(t *testing.T, replies ...raiseReply) (*fakeJournal, *scriptR
 	t.Helper()
 	journal := &fakeJournal{answers: replies}
 	runtime := newScriptRuntime()
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	loop.raiseRetryDelay = 0
 	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.LabelMissing, Step: 1, Fingerprint: "fp1:a",
 		Rows: []string{"Pick a model", "> GPT-5"}, Highlight: 1, Generation: 7}
@@ -283,7 +284,7 @@ func TestAProvenEntryReplayIsCountedAndEndsTheScriptWithNoRequest(t *testing.T) 
 	journal := &fakeJournal{answers: []raiseReply{entryAnswer(false)}}
 	runtime := newScriptRuntime()
 	runtime.replay = keyscripts.ReplayResult{Outcome: keyscripts.Proven}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.LabelMissing, Step: 1, Fingerprint: "fp1:a"}
 	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
 
@@ -334,7 +335,7 @@ func replayLoopAnswered(t *testing.T, entry raiseReply, replay keyscripts.Replay
 	journal := &fakeJournal{answers: []raiseReply{entry}}
 	runtime := newScriptRuntime()
 	runtime.replay = replay
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	loop.raiseRetryDelay = 0
 	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.NoEntry, Step: 1, Fingerprint: "fp1:a"}
 	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
@@ -427,7 +428,7 @@ func TestAGuardedEntryThatFailsAfterItsFirstStepIsDeclinedAndNeverReportedStale(
 
 func TestAStepRunByAnOlderBuildsScriptSaysWhichBuildItWas(t *testing.T) {
 	journal := &fakeJournal{}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return newScriptRuntime(), nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return newScriptRuntime(), nil })
 	runtime := &liveRuntime{id: "runtime-1", driver: newScriptRuntime(), build: "0.166.0"}
 	progress := keyscripts.Progress{Step: 0, Name: "open", Profile: "codex@0.165.0"}
 
@@ -448,7 +449,7 @@ func TestAWaitingRuntimeAsksAgainUnderANewKeyAndItsOwnReplayFinishesTheScript(t 
 	journal := &fakeJournal{answers: []raiseReply{wait, twoStepEntryAnswer()}}
 	runtime := newScriptRuntime()
 	runtime.replay = keyscripts.ReplayResult{Outcome: keyscripts.Proven}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	loop.raiseRetryDelay = 0
 	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.NoEntry, Step: 1, Fingerprint: "fp1:a"}
 	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
@@ -466,7 +467,7 @@ func TestAWaitingRuntimeAsksAgainUnderANewKeyAndItsOwnReplayFinishesTheScript(t 
 
 func TestAWaitEndsWhenTheRuntimeIsNoLongerHeld(t *testing.T) {
 	journal := &fakeJournal{}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return newScriptRuntime(), nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return newScriptRuntime(), nil })
 	runtime := &liveRuntime{id: "runtime-1", driver: newScriptRuntime(), hold: contracts.HoldNone}
 	loop.runtimes[runtime.id] = runtime
 

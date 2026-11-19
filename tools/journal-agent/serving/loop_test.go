@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"journal-agent/client"
+	"journal-agent/host"
 	"journal-agent/drivers/contracts"
 )
 
@@ -73,6 +74,14 @@ func (journal *fakeJournal) RaiseNavigation(
 	reply := journal.answers[0]
 	journal.answers = journal.answers[1:]
 	return reply.answer, reply.err
+}
+
+// grantedPreparer prepares a start from the fake journal's grant alone: the loop's tests do not reach accounts.
+type grantedPreparer struct{ journal *fakeJournal }
+
+func (preparer grantedPreparer) Prepare(ctx context.Context, runtimeID string) (host.PreparedStart, error) {
+	grant, err := preparer.journal.StartGrant(ctx, runtimeID)
+	return host.PreparedStart{Grant: grant}, err
 }
 
 func (journal *fakeJournal) StartGrant(context.Context, string) (client.Grant, error) {
@@ -172,7 +181,7 @@ func waitFor(t *testing.T, condition func() bool) {
 func TestDeliveriesRunAsOneTurnAndAreAppliedWhenItEnds(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &fakeRuntime{}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("a", 1, "deliver", "one"), claimed("b", 2, "deliver", "two")})
 
@@ -194,7 +203,7 @@ func TestDeliveriesRunAsOneTurnAndAreAppliedWhenItEnds(t *testing.T) {
 func TestAStopEndsTheRuntimeAndReportsItsExit(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &fakeRuntime{}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("stop", 1, "stop", "")})
 
@@ -209,7 +218,7 @@ func TestAStopEndsTheRuntimeAndReportsItsExit(t *testing.T) {
 func TestAnInterruptKeepsTheRuntimeHeldAndEndsWithItsTurn(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &fakeRuntime{}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("work", 1, "deliver", "count")})
 
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("stop-turn", 2, "interrupt", "")})
@@ -227,7 +236,7 @@ func TestAnInterruptKeepsTheRuntimeHeldAndEndsWithItsTurn(t *testing.T) {
 func TestATurnWhoseProgramFailsLeavesItsDeliveryUncertain(t *testing.T) {
 	journal := &fakeJournal{}
 	runtime := &fakeRuntime{}
-	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop := NewLoop(journal, grantedPreparer{journal}, func(string, host.PreparedStart) (Runtime, error) { return runtime, nil })
 	loop.Take(context.Background(), []client.ClaimedRequest{claimed("work", 1, "deliver", "hello")})
 
 	runtime.finished <- errors.New("exit status 1")

@@ -36,16 +36,14 @@ var errNoStartIdentity = errors.New("the process start identity cannot be read")
 // Markers keeps the start markers in the host's private state folder.
 type Markers struct{ Folder string }
 
-// Write saves the marker before the program starts; Started records the process once it runs.
+// Write saves the marker before the program starts, replacing the old one in one step; Started records the process
+// once it runs.
 func (markers Markers) Write(marker StartMarker) error {
-	if err := os.MkdirAll(markers.Folder, stateFolderMode); err != nil {
-		return err
-	}
 	content, err := json.Marshal(marker)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(markers.pathOf(marker.RuntimeID), content, secretFileMode)
+	return writePrivateFile(markers.pathOf(marker.RuntimeID), content)
 }
 
 // Started records the running process and its start identity on the runtime's marker.
@@ -79,6 +77,9 @@ func (markers Markers) Reconcile() (map[string]Reconciliation, error) {
 	}
 	outcomes := map[string]Reconciliation{}
 	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".") {
+			continue
+		}
 		content, err := os.ReadFile(filepath.Join(markers.Folder, entry.Name()))
 		if err != nil {
 			return nil, err

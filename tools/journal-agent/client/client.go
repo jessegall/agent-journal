@@ -201,8 +201,20 @@ type LivenessReport struct {
 // ErrRefused is returned when the journal refuses a call outright (4xx): a retry would be refused again.
 var ErrRefused = errors.New("the journal refused the call")
 
-// ErrAlreadyGranted is returned when a runtime's start token was handed out before.
+// ErrAlreadyGranted is returned when a runtime's start token was handed out before, or a start was claimed,
+// cancelled or ended already (410): it is gone, and asking again gets nothing.
 var ErrAlreadyGranted = errors.New("this start was already granted")
+
+// ErrConflict is returned when the journal refuses a call because of the state it is in (409), such as a program
+// arrangement the host has not proven.
+var ErrConflict = errors.New("the journal's state refuses the call")
+
+// ErrUnauthenticated is returned when the journal does not accept the host's credential or signature (401).
+var ErrUnauthenticated = errors.New("the journal did not accept the host's credential")
+
+// ErrUncertain is returned when the call may or may not have reached the journal: the connection failed or the
+// journal failed (5xx). A claim or report that ends this way is retried, never taken as refused.
+var ErrUncertain = errors.New("the call's outcome is unknown")
 
 // Client makes signed calls for one enrolled host. It never logs its secret.
 type Client struct {
@@ -298,6 +310,7 @@ type Grant struct {
 // RuntimeStart mirrors App\Agents\Support\RuntimeStart: what the host needs to start the runtime's program.
 type RuntimeStart struct {
 	DriverType        string  `json:"driver_type"`
+	SessionID         string  `json:"session_id"`
 	Program           string  `json:"program"`
 	ProgramBuild      string  `json:"program_build"`
 	Folder            string  `json:"folder"`
@@ -382,21 +395,32 @@ func (client *Client) call(ctx context.Context, target string, body any, answer 
 		}
 		content = encoded
 	}
+	return client.send(ctx, http.MethodPost, target, content, answer)
+}
+
+// read makes a signed GET: its signature covers the method, the exact target and an empty body.
+func (client *Client) read(ctx context.Context, target string, answer any) error {
+	return client.send(ctx, http.MethodGet, target, nil, answer)
+}
+
+func (client *Client) send(ctx context.Context, method, target string, content []byte, answer any) error {
 	callID, err := newCallID()
 	if err != nil {
 		return err
 	}
 	issuedAt := client.now().Unix()
-	signed, err := signature(client.enrollment.Secret, http.MethodPost, target, callID, issuedAt, content)
+	signed, err := signature(client.enrollment.Secret, method, target, callID, issuedAt, content)
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, client.enrollment.JournalURL+target, bytes.NewReader(content))
+	request, err := http.NewRequestWithContext(ctx, method, client.enrollment.JournalURL+target, bytes.NewReader(content))
 	if err != nil {
 		return err
 	}
 	request.Header.Set("Authorization", "Bearer "+client.enrollment.Secret)
-	request.Header.Set("Content-Type", "application/json")
+	if content != nil {
+		request.Header.Set("Content-Type", "application/json")
+	}
 	request.Header.Set("Accept", "application/json")
 	request.Header.Set(callIDHeader, callID)
 	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
@@ -405,24 +429,38 @@ func (client *Client) call(ctx context.Context, target string, body any, answer 
 
 	response, err := client.http.Do(request)
 	if err != nil {
-		return err
+		return errors.Join(ErrUncertain, err)
 	}
 	defer response.Body.Close()
-	if response.StatusCode == http.StatusGone {
-		return ErrAlreadyGranted
-	}
-	if response.StatusCode >= 300 {
-		message, _ := io.ReadAll(io.LimitReader(response.Body, 512))
-		failure := fmt.Errorf("the journal answered %d to %s: %s", response.StatusCode, target, message)
-		if response.StatusCode >= 400 && response.StatusCode < 500 {
-			return errors.Join(ErrRefused, failure)
-		}
-		return failure
+	if err := refusalOf(response, target); err != nil {
+		return err
 	}
 	if answer == nil {
 		return nil
 	}
 	return json.NewDecoder(response.Body).Decode(answer)
+}
+
+// refusalOf names what a status other than success means for the host; nil for a success.
+func refusalOf(response *http.Response, target string) error {
+	if response.StatusCode < 300 {
+		return nil
+	}
+	if response.StatusCode == http.StatusGone {
+		return ErrAlreadyGranted
+	}
+	message, _ := io.ReadAll(io.LimitReader(response.Body, 512))
+	failure := fmt.Errorf("the journal answered %d to %s: %s", response.StatusCode, target, message)
+	switch {
+	case response.StatusCode == http.StatusConflict:
+		return errors.Join(ErrConflict, ErrRefused, failure)
+	case response.StatusCode == http.StatusUnauthorized:
+		return errors.Join(ErrUnauthenticated, ErrRefused, failure)
+	case response.StatusCode >= 400 && response.StatusCode < 500:
+		return errors.Join(ErrRefused, failure)
+	default:
+		return errors.Join(ErrUncertain, failure)
+	}
 }
 
 func newCallID() (string, error) {

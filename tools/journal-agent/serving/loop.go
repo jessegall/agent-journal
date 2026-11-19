@@ -21,7 +21,6 @@ import (
 
 // Journal is the part of the journal the loop reports to.
 type Journal interface {
-	StartGrant(ctx context.Context, runtimeID string) (client.Grant, error)
 	ReportRequest(ctx context.Context, report client.RequestReport) error
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
@@ -44,15 +43,25 @@ type Runtime interface {
 }
 
 // Opener starts the driver of a runtime from its start grant; it is the one place that chooses by driver type.
-type Opener func(runtimeID string, grant client.Grant) (Runtime, error)
+type Opener func(runtimeID string, prepared host.PreparedStart) (Runtime, error)
+
+// Preparer takes a runtime to a prepared start: its committed grant and its saved-account claim, both saved, and
+// every prerequisite held. Nothing opens a driver without one.
+type Preparer interface {
+	Prepare(ctx context.Context, runtimeID string) (host.PreparedStart, error)
+}
 
 // Loop carries out claimed requests, one runtime at a time in its accepted order.
 type Loop struct {
 	journal   Journal
+	prepare   Preparer
 	open      Opener
 	scheduler *host.Scheduler
 	mutex     sync.Mutex
 	runtimes  map[string]*liveRuntime
+	// opening holds one lock a runtime, so two deliveries never open the same runtime twice while the loop-wide
+	// mutex is free during the network calls of its preparation.
+	opening map[string]*sync.Mutex
 	// raiseRetryDelay is how long a raise whose answer was lost waits before it is sent again.
 	raiseRetryDelay time.Duration
 }
@@ -73,12 +82,14 @@ type liveRuntime struct {
 }
 
 // NewLoop returns a loop that reports to the journal and opens drivers with open.
-func NewLoop(journal Journal, open Opener) *Loop {
+func NewLoop(journal Journal, prepare Preparer, open Opener) *Loop {
 	return &Loop{
 		journal:         journal,
+		prepare:         prepare,
 		open:            open,
 		scheduler:       host.NewScheduler(),
 		runtimes:        map[string]*liveRuntime{},
+		opening:         map[string]*sync.Mutex{},
 		raiseRetryDelay: time.Second,
 	}
 }
@@ -800,23 +811,47 @@ func parametersOf(request client.ClaimedRequest) map[string]string {
 }
 
 func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime, error) {
-	loop.mutex.Lock()
-	defer loop.mutex.Unlock()
-	if runtime, found := loop.runtimes[runtimeID]; found {
+	if runtime, found := loop.liveRuntime(runtimeID); found {
 		return runtime, nil
 	}
-	grant, err := loop.journal.StartGrant(ctx, runtimeID)
+	opening := loop.openingLock(runtimeID)
+	opening.Lock()
+	defer opening.Unlock()
+	if runtime, found := loop.liveRuntime(runtimeID); found {
+		return runtime, nil
+	}
+	prepared, err := loop.prepare.Prepare(ctx, runtimeID)
 	if err != nil {
 		return nil, err
 	}
-	driver, err := loop.open(runtimeID, grant)
+	driver, err := loop.open(runtimeID, prepared)
 	if err != nil {
 		return nil, err
 	}
-	runtime := &liveRuntime{id: runtimeID, driver: driver, build: grant.Runtime.ProgramBuild, hold: contracts.HoldNone}
+	runtime := &liveRuntime{
+		id: runtimeID, driver: driver, build: prepared.Grant.Runtime.ProgramBuild, hold: contracts.HoldNone,
+	}
+	loop.mutex.Lock()
 	loop.runtimes[runtimeID] = runtime
+	loop.mutex.Unlock()
 
 	return runtime, nil
+}
+
+func (loop *Loop) liveRuntime(runtimeID string) (*liveRuntime, bool) {
+	loop.mutex.Lock()
+	defer loop.mutex.Unlock()
+	runtime, found := loop.runtimes[runtimeID]
+	return runtime, found
+}
+
+func (loop *Loop) openingLock(runtimeID string) *sync.Mutex {
+	loop.mutex.Lock()
+	defer loop.mutex.Unlock()
+	if loop.opening[runtimeID] == nil {
+		loop.opening[runtimeID] = &sync.Mutex{}
+	}
+	return loop.opening[runtimeID]
 }
 
 func (loop *Loop) exited(ctx context.Context, runtime *liveRuntime, evidence string) {

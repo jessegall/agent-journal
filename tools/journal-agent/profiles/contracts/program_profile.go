@@ -28,12 +28,11 @@ type Start struct {
 	WorkFolder string
 }
 
-// SettingsFile is one file of the isolated settings folder: its name and content, or, for a login the person
-// already holds, the path it links to so the secret is never copied.
+// SettingsFile is one generated file of the isolated settings folder: its name and content. A sign-in is never one:
+// a start signs in only through the saved account the journal prepared for it.
 type SettingsFile struct {
 	Name    string
 	Content []byte
-	LinkTo  string
 }
 
 // ProgramProfile is how the host starts one pinned build of one agent program with its native subagents off

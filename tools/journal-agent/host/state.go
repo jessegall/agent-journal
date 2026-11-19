@@ -59,6 +59,35 @@ func (state State) Load() (Enrollment, error) {
 
 func (state State) enrollmentPath() string { return filepath.Join(state.Folder, enrollmentName) }
 
+// writePrivateFile replaces a file readable by its owner alone in one step: the content goes to a new file beside it,
+// is synced, and is renamed over the old one, so a crash leaves the old file or the new one, never half of either.
+func writePrivateFile(path string, content []byte) error {
+	if err := os.MkdirAll(filepath.Dir(path), stateFolderMode); err != nil {
+		return err
+	}
+	file, err := os.CreateTemp(filepath.Dir(path), "."+filepath.Base(path)+".writing-")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(file.Name())
+	if err := file.Chmod(secretFileMode); err != nil {
+		file.Close()
+		return err
+	}
+	if _, err := file.Write(content); err != nil {
+		file.Close()
+		return err
+	}
+	if err := file.Sync(); err != nil {
+		file.Close()
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return err
+	}
+	return os.Rename(file.Name(), path)
+}
+
 func requireOwnerOnly(path string, allowed os.FileMode) error {
 	info, err := os.Stat(path)
 	if err != nil {

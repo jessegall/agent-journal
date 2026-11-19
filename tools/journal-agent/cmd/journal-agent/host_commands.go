@@ -94,7 +94,7 @@ func serve(arguments []string) error {
 	journal := client.New(enrollment)
 	opener := runtimeOpener{stateFolder: *stateFolder, journalURL: journal.JournalURL(), hookCommand: *hookCommand,
 		socket: socket}
-	loop := serving.NewLoop(journal, opener.open)
+	loop := serving.NewLoop(journal, startPreparation(journal, *stateFolder, *installationFolder), opener.open)
 	watcher, err := host.NewScreenWatcher(ctx, journal, socket)
 	if err != nil {
 		return err
@@ -128,7 +128,8 @@ const (
 	defaultColumns uint16 = 120
 )
 
-func (opener runtimeOpener) open(runtimeID string, grant client.Grant) (serving.Runtime, error) {
+func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) (serving.Runtime, error) {
+	grant := prepared.Grant
 	profile, known := profileFor[grant.Runtime.Program]
 	if !known {
 		return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Program)
@@ -249,13 +250,14 @@ func attach(arguments []string) error {
 	folder := flags.String("folder", "", "the folder the agent works in")
 	program := flags.String("program", "claude", "claude or codex")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the program calls")
+	installationFolder := flags.String("installation", "", "the protected installation saved-account starts run from")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
 	rows, columns := terminalSize()
 	request := host.AttachRequest{RuntimeID: *runtimeID, Rows: rows, Columns: columns}
 	if *runtimeID == "" {
-		opened, err := openMainRuntime(*stateFolder, *agentID, *folder, *program, *hookCommand)
+		opened, err := openMainRuntime(*stateFolder, *installationFolder, *agentID, *folder, *program, *hookCommand)
 		if err != nil {
 			return err
 		}
@@ -312,9 +314,53 @@ func forwardKeys(in io.Reader, connection net.Conn) {
 	}
 }
 
-// openMainRuntime asks the journal for the main runtime, takes its start token and builds the program's
-// terminal start from the pinned profile, with the credential and generation for the hook relay.
-func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) (host.AttachRequest, error) {
+// startPreparation prepares every runtime start of this host: the grant and account claim saved in its private state,
+// and the start refused unless it runs from the verified installation under a protected arrangement the host proved.
+func startPreparation(journal *client.Client, stateFolder, installationFolder string) host.StartPreparation {
+	return host.StartPreparation{
+		Journal: journal,
+		States:  host.StartStates{Folder: filepath.Join(stateFolder, "starts")},
+		Prerequisites: func(grant client.Grant, claim client.ClaimedStart) error {
+			return protectedStartAllowed(stateFolder, installationFolder, grant, claim)
+		},
+	}
+}
+
+// errNoInstallation refuses an account start on a host that serves without a protected installation.
+var errNoInstallation = errors.New("this host has no protected installation, so it starts no saved account")
+
+func protectedStartAllowed(stateFolder, installationFolder string, grant client.Grant, claim client.ClaimedStart) error {
+	profile, known := profileFor[grant.Runtime.Program]
+	if !known {
+		return fmt.Errorf("%q has no pinned profile", grant.Runtime.Program)
+	}
+	if claim.Recipe.ProgramVersion != grant.Runtime.ProgramBuild {
+		return fmt.Errorf("the account recipe is for %s %s, the runtime for %s", profile.Program(),
+			claim.Recipe.ProgramVersion, grant.Runtime.ProgramBuild)
+	}
+	if installationFolder == "" {
+		return errNoInstallation
+	}
+	if _, err := (host.Installation{Folder: installationFolder}).Verify(); err != nil {
+		return err
+	}
+	capability, err := host.InspectProtection(profile.Program(), claim.Recipe.ProgramVersion,
+		host.NativeEvidence{Folder: stateFolder})
+	if err != nil {
+		return err
+	}
+	if !capability.Available {
+		return fmt.Errorf("the protected arrangement of %s %s is not available on this host: journal-agent protection "+
+			"names what is missing", profile.Program(), claim.Recipe.ProgramVersion)
+	}
+	return nil
+}
+
+// openMainRuntime asks the journal for the main runtime, prepares its start like any other runtime's and builds the
+// program's terminal start from the pinned profile, with the credential and generation for the hook relay.
+func openMainRuntime(
+	stateFolder, installationFolder, agentID, folder, program, hookCommand string,
+) (host.AttachRequest, error) {
 	profile, known := profileFor[program]
 	if !known || agentID == "" || folder == "" {
 		return host.AttachRequest{}, errors.New("attach needs --agent, --folder and --program claude or codex")
@@ -333,11 +379,11 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	grant, err := journal.StartGrant(ctx, opened.RuntimeID)
+	prepared, err := startPreparation(journal, stateFolder, installationFolder).Prepare(ctx, opened.RuntimeID)
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, grant)
+	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant)
 }
 
 // startOf builds the program's terminal start for a runtime from its pinned profile and its start grant: the
@@ -395,13 +441,6 @@ func writeSettings(profile contracts.ProgramProfile, start contracts.Start) erro
 	}
 	for _, file := range files {
 		target := filepath.Join(start.SettingsFolder, file.Name)
-		if file.LinkTo != "" {
-			_ = os.Remove(target)
-			if err := os.Symlink(file.LinkTo, target); err != nil {
-				return err
-			}
-			continue
-		}
 		if err := os.WriteFile(target, file.Content, 0o600); err != nil {
 			return err
 		}
