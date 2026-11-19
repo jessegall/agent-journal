@@ -29,7 +29,9 @@ final readonly class DraftClosing
      */
     public function closeOwn(DraftTarget $target): CloseResult
     {
-        return $this->closeTarget($target, fn (DocumentDraft $draft) => $draft->requireEditor($this->editors->editor()), CloseCause::Author, null, null);
+        $requireEditor = fn (DocumentDraft $draft) => $draft->requireEditor($this->editors->editor());
+
+        return $this->closeTarget($target, $requireEditor, CloseCause::Author, null, null);
     }
 
     /**
@@ -37,7 +39,7 @@ final readonly class DraftClosing
      */
     public function recover(DraftTarget $target, Actor $user, string $reason): CloseResult
     {
-        return $this->closeTarget($target, fn () => null, CloseCause::Recovery, $user, RecordFields::settlementReason($reason));
+        return $this->closeTarget($target, fn () => null, CloseCause::Recovery, $user, $reason);
     }
 
     /**
@@ -52,8 +54,13 @@ final readonly class DraftClosing
     /**
      * @param  callable(DocumentDraft): mixed  $requireCloser
      */
-    private function closeTarget(DraftTarget $target, callable $requireCloser, CloseCause $cause, Actor|null $closer, string|null $reason): CloseResult
-    {
+    private function closeTarget(
+        DraftTarget $target,
+        callable $requireCloser,
+        CloseCause $cause,
+        Actor|null $closer,
+        string|null $reason,
+    ): CloseResult {
         $document = Document::lockedForEditing($target->documentNumber);
         $closed = $document->closeOf($target->token);
 
@@ -69,13 +76,20 @@ final readonly class DraftClosing
         return $this->closeLocked($document, $draft, $cause, $closer, $reason);
     }
 
-    private function closeLocked(Document $document, DocumentDraft $draft, CloseCause $cause, Actor|null $closer, string|null $reason): CloseResult
-    {
+    private function closeLocked(
+        Document $document,
+        DocumentDraft $draft,
+        CloseCause $cause,
+        Actor|null $closer,
+        string|null $reason,
+    ): CloseResult {
         $close = $draft->closeInto($document, $document->currentRevisionOrFail(), $cause, $closer, $reason);
         $this->events->dispatch(new DocumentClosed($document->id, $document->number, $close->result_revision_number));
 
         if ($close->published) {
-            $this->events->dispatch(new DocumentPublished($document->id, $document->number, $close->result_revision_number));
+            $this->events->dispatch(
+                new DocumentPublished($document->id, $document->number, $close->result_revision_number),
+            );
         }
 
         return $close->result();

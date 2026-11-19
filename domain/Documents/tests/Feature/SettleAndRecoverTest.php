@@ -12,8 +12,8 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Domains\Support\AvailableListener;
-use App\Text\Exceptions\ContentMissing;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
@@ -54,7 +54,16 @@ final class SettleAndRecoverTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['record_settlements', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'record_settlements',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     protected function setUp(): void
     {
@@ -83,18 +92,55 @@ final class SettleAndRecoverTest extends TestCase
 
     public function test_a_blank_reason_another_reason_and_an_open_draft_are_refused(): void
     {
-        try {
-            $this->bus()->run(new SettleDocument(1, 1, '   '));
-            $this->fail('A blank reason was accepted.');
-        } catch (ContentMissing) {
-            $this->assertSame(AttentionState::Active, Document::query()->sole()->attention);
-        }
+        $this->assertThrows(
+            fn () => $this->bus()->run(new SettleDocument(1, 1, '   ')),
+            CommandInputInvalid::class,
+            'reason: The reason field is required.',
+        );
+        $this->assertSame(AttentionState::Active, Document::query()->sole()->attention);
 
         $this->bus()->run(new OpenDocument(1));
         $this->expectException(SettlementDenied::class);
         $this->expectExceptionMessage('close it before settling');
 
         $this->bus()->run(new SettleDocument(1, 1, 'Done.'));
+    }
+
+    public function test_a_reason_over_its_limit_is_refused_and_the_record_stays_unsettled(): void
+    {
+        $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
+        $tooLong = str_repeat('a', Document::SETTLEMENT_REASON_CHARACTERS + 1);
+
+        $this->assertThrows(fn () => $this->bus()->run(new SettleDocument(1, 1, $tooLong)), CommandInputInvalid::class);
+        $this->assertThrows(fn () => $this->bus()->run(new SettleReport(1, $tooLong)), CommandInputInvalid::class);
+        $this->assertSame(
+            [AttentionState::Active, AttentionState::Active],
+            [Document::query()->sole()->attention, Report::query()->sole()->attention],
+        );
+    }
+
+    public function test_a_reason_is_stored_trimmed_and_the_same_reason_again_changes_nothing(): void
+    {
+        $this->bus()->run(new SettleDocument(1, 1, '  Shipped.  '));
+        $this->bus()->run(new SettleDocument(1, 1, 'Shipped.'));
+
+        $settlements = $this->documents()->inspect(1)->settlements;
+
+        $this->assertSame(['Shipped.'], array_map(fn ($settlement) => $settlement->reason, $settlements));
+    }
+
+    public function test_a_blank_recovery_reason_is_refused_and_the_draft_stays_held(): void
+    {
+        $this->actAsAgent(9, 90);
+        $draft = $this->bus()->run(new OpenDocument(1));
+        $this->actAsUser(1);
+
+        $this->assertThrows(
+            fn () => $this->bus()->run(new RecoverDocument($this->target($draft), ' ')),
+            CommandInputInvalid::class,
+            'reason:',
+        );
+        $this->assertSame(1, DocumentDraft::query()->count());
     }
 
     public function test_an_agent_settles_only_the_reports_it_created(): void
@@ -119,7 +165,8 @@ final class SettleAndRecoverTest extends TestCase
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Ship it soon.'));
 
         $this->actAsUser(1);
-        $this->assertSame('Ship it soon.', trim(substr((string) $this->documents()->inspect(1)->editing->held->body, -14)));
+        $heldBody = (string) $this->documents()->inspect(1)->editing->held->body;
+        $this->assertSame('Ship it soon.', trim(substr($heldBody, -14)));
 
         try {
             $this->bus()->run(new RecoverDocument(new DraftTarget(1, $draft->token, 1), 'Agent gone.'));
@@ -128,12 +175,15 @@ final class SettleAndRecoverTest extends TestCase
             $this->assertSame(1, DocumentDraft::query()->count());
         }
 
-        $result = $this->bus()->run(new RecoverDocument($this->target($draft), 'Agent gone.'));
+        $result = $this->bus()->run(new RecoverDocument($this->target($draft), '  Agent gone.  '));
         $close = DocumentClose::query()->sole();
 
         $this->assertSame([2, true], [$result->revisionNumber, $result->published]);
         $this->assertSame(TestIds::of(9), $this->documents()->revisions(1, 1)[1]->authorId);
-        $this->assertSame([CloseCause::Recovery, TestIds::of(1), 'Agent gone.'], [$close->cause, $close->closer_id, $close->reason]);
+        $this->assertSame(
+            [CloseCause::Recovery, TestIds::of(1), 'Agent gone.'],
+            [$close->cause, $close->closer_id, $close->reason],
+        );
         $this->assertSame(1, $this->bus()->run(new OpenDocument(1))->version);
     }
 
@@ -145,7 +195,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->bus()->run(new RecoverDocument(new DraftTarget(1, 'any', 1), 'Mine now.'));
     }
 
-    public function test_an_ended_session_closes_its_changed_draft_into_a_revision_and_an_unchanged_one_into_none(): void
+    public function test_an_ended_session_closes_a_changed_draft_into_a_revision_and_an_unchanged_one_into_none(): void
     {
         $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
         $this->actAsAgent(9, 90);
@@ -159,7 +209,10 @@ final class SettleAndRecoverTest extends TestCase
 
         $this->assertSame(0, DocumentDraft::query()->count());
         $this->assertSame(['2', '1'], [$this->documents()->show(1)->revision, $this->documents()->show(2)->revision]);
-        $this->assertSame([CloseCause::Lifecycle, CloseCause::Lifecycle], DocumentClose::query()->orderBy('closed_at')->get()->pluck('cause')->all());
+        $this->assertSame(
+            [CloseCause::Lifecycle, CloseCause::Lifecycle],
+            DocumentClose::query()->orderBy('closed_at')->get()->pluck('cause')->all(),
+        );
     }
 
     public function test_a_failing_close_rolls_the_session_ending_back_and_keeps_the_draft(): void
@@ -183,14 +236,18 @@ final class SettleAndRecoverTest extends TestCase
 
     public function test_the_documents_listener_hears_a_session_ending_behind_its_domain_gate(): void
     {
-        $listeners = array_map(fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '', $this->app->make(Dispatcher::class)->getRawListeners()[LaunchEnded::class] ?? []);
+        $listeners = array_map(
+            fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '',
+            $this->app->make(Dispatcher::class)->getRawListeners()[LaunchEnded::class] ?? [],
+        );
 
         $this->assertContains(CloseEndedSessionDraft::class.'@handle', $listeners);
     }
 
     private function endSession(int $agent, int $session): void
     {
-        $this->app->make(CloseEndedSessionDraft::class)->handle(new LaunchEnded(TestIds::of($agent), TestIds::of($session)));
+        $this->app->make(CloseEndedSessionDraft::class)
+            ->handle(new LaunchEnded(TestIds::of($agent), TestIds::of($session)));
     }
 
     private function target(DraftReference $draft): DraftTarget
@@ -200,13 +257,21 @@ final class SettleAndRecoverTest extends TestCase
 
     private function actAsUser(int $user): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of($user)),
+            new OwnerAuthority('test'),
+        );
     }
 
     private function actAsAgent(int $agent, int $session): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), TestLaunchAuthority::forAgent(TestIds::of($agent)));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($session), new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of($agent)),
+            TestLaunchAuthority::forAgent(TestIds::of($agent)),
+        );
+        $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
+        $context = new AgentContext(TestIds::of($agent), TestIds::of($session), $call, null);
+        $this->app->instance(AgentContext::class, $context);
     }
 
     private function documents(): DocumentResolver

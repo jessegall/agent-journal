@@ -31,7 +31,20 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $reason
  * @property CarbonImmutable|null $closed_at
  */
-#[Fillable(['token', 'document_id', 'base_revision_number', 'result_revision_number', 'author_type', 'author_id', 'cause', 'closer_type', 'closer_id', 'reason', 'published', 'closed_at'])]
+#[Fillable([
+    'token',
+    'document_id',
+    'base_revision_number',
+    'result_revision_number',
+    'author_type',
+    'author_id',
+    'cause',
+    'closer_type',
+    'closer_id',
+    'reason',
+    'published',
+    'closed_at',
+])]
 final class DocumentClose extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -51,8 +64,14 @@ final class DocumentClose extends Model implements ReadableModel
         ];
     }
 
-    public static function record(DocumentDraft $draft, int $resultNumber, CloseCause $cause, Actor|null $closer, string|null $reason, bool $published): self
-    {
+    public static function record(
+        DocumentDraft $draft,
+        int $resultNumber,
+        CloseCause $cause,
+        Actor|null $closer,
+        string|null $reason,
+        bool $published,
+    ): self {
         return self::query()->create([
             'token' => $draft->token,
             'document_id' => $draft->document_id,
@@ -63,7 +82,7 @@ final class DocumentClose extends Model implements ReadableModel
             'cause' => $cause,
             'closer_type' => $closer?->actorType(),
             'closer_id' => $closer?->actorId(),
-            'reason' => $reason,
+            'reason' => $reason === null ? null : trim($reason),
             'published' => $published,
             'closed_at' => CarbonImmutable::now(),
         ]);

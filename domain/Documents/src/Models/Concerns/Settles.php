@@ -22,6 +22,7 @@ trait Settles
      */
     public function settle(Actor $actor, string $reason, int|null $revisionNumber): bool
     {
+        $reason = trim($reason);
         $last = RecordSettlement::query()->onRecord(static::LINK_TYPE, $this->id)->first();
 
         if ($this->attention === AttentionState::Settled && $last?->reason === $reason) {
@@ -52,6 +53,10 @@ trait Settles
      */
     public function settlements(): array
     {
-        return array_values(RecordSettlement::query()->onRecord(static::LINK_TYPE, $this->id)->get()->map(fn (RecordSettlement $settlement) => $settlement->card())->all());
+        return array_values(RecordSettlement::query()
+            ->onRecord(static::LINK_TYPE, $this->id)
+            ->get()
+            ->map(fn (RecordSettlement $settlement) => $settlement->card())
+            ->all());
     }
 }
