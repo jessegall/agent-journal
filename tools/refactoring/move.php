@@ -51,7 +51,7 @@ $arguments = array_values(array_filter(
 ));
 
 $moves = [];
-$namespace = '';
+$namespace = null;
 
 foreach ($arguments as $argument) {
     if (str_starts_with($argument, '--list=')) {
@@ -69,8 +69,12 @@ foreach ($arguments as $argument) {
     $moves[] = $argument;
 }
 
-if ($namespace !== '') {
-    $into = trim($moves[0] ?? '', '\\');
+if ($namespace !== null) {
+    if ($moves === []) {
+        exit(usage());
+    }
+
+    $into = trim($moves[0], '\\');
 
     if ($into === '') {
         exit(usage());
@@ -124,7 +128,13 @@ foreach ($moves as $move) {
         ? replace($old, $new, $files, $dry, $namespace, progress($at++, $total))
         : move($old, $new, $files, $dry, $namespace, progress($at++, $total));
 
-    $applied ? $done++ : $missed[] = $old;
+    if ($applied) {
+        $done++;
+
+        continue;
+    }
+
+    $missed[] = $old;
 }
 
 echo sprintf(
@@ -172,10 +182,16 @@ function progress(int $at, int $of): string
 /**
  * @param  list<string>  $files
  */
-function move(string $old, string $qualified, array $files, bool $dry, string $scope = '', string $progress = ''): bool
-{
+function move(
+    string $given,
+    string $qualified,
+    array $files,
+    bool $dry,
+    string|null $scope,
+    string $progress,
+): bool {
     $new = basename(str_replace('\\', '/', $qualified));
-    $where = declaredIn($old, $files, $scope);
+    $where = declaredIn($given, $files, $scope);
 
     if ($where === null) {
         return false;
@@ -183,7 +199,7 @@ function move(string $old, string $qualified, array $files, bool $dry, string $s
 
     // the source may have been given fully qualified to settle an ambiguous name; everything below
     // works on the short name, and the namespace it came from is the one the file already declares
-    $old = shortNameOf($old);
+    $old = shortNameOf($given);
 
     $to = destination($where, $qualified);
 
@@ -227,7 +243,7 @@ function move(string $old, string $qualified, array $files, bool $dry, string $s
 
     printf(
         "%s %s → %s%s\n      %d reference(s) repointed, %d import(s) added\n",
-        $progress === '' ? ' ' : $progress,
+        $progress,
         $old,
         $qualified,
         $where === $to ? '' : '  ('.relative($to).')',
@@ -252,10 +268,16 @@ function move(string $old, string $qualified, array $files, bool $dry, string $s
  *
  * @param  list<string>  $files
  */
-function replace(string $old, string $qualified, array $files, bool $dry, string $scope = '', string $progress = ''): bool
-{
+function replace(
+    string $given,
+    string $qualified,
+    array $files,
+    bool $dry,
+    string|null $scope,
+    string $progress,
+): bool {
     $new = basename(str_replace('\\', '/', $qualified));
-    $where = declaredIn($old, $files, $scope);
+    $where = declaredIn($given, $files, $scope);
 
     if ($where === null) {
         return false;
@@ -264,12 +286,17 @@ function replace(string $old, string $qualified, array $files, bool $dry, string
     $kept = declaredIn($qualified, $files);
 
     if ($kept === null) {
-        printf("  %s → %s  REFUSED: nothing declares %s, so there is nothing to replace it with\n", $old, $qualified, $qualified);
+        printf(
+            "  %s → %s  REFUSED: nothing declares %s, so there is nothing to replace it with\n",
+            $given,
+            $qualified,
+            $qualified,
+        );
 
         return false;
     }
 
-    $old = shortNameOf($old);
+    $old = shortNameOf($given);
     $from = namespaceOf($where).'\\'.$old;
     $onward = namespaceOf($kept).'\\'.$new;
 
@@ -313,7 +340,7 @@ function replace(string $old, string $qualified, array $files, bool $dry, string
 
     printf(
         "%s %s → %s  (%s deleted)\n      %d reference(s) repointed, %d import(s) added\n",
-        $progress === '' ? ' ' : $progress,
+        $progress,
         $old,
         $qualified,
         relative($where),
@@ -334,9 +361,19 @@ function replace(string $old, string $qualified, array $files, bool $dry, string
  *
  * @param  list<string>  $files
  * @param  array<string, string>  $pending  what each file will hold, so a dry run reports what a real one does
+ * @param  array{0: string, 1: string}  $declaring  the file the class leaves, then the file that declares it after
  */
-function rewrite(array $files, string $from, string $onward, string $old, string $new, bool $dry, array &$pending, array $declaring = [], array &$naming = []): int
-{
+function rewrite(
+    array $files,
+    string $from,
+    string $onward,
+    string $old,
+    string $new,
+    bool $dry,
+    array &$pending,
+    array $declaring,
+    array &$naming,
+): int {
     $touched = 0;
 
     foreach ($files as $file) {
@@ -346,7 +383,7 @@ function rewrite(array $files, string $from, string $onward, string $old, string
         // what this file will CALL the class, decided before anything is written: a file that already
         // means another class by the new name calls ours by as much of its namespace as tells them
         // apart, and that is the name written in — renaming to the bare one first would collide
-        $calls = $ours && ! in_array($file, $declaring, true) && clashes($was, $new, $from, $onward, $file, $declaring[0] ?? '')
+        $calls = $ours && ! in_array($file, $declaring, true) && clashes($was, $new, $from, $onward, $file, $declaring[0])
             ? qualifying($was, $onward, $new)
             : ['import' => $onward, 'named' => $new];
 
@@ -388,15 +425,17 @@ function keepingNeighbours(string $body, string $where, string $to): string
         return $body;
     }
 
+    $kept = $body;
+
     foreach (declaredUnder(substr($was, strlen(PACKAGE))) as $neighbour) {
-        if (! names($body, $neighbour) || bound($body, $neighbour)) {
+        if (! names($kept, $neighbour) || bound($kept, $neighbour)) {
             continue;
         }
 
-        $body = importing($body, $was.'\\'.$neighbour);
+        $kept = importing($kept, $was.'\\'.$neighbour);
     }
 
-    return $body;
+    return $kept;
 }
 
 /**
@@ -549,7 +588,7 @@ function beside(string $file, string $class, string $leaving = ''): bool
 {
     $path = dirname($file).'/'.$class.'.php';
 
-    // the class being moved is on its way OUT of that directory, so it is no longer a neighbour
+    // the class being moved leaves that directory, so it does not count as a neighbour
     return $path !== $leaving && is_file($path);
 }
 
@@ -588,20 +627,17 @@ function imported(string $body, string $class): bool
 
     foreach ($tokens as $token) {
         if (! is_array($token)) {
-            if ($token === '{') {
-                $depth++;
-            }
-            if ($token === '}') {
-                $depth--;
+            $depth += match ($token) {
+                '{' => 1,
+                '}' => -1,
+                default => 0,
+            };
+
+            if ($token === ';' && $importing && $last === $class) {
+                return true;
             }
 
-            if ($token === ';' && $importing) {
-                $importing = false;
-
-                if ($last === $class) {
-                    return true;
-                }
-            }
+            $importing = $importing && $token !== ';';
 
             continue;
         }
@@ -891,7 +927,7 @@ function shortNameOf(string $class): string
     return basename(str_replace('\\', '/', $class));
 }
 
-function declaredIn(string $class, array $files, string $scope = ''): string|null
+function declaredIn(string $class, array $files, string|null $scope = null): string|null
 {
     $wanted = basename(str_replace('\\', '/', $class));
     $under = str_contains($class, '\\') ? PACKAGE.trim(substr($class, 0, strrpos($class, '\\')), '\\') : '';
@@ -899,7 +935,7 @@ function declaredIn(string $class, array $files, string $scope = ''): string|nul
 
     foreach ($files as $file) {
         // a scope is the tree beneath it, so a class in one of its sub-namespaces is still under it
-        if ($scope !== '' && ! isUnder(namespaceOf($file), PACKAGE.$scope)) {
+        if ($scope !== null && ! isUnder(namespaceOf($file), PACKAGE.$scope)) {
             continue;
         }
 
@@ -1148,23 +1184,22 @@ function declaredUnder(string $namespace): array
 }
 
 /**
- * Every reference left pointing at a name nothing declares any more — what a half-applied move leaves
- * behind, and the one thing worth failing on.
- *
- * @param  list<string>  $was
- * @param  list<string>  $files
- * @return array<string, list<string>>
- *
- * Whether `$source` names the class `$qualified`, and not one whose name merely BEGINS with it. A
- * plain `str_contains` reported every file naming `WorkflowProblemsLoader` as still naming the
- * `WorkflowProblems` it was renamed from — a dangling reference that was not there, on a move that
- * had applied cleanly.
+ * Whether `$source` names the class `$qualified`, and not one whose name only BEGINS with it, such as
+ * `WorkflowProblemsLoader` for `WorkflowProblems`.
  */
 function namesClass(string $source, string $qualified): bool
 {
     return preg_match('/'.preg_quote($qualified, '/').'(?![A-Za-z0-9_\\\\])/', $source) === 1;
 }
 
+/**
+ * Every reference left pointing at a name nothing declares any more — what a half-applied move leaves
+ * behind, and the one thing worth failing on.
+ *
+ * @param  list<string>  $was
+ * @param  list<string>  $files
+ * @return array<string, list<string>>
+ */
 function dangling(array $was, array $files): array
 {
     $left = [];
