@@ -24,6 +24,7 @@ return new class extends Migration
             $table->ulid('live_writer_attempt_id')->nullable();
             $table->ulid('operation_id')->nullable();
             $table->boolean('cleanup_pending')->default(false);
+            $table->unsignedBigInteger('check_requested_generation')->nullable();
             $table->timestampTz('checked_at')->nullable();
             $table->timestampsTz();
 

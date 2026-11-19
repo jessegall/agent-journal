@@ -6,6 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Contracts\SignInProtocol;
+use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Exceptions\SignInProtocolMissing;
 use App\Profiles\Values\ClaimedSignIn;
@@ -55,6 +56,36 @@ final readonly class PrivateSignInProcesses
         $verification = $protocol->verify($claimed->directory);
         $outcome = $verification->isSignedIn ? SignInOutcome::Verified : SignInOutcome::Failed;
         $this->host->report($claimed, $outcome, $verification->identity);
+
+        return true;
+    }
+
+    /**
+     * Runs the next account check with the program's own status check and answers whether there was one; only a
+     * certain answer is reported as signed in or out.
+     */
+    public function checkNext(): bool
+    {
+        $claimed = $this->host->claimCheck();
+
+        if ($claimed === null) {
+            return false;
+        }
+
+        try {
+            $verification = $this->protocols->for($claimed->program)->verify($claimed->directory);
+        } catch (SignInProtocolMissing) {
+            $this->host->reportCheck($claimed, AccountCheckResult::Unknown);
+
+            return true;
+        }
+
+        $result = match (true) {
+            ! $verification->isCertain => AccountCheckResult::Unknown,
+            $verification->isSignedIn => AccountCheckResult::SignedIn,
+            default => AccountCheckResult::SignedOut,
+        };
+        $this->host->reportCheck($claimed, $result);
 
         return true;
     }

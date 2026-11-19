@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Profiles;
 
 use App\Profiles\Contracts\SignInHost;
+use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Values\ClaimedAccountCheck;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\SignInChallenge;
 
@@ -41,6 +43,25 @@ final class RecordingSignInHost implements SignInHost
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void
     {
         $this->challenges[] = $challenge;
+    }
+
+    /**
+     * @var list<AccountCheckResult>
+     */
+    public array $checks = [];
+
+    public ClaimedAccountCheck|null $nextCheck = null;
+
+    public function claimCheck(): ClaimedAccountCheck|null
+    {
+        [$claimed, $this->nextCheck] = [$this->nextCheck, null];
+
+        return $claimed;
+    }
+
+    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void
+    {
+        $this->checks[] = $result;
     }
 
     public function pendingCode(ClaimedSignIn $claimed): string|null

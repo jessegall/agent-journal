@@ -120,6 +120,14 @@ final class ProcessStart extends Model implements ReadableModel
     }
 
     /**
+     * The session's latest start, for telling which account and generation a failure it reports belongs to.
+     */
+    public static function latestOfSession(string $sessionId): self|null
+    {
+        return self::supervised()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
+    }
+
+    /**
      * The start the host claimed, by its key, locked; another host's start is as unknown as a missing one.
      *
      * @throws ProcessStartUnknown

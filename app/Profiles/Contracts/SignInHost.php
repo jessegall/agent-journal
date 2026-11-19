@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Contracts;
 
+use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Values\ClaimedAccountCheck;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\SignInChallenge;
 
@@ -18,6 +20,10 @@ interface SignInHost
     public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, string|null $identity): void;
 
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void;
+
+    public function claimCheck(): ClaimedAccountCheck|null;
+
+    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void;
 
     /**
      * The code the person typed for the sign-in, handed over once; none while none waits.

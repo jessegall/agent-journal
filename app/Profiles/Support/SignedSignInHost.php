@@ -6,7 +6,9 @@ namespace App\Profiles\Support;
 
 use App\AgentRequests\Support\SignedCall;
 use App\Profiles\Contracts\SignInHost;
+use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Values\ClaimedAccountCheck;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
@@ -63,6 +65,28 @@ final readonly class SignedSignInHost implements SignInHost
         $response = $this->send("/host/sign-ins/{$claimed->attemptId}/code", '');
 
         return $response->status() === 204 ? null : (string) $response->json('code');
+    }
+
+    public function claimCheck(): ClaimedAccountCheck|null
+    {
+        $response = $this->send('/host/accounts/checks/claim', '');
+
+        if ($response->status() === 204) {
+            return null;
+        }
+
+        return new ClaimedAccountCheck(
+            (string) $response->json('account_id'),
+            (string) $response->json('program'),
+            (string) $response->json('directory'),
+            (int) $response->json('generation'),
+        );
+    }
+
+    public function reportCheck(ClaimedAccountCheck $claimed, AccountCheckResult $result): void
+    {
+        $body = (string) json_encode(['generation' => $claimed->generation, 'result' => $result->value]);
+        $this->send("/host/accounts/{$claimed->accountId}/check", $body);
     }
 
     private function send(string $path, string $body): Response

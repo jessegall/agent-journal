@@ -65,7 +65,7 @@ final readonly class CodexSignIn implements SignInProtocol
         $status->finish();
         $isSignedIn = $status->exitCode() === 0 && is_file($directory.'/auth.json');
 
-        return new SignInVerification($isSignedIn, null);
+        return new SignInVerification($isSignedIn, null, in_array($status->exitCode(), [0, 1], true));
     }
 
     /**

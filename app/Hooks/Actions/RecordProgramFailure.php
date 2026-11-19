@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Actions;
 
 use App\Agents\Events\ProgramFailed;
+use App\Agents\Models\ProcessStart;
 use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\FailureReceipt;
@@ -24,7 +25,15 @@ final readonly class RecordProgramFailure
             return;
         }
 
-        $failed = new ProgramFailed($hook->agentId, $hook->sessionId, $details->program, $details->failure);
+        $start = ProcessStart::latestOfSession($hook->sessionId);
+        $failed = new ProgramFailed(
+            $hook->agentId,
+            $hook->sessionId,
+            $details->program,
+            $details->failure,
+            $start?->accountIdentity(),
+            $start?->account_generation,
+        );
         $this->events->dispatch($failed);
     }
 }

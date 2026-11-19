@@ -109,6 +109,8 @@ use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\CancelSignIn;
+use App\Profiles\Commands\CheckAccount;
+use App\Profiles\Commands\ClaimAccountCheck;
 use App\Profiles\Commands\ClaimSignIn;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\DismissAccountNotice;
@@ -118,6 +120,7 @@ use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\PublishSignInChallenge;
 use App\Profiles\Commands\ReconcileAccounts;
+use App\Profiles\Commands\RecordAccountFailure;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Commands\RevokeProfiles;
@@ -279,6 +282,9 @@ final class CoreCommands
             SubmitSignInCode::class,
             PublishSignInChallenge::class,
             TakeSignInCode::class,
+            RecordAccountFailure::class,
+            ClaimAccountCheck::class,
+            CheckAccount::class,
             ClaimSignIn::class,
             ReportSignIn::class,
             CompleteSignIn::class,
@@ -355,6 +361,9 @@ final class CoreCommands
             ReconcileStarts::class,
             PublishSignInChallenge::class,
             TakeSignInCode::class,
+            RecordAccountFailure::class,
+            ClaimAccountCheck::class,
+            CheckAccount::class,
             ClaimSignIn::class,
             ReportSignIn::class,
             CompleteSignIn::class,

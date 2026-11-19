@@ -26,7 +26,14 @@ final readonly class ReportFailureHandler implements CommandHandler
 
         $session = AgentSession::query()->findOrFail($start->session_id);
         $program = $session->selection()->program->value;
-        $this->events->dispatch(new ProgramFailed($start->agent_id, $start->session_id, $program, $command->failure));
+        $this->events->dispatch(new ProgramFailed(
+            $start->agent_id,
+            $start->session_id,
+            $program,
+            $command->failure,
+            $start->accountIdentity(),
+            $start->account_generation,
+        ));
         $this->events->dispatch(new AccountUseChanged($start->accountIdentity()));
     }
 }

@@ -54,15 +54,17 @@ final readonly class ClaudeSignIn implements SignInProtocol
             $this->environment($directory),
             $directory,
         );
-        $report = json_decode($status->finish(), true);
-        $report = is_array($report) ? $report : [];
+        $decoded = json_decode($status->finish(), true);
+        $report = is_array($decoded) ? $decoded : [];
         $configDirectory = $report['configDirectory'] ?? $directory;
         $isSignedIn = ($report['loggedIn'] ?? false) === true
             && ($report['authMethod'] ?? null) === 'claude.ai'
             && $configDirectory === $directory;
         $email = $report['email'] ?? null;
 
-        return new SignInVerification($isSignedIn, $isSignedIn && is_string($email) ? $email : null);
+        $identity = $isSignedIn && is_string($email) ? $email : null;
+
+        return new SignInVerification($isSignedIn, $identity, is_array($decoded));
     }
 
     /**

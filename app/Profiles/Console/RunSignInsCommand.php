@@ -29,7 +29,7 @@ final class RunSignInsCommand extends Command
         );
 
         do {
-            $ran = $runner->runNext();
+            $ran = $runner->runNext() || $runner->checkNext();
 
             if (! $ran && ! $this->option('once')) {
                 sleep(2);

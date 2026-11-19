@@ -125,6 +125,16 @@ final class ActiveAccount extends Model implements ReadableModel
     }
 
     /**
+     * Leaves the program with no chosen account when the given one was chosen, as when it must sign in again.
+     */
+    public function clearIfChosen(Account $account): void
+    {
+        if ($this->account_id === $account->id) {
+            $this->clear();
+        }
+    }
+
+    /**
      * Each program's current choice, one row per program made so far.
      *
      * @return list<self>

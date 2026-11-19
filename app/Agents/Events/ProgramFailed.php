@@ -6,12 +6,13 @@ namespace App\Agents\Events;
 
 use App\Agents\Enums\ProgramFailure;
 use App\Contracts\Event;
+use App\Records\Support\RecordIdentity;
 use App\Ui\Contracts\UpdatesUserInterface;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A launch's program reported that a request failed, and why in its checked vocabulary; the program's own error text
- * stays private.
+ * A launch's program reported that a request failed, and why in its checked vocabulary, with the account by identity
+ * and the sign-in generation its start ran in when it ran on one; the program's own error text stays private.
  */
 final readonly class ProgramFailed implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {
@@ -20,5 +21,7 @@ final readonly class ProgramFailed implements Event, ShouldDispatchAfterCommit, 
         public string $sessionId,
         public string $program,
         public ProgramFailure $failure,
+        public RecordIdentity|null $account = null,
+        public int|null $accountGeneration = null,
     ) {}
 }

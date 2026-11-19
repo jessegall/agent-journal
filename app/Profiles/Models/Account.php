@@ -8,6 +8,7 @@ use App\Agents\Enums\LaunchUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Support\SelectedAccount;
 use App\Links\Support\Linkable;
+use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
@@ -43,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $live_writer_attempt_id
  * @property string|null $operation_id
  * @property bool $cleanup_pending
+ * @property int|null $check_requested_generation
  * @property CarbonImmutable|null $checked_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -69,6 +71,7 @@ final class Account extends Model implements ReadableModel
             'maintenance' => 'boolean',
             'sign_in_generation' => 'integer',
             'cleanup_pending' => 'boolean',
+            'check_requested_generation' => 'integer',
             'checked_at' => 'immutable_datetime',
         ];
     }
@@ -166,6 +169,58 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
+     * Asks the host to check the account after a rejected sign-in seen in this generation; a failure from an older
+     * generation, such as one from before a new sign-in, asks nothing.
+     */
+    public function requestCheck(int $generation): bool
+    {
+        if (! $this->isGeneration($generation) || $this->state !== AccountState::SignedIn) {
+            return false;
+        }
+
+        $this->check_requested_generation = $generation;
+        $this->save();
+
+        return true;
+    }
+
+    /**
+     * The next account whose check a host runs, for the journal's host transport whoever acts; none when none waits.
+     */
+    public static function nextToCheck(): self|null
+    {
+        return self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->whereNotNull('check_requested_generation')
+            ->orderBy('updated_at')
+            ->lockForUpdate()
+            ->first();
+    }
+
+    /**
+     * Applies the host's check made in the given generation, and answers whether it showed the account signed out;
+     * a check of an older generation changes nothing, and only a definite sign-out needs a new sign-in.
+     */
+    public function applyCheck(int $generation, AccountCheckResult $result, CarbonImmutable $now): bool
+    {
+        if (! $this->isGeneration($generation)) {
+            return false;
+        }
+
+        $this->check_requested_generation = null;
+        $this->checked_at = $now;
+        $isSignedOut = $result === AccountCheckResult::SignedOut && $this->state === AccountState::SignedIn;
+
+        if ($isSignedOut) {
+            $this->state = AccountState::NeedsSignIn;
+        }
+
+        $this->save();
+
+        return $isSignedOut;
+    }
+
+    /**
      * The account as the launch it is chosen for runs with it.
      */
     public function selectedForLaunch(): SelectedAccount
@@ -176,6 +231,16 @@ final class Account extends Model implements ReadableModel
             $this->directoryForLaunch(),
             $this->sign_in_generation,
         );
+    }
+
+    /**
+     * The program of an account, for the journal's own maintenance or the host, read before its locks are taken.
+     */
+    public static function programOfForJournal(string $accountId): HookProgram
+    {
+        $program = self::query()->withoutGlobalScope(HumanAccounts::class)->whereKey($accountId)->value('program');
+
+        return HookProgram::from((string) $program);
     }
 
     /**
