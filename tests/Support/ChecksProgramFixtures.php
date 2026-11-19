@@ -46,6 +46,6 @@ trait ChecksProgramFixtures
 
     protected function hook(): HookIdentity
     {
-        return new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', hash('sha256', 'the input'));
+        return TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'the input'));
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Tests\Architecture\Support\CallScan;
-use Tests\Architecture\Support\DomainFiles;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -51,7 +50,7 @@ final class ExplicitTransactionTest extends TestCase
     {
         $found = [];
 
-        foreach (ScanCache::findingsByFile(new CallScan(), DomainFiles::in(array_map(base_path(...), $folders))) as $path => $calls) {
+        foreach (ScanCache::findingsInFolders(new CallScan(), array_map(base_path(...), $folders)) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
 
             if (in_array($file, self::ALLOWED, true)) {

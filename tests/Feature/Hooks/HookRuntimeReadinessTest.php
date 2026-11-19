@@ -8,7 +8,6 @@ use App\Contracts\LaunchTransaction;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Hooks\Contracts\ProgramCall;
-use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\ProgramAdapters;
 use App\Hooks\Stack\StateTypes;
@@ -24,7 +23,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use ReflectionMethod;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 final class HookRuntimeReadinessTest extends TestCase
@@ -89,7 +88,7 @@ final class HookRuntimeReadinessTest extends TestCase
     {
         $payload = HookPayload::from(['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$program->value][$event]]);
 
-        $call = $this->app->make(ProgramAdapters::class)->for($program)->callFor($payload, new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', hash('sha256', $event)));
+        $call = $this->app->make(ProgramAdapters::class)->for($program)->callFor($payload, TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', $event)));
 
         $this->assertInstanceOf(ProgramCall::class, $call);
     }

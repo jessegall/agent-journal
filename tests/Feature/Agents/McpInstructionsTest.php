@@ -11,7 +11,6 @@ use App\Assignments\Enums\AssignmentAbility;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
-use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Programs\ProgramCapabilities;
@@ -21,6 +20,7 @@ use App\Mcp\Support\McpInstructions;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -68,7 +68,7 @@ final class McpInstructionsTest extends TestCase
         $this->callAs('call-1', hash('sha256', 'call-1'));
         $this->app->instance(CurrentAuthorizer::class, new FixedCurrentAuthorizer([AssignmentAbility::Dispatch]));
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), hash('sha256', 'call-1')), null));
-        $start = new SessionStarted(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', hash('sha256', 'call-1')), new SessionStartDetails('native-1', SessionStartSource::Startup));
+        $start = new SessionStarted(TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'call-1')), new SessionStartDetails('native-1', SessionStartSource::Startup));
         $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);
 
         $reply = $this->machine()->answer($start, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0));

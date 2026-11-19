@@ -21,7 +21,7 @@ use App\Skills\Enums\PublicationState;
 use App\Skills\States\AwaitingSkillsState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 
 /**
  * A session whose new skill set waits holds its file changes with a reason, lets reads such as skill:status through,
@@ -87,6 +87,6 @@ final class AwaitingSkillsStateTest extends TestCase
 
     private function hook(): HookIdentity
     {
-        return new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest');
+        return TestActors::hookIdentity(1, 2, 'hook-1', 'digest');
     }
 }

@@ -8,7 +8,6 @@ use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Events\ContextStarted;
-use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Programs\ProgramCapabilities;
@@ -20,7 +19,6 @@ use Domain\Rules\Models\Rule;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -82,7 +80,7 @@ final class SessionContextTest extends TestCase
     private function start(string $callId, SessionStartSource $source): string
     {
         $this->callAs($callId, hash('sha256', $callId));
-        $start = new SessionStarted(new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, hash('sha256', $callId)), new SessionStartDetails("native-{$callId}", $source));
+        $start = new SessionStarted(TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)), new SessionStartDetails("native-{$callId}", $source));
         $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);
 
         $reply = $this->machine()->answer($start, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));

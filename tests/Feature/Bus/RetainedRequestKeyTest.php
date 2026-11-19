@@ -43,8 +43,8 @@ final class RetainedRequestKeyTest extends CommandBusTestCase
 
     public function test_another_session_of_the_same_actor_gets_the_same_answer(): void
     {
-        $first = $this->retainAs(TestIds::of(1), TestIds::of(10), 'once');
-        $again = $this->retainAs(TestIds::of(1), TestIds::of(11), 'once');
+        $first = $this->retainAs(1, 10, 'once');
+        $again = $this->retainAs(1, 11, 'once');
 
         $this->assertSame($first, $again);
         $rows = $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'once');
@@ -53,27 +53,27 @@ final class RetainedRequestKeyTest extends CommandBusTestCase
 
     public function test_another_actor_with_the_same_key_runs_its_own_command(): void
     {
-        $first = $this->retainAs(TestIds::of(1), TestIds::of(10), 'mine');
-        $other = $this->retainAs(TestIds::of(2), TestIds::of(20), 'mine');
+        $first = $this->retainAs(1, 10, 'mine');
+        $other = $this->retainAs(2, 20, 'mine');
 
         $this->assertNotSame($first, $other);
     }
 
     public function test_a_changed_payload_under_the_key_conflicts(): void
     {
-        $this->retainAs(TestIds::of(1), TestIds::of(10), 'first');
+        $this->retainAs(1, 10, 'first');
 
         $this->expectException(RequestKeyConflict::class);
 
-        $this->retainAs(TestIds::of(1), TestIds::of(11), 'second');
+        $this->retainAs(1, 11, 'second');
     }
 
     public function test_after_30_days_the_key_is_refused_and_its_receipt_is_kept(): void
     {
-        $this->retainAs(TestIds::of(1), TestIds::of(10), 'old');
+        $this->retainAs(1, 10, 'old');
         $this->travel(31)->days();
 
-        $this->assertThrows(fn () => $this->retainAs(TestIds::of(1), TestIds::of(11), 'old'), RequestKeyExpired::class);
+        $this->assertThrows(fn () => $this->retainAs(1, 11, 'old'), RequestKeyExpired::class);
         $this->assertNull(CommandReceipt::query()->withoutGlobalScopes()->sole()->refuses_until);
     }
 
@@ -86,8 +86,10 @@ final class RetainedRequestKeyTest extends CommandBusTestCase
         $this->app->make(CommandBus::class)->run(new RetainNote('no key'));
     }
 
-    private function retainAs(string $agentId, string $sessionId, string $text): int
+    private function retainAs(int $agentIdNumber, int $sessionIdNumber, string $text): int
     {
+        $agentId = TestIds::of($agentIdNumber);
+        $sessionId = TestIds::of($sessionIdNumber);
         $this->app->forgetScopedInstances();
         $this->startRequestAs($agentId, $sessionId);
         $this->app->make(RequestKey::class)->set(self::KEY);
