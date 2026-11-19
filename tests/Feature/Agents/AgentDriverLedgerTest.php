@@ -73,6 +73,7 @@ use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestLaunchAuthority;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -83,11 +84,19 @@ use Tests\TestCase;
 final class AgentDriverLedgerTest extends TestCase
 {
     use CommitsHookRows;
+    use WithActiveAccount;
     use RunsTrustedCommands;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'hosts', 'agent_runtimes', 'driver_requests', 'driver_turns'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'hosts', 'agent_runtimes', 'driver_requests', 'driver_turns', 'accounts', 'active_accounts', 'process_starts', 'links'];
 
     private const string FOLDER = '/work/project';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+    }
 
     public function test_opening_a_runtime_records_its_first_delivery(): void
     {

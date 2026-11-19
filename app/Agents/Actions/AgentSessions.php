@@ -23,15 +23,26 @@ final readonly class AgentSessions
     public function __construct(private AgentLifecycle $lifecycle, private BuiltInLaunchProfiles $builtInProfiles) {}
 
     /**
+     * Takes the agent's shared lifecycle lock for a launch, the first lock every launch takes, so a retirement waits
+     * for it; a retired agent is refused.
+     *
      * @throws LaunchRefused
      */
-    public function start(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null): AgentSession
+    public function lockForLaunch(Agent $agent): void
     {
         try {
             $this->lifecycle->lockShared($agent->id);
         } catch (AgentNotAvailable $retired) {
             throw LaunchRefused::forRetiredAgent($agent->id, $retired);
         }
+    }
+
+    /**
+     * @throws LaunchRefused
+     */
+    public function start(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null): AgentSession
+    {
+        $this->lockForLaunch($agent);
 
         $session = new AgentSession();
         $session->startFor($agent, $parent, $this->pinned($agent, $selection), $requestId);

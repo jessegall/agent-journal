@@ -10,16 +10,22 @@ use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchDisposition;
 use App\Agents\Enums\LaunchOriginType;
+use App\Agents\Enums\LaunchUnavailableReason;
+use App\Agents\Enums\ProcessStartState;
 use App\Agents\Events\LaunchAccepted;
+use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchRecord;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
+use App\Profiles\Models\Account;
+use App\Profiles\Models\ActiveAccount;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Database\QueryException;
@@ -29,6 +35,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -38,6 +45,7 @@ use Tests\TestCase;
 final class LaunchAgentTest extends TestCase
 {
     use RefreshHookDatabase;
+    use WithActiveAccount;
     use StartsAgentRequests;
 
     private Agent $agent;
@@ -45,6 +53,8 @@ final class LaunchAgentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->chooseActiveAccounts();
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
@@ -105,6 +115,33 @@ final class LaunchAgentTest extends TestCase
         $receipt = $this->launch($request);
 
         $this->assertSame([['--model', TestSelections::MODEL], LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED], [$receipt->programArguments, $receipt->actualModel]);
+    }
+
+    public function test_a_launch_runs_with_the_chosen_account_and_registers_its_pending_start(): void
+    {
+        $receipt = $this->launch($this->request());
+
+        $start = ProcessStart::query()->withoutGlobalScopes()->sole();
+        $account = Account::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole();
+        $session = AgentSession::query()->findOrFail($receipt->sessionId);
+        $this->assertSame([$receipt->sessionId, $account->id, 1], [$start->session_id, $start->account_id, $start->account_generation]);
+        $this->assertSame(ProcessStartState::Pending, $start->state);
+        $this->assertTrue($session->isLinkedTo($account));
+    }
+
+    public function test_without_a_chosen_account_the_launch_is_refused_and_keeps_nothing(): void
+    {
+        ActiveAccount::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole()->clear();
+
+        try {
+            $this->launch($this->request());
+            $this->fail('A launch ran without an account.');
+        } catch (AccountUnavailable $refused) {
+            $this->assertSame(LaunchUnavailableReason::NoAccount, $refused->reason);
+        }
+
+        $this->assertSame(0, ProcessStart::query()->withoutGlobalScopes()->count());
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agent->id)->count());
     }
 
     private function request(): LaunchRequest

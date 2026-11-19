@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Models;
 
+use App\Agents\Enums\LaunchUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Links\Support\Linkable;
+use App\Profiles\Models\Support\HumanAccounts;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -64,6 +66,27 @@ final class ActiveAccount extends Model implements ReadableModel
         ]);
 
         return self::query()->ofProgram($program)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * The account the program's launches use, with the selection and then the account locked for the launch's
+     * transaction; the launch path's own read, which no request's actor limits.
+     *
+     * @throws AccountUnavailable
+     */
+    public static function lockedAccountForLaunch(HookProgram $program): Account
+    {
+        $selection = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->ofProgram($program)
+            ->lockForUpdate()
+            ->first();
+
+        if ($selection === null || $selection->account_id === null) {
+            throw AccountUnavailable::forLaunch($program->value, LaunchUnavailableReason::NoAccount);
+        }
+
+        return Account::lockedForLaunch($selection->account_id);
     }
 
     /**

@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Actors\Contracts\WorkStacks;
+use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Exceptions\LaunchRootRefused;
 use App\Agents\Models\Agent;
@@ -25,6 +28,9 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
     public function __construct(
         private WorkStacks $workStacks,
         private LaunchSessions $launches,
+        private AgentSessions $sessions,
+        private ActiveAccountReader $accounts,
+        private RegisterPendingStart $starts,
     ) {}
 
     public function handle(OpenAgentRuntime $command): OpenedRuntime
@@ -43,7 +49,13 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
 
         $selection = SelectedProgram::resolve($command->program, ModelSelection::fromInput($command->model), null, null);
 
-        return $this->launches->launch(Agent::query()->findOrFail($command->agentId), $selection, (string) Str::ulid(), $parent, $intent)->opened();
+        $agent = Agent::query()->findOrFail($command->agentId);
+        $this->sessions->lockForLaunch($agent);
+        $account = $this->accounts->forLaunch($selection->program->value);
+        $launched = $this->launches->launch($agent, $selection, (string) Str::ulid(), $parent, $intent);
+        $this->starts->register($launched->session, $account);
+
+        return $launched->opened();
     }
 
     /**

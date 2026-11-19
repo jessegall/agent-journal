@@ -6,10 +6,12 @@ namespace App\Profiles\Models;
 
 use App\Agents\Enums\LaunchUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
+use App\Agents\Support\SelectedAccount;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
+use App\Profiles\Models\Support\HumanAccounts;
 use App\Profiles\Values\AccountLabel;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
@@ -119,6 +121,37 @@ final class Account extends Model implements ReadableModel
             ->get();
 
         return array_values($accounts->all());
+    }
+
+    /**
+     * The chosen account, locked for a launch and refused unless it accepts launches; the launch path's own read,
+     * which no request's actor limits.
+     *
+     * @throws AccountUnavailable
+     */
+    public static function lockedForLaunch(string $accountId): self
+    {
+        $account = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->whereKey($accountId)
+            ->lockForUpdate()
+            ->firstOrFail();
+        $account->requireAvailable();
+
+        return $account;
+    }
+
+    /**
+     * The account as the launch it is chosen for runs with it.
+     */
+    public function selectedForLaunch(): SelectedAccount
+    {
+        return new SelectedAccount(
+            $this->recordIdentity(),
+            $this->program,
+            $this->directoryForLaunch(),
+            $this->sign_in_generation,
+        );
     }
 
     /**

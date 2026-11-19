@@ -22,6 +22,7 @@ use Domain\Access\Support\AccessSettings;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -30,6 +31,7 @@ use Tests\TestCase;
 final class RuntimesPageTest extends TestCase
 {
     use RefreshHookDatabase;
+    use WithActiveAccount;
     use RunsTrustedCommands;
 
     private User $owner;
@@ -37,6 +39,8 @@ final class RuntimesPageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->chooseActiveAccounts();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }

@@ -24,6 +24,7 @@ use App\Agents\Exceptions\AccountUsesRemain;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
+use App\Agents\Resolvers\UnconfiguredAccounts;
 use App\Agents\Support\AccountUse;
 use App\Agents\Support\SelectedAccount;
 use App\Bus\Contracts\CommandBus;
@@ -31,6 +32,7 @@ use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
+use App\Profiles\Resolvers\ActiveAccountRecords;
 use App\Records\Contracts\IdentityLinks;
 use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
@@ -181,9 +183,11 @@ final class AccountUsesTest extends TestCase
 
     public function test_without_accounts_every_launch_is_refused_with_its_program_and_a_safe_reason(): void
     {
+        $this->assertInstanceOf(ActiveAccountRecords::class, $this->app->make(ActiveAccountReader::class));
+
         try {
-            $this->app->make(ActiveAccountReader::class)->forLaunch('claude-code');
-            $this->fail('A launch got an account nobody keeps.');
+            new UnconfiguredAccounts()->forLaunch('claude-code');
+            $this->fail('Core alone gave a launch an account.');
         } catch (AccountUnavailable $refused) {
             $this->assertSame('claude-code', $refused->program);
             $this->assertSame(LaunchUnavailableReason::NoAccount, $refused->reason);

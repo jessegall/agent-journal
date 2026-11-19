@@ -18,6 +18,7 @@ use App\Bus\Contracts\CommandBus;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -28,6 +29,15 @@ final class SessionPolicyTest extends TestCase
 {
     use RefreshHookDatabase;
     use StartsOwnerRequest;
+    use WithActiveAccount;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+        $this->startUserRequestAs($this->owner->id);
+    }
 
     public function test_a_launch_freezes_its_policy_with_its_session(): void
     {

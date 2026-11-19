@@ -35,7 +35,9 @@ use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\UsesTemporaryFolder;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -46,6 +48,7 @@ use Tests\TestCase;
 final class LaunchSkillsTest extends TestCase
 {
     use CommitsHookRows;
+    use WithActiveAccount;
     use InstallsBuiltInProfiles;
     use RunsTrustedCommands;
     use UsesTemporaryFolder;
@@ -65,6 +68,10 @@ final class LaunchSkillsTest extends TestCase
         'driver_turns',
         'profile_revisions',
         'profiles',
+        'accounts',
+        'active_accounts',
+        'process_starts',
+        'links',
     ];
 
     private const string FOLDER = '/work/project';
@@ -72,6 +79,8 @@ final class LaunchSkillsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->chooseActiveAccounts();
 
         $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
@@ -129,6 +138,7 @@ final class LaunchSkillsTest extends TestCase
         $this->started($session);
     }
 
+    #[TimeLimit(seconds: 3, reason: 'It launches two sessions with their accounts and writes two skill sets.')]
     public function test_two_sessions_in_one_work_folder_keep_their_own_sets_and_never_a_union(): void
     {
         $this->activateReviewer([]);

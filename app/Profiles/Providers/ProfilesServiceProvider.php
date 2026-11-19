@@ -10,6 +10,7 @@ use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Values\PolicyRegistration;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\BuiltInLaunchProfiles;
 use App\Agents\Contracts\LaunchProfileAdmission;
 use App\Hooks\Contracts\FileEditPermission;
@@ -30,6 +31,7 @@ use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Models\Support\HumanAccounts;
 use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
+use App\Profiles\Resolvers\ActiveAccountRecords;
 use App\Profiles\Resolvers\ProfilePrograms;
 use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\BuiltInProfilePins;
@@ -57,6 +59,7 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
         $this->app->bind(LaunchProfileAdmission::class, ProfileLaunchAdmission::class);
         $this->app->bind(BuiltInLaunchProfiles::class, BuiltInProfilePins::class);
+        $this->app->bind(ActiveAccountReader::class, ActiveAccountRecords::class);
     }
 
     public function boot(

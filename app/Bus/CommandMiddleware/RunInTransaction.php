@@ -46,9 +46,12 @@ final readonly class RunInTransaction implements CommandMiddleware
     public function handle(CommandCall $call, Closure $next): mixed
     {
         if ($this->database->transactionLevel() > 0) {
-            $this->requireJoinable($call);
+            $isolation = $this->requireJoinable($call);
 
-            return $this->running->joined($call, fn () => $next($call));
+            // The first command inside a stack transaction is the running command; later ones join it.
+            return $this->running->isRunning()
+                ? $this->running->joined($call, fn () => $next($call))
+                : $this->running->running($call, $isolation, fn () => $next($call));
         }
 
         for ($attempt = 1; ; $attempt++) {
@@ -111,9 +114,10 @@ final readonly class RunInTransaction implements CommandMiddleware
     }
 
     /**
-     * A command joins only a transaction of its own isolation that has its lock and statement limits (table 6.6).
+     * A command joins only a transaction of its own isolation that has its lock and statement limits (table 6.6); the
+     * answer is that isolation.
      */
-    private function requireJoinable(CommandCall $call): void
+    private function requireJoinable(CommandCall $call): string
     {
         $needed = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $open = $this->running->isolation() ?? (string) $this->database->scalar('SHOW transaction_isolation');
@@ -134,6 +138,8 @@ final readonly class RunInTransaction implements CommandMiddleware
                 "it needs {$needed} and the transaction {$outer} opened is {$open}",
             );
         }
+
+        return $open;
     }
 
     private function openTransactionHasNoLimits(): bool

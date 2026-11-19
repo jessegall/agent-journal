@@ -13,7 +13,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Inside the launch's bus transaction, links the new session to the account it runs with, once and for good, and
- * registers its process start before any process exists; both commit together or neither does.
+ * registers its process start before any process exists; both commit with the session or neither does.
  */
 final readonly class RegisterPendingStart
 {
