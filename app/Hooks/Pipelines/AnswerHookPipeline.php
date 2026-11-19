@@ -20,7 +20,7 @@ use App\Pipelines\Contracts\PipelineDefinition;
  * restore and walk the stack, keep or hand over the states' messages, settle the frames' lifecycle, render the reply
  * and save it with the stack.
  */
-final readonly class HookAnswerPipeline implements PipelineDefinition
+final readonly class AnswerHookPipeline implements PipelineDefinition
 {
     public function pipes(): array
     {

@@ -8,7 +8,7 @@ use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Hooks\Exceptions\ReplayFound;
-use App\Hooks\Pipelines\HookAnswerPipeline;
+use App\Hooks\Pipelines\AnswerHookPipeline;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Support\IncomingWorkList;
@@ -19,7 +19,7 @@ use App\Pipelines\Contracts\RunsPipelines;
 use Closure;
 
 /**
- * Answers one hook call: accepts the incoming work, then runs HookAnswerPipeline in one admitted stack transaction.
+ * Answers one hook call: accepts the incoming work, then runs AnswerHookPipeline in one admitted stack transaction.
  * A call answered before leaves that transaction with its recorded reply, and nothing is kept when any step fails.
  */
 final readonly class AgentStateMachine
@@ -55,7 +55,7 @@ final readonly class AgentStateMachine
             return $this->transaction->runAdmitted(
                 $target->sessionId,
                 $deadline,
-                fn (): ProgramReply => $this->pipelines->run(HookAnswerPipeline::class, $call, ProgramReply::class),
+                fn (): ProgramReply => $this->pipelines->run(AnswerHookPipeline::class, $call, ProgramReply::class),
             );
         } catch (ReplayFound $replay) {
             return $replay->reply;

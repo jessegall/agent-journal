@@ -152,7 +152,7 @@ final readonly class CodexAdapter implements ProgramAdapter
         $changes = $this->patchChanges($payload->argument('command'));
         $edit = new FileEditRequested($hook, $changes);
 
-        return $this->files->guard(
+        return $this->files->callUnlessRefused(
             $hook,
             FileAccess::Write,
             $changes->paths(),

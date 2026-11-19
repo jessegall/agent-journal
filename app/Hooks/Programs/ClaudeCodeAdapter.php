@@ -173,7 +173,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             $path = $payload->argument('file_path', 'notebook_path');
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
 
-            return $this->files->guard(
+            return $this->files->callUnlessRefused(
                 $hook,
                 FileAccess::Write,
                 [$path],
@@ -182,7 +182,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         }
 
         if ($tool->readsFiles()) {
-            return $this->files->guard(
+            return $this->files->callUnlessRefused(
                 $hook,
                 FileAccess::Read,
                 $payload->toolArguments()->presentTexts('file_path', 'path'),

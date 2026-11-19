@@ -22,7 +22,7 @@ final readonly class GuardedFiles
      * @param  list<string>  $paths
      * @param  Closure(): ProgramCall  $call
      */
-    public function guard(HookIdentity $hook, FileAccess $access, array $paths, Closure $call): ProgramCall
+    public function callUnlessRefused(HookIdentity $hook, FileAccess $access, array $paths, Closure $call): ProgramCall
     {
         foreach ($paths as $path) {
             $refusal = $this->policy->refusalFor($hook->sessionId, $access, $path);

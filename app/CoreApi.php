@@ -170,6 +170,7 @@ use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Enums\ScreenReportRefusal;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\StartRefusalType;
@@ -223,6 +224,7 @@ use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
+use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
@@ -231,6 +233,7 @@ use App\Agents\Support\StartPolicy;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRecordDetails;
 use App\Agents\Support\StartRequest;
+use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ClassGrant;
@@ -517,6 +520,7 @@ use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
@@ -527,7 +531,6 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
-use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
@@ -1397,6 +1400,9 @@ final class CoreApi
                 ToolFinished::class,
                 ToolResult::class,
                 ProgramToolInput::class,
+                TerminalViewReceipt::class,
+                ScreenReportAnswer::class,
+                ScreenReportRefusal::class,
                 ToolOutcome::class,
                 ActorIdentity::class,
                 AbilityRequirement::class,
