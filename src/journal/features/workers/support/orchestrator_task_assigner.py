@@ -36,4 +36,4 @@ class OrchestratorTaskAssigner:
         return self.delegable_tasks()
 
     def delegable_tasks(self) -> list[Task]:
-        return self.round_robin.offers() if self.settings.option(TasksOptions.AUTO) else self.round_robin.planned_offers(self.plans.running_plans())
+        return self.round_robin.offers() if self.settings.option(TasksOptions.AUTO) else self.round_robin.planned_offers(self.plans.offering_plans())

@@ -50,6 +50,8 @@ class AutoDispatch(Job):
         offers = self.dispatchable(time)
         limit = self.settings.integer(WorkersOptions.AUTO_DISPATCH_LIMIT) or self.settings.integer(WorkersOptions.WORKER_LIMIT)
         places = limit - self.workers.dispatched_count() if limit else len(offers)
+        if limit and self.settings.option(WorkersOptions.AUTO_DISPATCH_UNQUEUE) and places > len(offers):
+            self.unqueued(places - len(offers))
         for task in offers[:max(places, 0)]:
             current = self.tasks.find(task.row_id)
             if current.is_assignable():
@@ -61,6 +63,23 @@ class AutoDispatch(Job):
             if not any(self.holds(holder) for holder in self.tasks.holders(task)):
                 self.tasks.save(task.with_(delegated=False), Actor.system())
                 self.logs.save(TaskLog.build(task, "no worker holds it any more, so the journal hands it out again", self.time_source.seconds()), Actor.system())
+
+    def unqueued(self, places: int) -> None:
+        """Takes up to places tasks that wait in a busy worker's queue, and wait on nothing else, out of it, oldest queued first,
+        so they go out to workers of their own at the next round: on the hosted journal four open tasks sat behind two busy
+        workers while 18 of 30 places stood free (19 Nov)."""
+        taken, later = 0, self.plans.later_phase_task_ids()
+        for task in self.tasks.open_delegated():
+            if task.row_id in later:
+                continue
+            if taken >= places:
+                return
+            holders = self.tasks.holders(task)
+            if not holders or not all(self.holds(holder) for holder in holders) or self.tasks.open_waits(task):
+                continue
+            if self.tasks.unqueued_task(task, Actor.system()):
+                self.logs.save(TaskLog.build(task, "taken out of a busy worker's queue so a worker of its own takes it", self.time_source.seconds()), Actor.system())
+                taken += 1
 
     def holds(self, holder: Ref) -> bool:
         if holder.type != Worker.table():

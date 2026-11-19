@@ -1379,6 +1379,7 @@ workers.most_out = 3
 workers.auto_dispatch = False  (the user sets it)
 workers.auto_dispatch_most = 0
 workers.auto_dispatch_grace_seconds = 0
+workers.auto_dispatch_unqueue = False
 workers.next_at_clock_out = False  (the user sets it)
 workers.digest_seconds = 0
 workers.most_subagents = 5

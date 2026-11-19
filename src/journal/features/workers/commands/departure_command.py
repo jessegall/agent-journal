@@ -80,7 +80,7 @@ class DepartureCommand(Command):
             self.workers.save(self.workers.find(worker.id).rebased(f"its worktree rebased onto the project's branch at its clock-out, at {self.branch.project_heads(worker)}", self.time_source.moment().timestamp()), caller.actor)
         left = self.stacks.running(self.branch.place(worker)) if worker.worktree else []
         if left:
-            raise Rejection(f"your Docker stacks still run: {', '.join(left)}; take them down with their volumes before you clock out ({self.stacks.command(left)}), then clock out again")
+            raise Rejection(f"your Docker stacks still run: {', '.join(left)}; take them down first: {self.stacks.command(left)}")
         if self.turns.has_command(str(self.branch.place(worker))):
             self.tested(worker, task, args.tests, caller)
         self.plugin_check(WorkerDelivering, worker, task, DELIVERY_REFUSAL)
