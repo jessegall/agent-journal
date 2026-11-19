@@ -68,7 +68,7 @@ final class HookStartTest extends TestCase
 
         $this->assertSame(['hooks', 'permissions'], array_keys($settings));
         $this->assertSame(
-            ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'],
+            ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'StopFailure', 'SessionEnd'],
             array_keys($settings['hooks']),
         );
         $this->assertSame(
@@ -122,9 +122,9 @@ final class HookStartTest extends TestCase
         $started = $this->start('main-agent');
         $visits = $this->app->make(RecordConversationVisit::class);
 
-        $visits->entered($started->session->id, 'program-session-1', 'call-1', CarbonImmutable::now());
+        $visits->entered($started->session->id, 'program-session-1', null, 'call-1', CarbonImmutable::now());
         $framesBefore = $this->bottomOf($started);
-        $visits->entered($started->session->id, 'program-session-2', 'call-2', CarbonImmutable::now());
+        $visits->entered($started->session->id, 'program-session-2', null, 'call-2', CarbonImmutable::now());
 
         $this->assertSame(1, AgentSession::query()->count());
         $this->assertSame(

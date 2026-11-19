@@ -56,6 +56,9 @@ final class NavigationDispatchTest extends TestCase
         'desk_seats',
         'desk_preferences',
         'assignments',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     private RecordedAttention $attention;

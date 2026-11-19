@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Profiles;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\Actors\Values\OwnerAuthority;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
+use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\ReconcileSignIns;
+use App\Profiles\Enums\SignInState;
+use App\Profiles\Jobs\SignInDeadline;
+use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Support\PrivateSignInProcesses;
+use App\Profiles\Support\SignInProtocols;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Bus;
+use Tests\Fixtures\Profiles\RecordingSignInHost;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
+use Tests\TestCase;
+
+/**
+ * After a restart the host's runner says it runs no sign-in: the attempts it took end as interrupted at once, a new
+ * account's folder is owed its cleanup, and another host's attempts and the one it still runs are left alone.
+ */
+#[TimeLimit(seconds: 3, reason: 'It commits attempts through the bus and empties four tables per test.')]
+final class SignInRestartTest extends TestCase
+{
+    use CommitsHookRows;
+
+    private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts'];
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Bus::fake([SignInDeadline::class]);
+    }
+
+    public function test_a_restarted_runner_ends_only_the_sign_ins_it_lost(): void
+    {
+        $lost = $this->begin('claude-code', 'host-a');
+        $other = $this->begin('codex', 'host-b');
+
+        $kept = $this->reconcile('host-a', [$lost]);
+        $ended = $this->reconcile('host-a', []);
+
+        $this->assertSame([0, 1], [$kept, $ended]);
+        $attempt = SignInAttempt::query()->withoutGlobalScopes()->findOrFail($lost);
+        $this->assertSame(SignInState::Interrupted, $attempt->state);
+        $this->assertTrue($attempt->cleanup_pending);
+        $this->assertSame(
+            SignInState::Starting,
+            SignInAttempt::query()->withoutGlobalScopes()->findOrFail($other)->state,
+        );
+    }
+
+    public function test_the_runner_reports_at_start_that_it_runs_nothing(): void
+    {
+        $host = new RecordingSignInHost(null);
+
+        new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null)->reconcileAtStart();
+
+        $this->assertSame([[]], $host->reconciled);
+    }
+
+    private function begin(string $program, string $hostId): string
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
+        $attemptId = $this->app->make(CommandBus::class)->run(new BeginSignIn($program, "key-{$program}", 'Work'))
+            ->attemptId;
+        $this->assertSame($attemptId, SignInAttempt::claimFor($hostId, CarbonImmutable::now())?->id);
+
+        return $attemptId;
+    }
+
+    /**
+     * @param  list<string>  $running
+     */
+    private function reconcile(string $hostId, array $running): int
+    {
+        return $this->app->make(EntryDispatchers::class)->runAsJournal(
+            CommandEntry::HostControl,
+            'test host',
+            new ReconcileSignIns($hostId, $running),
+        );
+    }
+}

@@ -31,6 +31,7 @@ use App\Actors\Support\PresenceWindow;
 use App\Actors\Support\RegisteredPolicies;
 use App\Actors\Support\SystemActors;
 use App\Actors\Support\SystemAuthorizerProvider;
+use App\Actors\Support\SystemEntryPolicies;
 use App\Actors\Support\TargetActorAuthorizer;
 use App\Actors\Support\UserPresenceRecords;
 use Illuminate\Contracts\Foundation\Application;
@@ -46,6 +47,7 @@ final class ActorsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(SystemEntryPolicies::class);
         $this->app->bind(CurrentActor::class, ActorStore::class);
         $this->app->bind(CurrentActorSetter::class, ActorStore::class);
         $this->app->singleton(PolicyCatalogue::class, RegisteredPolicies::class);

@@ -105,15 +105,18 @@ use App\AgentRequests\Values\CommandReport;
 use App\AgentRequests\Values\ReportLine;
 use App\Agents\Commands\AbandonNavigation;
 use App\Agents\Commands\AnswerNavigation;
+use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\CloseTerminalView;
+use App\Agents\Commands\ContinueStart;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\HoldAccountUses;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\InterruptNavigation;
 use App\Agents\Commands\MarkMenuEntryStale;
@@ -141,9 +144,12 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RetireMenuEntry;
 use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
+use App\Agents\Commands\SettleAccountUses;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
@@ -157,11 +163,13 @@ use App\Agents\Contracts\SessionResolver;
 use App\Agents\Contracts\StartExecutor;
 use App\Agents\Contracts\StartReadiness;
 use App\Agents\Contracts\StartRecordResolver;
+use App\Agents\Contracts\StartsAgent;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
+use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
@@ -177,6 +185,7 @@ use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationKey;
 use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\OfflineReplyMode;
+use App\Agents\Enums\ProgramFailure;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Enums\RequestOutcome;
@@ -187,13 +196,20 @@ use App\Agents\Enums\ScreenReportRefusal;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Enums\StartRefusalType;
+use App\Agents\Enums\StartUnavailableReason;
+use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Events\DriverRequestRecovered;
+use App\Agents\Events\ProgramFailed;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\StartAccepted;
+use App\Agents\Events\StartUnavailable;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\AccountUnavailable;
+use App\Agents\Exceptions\AccountUseMissing;
+use App\Agents\Exceptions\AccountUsesRemain;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
@@ -219,6 +235,8 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Exceptions\StartRecordMissing;
 use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
+use App\Agents\Support\AccountUse;
+use App\Agents\Support\AccountUseCounts;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
@@ -231,6 +249,7 @@ use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\ExecutionReceipt;
 use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\ExitReceipt;
+use App\Agents\Support\HeldAccountUses;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
@@ -243,6 +262,7 @@ use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\ScreenReportAnswer;
+use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
@@ -682,14 +702,29 @@ use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\BeginSignInAgain;
+use App\Profiles\Commands\CancelSignIn;
+use App\Profiles\Commands\DismissAccountNotice;
+use App\Profiles\Commands\MaintainAccount;
+use App\Profiles\Commands\RemoveAccount;
+use App\Profiles\Commands\RenameAccount;
+use App\Profiles\Commands\RetryAccountCleanup;
+use App\Profiles\Commands\RetryAttemptCleanup;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Commands\StartProfileMain;
+use App\Profiles\Commands\SubmitSignInCode;
+use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
+use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\ProfileRevisionRevoked;
+use App\Profiles\Exceptions\AccountLabelInvalid;
+use App\Profiles\Exceptions\AccountLabelTaken;
+use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Exceptions\BuiltInProfileMissing;
 use App\Profiles\Exceptions\ProfileCannotCoordinate;
 use App\Profiles\Exceptions\ProfileFieldUnknown;
@@ -699,6 +734,9 @@ use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
+use App\Profiles\Exceptions\SignInAttemptMissing;
+use App\Profiles\Exceptions\SignInAttemptStale;
+use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Support\BaseOverride;
 use App\Profiles\Support\ClassRule;
 use App\Profiles\Support\OperationRule;
@@ -717,6 +755,7 @@ use App\Profiles\Values\ProfileProvenance;
 use App\Profiles\Values\ProfileSelection;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Profiles\Values\ProfileStartPolicy;
+use App\Profiles\Values\SignInStarted;
 use App\Profiles\Values\StartProfileAuthority;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
@@ -749,6 +788,7 @@ use App\Reads\Values\ReadOrder;
 use App\Reads\Values\RelationRead;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
+use App\Records\Contracts\IdentityLinks;
 use App\Records\Contracts\RecordLinker;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordResolver;
@@ -1024,6 +1064,10 @@ final class CoreApi
                 AgentRuntimeReassigned::class,
                 ProfileRevisionRevoked::class,
                 StartAccepted::class,
+                StartUnavailable::class,
+                ProgramFailed::class,
+                AccountUseChanged::class,
+                AccountsChanged::class,
                 EngineTicked::class,
                 SettingsChanged::class,
                 ShareRequested::class,
@@ -1037,6 +1081,10 @@ final class CoreApi
             )
             ->contracts(
                 SessionPolicyReader::class,
+                ActiveAccountReader::class,
+                StartsAgent::class,
+                AccountUses::class,
+                IdentityLinks::class,
                 JournalCall::class,
                 RegistersCalls::class,
                 CallSender::class,
@@ -1247,6 +1295,14 @@ final class CoreApi
                 AccountModeType::class,
                 HostCapabilityType::class,
                 SelectedProgram::class,
+                SelectedAccount::class,
+                AccountUse::class,
+                AccountUseCounts::class,
+                HeldAccountUses::class,
+                SignInStarted::class,
+                AccountProcessRole::class,
+                StartUnavailableReason::class,
+                ProgramFailure::class,
                 ModelSelection::class,
                 SelectionSource::class,
                 ProfileDefaults::class,
@@ -1668,6 +1724,20 @@ final class CoreApi
                 ActivateProfiles::class,
                 RevokeProfiles::class,
                 StartProfileMain::class,
+                SwitchAccount::class,
+                RenameAccount::class,
+                MaintainAccount::class,
+                DismissAccountNotice::class,
+                BeginSignIn::class,
+                BeginSignInAgain::class,
+                RemoveAccount::class,
+                RetryAccountCleanup::class,
+                RetryAttemptCleanup::class,
+                CancelSignIn::class,
+                SubmitSignInCode::class,
+                HoldAccountUses::class,
+                CancelAccountUses::class,
+                SettleAccountUses::class,
                 CreateSkill::class,
                 ReviseSkill::class,
                 RestoreSkill::class,
@@ -1686,6 +1756,7 @@ final class CoreApi
                 DismissMessage::class,
                 RetireAgent::class,
                 StartAgent::class,
+                ContinueStart::class,
                 CreateAgent::class,
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,
@@ -1883,6 +1954,15 @@ final class CoreApi
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,
                 InvalidRecordIdentity::class,
+                AccountUnavailable::class,
+                AccountUseMissing::class,
+                AccountUsesRemain::class,
+                AccountMissing::class,
+                AccountLabelTaken::class,
+                AccountLabelInvalid::class,
+                SignInAttemptMissing::class,
+                SignInAttemptStale::class,
+                SignInCodeInvalid::class,
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 InvalidRecordIds::class,

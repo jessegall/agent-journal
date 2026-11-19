@@ -13,6 +13,7 @@ use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
 use App\Hooks\Actions\AgentStacks;
+use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Actions\CurrentStates;
 use App\Hooks\Actions\UserStacks;
 use App\Hooks\Console\PruneHookHistoryCommand;
@@ -22,6 +23,8 @@ use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\InspectsStacks;
+use App\Hooks\Contracts\ProgramCompatibilities;
+use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Contracts\RunsStackTransactions;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -29,8 +32,10 @@ use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Inspection\StackInspectionQuery;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Models\FailureReceipt;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Models\Support\AgentSessionScope;
+use App\Hooks\Resolvers\PinnedCompatibilities;
 use App\Hooks\Stack\AdvisoryStackAdmission;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
@@ -39,11 +44,13 @@ use App\Hooks\Support\ContextBudget;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\IncomingWorkList;
 use App\Hooks\Support\PendingAgentMessages;
+use App\Hooks\Support\ProtectedAccounts;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
 use App\Hooks\Support\WorkStackPushes;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 
@@ -66,6 +73,11 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(IncomingWorkRegistration::class, IncomingWorkList::class);
         $this->app->singleton(StateTypes::class);
         $this->app->bind(StartTransaction::class, StackTransaction::class);
+        $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
+            $app->make(Repository::class)->string('accounts.root'),
+        ]));
+        $this->app->bind(ProtectedResources::class, CheckProtectedResources::class);
+        $this->app->bind(ProgramCompatibilities::class, PinnedCompatibilities::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
@@ -108,7 +120,7 @@ final class HooksServiceProvider extends ServiceProvider
             static fn () => Container::getInstance()->make(AgentContext::class),
         );
 
-        foreach ([AgentStackRow::class, HookCall::class] as $model) {
+        foreach ([AgentStackRow::class, HookCall::class, FailureReceipt::class] as $model) {
             $events->listen("eloquent.booted: {$model}", fn () => $model::addGlobalScope($scope));
         }
     }

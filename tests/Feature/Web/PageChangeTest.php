@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Bus\Contracts\CommandBus;
+use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Models\Account;
+use App\Profiles\Values\AccountLabel;
+use App\Programs\Enums\HookProgram;
 use App\Web\Events\PageChanged;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Enums\PlanType;
@@ -32,7 +36,18 @@ final class PageChangeTest extends TestCase
     /**
      * The changes commit for real, so a rolled back one is judged by the real transaction manager.
      */
-    private const array TABLES = ['users', 'tasks', 'plans', 'phases', 'phase_tasks', 'links', 'assignments'];
+    private const array TABLES = [
+        'users',
+        'tasks',
+        'plans',
+        'phases',
+        'phase_tasks',
+        'links',
+        'assignments',
+        'accounts',
+        'active_accounts',
+        'command_receipts',
+    ];
 
     public function test_a_page_fact_no_owner_exports_changes_no_page(): void
     {
@@ -54,6 +69,16 @@ final class PageChangeTest extends TestCase
         $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 0, 'Done.'));
 
         $this->assertSame([$plan->id], $progress);
+        Event::assertDispatchedTimes(PageChanged::class, 1);
+    }
+
+    public function test_choosing_an_account_changes_the_accounts_page_once(): void
+    {
+        $account = Account::signedIn(HookProgram::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
+
+        $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
+        $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
+
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
 

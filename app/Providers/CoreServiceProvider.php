@@ -23,8 +23,11 @@ use App\Links\Support\LinkTypeRegistry;
 use App\Mcp\Models\RetainedPage;
 use App\Pipelines\Contracts\RunsPipelines;
 use App\Pipelines\Support\Pipelines;
+use App\Profiles\Models\Account;
+use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\ProfileRevision;
+use App\Profiles\Models\SignInAttempt;
 use App\Settings\Models\SettingsRecord;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -95,6 +98,9 @@ final class CoreServiceProvider extends ServiceProvider
             'core.skill-request' => SkillRequest::class,
             Profile::LINK_TYPE => Profile::class,
             ProfileRevision::LINK_TYPE => ProfileRevision::class,
+            Account::LINK_TYPE => Account::class,
+            ActiveAccount::LINK_TYPE => ActiveAccount::class,
+            SignInAttempt::LINK_TYPE => SignInAttempt::class,
             RetainedPage::LINK_TYPE => RetainedPage::class,
             CommandReceipt::LINK_TYPE => CommandReceipt::class,
             Share::LINK_TYPE => Share::class,

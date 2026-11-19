@@ -44,7 +44,7 @@ enum ClaudeCodeTool: string
     }
 
     /**
-     * Whether the tool reads a file or a folder the agent names, which the file access policy then judges.
+     * Whether the tool reads, lists or searches files by the paths its input names.
      */
     public function readsFiles(): bool
     {

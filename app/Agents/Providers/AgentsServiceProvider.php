@@ -7,9 +7,11 @@ namespace App\Agents\Providers;
 use App\Actors\Contracts\ActorAttention;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
+use App\Actors\Support\SystemEntryPolicies;
 use App\Actors\Values\PolicyRegistration;
 use App\AgentRequests\Console\GenerateCallsCommand;
 use App\AgentRequests\Contracts\CallSender;
@@ -23,6 +25,8 @@ use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SendSignedCalls;
 use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Actions\StartHeartbeats;
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\ExpiresNavigation;
@@ -32,6 +36,7 @@ use App\Agents\Contracts\NavigationReader;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RecordsStartHeartbeats;
 use App\Agents\Contracts\RuntimeResolver;
+use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Contracts\StartReadiness;
@@ -40,9 +45,12 @@ use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\Agent;
 use App\Agents\Models\NavigationRequest;
+use App\Agents\Models\ProcessStart;
+use App\Agents\Models\Support\ProcessStartScope;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
+use App\Agents\Resolvers\LinkedAccountUses;
 use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
 use App\Agents\Resolvers\RuntimeRecords;
@@ -50,6 +58,7 @@ use App\Agents\Resolvers\SessionRecords;
 use App\Agents\Resolvers\StartRecords;
 use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
 use App\Agents\Resolvers\Support\HostStartMaterial;
+use App\Agents\Resolvers\UnconfiguredAccounts;
 use App\Agents\Resolvers\VerifiedHelperImages;
 use App\Agents\Support\AgentActivity;
 use App\Agents\Support\AgentActors;
@@ -61,6 +70,7 @@ use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseStartTransaction;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\FrozenSessionPolicies;
+use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\NavigationExpiry;
 use App\Agents\Support\NavigationRecords;
@@ -78,6 +88,8 @@ use App\Autoload\Support\FolderClasses;
 use App\Contracts\StartTransaction;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Console\Command;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -133,6 +145,9 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bindIf(StartTransaction::class, DatabaseStartTransaction::class);
         $this->app->bind(StartEnvironment::class, StartEnvironment::ofThisProcess(...));
         $this->app->bind(StartTokenSource::class, EnvironmentCredentialSource::class);
+        $this->app->bindIf(ActiveAccountReader::class, UnconfiguredAccounts::class);
+        $this->app->bind(AccountUses::class, LinkedAccountUses::class);
+        $this->app->bind(SessionOutputAccess::class, GrantedSessionOutputs::class);
         $this->app->bind(
             AgentClientSettings::class,
             fn ($app) => $app->make(StartTokenSource::class)->forThisStart(),
@@ -141,6 +156,7 @@ final class AgentsServiceProvider extends ServiceProvider
     }
 
     public function boot(
+        SystemEntryPolicies $systemEntries,
         AssignmentRegistration $assignments,
         ActorProviderRegistration $actors,
         ActiveActorCounterRegistry $presentActors,
@@ -148,14 +164,25 @@ final class AgentsServiceProvider extends ServiceProvider
         PolicyCatalogue $policies,
         PendingWorkSources $pendingWork,
         LinkTypeRegistry $links,
+        Dispatcher $events,
     ): void {
+        $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
+        $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
         $policies->register('Core', new PolicyRegistration(
             Agent::class,
             AgentPolicy::class,
             AgentAbility::class,
-            ownerOnly: [AgentAbility::RunKeyScript, AgentAbility::Inspect, AgentAbility::Steer, AgentAbility::Recover],
+            ownerOnly: [
+                AgentAbility::RunKeyScript,
+                AgentAbility::Inspect,
+                AgentAbility::Steer,
+                AgentAbility::Recover,
+                AgentAbility::ReadAccountUses,
+                AgentAbility::MaintainAccountUses,
+            ],
             coordinatorOnly: [AgentAbility::RetireOthers],
         ));
+        $systemEntries->allow('account reconciliation', AgentPolicy::class);
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);

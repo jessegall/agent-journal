@@ -28,6 +28,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -38,6 +39,7 @@ final class DispatchReplyInboxTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
+    use WithActiveAccount;
 
     private const array TABLES = [
         'users',
@@ -59,9 +61,19 @@ final class DispatchReplyInboxTest extends TestCase
         'start_records',
         'session_policies',
         'capacity_reservations',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     #[TimeLimit(seconds: 5, reason: 'It starts two agent sessions and seats a desk before it dispatches.')]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+    }
+
     public function test_a_run_keeps_mains_inbox_after_mains_occupant_changes(): void
     {
         $owner = User::factory()->create();

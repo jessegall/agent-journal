@@ -68,6 +68,9 @@ final class NavigationRaiseRouteTest extends TestCase
         'desk_seats',
         'desk_preferences',
         'assignments',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     private const string FINGERPRINT = 'fp1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';

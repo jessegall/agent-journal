@@ -7,18 +7,24 @@ namespace Tests\Feature\Agents;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Enums\ConversationModeType;
+use App\Agents\Enums\ProcessStartState;
 use App\Agents\Enums\StartDisposition;
 use App\Agents\Enums\StartOriginType;
+use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Events\StartAccepted;
+use App\Agents\Exceptions\AccountUnavailable;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\StartRefused;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\HostStartMaterial;
 use App\Agents\Support\StartPolicy;
 use App\Agents\Support\StartReceipt;
 use App\Agents\Support\StartRequest;
 use App\Bus\Contracts\CommandBus;
+use App\Profiles\Models\Account;
+use App\Profiles\Models\ActiveAccount;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -27,6 +33,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -38,6 +45,14 @@ final class StartAgentTest extends TestCase
     use HasResearcherAgent;
     use RefreshHookDatabase;
     use StartsOwnerRequest;
+    use WithActiveAccount;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+    }
 
     public function test_a_session_without_a_selection_cannot_be_written(): void
     {
@@ -123,6 +138,36 @@ final class StartAgentTest extends TestCase
             [['--model', TestSelections::MODEL], StartReceipt::ACTUAL_MODEL_NOT_REPORTED],
             [$receipt->programArguments, $receipt->actualModel],
         );
+    }
+
+    public function test_a_start_runs_with_the_chosen_account_and_registers_its_pending_start(): void
+    {
+        $receipt = $this->start($this->request());
+
+        $start = ProcessStart::query()->withoutGlobalScopes()->sole();
+        $account = Account::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole();
+        $session = AgentSession::query()->findOrFail($receipt->sessionId);
+        $this->assertSame(
+            [$receipt->sessionId, $account->id, 1],
+            [$start->session_id, $start->account_id, $start->account_generation],
+        );
+        $this->assertSame(ProcessStartState::Pending, $start->state);
+        $this->assertTrue($session->isLinkedTo($account));
+    }
+
+    public function test_without_a_chosen_account_the_start_is_refused_and_keeps_nothing(): void
+    {
+        ActiveAccount::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole()->clear();
+
+        try {
+            $this->start($this->request());
+            $this->fail('A start ran without an account.');
+        } catch (AccountUnavailable $refused) {
+            $this->assertSame(StartUnavailableReason::NoAccount, $refused->reason);
+        }
+
+        $this->assertSame(0, ProcessStart::query()->withoutGlobalScopes()->count());
+        $this->assertSame(0, AgentSession::query()->where('agent_id', $this->agent->id)->count());
     }
 
     private function request(): StartRequest

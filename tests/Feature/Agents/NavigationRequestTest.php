@@ -37,6 +37,9 @@ final class NavigationRequestTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'navigation_requests',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     public function test_a_raised_request_carries_its_script_goal_runtime_and_screen(): void

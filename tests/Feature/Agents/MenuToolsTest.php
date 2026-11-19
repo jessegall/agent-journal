@@ -42,6 +42,9 @@ final class MenuToolsTest extends TestCase
         'navigation_requests',
         'menu_entries',
         'command_receipts',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     private TestStart $caller;

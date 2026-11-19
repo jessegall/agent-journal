@@ -89,7 +89,7 @@ final class SessionContextTest extends TestCase
         $this->callAs($callId, hash('sha256', $callId));
         $start = new SessionStarted(
             TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)),
-            new SessionStartDetails("native-{$callId}", $source),
+            new SessionStartDetails("native-{$callId}", $source, null),
         );
         $capabilities = new ProgramCapabilities(
             'Test program',

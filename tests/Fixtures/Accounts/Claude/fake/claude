@@ -1,0 +1,22 @@
+#!/bin/sh
+# A stand-in for the claude command: a folder holding signed-in is an account signed in as the email it names. Its
+# login prints an address, reads one code, and signs the folder in when the code is ok.
+case "$1" in
+    --version) echo "2.1.323 (Claude Code)" ;;
+    --help) echo "Options: --restricted --strict-mcp-config --mcp-config <file> --settings <file> --tools <tools>" ;;
+    auth)
+        if [ "$2" = "login" ]; then
+            echo "Open https://claude.ai/oauth/authorize?code=test in your browser and paste the code here:"
+            read -r code
+            if [ "$code" = "ok" ]; then echo "person@example.test" > "$CLAUDE_CONFIG_DIR/signed-in"; fi
+            exit 0
+        fi
+        if [ -f "$CLAUDE_CONFIG_DIR/signed-in" ]; then
+            email=$(cat "$CLAUDE_CONFIG_DIR/signed-in")
+            printf '{"loggedIn":true,"authMethod":"claude.ai","configDirectory":"%s","email":"%s","token":"fake-secret-token"}\n' "$CLAUDE_CONFIG_DIR" "$email"
+        else
+            echo '{"loggedIn":false,"authMethod":"none"}'
+            exit 1
+        fi
+        ;;
+esac

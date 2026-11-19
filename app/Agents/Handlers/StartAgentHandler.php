@@ -6,8 +6,11 @@ namespace App\Agents\Handlers;
 
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Actions\AgentSessions;
+use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\StartAgent;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\AccountModeType;
@@ -44,6 +47,9 @@ final readonly class StartAgentHandler implements CommandHandler
 {
     public function __construct(
         private StartSessions $starts,
+        private AgentSessions $sessions,
+        private ActiveAccountReader $accounts,
+        private RegisterPendingStart $pendingStarts,
         private HostStartMaterial $material,
         private Dispatcher $events,
         private HostCapabilities $capabilities,
@@ -76,15 +82,20 @@ final readonly class StartAgentHandler implements CommandHandler
             $this->admitContainer($request);
         }
 
+        // The agent's lifecycle, then the program's selection and account, then the session: the order of every start.
+        $agent = Agent::query()->findOrFail($request->agentId);
+        $this->sessions->lockForStart($agent);
+        $account = $this->accounts->forStart($request->selection->program->value);
         $parent = $request->parentSessionId === null
             ? null
             : AgentSession::query()->findOrFail($request->parentSessionId);
         $started = $this->starts->startInTransaction(
-            Agent::query()->findOrFail($request->agentId),
+            $agent,
             $request->selection,
             $request->requestId,
             $parent,
         );
+        $this->pendingStarts->register($started->session, $account);
         SessionPolicy::freeze($started->session, $request->policy);
         $record->startedAs($started->session);
         $this->material->keep($request->requestId, $started);

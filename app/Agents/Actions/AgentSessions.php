@@ -23,6 +23,21 @@ final readonly class AgentSessions
     public function __construct(private AgentLifecycle $lifecycle, private BuiltInStartProfiles $builtInProfiles) {}
 
     /**
+     * Takes the agent's shared lifecycle lock for a start, the first lock every start takes, so a retirement waits
+     * for it; a retired agent is refused.
+     *
+     * @throws StartRefused
+     */
+    public function lockForStart(Agent $agent): void
+    {
+        try {
+            $this->lifecycle->lockShared($agent->id);
+        } catch (AgentNotAvailable $retired) {
+            throw StartRefused::forRetiredAgent($agent->id, $retired);
+        }
+    }
+
+    /**
      * @throws StartRefused
      */
     public function start(
@@ -31,11 +46,7 @@ final readonly class AgentSessions
         string $requestId,
         AgentSession|null $parent = null,
     ): AgentSession {
-        try {
-            $this->lifecycle->lockShared($agent->id);
-        } catch (AgentNotAvailable $retired) {
-            throw StartRefused::forRetiredAgent($agent->id, $retired);
-        }
+        $this->lockForStart($agent);
 
         $session = new AgentSession();
         $session->startFor($agent, $parent, $this->pinned($agent, $selection), $requestId);

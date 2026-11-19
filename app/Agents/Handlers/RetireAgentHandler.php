@@ -10,11 +10,13 @@ use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\StartTokens;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Enums\AgentAbility;
+use App\Agents\Events\AccountUseChanged;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\DriverRequests;
 use App\Agents\Support\StackTarget;
@@ -25,6 +27,7 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
 use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Retires an agent for good: it ends its sessions and releases its assignments, under the agent's exclusive
@@ -40,6 +43,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private AssignmentStorage $store,
         private PublishesAssignmentFacts $facts,
         private DriverRequests $requests,
+        private Dispatcher $events,
     ) {}
 
     public function handle(RetireAgent $command): AssignmentResult
@@ -55,6 +59,10 @@ final readonly class RetireAgentHandler implements CommandHandler
 
         $target->retireAt(CarbonImmutable::now());
         $this->endSessionsOf($target);
+
+        foreach (ProcessStart::cancelPendingOfAgent($target->id) as $account) {
+            $this->events->dispatch(new AccountUseChanged($account));
+        }
         $released = $this->store->releaseAll(AssigneeIdentity::of($target));
         $this->facts->publish($caller, AssignmentReason::Retired, $released);
 

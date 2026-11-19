@@ -102,6 +102,10 @@ final readonly class HookRelay
     ): ProgramReply {
         $event = ProgramEventName::of($payload);
 
+        if ($failure->isOutage() && $settings->passesOutages && $this->touchesAccounts($payload, $settings)) {
+            return OutageReply::protectedRefusal($event);
+        }
+
         if ($failure->isOutage() && $settings->passesOutages) {
             $log->append(LoggedBypass::from([
                 'nativeEvent' => $event,
@@ -111,6 +115,23 @@ final readonly class HookRelay
         }
 
         return OutageReply::for($failure, $settings->passesOutages, $event);
+    }
+
+    /**
+     * Whether a tool call reaches a saved account's folder; with no journal there is no output grant to read, so the
+     * session's own saved outputs are refused too until it is back.
+     */
+    private function touchesAccounts(string $payload, RelaySettings $settings): bool
+    {
+        $call = json_decode($payload, true);
+
+        if (! is_array($call) || ! is_array($call['tool_input'] ?? null)) {
+            return false;
+        }
+
+        $workFolder = is_string($call['cwd'] ?? null) ? $call['cwd'] : '/';
+
+        return $settings->accounts->isTouchedByToolCall($call['tool_input'], $workFolder);
     }
 
     private function uploadBypasses(RelaySettings $settings, BypassLog $log): void

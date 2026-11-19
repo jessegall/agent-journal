@@ -6,6 +6,7 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Enums\CodexTool;
 use App\Hooks\Enums\FileAccess;
 use App\Hooks\Enums\FileOperation;
@@ -20,14 +21,15 @@ use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
+use App\Hooks\Inputs\ProtectedFileRead;
 use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
-use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Support\ProgramCompatibility;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
 use App\Programs\Enums\HookProgram;
@@ -47,6 +49,7 @@ final readonly class CodexAdapter implements ProgramAdapter
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
         private GuardedFiles $files,
+        private ProtectedResources $protection,
     ) {}
 
     public function capabilities(): ProgramCapabilities
@@ -57,6 +60,11 @@ final readonly class CodexAdapter implements ProgramAdapter
             ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
             RewriteSupport::NeedsApproval,
         );
+    }
+
+    public function compatibility(): ProgramCompatibility
+    {
+        return ProgramCompatibility::pinned(HookProgram::Codex);
     }
 
     public function modelArguments(string $model): array
@@ -72,7 +80,7 @@ final readonly class CodexAdapter implements ProgramAdapter
 
         return match ($event) {
             HookEvent::SessionStart => new JudgedCall(
-                new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $payload->startSource())),
+                new SessionStarted($hook, $payload->startDetails()),
                 fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
             ),
             HookEvent::UserPromptSubmit => new JudgedCall(
@@ -98,6 +106,7 @@ final readonly class CodexAdapter implements ProgramAdapter
                 new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
                 fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionEnd, $answer),
             ),
+            HookEvent::StopFailure => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
         };
     }
 
@@ -139,6 +148,14 @@ final readonly class CodexAdapter implements ProgramAdapter
         }
 
         $original = $payload->toolArguments();
+        $folder = $payload->workFolder();
+
+        $isRefusedCommand = $tool->isShell()
+            && $this->protection->refusesCommand($hook->sessionId, $payload->argument('command'), $folder);
+
+        if ($isRefusedCommand) {
+            return new UnjudgedCall(ProgramReplies::denyProtected());
+        }
 
         if ($tool->isShell()) {
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
@@ -150,6 +167,13 @@ final readonly class CodexAdapter implements ProgramAdapter
         }
 
         $changes = $this->patchChanges($payload->argument('command'));
+
+        foreach ($changes->paths() as $path) {
+            if ($this->protection->refusesChange(ProtectedFileRead::resolve($folder, $path))) {
+                return new UnjudgedCall(ProgramReplies::denyProtected());
+            }
+        }
+
         $edit = new FileEditRequested($hook, $changes);
 
         return $this->files->callUnlessRefused(

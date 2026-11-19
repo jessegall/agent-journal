@@ -70,3 +70,57 @@ No host starts programs yet: the protected host is task 258 (plan 8). The pinned
 ## Changing a row
 
 A row becomes `supported` only with a native run recorded here: the exact commands, the redacted output and proof that each point of the question above holds. A newer pinned build gets its own check; until then its rows are unverified.
+
+## Process starts on an account
+
+Every launch on a saved account registers a process start in its launch transaction, after the agent's lifecycle
+lock and the program's selection and account locks, and before any process exists (`RegisterPendingStart`,
+`ProcessStart`). The host owns the process; the journal never opens a host folder. The enrolled host talks to these
+routes over its own signed transport (`journal.host`: its bearer secret plus the per-call signature), never with an
+agent's launch token, and every write runs through the bus as the journal itself (`CommandEntry::HostControl`):
+
+| Route | Command | What it does |
+|---|---|---|
+| `POST /host/starts/claim` (`session_id`) | `ClaimStart` | hands the session's pending start to this host once: its key, the account folder on the host and the sign-in generation; a start already taken, cancelled by maintenance or of an ended session answers 410 and no process may start |
+| `POST /host/starts/{start}/running` (`execution_id`) | `ReportRunning` | records the process, or the thread on the account's sign-in owner, as the start's execution |
+| `POST /host/starts/{start}/stopped` | `ReportStopped` | ends the start once the host proved its process exited, or that it made none |
+| `POST /host/starts/{start}/failure` (`failure`) | `ReportFailure` | ends the start and publishes the checked failure as `ProgramFailed` |
+| `GET /host/starts` | read | the host's starts that may still have a process, for its restart |
+| `POST /host/starts/reconcile` (`stopped`) | `ReconcileStarts` | ends only the named starts the host proved gone |
+
+A start is bound to the host that claimed it; another host's reports find nothing. Repeated reports change nothing.
+A start the host never names stays unresolved, so a missing process id or a lost host never ends one, and account
+maintenance waits for it. The protected launcher that installs the fixed program and hook copies, claims, spawns and
+reconciles is task 258; until it exists no start is spawned, and a pending start is not a running process.
+
+### The recipe a claim carries
+
+`ClaimStart` asks the program's adapter for the start's account settings (`AccountSettingsRequested`, answered by
+`App\Hooks\Listeners\SupplyAccountSettings`); Agents itself knows no program. The adapter reads the program's
+`ProgramCompatibility` and refuses the claim with `ProgramArrangementUnproven` (409, the start stays pending) unless
+the real program showed its arrangement; the recipe also names the build and arrangement it holds for, so the host
+refuses a different binary. The recipe never names a host path but the account folder; the host writes the per-launch
+files itself.
+
+| Program | Environment | Empty folder | Removed | Flags | Account configuration |
+|---|---|---|---|---|---|
+| Claude Code | `CLAUDE_CONFIG_DIR` = account folder | `ANTHROPIC_CONFIG_DIR` | `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN` | `--restricted`, `--strict-mcp-config`, `--mcp-config`, `--settings`, `--tools` | none |
+| Codex | `CODEX_HOME` = account folder | none | `OPENAI_API_KEY`, `CODEX_API_KEY` | `app-server`, `--add-dir` | `cli_auth_credentials_store = "file"` |
+
+The journal's own `JOURNAL_*` hook environment is unchanged by the recipe and set by the launcher as before.
+
+### Codex folder trust
+
+Codex runs the journal's hooks only in a trusted folder, and a trusted folder's own `.codex/config.toml` loads with
+it (see [codex-integration.md](codex-integration.md)). So the host trusts only an empty working root the journal
+made, never an agent's work folder and never a parent: `CodexFolderTrust::forWorkingRoot` refuses a folder outside
+the working roots folder, a link, or one that already holds anything. The work folder is given to the thread as a
+writable extra folder instead.
+
+`AccountConfigurationWrite::addTrust` adds that trust to the account's `config.toml` on the host: under a short lock
+file beside it, it reads the latest file, keeps every entry (hooks, the file sign-in store, earlier trusts), adds only
+the new `[projects."<exact path>"]` table and replaces the file with one rename, so a reader sees the old or the new
+file whole and a failed write leaves the old one. It never stops or waits for running threads. The lock serialises
+writers; it is not what keeps project settings out, the empty root is. Whether the pinned build runs the hooks in such
+a root, and keeps hostile work-folder files out after trust, later edits and a second concurrent worker, is the
+`hooks-run-in-empty-root` item of the Codex native evidence; until it passes the Codex arrangement stays refused.

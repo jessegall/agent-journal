@@ -109,6 +109,7 @@ A program that exits or is killed without an end hook is handled by `StartHeartb
 | PreToolUse, Read, Glob, Grep, LS, WebFetch, WebSearch, TodoWrite | not judged: the neutral reply, so Claude Code's own permissions decide |
 | PostToolUse | onToolFinished |
 | Stop | onStop |
+| StopFailure | not judged: its checked `error` code is kept once per callback id and published as `ProgramFailed`; `error_details` is never read; the empty reply |
 | SessionEnd | onSessionEnd |
 | PreCompact, SubagentStop, Notification, any other callback or tool, `Agent` among them | refused by name (`UnsupportedHook`) |
 | onCompaction | not mapped yet: the compaction signal and its correlation are plan 2, task 71 |
@@ -173,3 +174,22 @@ A capability is marked supported only from a native run inside the admitted cont
 | stop-deadline | the Stop hook's deadline, `stop_hook_active` and the continuation cap | unverified: `stop_hook_active` is captured on Stop; the capture never blocked a stop or passed a timeout | unverified: `stop_hook_active` is captured on Stop; SessionEnd hooks run for 1 second unless they say more, 3 at most; the Stop deadline and cap are not measured |
 
 A row turns supported only with the commands, the redacted output and the program build of a container run recorded here.
+
+## Account launch compatibility
+
+Each adapter answers `compatibility()` with a `ProgramCompatibility` (`app/Hooks/Support/ProgramCompatibility.php`):
+the pinned version and binary digest of its account-free capture, the flags and account settings checked against that
+build, and how launches on one account share its sign-in. Launch preparation reads it and calls `requireLaunchable()`,
+which refuses with `ProgramArrangementUnproven` unless the real program showed the arrangement. Failure notifications
+are a separate path (`NotificationCall`, `ProgramFailed`) and never change this record.
+
+Every claim carries one of three states: contract passed (the journal's own tests pass), native shown (a run of the
+pinned program showed it) or prerequisite missing (what showing it needs is not there yet). Settings text alone is
+never native evidence.
+
+| Program | Arrangement | State | Who shows the rest |
+|---|---|---|---|
+| Claude Code 2.1.323 | direct processes: each launch runs its own process on the account directory | prerequisite missing: parallel refresh, Keychain separation and hooks under `--restricted` need a signed-in run | `tools/accounts/check-claude.php` (`docs/accounts/claude-native-evidence.md`) |
+| Codex 0.165.0 | shared owner: one `codex app-server` owns sign-in and refresh, each launch a thread on it, with `cli_auth_credentials_store = "file"` | prerequisite missing: hooks on threads, separate thread identities and refresh under parallel threads need a signed-in run | `tools/accounts/check-codex.php` (`docs/accounts/codex-native-evidence.md`) |
+
+The Accounts pages stay available while a state is missing; only account launches are refused.

@@ -92,7 +92,13 @@ final class AgentDriverLedgerTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'driver_turns',
+        'accounts',
+        'active_accounts',
+        'process_starts',
+        'links',
     ];
+
+    private const string FOLDER = '/work/project';
 
     public function test_opening_a_runtime_records_its_first_delivery(): void
     {

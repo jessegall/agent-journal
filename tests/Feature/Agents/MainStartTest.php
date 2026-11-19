@@ -9,6 +9,7 @@ use App\Agents\Models\AgentSession;
 use Illuminate\Support\Str;
 use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,14 @@ final class MainStartTest extends TestCase
 {
     use ActsAsOwner;
     use RefreshHookDatabase;
+    use WithActiveAccount;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+    }
 
     public function test_a_named_program_and_model_start_the_agent(): void
     {

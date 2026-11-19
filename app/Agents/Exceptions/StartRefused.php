@@ -19,6 +19,16 @@ final class StartRefused extends RuntimeException
         return new self("No domain supplies hooks for {$program}, so it cannot be started under the journal.");
     }
 
+    public static function withoutPredecessor(string $sessionId): self
+    {
+        return new self("No start of session {$sessionId} of this agent can be continued.");
+    }
+
+    public static function withoutAccountSettings(string $program): self
+    {
+        return new self("No adapter prepares an account start of {$program}, so it is not claimed.");
+    }
+
     public static function skillsUnsupported(string $program): self
     {
         return new self("The journal cannot deliver skills to {$program}, so it is not started.");

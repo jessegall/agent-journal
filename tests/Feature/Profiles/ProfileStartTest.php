@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -35,12 +36,15 @@ final class ProfileStartTest extends TestCase
 {
     use RefreshHookDatabase;
     use StartsAgentRequests;
+    use WithActiveAccount;
 
     private Agent $main;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->chooseActiveAccounts();
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));

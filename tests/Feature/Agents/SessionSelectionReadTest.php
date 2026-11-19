@@ -80,9 +80,9 @@ final class SessionSelectionReadTest extends TestCase
     public function test_the_visit_count_after_a_b_a_is_three(): void
     {
         $visits = $this->app->make(RecordConversationVisit::class);
-        $visits->entered($this->session->id, 'native-a', 'call-1', CarbonImmutable::now());
-        $visits->entered($this->session->id, 'native-b', 'call-2', CarbonImmutable::now());
-        $visits->entered($this->session->id, 'native-a', 'call-3', CarbonImmutable::now());
+        $visits->entered($this->session->id, 'native-a', null, 'call-1', CarbonImmutable::now());
+        $visits->entered($this->session->id, 'native-b', null, 'call-2', CarbonImmutable::now());
+        $visits->entered($this->session->id, 'native-a', null, 'call-3', CarbonImmutable::now());
 
         $option = $this->app->make(SessionResolver::class)->active()[0];
 

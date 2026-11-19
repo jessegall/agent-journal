@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Contracts\StartsAgent;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\StartAgentHandler;
 use App\Agents\Models\Agent;
@@ -23,7 +24,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(StartAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class StartAgent extends Command implements HasAuthorizationSubject
+final readonly class StartAgent extends Command implements HasAuthorizationSubject, StartsAgent
 {
     public function __construct(public StartRequest $request) {}
 
@@ -33,5 +34,10 @@ final readonly class StartAgent extends Command implements HasAuthorizationSubje
     public function subject(): string
     {
         return Agent::class;
+    }
+
+    public function startedAgentId(): string
+    {
+        return $this->request->agentId;
     }
 }

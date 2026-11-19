@@ -54,7 +54,13 @@ final readonly class SessionStarted implements HookInput
 
     public function recordVisit(ConversationVisits $visits, string $sessionId, CarbonImmutable $at): void
     {
-        $visits->entered($sessionId, $this->start->vendorSessionId, $this->hook->hookId, $at);
+        $visits->entered(
+            $sessionId,
+            $this->start->vendorSessionId,
+            $this->start->transcriptPath,
+            $this->hook->hookId,
+            $at,
+        );
     }
 
     public function recordTurn(NativeTurnRecords $turns, string $sessionId, int|null $generation): void {}

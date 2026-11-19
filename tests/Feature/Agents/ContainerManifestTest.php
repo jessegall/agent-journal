@@ -33,6 +33,7 @@ use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -43,8 +44,16 @@ final class ContainerManifestTest extends TestCase
 {
     use RefreshHookDatabase;
     use StartsAgentRequests;
+    use WithActiveAccount;
 
     private const string IMAGE = 'registry.example/journal-helper@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+    }
 
     public function test_a_writer_start_compiles_a_manifest_with_exactly_the_listed_controls(): void
     {

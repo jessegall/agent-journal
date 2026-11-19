@@ -61,6 +61,9 @@ final class AnswerNavigationTest extends TestCase
         'desk_preferences',
         'assignments',
         'command_receipts',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     private Agent $main;

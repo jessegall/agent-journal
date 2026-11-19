@@ -61,6 +61,36 @@ final class Link extends MorphPivot implements ReadableModel
     }
 
     /**
+     * The link between a model and a record named only by its link alias and id, made now when there is none yet;
+     * the named record is never loaded.
+     */
+    public static function connectKey(Model $source, string $targetType, string $targetId): self
+    {
+        return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
+            ?? self::recorded($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
+    }
+
+    /**
+     * Narrows a query of records the caller may read to those linked, in either direction, to the record of this
+     * link alias and id.
+     *
+     * @template TBuilder of Builder<*>
+     *
+     * @param  TBuilder  $records
+     * @return TBuilder
+     */
+    public static function narrowToLinked(Builder $records, string $type, string $id): Builder
+    {
+        $other = $records->getModel();
+        $key = $other->getQualifiedKeyName();
+        $otherType = $other->getMorphClass();
+        $asTargets = self::query()->withSourceKey($type, $id)->where('target_type', $otherType)->select('target_id');
+        $asSources = self::query()->withTargetKey($type, $id)->where('source_type', $otherType)->select('source_id');
+
+        return $records->where(fn (Builder $linked) => $linked->whereIn($key, $asTargets)->orWhereIn($key, $asSources));
+    }
+
+    /**
      * A link stored as given, between two records named by their link type and id.
      */
     public static function recorded(string $sourceType, string $sourceId, string $targetType, string $targetId): self
@@ -140,6 +170,19 @@ final class Link extends MorphPivot implements ReadableModel
     }
 
     /**
+     * Every link between this record and a record of the given link alias, in either direction.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromRecordToType(Builder $query, Model $record, string $type): void
+    {
+        $query->where(fn (Builder $either) => $either
+            ->where(fn (Builder $forward) => $forward->withSource($record)->where('target_type', $type))
+            ->orWhere(fn (Builder $backward) => $backward->withTarget($record)->where('source_type', $type)));
+    }
+
+    /**
      * The record on the other side of this link from the one given, by its link alias and id.
      *
      * @return array{string, string}
@@ -169,9 +212,8 @@ final class Link extends MorphPivot implements ReadableModel
      */
     private static function removeAll(ReadBuilder $query): array
     {
-        $ids = array_values(
-            array_map(strval(...), $query->readAll('every removed link is announced by id')->pluck('id')->all()),
-        );
+        $removed = $query->readAll('every removed link is announced by id')->pluck('id');
+        $ids = array_values(array_map(strval(...), $removed->all()));
         self::query()->whereKey($ids)->delete();
 
         return $ids;
@@ -206,7 +248,7 @@ final class Link extends MorphPivot implements ReadableModel
     #[Scope]
     protected function withSource(Builder $query, Model $source): void
     {
-        $query->where('source_type', $source->getMorphClass())->where('source_id', $source->getKey());
+        $query->withSourceKey($source->getMorphClass(), (string) $source->getKey());
     }
 
     /**
@@ -215,6 +257,24 @@ final class Link extends MorphPivot implements ReadableModel
     #[Scope]
     protected function withTarget(Builder $query, Model $target): void
     {
-        $query->where('target_type', $target->getMorphClass())->where('target_id', $target->getKey());
+        $query->withTargetKey($target->getMorphClass(), (string) $target->getKey());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withSourceKey(Builder $query, string $type, string $id): void
+    {
+        $query->where('source_type', $type)->where('source_id', $id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function withTargetKey(Builder $query, string $type, string $id): void
+    {
+        $query->where('target_type', $type)->where('target_id', $id);
     }
 }

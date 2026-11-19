@@ -55,6 +55,9 @@ final class NavigationRoundTest extends TestCase
         'desk_seats',
         'desk_preferences',
         'assignments',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     protected function setUp(): void

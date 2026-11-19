@@ -19,6 +19,7 @@ use App\Agents\Values\ScriptParameter;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Support\Str;
+use Tests\Support\WithActiveAccount;
 
 /**
  * Opens an agent's runtime on a newly enrolled host through the ledger's own commands, runs commands as the owner
@@ -27,6 +28,16 @@ use Illuminate\Support\Str;
  */
 trait OpensLedgerRuntimes
 {
+    use WithActiveAccount;
+
+    /**
+     * Every runtime starts through the real start path, which runs with the account chosen for its program.
+     */
+    protected function setUpOpensLedgerRuntimes(): void
+    {
+        $this->chooseActiveAccounts();
+    }
+
     private const string FOLDER = '/work/project';
 
     /**

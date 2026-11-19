@@ -22,7 +22,7 @@ final readonly class DeliveredSkillsAccess implements FileAccessPolicy
 
     private const string SKILL_FILE = 'SKILL.md';
 
-    public const string OTHER_RUNTIME = 'That file belongs to another agent\'s launch: only that agent may read or '
+    public const string OTHER_RUNTIME = 'That file belongs to another agent\'s start: only that agent may read or '
         .'change it.';
 
     public const string DELIVERED_SKILL = 'Your delivered skills are read-only: the journal writes them. Ask for a '

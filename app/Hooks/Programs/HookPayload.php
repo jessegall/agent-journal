@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Agents\Enums\ProgramFailure;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Inputs\ProgramToolInput;
+use App\Hooks\Inputs\ProtectedFileRead;
+use App\Hooks\Inputs\SessionStartDetails;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
@@ -40,6 +43,9 @@ final class HookPayload extends Data
         public readonly string|Optional $agentId = new Optional(),
         public readonly string|Optional $promptId = new Optional(),
         public readonly string|Optional $turnId = new Optional(),
+        public readonly string|Optional $error = new Optional(),
+        public readonly string|Optional $transcriptPath = new Optional(),
+        public readonly string|Optional $cwd = new Optional(),
     ) {}
 
     /**
@@ -75,6 +81,44 @@ final class HookPayload extends Data
         return $isToolCall && is_string($this->toolName) && in_array($this->toolName, $toolNames, true);
     }
 
+    /**
+     * The conversation a session start entered: its id, why it started and the transcript file the program named for
+     * it, when it named one.
+     */
+    public function startDetails(): SessionStartDetails
+    {
+        $transcriptPath = is_string($this->transcriptPath) ? $this->transcriptPath : null;
+
+        return new SessionStartDetails($this->sessionId, $this->startSource(), $transcriptPath);
+    }
+
+    /**
+     * The folder the program works in, against which a tool's relative paths are read; the file system root when the
+     * program named none, so nothing relative is read as safe.
+     */
+    public function workFolder(): string
+    {
+        return is_string($this->cwd) ? $this->cwd : '/';
+    }
+
+    /**
+     * The files a native read, list or search tool names: its file or folder and, for a search, where its pattern
+     * starts.
+     */
+    public function fileRead(): ProtectedFileRead
+    {
+        $arguments = $this->toolArguments();
+        $folder = $this->workFolder();
+        $named = $arguments->presentTexts('file_path', 'path');
+        $searched = ProtectedFileRead::resolve($folder, $named[0] ?? '.');
+        $pattern = $arguments->textArgument('pattern');
+        $patternFolder = is_string($pattern) && strcspn($pattern, '*?[{') < strlen($pattern)
+            ? [ProtectedFileRead::patternFolder($searched, $pattern)]
+            : [];
+
+        return ProtectedFileRead::inFolder($folder, [$searched, ...$patternFolder]);
+    }
+
     public function isSessionStart(): bool
     {
         return $this->event()->map(fn (HookEvent $event) => $event->isSessionStart())->getOrElse(false);
@@ -88,6 +132,14 @@ final class HookPayload extends Data
     public function event(): Option
     {
         return Option::fromValue(HookEvent::tryFrom($this->hookEventName));
+    }
+
+    /**
+     * Why a request failed, from the error code of a failure notification; its error details are never read.
+     */
+    public function programFailure(): ProgramFailure
+    {
+        return is_string($this->error) ? ProgramFailure::fromCheckedCode($this->error) : ProgramFailure::Unknown;
     }
 
     public function promptText(): string

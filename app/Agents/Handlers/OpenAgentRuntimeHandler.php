@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Actors\Contracts\WorkStacks;
+use App\Agents\Actions\AgentSessions;
+use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Exceptions\HostUnavailable;
 use App\Agents\Exceptions\StartRootRefused;
 use App\Agents\Models\Agent;
@@ -25,6 +28,9 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
     public function __construct(
         private WorkStacks $workStacks,
         private StartSessions $starts,
+        private AgentSessions $sessions,
+        private ActiveAccountReader $accounts,
+        private RegisterPendingStart $pendingStarts,
     ) {}
 
     public function handle(OpenAgentRuntime $command): OpenedRuntime
@@ -58,13 +64,19 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             null,
         );
 
-        return $this->starts->start(
-            Agent::query()->findOrFail($command->agentId),
+        $agent = Agent::query()->findOrFail($command->agentId);
+        $this->sessions->lockForStart($agent);
+        $account = $this->accounts->forStart($selection->program->value);
+        $started = $this->starts->start(
+            $agent,
             $selection,
             (string) Str::ulid(),
             $parent,
             $intent,
-        )->opened();
+        );
+        $this->pendingStarts->register($started->session, $account);
+
+        return $started->opened();
     }
 
     /**

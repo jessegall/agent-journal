@@ -8,37 +8,44 @@ use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Models\ProgramConversation;
 use App\Agents\Models\StartRecord;
 use Carbon\CarbonImmutable;
 
 /**
  * Records which native conversation a journal session is in, as a step inside the hook's stack transaction: under a
- * lock on the session row it finds or binds the conversation, appends the session's next visit once per event and
- * makes it the session's current one.
+ * lock on the session row it finds or binds the conversation in the settings store of the session's running start,
+ * appends the session's next visit once per event, makes it the session's current one and maps the session's saved
+ * outputs anew for that start.
  */
 final readonly class RecordConversationVisit implements ConversationVisits
 {
     /**
-     * The one settings store of a host until accounts name their own (plan 8 task 241).
+     * The settings store of a session the journal does not supervise: the host's own.
      */
     public const string HOST_SETTINGS = 'host';
+
+    public function __construct(private MapSessionOutputs $outputs) {}
 
     /**
      * A program start, resume or clear entered a native conversation.
      *
      * @throws ConversationIncompatible
      */
-    public function entered(string $sessionId, string $nativeId, string $eventId, CarbonImmutable $observedAt): void
-    {
+    public function entered(
+        string $sessionId,
+        string $nativeId,
+        string|null $transcriptPath,
+        string $eventId,
+        CarbonImmutable $observedAt,
+    ): void {
         $session = AgentSession::lockedForUpdate($sessionId);
+        $start = ProcessStart::lockedCurrentOf($session->id);
+        $settings = $start === null ? self::HOST_SETTINGS : $start->settingsIdentity();
         $context = StartRecord::query()->where('request_id', $session->start_request_id)->value('context_reference');
-        $conversation = ProgramConversation::query()->native(
-            (string) $session->program,
-            self::HOST_SETTINGS,
-            $nativeId,
-        )->first()
-            ?? ProgramConversation::begin($session, self::HOST_SETTINGS, $nativeId, $context);
+        $conversation = ProgramConversation::query()->native((string) $session->program, $settings, $nativeId)->first()
+            ?? ProgramConversation::begin($session, $settings, $nativeId, $context);
 
         if (! $conversation->admits($session->agent_id, $context)) {
             throw ConversationIncompatible::forSession($session->id);
@@ -46,6 +53,10 @@ final readonly class RecordConversationVisit implements ConversationVisits
 
         ConversationVisit::appendOnce($session, $conversation, $eventId, $observedAt);
         $session->enterConversation($conversation);
+
+        if ($start !== null) {
+            $this->outputs->map($session, $conversation, $start, $transcriptPath);
+        }
     }
 
     /**

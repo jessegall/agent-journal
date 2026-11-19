@@ -41,6 +41,9 @@ final class MenuEntryTest extends TestCase
         'driver_requests',
         'navigation_requests',
         'menu_entries',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     public function test_a_proven_entry_is_found_by_its_program_first_screen_and_goal(): void

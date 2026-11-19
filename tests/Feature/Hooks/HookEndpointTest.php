@@ -7,11 +7,14 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Enums\ProgramFailure;
+use App\Agents\Events\ProgramFailed;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Actions\StartStacks;
+use App\Hooks\Models\FailureReceipt;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use App\Processes\Values\AdmissionRefusal;
@@ -19,6 +22,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
@@ -40,6 +44,7 @@ final class HookEndpointTest extends TestCase
         'start_tokens',
         'agent_stacks',
         'hook_calls',
+        'failure_receipts',
         'tasks',
         'links',
         'program_conversations',
@@ -135,6 +140,38 @@ final class HookEndpointTest extends TestCase
         $this->assertSame('deny', $stdout['hookSpecificOutput']['permissionDecision']);
     }
 
+    public function test_a_failure_notification_is_heard_once_and_answers_without_walking_the_stack(): void
+    {
+        Event::fake([ProgramFailed::class]);
+        $body = $this->failureBody('authentication_failed');
+
+        $first = $this->hook('claude-code', $body, 'call-9')->assertOk()->getContent();
+        $retry = $this->hook('claude-code', $body, 'call-9')->assertOk()->getContent();
+
+        $this->assertSame($first, $retry);
+        $this->assertSame(['stdout' => '{}', 'stderr' => '', 'exitCode' => 0], json_decode((string) $first, true));
+        $this->assertSame(0, HookCall::query()->authorizedFor($this->target())->count());
+        Event::assertDispatchedTimes(ProgramFailed::class, 1);
+        Event::assertDispatched(ProgramFailed::class, fn (ProgramFailed $failed) => $failed->program === 'claude-code'
+            && $failed->sessionId === $this->start->session->id
+            && $failed->failure === ProgramFailure::AuthenticationFailed);
+    }
+
+    public function test_an_unchecked_failure_code_is_unknown_and_its_details_are_never_kept(): void
+    {
+        Event::fake([ProgramFailed::class]);
+
+        $this->hook('claude-code', $this->failureBody('token_revoked_maybe'), 'call-10')->assertOk();
+
+        Event::assertDispatched(
+            ProgramFailed::class,
+            fn (ProgramFailed $failed) => $failed->failure === ProgramFailure::Unknown,
+        );
+        $kept = FailureReceipt::query()->withoutGlobalScopes()->sole();
+        $this->assertSame(ProgramFailure::Unknown, $kept->failure);
+        $this->assertStringNotContainsString('secret detail', (string) json_encode($kept->getAttributes()));
+    }
+
     public function test_an_unauthenticated_call_is_refused(): void
     {
         $headers = $this->start->serverHeaders($this->stopBody(), target: '/hooks/claude-code');
@@ -218,6 +255,16 @@ final class HookEndpointTest extends TestCase
     private function stopBody(): string
     {
         return '{"session_id":"session-redacted","hook_event_name":"Stop","stop_hook_active":false}';
+    }
+
+    private function failureBody(string $error): string
+    {
+        return (string) json_encode([
+            'session_id' => 'session-redacted',
+            'hook_event_name' => 'StopFailure',
+            'error' => $error,
+            'error_details' => 'secret detail',
+        ]);
     }
 
     private function bashBody(string $command): string

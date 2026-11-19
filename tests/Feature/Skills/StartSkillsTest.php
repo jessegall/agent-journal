@@ -34,6 +34,8 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Skills\PublishesSkills;
+use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
 /**
@@ -47,6 +49,7 @@ final class StartSkillsTest extends TestCase
     use InstallsBuiltInProfiles;
     use PublishesSkills;
     use RunsTrustedCommands;
+    use WithActiveAccount;
 
     private const array TABLES = [
         'skill_publications',
@@ -63,9 +66,20 @@ final class StartSkillsTest extends TestCase
         'driver_turns',
         'profile_revisions',
         'profiles',
+        'accounts',
+        'active_accounts',
+        'process_starts',
+        'links',
     ];
 
     private const string FOLDER = '/work/project';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->chooseActiveAccounts();
+    }
 
     public function test_a_codex_start_gets_its_set_written_before_spawn_and_records_the_generation(): void
     {
@@ -118,6 +132,7 @@ final class StartSkillsTest extends TestCase
         $this->started($session);
     }
 
+    #[TimeLimit(seconds: 3, reason: 'It starts two sessions with their accounts and writes two skill sets.')]
     public function test_two_sessions_in_one_work_folder_keep_their_own_sets_and_never_a_union(): void
     {
         $this->activateReviewer([]);

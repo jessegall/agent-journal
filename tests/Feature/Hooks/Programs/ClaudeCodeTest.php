@@ -12,6 +12,7 @@ use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Programs\ClaudeCodeAdapter;
 use App\Hooks\Programs\JudgedCall;
+use App\Hooks\Programs\NotificationCall;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
@@ -47,6 +48,14 @@ final class ClaudeCodeTest extends TestCase
         }
 
         $call = $this->adapter()->callFor($payload, $this->hook());
+
+        if ($expected === 'reported') {
+            $this->assertInstanceOf(NotificationCall::class, $call);
+            $reply = $call->replyWith(fn () => $this->fail('A notification went to the journal.'));
+            $this->assertSame('{}', $reply->stdout);
+
+            return;
+        }
 
         if ($expected === 'untouched') {
             $this->assertSame(

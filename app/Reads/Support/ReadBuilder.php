@@ -41,6 +41,19 @@ class ReadBuilder extends Builder
     private int|null $completeRelationMax = null;
 
     /**
+     * Creates the row with no savepoint: a command runs in the bus's own transaction, which refuses any other, so a
+     * row created at the same moment by another writer fails the command with its unique violation.
+     *
+     * @param  array<string, mixed>  $attributes
+     * @param  (Closure(): array<string, mixed>)|array<string, mixed>  $values
+     * @return TModel
+     */
+    public function createOrFirst(array $attributes = [], Closure|array $values = [])
+    {
+        return $this->create(array_merge($attributes, value($values)));
+    }
+
+    /**
      * A known set larger than a page, such as the rows of 300 given ids.
      *
      * @throws ReadLimitInvalid

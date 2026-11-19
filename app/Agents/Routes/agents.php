@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Http\Controllers\Calls;
 use App\Http\Controllers\Agents\CloseTerminalViewController;
+use App\Http\Controllers\Agents\ContinueStartController;
 use App\Http\Controllers\Agents\OpenTerminalViewController;
 use App\Http\Controllers\Agents\RenewTerminalViewController;
 use App\Http\Controllers\Agents\RetireAgentController;
@@ -30,6 +31,10 @@ Route::middleware(['web', 'auth', 'journal.user'])
         Route::put('/', RenewTerminalViewController::class)->name('renew');
         Route::delete('/', CloseTerminalViewController::class)->name('close');
     });
+
+Route::post('/agents/sessions/{session}/continue', ContinueStartController::class)
+    ->middleware(['web', 'auth', 'journal.user'])
+    ->name('agents.continue');
 
 Route::middleware('journal.agent')
     ->prefix('agent')

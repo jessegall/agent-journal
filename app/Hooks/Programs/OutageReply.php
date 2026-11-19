@@ -19,6 +19,9 @@ final class OutageReply
 {
     public const string OUTAGE_REASON = 'The journal is unreachable, so this helper cannot act until it is back.';
 
+    public const string PROTECTED_REASON = 'The journal is unreachable, so saved program accounts and saved outputs '
+        .'stay closed until it is back.';
+
     public static function for(CallFailure $failure, bool $passesOutages, string $nativeEvent): ProgramReply
     {
         if ($failure->isOutage() && $passesOutages) {
@@ -29,6 +32,15 @@ final class OutageReply
             $nativeEvent,
             $failure->isOutage() ? self::OUTAGE_REASON : "The journal refused this call ({$failure->value}).",
         );
+    }
+
+    /**
+     * The refusal of a tool call that reaches a saved account while the journal is away, even for a start that
+     * passes outages.
+     */
+    public static function protectedRefusal(string $nativeEvent): ProgramReply
+    {
+        return self::refusal($nativeEvent, self::PROTECTED_REASON);
     }
 
     private static function neutral(string $nativeEvent): ProgramReply

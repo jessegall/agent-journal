@@ -14,6 +14,7 @@ enum HookEvent: string
     case PreToolUse = 'PreToolUse';
     case PostToolUse = 'PostToolUse';
     case Stop = 'Stop';
+    case StopFailure = 'StopFailure';
     case SessionEnd = 'SessionEnd';
 
     /**

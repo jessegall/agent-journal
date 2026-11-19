@@ -10,10 +10,12 @@ use App\AgentRequests\Support\StartProfilePin;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Exceptions\OfflineReplySealInvalid;
 use App\Agents\Support\OfflineReplySeal;
+use App\Hooks\Support\ProtectedAccounts;
 
 /**
  * What the relay of one start needs, given to the program's environment by the start: where the journal
- * answers, the start token, the sealed offline reply and the host's bypass file.
+ * answers, the start token, the sealed offline reply, the host's bypass file and the account folders it refuses on
+ * its own while the journal is away.
  */
 final readonly class RelaySettings
 {
@@ -25,6 +27,7 @@ final readonly class RelaySettings
         public string $bypassLogPath,
         public int $timeoutSeconds = 10,
         public int $processGeneration = 0,
+        public ProtectedAccounts $accounts = new ProtectedAccounts([]),
     ) {}
 
     /**
@@ -48,6 +51,7 @@ final readonly class RelaySettings
             $mode->passesOutages(),
             $start->value('JOURNAL_BYPASS_LOG'),
             processGeneration: self::processGenerationOf($start),
+            accounts: self::protectedAccountsOf($start),
         );
     }
 
@@ -64,9 +68,19 @@ final readonly class RelaySettings
     }
 
     /**
-     * The hook path, with the process generation the host gave this program when it has one, so the server can refuse
-     * a call from an older process (doc 40, section 12).
-     *
+     * The account folders the host gave this program, which the relay refuses on its own while the journal is away.
+     */
+    private static function protectedAccountsOf(StartEnvironment $start): ProtectedAccounts
+    {
+        $given = array_filter(
+            ['JOURNAL_ACCOUNTS_ROOT', 'CLAUDE_CONFIG_DIR', 'CODEX_HOME'],
+            fn (string $name) => $start->has($name) && $start->value($name) !== '',
+        );
+
+        return new ProtectedAccounts(array_values(array_map(fn (string $name) => $start->value($name), $given)));
+    }
+
+    /**
      * The folder of callback envelopes not yet answered, beside the bypass log.
      */
     public function pendingEnvelopesFolder(): string
@@ -74,6 +88,10 @@ final readonly class RelaySettings
         return $this->bypassLogPath.'.pending';
     }
 
+    /**
+     * The hook path, with the process generation the host gave this program when it has one, so the server can refuse
+     * a call from an older process (doc 40, section 12).
+     */
     public function hookPath(string $program): string
     {
         $query = $this->processGeneration > 0 ? ['generation' => $this->processGeneration] : [];

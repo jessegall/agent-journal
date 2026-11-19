@@ -46,6 +46,9 @@ final class NavigationLifecycleTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'navigation_requests',
+        'accounts',
+        'active_accounts',
+        'process_starts',
     ];
 
     public function test_the_engine_registers_the_expiry_sweep(): void

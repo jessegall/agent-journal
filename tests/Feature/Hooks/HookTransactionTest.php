@@ -160,7 +160,7 @@ final class HookTransactionTest extends TestCase
         $this->callAs('call-start', hash('sha256', 'call-start'));
         $start = new SessionStarted(
             TestActors::hookIdentity(1, 10, 'call-start', hash('sha256', 'call-start')),
-            new SessionStartDetails($vendorSessionId, SessionStartSource::Startup),
+            new SessionStartDetails($vendorSessionId, SessionStartSource::Startup, null),
         );
 
         $this->machine()->answer(

@@ -10,6 +10,7 @@ use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Support\ProgramCompatibility;
 
 /**
  * Turns the journal's final answer into one program's native reply. An adapter maps only the hooks its capabilities
@@ -18,6 +19,11 @@ use App\Hooks\Stack\HookAnswer;
 interface ProgramAdapter
 {
     public function capabilities(): ProgramCapabilities;
+
+    /**
+     * What an account start of the pinned program may rely on, and how far the real program showed it.
+     */
+    public function compatibility(): ProgramCompatibility;
 
     /**
      * The arguments that start this program on the selected model.

@@ -51,6 +51,23 @@ services:
             redis:
                 condition: service_healthy
 
+    # Runs the scheduled commands, such as the minute account reconciliation, with the queue's code and environment.
+    scheduler:
+        restart: unless-stopped
+        build:
+            context: .
+            dockerfile: .docker/app/Dockerfile
+            target: app
+        command: ['php', 'artisan', 'schedule:work']
+        # The scheduler listens on no port; the image's web server check does not apply.
+        healthcheck:
+            disable: true
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
     # Runs the engine: one pass a second while it owns the engine's advisory lock, on its own pinned database session.
     ticker:
         restart: unless-stopped

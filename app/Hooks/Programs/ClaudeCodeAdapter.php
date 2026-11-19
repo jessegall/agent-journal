@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Hooks\Actions\RecordProgramFailure;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Enums\ClaudeCodeTool;
 use App\Hooks\Enums\FileAccess;
 use App\Hooks\Enums\HookEvent;
@@ -14,6 +16,7 @@ use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
@@ -21,14 +24,15 @@ use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
+use App\Hooks\Inputs\ProtectedFileRead;
 use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
-use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Support\ProgramCompatibility;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
 use App\Programs\Enums\HookProgram;
@@ -45,6 +49,8 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
         private GuardedFiles $files,
+        private RecordProgramFailure $failures,
+        private ProtectedResources $protection,
     ) {}
 
     public function capabilities(): ProgramCapabilities
@@ -64,6 +70,11 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             ],
             RewriteSupport::WithoutApproval,
         );
+    }
+
+    public function compatibility(): ProgramCompatibility
+    {
+        return ProgramCompatibility::pinned(HookProgram::ClaudeCode);
     }
 
     public function modelArguments(string $model): array
@@ -98,6 +109,11 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
+            HookEvent::StopFailure => new NotificationCall(
+                $hook,
+                new FailureDetails(HookProgram::ClaudeCode->value, $payload->programFailure()),
+                $this->failures,
+            ),
             HookEvent::SessionEnd => new JudgedCall(
                 new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
                 fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionEnd, $answer),
@@ -123,7 +139,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         $source = $payload->startSource();
         $input = $source === SessionStartSource::Compact
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
-            : new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $source));
+            : new SessionStarted($hook, $payload->startDetails());
 
         return new JudgedCall(
             $input,
@@ -158,6 +174,23 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             return JournalToolCall::starting();
         }
 
+        if ($tool->readsFiles()) {
+            if ($this->protection->refusesRead($hook->sessionId, $payload->fileRead())) {
+                return new UnjudgedCall(ProgramReplies::denyProtected());
+            }
+
+            return $this->files->callUnlessRefused(
+                $hook,
+                FileAccess::Read,
+                $payload->toolArguments()->presentTexts('file_path', 'path'),
+                fn () => new UnjudgedCall(ProgramReplies::allowTool([])),
+            );
+        }
+
+        if ($tool === ClaudeCodeTool::Bash && $this->refusesCommand($payload, $hook)) {
+            return new UnjudgedCall(ProgramReplies::denyProtected());
+        }
+
         if ($tool === ClaudeCodeTool::Bash) {
             $original = $payload->toolArguments();
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
@@ -171,6 +204,11 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         if ($tool->changesFiles()) {
             $original = $payload->toolArguments();
             $path = $payload->argument('file_path', 'notebook_path');
+
+            if ($this->protection->refusesChange(ProtectedFileRead::resolve($payload->workFolder(), $path))) {
+                return new UnjudgedCall(ProgramReplies::denyProtected());
+            }
+
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
 
             return $this->files->callUnlessRefused(
@@ -181,15 +219,13 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             );
         }
 
-        if ($tool->readsFiles()) {
-            return $this->files->callUnlessRefused(
-                $hook,
-                FileAccess::Read,
-                $payload->toolArguments()->presentTexts('file_path', 'path'),
-                fn () => new UnjudgedCall(ProgramReplies::allowTool([])),
-            );
-        }
-
         return new UnjudgedCall(ProgramReplies::allowTool([]));
+    }
+
+    private function refusesCommand(HookPayload $payload, HookIdentity $hook): bool
+    {
+        $command = $payload->argument('command');
+
+        return $this->protection->refusesCommand($hook->sessionId, $command, $payload->workFolder());
     }
 }

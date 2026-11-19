@@ -89,7 +89,7 @@ final class HomePageTest extends TestCase
             ->where('page.data.windows.0.paneKey', 'chat')
             ->where('page.data.windows.1.paneKey', 'plans')
             ->where('page.data.windows.2.paneKey', 'rules')
-            ->where('page.data.barProps', ['section_web_bar_chat_agent'])
+            ->where('page.data.barProps', ['section_web_bar_accounts_notices', 'section_web_bar_chat_agent'])
             ->missing('window_chat_conversation')
             ->missing('page.data.plans')
             ->missing('page.data.chat')

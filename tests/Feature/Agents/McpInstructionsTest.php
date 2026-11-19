@@ -86,7 +86,7 @@ final class McpInstructionsTest extends TestCase
         );
         $start = new SessionStarted(
             TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'call-1')),
-            new SessionStartDetails('native-1', SessionStartSource::Startup),
+            new SessionStartDetails('native-1', SessionStartSource::Startup, null),
         );
         $capabilities = new ProgramCapabilities(
             'Test program',

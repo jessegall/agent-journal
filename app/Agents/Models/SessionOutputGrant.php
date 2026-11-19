@@ -1,0 +1,112 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Models;
+
+use App\Agents\Support\SessionOutputPaths;
+use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+/**
+ * One native conversation's saved output a journal session may read, granted by one process start in one mapping
+ * generation of it. Only the grants of the session's current start and its newest mapping count; every remap
+ * replaces the session's grants in its own transaction, so a stale grant never outlives it.
+ *
+ * @property string $id
+ * @property string $session_id
+ * @property string $start_id
+ * @property int $mapping_generation
+ * @property string $conversation_id
+ * @property string $transcript_path
+ * @property string|null $output_directory
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+#[Fillable([
+    'session_id',
+    'start_id',
+    'mapping_generation',
+    'conversation_id',
+    'transcript_path',
+    'output_directory',
+])]
+final class SessionOutputGrant extends Model implements ReadableModel
+{
+    use BoundedReads, HasUlids, Linkable;
+
+    private const int MOST_GRANTS = 200;
+
+    /**
+     * @var list<string>
+     */
+    protected $hidden = ['transcript_path', 'output_directory'];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['mapping_generation' => 'integer'];
+    }
+
+    /**
+     * Replaces every grant of the session with the given ones, under its start's newest mapping generation.
+     *
+     * @param  array<string, SessionOutputPaths>  $pathsByConversation
+     */
+    public static function replaceFor(ProcessStart $start, array $pathsByConversation): void
+    {
+        self::query()->where('session_id', $start->session_id)->delete();
+
+        foreach ($pathsByConversation as $conversationId => $paths) {
+            $grant = new self();
+            $grant->session_id = $start->session_id;
+            $grant->start_id = $start->id;
+            $grant->mapping_generation = $start->output_generation;
+            $grant->conversation_id = (string) $conversationId;
+            $grant->transcript_path = $paths->transcriptPath;
+            $grant->output_directory = $paths->outputDirectory;
+            $grant->save();
+        }
+    }
+
+    /**
+     * The session's grants by conversation, whatever start made them: what a remap of the same session carries on.
+     *
+     * @return array<string, SessionOutputPaths>
+     */
+    public static function heldBy(string $sessionId): array
+    {
+        $grants = self::query()->where('session_id', $sessionId)->readLimit(self::MOST_GRANTS)->get();
+
+        return $grants->mapWithKeys(fn (self $grant) => [$grant->conversation_id => $grant->paths()])->all();
+    }
+
+    /**
+     * The session's grants that count now: those of the given start in its newest mapping generation only.
+     *
+     * @return list<SessionOutputPaths>
+     */
+    public static function currentOf(ProcessStart $start): array
+    {
+        $grants = self::query()
+            ->where('session_id', $start->session_id)
+            ->where('start_id', $start->id)
+            ->where('mapping_generation', $start->output_generation)
+            ->readLimit(self::MOST_GRANTS)
+            ->get();
+
+        return array_values($grants->map(fn (self $grant) => $grant->paths())->all());
+    }
+
+    public function paths(): SessionOutputPaths
+    {
+        return new SessionOutputPaths($this->transcript_path, $this->output_directory);
+    }
+}

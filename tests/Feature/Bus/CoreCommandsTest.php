@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
+use App\Agents\Commands\ReconcileStarts;
+use App\Agents\Commands\ReportFailure;
+use App\Agents\Commands\ReportRunning;
+use App\Agents\Commands\ReportStopped;
 use App\Agents\Commands\StartAgent;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
@@ -37,7 +42,23 @@ use App\Processes\Commands\StopProcessRun;
 use App\Processes\Commands\StopSurvivors;
 use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Commands\WithdrawRuleProposal;
+use App\Profiles\Commands\CheckAccount;
+use App\Profiles\Commands\ClaimAccountCheck;
+use App\Profiles\Commands\ClaimCleanup;
+use App\Profiles\Commands\ClaimSignIn;
+use App\Profiles\Commands\CleanAccount;
+use App\Profiles\Commands\CleanSignInAttempt;
+use App\Profiles\Commands\CompleteSignIn;
+use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
+use App\Profiles\Commands\PublishSignInChallenge;
+use App\Profiles\Commands\ReconcileAccounts;
+use App\Profiles\Commands\ReconcileSignIns;
+use App\Profiles\Commands\RecordAccountFailure;
+use App\Profiles\Commands\ReleaseAccountRemoval;
+use App\Profiles\Commands\ReleaseSignInAgain;
+use App\Profiles\Commands\ReportSignIn;
+use App\Profiles\Commands\TakeSignInCode;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\ExpireShares;
 use App\Sharing\Commands\PruneShareAudit;
@@ -87,6 +108,27 @@ final class CoreCommandsTest extends CommandBusTestCase
         }
 
         $this->assertSame([
+            ClaimStart::class,
+            ReportRunning::class,
+            ReportStopped::class,
+            ReportFailure::class,
+            ReconcileStarts::class,
+            PublishSignInChallenge::class,
+            TakeSignInCode::class,
+            RecordAccountFailure::class,
+            ClaimAccountCheck::class,
+            CheckAccount::class,
+            ClaimSignIn::class,
+            ReportSignIn::class,
+            CompleteSignIn::class,
+            ExpireSignInAttempt::class,
+            ReleaseAccountRemoval::class,
+            ReconcileSignIns::class,
+            ClaimCleanup::class,
+            CleanAccount::class,
+            CleanSignInAttempt::class,
+            ReleaseSignInAgain::class,
+            ReconcileAccounts::class,
             InstallBuiltInProfiles::class,
             ReadShare::class,
             ExpireShares::class,
