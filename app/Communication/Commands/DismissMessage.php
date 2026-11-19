@@ -6,6 +6,8 @@ namespace App\Communication\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\RepeatableRead;
+use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Communication\Enums\MessageAbility;
@@ -14,17 +16,20 @@ use App\Communication\Models\Message;
 use App\Communication\Policies\MessagePolicy;
 
 /**
- * Dismisses a message, so it waits for no answer.
+ * Closes a message without an answer, with a reason: a member of its destination declines it, its author withdraws
+ * it, or the owner cancels it on inspection.
  *
  * @implements Command<null>
  */
 #[HandledBy(DismissMessageHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[RepeatableRead]
+#[RetainedActorRequestKey]
 final readonly class DismissMessage implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $messageId,
-        public int $round,
+        public string $reason,
     ) {}
 
     /**

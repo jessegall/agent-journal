@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Communication\Enums\MessageWorkState;
 use App\Communication\States\AnsweringMessageState;
-use App\Communication\Support\MessageWork;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
@@ -46,16 +44,16 @@ final class AgentStackTest extends TestCase
     public function test_the_task_and_message_example_answers_one_obligation_at_a_time(): void
     {
         $stop = $this->stop();
-        $both = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Unanswered);
+        $both = $this->exampleStack(TaskWorkState::Active, messageWaits: true);
 
         $this->assertSame(['message-95 deny keep'], $this->stepsOf($both->answer($stop)));
 
-        $answered = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Answered)->withoutExposedInactive();
+        $answered = $this->exampleStack(TaskWorkState::Active, messageWaits: false)->withoutExposedInactive();
 
         $this->assertSame(['ready', 'task-42'], $answered->frameIds());
         $this->assertSame(['task-42 deny keep'], $this->stepsOf($answered->answer($stop)));
 
-        $done = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered)->withoutExposedInactive();
+        $done = $this->exampleStack(TaskWorkState::Finished, messageWaits: false)->withoutExposedInactive();
         $answer = $done->answer($stop);
 
         $this->assertSame(AnswerType::Allow, $answer->decision->answerType());
@@ -64,7 +62,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_shell_write_is_refused_by_the_message_and_the_task_is_not_asked(): void
     {
-        $answer = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Unanswered)
+        $answer = $this->exampleStack(TaskWorkState::Active, messageWaits: true)
             ->answer(HookInputs::all()['shell command']);
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
@@ -203,7 +201,7 @@ final class AgentStackTest extends TestCase
 
     public function test_pushing_a_state_already_on_the_stack_changes_nothing(): void
     {
-        $stack = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Unanswered);
+        $stack = $this->exampleStack(TaskWorkState::Active, messageWaits: true);
 
         $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.working', '42')));
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
@@ -257,14 +255,14 @@ final class AgentStackTest extends TestCase
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_a_finished_state_is_never_asked(HookInput $input): void
     {
-        $stack = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered);
+        $stack = $this->exampleStack(TaskWorkState::Finished, messageWaits: false);
 
         $this->assertSame(['ready'], array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input)->steps));
     }
 
     public function test_a_finished_state_in_the_middle_stays_buried_when_the_top_is_popped(): void
     {
-        $stack = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Unanswered);
+        $stack = $this->exampleStack(TaskWorkState::Finished, messageWaits: true);
 
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->withoutExposedInactive()->frameIds());
         $this->assertSame(['ready'], $stack->poppedOf($stack->frames()[2])->frameIds());
@@ -272,7 +270,7 @@ final class AgentStackTest extends TestCase
 
     public function test_the_records_list_every_frame_bottom_first(): void
     {
-        $records = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Unanswered)->records()->all();
+        $records = $this->exampleStack(TaskWorkState::Active, messageWaits: true)->records()->all();
 
         $this->assertSame(['ready', 'task-42', 'message-95'], array_map(fn ($record) => $record->id, $records));
         $this->assertSame([true, false, false], array_map(fn ($record) => $record->isBottom, $records));
@@ -310,18 +308,18 @@ final class AgentStackTest extends TestCase
             $this->frame('review', new SwitchableState(false)),
             new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
             $this->frame('notes', new SwitchableState(true)),
-            new Frame('message-95', $this->reference('communication.answering', '95'), new AnsweringMessageState(new MessageWork(95, MessageWorkState::Answered, 1)), CarbonImmutable::now()),
+            $this->answeringFrame(false),
         );
 
         $this->assertSame(['ready', 'review', 'task-42', 'notes'], $stack->withoutExposedInactive()->frameIds());
     }
 
-    private function exampleStack(TaskWorkState $taskState, MessageWorkState $messageState): AgentStack
+    private function exampleStack(TaskWorkState $taskState, bool $messageWaits): AgentStack
     {
         return $this->stack(
             $this->ready(),
             new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState)), CarbonImmutable::now()),
-            new Frame('message-95', $this->reference('communication.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState, 1)), CarbonImmutable::now()),
+            $this->answeringFrame($messageWaits),
         );
     }
 
@@ -366,5 +364,12 @@ final class AgentStackTest extends TestCase
             fn (WalkStep $step) => "{$step->frameId} {$step->answer->value} {$step->transition->value}",
             $answer->steps,
         );
+    }
+
+    private function answeringFrame(bool $messageWaits): Frame
+    {
+        $reference = $this->reference('communication.answering', '95');
+
+        return new Frame('message-95', $reference, new AnsweringMessageState('95', $messageWaits), CarbonImmutable::now());
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Events;
 
+use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
 use App\Ui\Contracts\UpdatesUserInterface;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
@@ -13,5 +14,9 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  */
 final readonly class MessageAnswered implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {
-    public function __construct(public string $messageId) {}
+    public function __construct(
+        public string $messageId,
+        public string $replyId,
+        public ActorIdentity $answeredBy,
+    ) {}
 }

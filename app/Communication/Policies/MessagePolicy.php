@@ -6,10 +6,6 @@ namespace App\Communication\Policies;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Policy;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Enums\MessageAbility;
-use App\Communication\Models\Message;
 use BackedEnum;
 
 /**
@@ -19,18 +15,10 @@ use BackedEnum;
 final readonly class MessagePolicy implements Policy
 {
     /**
-     * @param  object|class-string  $subject
+     * Who may do what with a message is decided by the policy registration and by inbox membership on each path; the
+     * policy adds no rule of its own.
      *
-     * @throws ActorNotAllowed
+     * @param  object|class-string  $subject
      */
-    public function authorize(Actor $actor, object|string $subject, BackedEnum $ability): void
-    {
-        if (! $ability instanceof MessageAbility || ! $ability->needsTheAddressee()) {
-            return;
-        }
-
-        if (! $subject instanceof Message || ! $subject->isByActor(ActorIdentity::of($actor))) {
-            throw ActorNotAllowed::to($ability, 'message');
-        }
-    }
+    public function authorize(Actor $actor, object|string $subject, BackedEnum $ability): void {}
 }

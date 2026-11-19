@@ -19,6 +19,7 @@ use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Support\ContextCollection;
 use App\Hooks\Support\FinishedToolCalls;
+use App\Hooks\Support\IncomingWorkList;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 use Closure;
@@ -43,6 +44,7 @@ final readonly class AgentStateMachine
         private SessionStartStep $sessionStart,
         private FinishedToolCalls $toolCalls,
         private HookShellAdmission $admission,
+        private IncomingWorkList $incomingWork,
     ) {}
 
     /**
@@ -56,6 +58,8 @@ final readonly class AgentStateMachine
         if ($deadline->hasRunOut()) {
             throw HookDeadlineExpired::forCall($identity->hookId);
         }
+
+        $this->incomingWork->acceptAll();
 
         $replayed = null;
 

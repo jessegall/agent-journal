@@ -40,6 +40,11 @@ final class CredentialRejected extends RuntimeException
         return new self('The session of this launch credential has ended.');
     }
 
+    public static function fenced(): self
+    {
+        return new self('This runtime was replaced by a newer one of the same agent; use the newer credential.');
+    }
+
     public static function agentRetired(): self
     {
         return new self('The agent of this launch credential is retired.');

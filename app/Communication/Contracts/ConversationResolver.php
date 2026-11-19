@@ -4,16 +4,46 @@ declare(strict_types=1);
 
 namespace App\Communication\Contracts;
 
-use App\Actors\Support\ActorIdentity;
-use App\Communication\Data\Conversation;
-use App\Communication\Resolvers\MessageRecords;
-use Illuminate\Container\Attributes\Bind;
+use App\Communication\Data\InboxCounts;
+use App\Communication\Data\MessagePage;
+use App\Communication\Data\MessageView;
+use App\Communication\Data\WakeStatus;
+use App\Communication\Exceptions\MessageMissing;
 
 /**
- * The conversation with one agent session, as the user acting in this request may read it.
+ * Reads messages as the current actor may see them, in bounded pages, oldest first within a page; reading never
+ * marks anything read.
  */
-#[Bind(MessageRecords::class)]
 interface ConversationResolver
 {
-    public function conversationWith(ActorIdentity $actor): Conversation;
+    /**
+     * @throws MessageMissing
+     */
+    public function detail(string $messageId): MessageView;
+
+    /**
+     * The messages between two inboxes, both ways, older than the cursor.
+     */
+    public function between(
+        string $firstInboxId,
+        string $secondInboxId,
+        string|null $olderCursor,
+        int $limit,
+    ): MessagePage;
+
+    /**
+     * An inbox's whole history, incoming and outgoing, older than the cursor.
+     */
+    public function history(string $inboxId, string|null $olderCursor, int $limit): MessagePage;
+
+    public function counts(string $inboxId): InboxCounts;
+
+    /**
+     * For the message's author only: whether each notified member's runtime accepted the wake.
+     *
+     * @return list<WakeStatus>
+     *
+     * @throws MessageMissing
+     */
+    public function wakeStatus(string $messageId): array;
 }

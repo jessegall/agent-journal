@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
@@ -27,7 +26,13 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Exceptions\InboxUnavailable;
+use App\Communication\Models\InboxRecord;
 use App\Communication\Models\Message;
+use App\Communication\Models\MessageAttention;
+use App\Desks\Models\DeskPreference;
+use App\Desks\Models\DeskRecord;
+use App\Desks\Models\DeskSeat;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
@@ -49,7 +54,7 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAfterRetirement;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ReplacesCardsCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ReplacesTasksCommand;
-use Tests\Fixtures\Modules\Notes\CommandMiddleware\SendsToUnknownSession;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\SendsToUnknownInbox;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\SkipsCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\SwallowsFailure;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\TrimMessages;
@@ -57,6 +62,7 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Support\TestIds;
+use Tests\Support\WritesInboxMessages;
 
 /**
  * Module middleware on the Cards and Notes test modules (doc 19, Book E): the order by stage, owner and declaration,
@@ -65,15 +71,22 @@ use Tests\Support\TestIds;
  */
 final class ModuleMiddlewareTest extends CommandBusTestCase
 {
+    use WritesInboxMessages;
+
     protected function tearDown(): void
     {
         // The Rules commands commit for real here, so their rows go too.
         Rule::query()->delete();
         Plan::query()->delete();
         Task::query()->delete();
+        MessageAttention::query()->delete();
         Message::query()->withoutGlobalScopes()->delete();
         AgentSession::query()->delete();
         AssignmentRecord::query()->delete();
+        DeskPreference::query()->delete();
+        DeskSeat::query()->delete();
+        DeskRecord::query()->delete();
+        InboxRecord::query()->delete();
         Agent::query()->delete();
 
         parent::tearDown();
@@ -196,22 +209,37 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $session = $this->launchedSession();
         $this->startUserRequestAs(TestIds::of(1));
 
-        $this->app->make(CommandBus::class)->run(new SendMessage("  Trim me  \n", new ActorIdentity(ActorType::Agent, $session->agent_id)));
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
-        $this->assertSame('Trim me', Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $session->agent_id))->sole()->body);
+        $messageId = $this->app->make(CommandBus::class)->run(new SendMessage(
+            $this->inboxOf(new ActorIdentity(ActorType::User, TestIds::of(1)))->inboxId(),
+            $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId(),
+            "  Trim me  \n",
+        ));
+
+        $this->assertSame('Trim me', Message::query()->withoutGlobalScopes()->findOrFail($messageId)->body);
     }
 
-    public function test_a_message_pointed_at_an_unknown_agent_is_refused_and_leaves_no_message(): void
+    public function test_a_message_pointed_at_an_unknown_inbox_is_refused_and_leaves_no_message(): void
     {
-        $this->installCommandModulesRequiring(['Chat'], MiddlewareDeclaration::around(SendsToUnknownSession::class, CommandScope::command(SendMessage::class)));
+        $this->installCommandModulesRequiring(
+            ['Chat'],
+            MiddlewareDeclaration::around(SendsToUnknownInbox::class, CommandScope::command(SendMessage::class)),
+        );
         $session = $this->launchedSession();
         $this->startUserRequestAs(TestIds::of(1));
+        $this->app->make(RequestKey::class)->set((string) Str::ulid());
+        $command = new SendMessage(
+            $this->inboxOf(new ActorIdentity(ActorType::User, TestIds::of(1)))->inboxId(),
+            $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId(),
+            'Hello',
+        );
 
         try {
-            $this->app->make(CommandBus::class)->run(new SendMessage('Hello', new ActorIdentity(ActorType::Agent, $session->agent_id)));
-            $this->fail('A message reached an agent that does not exist.');
-        } catch (ActorUnavailable) {
-            $this->assertSame(0, Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $session->agent_id))->count());
+            $this->app->make(CommandBus::class)->run($command);
+            $this->fail('A message reached an inbox that does not exist.');
+        } catch (InboxUnavailable) {
+            $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
         }
     }
 

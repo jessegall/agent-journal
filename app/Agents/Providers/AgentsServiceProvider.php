@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Providers;
 
+use App\Actors\Contracts\ActorAttention;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\PolicyCatalogue;
@@ -18,6 +19,7 @@ use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\Agents\Console\EnrollHostCommand;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Console\RunKeyScriptCommand;
+use App\Agents\Contracts\ActorRuntimeResolver;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialResolver;
@@ -29,6 +31,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
+use App\Agents\Resolvers\CurrentAgentRuntimes;
 use App\Agents\Resolvers\HostLaunchMaterial;
 use App\Agents\Resolvers\LaunchRecords;
 use App\Agents\Resolvers\ProgramConversationRecords;
@@ -40,6 +43,7 @@ use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\AgentVisibility;
+use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
@@ -62,6 +66,8 @@ final class AgentsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(ActorRuntimeResolver::class, CurrentAgentRuntimes::class);
+        $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
         $this->app->scoped(CommandPermissionResolver::class, RolePermissionResolver::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);

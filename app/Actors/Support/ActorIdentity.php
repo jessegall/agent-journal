@@ -57,4 +57,14 @@ final readonly class ActorIdentity
     {
         return ["{$prefix}Type" => $this->type->value, "{$prefix}Id" => $this->id];
     }
+
+    /**
+     * This actor as the two columns of a row that the prefix names, such as sender_type and sender_id.
+     *
+     * @return array<string, string>
+     */
+    public function asColumns(string $prefix): array
+    {
+        return ["{$prefix}_type" => $this->type->value, "{$prefix}_id" => $this->id];
+    }
 }

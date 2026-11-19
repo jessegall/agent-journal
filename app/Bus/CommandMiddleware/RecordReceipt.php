@@ -7,6 +7,7 @@ namespace App\Bus\CommandMiddleware;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Exceptions\RequestKeyMissing;
 use App\Bus\Models\CommandReceipt;
+use App\Bus\Support\AcceptedReceipt;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\ReceiptCallers;
@@ -21,7 +22,12 @@ use Closure;
  */
 final readonly class RecordReceipt implements CommandMiddleware
 {
-    public function __construct(private RequestKey $key, private ReceiptCallers $callers, private CommandRegistry $registry) {}
+    public function __construct(
+        private RequestKey $key,
+        private ReceiptCallers $callers,
+        private CommandRegistry $registry,
+        private AcceptedReceipt $accepted,
+    ) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
     {
@@ -45,6 +51,7 @@ final readonly class RecordReceipt implements CommandMiddleware
         }
 
         $receipt = CommandReceipt::take($caller, $key, $call->command(), $this->registry->retentionOf($call->name()));
+        $this->accepted->accept($receipt->id);
         $result = $next($call);
         $receipt->complete($result);
 

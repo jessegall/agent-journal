@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Communication;
+
+use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Enums\MessageState;
+use App\Communication\Exceptions\AnswerImpossible;
+use App\Communication\Exceptions\MessageMissing;
+use App\Communication\Models\Message;
+use App\Desks\Models\DeskRecord;
+use Tests\Support\MessagingTestCase;
+
+/**
+ * The author of a note may ask for an answer to it after all: the note then waits in the same two inboxes. Nobody
+ * else may, and an inbox with nobody seated at it cannot answer.
+ */
+final class RequireMessageAnswerTest extends MessagingTestCase
+{
+    public function test_the_author_turns_a_note_into_a_question_in_the_same_inboxes(): void
+    {
+        $noteId = $this->ownerSends($this->inboxIdOf($this->builder), 'The build is red.');
+
+        $this->runOnBus(new RequireMessageAnswer($noteId));
+        $this->runOnBus(new RequireMessageAnswer($noteId));
+
+        $note = Message::query()->findOrFail($noteId);
+        $this->assertSame(MessageState::WaitingForAnswer, $note->state);
+        $this->assertSame($this->ownerInboxId(), $note->source_inbox_id);
+        $this->assertSame($this->inboxIdOf($this->builder), $note->destination_inbox_id);
+    }
+
+    public function test_only_the_author_may_ask_for_an_answer(): void
+    {
+        $noteId = $this->ownerSends($this->inboxIdOf($this->builder), 'The build is red.');
+        $this->asAgent($this->builder);
+
+        $this->expectException(MessageMissing::class);
+
+        $this->runOnBus(new RequireMessageAnswer($noteId));
+    }
+
+    public function test_an_inbox_nobody_is_seated_at_cannot_answer(): void
+    {
+        $nobody = DeskRecord::openSourceDesk('nobody', 'Nobody');
+        $noteId = $this->ownerSends($nobody->inboxId(), 'Anyone?');
+
+        $this->expectException(AnswerImpossible::class);
+
+        $this->runOnBus(new RequireMessageAnswer($noteId));
+    }
+}

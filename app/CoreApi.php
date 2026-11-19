@@ -329,10 +329,14 @@ use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
-use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\TakeNextMessages;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\Inbox;
@@ -342,8 +346,13 @@ use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Contracts\MessageAddressResolver;
-use App\Communication\Data\Conversation;
+use App\Communication\Data\InboxCounts;
+use App\Communication\Data\MessagePage;
+use App\Communication\Data\MessageReadBatch;
+use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
+use App\Communication\Data\WakeStatus;
+use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageDismissed;
@@ -379,6 +388,7 @@ use App\Desks\Exceptions\SeatCapacityReached;
 use App\Desks\Exceptions\SeatConflict;
 use App\Desks\Exceptions\SecondForwardingSeat;
 use App\Desks\Support\SeatChangeResult;
+use App\Domains\Contracts\ProvidesIncomingWork;
 use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
@@ -395,6 +405,8 @@ use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Contracts\IncomingWork;
+use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -418,6 +430,7 @@ use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\StateTypesRequested;
+use App\Hooks\Exceptions\IncomingWorkRepeated;
 use App\Hooks\Exceptions\MonotonicClockWentBack;
 use App\Hooks\Exceptions\StackTransactionRequired;
 use App\Hooks\Exceptions\StateReferencesInvalid;
@@ -961,6 +974,9 @@ final class CoreApi
                 RunClaims::class,
                 ReplyInboxes::class,
                 ProvidesInternalAssignables::class,
+                ProvidesIncomingWork::class,
+                IncomingWork::class,
+                IncomingWorkRegistration::class,
                 Desk::class,
                 ForwardsToDesk::class,
                 AssignmentDestinationResolver::class,
@@ -1164,8 +1180,13 @@ final class CoreApi
                 WholeRecord::class,
                 CommentType::class,
                 MessageAddress::class,
-                Conversation::class,
                 MessageView::class,
+                MessagePage::class,
+                InboxCounts::class,
+                MessageReadBatch::class,
+                MessageReadResult::class,
+                DismissalType::class,
+                WakeStatus::class,
                 MessageState::class,
                 CommentDetails::class,
                 RecordCommentView::class,
@@ -1495,8 +1516,13 @@ final class CoreApi
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
+                AskMessage::class,
+                ReadMessages::class,
+                TakeNextMessages::class,
+                ReplyToMessage::class,
+                ReleaseMessageClaim::class,
                 RequireMessageAnswer::class,
-                AnswerMessage::class,
+
                 DismissMessage::class,
                 RetireAgent::class,
                 LaunchAgent::class,
@@ -1625,6 +1651,7 @@ final class CoreApi
                 AbilityNotRegistered::class,
                 ConsoleOwnerMissing::class,
                 InboxUnavailable::class,
+                IncomingWorkRepeated::class,
                 DeskUnavailable::class,
                 DeskSeatCountInvalid::class,
                 SeatCapacityReached::class,

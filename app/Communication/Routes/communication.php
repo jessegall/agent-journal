@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Http\Controllers\Communication\AskMessageController;
+use App\Http\Controllers\Communication\DismissMessageController;
+use App\Http\Controllers\Communication\InboxCountsController;
+use App\Http\Controllers\Communication\InboxHistoryController;
+use App\Http\Controllers\Communication\MessagesBetweenController;
+use App\Http\Controllers\Communication\ReadMessagesController;
+use App\Http\Controllers\Communication\ReleaseMessageClaimController;
+use App\Http\Controllers\Communication\ReplyToMessageController;
+use App\Http\Controllers\Communication\RequireMessageAnswerController;
+use App\Http\Controllers\Communication\SendMessageController;
+use App\Http\Controllers\Communication\ShowMessageController;
+use App\Http\Controllers\Communication\TakeNextMessagesController;
+use App\Http\Controllers\Communication\WakeStatusController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('journal.agent')
+    ->prefix('agent/communication')
+    ->name('communication.agent.')
+    ->group(function (): void {
+        Route::post('send', SendMessageController::class)->name('send');
+        Route::post('ask', AskMessageController::class)->name('ask');
+        Route::post('reply', ReplyToMessageController::class)->name('reply');
+        Route::post('require-answer', RequireMessageAnswerController::class)->name('require-answer');
+        Route::post('read', ReadMessagesController::class)->name('read');
+        Route::post('take-next', TakeNextMessagesController::class)->name('take-next');
+        Route::post('dismiss', DismissMessageController::class)->name('dismiss');
+        Route::post('release-claim', ReleaseMessageClaimController::class)->name('release-claim');
+        Route::post('show', ShowMessageController::class)->name('show');
+        Route::post('between', MessagesBetweenController::class)->name('between');
+        Route::post('history', InboxHistoryController::class)->name('history');
+        Route::post('counts', InboxCountsController::class)->name('counts');
+        Route::post('wake-status', WakeStatusController::class)->name('wake-status');
+    });
+
+Route::middleware(['web', 'auth', 'journal.user'])
+    ->prefix('communication')
+    ->name('communication.')
+    ->group(function (): void {
+        Route::post('send', SendMessageController::class)->name('send');
+        Route::post('ask', AskMessageController::class)->name('ask');
+        Route::post('reply', ReplyToMessageController::class)->name('reply');
+        Route::post('require-answer', RequireMessageAnswerController::class)->name('require-answer');
+        Route::post('read', ReadMessagesController::class)->name('read');
+        Route::post('take-next', TakeNextMessagesController::class)->name('take-next');
+        Route::post('dismiss', DismissMessageController::class)->name('dismiss');
+        Route::post('release-claim', ReleaseMessageClaimController::class)->name('release-claim');
+        Route::get('show', ShowMessageController::class)->name('show');
+        Route::get('between', MessagesBetweenController::class)->name('between');
+        Route::get('history', InboxHistoryController::class)->name('history');
+        Route::get('counts', InboxCountsController::class)->name('counts');
+        Route::get('wake-status', WakeStatusController::class)->name('wake-status');
+    });

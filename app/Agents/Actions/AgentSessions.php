@@ -36,6 +36,7 @@ final readonly class AgentSessions
 
         $session = new AgentSession();
         $session->startFor($agent, $parent, $this->pinned($agent, $selection), $requestId);
+        $agent->adoptRuntime($session);
 
         return $session;
     }

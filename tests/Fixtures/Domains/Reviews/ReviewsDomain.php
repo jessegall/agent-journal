@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reviews;
 
+use App\Domains\Concerns\HasIncomingWork;
 use App\Domains\Concerns\HasStates;
+use App\Domains\Contracts\ProvidesIncomingWork;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Settings\Contracts\ProvidesSettings;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewStateType;
+use Tests\Fixtures\Domains\Reviews\Work\ReviewInbox;
 
-final class ReviewsDomain extends Domain implements ProvidesSettings, ProvidesStates
+final class ReviewsDomain extends Domain implements ProvidesIncomingWork, ProvidesSettings, ProvidesStates
 {
+    use HasIncomingWork;
     use HasStates;
 
     public function description(): string
@@ -29,6 +33,11 @@ final class ReviewsDomain extends Domain implements ProvidesSettings, ProvidesSt
     public function exports(): Exports
     {
         return Exports::make()->build();
+    }
+
+    public function incomingWork(): array
+    {
+        return [ReviewInbox::class];
     }
 
     public function states(): array

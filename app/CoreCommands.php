@@ -38,10 +38,14 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
-use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\TakeNextMessages;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Commands\ProvisionActorDesk;
@@ -175,7 +179,12 @@ final class CoreCommands
             UnlinkRecords::class,
             PostComment::class,
             PostTextComment::class,
-            SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
+            SendMessage::class,
+            AskMessage::class,
+            ReadMessages::class,
+            TakeNextMessages::class,
+            ReplyToMessage::class,
+            ReleaseMessageClaim::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class,
             SetBooleanSetting::class,
             SetIntegerSetting::class,

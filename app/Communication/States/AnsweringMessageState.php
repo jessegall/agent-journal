@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Communication\States;
 
-use App\Communication\Support\MessageWork;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\SessionStarted;
@@ -13,20 +12,21 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 
 /**
- * A message waits on the agent: it hears about it at start, may not stop, and may not change files until it answers.
+ * An actor answering a message it took up: reading is allowed, changing files and stopping are refused until it
+ * replies. The frame finishes once its exact claim is gone, replaced or no longer proved, or the message closed.
  */
 final class AnsweringMessageState extends AgentState
 {
-    public function __construct(private readonly MessageWork $message) {}
+    public function __construct(private readonly string $messageId, private readonly bool $claimStands) {}
 
     public function isFinished(): bool
     {
-        return ! $this->message->needsReply();
+        return ! $this->claimStands;
     }
 
     public function onSessionStart(SessionStarted $input): Decision
     {
-        return Decision::addContext($this->message->replyInstruction());
+        return Decision::addContext($this->instruction());
     }
 
     public function onShellCommand(ShellCommandRequested $input): Decision
@@ -35,16 +35,21 @@ final class AnsweringMessageState extends AgentState
             return Decision::delegate();
         }
 
-        return Decision::deny($this->message->replyInstruction());
+        return Decision::deny($this->instruction());
     }
 
     public function onFileEdit(FileEditRequested $input): Decision
     {
-        return Decision::deny($this->message->replyInstruction());
+        return Decision::deny($this->instruction());
     }
 
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::deny($this->message->replyInstruction());
+        return Decision::deny($this->instruction());
+    }
+
+    private function instruction(): string
+    {
+        return "You took up message {$this->messageId}, which waits for your answer: reply to it before other work.";
     }
 }

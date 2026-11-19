@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Communication\Events;
 
+use App\Actors\Support\ActorIdentity;
+use App\Communication\Enums\DismissalType;
 use App\Contracts\Event;
-use App\Ui\Contracts\UpdatesUserInterface;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * A message was dismissed without an answer; raised once that has committed.
+ * A message was closed without an answer: by whom and in which way, never the reason's text.
  */
-final readonly class MessageDismissed implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
+final readonly class MessageDismissed implements Event, ShouldDispatchAfterCommit
 {
-    public function __construct(public string $messageId) {}
+    public function __construct(
+        public string $messageId,
+        public ActorIdentity $dismissedBy,
+        public DismissalType $type,
+    ) {}
 }

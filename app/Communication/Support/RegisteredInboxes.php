@@ -71,4 +71,17 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
 
         throw InboxUnavailable::forName($name);
     }
+
+    public function accessFor(Inbox $inbox): InboxAccess
+    {
+        $record = InboxRecord::query()->find($inbox->inboxId()) ?? throw InboxUnavailable::forId($inbox->inboxId());
+        [, $accessClass] = $this->providers[$record->provider_key] ?? throw InboxUnavailable::forId($inbox->inboxId());
+
+        return $this->container->make($accessClass);
+    }
+
+    public function membersOf(Inbox $inbox): array
+    {
+        return $this->accessFor($inbox)->members($inbox)->memberships;
+    }
 }

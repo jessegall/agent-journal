@@ -7,13 +7,21 @@ namespace App\Communication\Data;
 use App\Communication\Enums\MessageState;
 
 /**
- * One message of a conversation as a page may show it: its id, its body exactly as sent and where it stands.
+ * A message as a reader sees it: who wrote it, between which inboxes, its text, its state and when it was first read.
  */
 final readonly class MessageView
 {
     public function __construct(
         public string $id,
+        public string $sourceInboxId,
+        public string $destinationInboxId,
+        public string $senderType,
+        public string $senderId,
         public string $body,
         public MessageState $state,
+        public int $stateVersion,
+        public string|null $replyToId,
+        public string|null $readAt,
+        public string $sentAt,
     ) {}
 }

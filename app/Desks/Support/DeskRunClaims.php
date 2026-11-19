@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Desks\Support;
 
-use PhpOption\Option;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Models\AssignmentRecord;
@@ -13,11 +12,13 @@ use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
+use App\Assignments\Support\ProvedClaims;
 use App\Desks\Contracts\RunClaims;
 use App\Desks\Exceptions\RunClaimRefused;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use App\Records\Support\RecordIdentity;
+use PhpOption\Option;
 
 /**
  * Run claims proved by the work's current holder: the actor itself for a direct run, or the actor's seat at the desk
@@ -28,6 +29,7 @@ final readonly class DeskRunClaims implements RunClaims
     public function __construct(
         private AssignmentStore $store,
         private ResponsibilityWriter $responsibilities,
+        private ProvedClaims $proved,
     ) {}
 
     public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): AssignmentReference
@@ -57,24 +59,9 @@ final readonly class DeskRunClaims implements RunClaims
             return [];
         }
 
-        $claims = AssignmentRecord::ofRecords($runs[0]->type, array_map(fn (RecordIdentity $run) => $run->id, $runs));
-        $proofs = ClaimAuthorization::ofClaims(array_map(fn (AssignmentRecord $claim) => $claim->id, $claims));
-        $liveHolders = AssignmentRecord::holdersOf(array_merge(...array_map(
-            fn (ClaimAuthorization $proof) => $proof->sourceIds(),
-            array_values($proofs),
-        )));
-        $holders = [];
+        $claims = $this->proved->validClaimsOn($runs[0]->type, array_map(fn (RecordIdentity $run) => $run->id, $runs));
 
-        foreach ($claims as $claim) {
-            $assignment = $claim->toAssignment();
-            $proof = $proofs[$claim->id] ?? null;
-
-            if ($proof?->isValidAgainst($assignment->holder(), $liveHolders) === true) {
-                $holders[$assignment->record->id] = SeatOccupant::of($assignment);
-            }
-        }
-
-        return $holders;
+        return array_map(fn (Assignment $claim) => SeatOccupant::of($claim), $claims);
     }
 
     public function holderOf(RecordIdentity $run): Option

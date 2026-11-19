@@ -37,10 +37,14 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
-use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\ReadMessages;
+use App\Communication\Commands\ReleaseMessageClaim;
+use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\TakeNextMessages;
 use App\CoreCommands;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
@@ -186,7 +190,12 @@ final class CoreCommandsTest extends CommandBusTestCase
             PostComment::class,
             PostTextComment::class,
             SendMessage::class,
-            AnswerMessage::class,
+            AskMessage::class,
+            ReadMessages::class,
+            TakeNextMessages::class,
+            ReplyToMessage::class,
+            ReleaseMessageClaim::class,
+
             DismissMessage::class,
             RequireMessageAnswer::class,
             SetStringSetting::class,

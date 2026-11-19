@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
@@ -21,6 +20,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -29,8 +29,29 @@ use Tests\TestCase;
 final class HomePageTest extends TestCase
 {
     use CommitsHookRows;
+    use WritesInboxMessages;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'messages', 'links', 'plans', 'rules'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'messages',
+        'links',
+        'plans',
+        'rules',
+        'inboxes',
+        'desks',
+        'desk_seats',
+        'desk_preferences',
+        'assignments',
+        'command_receipts',
+        'message_attentions',
+    ];
+
+    private string $pairId;
 
     private User $owner;
 
@@ -44,6 +65,8 @@ final class HomePageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agent = Agent::named('Builder', AgentRole::MainAgent);
         $this->session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
+        $this->pairId = $ownInboxId.'-'.$this->inboxOf(ActorIdentity::of($agent))->inboxId();
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 
@@ -97,10 +120,10 @@ final class HomePageTest extends TestCase
             ->assertStatus(303)
             ->assertRedirect($home);
 
-        $this->assertSame([$body], Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->session->agent_id))->pluck('body')->all());
+        $this->assertSame([$body], Message::query()->withoutGlobalScopes()->pluck('body')->all());
         $this->actingAs($this->owner)->get($home)->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
-                ->where('window_chat_conversation.data.conversation.id', "agent-{$this->session->agent_id}")
+                ->where('window_chat_conversation.data.conversation.id', $this->pairId)
                 ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)
                 ->where('window_chat_conversation.data.conversation.messages.0.body', $body)));
     }
@@ -142,7 +165,7 @@ final class HomePageTest extends TestCase
             ->assertRedirect('/')
             ->assertSessionHasErrors('body');
 
-        $this->assertSame(0, Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->session->agent_id))->count());
+        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_guessed_session_is_refused_on_the_session(): void

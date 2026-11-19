@@ -76,6 +76,11 @@ final class AgentRuntime extends Model implements ReadableModel
     /**
      * The runtime a session opens on a host, as its intent describes it, not saved yet.
      */
+    public static function existsForSession(string $sessionId): bool
+    {
+        return self::query()->where('agent_session_id', $sessionId)->exists();
+    }
+
     public static function forIntent(AgentSession $session, RuntimeIntent $intent): self
     {
         $runtime = new self();

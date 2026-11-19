@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Communication\Enums\MessageWorkState;
 use App\Communication\States\AnsweringMessageState;
-use App\Communication\Support\MessageWork;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -170,9 +168,7 @@ final class TransparentFramesTest extends TestCase
 
     private function message(bool $answered = false): Frame
     {
-        $work = new MessageWork(9, $answered ? MessageWorkState::Answered : MessageWorkState::Unanswered, 2);
-
-        return $this->frame('message', 'communication.answering', '9', new AnsweringMessageState($work));
+        return $this->frame('message', 'communication.answering', '9', new AnsweringMessageState('9', ! $answered));
     }
 
     private function frame(string $id, string $typeKey, string $subjectId, AgentState $state): Frame

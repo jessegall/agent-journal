@@ -4,129 +4,125 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorUnavailable;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
-use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\AnswerMessage;
-use App\Communication\Commands\DismissMessage;
+use App\Bus\Support\RequestKey;
+use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\SendMessage;
-use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
-use App\Communication\Events\MessageAnswered;
-use App\Communication\Events\MessageDismissed;
 use App\Communication\Events\MessageSent;
+use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Models\Message;
-use App\Communication\Resolvers\MessageRecords;
-use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Storage\FrameRecord;
+use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Event;
-use Tests\Fixtures\Agents\TestSelections;
+use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
+use Tests\Support\StartsAgentRequests;
+use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
- * The owner sends a message to a running agent's session with no agent context; it lands as the agent's own would.
+ * A member of a source inbox sends or asks to another inbox: the message keeps its text and its two inboxes, a resent
+ * request gives back the same message, and an inbox the sender may not use refuses and leaves nothing.
  */
 final class SendMessageTest extends TestCase
 {
     use CommitsHookRows;
+    use StartsAgentRequests;
+    use WritesInboxMessages;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'messages', 'links'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'inboxes',
+        'desks',
+        'desk_seats',
+        'desk_preferences',
+        'assignments',
+        'command_receipts',
+        'messages',
+        'message_attentions',
+    ];
 
-    private StackTarget $target;
+    private string $ownInboxId;
+
+    private string $builderInboxId;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        Event::fake([MessageSent::class, MessageAnswered::class, MessageDismissed::class]);
-        $agent = Agent::named('Builder', AgentRole::MainAgent);
-        $session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
-        $this->target = new StackTarget($session->agent_id, $session->id);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
+        Event::fake([MessageSent::class]);
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $this->startUserRequestAs($owner->id);
+        $this->ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
+        $builder = ActorIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
+        $this->builderInboxId = $this->inboxOf($builder)->inboxId();
     }
 
-    public function test_a_sent_message_keeps_its_text_waits_for_the_agent_and_sits_on_its_stack(): void
+    public function test_a_sent_message_keeps_its_text_and_both_inboxes_and_waits_for_nobody(): void
     {
-        $body = "Please check:\n    - the indented line\n\nthen answer.";
+        $messageId = $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, 'The build is green.'));
 
-        $this->send($body, $this->target->sessionId);
-
-        $stored = Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->target->agentId))->sole();
-        $this->assertSame([$body, MessageState::WaitingForAnswer, $this->target->agentId], [$stored->body, $stored->state, $stored->actor_id]);
-        $this->assertSame(['hooks.main_ready', 'communication.answering'], $this->stackTypeKeys());
-        Event::assertDispatched(MessageSent::class, fn (MessageSent $event) => $event->messageId === $stored->id);
+        $message = Message::query()->findOrFail($messageId);
+        $this->assertSame('The build is green.', $message->body);
+        $this->assertSame($this->ownInboxId, $message->source_inbox_id);
+        $this->assertSame($this->builderInboxId, $message->destination_inbox_id);
+        $this->assertSame(MessageState::Sent, $message->state);
+        Event::assertDispatched(MessageSent::class, fn (MessageSent $sent) => $sent->messageId === $messageId);
     }
 
-    public function test_a_guessed_target_is_refused_and_leaves_no_message(): void
+    public function test_an_asked_message_waits_for_an_answer(): void
     {
-        try {
-            $guessed = new ActorIdentity(ActorType::Agent, TestIds::of(99999));
-            $this->app->make(CommandBus::class)->run(new SendMessage('Hello', $guessed));
-            $this->fail('A guessed target took a message.');
-        } catch (ActorUnavailable) {
-            $this->assertSame(0, Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->target->agentId))->count());
-            Event::assertNotDispatched(MessageSent::class);
-        }
+        $messageId = $this->runOnBus(new AskMessage($this->ownInboxId, $this->builderInboxId, 'Which database?'));
+
+        $this->assertSame(MessageState::WaitingForAnswer, Message::query()->findOrFail($messageId)->state);
+    }
+
+    public function test_the_same_request_sent_again_gives_back_the_same_message(): void
+    {
+        $key = (string) Str::ulid();
+        $command = new SendMessage($this->ownInboxId, $this->builderInboxId, 'Once.');
+
+        $first = $this->runOnBus($command, $key);
+        $this->app->forgetScopedInstances();
+        $this->startUserRequestAs(User::query()->sole()->id);
+        $second = $this->runOnBus($command, $key);
+
+        $this->assertSame($first, $second);
+        $this->assertSame(1, Message::query()->count());
+    }
+
+    public function test_an_inbox_the_sender_is_not_seated_at_refuses_and_leaves_no_message(): void
+    {
+        $this->assertThrows(
+            fn () => $this->runOnBus(new SendMessage($this->builderInboxId, $this->ownInboxId, 'Not mine to send.')),
+            InboxUnavailable::class,
+        );
+        $this->assertThrows(
+            fn () => $this->runOnBus(new SendMessage($this->ownInboxId, (string) Str::ulid(), 'Nowhere.')),
+            InboxUnavailable::class,
+        );
+
+        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_blank_message_is_refused(): void
     {
         $this->expectException(MessageBodyEmpty::class);
 
-        $this->send("  \n\t ", $this->target->sessionId);
+        $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, "  \n"));
     }
 
-    public function test_the_user_reads_the_conversation_with_that_agent(): void
+    private function runOnBus(object $command, string|null $key = null): mixed
     {
-        $this->send('First', $this->target->sessionId);
-        $this->send('Second', $this->target->sessionId);
+        $this->app->make(RequestKey::class)->set($key ?? (string) Str::ulid());
 
-        $conversation = $this->app->make(MessageRecords::class)->conversationWith($this->target->actorIdentity());
-
-        $this->assertSame("agent-{$this->target->agentId}", $conversation->id());
-        $this->assertSame(['First', 'Second'], array_map(fn (MessageView $message) => $message->body, $conversation->messages));
-    }
-
-    public function test_answering_and_dismissing_raise_their_facts(): void
-    {
-        $this->send('Answer me', $this->target->sessionId);
-        $this->send('Never mind', $this->target->sessionId);
-        [$answered, $dismissed] = Message::query()->ownedBy(new ActorIdentity(ActorType::Agent, $this->target->agentId))->orderBy('id')->get()->all();
-        $this->app->make(CommandBus::class)->run(new AnswerMessage($answered->id, $answered->answer_round));
-        $this->app->make(CommandBus::class)->run(new DismissMessage($dismissed->id, $dismissed->answer_round));
-
-        Event::assertDispatched(MessageAnswered::class, fn (MessageAnswered $event) => $event->messageId === $answered->id);
-        Event::assertDispatched(MessageDismissed::class, fn (MessageDismissed $event) => $event->messageId === $dismissed->id);
-    }
-
-    private function send(string $body, string $sessionId): void
-    {
-        $agentId = AgentSession::query()->findOrFail($sessionId)->agent_id;
-        $this->app->make(CommandBus::class)->run(new SendMessage($body, new ActorIdentity(ActorType::Agent, $agentId)));
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function stackTypeKeys(): array
-    {
-        return array_map(
-            fn (FrameRecord $frame) => $frame->reference->typeKey,
-            AgentStackRow::query()->authorizedFor($this->target)->sole()->frames->all(),
-        );
+        return $this->app->make(CommandBus::class)->run($command);
     }
 }

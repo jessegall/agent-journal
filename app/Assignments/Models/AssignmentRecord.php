@@ -116,6 +116,22 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     }
 
     /**
+     * These exact assignments that still exist, keyed by assignment id.
+     *
+     * @param  list<string>  $assignmentIds
+     * @return array<string, Assignment>
+     */
+    public static function assignmentsOf(array $assignmentIds): array
+    {
+        return self::query()
+            ->withoutGlobalScope(SignedInScope::class)
+            ->whereKey($assignmentIds)
+            ->get()
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()])
+            ->all();
+    }
+
+    /**
      * The current assignments of these records of one type, read by a trusted provider path.
      *
      * @param  list<string>  $recordIds

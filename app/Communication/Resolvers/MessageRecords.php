@@ -4,76 +4,122 @@ declare(strict_types=1);
 
 namespace App\Communication\Resolvers;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Support\AttentionOrigin;
+use App\Assignments\Support\ProvedClaims;
 use App\Communication\Contracts\ConversationResolver;
-use App\Communication\Data\Conversation;
+use App\Communication\Data\InboxCounts;
+use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
-use Illuminate\Container\Attributes\Scoped;
+use App\Communication\Models\MessageAttention;
+use App\Communication\Support\InboxMembers;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
- * The named reads of messages the Chat domain answers for: the calling agent's own, and one the journal addressed.
+ * Reads messages through the visibility scope: what the actor may see now, page by page on creation time and id, so
+ * a cursor kept from before the actor lost a seat finds nothing it may no longer see.
  */
-#[Scoped]
 final readonly class MessageRecords implements ConversationResolver
 {
-    private const int OPEN_ROUNDS_READ = 100;
+    public function __construct(
+        private ProvedClaims $proved,
+        private CurrentActor $actors,
+    ) {}
 
-    public function get(string $messageId): Message
+    public function detail(string $messageId): MessageView
     {
-        return Message::query()->forActor()->find($messageId) ?? throw MessageMissing::forId($messageId);
+        $message = Message::query()->find($messageId) ?? throw MessageMissing::forId($messageId);
+
+        return $this->viewOf($message);
     }
 
-    /**
-     * The messages of these ids the actor may read, by id, in one read.
-     *
-     * @param  list<string>  $messageIds
-     * @return array<string, Message>
-     */
-    public function many(array $messageIds): array
-    {
-        return Message::query()->forActor()->whereKey($messageIds)->readLimit(count($messageIds))->get()->keyBy('id')->all();
+    public function between(
+        string $firstInboxId,
+        string $secondInboxId,
+        string|null $olderCursor,
+        int $limit,
+    ): MessagePage {
+        return $this->page(Message::query()->betweenInboxes($firstInboxId, $secondInboxId), $olderCursor, $limit);
     }
 
-    /**
-     * The journal's own read of a message it addressed to an actor, outside that actor's requests.
-     */
-    public function addressedTo(ActorIdentity $actor, string $messageId): Message
+    public function history(string $inboxId, string|null $olderCursor, int $limit): MessagePage
     {
-        return Message::query()->ownedBy($actor)->find($messageId) ?? throw MessageMissing::forId($messageId);
+        return $this->page(Message::query()->ofInbox($inboxId), $olderCursor, $limit);
     }
 
-    /**
-     * The messages whose open round waits on the actor, oldest first, for its new session's stack.
-     *
-     * @return list<Message>
-     */
-    public function openRoundsFor(ActorIdentity $actor): array
+    public function counts(string $inboxId): InboxCounts
     {
-        $messages = Message::query()->ownedBy($actor)->where('state', MessageState::WaitingForAnswer)->orderBy('id')
-            ->readLimit(self::OPEN_ROUNDS_READ)
-            ->get()->all();
-
-        return array_values($messages);
-    }
-
-    /**
-     * The conversation with one actor, as the user acting in this request may read it.
-     */
-    public function conversationWith(ActorIdentity $actor): Conversation
-    {
-        $messages = Message::query()->acrossOwners()
-            ->byActor($actor)
-            ->orderBy('id')
-            ->readAll('the whole conversation, oldest first, until it is paged')
-            ->get()
+        $incoming = fn () => Message::query()->toInbox($inboxId);
+        $waitingIds = $incoming()
+            ->where('state', MessageState::WaitingForAnswer)
+            ->readLimit(MessagePage::LARGEST_LIMIT * 10)
+            ->pluck('id')
             ->all();
+        $claimed = count($this->proved->validClaimsOn(Message::LINK_TYPE, array_values($waitingIds)));
 
-        return new Conversation($actor, array_values(array_map(
-            fn (Message $message) => new MessageView($message->id, $message->body, $message->state),
-            $messages,
-        )));
+        return new InboxCounts(
+            $incoming()->whereNull('read_at')->distinct()->count('id'),
+            count($waitingIds) - $claimed,
+            $claimed,
+        );
+    }
+
+    public function wakeStatus(string $messageId): array
+    {
+        $message = Message::query()->find($messageId);
+
+        if ($message === null || ! $message->isWrittenBy(ActorIdentity::of($this->actors->actor()))) {
+            throw MessageMissing::forId($messageId);
+        }
+
+        return array_values(MessageAttention::query()
+            ->where('origin_type', AttentionOrigin::MESSAGE)
+            ->where('origin_id', $message->id)
+            ->readLimit(InboxMembers::LIMIT)
+            ->get()
+            ->map(fn (MessageAttention $attention) => $attention->wakeStatus())
+            ->all());
+    }
+
+    /**
+     * @param  Builder<Message>  $query
+     */
+    private function page(Builder $query, string|null $olderCursor, int $limit): MessagePage
+    {
+        $pageSize = max(1, min($limit, MessagePage::LARGEST_LIMIT));
+        $cursor = $olderCursor === null ? null : Message::query()->find($olderCursor);
+        $rows = $query
+            ->when($cursor !== null, fn (Builder $older) => $older->olderThan($cursor))
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit($pageSize + 1)
+            ->get();
+        $shown = $rows->take($pageSize);
+
+        return new MessagePage(
+            array_values($shown->reverse()->map($this->viewOf(...))->all()),
+            $rows->count() > $pageSize ? $shown->last()?->id : null,
+        );
+    }
+
+    private function viewOf(Message $message): MessageView
+    {
+        return new MessageView(
+            $message->id,
+            $message->source_inbox_id,
+            $message->destination_inbox_id,
+            $message->sender_type,
+            $message->sender_id,
+            $message->body,
+            $message->state,
+            $message->state_version,
+            $message->reply_to_id,
+            $message->read_at?->toIso8601String(),
+            (string) $message->created_at?->toIso8601String(),
+        );
     }
 }

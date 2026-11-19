@@ -19,6 +19,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Contracts\Event;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
+use App\Domains\Contracts\ProvidesIncomingWork;
 use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
@@ -29,6 +30,7 @@ use App\Domains\Exceptions\SkillConditionRefused;
 use App\Domains\Exceptions\SkillDeclarationRefused;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Exports\Support\Exports;
+use App\Hooks\Contracts\IncomingWork;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Numbers\Contracts\ProvidesNumberedModels;
@@ -391,6 +393,16 @@ final readonly class DomainEntry
     public function assignables(): array
     {
         return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * The incoming work this domain's hooks accept; none without ProvidesIncomingWork.
+     *
+     * @return list<class-string<IncomingWork>>
+     */
+    public function incomingWork(): array
+    {
+        return $this->domain instanceof ProvidesIncomingWork ? $this->domain->incomingWork() : [];
     }
 
     /**

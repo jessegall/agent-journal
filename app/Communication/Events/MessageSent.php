@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Communication\Events;
 
-use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
 use App\Ui\Contracts\UpdatesUserInterface;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
@@ -16,7 +15,7 @@ final readonly class MessageSent implements Event, ShouldDispatchAfterCommit, Up
 {
     public function __construct(
         public string $messageId,
-        public ActorIdentity $recipient,
-        public int $round,
+        public string $sourceInboxId,
+        public string $destinationInboxId,
     ) {}
 }

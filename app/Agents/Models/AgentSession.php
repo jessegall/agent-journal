@@ -332,6 +332,10 @@ final class AgentSession extends Model implements ReadableModel
             throw CredentialRejected::sessionEnded();
         }
 
+        if (! $this->agent->isCurrentRuntime($this)) {
+            throw CredentialRejected::fenced();
+        }
+
         if ($this->agent->isRetired()) {
             throw CredentialRejected::agentRetired();
         }

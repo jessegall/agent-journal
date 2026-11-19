@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Communication\States\Support;
 
-use App\Communication\Resolvers\MessageRecords;
+use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Models\ClaimAuthorization;
+use App\Assignments\Support\AssigneeIdentity;
+use App\Assignments\Support\Assignment;
+use App\Communication\Models\Message;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
@@ -13,31 +17,65 @@ use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Builds the answering-message state from the message as it is now; it keeps no message between calls.
+ * Loads answering frames from their claims: each claim's assignment, proof and message are read once for all frames,
+ * and a frame stands while its claim exists, its proof holds and its message still waits.
  */
 final readonly class AnsweringMessageStateFactory implements StateLoader
 {
-    public function __construct(private MessageRecords $messages) {}
-
     public function statesFor(StateReferences $references): StateSet
     {
-        $subjects = $this->messages->many($references->subjectIds());
+        $claimIds = $references->subjectIds();
+        $claims = AssignmentRecord::assignmentsOf($claimIds);
+        $proofs = ClaimAuthorization::ofClaims($claimIds);
+        $liveHolders = AssignmentRecord::holdersOf(array_merge(...array_map(
+            fn (ClaimAuthorization $proof) => $proof->sourceIds(),
+            array_values($proofs),
+        )));
+        $messages = Message::query()->withoutGlobalScopes()
+            ->whereKey(array_map(fn ($claim) => $claim->record->id, array_values($claims)))
+            ->readLimit(max(1, count($claims)))
+            ->get()
+            ->keyBy('id');
 
-        return StateSet::build($references, function (StateReference $reference) use ($subjects): AgentState {
-            $subject = $reference->subject;
+        return StateSet::build(
+            $references,
+            fn (StateReference $reference) => $this->stateOf($reference, $claims, $proofs, $liveHolders, $messages),
+        );
+    }
 
-            if (! $subject instanceof SubjectReference || ! isset($subjects[$subject->id])) {
-                throw StateSubjectMissing::for($reference->typeKey);
-            }
+    /**
+     * @param  array<string, Assignment>  $claims
+     * @param  array<string, ClaimAuthorization>  $proofs
+     * @param  array<string, AssigneeIdentity>  $liveHolders
+     * @param  Collection<string, Message>  $messages
+     */
+    private function stateOf(
+        StateReference $reference,
+        array $claims,
+        array $proofs,
+        array $liveHolders,
+        Collection $messages,
+    ): AgentState {
+        $subject = $reference->subject;
 
-            return new AnsweringMessageState($subjects[$subject->id]->workIn($subject->runNumber));
-        });
+        if (! $subject instanceof SubjectReference) {
+            throw StateSubjectMissing::for($reference->typeKey);
+        }
+
+        $claim = $claims[$subject->id] ?? null;
+        $message = $claim === null ? null : $messages->get($claim->record->id);
+        $proof = $proofs[$subject->id] ?? null;
+        $stands = $claim !== null && $message !== null && $message->needsReply()
+            && $proof?->isValidAgainst($claim->holder(), $liveHolders) === true;
+
+        return new AnsweringMessageState($claim?->record->id ?? $subject->id, $stands);
     }
 
     public function schemaVersion(): int
     {
-        return 1;
+        return 2;
     }
 }

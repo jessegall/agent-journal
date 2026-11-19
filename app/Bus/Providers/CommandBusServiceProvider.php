@@ -7,6 +7,7 @@ namespace App\Bus\Providers;
 use App\Bus\Console\PruneReceiptsCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
+use App\Bus\Support\AcceptedReceipt;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\ConsoleOwner;
 use App\Bus\Support\LaravelCommandBus;
@@ -28,6 +29,7 @@ final class CommandBusServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(AcceptedReceipt::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);
         $this->app->scoped(CommandBus::class, fn ($app): CommandBus => LaravelCommandBus::forRequest($app, $app->make(CommandRegistry::class)));
     }

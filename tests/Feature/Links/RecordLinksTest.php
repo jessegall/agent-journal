@@ -34,6 +34,7 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
+use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
 /**
@@ -43,11 +44,28 @@ use Tests\TestCase;
 final class RecordLinksTest extends TestCase
 {
     use CommitsHookRows;
+    use WritesInboxMessages;
 
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['links', 'messages', 'tasks', 'phases', 'plans', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'links',
+        'messages',
+        'tasks',
+        'phases',
+        'plans',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+        'inboxes',
+        'desks',
+        'desk_seats',
+        'desk_preferences',
+        'assignments',
+        'command_receipts',
+    ];
 
     protected function setUp(): void
     {
@@ -137,7 +155,8 @@ final class RecordLinksTest extends TestCase
     {
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
         $message = $this->messageFor(8);
-        Link::connect(Document::query()->sole(), Message::query()->acrossOwners()->whereKey($message->id)->sole());
+        $stored = Message::query()->withoutGlobalScopes()->whereKey($message->id)->sole();
+        Link::connect(Document::query()->sole(), $stored);
 
         $this->actAsAgent(9);
 
@@ -146,10 +165,9 @@ final class RecordLinksTest extends TestCase
 
     private function messageFor(int $agent): Message
     {
-        $message = Message::write("Private plan\nDetails.");
-        $message->requireAnswerFrom(new StackTarget(TestIds::of($agent), TestIds::of($agent * 10))->actorIdentity());
+        $recipient = new StackTarget(TestIds::of($agent), TestIds::of($agent * 10))->actorIdentity();
 
-        return $message;
+        return $this->askInboxOf($recipient, "Private plan\nDetails.");
     }
 
     /**

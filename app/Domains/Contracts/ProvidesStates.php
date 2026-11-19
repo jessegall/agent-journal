@@ -15,7 +15,7 @@ interface ProvidesStates
 {
     /**
      * Every state type key of the domain with the factory that builds its state, such as
-     * ['communication.answering' => AnsweringMessageStateFactory::class].
+     * ['tasks.working' => WorkingOnTaskStateFactory::class].
      *
      * @return array<string, class-string<StateLoader>>
      */

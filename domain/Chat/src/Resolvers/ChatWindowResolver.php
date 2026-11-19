@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Resolvers;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Support\SessionOption;
+use App\Assignments\Support\AssigneeIdentity;
+use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\ConversationResolver;
+use App\Communication\Contracts\InboxDestinationResolver;
+use App\Communication\Data\MessagePage;
 use App\Ui\Contracts\PageResolver;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ConversationData;
@@ -24,6 +29,9 @@ final readonly class ChatWindowResolver implements PageResolver
         private ConversationRequest $request,
         private SessionResolver $sessions,
         private ConversationResolver $messages,
+        private CurrentActor $actors,
+        private ActorInboxResolver $ownInboxes,
+        private InboxDestinationResolver $destinations,
     ) {}
 
     public function read(): ChatData
@@ -41,8 +49,11 @@ final readonly class ChatWindowResolver implements PageResolver
 
     private function conversationIn(SessionOption $session): ConversationData
     {
-        $conversation = $this->messages->conversationWith($session->target->actorIdentity());
+        $own = $this->ownInboxes->preferredFor($this->actors->actor())->inboxId();
+        $agent = AssigneeIdentity::ofActorIdentity($session->target->actorIdentity());
+        $theirs = $this->destinations->resolve($agent)->inboxId();
+        $page = $this->messages->between($own, $theirs, null, MessagePage::DEFAULT_LIMIT);
 
-        return ConversationData::fromConversation($conversation, (string) $session->sessionId);
+        return ConversationData::fromPage("{$own}-{$theirs}", $page, (string) $session->sessionId);
     }
 }
