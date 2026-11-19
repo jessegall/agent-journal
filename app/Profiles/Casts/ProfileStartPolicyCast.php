@@ -86,7 +86,7 @@ final class ProfileStartPolicyCast implements CastsAttributes
      */
     private static function models(string $column): array
     {
-        return array_values(self::list($column)->map(fn (string $model): string => $model)->all());
+        return array_values(self::decodedList($column)->map(fn (string $model): string => $model)->all());
     }
 
     /**
@@ -98,7 +98,7 @@ final class ProfileStartPolicyCast implements CastsAttributes
      */
     private static function origins(string $column): array
     {
-        return array_values(FieldOriginData::collect(self::list($column))
+        return array_values(FieldOriginData::collect(self::decodedList($column))
             ->map(fn (FieldOriginData $origin): FieldOrigin => $origin->toFieldOrigin())
             ->all());
     }
@@ -110,7 +110,7 @@ final class ProfileStartPolicyCast implements CastsAttributes
      *
      * @throws JsonException
      */
-    private static function list(string $column): Collection
+    private static function decodedList(string $column): Collection
     {
         return Collection::fromJson($column, 16, JSON_THROW_ON_ERROR);
     }

@@ -36,7 +36,7 @@ final readonly class TerminalViews
         CarbonImmutable $now,
     ): TerminalViewReceipt {
         if (! in_array($intervalMs, TerminalView::INTERVALS_MS, true)) {
-            throw TerminalViewRefused::interval($intervalMs);
+            throw TerminalViewRefused::unsupportedInterval($intervalMs);
         }
 
         $runtime = $this->watchableRuntime($agentId);

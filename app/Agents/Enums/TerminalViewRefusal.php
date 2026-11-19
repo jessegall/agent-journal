@@ -15,7 +15,7 @@ enum TerminalViewRefusal: string
     case ProcessDriver = 'process_driver';
     case NotRunning = 'not_running';
     case TooManyViews = 'too_many_views';
-    case Interval = 'interval';
+    case UnsupportedInterval = 'interval';
 
     /**
      * The code a caller reads from the refusal, which also gives its HTTP status.
@@ -25,7 +25,7 @@ enum TerminalViewRefusal: string
         return match ($this) {
             self::MayNotInspect => RefusalCode::Forbidden,
             self::NotRunning => RefusalCode::StateBlocked,
-            self::ProcessDriver, self::Interval => RefusalCode::InvalidInput,
+            self::ProcessDriver, self::UnsupportedInterval => RefusalCode::InvalidInput,
             self::TooManyViews => RefusalCode::Busy,
         };
     }

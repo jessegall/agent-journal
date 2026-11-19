@@ -58,11 +58,11 @@ final class TerminalViewRefused extends RuntimeException implements CodedRefusal
         );
     }
 
-    public static function interval(int $intervalMs): self
+    public static function unsupportedInterval(int $intervalMs): self
     {
         return new self(
             "A terminal view refreshes every 500 or 1000 ms, not every {$intervalMs} ms.",
-            TerminalViewRefusal::Interval,
+            TerminalViewRefusal::UnsupportedInterval,
         );
     }
 
