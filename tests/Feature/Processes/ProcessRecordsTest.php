@@ -16,6 +16,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Values\PartEnd;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
@@ -90,16 +91,7 @@ final class ProcessRecordsTest extends TestCase
 
     private function admittedRun(RunMode $mode = RunMode::Normal, string $admission = 'admission-1'): ProcessRun
     {
-        return ProcessRun::admit(ActorIdentity::system(), [
-            'admission_id' => $admission,
-            'mode' => $mode,
-            'project_key' => 'project',
-            'source_digest' => str_repeat('a', 64),
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => str_repeat('b', 64),
-            'registry_revision' => 'rules-1',
-            'policy_revision' => 'policy-1',
-        ]);
+        return ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of(admissionId: $admission, mode: $mode));
     }
 
     private function part(string $partId = 'first'): PartRun

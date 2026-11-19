@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
+use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
@@ -100,17 +101,6 @@ final class ProcessChannelTest extends TestCase
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
         $plan = $this->app->make(ExecutionPlanner::class)->plan($tree, $this->app->make(CommandClassifier::class)->classify($tree, $context));
 
-        return ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), [
-            'admission_id' => bin2hex(random_bytes(8)),
-            'mode' => RunMode::Normal,
-            'project_key' => 'project',
-            'source_digest' => hash('sha256', $line),
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => $plan->treeDigest,
-            'registry_revision' => 'rules-1',
-            'policy_revision' => 'policy-1',
-            'working_folder' => $this->folder,
-            'plan' => $plan->toArray(),
-        ]);
+        return ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), TestRunAdmissions::of(line: $line, plan: $plan, workingFolder: $this->folder));
     }
 }

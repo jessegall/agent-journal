@@ -7,6 +7,7 @@ namespace App\Processes\Models;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Processes\Values\RunAdmission;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\RunMode;
@@ -96,22 +97,21 @@ final class ProcessRun extends Model implements ReadableModel
     }
 
     /**
-     * Admits a run for an actor; the admission id is single-use, so a second admission with it fails on its key.
-     *
-     * @param  array{
-     *     admission_id: string,
-     *     mode: RunMode,
-     *     project_key: string,
-     *     source_digest: string,
-     *     dialect: ShellDialect,
-     *     tree_digest: string,
-     *     registry_revision: string,
-     *     policy_revision: string,
-     * }  $admission
+     * A run admitted for the actor, queued with its plan and nothing started yet.
      */
-    public static function admit(ActorIdentity $actor, array $admission): self
+    public static function admit(ActorIdentity $actor, RunAdmission $admission): self
     {
-        $run = new self($admission);
+        $run = new self();
+        $run->admission_id = $admission->admissionId;
+        $run->mode = $admission->mode;
+        $run->project_key = $admission->projectKey;
+        $run->source_digest = $admission->sourceDigest;
+        $run->dialect = $admission->dialect;
+        $run->tree_digest = $admission->plan->treeDigest;
+        $run->registry_revision = $admission->registryRevision;
+        $run->policy_revision = $admission->policyRevision;
+        $run->working_folder = $admission->workingFolder;
+        $run->plan = $admission->plan->toArray();
         $run->belongTo($actor);
         $run->save();
 

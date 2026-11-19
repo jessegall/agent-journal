@@ -30,6 +30,7 @@ use App\Processes\Support\ExecutionPlanner;
 use App\Processes\Support\OutputDiskCapacity;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\RunnerCapability;
+use App\Processes\Values\RunAdmission;
 use App\Processes\Values\Admission;
 use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\AdmittedRun;
@@ -231,18 +232,17 @@ final readonly class LineAdmission implements ShellAdmission
         $plan = $this->planner->plan($tree, $classification);
         $policy = $this->permissions->forActor($actor);
         $references = array_map(fn (ClassFact $fact): string => $fact->origin->reference(), $classification->facts());
-        $stored = ProcessRun::admit($actor, [
-            'admission_id' => $requestKey,
-            'mode' => RunMode::Normal,
-            'project_key' => $this->projects->current(),
-            'source_digest' => hash('sha256', $tree->source),
-            'dialect' => $tree->dialect,
-            'tree_digest' => $plan->treeDigest,
-            'registry_revision' => $this->rules->registry()->revision(),
-            'policy_revision' => "{$policy->source}@{$policy->revision}",
-            'working_folder' => $context->workingFolder,
-            'plan' => $plan->toArray(),
-        ]);
+        $stored = ProcessRun::admit($actor, new RunAdmission(
+            $requestKey,
+            RunMode::Normal,
+            $this->projects->current(),
+            hash('sha256', $tree->source),
+            $tree->dialect,
+            $this->rules->registry()->revision(),
+            "{$policy->source}@{$policy->revision}",
+            $context->workingFolder,
+            $plan,
+        ));
 
         $run = $this->runOf($stored, $plan, $tree, $actor, array_values(array_unique($references)));
 

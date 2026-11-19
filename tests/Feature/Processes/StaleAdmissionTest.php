@@ -36,6 +36,7 @@ use Tests\Fixtures\Processes\StaleAfterFirstEnd;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
+use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
@@ -87,16 +88,7 @@ final class StaleAdmissionTest extends TestCase
 
     private function admit(ActorIdentity $actor, string $line): ProcessRun
     {
-        return ProcessRun::admit($actor, [
-            'admission_id' => bin2hex(random_bytes(8)),
-            'mode' => RunMode::Normal,
-            'project_key' => (string) config('processes.project_key'),
-            'source_digest' => hash('sha256', $line),
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => str_repeat('b', 64),
-            'registry_revision' => 'rules-1',
-            'policy_revision' => 'policy-1',
-        ]);
+        return ProcessRun::admit($actor, TestRunAdmissions::of(projectKey: (string) config('processes.project_key'), line: $line));
     }
 
     private function tidyRule(): CommandRule

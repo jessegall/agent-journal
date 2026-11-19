@@ -28,6 +28,7 @@ use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
+use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
@@ -152,16 +153,7 @@ final class ReaderProposalTest extends TestCase
 
     private function sampleRun(): ProcessRun
     {
-        $run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), [
-            'admission_id' => 'sample',
-            'mode' => RunMode::Evidence,
-            'project_key' => $this->request->project_key,
-            'source_digest' => str_repeat('a', 64),
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => str_repeat('b', 64),
-            'registry_revision' => 'rules-1',
-            'policy_revision' => 'policy-1',
-        ]);
+        $run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), TestRunAdmissions::of(admissionId: 'sample', mode: RunMode::Evidence, projectKey: $this->request->project_key));
         $part = PartRun::query()->create([
             'process_run_id' => $run->id,
             'syntax_node' => 1,

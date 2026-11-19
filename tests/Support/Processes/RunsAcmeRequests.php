@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
+use Tests\Support\TestRunAdmissions;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
@@ -144,16 +145,9 @@ trait RunsAcmeRequests
 
     private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun
     {
-        $run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), [
-            'admission_id' => bin2hex(random_bytes(8)),
-            'mode' => $mode,
-            'project_key' => (string) config('processes.project_key'),
-            'source_digest' => str_repeat('a', 64),
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => str_repeat('b', 64),
-            'registry_revision' => 'rules-1',
-            'policy_revision' => 'policy-1',
-        ]);
+        $actor = new ActorIdentity(ActorType::Agent, $this->launch->agent->id);
+        $projectKey = (string) config('processes.project_key');
+        $run = ProcessRun::admit($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
         $part = PartRun::query()->create([
             'process_run_id' => $run->id,
             'syntax_node' => 1,

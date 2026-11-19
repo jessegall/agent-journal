@@ -94,7 +94,11 @@ final readonly class ShellTree
      */
     public function redirects(): array
     {
-        $redirects = array_merge(...array_map(fn (ShellNode $node) => $node->redirects, array_values($this->nodes)));
+        $redirects = $this->nodes
+                |> array_values(...)
+                |> (fn($x) => array_map(fn(ShellNode $node) => $node->redirects, $x))
+                |> (fn($x) => array_merge(...$x));
+
         usort($redirects, fn (Redirect $first, Redirect $second) => $first->range->start <=> $second->range->start);
 
         return $redirects;

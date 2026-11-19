@@ -22,6 +22,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
@@ -109,16 +110,7 @@ final class OutputCaptureTest extends TestCase
 
     private function part(): PartRun
     {
-        $run = ProcessRun::admit(ActorIdentity::system(), [
-            'admission_id' => bin2hex(random_bytes(8)),
-            'mode' => RunMode::Normal,
-            'project_key' => 'project',
-            'source_digest' => str_repeat('a', 64),
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => str_repeat('b', 64),
-            'registry_revision' => 'rules-1',
-            'policy_revision' => 'policy-1',
-        ]);
+        $run = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of());
         $part = PartRun::query()->create(['process_run_id' => $run->id, 'syntax_node' => 1, 'part_id' => 'node-1', 'attempt' => 1, 'operation' => 'head']);
         $part->start(1, 'host');
         $part->finishProcess(PartEnd::exited(0));

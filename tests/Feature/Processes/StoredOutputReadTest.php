@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
+use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
@@ -40,10 +41,7 @@ final class StoredOutputReadTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         $this->launch = TestLaunch::start();
-        $this->run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), [
-            'admission_id' => 'stored-output', 'mode' => RunMode::Normal, 'project_key' => 'project', 'source_digest' => str_repeat('a', 64),
-            'dialect' => ShellDialect::Bash, 'tree_digest' => str_repeat('b', 64), 'registry_revision' => 'rules-1', 'policy_revision' => 'policy-1',
-        ]);
+        $this->run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), TestRunAdmissions::of(admissionId: 'stored-output'));
         $part = PartRun::query()->create(['process_run_id' => $this->run->id, 'syntax_node' => 1, 'part_id' => 'node-1', 'attempt' => 1, 'operation' => 'tool']);
         $part->start(1, 'host');
         $lines = implode('', array_map(fn (int $line) => "line {$line}".($line === 50 ? ' error' : '')."\n", range(1, 100)));

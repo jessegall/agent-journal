@@ -18,6 +18,7 @@ use App\Processes\Exceptions\PhaseTimingRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Values\RunAdmission;
 use App\Processes\Values\Classification;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ExecutionContext;
@@ -91,18 +92,17 @@ final readonly class EvidenceRuns
             throw EvidencePermitRefused::changed();
         }
         $plan = $this->planner->plan($classification->tree, $classification);
-        $run = ProcessRun::admit($runner, [
-            'admission_id' => "evidence-{$permit->id}",
-            'mode' => RunMode::Evidence,
-            'project_key' => $permit->project_key,
-            'source_digest' => $permit->source_digest,
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => $plan->treeDigest,
-            'registry_revision' => $permit->classification_digest,
-            'policy_revision' => 'evidence-permit',
-            'working_folder' => $permit->working_folder,
-            'plan' => $plan->toArray(),
-        ]);
+        $run = ProcessRun::admit($runner, new RunAdmission(
+            "evidence-{$permit->id}",
+            RunMode::Evidence,
+            $permit->project_key,
+            $permit->source_digest,
+            ShellDialect::Bash,
+            $permit->classification_digest,
+            'evidence-permit',
+            $permit->working_folder,
+            $plan,
+        ));
         $permit->consume($requestId, $run);
 
         return $run;

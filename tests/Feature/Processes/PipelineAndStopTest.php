@@ -25,6 +25,7 @@ use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Fixtures\Processes\StopAfter;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
 /**
@@ -116,16 +117,7 @@ final class PipelineAndStopTest extends TestCase
         $context = new ExecutionContext(ShellDialect::Bash, $this->folder, $this->folder, ['PATH' => (string) getenv('PATH')]);
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
         $plan = $this->app->make(ExecutionPlanner::class)->plan($tree, $this->app->make(CommandClassifier::class)->classify($tree, $context));
-        $this->processRun = ProcessRun::admit(ActorIdentity::system(), [
-            'admission_id' => bin2hex(random_bytes(8)),
-            'mode' => RunMode::Normal,
-            'project_key' => 'project',
-            'source_digest' => hash('sha256', $line),
-            'dialect' => ShellDialect::Bash,
-            'tree_digest' => $plan->treeDigest,
-            'registry_revision' => 'rules-1',
-            'policy_revision' => 'policy-1',
-        ]);
+        $this->processRun = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of(line: $line, plan: $plan));
 
         return $this->app->make(Supervisor::class)->run(new RecordedRunEvents($this->processRun, $this->output), $plan, $context, $stop);
     }
