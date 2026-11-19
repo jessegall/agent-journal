@@ -11,6 +11,9 @@ from journal.repositories.scope import Scope
 # what a worker the journal's restart stopped is told as it is started again in its own session
 REVIVE_BRIEF = ("The journal restarted while you were at work, and your run stopped with it. Carry on with your job where you left "
                 "off: your session, worktree and task are as you left them.")
+# what a worker whose clock-out the journal's restart cut off is told as it is started again in its own session
+CLOCK_OUT_AGAIN_BRIEF = ("The journal restarted while your clock-out ran its tests, and the clock-out stopped with it. Clock out again now, "
+                         "with the same report and tests: your session, worktree and task are as you left them.")
 # the last event of a run that ended on its own: Claude Code's result, Codex's end of its turn
 ENDING_EVENTS = {"result", "turn.completed", "turn.failed"}
 TAIL_BYTES = 65536
@@ -20,7 +23,7 @@ REVIVE_WINDOW_SECONDS = 30 * 60
 
 
 class WorkerWatch(Job):
-    """Every two seconds, each worker the journal found still out at boot is checked: one whose process has ended has its report filed from its files, one past its time limit is stopped, so a restart never loses a worker. A worker whose run the restart cut off, its process gone with no end in its output and its output still moving in the half hour before the boot, is started again in its own session at the first look, so a restart never stops the work either; one whose process had been gone longer is only closed."""
+    """Every two seconds, each worker the journal found still out at boot is checked: one whose process has ended has its report filed from its files, one past its time limit is stopped, so a restart never loses a worker. A worker whose run the restart cut off, its process gone with no end in its output and its output still moving in the half hour before the boot, is started again in its own session at the first look, so a restart never stops the work either; one whose process had been gone longer is only closed. A worker whose clock-out went on in the journal by itself when the restart came is started again in its own session and told to clock out again."""
 
     interval_seconds = 2.0
 
@@ -31,7 +34,7 @@ class WorkerWatch(Job):
 
     def add(self, worker: Worker) -> None:
         self.watched.append(worker)
-        if worker.pid > 0 and not self.runner.is_running(worker.pid) and self.was_at_work(worker) and not self.ended_on_its_own(worker):
+        if worker.is_clocking_out() or (worker.pid > 0 and not self.runner.is_running(worker.pid) and self.was_at_work(worker) and not self.ended_on_its_own(worker)):
             self.cut_off.add(worker.id)
 
     def was_at_work(self, worker: Worker) -> bool:
@@ -61,6 +64,6 @@ class WorkerWatch(Job):
                     self.watched.remove(worker)
                     self.cut_off.discard(worker.id)
                     with self.runner.lock(worker.id):
-                        self.actions.relaunch(self.actions.workers.find(worker.id), REVIVE_BRIEF, None, Actor.system(), JOB_MOVE)
+                        self.actions.relaunch(self.actions.workers.find(worker.id), CLOCK_OUT_AGAIN_BRIEF if worker.is_clocking_out() else REVIVE_BRIEF, None, Actor.system(), JOB_MOVE)
                 elif self.runner.is_finished(worker, Actor.system()):
                     self.watched.remove(worker)

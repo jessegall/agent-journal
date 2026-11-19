@@ -44,7 +44,7 @@ def test_a_second_clock_out_while_the_first_still_runs_is_refused_at_once_while_
     story.worker_test_run_ends_after(story.agents.subject, 1.0)
     result = story.agent_runs(story.agents.subject, "clock-out 'the parser is done' --tests passing_story.py")
     result.expect_command_refused()
-    result.expect_command_text("your earlier clock-out still runs, its test turn")
+    result.expect_command_text("your clock-out continues on the journal: its test turn")
     result = story.worker_clock_out_ends(story.agents.subject)
     result.expect_command_passed()
     result.expect_command_text("clocked out of task")

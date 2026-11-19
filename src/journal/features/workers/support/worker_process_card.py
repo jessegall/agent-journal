@@ -15,8 +15,8 @@ from journal.support.actor import Actor
 from journal.support.card_type import CardType
 
 FAILURES = ("could not start", "failed with code", "stopped after")
-STATE_OUTCOMES = {WorkerState.STOPPED: CardOutcome.NONE, WorkerState.READY: CardOutcome.RUNNING, WorkerState.MERGED: CardOutcome.PASSED, WorkerState.RELEASED: CardOutcome.NONE}
-STATE_NAMES = {WorkerState.STOPPED: "stopped", WorkerState.READY: "started", WorkerState.MERGED: "merged", WorkerState.RELEASED: "released", WorkerState.UNFINISHED: "stopped before it finished", WorkerState.DELIVERED: "finished, ready to check"}
+STATE_OUTCOMES = {WorkerState.STOPPED: CardOutcome.NONE, WorkerState.READY: CardOutcome.RUNNING, WorkerState.CLOCKING_OUT: CardOutcome.RUNNING, WorkerState.MERGED: CardOutcome.PASSED, WorkerState.RELEASED: CardOutcome.NONE}
+STATE_NAMES = {WorkerState.STOPPED: "stopped", WorkerState.READY: "started", WorkerState.CLOCKING_OUT: "clocking out", WorkerState.MERGED: "merged", WorkerState.RELEASED: "released", WorkerState.UNFINISHED: "stopped before it finished", WorkerState.DELIVERED: "finished, ready to check"}
 FAILED = "failed"
 
 

@@ -11,7 +11,7 @@ PROGRESS_ROWS = (Proof, TaskLog, WorkerTodo)
 from journal.support.worker_actor import WorkerActor
 
 class WorkerProgressRecord(Listener[Created]):
-    """A proof, a to-do or a log line a worker writes is progress, so its quiet span starts again from that moment."""
+    """A proof, a to-do or a log line a worker writes is progress, so its quiet span starts again from that moment, written on the row as it is then, so a move made meanwhile on another thread, such as a clock-out handing the work in, is never undone."""
 
     actors = (WorkerActor,)
 
@@ -22,4 +22,4 @@ class WorkerProgressRecord(Listener[Created]):
         if not isinstance(event.model, PROGRESS_ROWS):
             return
         for worker in self.workers.numbered(event.actor.number()):
-            self.workers.save(worker.contacted(self.time_source.seconds()), Actor.system())
+            self.workers.rewritten(worker, Actor.system(), lambda current: current.contacted(self.time_source.seconds()))
