@@ -14,8 +14,9 @@ if [ -z "${JOURNAL_ADDRESS:-}" ]; then
     [ "${JOURNAL_PLAIN_HTTP:-}" = "1" ] || { echo "set JOURNAL_ADDRESS in .env to the server's domain, or JOURNAL_PLAIN_HTTP=1 for a test on a private network" >&2; exit 1; }
     JOURNAL_ADDRESS=":8080"
 fi
-# The hash is made before anything runs as another user, from standard input, so the password is on no command line.
-PASSWORD_HASH="$(printf '%s\n' "$JOURNAL_PASSWORD" | caddy hash-password)"
+# The login key is made before anything runs as another user, from standard input, so the password is on no command
+# line: an scrypt key with its salt, which only the login gate gets.
+read -r LOGIN_SALT LOGIN_KEY < <(printf '%s' "$JOURNAL_PASSWORD" | python3 -c 'import hashlib, os, sys; salt = os.urandom(16); print(salt.hex(), hashlib.scrypt(sys.stdin.buffer.read(), salt=salt, n=2 ** 14, r=8, p=1, dklen=32).hex())')
 unset JOURNAL_PASSWORD
 PROJECT=/data/project
 ROOT="$PROJECT/.journal"
@@ -80,9 +81,12 @@ SETUP
 [ "$IMPORTING" = 0 ] || rmdir /data/import
 
 "${AS_JOURNAL[@]}" JOURNAL_ROOT="$PROJECT" JOURNAL_PORT=8421 "$(cat "$ROOT/python")" "$ROOT/src/journal.py" serve &
+# The login gate runs as caddy on the loopback with the login key; the journal's user never sees it.
+setpriv --reuid caddy --regid caddy --init-groups --no-new-privs env -i PATH=/usr/local/bin:/usr/bin:/bin \
+    JOURNAL_USER="$JOURNAL_USER" JOURNAL_LOGIN_SALT="$LOGIN_SALT" JOURNAL_LOGIN_KEY="$LOGIN_KEY" python3 /usr/local/lib/login_gate.py &
 # Caddy listens on 8080 and 8443 inside the container, which compose publishes as 80 and 443, so it needs no privilege.
 setpriv --reuid caddy --regid caddy --init-groups --no-new-privs env -i PATH=/usr/bin:/bin HOME=/data/caddy \
     XDG_DATA_HOME=/data/caddy XDG_CONFIG_HOME=/data/caddy/config JOURNAL_ADDRESS="$JOURNAL_ADDRESS" \
-    JOURNAL_USER="$JOURNAL_USER" JOURNAL_PASSWORD_HASH="$PASSWORD_HASH" caddy run --config /etc/caddy/Caddyfile --adapter caddyfile &
+    caddy run --config /etc/caddy/Caddyfile --adapter caddyfile &
 wait -n
 exit 1
