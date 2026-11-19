@@ -34,9 +34,13 @@ final class HookEndpointTest extends TestCase
 {
     use CommitsHookRows;
 
+    /**
+     * The tables these tests commit to, the runtime its launch opens included, emptied around each test.
+     */
     private const array TABLES = [
         'agents',
         'agent_sessions',
+        'agent_runtimes',
         'launch_credentials',
         'agent_stacks',
         'hook_calls',
@@ -67,7 +71,9 @@ final class HookEndpointTest extends TestCase
 
     public function test_an_allowed_stop_answers_the_host_with_an_empty_object(): void
     {
-        $this->hook('claude-code', $this->stopBody())->assertOk()->assertExactJson(['stdout' => '{}', 'stderr' => '', 'exitCode' => 0]);
+        $this->hook('claude-code', $this->stopBody())
+            ->assertOk()
+            ->assertExactJson(['stdout' => '{}', 'stderr' => '', 'exitCode' => 0]);
         $this->assertSame(1, HookCall::query()->authorizedFor($this->target())->count());
     }
 
@@ -81,14 +87,20 @@ final class HookEndpointTest extends TestCase
         $this->assertStringContainsString("Task {$task->number} still needs work", (string) $stdout);
     }
 
-    #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]
+    #[TimeLimit(
+        seconds: 5,
+        reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.',
+    )]
     public function test_cores_admission_refuses_an_unsaved_check_and_sends_a_read_to_the_runner(): void
     {
-        $refused = json_decode((string) $this->hook('claude-code', $this->bashBody('composer test'), 'call-1')->assertOk()->json('stdout'), true);
-        $admitted = json_decode((string) $this->hook('claude-code', $this->bashBody('git status'), 'call-2')->assertOk()->json('stdout'), true);
+        $refused = $this->hookOutput('claude-code', $this->bashBody('composer test'), 'call-1');
+        $admitted = $this->hookOutput('claude-code', $this->bashBody('git status'), 'call-2');
 
         $this->assertSame('deny', $refused['hookSpecificOutput']['permissionDecision']);
-        $this->assertStringContainsString(AdmissionRefusal::NOTICE, $refused['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertStringContainsString(
+            AdmissionRefusal::NOTICE,
+            $refused['hookSpecificOutput']['permissionDecisionReason'],
+        );
         $runnerLine = $admitted['hookSpecificOutput']['updatedInput']['command'];
         $this->assertStringStartsWith('journal process run --admission ', $runnerLine);
     }
@@ -98,7 +110,7 @@ final class HookEndpointTest extends TestCase
         $flagged = json_decode($this->bashBody('composer test'), true);
         $flagged['tool_input']['saved'] = true;
 
-        $stdout = json_decode((string) $this->hook('claude-code', (string) json_encode($flagged))->assertOk()->json('stdout'), true);
+        $stdout = $this->hookOutput('claude-code', (string) json_encode($flagged));
 
         $this->assertSame('deny', $stdout['hookSpecificOutput']['permissionDecision']);
     }
@@ -121,7 +133,7 @@ final class HookEndpointTest extends TestCase
 
     public function test_codex_answers_through_its_own_adapter(): void
     {
-        $body = (string) json_encode(['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'Bash', 'tool_input' => ['command' => 'composer test']]);
+        $body = $this->bashBody('composer test');
 
         $stdout = json_decode((string) $this->hook('codex', $body)->assertOk()->json('stdout'), true);
 
@@ -166,23 +178,30 @@ final class HookEndpointTest extends TestCase
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/hooks/claude-code', server: $headers, content: $this->stopBody())->assertUnauthorized();
-        $this->call('POST', '/hooks/claude-code', server: $this->launch->serverHeaders('{"other":"body"}', target: '/hooks/claude-code'), content: $this->stopBody())->assertUnauthorized();
+        $headers = $this->launch->serverHeaders('{"other":"body"}', target: '/hooks/claude-code');
+        $this->call('POST', '/hooks/claude-code', server: $headers, content: $this->stopBody())->assertUnauthorized();
     }
 
     public function test_a_malformed_or_unmapped_payload_is_refused(): void
     {
         $this->hook('claude-code', '{"session_id":"session-redacted"}', 'call-1')->assertUnprocessable();
-        $this->hook('claude-code', '{"session_id":"session-redacted","hook_event_name":"Notification"}', 'call-2')->assertUnprocessable();
-        $this->hook('claude-code', '{"session_id":"session-redacted","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{}}', 'call-3')->assertUnprocessable();
+        $notification = '{"session_id":"session-redacted","hook_event_name":"Notification"}';
+        $noCommand = '{"session_id":"session-redacted","hook_event_name":"PreToolUse","tool_name":"Bash",'
+            .'"tool_input":{}}';
+        $this->hook('claude-code', $notification, 'call-2')->assertUnprocessable();
+        $this->hook('claude-code', $noCommand, 'call-3')->assertUnprocessable();
     }
 
     public function test_a_clear_keeps_the_journal_session_and_records_the_new_program_session(): void
     {
-        $this->hook('claude-code', '{"session_id":"program-session-1","hook_event_name":"SessionStart","source":"startup"}', 'call-1')->assertOk();
-        $this->hook('claude-code', '{"session_id":"program-session-2","hook_event_name":"SessionStart","source":"clear"}', 'call-2')->assertOk();
+        $startup = '{"session_id":"program-session-1","hook_event_name":"SessionStart","source":"startup"}';
+        $clear = '{"session_id":"program-session-2","hook_event_name":"SessionStart","source":"clear"}';
+        $this->hook('claude-code', $startup, 'call-1')->assertOk();
+        $this->hook('claude-code', $clear, 'call-2')->assertOk();
 
         $this->assertSame(1, AgentSession::query()->count());
-        $this->assertSame('program-session-2', $this->launch->session->fresh(['currentConversation'])?->currentConversation?->native_id);
+        $conversation = $this->launch->session->fresh(['currentConversation'])?->currentConversation;
+        $this->assertSame('program-session-2', $conversation?->native_id);
         $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
     }
 
@@ -198,7 +217,19 @@ final class HookEndpointTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->call('POST', "/hooks/{$program}", server: $this->launch->serverHeaders($body, $callId, target: "/hooks/{$program}"), content: $body);
+        $headers = $this->launch->serverHeaders($body, $callId, target: "/hooks/{$program}");
+
+        return $this->call('POST', "/hooks/{$program}", server: $headers, content: $body);
+    }
+
+    /**
+     * The hook's answer to the program, decoded from the stdout it returned.
+     *
+     * @return array<string, mixed>
+     */
+    private function hookOutput(string $program, string $body, string $callId = 'call-1'): array
+    {
+        return (array) json_decode((string) $this->hook($program, $body, $callId)->assertOk()->json('stdout'), true);
     }
 
     private function asLaunchedAgent(\Closure $work): void
@@ -209,7 +240,10 @@ final class HookEndpointTest extends TestCase
             new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id), TestLaunchAuthority::forAgent($this->launch->agent->id));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($this->launch->agent->id),
+            TestLaunchAuthority::forAgent($this->launch->agent->id),
+        );
         $work();
         $this->app->forgetScopedInstances();
     }
@@ -236,6 +270,11 @@ final class HookEndpointTest extends TestCase
 
     private function bashBody(string $command): string
     {
-        return (string) json_encode(['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'Bash', 'tool_input' => ['command' => $command]]);
+        return (string) json_encode([
+            'session_id' => 'session-redacted',
+            'hook_event_name' => 'PreToolUse',
+            'tool_name' => 'Bash',
+            'tool_input' => ['command' => $command],
+        ]);
     }
 }

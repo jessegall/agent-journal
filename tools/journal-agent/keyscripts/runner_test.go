@@ -63,12 +63,8 @@ func newRun(t *testing.T) *run {
 	menu := newLiveMenu(t, reader, options)
 	gate := terminal.NewInputGate(menu, reader, layout.Composer, clock.Now)
 	result := &run{gate: gate, menu: menu, clock: clock}
-	entries := func() screen.MenuEntries {
-		entries, _ := options.Entries(reader.Snapshot())
-
-		return entries
-	}
-	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, entries, func(step Progress) {
+	view := optionsView{reader: reader, options: options}
+	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(step Progress) {
 		result.steps = append(result.steps, step)
 	})
 
@@ -142,4 +138,18 @@ func TestOnlyRegisteredScriptsRun(t *testing.T) {
 	if _, err := registry.Find("claude@2.1.323", "rm -rf"); err == nil {
 		t.Fatal("an unregistered script name was found")
 	}
+}
+
+// optionsView reads one option list of the screen, as a run's view of its menu.
+type optionsView struct {
+	reader  *screen.EmulatorReader
+	options screen.OptionList
+}
+
+func (view optionsView) Rows() []string { return view.reader.Snapshot().Rows }
+
+func (view optionsView) MenuEntries() screen.MenuEntries {
+	entries, _ := view.options.Entries(view.reader.Snapshot())
+
+	return entries
 }

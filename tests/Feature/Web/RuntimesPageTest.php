@@ -47,11 +47,13 @@ final class RuntimesPageTest extends TestCase
 
     public function test_the_page_lists_each_runtime_with_its_requests_and_writes_nothing(): void
     {
+        $this->assertSame(0, AgentRuntime::query()->count(), 'A runtime another test committed is still here.');
         $this->switchChatOff();
         $this->openRuntime();
         $requests = DriverRequest::query()->count();
 
-        $this->actingAs($this->owner)->get('/web/runtimes')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $response = $this->actingAs($this->owner)->get('/web/runtimes')->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('web/Runtimes')
             ->where('page.data.runtimes.0.status.program', 'claude-code')
             ->where('page.data.runtimes.0.status.isStale', true)
