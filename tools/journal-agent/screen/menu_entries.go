@@ -3,7 +3,6 @@ package screen
 import (
 	"regexp"
 	"strings"
-	"unicode"
 
 	"journal-agent/screen/contracts"
 )
@@ -62,9 +61,8 @@ func labelOf(text, label string) bool {
 	if len(column) <= len(label)+1 || column[len(label)] != ' ' || !strings.EqualFold(column[:len(label)], label) {
 		return false
 	}
-	note := []rune(column[len(label)+1:])
 
-	return !unicode.IsLetter(note[0]) && !unicode.IsDigit(note[0])
+	return !wordGoesOn([]rune(column[len(label)+1:]))
 }
 
 // EntryReader is a menu region that can read its entries.
