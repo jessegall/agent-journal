@@ -30,6 +30,11 @@ final readonly class ClaudeSignIn implements SignInProtocol
         );
     }
 
+    public function hasFinished(PrivateAccountProcess $process): bool
+    {
+        return ! $process->isRunning();
+    }
+
     public function verify(string $directory): SignInVerification
     {
         $status = PrivateAccountProcess::start(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInHost;
+use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Exceptions\SignInProtocolMissing;
 use App\Profiles\Values\ClaimedSignIn;
@@ -49,7 +50,7 @@ final readonly class PrivateSignInProcesses
         self::makePrivateFolder($claimed->directory);
         $process = $protocol->begin($claimed->directory);
         $this->host->report($claimed, SignInOutcome::Waiting, null);
-        $this->waitForEnd($process, $claimed);
+        $this->waitForEnd($protocol, $process, $claimed);
 
         $verification = $protocol->verify($claimed->directory);
         $outcome = $verification->isSignedIn ? SignInOutcome::Verified : SignInOutcome::Failed;
@@ -58,11 +59,11 @@ final readonly class PrivateSignInProcesses
         return true;
     }
 
-    private function waitForEnd(PrivateAccountProcess $process, ClaimedSignIn $claimed): void
+    private function waitForEnd(SignInProtocol $protocol, PrivateAccountProcess $process, ClaimedSignIn $claimed): void
     {
         $deadline = CarbonImmutable::parse($claimed->expiresAt);
 
-        while ($process->isRunning() && CarbonImmutable::now()->lessThan($deadline)) {
+        while (! $protocol->hasFinished($process) && CarbonImmutable::now()->lessThan($deadline)) {
             ($this->pause)();
         }
 

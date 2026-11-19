@@ -38,6 +38,7 @@ use App\Profiles\Resolvers\ProfilePrograms;
 use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ClaudeSignIn;
+use App\Profiles\Support\CodexSignIn;
 use App\Profiles\Support\ConfiguredOperations;
 use App\Profiles\Support\ProfileAuthorizerProvider;
 use App\Profiles\Support\ProfileFileEditPermission;
@@ -68,7 +69,10 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->singleton(SignInProtocols::class);
         $this->callAfterResolving(
             SignInProtocols::class,
-            fn (SignInProtocols $protocols) => $protocols->register('claude-code', ClaudeSignIn::class),
+            function (SignInProtocols $protocols): void {
+                $protocols->register('claude-code', ClaudeSignIn::class);
+                $protocols->register('codex', CodexSignIn::class);
+            },
         );
     }
 

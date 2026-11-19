@@ -8,6 +8,18 @@ case "$1" in
     login)
         if [ -f "$CODEX_HOME/auth.json" ]; then echo "Logged in using ChatGPT"; else echo "Not logged in"; exit 1; fi
         ;;
+    app-server)
+        # Answers the device-code start, then signs the folder in and announces it, and serves until stdin closes.
+        while read -r line; do
+            case "$line" in
+                *account/login/start*)
+                    echo '{"id":1,"result":{"type":"chatgptDeviceCode","loginId":"login-1","userCode":"ABCD-1234","verificationUrl":"https://auth.openai.com/codex/device"}}'
+                    echo '{"tokens":"fake-secret-token"}' > "$CODEX_HOME/auth.json"
+                    echo '{"method":"account/login/completed","params":{"success":true,"loginId":"login-1"}}'
+                    ;;
+            esac
+        done
+        ;;
     mcp)
         here=$(pwd -P)
         if [ -f "$here/.codex/config.toml" ] && grep -q "\"$here\"" "$CODEX_HOME/config.toml"; then

@@ -17,6 +17,8 @@ final class PrivateAccountProcess
 
     private string $buffer = '';
 
+    private int|null $exitCode = null;
+
     /**
      * @param  resource  $process
      * @param  array<int, resource>  $pipes
@@ -81,12 +83,32 @@ final class PrivateAccountProcess
 
     public function isRunning(): bool
     {
-        return proc_get_status($this->process)['running'];
+        $status = proc_get_status($this->process);
+
+        if (! $status['running'] && $this->exitCode === null) {
+            $this->exitCode = $status['exitcode'];
+        }
+
+        return $status['running'];
+    }
+
+    /**
+     * How the process ended; null while it runs.
+     */
+    public function exitCode(): int|null
+    {
+        if ($this->exitCode !== null) {
+            return $this->exitCode;
+        }
+
+        $this->isRunning();
+
+        return $this->exitCode;
     }
 
     public function stop(): void
     {
-        if (proc_get_status($this->process)['running']) {
+        if ($this->isRunning()) {
             proc_terminate($this->process);
         }
 

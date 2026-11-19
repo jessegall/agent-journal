@@ -19,6 +19,11 @@ interface SignInProtocol
     public function begin(string $directory): PrivateAccountProcess;
 
     /**
+     * Whether the program's sign-in is over, approved or not; a process that serves on after it says so itself.
+     */
+    public function hasFinished(PrivateAccountProcess $process): bool;
+
+    /**
      * The program's own check of the folder, run after its sign-in process ended.
      */
     public function verify(string $directory): SignInVerification;

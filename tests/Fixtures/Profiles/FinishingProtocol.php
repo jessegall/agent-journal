@@ -18,6 +18,11 @@ final readonly class FinishingProtocol implements SignInProtocol
         return PrivateAccountProcess::start(['/bin/sh', '-c', 'exit 0'], ['PATH' => '/usr/bin:/bin'], $directory);
     }
 
+    public function hasFinished(PrivateAccountProcess $process): bool
+    {
+        return ! $process->isRunning();
+    }
+
     public function verify(string $directory): SignInVerification
     {
         return new SignInVerification(true, 'work@example.test');
