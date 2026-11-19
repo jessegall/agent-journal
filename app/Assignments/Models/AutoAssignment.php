@@ -79,10 +79,11 @@ final class AutoAssignment extends Model implements ReadableModel
      */
     public static function enableFirst(AutoAssignmentInput $input): self
     {
+        $key = $input->key;
         $row = new self([
-            'actor_type' => $input->key->actor->type,
-            'actor_id' => $input->key->actor->id,
-            'assignable_type' => $input->key->assignableType,
+            'actor_type' => $key->actor->type,
+            'actor_id' => $key->actor->id,
+            'assignable_type' => $key->assignableType,
             'enabled' => true,
             'pool' => $input->pool,
             'size' => $input->size,

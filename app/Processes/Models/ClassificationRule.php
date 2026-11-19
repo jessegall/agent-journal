@@ -8,6 +8,7 @@ use App\Links\Support\Linkable;
 use App\Processes\Casts\RuleScopeCast;
 use App\Processes\Enums\ClassificationState;
 use App\Processes\Exceptions\ClassificationRuleRefused;
+use App\Processes\Models\Support\NamedByRuleScope;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\RuleScope;
 use App\Reads\Contracts\ReadableModel;
@@ -41,6 +42,7 @@ final class ClassificationRule extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids, Linkable;
+    use NamedByRuleScope;
 
     /**
      * @return array<string, string>
@@ -166,16 +168,5 @@ final class ClassificationRule extends Model implements ReadableModel
     protected function active(Builder $query): void
     {
         $query->where('state', ClassificationState::Active->value);
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofRule(Builder $query, RuleScope $scope, string $ruleId): void
-    {
-        $query->where('scope_type', $scope->type->value)
-            ->where('scope_owner', $scope->owner)
-            ->where('rule_id', $ruleId);
     }
 }

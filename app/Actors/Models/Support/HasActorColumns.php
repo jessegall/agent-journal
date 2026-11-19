@@ -23,4 +23,13 @@ trait HasActorColumns
     {
         $query->where('actor_type', $actor->type->value)->where('actor_id', $actor->id);
     }
+
+    /**
+     * Whether the row names this actor.
+     */
+    public function isByActor(ActorIdentity $actor): bool
+    {
+        return $this->getAttribute('actor_type') === $actor->type->value
+            && $this->getAttribute('actor_id') === $actor->id;
+    }
 }

@@ -21,6 +21,6 @@ final readonly class PartActivity
         public int $elapsedSeconds,
         public array $bytes,
         public string $lastActivityAt,
-        public string $latestLine,
+        public string|null $latestLine,
     ) {}
 }

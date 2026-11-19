@@ -6,6 +6,7 @@ namespace App\Processes\Events;
 
 use App\Contracts\Event;
 use App\Processes\Contracts\ChangesActiveRules;
+use App\Processes\Models\ModuleRuleBundle;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
@@ -14,6 +15,11 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class BundleActivated implements ChangesActiveRules, Event, ShouldDispatchAfterCommit
 {
     public function __construct(public string $projectKey, public string $module, public string $digest) {}
+
+    public static function forApproval(ModuleRuleBundle $approval): self
+    {
+        return new self($approval->project_key, $approval->module, $approval->digest);
+    }
 
     public function project(): string
     {

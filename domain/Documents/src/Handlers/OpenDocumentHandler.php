@@ -35,7 +35,7 @@ final readonly class OpenDocumentHandler implements CommandHandler
             return $held->reference($document);
         }
 
-        $elsewhere = DocumentDraft::query()->with('document')->where('author_type', $editor->type()->value)->where('author_id', $editor->id())->first();
+        $elsewhere = DocumentDraft::query()->with('document')->where('author_type', $editor->type->value)->where('author_id', $editor->id)->first();
 
         if ($elsewhere !== null) {
             throw DraftHeld::elsewhere($elsewhere->document->number);

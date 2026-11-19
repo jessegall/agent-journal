@@ -8,7 +8,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * A stored profile revision whose launch policy no longer reads as one; it fails rather than stand in for a default.
+ * A stored profile revision whose launch policy does not read as one; it fails rather than stand in for a default.
  */
 final class ProfileRevisionUnreadable extends RuntimeException
 {

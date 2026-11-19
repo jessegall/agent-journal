@@ -35,7 +35,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
         $part = PartRun::query()->whereKey($command->partRunId)->lockForUpdate()->sole();
         $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
         $actor = ActorIdentity::of($this->actors->actor());
-        if ($actor->type !== ActorType::User && ! $run->isRunBy($actor)) {
+        if ($actor->type !== ActorType::User && ! $run->isByActor($actor)) {
             throw ReplayRefused::notYours($part->id);
         }
         if ($run->mode !== RunMode::Normal) {

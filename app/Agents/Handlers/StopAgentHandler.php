@@ -8,6 +8,7 @@ use App\Agents\Commands\StopAgent;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\DriverRequests;
+use App\Agents\Values\DriverRequestPayload;
 use App\Contracts\CommandHandler;
 
 final readonly class StopAgentHandler implements CommandHandler
@@ -16,7 +17,7 @@ final readonly class StopAgentHandler implements CommandHandler
 
     public function handle(StopAgent $command): DriverReceipt
     {
-        $request = $this->requests->append($command->target(), DriverOperation::Stop, $command->idempotencyKey, []);
+        $request = $this->requests->append($command->target(), DriverOperation::Stop, $command->idempotencyKey, DriverRequestPayload::nothing());
         $this->requests->markStopping($command->target());
 
         return $request->receipt();

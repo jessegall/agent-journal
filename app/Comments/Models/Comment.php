@@ -16,6 +16,7 @@ use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRelationSet;
+use App\Text\Enums\TextAnchorType;
 use App\Text\Exceptions\IncompleteTextAnchor;
 use App\Text\Support\MarkdownText;
 use App\Text\Values\TextAnchor;
@@ -133,20 +134,38 @@ final class Comment extends Model implements ReadableModel, Shareable
         }
 
         try {
-            return TextAnchor::stored([
-                'versionId' => $this->version_id,
-                'versionLabel' => $this->version_label,
-                'type' => $this->anchor_type,
-                'sectionNumber' => $this->section_number,
-                'firstLine' => $this->first_line,
-                'lastLine' => $this->last_line,
-                'quote' => $this->quote,
-                'startOffset' => $this->start_offset,
-                'endOffset' => $this->end_offset,
-            ]);
+            return $this->anchor();
         } catch (IncompleteTextAnchor $broken) {
             throw CommentAnchorCorrupt::for($this->id, $broken->getMessage());
         }
+    }
+
+    /**
+     * The anchor its columns hold, refused when a column its type needs is empty.
+     *
+     * @throws IncompleteTextAnchor
+     */
+    private function anchor(): TextAnchor
+    {
+        $type = $this->anchor_type === null ? null : TextAnchorType::tryFrom($this->anchor_type);
+        if ($type === null) {
+            throw IncompleteTextAnchor::withoutType();
+        }
+        $column = fn (string $field, string $name): string|int => $this->getAttribute($name)
+            ?? throw IncompleteTextAnchor::missing($type->value, $field);
+        $isQuote = $type === TextAnchorType::Quote;
+
+        return TextAnchor::restored(
+            (string) $column('versionId', 'version_id'),
+            (string) $column('versionLabel', 'version_label'),
+            $type,
+            $type === TextAnchorType::Section ? (int) $column('sectionNumber', 'section_number') : 0,
+            (int) $column('firstLine', 'first_line'),
+            (int) $column('lastLine', 'last_line'),
+            $isQuote ? (string) $column('quote', 'quote') : '',
+            $isQuote ? (int) $column('startOffset', 'start_offset') : 0,
+            $isQuote ? (int) $column('endOffset', 'end_offset') : 0,
+        );
     }
 
     /**

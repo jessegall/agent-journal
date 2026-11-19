@@ -15,6 +15,7 @@ use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Exceptions\SkillPublicationMissing;
 use App\Skills\Exceptions\SkillPublicationStale;
 use App\Skills\Values\PublicationIntent;
+use App\Skills\Values\PublicationManifest;
 use App\Skills\Values\PublicationStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -175,15 +176,13 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * @param  array<string, mixed>  $manifest
-     *
      * @throws SkillPublicationStale when a newer worker holds it
      */
-    public function deliver(int $fence, array $manifest): void
+    public function deliver(int $fence, PublicationManifest $manifest): void
     {
         $this->checkFence($fence);
         $this->moveTo(PublicationState::Delivered);
-        $this->manifest = $manifest;
+        $this->manifest = $manifest->jsonSerialize();
         $this->open_key = null;
         $this->lease_holder = null;
         $this->lease_until = null;

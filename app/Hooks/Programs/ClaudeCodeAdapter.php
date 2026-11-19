@@ -25,8 +25,6 @@ use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
-use App\Hooks\Inputs\ToolFinished;
-use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
@@ -85,7 +83,9 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),
-            'PostToolUse' => $this->finishedCall($payload, $hook),
+            'PostToolUse' => $this->callsJournalTools($payload)
+                ? JournalToolCall::finished()
+                : JudgedCall::forFinishedTool($hook, $payload),
             'Stop' => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
@@ -124,21 +124,6 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     /**
      * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal hears it.
      */
-    private function finishedCall(HookPayload $payload, HookIdentity $hook): ProgramCall
-    {
-        if ($this->callsJournalTools($payload)) {
-            return JournalToolCall::finished();
-        }
-
-        return new JudgedCall(
-            new ToolFinished(
-                $hook,
-                new ToolResult($payload->toolNameText(), $payload->toolOutcome(), $payload->toolArguments()),
-            ),
-            fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
-        );
-    }
-
     private function callsJournalTools(HookPayload $payload): bool
     {
         $tool = ClaudeCodeTool::tryFrom($payload->toolNameText());
@@ -155,7 +140,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
 
         $tool = ClaudeCodeTool::named($payload->toolNameText());
 
-        if ($tool->readsResources()) {
+        if ($tool->canReadResources()) {
             $this->journalTools->requireJournalResource(self::PROGRAM, $payload);
         }
 

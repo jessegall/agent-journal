@@ -28,7 +28,8 @@ enum CodexTool: string
     {
         return match ($this) {
             self::Bash => true,
-            default => false,
+            self::ApplyPatch, self::ToolSearch, self::ListMcpResources, self::ListMcpResourceTemplates,
+            self::ReadMcpResource => false,
         };
     }
 
@@ -46,7 +47,7 @@ enum CodexTool: string
     /**
      * Whether the tool names an MCP server or resource address the journal must check.
      */
-    public function readsResources(): bool
+    public function canReadResources(): bool
     {
         return match ($this) {
             self::ListMcpResources, self::ListMcpResourceTemplates, self::ReadMcpResource => true,

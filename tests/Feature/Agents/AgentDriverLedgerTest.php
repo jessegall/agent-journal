@@ -178,7 +178,7 @@ final class AgentDriverLedgerTest extends TestCase
         $this->app->make(NativeTurns::class)->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->subMinute());
 
         $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
-        $this->assertSame([null, RequestProgress::Staged], [$wake->wake_acknowledged, $wake->progress]);
+        $this->assertSame([0, RequestProgress::Staged], [$wake->wake_acknowledged, $wake->progress]);
     }
 
     public function test_a_wake_of_an_idle_session_with_nothing_pending_settles_as_no_work_and_starts_no_turn(): void

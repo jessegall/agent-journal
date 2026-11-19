@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ProposeCommandRule;
@@ -33,7 +32,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
     {
         $actor = ActorIdentity::of($this->actors->actor());
         $request = CommandRequest::query()->whereKey($command->commandRequestId)->lockForUpdate()->sole();
-        if ($actor->type !== ActorType::User && ! $request->isOpenedBy($actor)) {
+        if (! $request->acceptsProposalFrom($actor)) {
             throw RuleProposalRefused::notTheRequester($request->id);
         }
         $this->checks->check($command->proposed->rule, $request->hold_reason->needsReader());

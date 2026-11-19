@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Data;
 
+use App\Processes\Models\CommandRequest;
 use Spatie\LaravelData\Data;
 
 /**
@@ -21,4 +22,16 @@ final class HeldPartData extends Data
         public readonly string $requestState = '',
         public readonly string $next = '',
     ) {}
+
+    /**
+     * The same held part, now with the command request that holds its work.
+     */
+    public function heldIn(CommandRequest $request): self
+    {
+        return clone ($this, [
+            'requestId' => $request->id,
+            'requestState' => $request->state->value,
+            'next' => $request->nextStep()->command,
+        ]);
+    }
 }

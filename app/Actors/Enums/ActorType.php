@@ -31,6 +31,16 @@ enum ActorType: string
         return [self::Agent, self::User];
     }
 
+    public function isAgent(): bool
+    {
+        return $this === self::Agent;
+    }
+
+    public function isUser(): bool
+    {
+        return $this === self::User;
+    }
+
     /**
      * Whether an actor of this type signed in, as a user or an agent, and so may read ordinary content; the system
      * and the engine read only through named queries.

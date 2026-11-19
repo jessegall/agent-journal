@@ -64,13 +64,7 @@ final readonly class RuleApprovals
         } elseif ($request !== null) {
             $request->approveOrdinary();
         }
-        $this->events->dispatch(new RuleActivated(
-            $proposal->project_key,
-            $approved->rule_id,
-            $approved->revision,
-            $approved->digest,
-            $approval->reason,
-        ));
+        $this->events->dispatch(RuleActivated::forRevision($approved, $approval->reason));
 
         return ApprovalReceipt::of($approved);
     }

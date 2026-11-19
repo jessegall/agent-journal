@@ -8,17 +8,25 @@ defineSlots<{ row(props: { row: Row }): unknown }>();
 </script>
 
 <template>
-    <p v-if="rows.length === 0">{{ empty }}</p>
-    <table v-else>
-        <thead>
-            <tr>
-                <th v-for="heading in headings" :key="heading">{{ heading }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="row in rows" :key="rowKey(row)">
-                <slot name="row" :row="row" />
-            </tr>
-        </tbody>
-    </table>
+    <template v-if="rows.length === 0">
+      <p>{{ empty }}</p>
+    </template>
+    <template v-else>
+      <table>
+          <thead>
+              <tr>
+                  <template v-for="heading in headings" :key="heading">
+                    <th>{{ heading }}</th>
+                  </template>
+              </tr>
+          </thead>
+          <tbody>
+              <template v-for="row in rows" :key="rowKey(row)">
+                <tr>
+                    <slot name="row" :row="row" />
+                </tr>
+              </template>
+          </tbody>
+      </table>
+    </template>
 </template>

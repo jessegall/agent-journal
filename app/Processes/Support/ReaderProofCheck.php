@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Processes\Declarations\VerificationContract;
-use App\Processes\Enums\CaptureState;
-use App\Processes\Enums\EmptyPolicy;
 use App\Processes\Exceptions\ReaderProofFailed;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
@@ -16,6 +14,7 @@ use App\Processes\Models\ReaderRevision;
 use App\Processes\Values\ExitBranch;
 use App\Processes\Values\OutputProblem;
 use App\Processes\Values\ProvenBranch;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
  * The journal's own proof of a draft reader (doc 21 revision 6, section 71 step 5): every run must be a complete sample
@@ -40,6 +39,7 @@ final readonly class ReaderProofCheck
         array $runIds,
     ): array {
         $samples = EvidencePermit::query()->sampling($request)->readLimit(100)->pluck('process_run_id')->all();
+        $runs = ProcessRun::query()->ownedBy($request->opener())->whereKey($runIds)->readLimit(100)->get()->keyBy('id');
         $failures = [];
         $proven = [];
         foreach ($runIds as $runId) {
@@ -48,7 +48,7 @@ final readonly class ReaderProofCheck
 
                 continue;
             }
-            $run = ProcessRun::query()->ownedBy($request->opener())->findOrFail($runId);
+            $run = $runs->get($runId) ?? throw new ModelNotFoundException()->setModel(ProcessRun::class, [$runId]);
             $part = $this->samplePart($request, $run);
             $runFailures = $this->runFailures($request, $run, $part);
             if ($runFailures === []) {
@@ -86,7 +86,7 @@ final readonly class ReaderProofCheck
             return ['the run has not ended with its own exit status'];
         }
         $manifest = $this->manifests->stateOf($part);
-        if ($part->capture_state !== CaptureState::Complete || $manifest !== CaptureState::Complete) {
+        if (! $part->capture_state->isComplete() || ! $manifest->isComplete()) {
             return ['its captured output is not complete'];
         }
         if (! $request->hasReadEvidence($run)) {
@@ -112,7 +112,7 @@ final readonly class ReaderProofCheck
             $claimed = $assessment->claimed->value;
             $failures[] = "the reader claims {$claimed} for exit {$part->end_code}, which means {$outcome->value}";
         }
-        if ($assessment->records === [] && $contract->output->empty->policy === EmptyPolicy::Invalid) {
+        if ($assessment->records === [] && $contract->output->isEmptyRefused()) {
             $failures[] = 'the reader found no record and the contract does not allow an empty output';
         }
 
@@ -137,11 +137,8 @@ final readonly class ReaderProofCheck
     private function unprovenStatuses(VerificationContract $contract, array $proven): array
     {
         $covered = array_map(fn (ProvenBranch $branch): int => $branch->status, $proven);
-        $missing = array_filter(
-            $contract->exits->branches,
-            fn (ExitBranch $branch): bool => ! in_array($branch->status, $covered, true),
-        );
+        $missing = $contract->exits->branchesMissing($covered);
 
-        return array_values(array_map(fn (ExitBranch $branch): int => $branch->status, $missing));
+        return array_map(fn (ExitBranch $branch): int => $branch->status, $missing);
     }
 }

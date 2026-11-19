@@ -30,7 +30,7 @@ final readonly class RetireCommandRuleHandler implements CommandHandler
             ->lockForUpdate()
             ->sole();
         $rule->retire($command->expectedRevision, $command->reason);
-        $retired = new RuleRetired($rule->project_key, $rule->rule_id, $rule->active_revision, $command->reason);
+        $retired = RuleRetired::forRule($rule, $command->reason);
         $this->events->dispatch($retired);
 
         return $rule->id;

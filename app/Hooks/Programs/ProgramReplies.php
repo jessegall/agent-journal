@@ -25,7 +25,9 @@ final class ProgramReplies
      */
     public static function allowTool(array $context): ProgramReply
     {
-        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => self::withContext([], $context)]));
+        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => PreToolOutput::from([
+            'additionalContext' => PreToolOutput::contextText($context),
+        ])]));
     }
 
     /**
@@ -33,10 +35,11 @@ final class ProgramReplies
      */
     public static function denyTool(string $reason, array $context): ProgramReply
     {
-        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => self::withContext([
+        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => PreToolOutput::from([
             'permissionDecision' => ProgramPermission::Deny,
             'permissionDecisionReason' => $reason,
-        ], $context)]));
+            'additionalContext' => PreToolOutput::contextText($context),
+        ])]));
     }
 
     /**
@@ -45,7 +48,10 @@ final class ProgramReplies
      */
     public static function rewriteTool(array $updatedInput, array $context): ProgramReply
     {
-        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => self::withContext(['updatedInput' => $updatedInput], $context)]));
+        return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => PreToolOutput::from([
+            'additionalContext' => PreToolOutput::contextText($context),
+            'updatedInput' => $updatedInput,
+        ])]));
     }
 
     /**
@@ -113,19 +119,5 @@ final class ProgramReplies
             'hookEventName' => $hookEventName,
             'additionalContext' => implode("\n", $answer->context),
         ]]));
-    }
-
-    /**
-     * @param  array<string, mixed>  $fields
-     * @param  list<string>  $context
-     * @return array<string, mixed>
-     */
-    private static function withContext(array $fields, array $context): array
-    {
-        if ($context === []) {
-            return $fields;
-        }
-
-        return [...$fields, 'additionalContext' => implode("\n", $context)];
     }
 }

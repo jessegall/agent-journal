@@ -23,4 +23,14 @@ final class PreToolOutput extends Data
         public readonly string|Optional $additionalContext = new Optional(),
         public readonly array|Optional $updatedInput = new Optional(),
     ) {}
+
+    /**
+     * The context lines for the agent as one text, absent when there are none.
+     *
+     * @param  list<string>  $context
+     */
+    public static function contextText(array $context): string|Optional
+    {
+        return $context === [] ? Optional::create() : implode("\n", $context);
+    }
 }

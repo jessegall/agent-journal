@@ -6,6 +6,7 @@ namespace App\Http\Data\Sharing;
 
 use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\ShareSelectedTarget;
+use App\Http\Data\Support\OptionalOrMissing;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,6 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class SavedSharePreviewData extends Data
 {
+    use OptionalOrMissing;
+
     /**
      * @param  list<string>  $selectedIds
      */

@@ -99,7 +99,7 @@ final class RuleProposal extends Model implements ReadableModel
             'project_key' => $projectKey,
             'scope' => $proposed->rule->scope,
             'command_request_id' => $answers?->id,
-            'program' => $proposed->rule->program->family,
+            'program' => $proposed->rule->programFamily(),
             'operation' => $proposed->rule->operation(),
             'state' => ProposalState::Draft,
             'author_type' => $author->type->value,
@@ -137,7 +137,7 @@ final class RuleProposal extends Model implements ReadableModel
     public function withdraw(ActorIdentity $author): void
     {
         $this->checkAuthor($author);
-        if (! $this->state->acceptsRevision()) {
+        if (! $this->state->canAcceptRevision()) {
             throw RuleProposalRefused::ended($this->id, $this->state);
         }
         $this->state = ProposalState::Withdrawn;
@@ -203,7 +203,7 @@ final class RuleProposal extends Model implements ReadableModel
      */
     private function record(ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
     {
-        if (! $this->state->acceptsRevision()) {
+        if (! $this->state->canAcceptRevision()) {
             throw RuleProposalRefused::ended($this->id, $this->state);
         }
 
@@ -215,7 +215,7 @@ final class RuleProposal extends Model implements ReadableModel
             'author_type' => $author->type->value,
             'author_id' => $author->id,
         ]);
-        $this->program = $proposed->rule->program->family;
+        $this->program = $proposed->rule->programFamily();
         $this->operation = $proposed->rule->operation();
         $this->replaces = $proposed->rule->replaces;
         $this->current_revision = $revision->revision;
@@ -230,7 +230,7 @@ final class RuleProposal extends Model implements ReadableModel
      */
     private function end(ProposalState $state): void
     {
-        if (! $this->state->acceptsRevision()) {
+        if (! $this->state->canAcceptRevision()) {
             throw RuleProposalRefused::ended($this->id, $this->state);
         }
         $this->state = $state;

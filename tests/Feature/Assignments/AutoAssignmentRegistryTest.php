@@ -10,6 +10,7 @@ use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentDeclarationRefused;
 use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Domains\Bootstrappers\RegisterAssignables;
 use App\Domains\Support\Domain;
@@ -107,9 +108,7 @@ final class AutoAssignmentRegistryTest extends TestCase
         $this->expectExceptionObject(AutoAssignmentDeclarationRefused::assignerRepeated(ErrandsDomain::ERRAND));
 
         $this->registry->registerAutoAssigner(
-            ErrandsDomain::ERRAND,
-            ErrandAssigner::class,
-            ErrandWork::class,
+            new AutoAssignerDefinition(ErrandsDomain::ERRAND, ErrandAssigner::class, ErrandWork::class),
             'Errands',
         );
     }
@@ -130,18 +129,14 @@ final class AutoAssignmentRegistryTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->registry->registerAutoAssigner(
-                'errands.chore',
-                ErrandWork::class,
-                ErrandWork::class,
+                new AutoAssignerDefinition('errands.chore', ErrandWork::class, ErrandWork::class),
                 'Errands',
             ),
             AssignmentProviderInvalid::class,
         );
         $this->assertThrows(
             fn () => $this->registry->registerAutoAssigner(
-                'errands.chore',
-                ErrandAssigner::class,
-                ErrandAssigner::class,
+                new AutoAssignerDefinition('errands.chore', ErrandAssigner::class, ErrandAssigner::class),
                 'Errands',
             ),
             AssignmentProviderInvalid::class,
@@ -162,9 +157,7 @@ final class AutoAssignmentRegistryTest extends TestCase
 
         $this->assertThrows(
             fn () => $this->registry->registerAutoAssigner(
-                'rounds.round',
-                ErrandAssigner::class,
-                ErrandWork::class,
+                new AutoAssignerDefinition('rounds.round', ErrandAssigner::class, ErrandWork::class),
                 'Rounds',
             ),
             AutoAssignmentDeclarationRefused::class,
@@ -172,9 +165,7 @@ final class AutoAssignmentRegistryTest extends TestCase
         );
         $this->assertThrows(
             fn () => $this->registry->registerAutoAssigner(
-                'errands.chore',
-                ErrandAssigner::class,
-                ErrandWork::class,
+                new AutoAssignerDefinition('errands.chore', ErrandAssigner::class, ErrandWork::class),
                 'Rounds',
             ),
             AutoAssignmentDeclarationRefused::class,

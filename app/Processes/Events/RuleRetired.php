@@ -6,6 +6,7 @@ namespace App\Processes\Events;
 
 use App\Contracts\Event;
 use App\Processes\Contracts\ChangesActiveRules;
+use App\Processes\Models\ClassificationRule;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
@@ -19,6 +20,11 @@ final readonly class RuleRetired implements ChangesActiveRules, Event, ShouldDis
         public int $revision,
         public string $reason,
     ) {}
+
+    public static function forRule(ClassificationRule $rule, string $reason): self
+    {
+        return new self($rule->project_key, $rule->rule_id, $rule->active_revision, $reason);
+    }
 
     public function project(): string
     {

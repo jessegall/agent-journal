@@ -11,6 +11,7 @@ use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Exceptions\SkillPublicationStale;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
+use App\Skills\Values\PublicationManifest;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\CommitsHookRows;
@@ -47,7 +48,7 @@ final class SkillPublicationModelsTest extends TestCase
         $publication = SkillPublication::intend(TestIds::of(1), 'codex', '/work/.agents/skills', $this->generation(), str_repeat('a', 64), ['journal']);
         $fence = $publication->claim('worker-1', CarbonImmutable::now()->addMinute());
         $publication->recordProgress($fence, 1);
-        $publication->deliver($fence, ['files' => ['journal/SKILL.md' => str_repeat('b', 64)]]);
+        $publication->deliver($fence, new PublicationManifest('generation', $publication->id, 'session', 'claude', 'selection', ['journal/SKILL.md' => str_repeat('b', 64)]));
 
         $this->assertSame(PublicationState::Delivered, $publication->state);
         $this->expectException(SkillPublicationFailed::class);

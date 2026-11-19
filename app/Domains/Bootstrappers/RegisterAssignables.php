@@ -25,12 +25,7 @@ final readonly class RegisterAssignables implements DomainBootstrapper
         }
 
         foreach ($domain->autoAssigners() as $definition) {
-            $this->assignments->registerAutoAssigner(
-                $definition->type,
-                $definition->assignerClass,
-                $definition->workProviderClass,
-                $domain->name,
-            );
+            $this->assignments->registerAutoAssigner($definition, $domain->name);
         }
 
         foreach ($domain->assignmentPools() as $definition) {

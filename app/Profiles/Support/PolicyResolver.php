@@ -93,7 +93,7 @@ final readonly class PolicyResolver
         $denials = [];
 
         foreach ([$project, $profile->override] as $override) {
-            $classes = self::withClasses($classes, $override);
+            $classes = $override->appliedTo($classes);
             $grants = [
                 ...array_filter($grants, fn (OperationGrant $grant) => ! in_array(
                     $grant->operation,
@@ -197,24 +197,6 @@ final readonly class PolicyResolver
                 throw ProfilePolicyRefused::readOnlyCeiling($profile->key);
             }
         }
-    }
-
-    /**
-     * @param  list<ClassRule>  $classes
-     * @return list<ClassRule>
-     */
-    private static function withClasses(array $classes, PolicyOverride $override): array
-    {
-        $kept = array_filter($classes, fn (ClassRule $class) => ! array_any(
-            $override->removeClasses,
-            fn (ClassRule $removed) => $removed->isSameAs($class),
-        ));
-        $added = array_filter($override->allowClasses, fn (ClassRule $class) => ! array_any(
-            $kept,
-            fn (ClassRule $existing) => $existing->isSameAs($class),
-        ));
-
-        return [...$kept, ...$added];
     }
 
     /**

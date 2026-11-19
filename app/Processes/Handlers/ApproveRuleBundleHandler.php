@@ -46,7 +46,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
 
         $owner = ActorIdentity::of($this->actors->actor());
         $approval = ModuleRuleBundle::approve($this->projects->current(), $installed[0], $owner);
-        $this->events->dispatch(new BundleActivated($approval->project_key, $approval->module, $approval->digest));
+        $this->events->dispatch(BundleActivated::forApproval($approval));
 
         return $approval->id;
     }

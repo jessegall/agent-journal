@@ -117,13 +117,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      * @throws AssignmentProviderInvalid
      * @throws AutoAssignmentDeclarationRefused
      */
-    public function registerAutoAssigner(
-        string $type,
-        string $assignerClass,
-        string $workProviderClass,
-        string $owner,
-    ): void {
+    public function registerAutoAssigner(AutoAssignerDefinition $definition, string $owner): void
+    {
         $this->requireOwner($owner);
+        $type = $definition->type;
+        $assignerClass = $definition->assignerClass;
+        $workProviderClass = $definition->workProviderClass;
 
         if (array_key_exists($type, $this->autoAssigners)) {
             throw AutoAssignmentDeclarationRefused::assignerRepeated($type);

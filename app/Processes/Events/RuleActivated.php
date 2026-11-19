@@ -6,6 +6,7 @@ namespace App\Processes\Events;
 
 use App\Contracts\Event;
 use App\Processes\Contracts\ChangesActiveRules;
+use App\Processes\Models\RuleRevision;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
@@ -20,6 +21,11 @@ final readonly class RuleActivated implements ChangesActiveRules, Event, ShouldD
         public string $digest,
         public string $reason,
     ) {}
+
+    public static function forRevision(RuleRevision $approved, string $reason): self
+    {
+        return new self($approved->project_key, $approved->rule_id, $approved->revision, $approved->digest, $reason);
+    }
 
     public function project(): string
     {

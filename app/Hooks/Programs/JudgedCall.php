@@ -6,6 +6,9 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Stack\HookAnswer;
 use Closure;
 
@@ -21,6 +24,19 @@ final readonly class JudgedCall implements ProgramCall
         public HookInput $input,
         public Closure $render,
     ) {}
+
+    /**
+     * A finished tool call the journal judges, answered as an observation.
+     */
+    public static function forFinishedTool(HookIdentity $hook, HookPayload $payload): self
+    {
+        $result = new ToolResult($payload->toolNameText(), $payload->toolOutcome(), $payload->toolArguments());
+
+        return new self(
+            new ToolFinished($hook, $result),
+            fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
+        );
+    }
 
     public function replyWith(Closure $answerByJournal): ProgramReply
     {

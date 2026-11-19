@@ -45,7 +45,7 @@ final class RunPageTest extends TestCase
         $this->page("/processes/runs/{$part->process_run_id}")->assertInertia(fn (AssertableInertia $page) => $page
             ->component('processes/RunView')
             ->where('page.data.snapshot.parts.0.operation', 'acme verify')
-            ->where('page.data.snapshot.parts.0.receiptId', '')
+            ->where('page.data.snapshot.parts.0.receiptId', null)
             ->where("page.data.outputs.{$part->id}.0.stream", 'stdout'));
         $this->page('/processes/runs')->assertInertia(fn (AssertableInertia $page) => $page
             ->component('processes/RunsWindow')

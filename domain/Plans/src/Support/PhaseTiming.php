@@ -14,7 +14,6 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Contracts\TaskReader;
-use Domain\Tasks\Enums\TaskState;
 
 /**
  * Holds an agent's tests and checks while the current phase of a started plan it holds still has open or started
@@ -58,7 +57,7 @@ final readonly class PhaseTiming implements VerificationTiming
             }
             $unfinished = array_filter(
                 $summaries,
-                fn (TaskSummary $task): bool => $task->state === TaskState::Open || $task->state === TaskState::Started,
+                fn (TaskSummary $task): bool => $task->state->isHoldingChecks(),
             );
             if ($unfinished === []) {
                 return TimingVerdict::allowed();

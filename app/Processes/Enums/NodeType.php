@@ -44,7 +44,9 @@ enum NodeType: string
             self::AndList => PartJoin::And,
             self::OrList => PartJoin::Or,
             self::Sequence, self::Background => PartJoin::Sequence,
-            default => null,
+            self::SimpleCommand, self::Negation, self::Group, self::Subshell, self::CommandSubstitution,
+            self::ProcessSubstitution, self::Redirect, self::Assignment, self::HereDocument, self::Comment,
+            self::Unsupported => null,
         };
     }
 }

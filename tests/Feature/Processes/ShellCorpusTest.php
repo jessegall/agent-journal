@@ -81,7 +81,7 @@ final class ShellCorpusTest extends TestCase
             if ($case['expected']['outcome'] !== 'complete') {
                 continue;
             }
-            $actual = $classifier->classify($syntax->parse($case['source'], ShellDialect::from($case['dialect'])), $context)->summary();
+            $actual = $classifier->classify($syntax->parse($case['source'], ShellDialect::from($case['dialect'])), $context)->summary()->toArray();
 
             if ($actual !== $case['expected']['classification']) {
                 $differences[] = $case['id'].' expected '.json_encode($case['expected']['classification']).' classified '.json_encode($actual);

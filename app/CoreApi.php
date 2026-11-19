@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Processes\Data\PartSummaryData;
+use App\Processes\Data\ClassificationSummaryData;
 use App\Actors\Contracts\ActiveActorCounter;
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\Actor;
@@ -1132,7 +1134,9 @@ final class CoreApi
                 CommandOperation::class,
                 CommandClassSet::class,
                 Classification::class,
+                ClassificationSummaryData::class,
                 PartClassification::class,
+                PartSummaryData::class,
                 ClassFact::class,
                 UnresolvedFact::class,
                 UnresolvedType::class,

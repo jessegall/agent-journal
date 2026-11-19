@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 use App\Skills\Enums\GenerationState;
+use JsonSerializable;
 
 /**
  * Where the newest generation of the catalogue stands: ready, failed with its reason, or retired.
  */
-final readonly class GenerationStatus
+final readonly class GenerationStatus implements JsonSerializable
 {
     public function __construct(
         public string $generationId,
@@ -21,7 +22,7 @@ final readonly class GenerationStatus
     /**
      * @return array{generation: string, state: string, digest: string, error: string|null}
      */
-    public function toArray(): array
+    public function jsonSerialize(): array
     {
         return [
             'generation' => $this->generationId,

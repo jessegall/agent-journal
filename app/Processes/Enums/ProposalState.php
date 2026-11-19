@@ -20,7 +20,7 @@ enum ProposalState: string
     /**
      * Whether a new revision may still be added: only before the owner decided and before it was withdrawn.
      */
-    public function acceptsRevision(): bool
+    public function canAcceptRevision(): bool
     {
         return $this === self::Draft || $this === self::Pending;
     }

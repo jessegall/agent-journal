@@ -49,4 +49,24 @@ final readonly class PolicyOverride
             ...$this->denyOperations,
         ];
     }
+
+    /**
+     * The classes with this override applied: its removed classes gone, its allowed ones added once.
+     *
+     * @param  list<ClassRule>  $classes
+     * @return list<ClassRule>
+     */
+    public function appliedTo(array $classes): array
+    {
+        $kept = array_values(array_filter($classes, fn (ClassRule $class) => ! array_any(
+            $this->removeClasses,
+            fn (ClassRule $removed) => $removed->isSameAs($class),
+        )));
+        $added = array_values(array_filter($this->allowClasses, fn (ClassRule $class) => ! array_any(
+            $kept,
+            fn (ClassRule $existing) => $existing->isSameAs($class),
+        )));
+
+        return [...$kept, ...$added];
+    }
 }

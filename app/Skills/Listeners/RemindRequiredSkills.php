@@ -6,7 +6,6 @@ namespace App\Skills\Listeners;
 
 use App\Agents\Models\AgentSession;
 use App\Contracts\Listener;
-use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Models\SkillPublication;
@@ -34,9 +33,9 @@ final readonly class RemindRequiredSkills implements Listener
         }
 
         $generation = $publication->generation();
-        $freshContext = $event->type === ContextStartType::Clear || $event->type === ContextStartType::Compact;
+        $freshContext = $event->type->isFreshContext();
 
-        foreach ($this->contexts->forSession($session)->profile->requiredSkills() as $key) {
+        foreach ($this->contexts->forSession($session)->requiredSkills() as $key) {
             $entry = in_array($key, $publication->skill_keys, true) ? $generation->entry($key) : null;
 
             if ($entry === null || (! $freshContext && SkillReceipt::hasRead($session->id, $key, $entry['digest']))) {

@@ -62,4 +62,18 @@ final readonly class ExitPolicy
 
         return $branch === [] ? Outcome::ExecutionError : $branch[0]->outcome;
     }
+
+    /**
+     * The branches no given exit status covers.
+     *
+     * @param  list<int>  $statuses
+     * @return list<ExitBranch>
+     */
+    public function branchesMissing(array $statuses): array
+    {
+        return array_values(array_filter(
+            $this->branches,
+            fn (ExitBranch $branch): bool => ! in_array($branch->status, $statuses, true),
+        ));
+    }
 }

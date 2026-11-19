@@ -9,6 +9,7 @@ use App\Agents\Enums\DriverOperation;
 use App\Agents\Exceptions\KeyScriptRefused;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\DriverRequests;
+use App\Agents\Values\DriverRequestPayload;
 use App\Agents\Values\ScriptParameter;
 use App\Contracts\CommandHandler;
 use Illuminate\Container\Attributes\Config;
@@ -47,11 +48,7 @@ final readonly class RunKeyScriptHandler implements CommandHandler
             throw KeyScriptRefused::parameters($command->script, $problems);
         }
 
-        $payload = [
-            'script_id' => $command->script,
-            'script_version' => $script['version'],
-            'script_parameters' => $parameters,
-        ];
+        $payload = DriverRequestPayload::keyScript($command->script, $script['version'], $parameters);
 
         $request = $this->requests->append(
             $command->target(),

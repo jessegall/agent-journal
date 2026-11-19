@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Readers;
 
-use App\Actors\Enums\ActorType;
 use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Contracts\EditorContext;
 use Domain\Documents\Data\DraftState;
@@ -50,7 +49,7 @@ final readonly class DraftRecords implements DraftReader
         } catch (DraftConflict) {
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
-            return DraftState::from($editor->type() === ActorType::User ? [...$held, 'held' => $draft->view($document)] : $held);
+            return DraftState::from($editor->type->isUser() ? [...$held, 'held' => $draft->view($document)] : $held);
         }
 
         return DraftState::from(['state' => EditingState::Yours, 'draft' => $draft->view($document)]);

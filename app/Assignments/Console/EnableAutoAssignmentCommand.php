@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Assignments\Console;
 
-use App\Actors\Exceptions\InvalidActorText;
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Assignments\Console\Concerns\ReadsAutoAssignmentChange;
 use App\Processes\Attributes\JournalRoute;
@@ -19,7 +17,6 @@ use Illuminate\Console\Command;
 final class EnableAutoAssignmentCommand extends Command
 {
     use ReadsAutoAssignmentChange;
-    use SendsSignedWrites;
 
     protected $signature = 'assignment:auto-enable {actor : The actor as type:id}
         {type : The record type, such as tasks.task}
@@ -32,14 +29,6 @@ final class EnableAutoAssignmentCommand extends Command
 
     public function handle(AgentRequestSender $journal): int
     {
-        try {
-            $body = $this->changeFields((int) $this->option('size'));
-        } catch (InvalidActorText $invalid) {
-            $this->error($invalid->getMessage());
-
-            return self::FAILURE;
-        }
-
-        return $this->sendWriteAndPrint($journal, '/agent/assignments/auto/enable', $body);
+        return $this->sendChange($journal, '/agent/assignments/auto/enable');
     }
 }

@@ -90,9 +90,11 @@ final class EvidencePermit extends Model implements ReadableModel
         ActorIdentity $runner,
         PermitLimits $limits,
     ): self {
-        $fields = self::fieldsOf($projectKey, $line, $runner, $limits);
+        $permit = self::filled($projectKey, $line, $runner, $limits);
+        $permit->candidate_rules = [];
+        $permit->save();
 
-        return self::query()->create([...$fields, 'candidate_rules' => []]);
+        return $permit;
     }
 
     /**
@@ -104,11 +106,12 @@ final class EvidencePermit extends Model implements ReadableModel
         CommandRule $proposed,
         PermitLimits $limits,
     ): self {
-        return self::query()->create([
-            ...self::fieldsOf($request->project_key, $line, $request->opener(), $limits),
-            'command_request_id' => $request->id,
-            'candidate_rules' => [$proposed],
-        ]);
+        $permit = self::filled($request->project_key, $line, $request->opener(), $limits);
+        $permit->command_request_id = $request->id;
+        $permit->candidate_rules = [$proposed];
+        $permit->save();
+
+        return $permit;
     }
 
     /**
@@ -174,26 +177,27 @@ final class EvidencePermit extends Model implements ReadableModel
     }
 
     /**
-     * @return array<string, mixed>
+     * A permit for the line, filled from the line, the runner and the limits, not yet saved.
      */
-    private static function fieldsOf(
+    private static function filled(
         string $projectKey,
         PermittedLine $line,
         ActorIdentity $runner,
         PermitLimits $limits,
-    ): array {
-        return [
-            'project_key' => $projectKey,
-            'working_folder' => $line->workingFolder,
-            'source_line' => $line->line,
-            'source_digest' => hash('sha256', $line->line),
-            'classification_digest' => $line->classificationDigest,
-            'approved_classes' => $line->approvedClasses,
-            'runner_type' => $runner->type->value,
-            'runner_id' => $runner->id,
-            'byte_cap' => $limits->byteCap,
-            'seconds_cap' => $limits->secondsCap,
-            'expires_at' => CarbonImmutable::now()->addMinutes($limits->minutesValid),
-        ];
+    ): self {
+        $permit = new self();
+        $permit->project_key = $projectKey;
+        $permit->working_folder = $line->workingFolder;
+        $permit->source_line = $line->line;
+        $permit->source_digest = hash('sha256', $line->line);
+        $permit->classification_digest = $line->classificationDigest;
+        $permit->approved_classes = $line->approvedClasses;
+        $permit->runner_type = $runner->type->value;
+        $permit->runner_id = $runner->id;
+        $permit->byte_cap = $limits->byteCap;
+        $permit->seconds_cap = $limits->secondsCap;
+        $permit->expires_at = CarbonImmutable::now()->addMinutes($limits->minutesValid);
+
+        return $permit;
     }
 }

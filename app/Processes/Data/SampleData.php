@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Data;
 
+use App\Processes\Models\EvidencePermit;
 use Spatie\LaravelData\Data;
 
 /**
@@ -25,4 +26,20 @@ final class SampleData extends Data
         public readonly string $runId,
         public readonly array $parts,
     ) {}
+
+    /**
+     * @param  list<string>  $parts  each part's operation, end and capture state as one readable line
+     */
+    public static function fromPermit(EvidencePermit $permit, array $parts): self
+    {
+        return new self(
+            $permit->id,
+            $permit->source_line,
+            $permit->approved_classes,
+            $permit->byte_cap,
+            $permit->seconds_cap,
+            (string) $permit->process_run_id,
+            $parts,
+        );
+    }
 }

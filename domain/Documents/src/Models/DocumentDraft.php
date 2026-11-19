@@ -6,6 +6,7 @@ namespace Domain\Documents\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -16,7 +17,6 @@ use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Support\DraftText;
-use Domain\Documents\Support\Editor;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -64,13 +64,13 @@ final class DocumentDraft extends Model implements ReadableModel
     /**
      * Opens the draft of a locked document for this editor, starting from its current revision.
      */
-    public static function openFor(Document $document, DocumentRevision $base, Editor $editor): self
+    public static function openFor(Document $document, DocumentRevision $base, ActorIdentity $editor): self
     {
         return self::query()->create([
             'document_id' => $document->id,
             'token' => Str::random(40),
-            'author_type' => $editor->type(),
-            'author_id' => $editor->id(),
+            'author_type' => $editor->type,
+            'author_id' => $editor->id,
             'base_revision_number' => $base->number,
             'title' => $base->title,
             'abstract' => $base->abstract,
@@ -101,9 +101,9 @@ final class DocumentDraft extends Model implements ReadableModel
     /**
      * @throws DraftConflict
      */
-    public function requireEditor(Editor $editor): void
+    public function requireEditor(ActorIdentity $editor): void
     {
-        $isTheEditor = $this->author_type === $editor->type() && $this->author_id === $editor->id();
+        $isTheEditor = $this->author_type === $editor->type && $this->author_id === $editor->id;
 
         if (! $isTheEditor) {
             throw DraftConflict::notYours();

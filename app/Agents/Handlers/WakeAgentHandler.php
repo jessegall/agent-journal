@@ -8,6 +8,7 @@ use App\Agents\Commands\WakeAgent;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\DriverRequests;
+use App\Agents\Values\DriverRequestPayload;
 use App\Contracts\CommandHandler;
 
 final readonly class WakeAgentHandler implements CommandHandler
@@ -19,12 +20,12 @@ final readonly class WakeAgentHandler implements CommandHandler
         $open = $this->requests->openWake($command->target());
 
         if ($open !== null) {
-            $open->claimWake(($open->wake_requested ?? 1) + 1);
+            $open->claimWake($open->wake_requested + 1);
 
             return $open->receipt();
         }
 
-        $wake = $this->requests->append($command->target(), DriverOperation::Wake, $command->idempotencyKey, []);
+        $wake = $this->requests->append($command->target(), DriverOperation::Wake, $command->idempotencyKey, DriverRequestPayload::nothing());
         $wake->claimWake(1);
 
         return $wake->receipt();

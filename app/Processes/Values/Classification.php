@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Data\ClassificationSummaryData;
+use App\Processes\Data\PartSummaryData;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
 
@@ -100,22 +102,15 @@ final readonly class Classification
     }
 
     /**
-     * The classification as plain data, as the shell corpus freezes it: whether it is known, the classes it needs and,
-     * per part, its program, purpose, unresolved reasons and contract tools.
-     *
-     * @return array{
-     *     known: bool,
-     *     classes: list<string>,
-     *     parts: list<array{program: string|null, purpose: string, unresolved: list<string>, tools: list<string>}>,
-     * }
+     * The classification as plain data, as the corpus freezes it and an evidence digest hashes it.
      */
-    public function summary(): array
+    public function summary(): ClassificationSummaryData
     {
-        return [
+        return ClassificationSummaryData::from([
             'known' => $this->isKnown(),
             'classes' => $this->requiredClasses()->toArray(),
-            'parts' => array_map(fn (PartClassification $part): array => $part->summary(), $this->parts),
-        ];
+            'parts' => array_map(fn (PartClassification $part): PartSummaryData => $part->summary(), $this->parts),
+        ]);
     }
 
     /**

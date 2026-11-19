@@ -46,7 +46,7 @@ final readonly class ActivityProjection
             $started === null ? 0 : (int) abs($until->diffInSeconds($started)),
             $part->stream_offsets,
             $newest === null ? '' : $newest->captured_at->toIso8601String(),
-            $newest === null ? '' : $this->latestLineOf($newest),
+            $newest === null ? null : $this->latestLineOf($newest),
         );
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Enums\EmptyPolicy;
 use App\Processes\Enums\EmptySelection;
 use App\Processes\Enums\FramingType;
 use App\Processes\Enums\OutputEncoding;
@@ -67,7 +68,7 @@ final readonly class OutputContract
         return "output {$this->framing->value}, summary {$this->summary->value}, empty {$this->empty->policy->value}";
     }
 
-    public function requiresSummary(): bool
+    public function isSummaryRequired(): bool
     {
         return $this->summary === SummaryRule::RequiredTerminalRecord;
     }
@@ -86,5 +87,13 @@ final readonly class OutputContract
             EmptyRunPolicy::invalid(),
             EmptySelection::ConfigurationProblem,
         );
+    }
+
+    /**
+     * Whether a run that read no record breaks the contract.
+     */
+    public function isEmptyRefused(): bool
+    {
+        return $this->empty->policy === EmptyPolicy::Invalid;
     }
 }

@@ -27,8 +27,8 @@ return new class extends Migration
             $table->timestampTz('expected_observed_at')->nullable();
             $table->string('actual_binding', 32)->nullable();
             $table->unsignedInteger('attempt_version')->default(0);
-            $table->unsignedBigInteger('wake_requested')->nullable();
-            $table->unsignedBigInteger('wake_acknowledged')->nullable();
+            $table->unsignedBigInteger('wake_requested')->default(0);
+            $table->unsignedBigInteger('wake_acknowledged')->default(0);
             $table->unsignedBigInteger('wake_claimed')->nullable();
             $table->timestampTz('staged_at')->nullable();
             $table->string('script_id')->nullable();

@@ -12,6 +12,7 @@ use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Values\DriverRequestPayload;
 
 /**
  * Appends driver requests to a runtime's one ordered ledger inside the caller's bus transaction, locking the session,
@@ -20,13 +21,14 @@ use App\Agents\Models\DriverRequest;
  */
 final readonly class DriverRequests
 {
-    /**
-     * @param  array<string, mixed>  $payload  the typed columns of the request: its message, model, effort or script
-     */
-    public function append(StackTarget $target, DriverOperation $operation, string $idempotencyKey, array $payload): DriverRequest
-    {
+    public function append(
+        StackTarget $target,
+        DriverOperation $operation,
+        string $idempotencyKey,
+        DriverRequestPayload $payload,
+    ): DriverRequest {
         $runtime = $this->lockedRuntime($target);
-        $digest = hash('sha256', $operation->value."\n".json_encode($payload, JSON_THROW_ON_ERROR));
+        $digest = $payload->digestFor($operation->value);
 
         $existing = DriverRequest::query()->where('agent_runtime_id', $runtime->id)->where('idempotency_key', $idempotencyKey)->first();
         if ($existing !== null) {
@@ -45,8 +47,8 @@ final readonly class DriverRequests
             'payload_digest' => $digest,
             'expected_timing' => $runtime->activity->expectedTiming(),
             'expected_observed_at' => $runtime->last_observed_at,
-            ...$payload,
         ]);
+        $request->carry($payload);
         $request->accept();
 
         return $request;

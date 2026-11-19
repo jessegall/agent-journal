@@ -172,6 +172,11 @@ final readonly class CommandRule implements StoredValue
     /**
      * The canonical operation the rule covers: its program family and subcommands, such as git branch.
      */
+    public function programFamily(): string
+    {
+        return $this->program->family;
+    }
+
     public function operation(): string
     {
         return implode(' ', [$this->program->family, ...$this->subcommands]);
@@ -219,7 +224,7 @@ final readonly class CommandRule implements StoredValue
      */
     private function changed(RuleScope $scope, ExecutableBinding $binding, int $revision, array $replaces): self
     {
-        return clone($this, ['scope' => $scope, 'binding' => $binding, 'revision' => $revision, 'replaces' => $replaces]);
+        return clone ($this, ['scope' => $scope, 'binding' => $binding, 'revision' => $revision, 'replaces' => $replaces]);
     }
 
     /**

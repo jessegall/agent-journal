@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
+use App\Text\Enums\TextAnchorType;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Comments\Data\CommentDetails;
 use App\Text\Values\TextAnchor;
@@ -31,7 +32,23 @@ trait PrintsComments
         }
 
         /**
-         * @var array{items: list<array{comment: array<string, mixed>, anchor?: array{versionId?: string|null, versionLabel?: string|null, type?: string|null, sectionNumber?: int|null, firstLine?: int|null, lastLine?: int|null, quote?: string|null, startOffset?: int|null, endOffset?: int|null}}>, nextAfter: string|null} $reply
+         * @var array{
+         *     items: list<array{
+         *         comment: array<string, mixed>,
+         *         anchor?: array{
+         *             versionId: string,
+         *             versionLabel: string,
+         *             type: string,
+         *             sectionNumber: int,
+         *             firstLine: int,
+         *             lastLine: int,
+         *             quote: string,
+         *             startOffset: int,
+         *             endOffset: int,
+         *         },
+         *     }>,
+         *     nextAfter: string|null,
+         * } $reply
          */
         $this->printComments($reply['items']);
 
@@ -43,7 +60,20 @@ trait PrintsComments
     }
 
     /**
-     * @param  list<array{comment: array<string, mixed>, anchor?: array{versionId?: string|null, versionLabel?: string|null, type?: string|null, sectionNumber?: int|null, firstLine?: int|null, lastLine?: int|null, quote?: string|null, startOffset?: int|null, endOffset?: int|null}}>  $items
+     * @param  list<array{
+     *     comment: array<string, mixed>,
+     *     anchor?: array{
+     *         versionId: string,
+     *         versionLabel: string,
+     *         type: string,
+     *         sectionNumber: int,
+     *         firstLine: int,
+     *         lastLine: int,
+     *         quote: string,
+     *         startOffset: int,
+     *         endOffset: int,
+     *     },
+     * }>  $items
      */
     private function printComments(array $items): void
     {
@@ -52,8 +82,39 @@ trait PrintsComments
         }
 
         foreach (CommentDetails::collect(array_column($items, 'comment')) as $index => $comment) {
-            $this->printComment($comment, isset($items[$index]['anchor']) ? TextAnchor::stored($items[$index]['anchor'])->description() : 'on the whole record');
+            $anchor = $items[$index]['anchor'] ?? null;
+            $this->printComment($comment, $anchor === null ? 'on the whole record' : $this->placeOf($anchor));
         }
+    }
+
+    /**
+     * Where an anchor the journal answered with points, as a person reads it.
+     *
+     * @param  array{
+     *     versionId: string,
+     *     versionLabel: string,
+     *     type: string,
+     *     sectionNumber: int,
+     *     firstLine: int,
+     *     lastLine: int,
+     *     quote: string,
+     *     startOffset: int,
+     *     endOffset: int,
+     * }  $anchor
+     */
+    private function placeOf(array $anchor): string
+    {
+        return TextAnchor::restored(
+            $anchor['versionId'],
+            $anchor['versionLabel'],
+            TextAnchorType::from($anchor['type']),
+            $anchor['sectionNumber'],
+            $anchor['firstLine'],
+            $anchor['lastLine'],
+            $anchor['quote'],
+            $anchor['startOffset'],
+            $anchor['endOffset'],
+        )->description();
     }
 
     private function printComment(CommentDetails $comment, string $place): void

@@ -20,6 +20,6 @@ final class RunWindowData extends Data
         public readonly RunSnapshotData $snapshot,
         public readonly array $outputs,
         public readonly array $problems,
-        public readonly string $stopReason,
+        public readonly string|null $stopReason,
     ) {}
 }

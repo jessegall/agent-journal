@@ -20,14 +20,14 @@ const result = computed(() => {
     if (props.evidenceOnly) {
         return 'evidence only';
     }
-    if (props.part.receiptId !== '') {
+    if (props.part.receiptId !== null) {
         return `${props.part.outcome} (receipt ${props.part.receiptId})`;
     }
 
-    return props.part.assessmentId === '' ? 'result unavailable: not assessed' : 'result unavailable';
+    return props.part.assessmentId === null ? 'result unavailable: not assessed' : 'result unavailable';
 });
 const exitText = computed(() => {
-    if (props.part.receiptId !== '' || props.part.problems.length === 0) {
+    if (props.part.receiptId !== null || props.part.problems.length === 0) {
         return '';
     }
 
@@ -52,7 +52,7 @@ const exitText = computed(() => {
         <template v-if="problems.length > 0">
             <ProblemList :problems="problems" />
         </template>
-        <template v-if="part.latestLine !== ''">
+        <template v-if="part.latestLine !== null">
             <p>Latest: <code>{{ part.latestLine }}</code></p>
         </template>
         <template v-for="output in outputs" :key="output.stream">

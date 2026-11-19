@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ProposeReader;
@@ -32,7 +31,7 @@ final readonly class ProposeReaderHandler implements CommandHandler
     {
         $actor = ActorIdentity::of($this->actors->actor());
         $request = CommandRequest::query()->whereKey($command->commandRequestId)->lockForUpdate()->sole();
-        if ($actor->type !== ActorType::User && ! $request->isOpenedBy($actor)) {
+        if (! $request->acceptsProposalFrom($actor)) {
             throw ReaderProposalRefused::notTheRequester($request->id);
         }
         if (! $request->state->isOpen()) {
@@ -46,7 +45,7 @@ final readonly class ProposeReaderHandler implements CommandHandler
         if ($contracts === []) {
             throw ReaderProposalRefused::noContract($request->id, $command->declarationRevision);
         }
-        if ($contracts[0]->output->requiresSummary() && ! $command->definition->hasRole(RecordRole::Summary)) {
+        if ($contracts[0]->output->isSummaryRequired() && ! $command->definition->hasRole(RecordRole::Summary)) {
             throw ReaderDefinitionInvalid::summaryMissing();
         }
 

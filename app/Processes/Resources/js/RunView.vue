@@ -47,7 +47,7 @@ function stop(): void {
             <p>Evidence only: this run never gives a result.</p>
         </template>
         <p>Lifecycle: {{ data.snapshot.lifecycle }}</p>
-        <template v-if="data.stopReason !== ''">
+        <template v-if="data.stopReason !== null">
             <p>Stopped: {{ data.stopReason }}</p>
         </template>
         <template v-if="refusal !== ''">

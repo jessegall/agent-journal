@@ -19,7 +19,6 @@ use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareScope;
 use App\Ui\Contracts\PageReader;
-use Spatie\LaravelData\Optional;
 
 /**
  * The owner's share preview page: the root's candidates found now, each marked shared when the root's live share
@@ -49,9 +48,9 @@ final readonly class SharePreviewReader implements PageReader
                 fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved),
                 $candidates->linked,
             ),
-            'savedPreview' => $saved->map(SavedSharePreviewData::fromPreview(...))->getOrElse(Optional::create()),
-            'liveShare' => Share::liveFor($root)->map(RootShareData::fromShare(...))->getOrElse(Optional::create()),
-            'openProposals' => array_map(RootShareData::fromShare(...), Share::openProposalsFor($root)),
+            'savedPreview' => SavedSharePreviewData::optionalOrMissing($saved->getOrElse(null)),
+            'liveShare' => RootShareData::optionalOrMissing(Share::liveFor($root)->getOrElse(null)),
+            'openProposals' => Share::openProposalsFor($root),
         ]);
     }
 }

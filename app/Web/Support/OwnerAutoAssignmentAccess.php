@@ -6,7 +6,6 @@ namespace App\Web\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\JournalAccessPolicy;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AutoAssignmentAccess;
@@ -65,7 +64,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
         ActorIdentity $target,
         AutoAssignmentDenied $denial,
     ): void {
-        if ($actor->actorType() !== ActorType::Agent || $target->type !== ActorType::Agent) {
+        if (! $actor->actorType()->isAgent() || ! $target->type->isAgent()) {
             throw $denial;
         }
 

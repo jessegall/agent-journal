@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait BelongsToOneActor
 {
+    use HasActorColumns;
     use ReadsForActor;
 
     public static function bootBelongsToOneActor(): void

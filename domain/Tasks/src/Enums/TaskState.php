@@ -33,7 +33,21 @@ enum TaskState: string
      */
     public function hasEnded(): bool
     {
-        return $this === self::Finished || $this === self::Cancelled;
+        return match ($this) {
+            self::Finished, self::Cancelled => true,
+            self::Open, self::Started, self::Blocked => false,
+        };
+    }
+
+    /**
+     * Whether a task in this state holds its phase's checks back: open or started, not blocked or ended.
+     */
+    public function isHoldingChecks(): bool
+    {
+        return match ($this) {
+            self::Open, self::Started => true,
+            self::Blocked, self::Finished, self::Cancelled => false,
+        };
     }
 
     /**

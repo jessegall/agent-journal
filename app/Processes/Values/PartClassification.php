@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Data\PartSummaryData;
 use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
@@ -46,16 +47,14 @@ final readonly class PartClassification
 
     /**
      * The part as plain data: its program, purpose, unresolved reasons and contract tools.
-     *
-     * @return array{program: string|null, purpose: string, unresolved: list<string>, tools: list<string>}
      */
-    public function summary(): array
+    public function summary(): PartSummaryData
     {
-        return [
+        return PartSummaryData::from([
             'program' => $this->program?->family,
             'purpose' => $this->purpose->value,
             'unresolved' => array_map(fn (UnresolvedFact $fact): string => $fact->type->value, $this->unresolved),
             'tools' => array_map(fn (VerificationContract $contract): string => $contract->tool->value, $this->contracts),
-        ];
+        ]);
     }
 }

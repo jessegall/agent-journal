@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Skills\Values;
 
+use JsonSerializable;
+
 /**
  * The skill delivery as the actor may see it: the newest generation, absent before the first refresh, and the newest
  * publication of each visible session.
  */
-final readonly class SkillStatus
+final readonly class SkillStatus implements JsonSerializable
 {
     /**
      * @param  list<PublicationStatus>  $publications
@@ -21,12 +23,12 @@ final readonly class SkillStatus
     /**
      * @return array{generation: array<string, string|null>|null, publications: list<array<string, string|null>>}
      */
-    public function toArray(): array
+    public function jsonSerialize(): array
     {
         return [
-            'generation' => $this->generation?->toArray(),
+            'generation' => $this->generation?->jsonSerialize(),
             'publications' => array_map(
-                fn (PublicationStatus $publication) => $publication->toArray(),
+                fn (PublicationStatus $publication) => $publication->jsonSerialize(),
                 $this->publications,
             ),
         ];

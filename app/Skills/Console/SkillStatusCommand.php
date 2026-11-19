@@ -50,9 +50,8 @@ final class SkillStatusCommand extends Command
         }
 
         if ($this->option('json')) {
-            $skillRows = array_map(fn (SessionSkillStatus $skill) => $skill->toArray(), $skills);
             $this->line(json_encode(
-                [...$status->toArray(), 'skills' => $skillRows],
+                [...$status->jsonSerialize(), 'skills' => $skills],
                 JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
             ));
 

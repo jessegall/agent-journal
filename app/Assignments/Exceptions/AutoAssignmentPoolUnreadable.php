@@ -8,7 +8,7 @@ use RuntimeException;
 use Throwable;
 
 /**
- * A stored auto-assignment whose pool column no longer reads as a pool reference: it fails rather than stand in for
+ * A stored auto-assignment whose pool column does not read as a pool reference: it fails rather than stand in for
  * any pool.
  */
 final class AutoAssignmentPoolUnreadable extends RuntimeException

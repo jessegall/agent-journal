@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Events;
 
 use App\Contracts\Event;
+use App\Processes\Models\RuleProposal;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
@@ -18,4 +19,9 @@ final readonly class RuleRejected implements Event, ShouldDispatchAfterCommit
         public string $authorId,
         public string $reason,
     ) {}
+
+    public static function forProposal(RuleProposal $proposal, string $reason): self
+    {
+        return new self($proposal->id, $proposal->author_type, $proposal->author_id, $reason);
+    }
 }

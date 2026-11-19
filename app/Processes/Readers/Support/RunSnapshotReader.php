@@ -13,7 +13,6 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Support\ProjectKey;
-use App\Processes\Values\OutputProblem;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -55,25 +54,8 @@ final readonly class RunSnapshotReader
             ->first();
         $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
         $receipt = $this->receipts->forPart($part->id);
-        $problems = $assessment === null ? [] : $assessment->problems;
-        $codes = array_map(fn (OutputProblem $problem): string => $problem->code->value, $problems);
-        $end = $part->end()->hasStatus() ? "{$part->end_type->value} {$part->end_code}" : $part->end_type->value;
+        $receipt = $receipt->isDefined() ? $receipt->get()->receiptId : null;
 
-        return new PartSnapshotData(
-            $part->id,
-            $part->operation,
-            $activity->lifecycle,
-            $end,
-            $part->capture_state->value,
-            $activity->elapsedSeconds,
-            $activity->bytes,
-            $activity->latestLine,
-            $position === null ? '' : $position->reader_revision_id,
-            $position === null ? 'no reader' : $position->interpretation->value,
-            $assessment === null ? '' : $assessment->id,
-            $assessment === null ? '' : $assessment->outcome->value,
-            $codes,
-            $receipt->isDefined() ? $receipt->get()->receiptId : '',
-        );
+        return PartSnapshotData::of($part, $activity, $position, $assessment, $receipt);
     }
 }

@@ -11,6 +11,7 @@ use App\Processes\Casts\StoredValueCast;
 use App\Processes\Casts\StoredValuesCast;
 use App\Processes\Exceptions\RevisionImmutable;
 use App\Processes\Exceptions\RuleRevisionInvalid;
+use App\Processes\Models\Support\NamedByRuleScope;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ReaderApproval;
 use App\Processes\Values\RuleScope;
@@ -66,6 +67,7 @@ final class RuleRevision extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids, Linkable;
+    use NamedByRuleScope;
 
     public const string CREATED_AT = 'approved_at';
 
@@ -150,16 +152,5 @@ final class RuleRevision extends Model implements ReadableModel
     protected function ofProject(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey);
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofRule(Builder $query, RuleScope $scope, string $ruleId): void
-    {
-        $query->where('scope_type', $scope->type->value)
-            ->where('scope_owner', $scope->owner)
-            ->where('rule_id', $ruleId);
     }
 }

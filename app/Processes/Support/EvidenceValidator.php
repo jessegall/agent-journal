@@ -6,8 +6,6 @@ namespace App\Processes\Support;
 
 use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\AssessmentOutcome;
-use App\Processes\Enums\CaptureState;
-use App\Processes\Enums\EmptyPolicy;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\Outcome;
 use App\Processes\Enums\PartEndType;
@@ -56,7 +54,7 @@ final readonly class EvidenceValidator
             $problems[] = $this->problem(ProblemCode::OutcomeConflict, $claim);
         }
         $empty = $read->records === [];
-        if ($empty && $contract->output->empty->policy === EmptyPolicy::Invalid) {
+        if ($empty && $contract->output->isEmptyRefused()) {
             $problems[] = $this->problem(ProblemCode::OutputMissing, 'The contract does not allow an empty output.');
         }
         if ($problems !== []) {
@@ -97,7 +95,7 @@ final readonly class EvidenceValidator
             $problems[] = $this->problem(ProblemCode::ExitUnavailable, 'The part did not end with its own exit.');
         }
         $manifest = $this->manifests->stateOf($part);
-        if ($part->capture_state !== CaptureState::Complete || $manifest !== CaptureState::Complete) {
+        if (! $part->capture_state->isComplete() || ! $manifest->isComplete()) {
             $problems[] = $this->problem(ProblemCode::OutputIncomplete, 'The captured output is not complete.');
         }
 

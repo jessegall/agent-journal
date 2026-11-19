@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 use App\Skills\Enums\PublicationState;
+use JsonSerializable;
 
 /**
  * Where one session's newest skill publication stands, with its safe error, and the command that retries it when it
  * failed.
  */
-final readonly class PublicationStatus
+final readonly class PublicationStatus implements JsonSerializable
 {
     public function __construct(
         public string $publicationId,
@@ -38,7 +39,7 @@ final readonly class PublicationStatus
     /**
      * @return array<string, string|null>
      */
-    public function toArray(): array
+    public function jsonSerialize(): array
     {
         return [
             'session' => $this->sessionId,

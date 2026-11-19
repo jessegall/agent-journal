@@ -7,11 +7,11 @@ namespace App\Processes\Models;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
-use App\Processes\Values\RunAdmission;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\RunAdmission;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -41,7 +41,7 @@ use Illuminate\Support\Carbon;
  * @property string $policy_revision
  * @property LifecycleState $lifecycle
  * @property CaptureState $capture_state
- * @property string $stop_reason
+ * @property string|null $stop_reason
  * @property int $update_sequence the number of the last live update sent for this run
  * @property string $stale_reason why the run's admission no longer holds, or empty while it does
  * @property string $event_key_hash
@@ -161,11 +161,6 @@ final class ProcessRun extends Model implements ReadableModel
         $this->increment('update_sequence');
 
         return $this->update_sequence;
-    }
-
-    public function isRunBy(ActorIdentity $actor): bool
-    {
-        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
     }
 
     public function isStale(): bool

@@ -37,7 +37,9 @@ enum ClaudeCodeTool: string
     {
         return match ($this) {
             self::Edit, self::MultiEdit, self::Write, self::NotebookEdit => true,
-            default => false,
+            self::Bash, self::Read, self::Glob, self::Grep, self::LS, self::WebFetch, self::WebSearch,
+            self::TodoWrite, self::ToolSearch, self::ListMcpResources, self::ReadMcpResource,
+            self::ReadMcpResourceDirectory => false,
         };
     }
 
@@ -56,18 +58,21 @@ enum ClaudeCodeTool: string
     {
         return match ($this) {
             self::ToolSearch, self::ListMcpResources, self::ReadMcpResource, self::ReadMcpResourceDirectory => true,
-            default => false,
+            self::Bash, self::Edit, self::MultiEdit, self::Write, self::NotebookEdit, self::Read,
+            self::Glob, self::Grep, self::LS, self::WebFetch, self::WebSearch, self::TodoWrite => false,
         };
     }
 
     /**
      * Whether the tool names an MCP server or resource address the journal must check.
      */
-    public function readsResources(): bool
+    public function canReadResources(): bool
     {
         return match ($this) {
             self::ListMcpResources, self::ReadMcpResource, self::ReadMcpResourceDirectory => true,
-            default => false,
+            self::Bash, self::Edit, self::MultiEdit, self::Write, self::NotebookEdit, self::Read,
+            self::Glob, self::Grep, self::LS, self::WebFetch, self::WebSearch, self::TodoWrite,
+            self::ToolSearch => false,
         };
     }
 }

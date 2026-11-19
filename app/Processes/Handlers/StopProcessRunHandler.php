@@ -26,7 +26,7 @@ final readonly class StopProcessRunHandler implements CommandHandler
     {
         $run = ProcessRun::query()->withoutGlobalScopes()->whereKey($command->runId)->lockForUpdate()->sole();
         $actor = ActorIdentity::of($this->actors->actor());
-        if ($actor->type !== ActorType::User && ! $run->isRunBy($actor)) {
+        if ($actor->type !== ActorType::User && ! $run->isByActor($actor)) {
             throw StopRefused::notYours($run->id);
         }
         if ($run->lifecycle->isFinal()) {

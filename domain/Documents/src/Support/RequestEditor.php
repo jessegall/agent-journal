@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
 use Domain\Documents\Contracts\EditorContext;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -16,8 +17,8 @@ final readonly class RequestEditor implements EditorContext
 {
     public function __construct(private CurrentActor $actors) {}
 
-    public function editor(): Editor
+    public function editor(): ActorIdentity
     {
-        return new Editor($this->actors->actor());
+        return ActorIdentity::of($this->actors->actor());
     }
 }

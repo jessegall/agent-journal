@@ -7,6 +7,7 @@ namespace App\Agents\Support;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Values\DriverRequestPayload;
 
 /**
  * Accepts a model and an effort as one settings change: the pair is validated before either is accepted, and each
@@ -37,10 +38,10 @@ final readonly class DriverSettings
 
         $accepted = [];
         if ($model !== null) {
-            $accepted[] = $this->requests->append($target, DriverOperation::ChangeModel, $idempotencyKey.':model', ['model' => $model]);
+            $accepted[] = $this->requests->append($target, DriverOperation::ChangeModel, $idempotencyKey.':model', DriverRequestPayload::model($model));
         }
         if ($effort !== null) {
-            $accepted[] = $this->requests->append($target, DriverOperation::ChangeEffort, $idempotencyKey.':effort', ['effort' => $effort]);
+            $accepted[] = $this->requests->append($target, DriverOperation::ChangeEffort, $idempotencyKey.':effort', DriverRequestPayload::effort($effort));
         }
 
         foreach ($accepted as $request) {

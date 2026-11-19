@@ -12,6 +12,7 @@ use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\DriverReceipt;
+use App\Agents\Values\DriverRequestPayload;
 use App\Agents\Values\ScriptProgress;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -42,8 +43,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonImmutable|null $updated_at
  * @property string|null $actual_binding
  * @property int $attempt_version
- * @property int|null $wake_requested
- * @property int|null $wake_acknowledged
+ * @property int $wake_requested
+ * @property int $wake_acknowledged
  * @property int|null $wake_claimed
  * @property CarbonImmutable|null $staged_at
  * @property string|null $script_id
@@ -230,18 +231,31 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * Takes the payload's typed columns: its message, model, effort or key script.
+     */
+    public function carry(DriverRequestPayload $payload): void
+    {
+        $this->message = $payload->message;
+        $this->model = $payload->model;
+        $this->effort = $payload->effort;
+        $this->script_id = $payload->scriptId;
+        $this->script_version = $payload->scriptVersion;
+        $this->script_parameters = $payload->scriptParameters;
+    }
+
+    /**
      * Claims the wake up to the requested watermark, so a later wake request raises it instead of adding a row.
      */
     public function claimWake(int $requested): void
     {
-        $this->wake_requested = max($requested, $this->wake_requested ?? 0);
+        $this->wake_requested = max($requested, $this->wake_requested);
         $this->row_version++;
         $this->save();
     }
 
     public function acknowledgeWake(int $acknowledged): void
     {
-        $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged ?? 0);
+        $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged);
         $this->row_version++;
         $this->save();
     }

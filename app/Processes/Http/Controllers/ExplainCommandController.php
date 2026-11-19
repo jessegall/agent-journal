@@ -54,14 +54,6 @@ final readonly class ExplainCommandController
         ));
         $opened = CommandRequest::query()->findOrFail($requestId);
 
-        return new HeldPartData(
-            $part->node,
-            $part->code,
-            $part->operation,
-            $part->holdReason,
-            $opened->id,
-            $opened->state->value,
-            $opened->nextStep()->command,
-        );
+        return $part->heldIn($opened);
     }
 }

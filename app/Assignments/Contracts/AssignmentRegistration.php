@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Contracts;
 
 use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 
 /**
@@ -26,16 +27,7 @@ interface AssignmentRegistration
      */
     public function registerRecord(string $type, string $providerClass, string $owner): void;
 
-    /**
-     * @param  class-string<AutoAssigner>  $assignerClass
-     * @param  class-string<AssignedWorkProvider>  $workProviderClass
-     */
-    public function registerAutoAssigner(
-        string $type,
-        string $assignerClass,
-        string $workProviderClass,
-        string $owner,
-    ): void;
+    public function registerAutoAssigner(AutoAssignerDefinition $definition, string $owner): void;
 
     public function registerPool(PoolDefinition $pool, string $owner): void;
 

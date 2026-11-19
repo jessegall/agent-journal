@@ -7,6 +7,7 @@ namespace App\Hooks\Inspection;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Storage\WalkStep;
+use App\Http\Data\Support\OptionalOrMissing;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 

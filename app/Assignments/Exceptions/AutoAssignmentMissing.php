@@ -18,9 +18,10 @@ final class AutoAssignmentMissing extends RuntimeException implements CommandRef
 
     public static function forKey(AutoAssignmentKey $key): self
     {
+        $actor = $key->actor;
+
         return new self(
-            "The {$key->actor->type->value} {$key->actor->id} has no auto-assignment of {$key->assignableType}; "
-            .'enable it first.',
+            "The {$actor->type->value} {$actor->id} has no auto-assignment of {$key->assignableType}; enable it first.",
         );
     }
 

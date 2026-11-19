@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Inspection;
+namespace App\Http\Data\Support;
 
 use Spatie\LaravelData\Optional;
 

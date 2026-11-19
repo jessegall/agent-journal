@@ -151,15 +151,15 @@ final class CommandRequest extends Model implements ReadableModel
             ->map(fn (PartRun $part): int => $part->end_code)
             ->all();
 
-        return array_values(array_filter(
-            $exits->branches,
-            fn (ExitBranch $branch): bool => ! in_array($branch->status, $statuses, true),
-        ));
+        return $exits->branchesMissing(array_values($statuses));
     }
 
-    public function isOpenedBy(ActorIdentity $actor): bool
+    /**
+     * Whether the actor may propose for the request: a user, or the actor that opened it.
+     */
+    public function acceptsProposalFrom(ActorIdentity $actor): bool
     {
-        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+        return $actor->type->isUser() || $this->isByActor($actor);
     }
 
     /**

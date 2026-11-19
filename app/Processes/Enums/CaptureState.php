@@ -14,4 +14,9 @@ enum CaptureState: string
     case Incomplete = 'incomplete';
     case Corrupt = 'corrupt';
     case Removed = 'removed';
+
+    public function isComplete(): bool
+    {
+        return $this === self::Complete;
+    }
 }

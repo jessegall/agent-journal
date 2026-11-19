@@ -94,13 +94,8 @@ final readonly class RequestWindowReader implements PageReader
     {
         $permits = EvidencePermit::query()->where('command_request_id', $request->id)->readLimit(20)->get();
 
-        return array_values($permits->map(fn (EvidencePermit $permit) => new SampleData(
-            $permit->id,
-            $permit->source_line,
-            $permit->approved_classes,
-            $permit->byte_cap,
-            $permit->seconds_cap,
-            (string) $permit->process_run_id,
+        return array_values($permits->map(fn (EvidencePermit $permit) => SampleData::fromPermit(
+            $permit,
             $permit->process_run_id === null ? [] : $this->partsOf($permit->process_run_id),
         ))->all());
     }

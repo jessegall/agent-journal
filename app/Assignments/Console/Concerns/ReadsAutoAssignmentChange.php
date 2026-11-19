@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Assignments\Console\Concerns;
 
 use App\Actors\Exceptions\InvalidActorText;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
+use App\AgentRequests\Contracts\AgentRequestSender;
 
 /**
  * The change an enable or configure command sends: its auto-assignment key and the pool its options describe. Task
@@ -13,6 +15,24 @@ use App\Actors\Exceptions\InvalidActorText;
 trait ReadsAutoAssignmentChange
 {
     use ReadsAutoAssignmentKey;
+    use SendsSignedWrites;
+
+    /**
+     * Sends the change its options describe to the journal and prints the answer; actor text that does not read
+     * fails before anything is sent.
+     */
+    protected function sendChange(AgentRequestSender $journal, string $path): int
+    {
+        try {
+            $body = $this->changeFields((int) $this->option('size'));
+        } catch (InvalidActorText $invalid) {
+            $this->error($invalid->getMessage());
+
+            return self::FAILURE;
+        }
+
+        return $this->sendWriteAndPrint($journal, $path, $body);
+    }
 
     /**
      * @return array<string, mixed>

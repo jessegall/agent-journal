@@ -49,7 +49,7 @@ enum RefusalCode: string
     /**
      * Whether a refusal with this code holds the work in a command request that names what is owed.
      */
-    public function opensRequest(): bool
+    public function shouldOpenRequest(): bool
     {
         return in_array($this, [self::CommandUnknown, self::OptionUnknown, self::ReaderRequired], true);
     }

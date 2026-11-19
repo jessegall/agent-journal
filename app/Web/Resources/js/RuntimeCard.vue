@@ -45,7 +45,9 @@ function age(seconds: number | null): string {
                 </tr>
             </thead>
             <tbody>
-                <RuntimeRequestRow v-for="request in requests" :key="request.requestId" :request="request" />
+                <template v-for="request in requests" :key="request.requestId">
+                  <RuntimeRequestRow :request="request" />
+                </template>
             </tbody>
         </table>
     </section>

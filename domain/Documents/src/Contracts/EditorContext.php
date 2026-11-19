@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts;
 
-use Domain\Documents\Support\Editor;
+use App\Actors\Support\ActorIdentity;
 use Domain\Documents\Support\RequestEditor;
 use Illuminate\Container\Attributes\Bind;
 
@@ -14,5 +14,5 @@ use Illuminate\Container\Attributes\Bind;
 #[Bind(RequestEditor::class)]
 interface EditorContext
 {
-    public function editor(): Editor;
+    public function editor(): ActorIdentity;
 }

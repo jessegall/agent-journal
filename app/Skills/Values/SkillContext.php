@@ -25,4 +25,12 @@ final readonly class SkillContext
         public ProgramKey|null $program,
         public ProviderKey|null $provider,
     ) {}
+
+    /**
+     * @return list<string>
+     */
+    public function requiredSkills(): array
+    {
+        return $this->profile->requiredSkills();
+    }
 }

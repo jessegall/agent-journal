@@ -23,4 +23,15 @@ enum ContextStartType: string
             SessionStartSource::Compact => self::Compact,
         };
     }
+
+    /**
+     * Whether the context starts empty again, after a clear or a compaction.
+     */
+    public function isFreshContext(): bool
+    {
+        return match ($this) {
+            self::Clear, self::Compact => true,
+            self::Launch, self::Resume => false,
+        };
+    }
 }

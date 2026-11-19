@@ -6,6 +6,7 @@ namespace App\Http\Data\Sharing;
 
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
+use App\Http\Data\Support\OptionalOrMissing;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -15,6 +16,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class RootShareData extends Data
 {
+    use OptionalOrMissing;
+
     public function __construct(
         public readonly string $id,
         public readonly int $number,
