@@ -151,8 +151,7 @@ trait InstallsCommandModules
      */
     private function domainsWith(string ...$moduleClasses): DomainRegistry
     {
-        /** @var list<class-string> $domains */
-        $domains = require base_path('bootstrap/domains.php');
+        $domains = DomainRegistry::installedClasses(base_path());
 
         return DomainRegistry::from([...$domains, ...$moduleClasses]);
     }

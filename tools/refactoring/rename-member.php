@@ -339,7 +339,7 @@ function memberEdits(array $files, string $what, string $class, string $old, str
     foreach ($files as $path => $file) {
         $found = [];
 
-        foreach ($finder->find($file['statements'], static fn (Node $node): bool => true) as $node) {
+        foreach ($finder->find($file['statements'], static fn (Node $node) => true) as $node) {
             array_push($found, ...memberSites($node, $what, $old, $new, $family));
         }
 

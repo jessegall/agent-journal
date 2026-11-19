@@ -17,6 +17,7 @@ use App\Bus\Exceptions\CommandDispatcherMissing;
  */
 abstract readonly class Command implements CommandContract
 {
+    /** @phpstan-ignore property.uninitializedReadonly (bound later by withDispatcher through clone-with) */
     private ActorContext $dispatchingActor;
 
     /** The actor who dispatched this command; fails while the bus has not bound one. */
@@ -32,7 +33,7 @@ abstract readonly class Command implements CommandContract
     /** A copy of this command bound to exactly the given dispatcher. */
     final public function withDispatcher(ActorContext $dispatcher): static
     {
-        return clone($this, [
+        return clone ($this, [
             'dispatchingActor' => $dispatcher,
         ]);
     }

@@ -68,8 +68,7 @@ final class SkillAuthoringTest extends TestCase
      */
     private function installedOwners(): array
     {
-        /** @var list<string> $domainClasses */
-        $domainClasses = require base_path('bootstrap/domains.php');
+        $domainClasses = DomainRegistry::installedClasses(base_path());
 
         return DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner());
     }

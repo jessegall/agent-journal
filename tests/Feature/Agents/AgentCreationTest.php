@@ -9,9 +9,8 @@ use App\Agents\Contracts\AgentResolver;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -19,16 +18,8 @@ use Tests\TestCase;
  */
 final class AgentCreationTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
-    use StartsAgentRequests;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->startUserRequestAs($this->owner->id);
-    }
+    use StartsOwnerRequest;
 
     public function test_a_read_only_and_a_writing_helper_are_created_and_read_through_the_agent_reader(): void
     {

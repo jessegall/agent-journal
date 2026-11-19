@@ -34,8 +34,7 @@ final class SkillCatalogueTest extends TestCase
 
     public function test_the_catalogue_lists_a_registered_module_skill_with_its_owner(): void
     {
-        /** @var list<string> $domainClasses */
-        $domainClasses = require base_path('bootstrap/domains.php');
+        $domainClasses = DomainRegistry::installedClasses(base_path());
         $registry = SkillRegistry::of(DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner()));
         $entry = $this->catalogue($registry)->find(SkillKey::from('notes-writing'));
 

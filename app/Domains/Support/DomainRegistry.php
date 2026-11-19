@@ -254,4 +254,14 @@ final readonly class DomainRegistry
             }
         }
     }
+
+    /**
+     * The domain classes the project installs, in the order bootstrap/domains.php lists them.
+     *
+     * @return list<string>
+     */
+    public static function installedClasses(string $basePath): array
+    {
+        return require $basePath.'/bootstrap/domains.php';
+    }
 }

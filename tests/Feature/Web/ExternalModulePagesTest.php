@@ -81,8 +81,7 @@ final class ExternalModulePagesTest extends TestCase
      */
     private function installNotes(): void
     {
-        /** @var list<class-string> $domainClasses */
-        $domainClasses = require base_path('bootstrap/domains.php');
+        $domainClasses = DomainRegistry::installedClasses(base_path());
         $declarations = DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->uiDeclarations(new WebPages()->declarations());
         $this->app->instance(UiDeclarations::class, $declarations);
         $router = $this->app->make(Router::class);

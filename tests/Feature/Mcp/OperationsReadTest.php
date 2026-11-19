@@ -18,6 +18,7 @@ use stdClass;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Mcp\CascadeResult;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\LaunchesTestAgent;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -30,21 +31,13 @@ use Tests\TestCase;
 final class OperationsReadTest extends TestCase
 {
     use CommitsHookRows;
+    use LaunchesTestAgent;
     use SendsMcpFrames;
     use StartsAgentRequests;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'tasks', 'assignments', 'agent_stacks', 'command_receipts'];
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2OPERATN1';
-
-    private TestLaunch $launch;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->launch = TestLaunch::start();
-    }
 
     public function test_a_completed_assignment_write_reads_back_with_its_outcome(): void
     {
@@ -64,7 +57,7 @@ final class OperationsReadTest extends TestCase
     #[TimeLimit(3, 'It writes a thousand command outcomes and follows every continuation page over them.')]
     public function test_a_1000_outcome_cascade_is_read_whole_by_following_continuations(): void
     {
-        $this->receipt($this->launch->session->id, new CascadeResult('plans.plan 1', array_map(fn (int $number): array => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 1000))));
+        $this->receipt($this->launch->session->id, new CascadeResult('plans.plan 1', array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 1000))));
 
         $records = [];
         $arguments = ['request_key' => self::KEY];
@@ -82,7 +75,7 @@ final class OperationsReadTest extends TestCase
 
     public function test_the_resource_reads_the_same_with_its_continuation_in_the_uri(): void
     {
-        $this->receipt($this->launch->session->id, new CascadeResult('plans.plan 1', array_map(fn (int $number): array => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 30))));
+        $this->receipt($this->launch->session->id, new CascadeResult('plans.plan 1', array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 30))));
         $tool = $this->callMcpTool($this->launch, 'operations_read', ['request_key' => self::KEY])->json('result.structuredContent');
         $continuation = $tool['next_actions'][0]['arguments']['continuation'];
 
