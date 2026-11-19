@@ -45,4 +45,39 @@ final class TimeLimitTest extends TestCase
             TestAlarm::armForTest(self::class, __FUNCTION__);
         }
     }
+
+    #[TimeLimit(seconds: 3, reason: 'It waits out a one second alarm of its own to prove a caught timeout is kept.')]
+    public function test_a_timeout_the_test_caught_is_still_thrown_as_the_timeout(): void
+    {
+        if (! TestAlarm::isAvailable()) {
+            $this->markTestSkipped('pcntl is not loaded.');
+        }
+
+        TestAlarm::armForTest(self::class, 'test_a_test_gets_one_second_unless_it_says_otherwise');
+
+        try {
+            while (true) {
+                usleep(10_000);
+            }
+        } catch (TestTimedOut) {
+            $this->assertTrue(TestAlarm::hasRung());
+            $this->assertStringContainsString(
+                'test_a_test_gets_one_second_unless_it_says_otherwise',
+                $this->timeoutThrown()->getMessage(),
+            );
+        } finally {
+            TestAlarm::armForTest(self::class, __FUNCTION__);
+        }
+
+        $this->assertFalse(TestAlarm::hasRung());
+    }
+
+    private function timeoutThrown(): TestTimedOut
+    {
+        try {
+            TestAlarm::throwTimeout();
+        } catch (TestTimedOut $timeout) {
+            return $timeout;
+        }
+    }
 }

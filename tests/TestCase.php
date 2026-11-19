@@ -15,6 +15,9 @@ use Laravel\Fortify\Features;
 use PDO;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
+use Tests\Support\TimeLimits\TestAlarm;
+use Throwable;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -60,6 +63,19 @@ abstract class TestCase extends BaseTestCase
         Relation::morphMap($this->applicationMorphMap, false);
 
         parent::tearDown();
+    }
+
+    /**
+     * A test that ran out of time fails as the timeout, even when its own code caught the timeout and failed on
+     * something else, such as an assertThrows that expected another exception.
+     */
+    protected function onNotSuccessfulTest(Throwable $failure): never
+    {
+        if (TestAlarm::hasRung() && ! $failure instanceof TestTimedOut) {
+            TestAlarm::throwTimeout();
+        }
+
+        parent::onNotSuccessfulTest($failure);
     }
 
     /**
