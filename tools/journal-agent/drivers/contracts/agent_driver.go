@@ -102,6 +102,8 @@ const (
 	HoldNone           Hold = "none"
 	HoldInterrupted    Hold = "interrupted"
 	HoldNeedsAttention Hold = "needs_attention"
+	// HoldNavigationNeeded is a key script stopped on a menu it could not be certain of, for the main agent.
+	HoldNavigationNeeded Hold = "navigation_needed"
 )
 
 // OperationResult is what a driver reports for one attempt: its progress, the binding it actually used, how it ended

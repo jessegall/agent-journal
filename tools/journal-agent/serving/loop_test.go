@@ -16,6 +16,7 @@ type fakeJournal struct {
 	grants   int
 	reports  []client.RequestReport
 	activity []string
+	holds    []string
 	exits    int
 }
 
@@ -37,6 +38,7 @@ func (journal *fakeJournal) ReportActivity(_ context.Context, report client.Acti
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.activity = append(journal.activity, report.Activity)
+	journal.holds = append(journal.holds, report.Hold)
 	return nil
 }
 

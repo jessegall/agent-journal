@@ -237,7 +237,11 @@ func (loop *Loop) startScript(ctx context.Context, runtime *liveRuntime, request
 
 func (loop *Loop) runScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
 	result, err := loop.scriptResult(ctx, runtime, request)
-	loop.reportResult(ctx, request, result, err)
+	if err == nil && result.Hold == contracts.HoldNavigationNeeded {
+		loop.holdForNavigation(ctx, runtime, request, *result.Script.Uncertainty)
+	} else {
+		loop.reportResult(ctx, request, result, err)
+	}
 
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 	loop.activity(ctx, runtime, "idle")
@@ -273,6 +277,36 @@ func (loop *Loop) scriptResult(
 	}
 
 	return scriptEnd(*result.Script), nil
+}
+
+// holdForNavigation ends a script that stopped on a menu it could not be certain of: its request ends
+// entry_unavailable at the stalled step with only the reason as evidence, never the screen's rows, and the runtime
+// holds navigation_needed so no other work types into that menu.
+func (loop *Loop) holdForNavigation(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+) {
+	outcome := string(contracts.OutcomeEntryUnavailable)
+	report := client.RequestReport{
+		RequestID: request.RequestID,
+		Attempt:   request.Attempt,
+		Progress:  string(contracts.ProgressFailed),
+		Outcome:   &outcome,
+		Script: &client.ScriptReport{
+			Step:       uncertainty.Step,
+			Generation: runtime.driver.Generation(),
+			Evidence:   "navigation-needed: " + string(uncertainty.Reason),
+		},
+	}
+	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+		log.Printf("the stop of request %s for navigation could not be reported: %v", request.RequestID, err)
+	}
+	loop.mutex.Lock()
+	runtime.hold = contracts.HoldNavigationNeeded
+	loop.mutex.Unlock()
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.Hold() })
 }
 
 // stepReporter is a driver whose key scripts report each step they confirm.
@@ -315,6 +349,13 @@ func scriptEnd(result keyscripts.Result) contracts.OperationResult {
 		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeScriptFailed}
 	case keyscripts.EntryUnavailable:
 		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeEntryUnavailable}
+	case keyscripts.NavigationNeeded:
+		return contracts.OperationResult{
+			Progress: contracts.ProgressFailed,
+			Outcome:  contracts.OutcomeEntryUnavailable,
+			Hold:     contracts.HoldNavigationNeeded,
+			Script:   &result,
+		}
 	}
 
 	return contracts.OperationResult{Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}

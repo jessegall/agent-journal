@@ -13,6 +13,8 @@ const (
 	HoldNone = "none"
 	// HoldUnknownScreen is a screen nobody recognised: nothing is guessed and no Escape is sent.
 	HoldUnknownScreen = "unknown_screen"
+	// HoldNavigationNeeded is a key script stopped on a menu it could not be certain of, for the main agent.
+	HoldNavigationNeeded = "navigation_needed"
 )
 
 // HoldReport is what the host reports for a screen: the reason it holds the runtime, the menu family, the program

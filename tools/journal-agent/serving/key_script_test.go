@@ -164,3 +164,31 @@ func TestAStopIsTakenWhileAScriptWaitsForItsScreen(t *testing.T) {
 	}
 	runtime.release <- keyscripts.Result{Outcome: keyscripts.Paused, Step: 2}
 }
+
+func TestARunThatNeedsNavigationEndsEntryUnavailableAndHoldsTheRuntimeWithoutRows(t *testing.T) {
+	journal := &fakeJournal{}
+	runtime := newScriptRuntime()
+	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.NoEntry, Step: 1, Rows: []string{"Pick a colour"}}
+	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
+
+	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
+	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
+
+	last := journal.reportsOf("script")[3]
+	want := client.ScriptReport{Step: 1, Generation: 1, Evidence: "navigation-needed: no-entry"}
+	if last.Progress != "failed" || last.Outcome == nil || *last.Outcome != "entry_unavailable" ||
+		last.Script == nil || *last.Script != want {
+		t.Fatalf("a run that needs navigation was reported %+v", last)
+	}
+	waitFor(t, func() bool {
+		journal.mutex.Lock()
+		defer journal.mutex.Unlock()
+		return len(journal.holds) == 2
+	})
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if journal.holds[1] != "navigation_needed" || journal.activity[1] != "idle" {
+		t.Fatalf("the runtime was reported %v holding %v", journal.activity, journal.holds)
+	}
+}
