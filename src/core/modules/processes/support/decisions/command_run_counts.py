@@ -8,7 +8,6 @@ from engine.repository.repository import Repository
 from core.modules.processes.models.command_run_count import CommandRunCount
 
 COUNTING_COMMANDS_READ = 1000
-COUNTING_REASON = "the commands still counting runs without a reader, which a reader or a mark may set back; read by their count's index"
 
 
 class CommandRunCounts:
@@ -36,7 +35,14 @@ class CommandRunCounts:
         if stored is not None:
             self.repository.update(stored, context, runs_without_reader=0)
 
+    # a reader's patterns and a mark's terms are matched here, not in sql, so every counting command is read, a page at a
+    # time by id, so no one read passes the read limit and none is left out
     def reset(self, covers: Callable[[str], bool], context: Context) -> None:
-        counting = self.queries.query(CommandRunCount).matching(Greater("runs_without_reader", 0)).descending("runs_without_reader").limit(COUNTING_COMMANDS_READ, COUNTING_REASON).get()
-        for stored in [row for row in counting if covers(row.command_key)]:
-            self.repository.update(stored, context, runs_without_reader=0)
+        last_id = 0
+        while True:
+            page = self.queries.query(CommandRunCount).matching(Greater("runs_without_reader", 0)).matching(Greater("id", last_id)).ordered("id").take(COUNTING_COMMANDS_READ)
+            for stored in [row for row in page if covers(row.command_key)]:
+                self.repository.update(stored, context, runs_without_reader=0)
+            if len(page) < COUNTING_COMMANDS_READ:
+                return
+            last_id = page[-1].id
