@@ -1,5 +1,7 @@
 # Access
 
+Access decides who may use the journal and what an agent may do.
+
 ## Who may use the journal
 
 Users sign in to the journal, and the journal's access settings name which of them may use it. A user the settings do not admit is refused.
