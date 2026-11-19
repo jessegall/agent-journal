@@ -29,7 +29,9 @@ final readonly class TransactionalIdentityLinks implements IdentityLinks
             ->readAll('a record links to few records of one type')
             ->get();
 
-        return array_values($links->map(fn (Link $link) => new RecordIdentity(...$link->otherSideFrom($record)))->all());
+        $identities = $links->map(fn (Link $link) => new RecordIdentity(...$link->otherSideFrom($record)));
+
+        return array_values($identities->all());
     }
 
     public function among(Builder $records, RecordIdentity $other): Builder

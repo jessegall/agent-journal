@@ -27,7 +27,10 @@ final class LinkTypeRegistry
             $registeredModel = $known[$name] ?? null;
             $registeredName = array_search($model, $known, true);
 
-            if (($registeredModel !== null && $registeredModel !== $model) || ($registeredName !== false && $registeredName !== $name)) {
+            $nameTaken = $registeredModel !== null && $registeredModel !== $model;
+            $modelTaken = $registeredName !== false && $registeredName !== $name;
+
+            if ($nameTaken || $modelTaken) {
                 throw LinkTypeRepeated::for($name, $model);
             }
         }

@@ -1,0 +1,250 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Agents;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Exceptions\ActorNotAllowed;
+use App\Actors\Support\ActorContext;
+use App\Actors\Values\OwnerAuthority;
+use App\Agents\Actions\LaunchSessions;
+use App\Agents\Commands\CancelAccountUses;
+use App\Agents\Commands\HoldAccountUses;
+use App\Agents\Commands\SettleAccountUses;
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Contracts\ActiveAccountReader;
+use App\Agents\Enums\AccountProcessRole;
+use App\Agents\Enums\LaunchUnavailableReason;
+use App\Agents\Events\AccountUseChanged;
+use App\Agents\Exceptions\AccountUnavailable;
+use App\Agents\Exceptions\AccountUseMissing;
+use App\Agents\Exceptions\AccountUsesRemain;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
+use App\Agents\Support\AccountUse;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandTransaction;
+use App\Bus\Exceptions\CommandTransactionMissing;
+use App\Links\Exceptions\UnknownLinkType;
+use App\Links\Support\LinkTypeRegistry;
+use App\Records\Contracts\IdentityLinks;
+use App\Records\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Connection;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Links\Note;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
+use Tests\TestCase;
+
+/**
+ * A launch's session links to the account it ran with by the account's identity alone, and Core answers how the
+ * accounts are used and holds and settles their launches for maintenance, for the owner only.
+ */
+final class AccountUsesTest extends TestCase
+{
+    use CommitsHookRows;
+
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+        'command_receipts',
+    ];
+
+    /**
+     * An account's link alias whose table this test never creates: linking and reading by identity must not load it.
+     */
+    private const string ACCOUNT_TYPE = 'fixtures.note';
+
+    private Agent $agent;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->make(LinkTypeRegistry::class)->register([self::ACCOUNT_TYPE => Note::class]);
+        $this->agent = Agent::named('Test agent', 'main-agent');
+        $this->actAsOwner();
+    }
+
+    public function test_a_session_links_to_an_account_named_only_by_identity_and_reads_it_back(): void
+    {
+        $account = $this->account();
+        $session = $this->sessionOn($account);
+        $this->sessionOn($account);
+
+        $this->assertTrue($this->uses()->accountOf($session->id, self::ACCOUNT_TYPE)->isSameAs($account));
+        $linked = $this->links()->linkedOfType($session, self::ACCOUNT_TYPE);
+        $this->assertSame([$account->id], array_map(fn (RecordIdentity $identity) => $identity->id, $linked));
+    }
+
+    public function test_linking_outside_a_bus_command_or_to_an_unregistered_alias_is_refused(): void
+    {
+        $session = $this->launch();
+
+        try {
+            $this->links()->link($session, $this->account());
+            $this->fail('A link was written outside a bus command.');
+        } catch (CommandTransactionMissing) {
+            $this->passCommandTransaction();
+        }
+
+        $this->expectException(UnknownLinkType::class);
+
+        $this->links()->link($session, new RecordIdentity('fixtures.unknown', (string) Str::ulid()));
+    }
+
+    public function test_counts_and_history_follow_running_and_ended_launches_of_each_account(): void
+    {
+        [$first, $second, $unused] = [$this->account(), $this->account(), $this->account()];
+        $ended = $this->sessionOn($first);
+        $running = $this->sessionOn($first);
+        $this->sessionOn($second);
+        $ended->endAt(CarbonImmutable::now());
+
+        $counts = $this->uses()->counts([$first, $second, $unused]);
+        $history = $this->uses()->history($first, 10);
+
+        $this->assertSame(
+            [1, 1, 0],
+            array_map(fn (RecordIdentity $account) => $counts->runningFor($account), [$first, $second, $unused]),
+        );
+        $this->assertSame([$running->id, $ended->id], array_map(fn (AccountUse $use) => $use->sessionId, $history));
+        $this->assertSame([true, false], array_map(fn (AccountUse $use) => $use->isRunning(), $history));
+        $this->assertSame(AccountProcessRole::Execution, $history[0]->role);
+        $this->assertTrue($this->uses()->counts([$unused])->isEmpty());
+    }
+
+    public function test_a_session_without_an_account_names_what_is_missing(): void
+    {
+        $this->expectException(AccountUseMissing::class);
+
+        $this->uses()->accountOf($this->launch()->id, self::ACCOUNT_TYPE);
+    }
+
+    public function test_an_agent_may_neither_read_nor_maintain_account_uses(): void
+    {
+        $account = $this->account();
+        $this->actAsAgent();
+
+        $this->assertRefused(fn () => $this->uses()->counts([$account]));
+        $this->assertRefused(fn () => $this->uses()->history($account, 10));
+        $this->assertRefused(fn () => $this->bus()->run(new HoldAccountUses($account)));
+    }
+
+    public function test_maintenance_holds_the_running_launches_and_settles_only_once_they_ended(): void
+    {
+        Event::fake([AccountUseChanged::class]);
+        $account = $this->account();
+        $session = $this->sessionOn($account);
+
+        $held = $this->bus()->run(new HoldAccountUses($account));
+        $cancelled = $this->bus()->run(new CancelAccountUses($account));
+
+        $this->assertSame([$session->id], array_map(fn (AccountUse $use) => $use->sessionId, $held));
+        $this->assertSame(0, $cancelled);
+
+        try {
+            $this->bus()->run(new SettleAccountUses($account));
+            $this->fail('An account with a running launch was settled.');
+        } catch (AccountUsesRemain) {
+            $session->endAt(CarbonImmutable::now());
+        }
+
+        $this->bus()->run(new SettleAccountUses($account));
+
+        Event::assertDispatchedTimes(AccountUseChanged::class, 2);
+    }
+
+    public function test_without_accounts_every_launch_is_refused_with_its_program_and_a_safe_reason(): void
+    {
+        try {
+            $this->app->make(ActiveAccountReader::class)->forLaunch('claude-code');
+            $this->fail('A launch got an account nobody keeps.');
+        } catch (AccountUnavailable $refused) {
+            $this->assertSame('claude-code', $refused->program);
+            $this->assertSame(LaunchUnavailableReason::NoAccount, $refused->reason);
+        }
+    }
+
+    private function account(): RecordIdentity
+    {
+        return new RecordIdentity(self::ACCOUNT_TYPE, (string) Str::ulid());
+    }
+
+    private function launch(): AgentSession
+    {
+        return $this->app->make(LaunchSessions::class)
+            ->launch($this->agent, TestSelections::of('claude-code'), TestSelections::requestId())
+            ->session;
+    }
+
+    private function sessionOn(RecordIdentity $account): AgentSession
+    {
+        $session = $this->launch();
+        $this->passCommandTransaction();
+        $this->links()->link($session, $account);
+
+        return $session;
+    }
+
+    /**
+     * The bus's own transaction check is proved by its tests; here the link is written as a launch command would.
+     */
+    private function passCommandTransaction(): void
+    {
+        $this->app->instance(CommandTransaction::class, new class implements CommandTransaction {
+            public function requireRunning(Connection $connection): void {}
+        });
+        $this->app->forgetInstance(IdentityLinks::class);
+    }
+
+    private function assertRefused(callable $read): void
+    {
+        try {
+            $read();
+            $this->fail('An agent read or changed the uses of an account.');
+        } catch (ActorNotAllowed) {
+            $this->addToAssertionCount(1);
+        }
+    }
+
+    private function actAsOwner(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
+    }
+
+    private function actAsAgent(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($this->agent->id),
+            TestLaunchAuthority::forAgent($this->agent->id),
+        );
+    }
+
+    private function uses(): AccountUses
+    {
+        return $this->app->make(AccountUses::class);
+    }
+
+    private function links(): IdentityLinks
+    {
+        return $this->app->make(IdentityLinks::class);
+    }
+
+    private function bus(): CommandBus
+    {
+        return $this->app->make(CommandBus::class);
+    }
+}

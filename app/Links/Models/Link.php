@@ -84,10 +84,10 @@ final class Link extends MorphPivot implements ReadableModel
         $other = $records->getModel();
         $key = $other->getQualifiedKeyName();
         $otherType = $other->getMorphClass();
+        $asTargets = self::query()->withSourceKey($type, $id)->where('target_type', $otherType)->select('target_id');
+        $asSources = self::query()->withTargetKey($type, $id)->where('source_type', $otherType)->select('source_id');
 
-        return $records->where(fn (Builder $linked) => $linked
-            ->whereIn($key, self::query()->withSourceKey($type, $id)->where('target_type', $otherType)->select('target_id'))
-            ->orWhereIn($key, self::query()->withTargetKey($type, $id)->where('source_type', $otherType)->select('source_id')));
+        return $records->where(fn (Builder $linked) => $linked->whereIn($key, $asTargets)->orWhereIn($key, $asSources));
     }
 
     /**
@@ -212,7 +212,8 @@ final class Link extends MorphPivot implements ReadableModel
      */
     private static function removeAll(ReadBuilder $query): array
     {
-        $ids = array_values(array_map(strval(...), $query->readAll('every removed link is announced by id')->pluck('id')->all()));
+        $removed = $query->readAll('every removed link is announced by id')->pluck('id');
+        $ids = array_values(array_map(strval(...), $removed->all()));
         self::query()->whereKey($ids)->delete();
 
         return $ids;

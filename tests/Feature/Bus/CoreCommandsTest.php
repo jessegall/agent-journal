@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
@@ -14,6 +15,7 @@ use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\FenceProfileRevision;
+use App\Agents\Commands\HoldAccountUses;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
@@ -33,6 +35,7 @@ use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
+use App\Agents\Commands\SettleAccountUses;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Assignments\Commands\AssignRecord;
@@ -169,6 +172,9 @@ final class CoreCommandsTest extends CommandBusTestCase
             ConfigureAutoAssignment::class,
             DisableAutoAssignment::class,
             RetireAgent::class,
+            HoldAccountUses::class,
+            CancelAccountUses::class,
+            SettleAccountUses::class,
             FenceProfileRevision::class,
             LaunchAgent::class,
             CreateAgent::class,
