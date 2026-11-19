@@ -106,6 +106,7 @@ use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\CancelSignIn;
+use App\Profiles\Commands\ClaimSignIn;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
@@ -113,6 +114,7 @@ use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\RenameAccount;
+use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Commands\SwitchAccount;
 use App\Records\Commands\LinkRecords;
@@ -279,6 +281,8 @@ final class CoreCommandsTest extends CommandBusTestCase
             MaintainAccount::class,
             BeginSignIn::class,
             CancelSignIn::class,
+            ClaimSignIn::class,
+            ReportSignIn::class,
             CompleteSignIn::class,
             ExpireSignInAttempt::class,
             ReconcileAccounts::class,
@@ -351,6 +355,8 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReportStopped::class,
             ReportFailure::class,
             ReconcileStarts::class,
+            ClaimSignIn::class,
+            ReportSignIn::class,
             CompleteSignIn::class,
             ExpireSignInAttempt::class,
             ReconcileAccounts::class,

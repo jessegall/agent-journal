@@ -161,6 +161,7 @@ final class Account extends Model implements ReadableModel
         $this->state = AccountState::SignedIn;
         $this->identity = $identity;
         $this->checked_at = $checkedAt;
+        $this->save();
         $this->releaseWriter($attempt);
     }
 

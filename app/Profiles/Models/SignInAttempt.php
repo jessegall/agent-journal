@@ -203,6 +203,47 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
+     * The oldest attempt no host runs yet, taken by this host to run its program's sign-in; none when nothing waits.
+     */
+    public static function claimFor(string $hostId, CarbonImmutable $now): self|null
+    {
+        $attempt = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->where('state', SignInState::Starting->value)
+            ->whereNull('process_reference')
+            ->where('expires_at', '>', $now)
+            ->orderBy('created_at')
+            ->lockForUpdate()
+            ->first();
+
+        if ($attempt === null) {
+            return null;
+        }
+
+        $attempt->process_reference = $hostId;
+        $attempt->save();
+
+        return $attempt;
+    }
+
+    /**
+     * The attempt this host runs, read before its locks are taken in their order; another host's attempt is as unknown
+     * as a missing one.
+     *
+     * @throws SignInAttemptMissing
+     */
+    public static function runBy(string $hostId, string $attemptId): self
+    {
+        $attempt = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->whereKey($attemptId)
+            ->where('process_reference', $hostId)
+            ->first();
+
+        return self::found($attemptId, $attempt);
+    }
+
+    /**
      * The program's sign-in started and now waits for its person; only from here may a verified result complete it.
      */
     public function waitForPerson(): void
