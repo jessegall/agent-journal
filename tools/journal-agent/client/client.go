@@ -13,6 +13,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"journal-agent/screen"
 )
 
 // Enrollment is what agents:host-enroll handed a host: where the journal is, which host it is and its secret.
@@ -87,13 +89,58 @@ func New(enrollment Enrollment) *Client {
 	return &Client{enrollment: enrollment, http: &http.Client{Timeout: 30 * time.Second}, now: time.Now}
 }
 
-// Claim long-polls for up to waitSeconds and returns at most limit requests of this host's runtimes.
-func (client *Client) Claim(ctx context.Context, limit, waitSeconds int) ([]ClaimedRequest, error) {
+// Watch is one runtime somebody watches in the journal, and how often its screen is captured.
+type Watch struct {
+	RuntimeID  string `json:"runtime_id"`
+	IntervalMs int    `json:"interval_ms"`
+}
+
+// Claim is one answer to a claim: the requests handed to this host, the runtimes watched on it and the version of
+// that watched list.
+type Claim struct {
+	Requests       []ClaimedRequest `json:"requests"`
+	Watched        []Watch          `json:"watched"`
+	WatchedVersion int              `json:"watched_version"`
+}
+
+// Claim long-polls for up to waitSeconds and returns at most limit requests of this host's runtimes; the poll answers
+// at once when the watched list's version differs from watchedVersion, the last one the host saw.
+func (client *Client) Claim(ctx context.Context, limit, waitSeconds, watchedVersion int) (Claim, error) {
+	var answer Claim
+	target := "/host/claim?limit=" + strconv.Itoa(limit) + "&wait=" + strconv.Itoa(waitSeconds) +
+		"&watched_version=" + strconv.Itoa(watchedVersion)
+	return answer, client.call(ctx, target, nil, &answer)
+}
+
+// ScreenReport is one frame of a watched runtime's screen.
+type ScreenReport struct {
+	RuntimeID string       `json:"runtime_id"`
+	Frame     screen.Frame `json:"frame"`
+}
+
+// ScreenRefused is the journal's refusal of a screen report, such as for a runtime nobody watches any more.
+type ScreenRefused struct {
+	Reason string
+}
+
+func (refused ScreenRefused) Error() string {
+	return "the journal refused the screen report: " + refused.Reason
+}
+
+// ReportScreen sends one frame of the runtime's screen; a refusal comes back as ScreenRefused.
+func (client *Client) ReportScreen(ctx context.Context, runtimeID string, frame screen.Frame) error {
 	var answer struct {
-		Requests []ClaimedRequest `json:"requests"`
+		Status string `json:"status"`
+		Reason string `json:"reason"`
 	}
-	target := "/host/claim?limit=" + strconv.Itoa(limit) + "&wait=" + strconv.Itoa(waitSeconds)
-	return answer.Requests, client.call(ctx, target, nil, &answer)
+	report := ScreenReport{RuntimeID: runtimeID, Frame: frame}
+	if err := client.call(ctx, "/host/reports/screen", report, &answer); err != nil {
+		return err
+	}
+	if answer.Status == "refused" {
+		return ScreenRefused{Reason: answer.Reason}
+	}
+	return nil
 }
 
 // LaunchFile is one file the host writes in a launch folder.

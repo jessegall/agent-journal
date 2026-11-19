@@ -26,6 +26,7 @@ type EmulatorReader struct {
 	hashes        map[string]uint64
 	generations   map[string]uint64
 	version       uint64
+	unreadable    bool
 }
 
 var _ contracts.ScreenReader = (*EmulatorReader)(nil)
@@ -55,32 +56,36 @@ func NewEmulatorReader(columns, rows int, limits Limits, regions []contracts.Reg
 }
 
 func (reader *EmulatorReader) Feed(bytes []byte) error {
-	if err := reader.limits.checkChunk(len(bytes)); err != nil {
-		return err
-	}
-
 	reader.lock.Lock()
 	defer reader.lock.Unlock()
+
+	if err := reader.limits.checkChunk(len(bytes)); err != nil {
+		reader.unreadable = true
+		return err
+	}
 
 	written, err := reader.terminal.Write(bytes)
 	if written > 0 {
 		reader.version++
 	}
 	if err != nil {
+		reader.unreadable = true
 		return err
 	}
+	reader.unreadable = false
 	reader.countGenerations()
 
 	return nil
 }
 
 func (reader *EmulatorReader) Resize(columns, rows int) error {
-	if err := reader.limits.checkSize(columns, rows); err != nil {
-		return err
-	}
-
 	reader.lock.Lock()
 	defer reader.lock.Unlock()
+
+	if err := reader.limits.checkSize(columns, rows); err != nil {
+		reader.unreadable = true
+		return err
+	}
 
 	reader.terminal.Resize(columns, rows)
 	reader.version++
@@ -141,6 +146,15 @@ func (reader *EmulatorReader) Generation(region string) uint64 {
 	defer reader.lock.Unlock()
 
 	return reader.generations[region]
+}
+
+// Unreadable says whether the last feed or resize failed, so the screen shown may be stale; the next good feed clears
+// it.
+func (reader *EmulatorReader) Unreadable() bool {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	return reader.unreadable
 }
 
 // Version goes up with every feed that wrote bytes and every resize, so a watcher can tell cheaply that the screen

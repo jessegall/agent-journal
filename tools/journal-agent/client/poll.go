@@ -13,12 +13,16 @@ const (
 	claimWait    = 10
 )
 
-// Poll claims requests in a loop until ctx ends, handing each batch to handle. When the journal cannot be reached
-// it waits, doubling the wait up to a minute, and starts over at a second after the next answer.
-func (client *Client) Poll(ctx context.Context, handle func([]ClaimedRequest)) {
+// Poll claims requests in a loop until ctx ends, handing each answer to handle when it holds requests or a new
+// watched list, and the first answer after the journal was lost, so the watched list is named again. When the
+// journal cannot be reached it waits, doubling the wait up to a minute, and starts over at a second after the next
+// answer.
+func (client *Client) Poll(ctx context.Context, handle func(Claim)) {
 	backoff := firstBackoff
+	watchedVersion := 0
+	lost := false
 	for ctx.Err() == nil {
-		claimed, err := client.Claim(ctx, claimLimit, claimWait)
+		claimed, err := client.Claim(ctx, claimLimit, claimWait, watchedVersion)
 		if err != nil {
 			log.Printf("claim failed, retrying in %s: %v", backoff, err)
 			select {
@@ -27,10 +31,13 @@ func (client *Client) Poll(ctx context.Context, handle func([]ClaimedRequest)) {
 			case <-time.After(backoff):
 			}
 			backoff = min(backoff*2, lastBackoff)
+			lost = true
 			continue
 		}
 		backoff = firstBackoff
-		if len(claimed) > 0 {
+		if len(claimed.Requests) > 0 || claimed.WatchedVersion != watchedVersion || lost {
+			watchedVersion = claimed.WatchedVersion
+			lost = false
 			handle(claimed)
 		}
 	}

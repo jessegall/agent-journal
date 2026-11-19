@@ -11,14 +11,16 @@ import (
 	"journal-agent/screen"
 )
 
-// listeningSocket serves an attach socket whose programs are bare PTYs with nothing running behind them.
-func listeningSocket(t *testing.T) *AttachSocket {
+// listeningSocket serves an attach socket whose programs are bare PTYs with nothing running behind them; closing a
+// program's end of its PTY, sent on the channel as each starts, ends it.
+func listeningSocket(t *testing.T) (*AttachSocket, chan *os.File) {
 	t.Helper()
 	folder, err := os.MkdirTemp("/tmp", "attach")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { os.RemoveAll(folder) })
+	programs := make(chan *os.File, 4)
 
 	socket := &AttachSocket{
 		Folder: folder,
@@ -28,6 +30,7 @@ func listeningSocket(t *testing.T) *AttachSocket {
 				return nil, err
 			}
 			t.Cleanup(func() { program.Close(); terminal.Close() })
+			programs <- terminal
 			return program, nil
 		},
 		Layout: func(AttachRequest) (screen.Layout, error) {
@@ -40,7 +43,7 @@ func listeningSocket(t *testing.T) *AttachSocket {
 	}
 	t.Cleanup(func() { listener.Close() })
 
-	return socket
+	return socket, programs
 }
 
 // attached connects a client that asks for the runtime at the given size.
@@ -78,7 +81,7 @@ func waitForSize(t *testing.T, socket *AttachSocket, runtimeID string, rows, col
 }
 
 func TestAResizeOfTheAttachedWindowResizesTheScreen(t *testing.T) {
-	socket := listeningSocket(t)
+	socket, _ := listeningSocket(t)
 	connection := attached(t, socket, "runtime-1", 24, 80)
 	waitForSize(t, socket, "runtime-1", 24, 80)
 
@@ -90,7 +93,7 @@ func TestAResizeOfTheAttachedWindowResizesTheScreen(t *testing.T) {
 }
 
 func TestAReattachAtAnotherSizeResizesTheScreen(t *testing.T) {
-	socket := listeningSocket(t)
+	socket, _ := listeningSocket(t)
 	first := attached(t, socket, "runtime-1", 24, 80)
 	waitForSize(t, socket, "runtime-1", 24, 80)
 	first.Close()
@@ -98,4 +101,29 @@ func TestAReattachAtAnotherSizeResizesTheScreen(t *testing.T) {
 	attached(t, socket, "runtime-1", 50, 160)
 
 	waitForSize(t, socket, "runtime-1", 50, 160)
+}
+
+func TestAnEndedProgramLeavesNoReaderAndARelaunchGetsANewOne(t *testing.T) {
+	socket, programs := listeningSocket(t)
+	if _, found := socket.ReaderFor("runtime-1"); found {
+		t.Fatal("a reader before the runtime was started")
+	}
+	attached(t, socket, "runtime-1", 24, 80)
+	waitForSize(t, socket, "runtime-1", 24, 80)
+	first, _ := socket.ReaderFor("runtime-1")
+
+	(<-programs).Close()
+	deadline := time.Now().Add(time.Second)
+	for _, found := socket.ReaderFor("runtime-1"); found; _, found = socket.ReaderFor("runtime-1") {
+		if time.Now().After(deadline) {
+			t.Fatal("the ended program's terminal stayed")
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+
+	attached(t, socket, "runtime-1", 24, 80)
+	waitForSize(t, socket, "runtime-1", 24, 80)
+	if second, _ := socket.ReaderFor("runtime-1"); second == first {
+		t.Fatal("the relaunch reuses the ended program's reader")
+	}
 }

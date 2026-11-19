@@ -24,6 +24,7 @@ type Frame struct {
 	Plain      bool             `json:"plain"`
 	TooLarge   bool             `json:"too_large"`
 	Unreadable bool             `json:"unreadable"`
+	NoTerminal bool             `json:"no_terminal"`
 }
 
 // FrameLimit is the most bytes of JSON one frame may take.
