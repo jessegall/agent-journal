@@ -111,7 +111,9 @@ final class SettingsCommandsTest extends TestCase
             $announced++;
         });
 
+        $this->useSettingsBesideTestModules();
         $this->installCommandModules();
+        $this->actAs(ActorContext::forUser($this->ownerId));
         $change = $this->commands->integer($this->reviews->retryLimit, 4, 0);
 
         $this->assertThrows(
