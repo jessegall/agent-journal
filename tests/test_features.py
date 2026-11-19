@@ -5688,7 +5688,7 @@ def test_a_run_counts_as_running_while_its_heartbeat_is_fresh_and_one_that_stopp
     from journal.support.heartbeat import Heartbeat
     from journal.support.time_source import TimeSource
     sent = []
-    monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, verb, fields: sent.append((environment_id, verb, fields.get("name"))))
+    monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, verb, fields: sent.append((environment_id, verb, fields.get("name"))) or SupervisorReply(True))
     monkeypatch.setattr(SupervisorLink, "hosting", lambda link: MAIN)
     monkeypatch.setattr(SupervisorLink, "running", lambda link, environments: [e for e in environments if e.row_id == MAIN])
     clock = app.container.get(TimeSource)

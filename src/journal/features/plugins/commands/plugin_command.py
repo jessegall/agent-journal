@@ -10,6 +10,7 @@ from journal.events.moments.plugin_proposed import PluginProposed
 from journal.features.plugins.support.plugin_preview import PluginPreview
 from journal.features.plugins.support.plugin_aliases import PluginAliases
 from journal.features.plugins.support.plugin_installing import PluginInstalling
+from journal.features.plugins.support.plugin_runs import PluginRuns
 from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
 from journal.repositories.scope import Scope
@@ -20,8 +21,8 @@ STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": 
 class PluginCommand(Command):
     noun = "plugin"
 
-    def __init__(self, plugins: Plugins, installing: PluginInstalling, announcer: Announcer, scope: Scope, settings: PluginSettings, aliases: PluginAliases, probes: PluginHealth) -> None:
-        self.plugins, self.installing, self.announcer, self.scope, self.schemas, self.aliases, self.probes = plugins, installing, announcer, scope, settings, aliases, probes
+    def __init__(self, plugins: Plugins, installing: PluginInstalling, announcer: Announcer, scope: Scope, settings: PluginSettings, aliases: PluginAliases, probes: PluginHealth, runs: PluginRuns) -> None:
+        self.plugins, self.installing, self.announcer, self.scope, self.schemas, self.aliases, self.probes, self.runs = plugins, installing, announcer, scope, settings, aliases, probes, runs
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "the plugins installed here, each on or off and how it last failed")
@@ -43,6 +44,11 @@ class PluginCommand(Command):
         configure.add_argument("key")
         configure.add_argument("value")
         self.verb(verbs, "settings", "a plugin's settings, what each is and how it is set").add_argument("name")
+        queue = self.verb(verbs, "queue", "run a command for a plugin in a checkout, one run of its kind at a time, its output streamed and its exit code kept")
+        queue.add_argument("name")
+        queue.add_argument("--kind", required=True, help="what the run is, so runs of one kind wait for each other")
+        queue.add_argument("--checkout", required=True, help="the folder it runs in")
+        queue.add_argument("command", nargs="+", help="after --: the command and its arguments")
         removal = self.verb(verbs, "remove", "take a plugin out; its data folder stays unless --purge")
         removal.add_argument("name")
         removal.add_argument("--purge", action="store_true", help="delete its data folder too")
@@ -108,6 +114,10 @@ class PluginCommand(Command):
         self.installing.disable(args.name, caller.actor)
         print(f"{args.name} off")
         return 0
+
+    def queue(self, args: Namespace, caller: Caller) -> int:
+        command = args.command[1:] if args.command[:1] == ["--"] else args.command
+        return self.runs.run(self.plugins.lookup(args.name), caller.environment, args.kind, args.checkout, command)
 
     def remove(self, args: Namespace, caller: Caller) -> int:
         if args.purge:
