@@ -25,6 +25,15 @@ final readonly class RegisterAssignables implements DomainBootstrapper
             $this->assignments->registerRecord($type, $providerClass, $domain->name, AssignmentPurpose::PublicWork);
         }
 
+        foreach ($domain->internalAssignables() as $type => $providerClass) {
+            $this->assignments->registerRecord(
+                $type,
+                $providerClass,
+                $domain->name,
+                AssignmentPurpose::InternalResponsibility,
+            );
+        }
+
         foreach ($domain->autoAssigners() as $definition) {
             $this->assignments->registerAutoAssigner($definition, $domain->name);
         }

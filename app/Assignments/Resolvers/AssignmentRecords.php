@@ -7,6 +7,7 @@ namespace App\Assignments\Resolvers;
 use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentResolver;
+use App\Assignments\Contracts\SharedHolders;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Models\AssignmentRecord;
@@ -31,6 +32,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
         private CurrentActor $actors,
         private AssignmentProviders $providers,
         private LoggerInterface $log,
+        private SharedHolders $shared,
     ) {}
 
     /**
@@ -74,8 +76,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
 
         while (true) {
             $candidates = AssignmentRecord::query()
-                ->where('holder_type', $holder->type)
-                ->where('holder_id', $holder->id)
+                ->heldOrShared($holder, $this->shared->sharedWith($holder))
                 ->where('record_type', $type)
                 ->when($examinedUpTo !== null, fn (Builder $query) => $query->where('record_id', '>', $examinedUpTo))
                 ->orderBy('record_id')

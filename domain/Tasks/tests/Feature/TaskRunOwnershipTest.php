@@ -15,6 +15,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
+use App\Desks\Contracts\RunClaims;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
@@ -26,6 +27,7 @@ use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -39,7 +41,19 @@ final class TaskRunOwnershipTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links', 'command_receipts'];
+    private const array TABLES = [
+        'tasks',
+        'task_runs',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+        'assignments',
+        'claim_authorizations',
+        'command_receipts',
+    ];
 
     private AgentSession $first;
 
@@ -67,7 +81,9 @@ final class TaskRunOwnershipTest extends TestCase
         $this->assertThrows(fn () => $this->bus()->run(new StartTask($this->task->id)), TaskRunTaken::class);
 
         $this->assertSame([1, 1], [$run, $retry]);
-        $this->assertSame($this->first->agent_id, $this->task->fresh()?->run_actor_id);
+        $run = TaskRun::query()->where('task_id', $this->task->id)->sole();
+        $holder = $this->app->make(RunClaims::class)->holderOf($run->assignmentIdentity())->get();
+        $this->assertSame($this->first->agent_id, $holder->id);
     }
 
     public function test_finishing_records_the_note_and_ends_the_working_state(): void

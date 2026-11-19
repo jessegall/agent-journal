@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Contracts;
 
 use App\Assignments\Support\AssigneeIdentity;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 
 /**
  * Fresh subqueries of assigned record ids, for a domain query to filter by with whereIn or whereNotIn.

@@ -19,6 +19,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Contracts\Event;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
+use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
@@ -390,6 +391,16 @@ final readonly class DomainEntry
     public function assignables(): array
     {
         return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * The record types of this domain only Core's own writers assign; none without ProvidesInternalAssignables.
+     *
+     * @return array<string, class-string<AssignableProvider>>
+     */
+    public function internalAssignables(): array
+    {
+        return $this->domain instanceof ProvidesInternalAssignables ? $this->domain->internalAssignables() : [];
     }
 
     /**

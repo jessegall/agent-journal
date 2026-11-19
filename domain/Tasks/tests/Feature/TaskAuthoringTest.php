@@ -7,7 +7,6 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\CreateTask;
@@ -39,7 +38,7 @@ final class TaskAuthoringTest extends TestCase
 
     public function test_the_tasks_table_has_the_authoring_and_run_columns(): void
     {
-        $this->assertTrue(Schema::hasColumns('tasks', ['brief', 'creator_type', 'creator_id', 'revision', 'run_number', 'run_actor_type', 'run_actor_id', 'result_note', 'block_reason', 'cancel_reason']));
+        $this->assertTrue(Schema::hasColumns('tasks', ['brief', 'creator_type', 'creator_id', 'revision', 'run_number', 'result_note', 'block_reason', 'cancel_reason']));
     }
 
     public function test_create_task_records_its_brief_and_creator(): void
@@ -62,17 +61,15 @@ final class TaskAuthoringTest extends TestCase
         $this->assertSame(['New', 'New brief', 2, TaskState::Open, 0], [$fresh?->title, $fresh?->brief, $fresh?->revision, $fresh?->state, $fresh?->run_number]);
     }
 
-    public function test_a_run_belongs_to_the_session_that_started_it_and_records_its_note_and_reasons(): void
+    public function test_a_run_counts_up_and_records_its_note_and_reasons(): void
     {
         $task = Task::factory()->create();
 
-        $task->startRun(new ActorIdentity(ActorType::Agent, self::AGENT));
+        $task->startRun();
         $this->assertSame([1, TaskState::Started], [$task->run_number, $task->state]);
-        $this->assertTrue($task->isRunOwnedBy(new ActorIdentity(ActorType::Agent, self::AGENT)));
-        $this->assertFalse($task->isRunOwnedBy(new ActorIdentity(ActorType::Agent, '01jd8x0g9m3qz6v4k2agent002')));
 
         $task->blockRun('Waits on the schema.');
-        $task->startRun(new ActorIdentity(ActorType::Agent, self::AGENT));
+        $task->startRun();
         $task->finishRun('Built and tested.');
         $fresh = $task->fresh();
 

@@ -22,8 +22,6 @@ return new class extends Migration
             $table->unsignedInteger('revision')->default(1);
             $table->string('state', 16)->default('open');
             $table->unsignedInteger('run_number')->default(0);
-            $table->string('run_actor_type', 16)->nullable();
-            $table->string('run_actor_id', 64)->nullable();
             $table->text('result_note')->nullable();
             $table->text('block_reason')->nullable();
             $table->text('cancel_reason')->nullable();

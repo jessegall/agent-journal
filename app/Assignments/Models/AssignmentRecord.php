@@ -88,6 +88,57 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         ]);
     }
 
+    /**
+     * Removes, in one statement, every claim that stands on this exact seat or work assignment.
+     */
+    public static function releaseClaimsFor(AssignmentReference $source): int
+    {
+        return self::query()
+            ->withoutGlobalScope(SignedInScope::class)
+            ->whereIn('id', ClaimAuthorization::claimIdsFor($source))
+            ->delete();
+    }
+
+    /**
+     * The current holder of each of these exact assignments that still exists, keyed by assignment id.
+     *
+     * @param  list<string>  $assignmentIds
+     * @return array<string, AssigneeIdentity>
+     */
+    public static function holdersOf(array $assignmentIds): array
+    {
+        return self::query()
+            ->withoutGlobalScope(SignedInScope::class)
+            ->whereKey($assignmentIds)
+            ->get()
+            ->mapWithKeys(fn (self $row) => [$row->id => $row->toAssignment()->holder()])
+            ->all();
+    }
+
+    /**
+     * The current assignments of these records of one type, read by a trusted provider path.
+     *
+     * @param  list<string>  $recordIds
+     * @return list<self>
+     */
+    public static function ofRecords(string $type, array $recordIds): array
+    {
+        return array_values(self::query()
+            ->withoutGlobalScope(SignedInScope::class)
+            ->where('record_type', $type)
+            ->whereIn('record_id', $recordIds)
+            ->get()
+            ->all());
+    }
+
+    /**
+     * Whether this exact assignment still exists, whoever holds it.
+     */
+    public static function stillExists(string $assignmentId): bool
+    {
+        return self::holdersOf([$assignmentId]) !== [];
+    }
+
     public function toAssignment(): Assignment
     {
         return new Assignment(
@@ -147,6 +198,24 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         $query->withoutGlobalScope(SignedInScope::class)
             ->where('record_type', $type)
             ->whereIn('record_id', $recordIds);
+    }
+
+    /**
+     * The assignments the assignee holds itself or through a holder it shares work with.
+     *
+     * @param  Builder<self>  $query
+     * @param  array<string, Builder<*>>  $shared
+     */
+    #[Scope]
+    protected function heldOrShared(Builder $query, AssigneeIdentity $holder, array $shared): void
+    {
+        $query->where(function (Builder $holders) use ($holder, $shared): void {
+            $holders->where(fn (Builder $own) => $own->where('holder_type', $holder->type)->where('holder_id', $holder->id));
+
+            foreach ($shared as $type => $ids) {
+                $holders->orWhere(fn (Builder $group) => $group->where('holder_type', $type)->whereIn('holder_id', $ids));
+            }
+        });
     }
 
     /**

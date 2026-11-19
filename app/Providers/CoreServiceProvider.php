@@ -12,6 +12,7 @@ use App\Agents\Models\ConversationVisit;
 use App\Agents\Models\LaunchBypass;
 use App\Agents\Models\LaunchCredential;
 use App\Agents\Models\ProgramConversation;
+use App\Assignments\Models\ClaimAuthorization;
 use App\Bus\Models\CommandReceipt;
 use App\Comments\Models\Comment;
 use App\Engine\Models\EngineFrameTime;
@@ -75,6 +76,7 @@ final class CoreServiceProvider extends ServiceProvider
             'core.agent-stack' => AgentStackRow::class,
             'core.hook-call' => HookCall::class,
             'core.link' => Link::class,
+            'core.claim-authorization' => ClaimAuthorization::class,
             'core.comment' => Comment::class,
             'core.settings-record' => SettingsRecord::class,
             'core.user-presence' => UserPresence::class,

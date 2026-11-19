@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers\Support;
 
 use App\Actors\Contracts\ActorLabels;
+use App\Desks\Contracts\RunClaims;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskRun;
 use Illuminate\Support\Collection;
 
 /**
@@ -14,7 +16,10 @@ use Illuminate\Support\Collection;
  */
 final readonly class TaskExecutions
 {
-    public function __construct(private ActorLabels $labels) {}
+    public function __construct(
+        private ActorLabels $labels,
+        private RunClaims $claims,
+    ) {}
 
     /**
      * The execution of each task, keyed by task id; null for a task never started.
@@ -24,9 +29,13 @@ final readonly class TaskExecutions
      */
     public function of(Collection $tasks): array
     {
-        $runners = array_values(array_filter($tasks->map(fn (Task $task) => $task->runner())->all()));
-        $labels = $this->labels->labelsFor($runners);
+        $runs = array_filter($tasks->mapWithKeys(fn (Task $task) => [$task->id => $task->currentRun()])->all());
+        $holders = $this->claims->holdersOf(array_values(array_map(fn (TaskRun $run) => $run->assignmentIdentity(), $runs)));
+        $runners = array_map(fn (TaskRun $run) => $holders[$run->id] ?? $run->starter(), $runs);
+        $labels = $this->labels->labelsFor(array_values($runners));
 
-        return $tasks->mapWithKeys(fn (Task $task) => [$task->id => $task->executionWith($labels)])->all();
+        return $tasks->mapWithKeys(fn (Task $task) => [
+            $task->id => isset($runners[$task->id]) ? $task->executionBy($runners[$task->id], $labels) : null,
+        ])->all();
     }
 }

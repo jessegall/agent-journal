@@ -200,12 +200,20 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     #[Scope]
     protected function occupiedBy(Builder $query, ActorIdentity $actor): void
     {
+        $query->seatedAssignee(AssigneeIdentity::ofActorIdentity($actor));
+    }
+
+    /**
+     * The desks the assignee holds a seat at.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function seatedAssignee(Builder $query, AssigneeIdentity $member): void
+    {
         $seats = DeskSeat::query()
             ->select('desk_id')
-            ->whereIn('id', AssignmentRecord::query()->heldRecordIds(
-                DeskSeat::LINK_TYPE,
-                AssigneeIdentity::ofActorIdentity($actor),
-            ));
+            ->whereIn('id', AssignmentRecord::query()->heldRecordIds(DeskSeat::LINK_TYPE, $member));
 
         $query->whereIn('id', $seats);
     }

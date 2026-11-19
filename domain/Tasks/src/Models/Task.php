@@ -35,7 +35,6 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
-use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Support\TaskWork;
@@ -46,7 +45,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use PhpOption\None;
 use PhpOption\Option;
@@ -66,8 +65,6 @@ use PhpOption\Some;
  * @property int $revision
  * @property TaskState $state
  * @property int $run_number
- * @property ActorType|null $run_actor_type
- * @property string|null $run_actor_id
  * @property string|null $result_note
  * @property string|null $block_reason
  * @property string|null $cancel_reason
@@ -81,8 +78,6 @@ use PhpOption\Some;
     'creator_id',
     'revision',
     'run_number',
-    'run_actor_type',
-    'run_actor_id',
     'result_note',
     'block_reason',
     'cancel_reason',
@@ -115,7 +110,6 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         return [
             'state' => TaskState::class,
             'creator_type' => ActorType::class,
-            'run_actor_type' => ActorType::class,
             'revision' => 'integer',
             'run_number' => 'integer',
         ];
@@ -252,20 +246,14 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
-     * Starts a new run owned by the actor; a task already started by that actor keeps its run. An ended task is not
-     * started again, and another actor's run is not taken.
+     * Starts a new run, or keeps the run a started task already has. An ended task is not started again.
      *
      * @throws TaskRestartRefused
-     * @throws TaskRunTaken
      */
-    public function startRun(ActorIdentity $actor): void
+    public function startRun(): void
     {
         if ($this->state->hasEnded()) {
             throw TaskRestartRefused::forTask($this->number, $this->state->value);
-        }
-
-        if ($this->state === TaskState::Started && ! $this->isRunOwnedBy($actor)) {
-            throw TaskRunTaken::forTask($this->number);
         }
 
         if ($this->state !== TaskState::Started) {
@@ -273,8 +261,6 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         }
 
         $this->state = TaskState::Started;
-        $this->run_actor_type = $actor->type;
-        $this->run_actor_id = $actor->id;
         $this->save();
     }
 
@@ -324,15 +310,10 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
-     * Who works on the task's latest run, with the runner's label when the caller may see it; null before any run.
+     * Who works on the task's latest run, with the runner's label when the caller may see it.
      */
-    public function executionWith(ActorLabelSet $labels): TaskExecution|null
+    public function executionBy(ActorIdentity $runner, ActorLabelSet $labels): TaskExecution
     {
-        $runner = $this->runner();
-        if ($runner === null) {
-            return null;
-        }
-
         return new TaskExecution(
             $runner->type,
             $runner->id,
@@ -343,20 +324,11 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
-     * The actor working on the task's latest run; null before any run.
+     * The task's latest run, when it was ever started.
      */
-    public function runner(): ActorIdentity|null
+    public function currentRun(): TaskRun|null
     {
-        if ($this->run_actor_type === null || $this->run_actor_id === null) {
-            return null;
-        }
-
-        return new ActorIdentity($this->run_actor_type, $this->run_actor_id);
-    }
-
-    public function isRunOwnedBy(ActorIdentity $actor): bool
-    {
-        return $this->run_actor_type === $actor->type && $this->run_actor_id === $actor->id;
+        return $this->run_number === 0 ? null : TaskRun::ofTask($this, $this->run_number);
     }
 
     /**

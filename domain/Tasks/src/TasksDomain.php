@@ -15,6 +15,7 @@ use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
@@ -44,6 +45,7 @@ use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\CreateTask;
 use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\ResumeTaskRun;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
@@ -60,14 +62,16 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Mcp\AssignedTasksTool;
 use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Resolvers\TaskAssignments;
 use Domain\Tasks\Resolvers\TaskRecords;
+use Domain\Tasks\Resolvers\TaskRunAssignments;
 use Domain\Tasks\Skills\TasksSkill;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesInternalAssignables, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -88,6 +92,7 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesA
             EditTask::class,
             FinishTask::class,
             StartTask::class,
+            ResumeTaskRun::class,
         ];
     }
 
@@ -147,6 +152,11 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesA
     public function assignables(): array
     {
         return [Task::LINK_TYPE => TaskAssignments::class];
+    }
+
+    public function internalAssignables(): array
+    {
+        return [TaskRun::LINK_TYPE => TaskRunAssignments::class];
     }
 
     public function autoAssigners(): array

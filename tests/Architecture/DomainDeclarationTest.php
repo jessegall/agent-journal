@@ -42,6 +42,7 @@ final class DomainDeclarationTest extends TestCase
         'Concerns/HasNumberedModels.php',
         'Contracts/ProvidesStates.php',
         'Contracts/ProvidesAssignables.php',
+        'Contracts/ProvidesInternalAssignables.php',
         'Contracts/ProvidesLinkRecords.php',
         'Contracts/DomainBootstrapper.php',
         'Bootstrappers/LoadMigrations.php',

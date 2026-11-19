@@ -370,12 +370,16 @@ use App\Desks\Commands\RestoreActorDesk;
 use App\Desks\Commands\SeatActor;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Contracts\Desk;
+use App\Desks\Contracts\ReplyInboxes;
+use App\Desks\Contracts\RunClaims;
 use App\Desks\Exceptions\DeskSeatCountInvalid;
 use App\Desks\Exceptions\DeskUnavailable;
+use App\Desks\Exceptions\RunClaimRefused;
 use App\Desks\Exceptions\SeatCapacityReached;
 use App\Desks\Exceptions\SeatConflict;
 use App\Desks\Exceptions\SecondForwardingSeat;
 use App\Desks\Support\SeatChangeResult;
+use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Events\EngineTicked;
@@ -954,6 +958,9 @@ final class CoreApi
                 InboxAccess::class,
                 ActorDesks::class,
                 ActorProvisioning::class,
+                RunClaims::class,
+                ReplyInboxes::class,
+                ProvidesInternalAssignables::class,
                 Desk::class,
                 ForwardsToDesk::class,
                 AssignmentDestinationResolver::class,
@@ -1623,6 +1630,7 @@ final class CoreApi
                 SeatCapacityReached::class,
                 SecondForwardingSeat::class,
                 SeatConflict::class,
+                RunClaimRefused::class,
                 InboxProviderInvalid::class,
                 PolicyRegistrationConflict::class,
                 AuthorizerProviderRepeated::class,

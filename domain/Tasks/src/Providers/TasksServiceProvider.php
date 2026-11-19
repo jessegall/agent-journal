@@ -11,6 +11,7 @@ use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Resolvers\AssignedTasks;
 use Domain\Tasks\Resolvers\ListedTasks;
 use Domain\Tasks\Resolvers\TaskAssignmentRecords;
@@ -37,6 +38,7 @@ final class TasksServiceProvider extends ServiceProvider
         $this->commands([AssignedTasksCommand::class]);
         $links->register([
             Task::LINK_TYPE => Task::class,
+            TaskRun::LINK_TYPE => TaskRun::class,
         ]);
     }
 }

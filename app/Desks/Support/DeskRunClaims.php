@@ -1,0 +1,130 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Desks\Support;
+
+use PhpOption\Option;
+use App\Actors\Support\ActorIdentity;
+use App\Assignments\Contracts\ResponsibilityWriter;
+use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Models\ClaimAuthorization;
+use App\Assignments\Storage\AssignmentStore;
+use App\Assignments\Support\AssigneeIdentity;
+use App\Assignments\Support\Assignment;
+use App\Assignments\Support\AssignmentReference;
+use App\Desks\Contracts\RunClaims;
+use App\Desks\Exceptions\RunClaimRefused;
+use App\Desks\Models\DeskRecord;
+use App\Desks\Models\DeskSeat;
+use App\Records\Support\RecordIdentity;
+
+/**
+ * Run claims proved by the work's current holder: the actor itself for a direct run, or the actor's seat at the desk
+ * that holds the work for a desk run.
+ */
+final readonly class DeskRunClaims implements RunClaims
+{
+    public function __construct(
+        private AssignmentStore $store,
+        private ResponsibilityWriter $responsibilities,
+    ) {}
+
+    public function take(RecordIdentity $run, RecordIdentity $work, ActorIdentity $actor): AssignmentReference
+    {
+        $claimant = AssigneeIdentity::ofActorIdentity($actor);
+        $current = $this->store->lockCurrent($run);
+
+        if ($current->isDefined()) {
+            $proof = ClaimAuthorization::ofClaim($current->get()->reference->id);
+            $holder = $current->get()->holder();
+
+            if ($proof !== null && $proof->isValidFor($holder)) {
+                return $holder->isSameAs($claimant)
+                    ? $current->get()->reference
+                    : throw RunClaimRefused::claimedByAnother($run->id);
+            }
+
+            $this->responsibilities->release($run, $current->get()->reference);
+        }
+
+        return $this->claim($run, $this->workOf($work, $claimant), $claimant);
+    }
+
+    public function holdersOf(array $runs): array
+    {
+        if ($runs === []) {
+            return [];
+        }
+
+        $claims = AssignmentRecord::ofRecords($runs[0]->type, array_map(fn (RecordIdentity $run) => $run->id, $runs));
+        $proofs = ClaimAuthorization::ofClaims(array_map(fn (AssignmentRecord $claim) => $claim->id, $claims));
+        $liveHolders = AssignmentRecord::holdersOf(array_merge(...array_map(
+            fn (ClaimAuthorization $proof) => $proof->sourceIds(),
+            array_values($proofs),
+        )));
+        $holders = [];
+
+        foreach ($claims as $claim) {
+            $assignment = $claim->toAssignment();
+            $proof = $proofs[$claim->id] ?? null;
+
+            if ($proof?->isValidAgainst($assignment->holder(), $liveHolders) === true) {
+                $holders[$assignment->record->id] = SeatOccupant::of($assignment);
+            }
+        }
+
+        return $holders;
+    }
+
+    public function holderOf(RecordIdentity $run): Option
+    {
+        return Option::fromValue($this->holdersOf([$run])[$run->id] ?? null);
+    }
+
+    public function release(RecordIdentity $run): void
+    {
+        $current = $this->store->lockCurrent($run);
+
+        if ($current->isDefined()) {
+            $this->responsibilities->release($run, $current->get()->reference);
+        }
+    }
+
+    /**
+     * The work's current assignment; work nobody holds is given to the claimant as it starts.
+     */
+    private function workOf(RecordIdentity $work, AssigneeIdentity $claimant): Assignment
+    {
+        $current = $this->store->lockCurrent($work);
+
+        return $current->isDefined() ? $current->get() : $this->store->assignIfUnheld($work, $claimant);
+    }
+
+    /**
+     * @throws RunClaimRefused
+     */
+    private function claim(RecordIdentity $run, Assignment $work, AssigneeIdentity $claimant): AssignmentReference
+    {
+        if ($work->holder()->isSameAs($claimant)) {
+            $claim = $this->responsibilities->assign($run, $claimant)->reference;
+            ClaimAuthorization::forDirectRun($claim, $work->reference);
+
+            return $claim;
+        }
+
+        $seat = AssignmentRecord::query()
+            ->assignedAmong(DeskSeat::LINK_TYPE, DeskSeat::query()->select('id')->where('desk_id', $work->holder()->id))
+            ->heldBy($claimant)
+            ->first();
+
+        if ($work->holder()->type !== DeskRecord::ASSIGNEE_TYPE || $seat === null) {
+            throw RunClaimRefused::notTheHolder($run->id);
+        }
+
+        $claim = $this->responsibilities->assign($run, $claimant)->reference;
+        ClaimAuthorization::forDeskRun($claim, $seat->toAssignment()->reference, $work->reference);
+
+        return $claim;
+    }
+}

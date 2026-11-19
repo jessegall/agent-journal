@@ -99,7 +99,7 @@ final class AssignmentQueryTest extends TestCase
         $this->hold($first, $this->builder);
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        $query = new DatabaseAssignmentQuery();
+        $query = $this->app->make(DatabaseAssignmentQuery::class);
 
         $this->assertSame([$first], $query->heldIds(Task::LINK_TYPE, $this->builder)->pluck('record_id')->all());
         $this->assertSame([$first], $query->assignedIds(Task::LINK_TYPE)->pluck('record_id')->all());

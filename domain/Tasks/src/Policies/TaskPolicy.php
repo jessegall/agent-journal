@@ -8,6 +8,7 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Policy;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
+use App\Desks\Contracts\RunClaims;
 use BackedEnum;
 use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Models\Task;
@@ -18,6 +19,8 @@ use Domain\Tasks\Models\Task;
  */
 final readonly class TaskPolicy implements Policy
 {
+    public function __construct(private RunClaims $claims) {}
+
     /**
      * @param  object|class-string  $subject
      *
@@ -29,8 +32,19 @@ final readonly class TaskPolicy implements Policy
             return;
         }
 
-        if (! $subject instanceof Task || ! $subject->isRunOwnedBy(ActorIdentity::of($actor))) {
+        if (! $subject instanceof Task || ! $this->holdsTheRun($subject, ActorIdentity::of($actor))) {
             throw ActorNotAllowed::to($ability, 'task');
         }
+    }
+
+    /**
+     * Whether the actor's claim on the task's latest run still stands.
+     */
+    private function holdsTheRun(Task $task, ActorIdentity $actor): bool
+    {
+        $run = $task->currentRun();
+        $holder = $run === null ? null : $this->claims->holderOf($run->assignmentIdentity())->getOrElse(null);
+
+        return $holder !== null && $holder->isSameAs($actor);
     }
 }
