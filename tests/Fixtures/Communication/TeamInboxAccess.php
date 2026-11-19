@@ -49,6 +49,6 @@ final readonly class TeamInboxAccess implements InboxAccess
 
     public function memberInboxIds(ActorIdentity $actor): Builder
     {
-        return InboxRecord::query()->whereKey($this->roster->inboxIdsOf($actor))->select('id');
+        return InboxRecord::query()->whereKey($this->roster->inboxIdsOf($actor))->select('id as inbox_id');
     }
 }

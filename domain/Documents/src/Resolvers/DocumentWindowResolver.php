@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Agents\Contracts\SessionResolver;
 use App\Assignments\Support\Page;
 use App\Comments\Contracts\CommentResolver;
 use App\Numbers\Support\RecordReference;
@@ -14,7 +13,6 @@ use App\Sharing\Contracts\ShareStatusResolver;
 use App\Ui\Contracts\PageResolver;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftResolver;
-use Domain\Documents\Data\DockSession;
 use Domain\Documents\Data\DocumentPageData;
 use Domain\Documents\Data\RecordPageData;
 use Domain\Documents\Http\Requests\RecordPageRequest;
@@ -24,7 +22,7 @@ use Domain\Documents\Http\Requests\RecordPageRequest;
  */
 final readonly class DocumentWindowResolver implements PageResolver
 {
-    public function __construct(private RecordPageRequest $request, private DocumentResolver $documents, private DraftResolver $drafts, private SessionResolver $sessions, private CommentResolver $comments, private RecordResolver $records, private ShareStatusResolver $shares) {}
+    public function __construct(private RecordPageRequest $request, private DocumentResolver $documents, private DraftResolver $drafts, private CommentResolver $comments, private RecordResolver $records, private ShareStatusResolver $shares) {}
 
     public function read(): DocumentPageData
     {
@@ -33,7 +31,7 @@ final readonly class DocumentWindowResolver implements PageResolver
 
         return DocumentPageData::from([
             'number' => (string) $number,
-            'record' => RecordPageData::fromDocumentView($this->documents->show($number), $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)), $this->documents->inspect($number)->settlements, $this->documents->links($number), array_map(DockSession::fromSessionOption(...), $this->sessions->active()), $this->shares->isPubliclyShared($identity)),
+            'record' => RecordPageData::fromDocumentView($this->documents->show($number), $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)), $this->documents->inspect($number)->settlements, $this->documents->links($number), $this->shares->isPubliclyShared($identity)),
             'editing' => $this->drafts->stateOf($number),
             'revisions' => $this->documents->revisions($number, 1),
         ]);

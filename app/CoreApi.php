@@ -347,8 +347,11 @@ use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Contracts\MessageAddressResolver;
 use App\Communication\Data\InboxCounts;
+use App\Communication\Data\InboxView;
+use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageReadBatch;
+use App\Communication\Data\MessageReader;
 use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
 use App\Communication\Data\WakeStatus;
@@ -1196,7 +1199,10 @@ final class CoreApi
                 MessageAddress::class,
                 MessageView::class,
                 MessagePage::class,
+                MessageReader::class,
+                MessageClaimHolder::class,
                 InboxCounts::class,
+                InboxView::class,
                 MessageReadBatch::class,
                 MessageReadResult::class,
                 DismissalType::class,

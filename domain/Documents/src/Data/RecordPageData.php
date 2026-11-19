@@ -22,7 +22,6 @@ final class RecordPageData extends Data
     /**
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
-     * @param  list<DockSession>  $sessions
      */
     public function __construct(
         public readonly string $label,
@@ -36,8 +35,6 @@ final class RecordPageData extends Data
         public readonly array $settlements,
         #[DataCollectionOf(RecordCard::class)]
         public readonly array $links,
-        #[DataCollectionOf(DockSession::class)]
-        public readonly array $sessions,
         public readonly bool $publiclyShared,
         public readonly string|Optional $revision = new Optional(),
     ) {}
@@ -45,9 +42,8 @@ final class RecordPageData extends Data
     /**
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
-     * @param  list<DockSession>  $sessions
      */
-    public static function fromDocumentView(DocumentView $document, CommentList $comments, array $settlements, array $links, array $sessions, bool $publiclyShared): self
+    public static function fromDocumentView(DocumentView $document, CommentList $comments, array $settlements, array $links, bool $publiclyShared): self
     {
         return self::from([
             'label' => "doc {$document->number}",
@@ -59,7 +55,6 @@ final class RecordPageData extends Data
             'attention' => $document->attention,
             'settlements' => $settlements,
             'links' => $links,
-            'sessions' => $sessions,
             'publiclyShared' => $publiclyShared,
             'revision' => $document->revision,
         ]);
@@ -68,9 +63,8 @@ final class RecordPageData extends Data
     /**
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
-     * @param  list<DockSession>  $sessions
      */
-    public static function fromReportView(ReportView $report, CommentList $comments, array $settlements, array $links, array $sessions, bool $publiclyShared): self
+    public static function fromReportView(ReportView $report, CommentList $comments, array $settlements, array $links, bool $publiclyShared): self
     {
         return self::from([
             'label' => "report {$report->number}",
@@ -82,7 +76,6 @@ final class RecordPageData extends Data
             'attention' => $report->attention,
             'settlements' => $settlements,
             'links' => $links,
-            'sessions' => $sessions,
             'publiclyShared' => $publiclyShared,
         ]);
     }

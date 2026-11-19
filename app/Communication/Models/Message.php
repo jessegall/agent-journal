@@ -10,6 +10,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\Assignable;
 use App\Communication\Contracts\MemberInboxes;
+use App\Communication\Data\MessageReader;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\AnswerImpossible;
@@ -32,6 +33,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\LaravelData\Optional;
 
 /**
  * One message from one inbox to another: who wrote it, whether it waits for an answer, who first read it and how it
@@ -250,6 +252,23 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
             ->orWhere(fn (Builder $same) => $same
                 ->where('created_at', $cursor->created_at)
                 ->where('id', '<', $cursor->id)));
+    }
+
+    public function author(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->sender_type), $this->sender_id);
+    }
+
+    /**
+     * Who first read the message, absent until someone has.
+     */
+    public function firstRead(): MessageReader|Optional
+    {
+        if ($this->read_at === null || $this->read_by_type === null || $this->read_by_id === null) {
+            return Optional::create();
+        }
+
+        return new MessageReader($this->read_by_type, $this->read_by_id, $this->read_at->toIso8601String());
     }
 
     public function isWrittenBy(ActorIdentity $actor): bool

@@ -7,8 +7,9 @@ import Icon from '@kit/Icon';
 import { useComposerHeight } from './composables/useComposerHeight';
 import { useMessageDrafts } from './composables/useMessageDrafts';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { send as sendRoute } from '@generated/routes/chat';
+import { reply as replyRoute, send as sendRoute } from '@generated/routes/chat';
 import type { MessageInput } from '@generated/types/chat';
+import type { MessageView } from '@generated/types/core';
 
 /**
  * Asks the agent of the chosen conversation, from the person's inbox to the agent's (doc 4, 6.5). The text is the draft of this conversation, so switching
@@ -20,7 +21,10 @@ const props = defineProps<{
     session: string;
     sourceInboxId: string;
     destinationInboxId: string;
+    replyingTo: MessageView | null;
 }>();
+
+const emit = defineEmits<{ replied: [] }>();
 
 const drafts = useMessageDrafts();
 const body = ref('');
@@ -58,26 +62,42 @@ function submit(): void {
         session: props.session,
         sourceInboxId: props.sourceInboxId,
         destinationInboxId: props.destinationInboxId,
+        replyingTo: props.replyingTo,
     };
+    const hooks = {
+        preserveScroll: true,
+        ...formSendingHooks(),
+        onSuccess: () => {
+            drafts.clearSent(sent.key, sent.body);
+
+            if (props.draftKey === sent.key) {
+                body.value = drafts.read(sent.key);
+            }
+
+            if (sent.replyingTo !== null) {
+                emit('replied');
+            }
+        },
+    };
+
+    // A reply goes to the message at the version shown; a stale one is refused and the draft stays.
+    if (sent.replyingTo !== null) {
+        form.transform(() => ({
+            messageId: sent.replyingTo?.id,
+            stateVersion: sent.replyingTo?.stateVersion,
+            body: sent.body,
+            session: sent.session,
+        })).submit(replyRoute(), hooks);
+
+        return;
+    }
+
     form.transform(() => ({
         body: sent.body,
         session: sent.session,
         sourceInboxId: sent.sourceInboxId,
         destinationInboxId: sent.destinationInboxId,
-    })).submit(
-        sendRoute(),
-        {
-            preserveScroll: true,
-            ...formSendingHooks(),
-            onSuccess: () => {
-                drafts.clearSent(sent.key, sent.body);
-
-                if (props.draftKey === sent.key) {
-                    body.value = drafts.read(sent.key);
-                }
-            },
-        },
-    );
+    })).submit(sendRoute(), hooks);
 }
 
 function sendOnEnter(event: KeyboardEvent): void {
@@ -95,6 +115,11 @@ function sendOnEnter(event: KeyboardEvent): void {
         class="flex flex-col gap-1.5 rounded-composer border border-border-2 px-3 py-2.5"
         @submit.prevent="submit"
     >
+        <template v-if="replyingTo">
+            <p class="text-small text-text-3">
+                Replying to: {{ replyingTo.body.slice(0, 80) }}
+            </p>
+        </template>
         <textarea
             ref="textarea"
             v-model="body"

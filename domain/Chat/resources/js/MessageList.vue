@@ -1,10 +1,34 @@
 <script setup lang="ts">
-import type { MessageData } from '@generated/types/chat';
+import type { MessageView } from '@generated/types/core';
 
 /**
- * The messages of one conversation, oldest first, each body shown exactly as it was typed.
+ * The messages between two inboxes, oldest first: the person's own on the right, the other inbox's on the left with
+ * the name of whoever wrote it, and for each incoming question whether it is unread, waiting or taken up. Bodies are
+ * shown as text, never as HTML.
  */
-defineProps<{ messages: MessageData[] }>();
+const props = defineProps<{ messages: MessageView[]; ownInboxId: string }>();
+
+const emit = defineEmits<{ reply: [message: MessageView] }>();
+
+function isOwn(message: MessageView): boolean {
+    return message.sourceInboxId === props.ownInboxId;
+}
+
+function stateOf(message: MessageView): string | null {
+    if (isOwn(message)) {
+        return message.state === 'waiting_for_answer' ? 'Waiting for an answer' : null;
+    }
+
+    if (message.firstReader === undefined) {
+        return 'Unread';
+    }
+
+    if (message.state !== 'waiting_for_answer') {
+        return null;
+    }
+
+    return message.claimHolder === undefined ? 'Waiting, nobody took it up' : 'Taken up';
+}
 </script>
 
 <template>
@@ -18,11 +42,33 @@ defineProps<{ messages: MessageData[] }>();
             </div>
         </template>
         <template v-for="message in messages" :key="message.id">
-            <p
-                class="ml-auto max-w-[85%] rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text"
+            <div
+                :class="[
+                    'flex max-w-[85%] flex-col gap-0.5',
+                    isOwn(message) ? 'ml-auto items-end' : 'mr-auto items-start',
+                ]"
             >
-                {{ message.body }}
-            </p>
+                <template v-if="!isOwn(message)">
+                    <span class="text-small text-text-3">
+                        {{ message.authorLabel ?? message.sourceInboxLabel }}
+                    </span>
+                </template>
+                <p
+                    class="rounded-bubble bg-raised px-3 py-2 text-body whitespace-pre-wrap text-text"
+                >
+                    {{ message.body }}
+                </p>
+                <span class="flex gap-2 text-small text-text-3">
+                    <template v-if="stateOf(message) !== null">
+                        <span>{{ stateOf(message) }}</span>
+                    </template>
+                    <template v-if="!isOwn(message) && message.state === 'waiting_for_answer'">
+                        <button type="button" class="underline" @click="emit('reply', message)">
+                            Reply
+                        </button>
+                    </template>
+                </span>
+            </div>
         </template>
     </div>
 </template>

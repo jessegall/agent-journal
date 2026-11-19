@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Communication\Data;
 
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
 /**
  * One page of messages, oldest first, with the cursor of the next older page when there is one.
  */
-final readonly class MessagePage
+#[TypeScript]
+final class MessagePage extends Data
 {
     public const int DEFAULT_LIMIT = 50;
 
@@ -17,7 +22,7 @@ final readonly class MessagePage
      * @param  list<MessageView>  $messages
      */
     public function __construct(
-        public array $messages,
-        public string|null $olderCursor,
+        #[DataCollectionOf(MessageView::class)] public readonly array $messages,
+        public readonly string|null $olderCursor,
     ) {}
 }

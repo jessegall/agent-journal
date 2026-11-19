@@ -12,10 +12,13 @@ use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Data\MessagePage;
+use App\Records\Contracts\RecordResolver;
 use App\Ui\Contracts\PageResolver;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;
+use Domain\Chat\Resolvers\Support\DockedRecordRecords;
+use Domain\Chat\Support\ConversationPair;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 
@@ -32,6 +35,8 @@ final readonly class ChatWindowResolver implements PageResolver
         private CurrentActor $actors,
         private ActorInboxResolver $ownInboxes,
         private InboxDestinationResolver $destinations,
+        private DockedRecordRecords $docked,
+        private RecordResolver $records,
     ) {}
 
     public function read(): ChatData
@@ -54,6 +59,8 @@ final readonly class ChatWindowResolver implements PageResolver
         $theirs = $this->destinations->resolve($agent)->inboxId();
         $page = $this->messages->between($own, $theirs, null, MessagePage::DEFAULT_LIMIT);
 
-        return ConversationData::fromPage($own, $theirs, $page, (string) $session->sessionId);
+        $docked = $this->records->visibleCards($this->docked->docked(new ConversationPair($own, $theirs)));
+
+        return ConversationData::fromPage($own, $theirs, $page, (string) $session->sessionId, $docked);
     }
 }

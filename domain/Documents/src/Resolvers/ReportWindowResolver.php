@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
-use App\Agents\Contracts\SessionResolver;
 use App\Assignments\Support\Page;
 use App\Comments\Contracts\CommentResolver;
 use App\Numbers\Support\RecordReference;
@@ -13,7 +12,6 @@ use App\Records\Contracts\RecordResolver;
 use App\Sharing\Contracts\ShareStatusResolver;
 use App\Ui\Contracts\PageResolver;
 use Domain\Documents\Contracts\ReportResolver;
-use Domain\Documents\Data\DockSession;
 use Domain\Documents\Data\RecordPageData;
 use Domain\Documents\Http\Requests\RecordPageRequest;
 
@@ -22,13 +20,13 @@ use Domain\Documents\Http\Requests\RecordPageRequest;
  */
 final readonly class ReportWindowResolver implements PageResolver
 {
-    public function __construct(private RecordPageRequest $request, private ReportResolver $reports, private SessionResolver $sessions, private CommentResolver $comments, private RecordResolver $records, private ShareStatusResolver $shares) {}
+    public function __construct(private RecordPageRequest $request, private ReportResolver $reports, private CommentResolver $comments, private RecordResolver $records, private ShareStatusResolver $shares) {}
 
     public function read(): RecordPageData
     {
         $number = $this->request->reportNumber();
         $identity = $this->records->identify(RecordReference::of('report', $number));
 
-        return RecordPageData::fromReportView($this->reports->show($number), $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)), $this->reports->inspect($number)->settlements, $this->reports->links($number), array_map(DockSession::fromSessionOption(...), $this->sessions->active()), $this->shares->isPubliclyShared($identity));
+        return RecordPageData::fromReportView($this->reports->show($number), $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)), $this->reports->inspect($number)->settlements, $this->reports->links($number), $this->shares->isPubliclyShared($identity));
     }
 }

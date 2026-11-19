@@ -9,21 +9,16 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One session's dock: its newest active cards, whether more follow, and the cards hidden from it.
+ * Documents and reports Chat may suggest docking: the newest that still ask for attention. Suggesting docks nothing.
  */
 #[TypeScript]
 final class DockData extends Data
 {
     /**
-     * @param  list<DockCard>  $cards
-     * @param  list<DockCard>  $hidden
+     * @param  list<DockCard>  $suggestions
      */
     public function __construct(
-        public readonly string $sessionId,
         #[DataCollectionOf(DockCard::class)]
-        public readonly array $cards,
-        public readonly bool $hasMore,
-        #[DataCollectionOf(DockCard::class)]
-        public readonly array $hidden,
+        public readonly array $suggestions,
     ) {}
 }

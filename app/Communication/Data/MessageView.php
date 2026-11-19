@@ -5,23 +5,33 @@ declare(strict_types=1);
 namespace App\Communication\Data;
 
 use App\Communication\Enums\MessageState;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A message as a reader sees it: who wrote it, between which inboxes, its text, its state and when it was first read.
+ * A message as a reader sees it: between which inboxes and by whom, its text and state, who first read it and who has
+ * taken it up. A message nobody read has no first reader, and one nobody holds has no claim holder.
  */
-final readonly class MessageView
+#[TypeScript]
+final class MessageView extends Data
 {
     public function __construct(
-        public string $id,
-        public string $sourceInboxId,
-        public string $destinationInboxId,
-        public string $senderType,
-        public string $senderId,
-        public string $body,
-        public MessageState $state,
-        public int $stateVersion,
-        public string|null $replyToId,
-        public string|null $readAt,
-        public string $sentAt,
+        public readonly string $id,
+        public readonly string $sourceInboxId,
+        public readonly string $sourceInboxLabel,
+        public readonly string $destinationInboxId,
+        public readonly string $destinationInboxLabel,
+        public readonly string $authorType,
+        public readonly string $authorId,
+        public readonly string|null $authorLabel,
+        public readonly string $body,
+        public readonly MessageState $state,
+        public readonly int $stateVersion,
+        public readonly string|null $replyToId,
+        public readonly string|null $answerId,
+        public readonly MessageReader|Optional $firstReader,
+        public readonly MessageClaimHolder|Optional $claimHolder,
+        public readonly string $sentAt,
     ) {}
 }

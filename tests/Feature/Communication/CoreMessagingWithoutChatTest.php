@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandRegistry;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Models\Message;
@@ -22,7 +21,8 @@ use Tests\TestCase;
 
 /**
  * Messaging is Core: its commands, its answering state, its link type and its numbering are registered by Core, and
- * Chat, the conversation product, registers none of them, so messaging works with Chat switched off.
+ * Chat, the conversation product, registers none of them, only its own pins and docks, so messaging works with
+ * Chat switched off.
  */
 final class CoreMessagingWithoutChatTest extends TestCase
 {
@@ -30,7 +30,10 @@ final class CoreMessagingWithoutChatTest extends TestCase
     {
         $chat = new ChatDomain();
 
-        $this->assertNotInstanceOf(ProvidesCommands::class, $chat);
+        $this->assertSame([], array_values(array_filter(
+            $chat->commands(),
+            fn (string $command) => str_starts_with($command, 'App\\Communication\\'),
+        )));
         $this->assertNotInstanceOf(ProvidesStates::class, $chat);
         $this->assertNotInstanceOf(ProvidesLinkRecords::class, $chat);
         $this->assertNotInstanceOf(ProvidesNumberedModels::class, $chat);

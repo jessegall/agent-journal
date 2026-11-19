@@ -1,48 +1,19 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import type { DockCard, DockData } from '@generated/types/documents';
-import Button from '@kit/Button';
-import { formSendingHooks } from '@kit/usePageChanges';
+import { Link } from '@inertiajs/vue3';
+import type { DockData } from '@generated/types/documents';
 
 /**
- * The documents and reports docked in this session: cards that open their pages, a Hide action, and the hidden
- * cards to show again.
+ * Suggested documents and reports for this conversation, newest first. Suggesting docks nothing.
  */
-const props = defineProps<{ data: DockData }>();
-
-const showHidden = ref(false);
-
-function send(path: string, card: DockCard): void {
-    router.post(path, { type: card.type, number: card.number, session: props.data.sessionId }, { preserveScroll: true, ...formSendingHooks() });
-}
+defineProps<{ data: DockData }>();
 </script>
 
 <template>
-    <section class="flex flex-col gap-2">
-        <template v-for="card in data.cards" :key="`${card.type}-${card.number}`">
-            <article class="flex items-start gap-2">
-                <a :href="card.route" class="flex flex-1 flex-col">
-                    <span class="font-mono tabular-nums text-small">{{ card.type }} {{ card.number }}</span>
-                    <span>{{ card.title }}</span>
-                    <span class="text-small text-text-3">{{ card.abstract }}</span>
-                </a>
-                <Button @click="send('/documents/dock/hide', card)">Hide</Button>
-            </article>
+    <ul class="flex flex-wrap gap-1.5" aria-label="Suggested records">
+        <template v-for="card in data.suggestions" :key="`${card.type}:${card.number}`">
+            <li class="rounded-control border border-dashed border-border-2 px-2 py-1 text-small text-text-3">
+                <Link :href="card.route">{{ card.title }}</Link>
+            </li>
         </template>
-        <template v-if="data.hasMore">
-            <a href="/documents" class="text-small">More in the library</a>
-        </template>
-        <template v-if="data.hidden.length > 0">
-            <Button @click="showHidden = !showHidden">{{ showHidden ? 'Hide hidden cards' : `Show hidden (${data.hidden.length})` }}</Button>
-            <template v-if="showHidden">
-                <template v-for="card in data.hidden" :key="`hidden-${card.type}-${card.number}`">
-                    <div class="flex items-center gap-2 text-text-3">
-                        <span class="flex-1">{{ card.type }} {{ card.number }} {{ card.title }}</span>
-                        <Button @click="send('/documents/dock', card)">Show again</Button>
-                    </div>
-                </template>
-            </template>
-        </template>
-    </section>
+    </ul>
 </template>

@@ -35,17 +35,12 @@ use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Api\Events\DocumentPublished;
-use Domain\Documents\Api\Events\RecordDockChanged;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Commands\DockDocument;
-use Domain\Documents\Commands\DockReport;
-use Domain\Documents\Commands\HideDocumentDock;
-use Domain\Documents\Commands\HideReportDock;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Commands\ReplaceDocumentBody;
@@ -59,7 +54,6 @@ use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DockData;
-use Domain\Documents\Data\DockSession;
 use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentList;
@@ -92,8 +86,6 @@ use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Http\Controllers\CloseDraftPageController;
 use Domain\Documents\Http\Controllers\CreateDocumentPageController;
 use Domain\Documents\Http\Controllers\CreateReportPageController;
-use Domain\Documents\Http\Controllers\DockRecordController;
-use Domain\Documents\Http\Controllers\HideDockController;
 use Domain\Documents\Http\Controllers\OpenDocumentPageController;
 use Domain\Documents\Http\Controllers\RecoverDocumentPageController;
 use Domain\Documents\Http\Controllers\SaveDraftPageController;
@@ -132,10 +124,10 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordSettled::class, RecordDockChanged::class)
+            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordSettled::class)
             ->contracts(DraftResolver::class, DocumentResolver::class, ReportResolver::class)
-            ->values(DockSession::class, DockCard::class, DockData::class, CloseCard::class, RecordInspection::class, SettlementCard::class, RevisionPageData::class, RecordText::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
-            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class, DockDocument::class, DockReport::class, HideDocumentDock::class, HideReportDock::class)
+            ->values(DockCard::class, DockData::class, CloseCard::class, RecordInspection::class, SettlementCard::class, RevisionPageData::class, RecordText::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
+            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class)
             ->exceptions(SettlementDenied::class, StaleRead::class, DraftMissing::class, DraftHeld::class, DraftConflict::class, DocumentMissing::class, ReportMissing::class)
             ->build();
     }
@@ -173,7 +165,7 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
 
     public function commands(): array
     {
-        return [CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class, DockDocument::class, DockReport::class, HideDocumentDock::class, HideReportDock::class];
+        return [CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class];
     }
 
     public function pages(): array
@@ -209,11 +201,14 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function sections(): array
     {
         return [
-            Section::make('records', 'Documents and reports', 'chat.dock', SlotContextType::Session, DocumentDockResolver::class, 'DocumentDock.vue')
-                ->actions(
-                    ActionRoute::post('dock', DockRecordController::class, 'dock-record'),
-                    ActionRoute::post('dock/hide', HideDockController::class, 'hide-dock'),
-                ),
+            Section::make(
+                'records',
+                'Documents and reports',
+                'chat.dock',
+                SlotContextType::Session,
+                DocumentDockResolver::class,
+                'DocumentDock.vue',
+            ),
         ];
     }
 

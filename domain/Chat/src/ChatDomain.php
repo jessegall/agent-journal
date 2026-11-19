@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
+use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Skills\Contracts\ProvidesSkills;
@@ -17,12 +20,29 @@ use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
+use Domain\Chat\Commands\DockRecord;
+use Domain\Chat\Commands\HideDockedRecord;
+use Domain\Chat\Commands\PinMessage;
+use Domain\Chat\Commands\RestoreDockedRecord;
+use Domain\Chat\Commands\UnpinMessage;
+use Domain\Chat\Enums\DockedRecordAbility;
+use Domain\Chat\Enums\MessagePinAbility;
+use Domain\Chat\Http\Controllers\CancelMessageController;
+use Domain\Chat\Http\Controllers\ReadShownController;
+use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\SendMessageController;
+use Domain\Chat\Http\Controllers\TakeNextController;
+use Domain\Chat\Models\DockedRecord;
+use Domain\Chat\Models\MessagePin;
+use Domain\Chat\Policies\DockedRecordPolicy;
+use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Resolvers\ChatWindowResolver;
 use Domain\Chat\Resolvers\ChosenAgentSection;
+use Domain\Chat\Resolvers\HistoryPageResolver;
+use Domain\Chat\Resolvers\InboxPageResolver;
 use Domain\Chat\Skills\ChatSkill;
 
-final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesSkills
+final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesSkills
 {
     public function description(): string
     {
@@ -42,6 +62,25 @@ final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPag
         return Exports::make()->build();
     }
 
+    public function commands(): array
+    {
+        return [
+            PinMessage::class,
+            UnpinMessage::class,
+            DockRecord::class,
+            HideDockedRecord::class,
+            RestoreDockedRecord::class,
+        ];
+    }
+
+    public function policies(): array
+    {
+        return [
+            new PolicyRegistration(MessagePin::class, MessagePinPolicy::class, MessagePinAbility::class),
+            new PolicyRegistration(DockedRecord::class, DockedRecordPolicy::class, DockedRecordAbility::class),
+        ];
+    }
+
     public function pages(): array
     {
         return [
@@ -49,7 +88,17 @@ final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPag
                 ->at('')
                 ->onHome(10)
                 ->slots(Slot::make('dock', SlotContextType::Session))
-                ->actions(ActionRoute::post('messages', SendMessageController::class, 'send')),
+                ->actions(
+                    ActionRoute::post('messages', SendMessageController::class, 'send'),
+                    ActionRoute::post('messages/read', ReadShownController::class, 'read'),
+                    ActionRoute::post('messages/reply', ReplyController::class, 'reply'),
+                ),
+            Page::make('inbox', 'Inbox', Icon::Chat, InboxPageResolver::class, 'Inbox.vue')
+                ->at('inbox')
+                ->actions(ActionRoute::post('inbox/take-next', TakeNextController::class, 'take-next')),
+            Page::make('history', 'History', Icon::Chat, HistoryPageResolver::class, 'History.vue')
+                ->at('history')
+                ->actions(ActionRoute::post('history/cancel', CancelMessageController::class, 'cancel')),
         ];
     }
 
