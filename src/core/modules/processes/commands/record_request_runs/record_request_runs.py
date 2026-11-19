@@ -8,8 +8,7 @@ from core.modules.processes.support.request_log_entry import RequestLogEntry
 @dataclass(frozen=True)
 class RecordRequestRuns(Command[None]):
     """Writes the rows of the journal commands and viewer requests of one environment that the request log held,
-    and prunes the oldest rows past the newest kept."""
-
-    lock = True
+    and prunes the oldest rows past the newest kept. Each row is a write of its own, so a long log never holds the
+    write turn."""
 
     entries: Sequence[RequestLogEntry]

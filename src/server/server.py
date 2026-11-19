@@ -14,6 +14,7 @@ if __name__ == "__main__":
 
 from engine.time.clock import Clock
 from engine.container.container import Container
+from engine.database.database import Database
 from engine.hosting.host_probe import HostProbe
 from engine.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
 from engine.hosting.hosted_start_check import HostedStartCheck
@@ -95,6 +96,7 @@ SERVICES_CHECK_SECONDS = 30.0
 HEALTH_CHECK_SECONDS = 60.0
 TICK_PERIOD_SECONDS = 1.0
 BACKUP_CHECK_SECONDS = 60.0
+STATISTICS_SECONDS = 3600.0
 IDLE_CHECK_SECONDS = 30.0
 CHECK_PERIOD_SECONDS = 60.0
 
@@ -210,6 +212,7 @@ def main(argv: list[str]) -> int:
         ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
         ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
+    ticker.register(TickHandler(TickInterval(seconds=STATISTICS_SECONDS), lambda container: container.get(Database).refresh_statistics(), "database statistics", starts_immediately=True))
     idle_exit = InactiveServerShutdown(clock, lambda reason: (files.log_line(reason), server.request_stop()))
     ticker.register(TickHandler(TickInterval(seconds=IDLE_CHECK_SECONDS), idle_exit.follow, "idle server exit"))
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, clock.timestamp(), wakes, hook_database, viewer, tunnel, reported_findings, journal_door),

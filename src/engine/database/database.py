@@ -26,6 +26,7 @@ BUSY_TIMEOUT_SECONDS = 5.0
 READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
 AUTO_VACUUM_OFF = 0
+ANALYSIS_LIMIT_ROWS = 1000
 
 
 class Database:
@@ -98,6 +99,13 @@ class Database:
         self.connection.execute("PRAGMA auto_vacuum = INCREMENTAL")
         self.connection.execute("VACUUM")
         return True
+
+    # SQLite picks its indexes from these statistics: without them it guesses, and many reads scan a table an
+    # index would search. The limit samples each index, so a refresh takes milliseconds on a large database.
+    def refresh_statistics(self) -> None:
+        with self.transaction():
+            self.connection.execute(f"PRAGMA analysis_limit = {ANALYSIS_LIMIT_ROWS}")
+            self.connection.execute("PRAGMA optimize = 0x10002").fetchall()
 
     def release_free_pages(self, pages: int) -> None:
         self.connection.execute(f"PRAGMA incremental_vacuum({int(pages)})").fetchall()
