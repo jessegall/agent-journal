@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Skills\Writing;
 
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Numbers\Commands\InstallNumbers;
 use App\Skills\Contracts\SkillConditionEvaluator;
 use App\Skills\Values\ConditionResult;
@@ -17,12 +18,12 @@ use Spatie\LaravelData\Data;
 final readonly class WritesDuringEvaluation implements SkillConditionEvaluator
 {
     public function __construct(
-        private CommandBus $commands,
+        private EntryDispatchers $dispatchers,
     ) {}
 
     public function evaluate(SkillContext $context, Data $parameters): ConditionResult
     {
-        $this->commands->run(new InstallNumbers());
+        $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'number install', new InstallNumbers());
 
         return ConditionResult::match('wrote');
     }

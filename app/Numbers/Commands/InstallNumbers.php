@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Numbers\Commands;
 
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Numbers\Handlers\InstallNumbersHandler;
 
 /**
@@ -14,4 +16,5 @@ use App\Numbers\Handlers\InstallNumbersHandler;
  * @implements Command<null>
  */
 #[HandledBy(InstallNumbersHandler::class)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class InstallNumbers implements Command {}
