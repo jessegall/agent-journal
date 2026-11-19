@@ -70,7 +70,28 @@ A command the engine runs must declare `#[App\Bus\Attributes\AllowsEngine]`; wit
 `EngineNotAllowed`. A command with both `AllowsEngine` and `RequiresActor(User)` or `RequiresActor(Agent)` fails at
 registration.
 
-Its handler must make a repeat harmless, because a frame can be reconsidered after a crash or a partial failure:
+Every command a tick answers runs with the frame's work as its origin (`App\Hooks\Values\WorkOccurrence`, for
+example run 3 of task 41). Inside the command's transaction and before its handler, `GuardTickOrigin` takes the
+origin's row lock through the ticking type's `WorkOccurrenceGuard` and checks the work is still live; a retried
+attempt checks again first. When the work is over (`WorkOccurrenceStale`) the command commits nothing, the tick's
+remaining commands are dropped, and the frame settles, since running it again cannot bring the work back. A finish
+between two commands of one tick lets the first commit and refuses the second.
+
+A ticking loader names its guard, so a ticking type without one cannot be declared:
+
+```php
+public function occurrenceGuard(): WorkOccurrenceGuard
+{
+    return new AwaitingAnswerGuard(); // locks the question and requires it still waiting
+}
+```
+
+A command that changes work besides its origin implements `App\Hooks\Contracts\LocksTickSubjects` and names every
+other subject it locks. The engine takes the origin first, then those subjects ordered by type and id, so two ticks
+never wait on each other in opposite order; a command nested inside it that locks undeclared work is refused
+(`TickSubjectUndeclared`).
+
+Its handler must still make a repeat harmless, because a frame can be reconsidered after a crash or a partial failure:
 
 1. Lock the subject through its model.
 2. Recheck the condition under the lock (still unanswered, not yet reminded).
@@ -82,7 +103,7 @@ public function handle(SendQuestionReminder $command): void
     $question = Question::lockedById($command->questionId);
 
     if ($question->answered) {
-        $this->stacks->removeFinished($command->target);
+        $this->stacks->popExposed($command->target);
 
         return;
     }
@@ -101,7 +122,8 @@ The engine's grant for a tick covers only that frame's target. In a handler:
 
 - `App\Hooks\Contracts\EngineStack::push($target, $reference)` pushes a state through the same push every caller uses.
   It refuses a target outside the grant (`EngineAccessRefused`) and a session that no longer runs.
-- `App\Hooks\Contracts\StackCleanup::removeFinished($target)` settles finished frames, subject before stack.
+- `App\Hooks\Contracts\AgentStack::popExposed($target)` pops the finished and switched-off frames exposed at the top,
+  with their exits; frames buried under a live one stay.
 
 Never change a stack from `onTick` itself.
 

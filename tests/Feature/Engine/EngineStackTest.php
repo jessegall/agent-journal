@@ -11,23 +11,19 @@ use App\Agents\Models\Agent;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
 use App\Engine\Exceptions\EngineAccessRefused;
-use App\Engine\Support\EngineAccess;
-use App\Engine\Support\EnginePass;
 use App\Hooks\Contracts\EngineStack;
-use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
-use App\Hooks\Support\StackTransaction;
 use Carbon\CarbonImmutable;
-use Closure;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\Lifecycle\LifecycleLog;
 use Tests\Fixtures\Hooks\Lifecycle\RecordingStateLoader;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsAsEngine;
 use Tests\TestCase;
 
 /**
@@ -38,6 +34,7 @@ use Tests\TestCase;
 final class EngineStackTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsAsEngine;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
 
@@ -91,28 +88,10 @@ final class EngineStackTest extends TestCase
         $this->asEngineFor($target, fn () => $this->app->make(EngineStack::class)->push($target, $this->task('A')));
         $this->tasks->finished = ['A'];
 
-        $this->asEngineFor($target, fn () => $this->app->make(StackCleanup::class)->removeFinished($target));
+        $this->asEngineFor($target, fn () => $this->app->make(EngineStack::class)->popExposed($target));
 
         $this->assertSame(['enter:A', 'exit:A'], $this->log->calls);
         $this->assertSame([], $this->storedSubjects($launched));
-    }
-
-    /**
-     * Runs the work as an engine handler would: in an engine pass, with a frame grant for the target, in a transaction.
-     *
-     * @param  Closure(): void  $work
-     */
-    private function asEngineFor(StackTarget $target, Closure $work): void
-    {
-        $this->app->make(EnginePass::class)->run(function () use ($target, $work): void {
-            $this->app->make(EngineAccess::class)->grantFrame($target, 'frame-of-the-tick');
-            $this->app->make(StackTransaction::class)->run($work);
-        });
-    }
-
-    private function launch(): LaunchedAgent
-    {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function targetOf(LaunchedAgent $launched): StackTarget
@@ -133,5 +112,10 @@ final class EngineStackTest extends TestCase
         $frames = array_slice(AgentStackRow::query()->authorizedFor($this->targetOf($launched))->sole()->frames->all(), 1);
 
         return array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', $frames);
+    }
+
+    private function launch(): LaunchedAgent
+    {
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 }

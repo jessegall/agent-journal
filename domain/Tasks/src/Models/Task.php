@@ -14,7 +14,6 @@ use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
 use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\PoolMembers;
-use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Links\Support\Linkable;
@@ -38,7 +37,6 @@ use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Exceptions\TaskTextTooLong;
-use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -90,7 +88,7 @@ use PhpOption\Some;
     'cancel_reason',
 ])]
 #[UseFactory(TaskFactory::class)]
-final class Task extends Model implements Assignable, Numbered, ReadableModel, WorkedOnStack
+final class Task extends Model implements Assignable, Numbered, ReadableModel
 {
     /**
      * @use HasFactory<TaskFactory>
@@ -206,14 +204,6 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
         }
 
         $query->orderByRaw("case id {$cases} end", $bindings);
-    }
-
-    /**
-     * The state a frame holds while this run of the task is worked on.
-     */
-    public function workState(): StateReference
-    {
-        return WorkingOnTaskStateReference::forTask($this);
     }
 
     /**

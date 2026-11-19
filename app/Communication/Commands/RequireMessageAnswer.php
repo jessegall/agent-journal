@@ -19,5 +19,6 @@ final readonly class RequireMessageAnswer implements Command
     public function __construct(
         public string $messageId,
         public string $sessionId,
+        public int $currentRound,
     ) {}
 }

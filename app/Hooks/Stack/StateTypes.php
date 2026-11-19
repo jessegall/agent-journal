@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\States\Support\StateTypeRegistry;
@@ -22,6 +23,14 @@ final class StateTypes
     public function registry(): StateTypeRegistry
     {
         return $this->registry ??= $this->build();
+    }
+
+    /**
+     * The guard that checks the work of a ticking state type is still live.
+     */
+    public function occurrenceGuardOf(string $typeKey): WorkOccurrenceGuard
+    {
+        return $this->registry()->tickingType($typeKey)->occurrenceGuard();
     }
 
     public function ticking(): TickingTypes

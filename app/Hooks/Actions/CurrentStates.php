@@ -28,7 +28,11 @@ final readonly class CurrentStates implements CurrentState
 
     public function top(StackTarget $target): Option
     {
-        return $this->highestUnfinished($target, fn (Frame $frame) => true);
+        return AgentStackRow::activeFor($target)->map(function (AgentStackRow $row): StateReference {
+            $stack = $this->restorer->restore($row->frames, $row->frames->role());
+
+            return $stack->top()->reference;
+        });
     }
 
     /**

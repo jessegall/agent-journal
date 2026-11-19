@@ -63,7 +63,7 @@ final class TaskStateContributionTest extends TestCase
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
     }
 
-    public function test_the_state_reads_the_task_fresh_and_the_next_hook_removes_a_finished_run(): void
+    public function test_the_state_reads_the_task_fresh_and_the_next_hook_passes_over_a_finished_run(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
@@ -74,7 +74,7 @@ final class TaskStateContributionTest extends TestCase
 
         $this->assertStringContainsString("Task {$task->number} still needs work", $held);
         $this->assertSame('{}', $allowed);
-        $this->assertSame([], $this->taskFrames());
+        $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
     }
 
     public function test_a_new_run_after_a_blocked_one_gets_its_own_frame(): void
@@ -89,7 +89,7 @@ final class TaskStateContributionTest extends TestCase
     }
 
     #[TimeLimit(seconds: 3, reason: 'It runs four task commands through the bus, each with its stack transaction.')]
-    public function test_finishing_a_task_in_its_command_takes_its_frame_off_and_the_task_below_is_current_again(): void
+    public function test_finishing_a_task_changes_only_the_task_and_the_task_below_is_current_again(): void
     {
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Fix the hook']);
@@ -101,12 +101,12 @@ final class TaskStateContributionTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new FinishTask($second->id, 1, 'Fixed.'));
 
-        $this->assertSame(["tasks.working {$first->id} 1"], $this->taskFrames());
+        $this->assertSame(["tasks.working {$first->id} 1", "tasks.working {$second->id} 1"], $this->taskFrames());
         $this->assertSame($first->number, $tasks->currentForCaller()->get()->number);
     }
 
     #[TimeLimit(seconds: 3, reason: 'It runs four task commands through the bus, each with its stack transaction.')]
-    public function test_blocking_or_cancelling_a_task_takes_its_frame_off_in_the_same_command(): void
+    public function test_blocking_or_cancelling_a_task_leaves_its_frame_stored_and_no_task_current(): void
     {
         $blocked = Task::factory()->create(['title' => 'Wait for review']);
         $cancelled = Task::factory()->create(['title' => 'Drop the idea']);
@@ -116,7 +116,7 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new CancelTask($cancelled->id, 'Dropped.'));
         $this->app->make(CommandBus::class)->run(new BlockTask($blocked->id, 1, 'Waits for review.'));
 
-        $this->assertSame([], $this->taskFrames());
+        $this->assertSame(["tasks.working {$blocked->id} 1", "tasks.working {$cancelled->id} 1"], $this->taskFrames());
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 

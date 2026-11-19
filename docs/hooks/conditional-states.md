@@ -61,26 +61,24 @@ a toggle group, read through `group()`, decides participation.
   `push` contracts stay as they are, and the hook trace still records the push the state asked for.
 - **Hooks.** The hook walk skips a frame that is finished or not enabled, so a switched-off frame never answers and the
   frames beneath it answer as usual.
-- **Cleanup.** `AgentStack::withoutInactiveFrames()` leaves out every frame that is finished or not enabled, wherever
-  it sits; the bottom frame is never removed. Every real operation that saves a stack (a hook, a push, a cleanup) goes
-  through it, so a switched-off frame leaves the stored stack where a finished frame would. Leaving it out does not
-  finish its subject.
+- **Storage.** A switched-off frame stays stored, like a finished one. An ordinary hook saves the stack unchanged; only an
+  explicit transition removes frames, and then only the frame it names plus the inactive frames exposed at the top
+  (`AgentStack::withoutExposedInactive()`). A switched-off frame buried under a live one stays, still counts towards
+  `AgentStack::DEEPEST`, and answers again once its group is switched back on. Removing it never finishes its subject.
 - **Restore.** `StackRestorer::restore` stays read-only: it still builds and validates every stored frame, a switched-
   off one included (subject and schema checks), and writes nothing.
 - **Switching back on.** Enabling the group again makes future pushes eligible again. It does not bring back a frame
-  that was removed while the group was off, and it does not replay a push that was declined.
+  that an explicit transition removed while the group was off, and it does not replay a push that was declined.
 
 ## Integration rule for lifecycle and ticks
 
 For the builders of doc 36 revision 3's frame lifecycle (plan 24) and doc 35 revision 3's ticker:
 
-- **Lifecycle.** Keep the unpruned stack as `before`. The baseline the hook walk and push start from is `before`
-  without finished or switched-off frames (`withoutInactiveFrames()`). Lifecycle callbacks come only from the final
-  difference between `before` and the saved stack, as they do today.
+- **Lifecycle.** The hook walk and a push start from the stored stack as it is. Lifecycle callbacks come only from the
+  frames an explicit transition removed or added, and a resume only for a live top whose live cover was removed.
 - **Ticks.** The ticker skips a switched-off candidate both when it selects frames to tick and when it revalidates one,
   without pruning it from the stack (`TickCandidates::restore`). A domain wrapper around a ticking loader keeps the
   `TickableStateLoader` mark (`DomainTickableStateType`). A skipped tick advances no timing baseline.
 
-When this phase ran, doc 36's lifecycle already existed (`FrameLifecycle::settle` in `AgentStateMachine`, `StatePush`
-and `StackCleanups`), and its baseline was moved to `withoutInactiveFrames()` in the same change. The ticker follows the
-tick rule above.
+`FrameLifecycle::settle` runs for every explicit transition (`AgentStateMachine`, `StatePush` and
+`AgentStack::popExposed`). The ticker follows the tick rule above.

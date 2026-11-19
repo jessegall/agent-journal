@@ -8,10 +8,8 @@ use App\Agents\Support\StackTarget;
 use App\Communication\Enums\MessageState;
 use App\Communication\Enums\MessageWorkState;
 use App\Communication\Exceptions\MessageMissing;
-use App\Communication\States\Support\AnsweringMessageStateReference;
+use App\Communication\Exceptions\MessageRoundStale;
 use App\Communication\Support\MessageWork;
-use App\Hooks\Contracts\WorkedOnStack;
-use App\Hooks\Decisions\StateReference;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
@@ -32,13 +30,14 @@ use Illuminate\Support\Carbon;
  * @property int $number
  * @property string $body
  * @property MessageState $state
+ * @property int $answer_round the round of asking for an answer; 0 before anyone was asked
  * @property string|null $agent_id
  * @property string|null $session_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['body'])]
-final class Message extends Model implements Numbered, ReadableModel, WorkedOnStack
+final class Message extends Model implements Numbered, ReadableModel
 {
     use BelongsToOneAgent, HasNumber, HasUlids;
     use BoundedReads;
@@ -49,7 +48,7 @@ final class Message extends Model implements Numbered, ReadableModel, WorkedOnSt
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['state' => 'sent'];
+    protected $attributes = ['state' => 'sent', 'answer_round' => 0];
 
     /**
      * @return array<string, string>
@@ -58,6 +57,7 @@ final class Message extends Model implements Numbered, ReadableModel, WorkedOnSt
     {
         return [
             'state' => MessageState::class,
+            'answer_round' => 'integer',
         ];
     }
 
@@ -86,8 +86,12 @@ final class Message extends Model implements Numbered, ReadableModel, WorkedOnSt
         return mb_strimwidth(strtok($this->body, "\n") ?: '', 0, 80, '…');
     }
 
+    /**
+     * Opens a new round of asking the session for an answer, so a frame of an earlier round stays finished.
+     */
     public function requireAnswerFrom(StackTarget $target): void
     {
+        $this->answer_round++;
         $this->state = MessageState::WaitingForAnswer;
         $this->agent_id = $target->agentId;
         $this->session_id = $target->sessionId;
@@ -95,11 +99,15 @@ final class Message extends Model implements Numbered, ReadableModel, WorkedOnSt
     }
 
     /**
-     * The state a frame holds while the question is answered.
+     * Refuses a change made for a round that is no longer the current one.
+     *
+     * @throws MessageRoundStale
      */
-    public function workState(): StateReference
+    public function requireRound(int $round): void
     {
-        return AnsweringMessageStateReference::forMessage($this);
+        if ($round !== $this->answer_round) {
+            throw MessageRoundStale::for($this->number, $round, $this->answer_round);
+        }
     }
 
     public function markAnswered(): void
@@ -116,6 +124,16 @@ final class Message extends Model implements Numbered, ReadableModel, WorkedOnSt
 
     public function work(): MessageWork
     {
-        return new MessageWork($this->number, MessageWorkState::of($this->state));
+        return $this->workIn($this->answer_round);
+    }
+
+    /**
+     * The work of one round: a round older than the current one is over, whatever the message's state is now.
+     */
+    public function workIn(int $round): MessageWork
+    {
+        $state = $round < $this->answer_round ? MessageWorkState::Answered : MessageWorkState::of($this->state);
+
+        return new MessageWork($this->number, $state, $round);
     }
 }

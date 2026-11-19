@@ -48,7 +48,7 @@ final class AgentStateMachineTest extends TestCase
         $this->assertSame(3, AgentStackRow::query()->sole()->version);
     }
 
-    public function test_a_finished_task_is_removed_and_saved_before_the_stop_is_allowed(): void
+    public function test_a_finished_task_is_passed_over_and_stays_stored_when_the_stop_is_allowed(): void
     {
         $this->pushState($this->task(42));
         $this->tasks->tasks[42] = TaskWorkState::Finished;
@@ -56,7 +56,7 @@ final class AgentStateMachineTest extends TestCase
         $reply = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
 
         $this->assertSame('{}', $reply->stdout);
-        $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.main_ready', 'test.tasks'], $this->storedTypeKeys());
     }
 
     #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]

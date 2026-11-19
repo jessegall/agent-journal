@@ -11,8 +11,10 @@ use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Models\EngineFrameTime;
 use App\Engine\Values\FrameSettlement;
 use App\Engine\Values\TickCandidate;
+use App\Hooks\Exceptions\WorkOccurrenceStale;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickContext;
+use App\Hooks\Values\WorkLockSet;
 use App\Reads\Support\ScopedReadMeter;
 use Carbon\CarbonImmutable;
 use PhpOption\Some;
@@ -41,6 +43,7 @@ final readonly class TickDelivery
         private EngineAccess $access,
         private CommandBus $commands,
         private EngineSettings $settings,
+        private TickOrigins $origins,
         private LoggerInterface $log,
     ) {}
 
@@ -56,18 +59,19 @@ final readonly class TickDelivery
         $passNowReading = $this->clock->nanoseconds();
         $checkpoints = EngineFrameTime::settledAtFor(array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates));
         $settled = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', function () use ($batch, $passStartNanoseconds, $passNow, $passNowReading, $checkpoints): array {
-            $changedStacks = [];
+            $anyTicked = false;
             $settled = [];
 
             foreach ($batch->candidates as $candidate) {
+                // Once a tick's commands ran, any stack may have changed, so every later candidate is read again.
+                $current = $anyTicked ? $this->candidates->refresh($candidate) : new Some($candidate);
+
                 if ($this->budgetSpent($passStartNanoseconds)) {
-                    $this->candidates->startNextPassAt($candidate);
+                    $this->candidates->startNextPassAt($current->getOrElse($candidate));
                     $this->log->info('Engine pass deferred ticks', ['frame' => $candidate->frameId]);
 
                     break;
                 }
-
-                $current = isset($changedStacks[$candidate->stackId]) ? $this->candidates->refresh($candidate) : new Some($candidate);
 
                 if ($current->isEmpty()) {
                     continue;
@@ -80,7 +84,7 @@ final readonly class TickDelivery
                     $settled[] = [$current->get(), $now, $start];
                 }
 
-                $changedStacks[$candidate->stackId] = true;
+                $anyTicked = true;
             }
 
             return $settled;
@@ -90,18 +94,26 @@ final readonly class TickDelivery
     }
 
     /**
-     * Runs one frame's tick and its commands under the frame's grant; answers whether all of it succeeded.
+     * Runs one frame's tick, which only returns commands, then each command under the frame's grant with the frame's
+     * work as its origin; answers whether all of it succeeded. Once the origin's work is over the tick's remaining
+     * commands are dropped and the tick counts as settled, since running it again cannot bring that work back.
      */
     private function tick(TickCandidate $candidate, CarbonImmutable $now, ElapsedTime $delta): bool
     {
+        $context = new TickContext($now, $delta, $candidate->enteredAt, $candidate->target);
         $this->access->grantFrame($candidate->target, $candidate->frameId);
 
         try {
-            $commands = $candidate->state->onTick(new TickContext($now, $delta, $candidate->enteredAt, $candidate->target));
+            $commands = $candidate->state->onTick($context);
 
             foreach ($commands->all() as $command) {
-                $this->commands->run($command);
+                $locks = WorkLockSet::for($candidate->occurrence, $command);
+                $this->origins->runWith($locks, fn (): mixed => $this->commands->run($command));
             }
+
+            return true;
+        } catch (WorkOccurrenceStale $stale) {
+            $this->log->info('Engine tick of finished work dropped', ['frame' => $candidate->frameId, 'reason' => $stale->getMessage()]);
 
             return true;
         } catch (Throwable $failure) {

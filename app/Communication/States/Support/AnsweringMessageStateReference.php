@@ -10,7 +10,8 @@ use App\Hooks\Decisions\StateReferenceFactory;
 use App\Hooks\Decisions\SubjectReference;
 
 /**
- * The stack reference of answering one message; a message is answered once, so it has one run.
+ * The stack reference of answering one message in one answer round: asking again opens a new round, and so a new
+ * reference, while a frame of an earlier round stays finished.
  */
 final class AnsweringMessageStateReference extends StateReferenceFactory
 {
@@ -18,6 +19,11 @@ final class AnsweringMessageStateReference extends StateReferenceFactory
 
     public static function forMessage(Message $message): StateReference
     {
-        return self::about(new SubjectReference($message->id, 1));
+        return self::forRound($message->id, $message->answer_round);
+    }
+
+    public static function forRound(string $messageId, int $round): StateReference
+    {
+        return self::about(new SubjectReference($messageId, $round));
     }
 }

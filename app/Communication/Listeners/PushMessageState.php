@@ -22,6 +22,7 @@ final readonly class PushMessageState implements Listener
 
     public function handle(MessageNeedsAnswer $event): void
     {
-        $this->stacks->push($event->target, AnsweringMessageStateReference::forMessage($this->messages->addressedTo($event->target, $event->messageId)));
+        $message = $this->messages->addressedTo($event->target, $event->messageId);
+        $this->stacks->push($event->target, AnsweringMessageStateReference::forRound($message->id, $event->round));
     }
 }

@@ -9,6 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Storage\FrameRecord;
 use Domain\Plans\Commands\StartPlan;
@@ -66,11 +67,22 @@ final class PlanWorkingStateTest extends TestCase
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
         $restorer = $this->app->make(StackRestorer::class);
 
-        $this->assertFalse($restorer->restore($row->frames, $row->frames->role())->top()->isFinished());
+        $this->assertFalse($this->planFrame($restorer, $row)->isFinished());
 
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Cancelled->value]);
 
-        $this->assertTrue($restorer->restore($row->frames, $row->frames->role())->top()->isFinished());
+        $this->assertTrue($this->planFrame($restorer, $row)->isFinished());
+        $this->assertTrue($restorer->restore($row->frames, $row->frames->role())->top()->isBottom());
+    }
+
+    /**
+     * The plan's frame as stored, finished or not: the walk passes over it once it is finished, the stack keeps it.
+     */
+    private function planFrame(StackRestorer $restorer, AgentStackRow $row): Frame
+    {
+        $frames = $restorer->restore($row->frames, $row->frames->role())->frames();
+
+        return $frames[array_key_last($frames)];
     }
 
     private function plan(): Plan

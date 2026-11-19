@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\QuestionReminders\Handlers;
 
 use App\Actors\Contracts\ServerClock;
 use App\Contracts\CommandHandler;
-use App\Hooks\Contracts\StackCleanup;
+use App\Hooks\Contracts\EngineStack;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 
@@ -18,7 +18,7 @@ final readonly class SendQuestionReminderHandler implements CommandHandler
 {
     public function __construct(
         private ServerClock $clock,
-        private StackCleanup $stacks,
+        private EngineStack $stacks,
     ) {}
 
     public function handle(SendQuestionReminder $command): void
@@ -26,7 +26,7 @@ final readonly class SendQuestionReminderHandler implements CommandHandler
         $question = Question::lockedById($command->questionId);
 
         if ($question->answered) {
-            $this->stacks->removeFinished($command->target);
+            $this->stacks->popExposed($command->target);
 
             return;
         }

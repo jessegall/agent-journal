@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Tasks\Handlers;
 
 use App\Contracts\CommandHandler;
-use App\Hooks\Contracts\StackCleanup;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Exceptions\TaskCancelRefused;
@@ -18,7 +17,6 @@ final readonly class CancelTaskHandler implements CommandHandler
 {
     public function __construct(
         private Dispatcher $events,
-        private StackCleanup $cleanup,
         private TaskCaller $caller,
     ) {}
 
@@ -34,7 +32,7 @@ final readonly class CancelTaskHandler implements CommandHandler
             throw TaskCancelRefused::forTask($task->number);
         }
 
-        $this->cleanup->endWork($task, fn (Task $task) => $task->cancelWith($command->reason));
+        $task->cancelWith($command->reason);
         $this->events->dispatch(new TaskCancelled($command->taskId));
     }
 }

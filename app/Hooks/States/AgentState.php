@@ -19,12 +19,15 @@ use App\Hooks\Lifecycle\LifecycleContext;
 
 /**
  * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and
- * before() may answer any hook first, as a Laravel policy's before does.
+ * before() may answer any hook first, as a Laravel policy's before does. A state only answers: its hook methods, its
+ * lifecycle callbacks and its ticks never perform an external effect themselves. A tick returns commands, which the
+ * engine runs with the frame's work as their origin, locked and checked to be live before each command changes anything.
  */
 abstract class AgentState implements HookAnswerer
 {
     /**
-     * Whether the work this state stands for is done, so the state may leave the stack.
+     * Whether the work this state stands for is done. A finished frame stays stored but a walk passes over it, as if it
+     * were transparent; it leaves only when an explicit pop exposes it at the top.
      */
     public function isFinished(): bool
     {
@@ -37,12 +40,14 @@ abstract class AgentState implements HookAnswerer
     public function onEnter(LifecycleContext $context): void {}
 
     /**
-     * Runs after a committed stack change made this frame the top again, when the frames above it left.
+     * Runs after a committed stack change made this frame the live top again because the live frame covering it was
+     * removed; a frame covered only by finished or switched-off frames already answered first, so it is not resumed.
      */
     public function onResume(LifecycleContext $context): void {}
 
     /**
-     * Runs after a committed stack change took this frame off the stack.
+     * Runs after a committed stack change removed this frame, finished or not; a frame that is only passed over by a
+     * walk has not left and is not exited.
      */
     public function onExit(LifecycleContext $context): void {}
 

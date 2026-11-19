@@ -67,6 +67,14 @@ final readonly class Frame
         return $this->typeEnabled && (! $this->state instanceof ConditionalState || $this->state->isEnabled());
     }
 
+    /**
+     * Whether a hook asks this frame: its work is not done and it may run now. A frame that is not live stays stored.
+     */
+    public function isLive(): bool
+    {
+        return ! $this->isFinished() && $this->isEnabled();
+    }
+
     public function enter(StackTarget $target): void
     {
         $this->state->onEnter($this->lifecycleContext($target));

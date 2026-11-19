@@ -51,7 +51,8 @@ final class TickCandidatesTest extends TestCase
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
             $event->registry->register('test.ticking', $this->ticking);
             $event->registry->register('test.plain', new UnreadLoader());
-            $event->registry->register('test.switchable', new DomainTickableStateType(new DomainStateType('Switchable', $this->switchable, fn () => $this->availability())));
+            $domainType = new DomainStateType('Switchable', $this->switchable, fn () => $this->availability());
+            $event->registry->register('test.switchable', new DomainTickableStateType($domainType, $this->switchable));
         });
     }
 

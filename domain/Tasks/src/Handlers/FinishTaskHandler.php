@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Tasks\Handlers;
 
 use App\Contracts\CommandHandler;
-use App\Hooks\Contracts\StackCleanup;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
@@ -18,7 +17,6 @@ final readonly class FinishTaskHandler implements CommandHandler
 {
     public function __construct(
         private Dispatcher $events,
-        private StackCleanup $cleanup,
         private TaskCaller $caller,
     ) {}
 
@@ -30,7 +28,7 @@ final readonly class FinishTaskHandler implements CommandHandler
     {
         $task = Task::lockedById($command->taskId);
         $task->requireRun($command->runNumber, $this->caller->runOwner());
-        $this->cleanup->endWork($task, fn (Task $task) => $task->finishRun($command->note));
+        $task->finishRun($command->note);
         $this->events->dispatch(new TaskFinished($command->taskId));
     }
 }

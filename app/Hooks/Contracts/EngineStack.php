@@ -17,4 +17,9 @@ use Illuminate\Container\Attributes\Bind;
 interface EngineStack
 {
     public function push(StackTarget $target, StateReference $reference): void;
+
+    /**
+     * Pops the finished and switched-off frames exposed at the top of the granted target's stack, with their exits.
+     */
+    public function popExposed(StackTarget $target): void;
 }

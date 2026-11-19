@@ -14,7 +14,7 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Actions\AgentStacks;
-use App\Hooks\Contracts\StackCleanup;
+use App\Hooks\Contracts\EngineStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Events\StateTypesRequested;
@@ -29,6 +29,7 @@ use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingState;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsAsEngine;
 use Tests\TestCase;
 
 /**
@@ -38,6 +39,7 @@ use Tests\TestCase;
 final class TickingStackFlagTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsAsEngine;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
 
@@ -70,7 +72,7 @@ final class TickingStackFlagTest extends TestCase
         $this->assertTrue($this->stackOf($launched)->has_ticking_frames);
 
         $this->finished = ['T'];
-        $this->as($launched, fn () => $this->app->make(StackCleanup::class)->removeFinished($this->targetOf($launched)));
+        $this->asEngineFor($this->targetOf($launched), fn () => $this->app->make(EngineStack::class)->popExposed($this->targetOf($launched)));
         $this->assertFalse($this->stackOf($launched)->has_ticking_frames);
     }
 

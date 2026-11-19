@@ -18,5 +18,6 @@ final readonly class DismissMessage implements Command
 {
     public function __construct(
         public string $messageId,
+        public int $round,
     ) {}
 }

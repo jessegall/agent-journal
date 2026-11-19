@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Hooks\Inspection;
 
 use App\Hooks\Decisions\SubjectReference;
-use App\Hooks\Storage\FrameRecord;
+use App\Hooks\Enums\FrameLiveness;
+use App\Hooks\Stack\Frame;
 use Spatie\LaravelData\Data;
 
 /**
@@ -18,17 +19,24 @@ final class InspectedFrame extends Data
         public readonly string $typeKey,
         public readonly InspectedSubject|null $subject,
         public readonly bool $isBottom,
+        public readonly FrameLiveness $liveness,
+        public readonly bool $isEffectiveTop,
     ) {}
 
-    public static function fromFrameRecord(FrameRecord $record): self
+    /**
+     * The frame as stored, with whether a hook asks it and whether it is the stack's highest live frame.
+     */
+    public static function fromFrame(Frame $frame, Frame $effectiveTop): self
     {
-        $subject = $record->reference->subject;
+        $subject = $frame->reference->subject;
 
         return new self(
-            $record->id,
-            $record->reference->typeKey,
+            $frame->id,
+            $frame->typeKey(),
             $subject instanceof SubjectReference ? new InspectedSubject($subject->id, $subject->runNumber) : null,
-            $record->isBottom,
+            $frame->isBottom(),
+            FrameLiveness::of($frame),
+            $frame->id === $effectiveTop->id,
         );
     }
 }

@@ -56,6 +56,18 @@ final class StateTypeRegistry implements StateRegistration
         return array_keys(array_filter($this->types, fn (StateLoader $type) => $type instanceof TickableStateLoader));
     }
 
+    /**
+     * The ticking state type of the key; a type that does not tick has no tick to guard.
+     *
+     * @throws StateTypeUnknown
+     */
+    public function tickingType(string $typeKey): TickableStateLoader
+    {
+        $type = $this->get($typeKey);
+
+        return $type instanceof TickableStateLoader ? $type : throw StateTypeUnknown::forTicking($typeKey);
+    }
+
     public function freeze(): void
     {
         $this->isFrozen = true;

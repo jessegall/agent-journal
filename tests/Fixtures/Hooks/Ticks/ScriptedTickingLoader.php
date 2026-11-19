@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
@@ -29,6 +30,13 @@ final class ScriptedTickingLoader implements TickableStateLoader
      */
     public array $scripts = [];
 
+    public ScriptedOccurrenceGuard $guard;
+
+    public function __construct()
+    {
+        $this->guard = new ScriptedOccurrenceGuard();
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn (StateReference $reference): AgentState => new ScriptedTickingState(
@@ -47,5 +55,10 @@ final class ScriptedTickingLoader implements TickableStateLoader
         $this->ticks[$subject][] = $tick;
 
         return isset($this->scripts[$subject]) ? ($this->scripts[$subject])($tick) : TickCommands::none();
+    }
+
+    public function occurrenceGuard(): WorkOccurrenceGuard
+    {
+        return $this->guard;
     }
 }

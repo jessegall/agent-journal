@@ -32,7 +32,7 @@ final readonly class AnsweringMessageStateFactory implements StateLoader
                 throw StateSubjectMissing::for($reference->typeKey);
             }
 
-            return new AnsweringMessageState($subjects[$subject->id]->work());
+            return new AnsweringMessageState($subjects[$subject->id]->workIn($subject->runNumber));
         });
     }
 

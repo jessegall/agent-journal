@@ -99,8 +99,8 @@ final class SendMessageTest extends TestCase
         $this->send('Answer me', $this->target->sessionId);
         $this->send('Never mind', $this->target->sessionId);
         [$answered, $dismissed] = Message::query()->ownedBy($this->target->agentId)->orderBy('id')->get()->all();
-        $this->app->make(CommandBus::class)->run(new AnswerMessage($answered->id));
-        $this->app->make(CommandBus::class)->run(new DismissMessage($dismissed->id));
+        $this->app->make(CommandBus::class)->run(new AnswerMessage($answered->id, $answered->answer_round));
+        $this->app->make(CommandBus::class)->run(new DismissMessage($dismissed->id, $dismissed->answer_round));
 
         Event::assertDispatched(MessageAnswered::class, fn (MessageAnswered $event) => $event->messageId === $answered->id);
         Event::assertDispatched(MessageDismissed::class, fn (MessageDismissed $event) => $event->messageId === $dismissed->id);

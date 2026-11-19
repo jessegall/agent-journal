@@ -6,6 +6,7 @@ namespace App\Domains\Support;
 
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\TickableStateLoader;
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 
@@ -15,7 +16,7 @@ use App\Hooks\Decisions\StateSet;
  */
 final readonly class DomainTickableStateType implements ConditionalStateType, TickableStateLoader
 {
-    public function __construct(private DomainStateType $type) {}
+    public function __construct(private DomainStateType $type, private TickableStateLoader $loader) {}
 
     public function statesFor(StateReferences $references): StateSet
     {
@@ -30,5 +31,10 @@ final readonly class DomainTickableStateType implements ConditionalStateType, Ti
     public function isEnabled(): bool
     {
         return $this->type->isEnabled();
+    }
+
+    public function occurrenceGuard(): WorkOccurrenceGuard
+    {
+        return $this->loader->occurrenceGuard();
     }
 }

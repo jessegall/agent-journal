@@ -8,13 +8,12 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\DatabaseClock;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
+use App\Engine\Support\EngineAccess;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Contracts\CurrentState;
-use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\ReadyStateType;
@@ -22,6 +21,7 @@ use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\StackMissing;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Contracts\EngineStack;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
@@ -119,7 +119,7 @@ final class StateLifecycleTest extends TestCase
         $this->push('A');
         $this->push('B');
         $this->tasks->finished = ['B'];
-        $this->transaction()->run(fn () => $this->cleanup()->removeFinished($this->target));
+        $this->popExposed($this->target);
 
         $this->assertEquals(['A' => $entered['A']], $this->storedEntryTimes());
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
@@ -138,7 +138,7 @@ final class StateLifecycleTest extends TestCase
         $this->assertTrue($entered->betweenIncluded($before, $after));
     }
 
-    public function test_cleanup_exits_finished_frames_and_resumes_the_frame_back_on_top(): void
+    public function test_the_top_pop_exits_the_exposed_finished_frames_and_resumes_nothing(): void
     {
         $this->push('P');
         $this->push('A');
@@ -146,9 +146,9 @@ final class StateLifecycleTest extends TestCase
         $this->tasks->finished = ['A', 'B'];
         $this->log->calls = [];
 
-        $this->transaction()->run(fn () => $this->cleanup()->removeFinished($this->target));
+        $this->popExposed($this->target);
 
-        $this->assertSame(['exit:B', 'exit:A', 'resume:P'], $this->log->calls);
+        $this->assertSame(['exit:B', 'exit:A'], $this->log->calls);
         $this->assertSame(['P'], $this->storedSubjects());
     }
 
@@ -157,25 +157,22 @@ final class StateLifecycleTest extends TestCase
         $this->push('A');
         $version = AgentStackRow::query()->forTarget($this->target)->sole()->version;
 
-        $this->transaction()->run(fn () => $this->cleanup()->removeFinished($this->target));
+        $this->popExposed($this->target);
 
         $this->assertSame($version, AgentStackRow::query()->forTarget($this->target)->sole()->version);
     }
 
-    public function test_cleanup_leaves_a_closed_stack_as_it_is_and_refuses_a_missing_or_foreign_one(): void
+    public function test_the_top_pop_leaves_a_closed_stack_as_it_is(): void
     {
         $this->push('A');
         $this->tasks->finished = ['A'];
         AgentStackRow::query()->forTarget($this->target)->sole()->closeAt(CarbonImmutable::now());
         $this->log->calls = [];
 
-        $this->transaction()->run(fn () => $this->cleanup()->removeFinished($this->target));
+        $this->popExposed($this->target);
 
         $this->assertSame([], $this->log->calls);
         $this->assertSame(['A'], $this->storedSubjects());
-        $this->expectException(StackTargetRefused::class);
-
-        $this->transaction()->run(fn () => $this->cleanup()->removeFinished(new StackTarget(TestIds::of(2), TestIds::of(20))));
     }
 
     public function test_cleanup_of_a_stack_that_does_not_exist_is_refused(): void
@@ -184,7 +181,7 @@ final class StateLifecycleTest extends TestCase
 
         $this->expectException(StackMissing::class);
 
-        $this->transaction()->run(fn () => $this->cleanup()->removeFinished($this->target));
+        $this->popExposed($this->target);
     }
 
     public function test_the_current_state_of_a_type_is_its_highest_live_frame_even_when_covered(): void
@@ -256,9 +253,13 @@ final class StateLifecycleTest extends TestCase
         return array_values(array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', array_slice($frames, 1)));
     }
 
-    private function cleanup(): StackCleanup
+    /**
+     * Pops the target's exposed frames as the engine would, with a frame grant for it.
+     */
+    private function popExposed(StackTarget $target): void
     {
-        return $this->app->make(StackCleanup::class);
+        $this->app->make(EngineAccess::class)->grantFrame($target, 'frame-of-the-tick');
+        $this->transaction()->run(fn () => $this->app->make(EngineStack::class)->popExposed($target));
     }
 
     /**

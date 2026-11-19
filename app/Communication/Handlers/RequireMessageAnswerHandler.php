@@ -25,7 +25,9 @@ final readonly class RequireMessageAnswerHandler implements CommandHandler
     {
         $target = $this->sessions->requireActive($command->sessionId);
 
-        Message::lockedById($command->messageId)->requireAnswerFrom($target);
-        $this->events->dispatch(new MessageNeedsAnswer($command->messageId, $target));
+        $message = Message::lockedById($command->messageId);
+        $message->requireRound($command->currentRound);
+        $message->requireAnswerFrom($target);
+        $this->events->dispatch(new MessageNeedsAnswer($command->messageId, $target, $message->answer_round));
     }
 }

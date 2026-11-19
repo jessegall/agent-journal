@@ -19,7 +19,7 @@ An agent and a user are both actors. Wherever code means who did, holds, owns or
 
 - A row owned by one actor uses Core's `BelongsToOneActor`.
 - Who holds a record is a Core assignment to an actor.
-- Where an agent works on something is a frame on its stack (`WorkedOnStack::workState()`), never a stored agent or session.
+- Where an agent works on something is a frame on its stack, never a stored agent or session.
 - Agent and session ids appear only in Core's Agents and Hooks code, where the agent itself is the subject: its sessions, stacks, hook calls and drivers.
 - `DomainActorColumnsTest` fails on a domain table with an agent or session column, and on a domain model method that takes or returns a `StackTarget` or `AgentContext`.
 

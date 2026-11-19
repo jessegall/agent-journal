@@ -334,14 +334,12 @@ use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\ReminderContribution;
-use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StackTransition;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\StateRegistration;
 use App\Hooks\Contracts\UserStack;
-use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferenceFactory;
@@ -875,9 +873,7 @@ final class CoreApi
                 Answer::class,
                 StackTransition::class,
                 StackEditor::class,
-                StackCleanup::class,
                 CurrentState::class,
-                WorkedOnStack::class,
                 TextContent::class,
                 TextResolver::class,
                 Commentable::class,

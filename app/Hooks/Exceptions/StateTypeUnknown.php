@@ -12,4 +12,9 @@ final class StateTypeUnknown extends InvalidArgumentException
     {
         return new self("No state type is registered under {$typeKey}.");
     }
+
+    public static function forTicking(string $typeKey): self
+    {
+        return new self("The state type {$typeKey} does not tick.");
+    }
 }

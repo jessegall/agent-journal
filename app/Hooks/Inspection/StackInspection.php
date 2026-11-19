@@ -6,6 +6,8 @@ namespace App\Hooks\Inspection;
 
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Stack\AgentStack;
+use App\Hooks\Stack\Frame;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -29,14 +31,19 @@ final class StackInspection extends Data
         public readonly InspectedCall|Optional $lastCall = new Optional(),
     ) {}
 
-    public static function fromAgentStackRow(AgentStackRow $row, InspectedCall|Optional $lastCall): self
+    /**
+     * The stored stack as the restored one marks it: each frame's liveness, read in one batched load, and its top.
+     */
+    public static function of(AgentStackRow $row, AgentStack $stack, InspectedCall|Optional $lastCall): self
     {
+        $top = $stack->top();
+
         return new self(
             $row->agent_id,
             $row->session_id,
             $row->status,
             $row->version,
-            array_map(InspectedFrame::fromFrameRecord(...), $row->frames->all()),
+            array_map(fn (Frame $frame) => InspectedFrame::fromFrame($frame, $top), $stack->frames()),
             $lastCall,
         );
     }

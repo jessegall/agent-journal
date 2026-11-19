@@ -17,5 +17,6 @@ final readonly class MessageSent implements Event, ShouldDispatchAfterCommit, Up
     public function __construct(
         public string $messageId,
         public StackTarget $target,
+        public int $round,
     ) {}
 }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
+use App\Engine\Values\ScanProgress;
 use App\Engine\Values\TickBatch;
 use App\Engine\Values\TickCandidate;
-use App\Engine\Values\TickCursor;
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\Decisions\StateReferences;
@@ -15,6 +15,7 @@ use App\Hooks\Exceptions\TickableStateMissing;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\WorkOccurrence;
 use App\Reads\Support\ScopedReadMeter;
 use PhpOption\None;
 use PhpOption\Option;
@@ -23,36 +24,40 @@ use PhpOption\Some;
 /**
  * Selects the ticking frames of a pass: open stacks that hold one, in stack and frame order from where the last pass
  * stopped, up to a limit, and restores only their ticking states, at most 100 references per type per read. Finished
- * frames and the frames of a switched-off type are skipped and stay stored. The cursor lives as long as the engine process.
+ * frames and the frames of a switched-off type are skipped and stay stored. The scan progress lives as long as the engine process.
  */
 final class TickCandidates
 {
-    private TickCursor $cursor;
+    private ScanProgress $progress;
 
     public function __construct(private readonly StateTypes $types)
     {
-        $this->cursor = TickCursor::start();
-    }
-
-    public function next(int $limit): TickBatch
-    {
-        $selected = $this->selectAfter($this->cursor, $limit);
-        $this->cursor = count($selected) < $limit ? TickCursor::start() : $this->cursorAfter($selected);
-
-        return new TickBatch(ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', fn () => $this->restore($selected)));
+        $this->progress = ScanProgress::start();
     }
 
     /**
-     * Sends the cursor back so the next pass starts at this candidate, which this pass had no time left for.
+     * The next ticking frames of this pass, up to the limit; once every ticking stack has been examined the next call
+     * starts a new pass. Progress counts the positions examined, not the live candidates found.
+     */
+    public function next(int $limit): TickBatch
+    {
+        $selected = $this->examineAfter($this->progress, $limit);
+        $restored = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', fn () => $this->restore($selected));
+
+        return new TickBatch($restored);
+    }
+
+    /**
+     * Has the next pass begin at this candidate, which this pass had no time left for, anchored on its frame.
      */
     public function startNextPassAt(TickCandidate $candidate): void
     {
-        $this->cursor = TickCursor::after($candidate->stackId, $candidate->position - 1);
+        $this->progress = $this->progress->resumeAt($candidate);
     }
 
     /**
-     * The candidate as it stands now, after a preceding command may have changed its stack: none when its frame is
-     * gone or its work is done.
+     * The candidate as it stands now, read again in full because an earlier command may have changed any stack: none
+     * when its frame is gone or its work is done, otherwise at its real current position.
      *
      * @return Option<TickCandidate>
      */
@@ -64,13 +69,9 @@ final class TickCandidates
             return None::create();
         }
 
-        if ($row->version === $candidate->stackVersion) {
-            return new Some($candidate);
-        }
-
-        foreach ($row->frames->all() as $record) {
+        foreach ($row->frames->all() as $position => $record) {
             if ($record->id === $candidate->frameId) {
-                $restored = $this->restore([new SelectedFrame($row, $record)]);
+                $restored = $this->restore([new SelectedFrame($row, $record, $position)]);
 
                 return $restored === [] ? None::create() : new Some($restored[0]);
             }
@@ -80,41 +81,44 @@ final class TickCandidates
     }
 
     /**
+     * The ticking frames after the progress, up to the limit, moving the progress past every position examined; when
+     * no stack is left the progress starts a new pass.
+     *
      * @return list<SelectedFrame>
      */
-    private function selectAfter(TickCursor $cursor, int $limit): array
+    private function examineAfter(ScanProgress $progress, int $limit): array
     {
         $ticking = $this->types->ticking();
-        $rows = AgentStackRow::query()->tickingOpen()->where('id', '>=', $cursor->stackId)->orderBy('id')->readLimit($limit)->get();
+        $rows = AgentStackRow::query()->tickingOpen()->where('id', '>=', $progress->stackId)->orderBy('id')
+            ->readLimit($limit)->get();
         $selected = [];
+        $last = $progress;
 
         foreach ($rows as $row) {
             foreach ($row->frames->all() as $position => $record) {
                 if (count($selected) === $limit) {
+                    $this->progress = $last;
+
                     return $selected;
                 }
 
-                if ($ticking->contains($record->reference->typeKey) && $cursor->precedes($row->id, $position)) {
+                if (! $progress->isAhead($row->id, $row->version, $position, $record->id)) {
+                    continue;
+                }
+
+                $isTicking = $ticking->contains($record->reference->typeKey);
+                $delivered = $isTicking ? [$record->id] : [];
+                $last = $last->after($row->id, $row->version, $position, $record->id, $delivered);
+
+                if ($isTicking) {
                     $selected[] = new SelectedFrame($row, $record, $position);
                 }
             }
         }
 
+        $this->progress = $rows->count() < $limit ? ScanProgress::start() : $last;
+
         return $selected;
-    }
-
-    /**
-     * @param  list<SelectedFrame>  $selected
-     */
-    private function cursorAfter(array $selected): TickCursor
-    {
-        $last = end($selected);
-
-        if ($last === false) {
-            return TickCursor::start();
-        }
-
-        return TickCursor::after($last->row->id, $last->position);
     }
 
     /**
@@ -178,6 +182,7 @@ final class TickCandidates
             $frame->position,
             $frame->record->enteredAt,
             $state,
+            WorkOccurrence::of($frame->record->reference),
         );
     }
 }

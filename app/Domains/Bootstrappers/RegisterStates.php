@@ -56,6 +56,6 @@ final readonly class RegisterStates implements DomainBootstrapper
     {
         $type = new DomainStateType($domain->name, $loader, $availability);
 
-        return $loader instanceof TickableStateLoader ? new DomainTickableStateType($type) : $type;
+        return $loader instanceof TickableStateLoader ? new DomainTickableStateType($type, $loader) : $type;
     }
 }

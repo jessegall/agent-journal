@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
@@ -26,6 +27,13 @@ final class CountingTickingLoader implements TickableStateLoader
      */
     public array $finished = [];
 
+    public ScriptedOccurrenceGuard $guard;
+
+    public function __construct()
+    {
+        $this->guard = new ScriptedOccurrenceGuard();
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $this->batchSizes[] = count($references->all);
@@ -38,5 +46,10 @@ final class CountingTickingLoader implements TickableStateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function occurrenceGuard(): WorkOccurrenceGuard
+    {
+        return $this->guard;
     }
 }

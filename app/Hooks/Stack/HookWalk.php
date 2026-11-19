@@ -27,7 +27,7 @@ final class HookWalk
     private AgentStack $stack;
 
     /**
-     * @param  Frame  $walkTop  the frame on top when the walk began, the only one that may push
+     * @param  Frame  $walkTop  the highest live frame when the walk began, the only one that may push
      */
     public function __construct(
         private readonly string $hookMethod,
@@ -50,9 +50,13 @@ final class HookWalk
         );
     }
 
+    /**
+     * The frame's explicit pop: it leaves with the inactive frames it exposed. The walk itself goes on from the frame's
+     * next lower place in the stack it started with.
+     */
     public function removeFrame(Frame $frame): void
     {
-        $this->stack = $this->stack->withoutFrame($frame);
+        $this->stack = $this->stack->poppedOf($frame);
     }
 
     public function pushOver(Frame $frame, StateReference $state): void
@@ -61,7 +65,7 @@ final class HookWalk
             throw StateBelowTopPushed::for($frame->typeKey());
         }
 
-        $this->stack = $this->stack->withStateOnTop($state);
+        $this->stack = $this->stack->withoutExposedInactive()->withStateOnTop($state);
     }
 
     public function finish(Decision $decision): HookAnswer

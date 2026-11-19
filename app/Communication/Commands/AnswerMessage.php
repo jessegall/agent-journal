@@ -18,5 +18,6 @@ final readonly class AnswerMessage implements Command
 {
     public function __construct(
         public string $messageId,
+        public int $round,
     ) {}
 }

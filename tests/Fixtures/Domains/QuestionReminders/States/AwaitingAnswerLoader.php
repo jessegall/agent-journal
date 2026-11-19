@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
@@ -37,5 +38,10 @@ final class AwaitingAnswerLoader implements TickableStateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function occurrenceGuard(): WorkOccurrenceGuard
+    {
+        return new AwaitingAnswerGuard();
     }
 }

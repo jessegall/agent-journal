@@ -15,5 +15,6 @@ final readonly class MessageNeedsAnswer implements Event
     public function __construct(
         public string $messageId,
         public StackTarget $target,
+        public int $round,
     ) {}
 }

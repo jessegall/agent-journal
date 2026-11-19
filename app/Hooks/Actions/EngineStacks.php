@@ -11,6 +11,9 @@ use App\Hooks\Contracts\EngineStack;
 use App\Hooks\Contracts\EngineTargetAccess;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Lifecycle\FrameLifecycle;
+use App\Hooks\Stack\StackRestorer;
+use App\Hooks\Stack\StateTypes;
 use App\Hooks\Stack\StatePush;
 use App\Hooks\Support\StackTransaction;
 
@@ -24,6 +27,9 @@ final readonly class EngineStacks implements EngineStack
         private StackTransaction $transaction,
         private EngineTargetAccess $access,
         private StatePush $statePush,
+        private StackRestorer $restorer,
+        private FrameLifecycle $lifecycle,
+        private StateTypes $types,
     ) {}
 
     public function push(StackTarget $target, StateReference $reference): void
@@ -37,5 +43,30 @@ final readonly class EngineStacks implements EngineStack
 
         $row = AgentStackRow::lockAuthorizedFor($target);
         $this->statePush->push($target, $row, $row->frames->role(), $reference);
+    }
+
+    /**
+     * The explicit top-pop outside a walk; a closed stack is left as it is.
+     */
+    public function popExposed(StackTarget $target): void
+    {
+        $this->transaction->requireOpen($target);
+        $this->access->checkTarget($target);
+        $this->lifecycle->refuseChangeDuringCallbacks($target);
+        $row = AgentStackRow::lockKeptFor(AgentStackRow::query()->authorizedFor($target), $target);
+
+        if (! $row->isActive()) {
+            return;
+        }
+
+        $before = $this->restorer->restore($row->frames, $row->frames->role());
+        $after = $before->withoutExposedInactive();
+
+        if ($after->frameIds() === $before->frameIds()) {
+            return;
+        }
+
+        $this->lifecycle->settle($target, $before, $after);
+        $row->saveFrames($after->records(), $this->types->ticking());
     }
 }

@@ -70,7 +70,7 @@ final class StackRestorerTest extends TestCase
         $this->assertSame([true], array_map(fn ($frame) => $frame->isFinished(), array_slice($after->frames(), 1)));
     }
 
-    public function test_restoring_keeps_a_finished_frame_and_the_stack_drops_it_on_request(): void
+    public function test_restoring_keeps_a_finished_frame_and_only_an_exposed_one_is_popped(): void
     {
         $this->tasks->tasks[42] = TaskWorkState::Cancelled;
 
@@ -80,7 +80,8 @@ final class StackRestorerTest extends TestCase
         );
 
         $this->assertSame(['ready', 'task-42', 'task-43'], $stack->frameIds());
-        $this->assertSame(['ready', 'task-43'], $stack->withoutInactiveFrames()->frameIds());
+        $this->assertSame(['ready', 'task-42', 'task-43'], $stack->withoutExposedInactive()->frameIds());
+        $this->assertSame('task-43', $stack->top()->id);
     }
 
     public function test_the_bottom_state_follows_the_agent_role(): void
@@ -160,7 +161,7 @@ final class StackRestorerTest extends TestCase
         $stack = $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42), $switchedOff), ReadyStateType::MainAgent);
 
         $this->assertSame(['ready', 'task-42', 'review'], $stack->frameIds());
-        $this->assertSame(['ready', 'task-42'], $stack->withoutInactiveFrames()->frameIds());
+        $this->assertSame(['ready', 'task-42'], $stack->withoutExposedInactive()->frameIds());
 
         $this->expectException(StateSchemaUnknown::class);
 
@@ -206,7 +207,7 @@ final class StackRestorerTest extends TestCase
 
         $this->assertSame(1, $loaded);
         $this->assertSame([true, false], array_map(fn ($frame) => $frame->isEnabled(), $stack->frames()));
-        $this->assertSame(['ready'], $stack->withoutInactiveFrames()->frameIds());
+        $this->assertSame(['ready'], $stack->withoutExposedInactive()->frameIds());
     }
 
     private function restorerWith(InMemoryTaskLoader $tasks): StackRestorer

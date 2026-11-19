@@ -7,8 +7,6 @@ namespace App\Hooks\Models;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Exceptions\StackMissing;
@@ -196,23 +194,6 @@ final class AgentStackRow extends Model implements ReadableModel
     protected function forTarget(Builder $query, StackTarget $target): void
     {
         $query->where('agent_id', $target->agentId)->where('session_id', $target->sessionId);
-    }
-
-    /**
-     * The active stacks, of any agent, with a frame of this state about this subject run.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function holdingState(Builder $query, StateReference $state): void
-    {
-        $frame = $state->subject instanceof SubjectReference
-            ? ['typeKey' => $state->typeKey, 'subject' => ['id' => $state->subject->id, 'runNumber' => $state->subject->runNumber]]
-            : ['typeKey' => $state->typeKey];
-
-        $query->withoutGlobalScope(AgentSessionScope::class)
-            ->where('status', StackStatus::Active->value)
-            ->whereRaw('frames @> ?::jsonb', [json_encode(['frames' => [$frame]], JSON_THROW_ON_ERROR)]);
     }
 
     /**

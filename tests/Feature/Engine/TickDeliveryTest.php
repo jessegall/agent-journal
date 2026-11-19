@@ -131,6 +131,22 @@ final class TickDeliveryTest extends TestCase
         $this->assertFalse($this->app->make(FrameBaselines::class)->has('a'));
     }
 
+    public function test_a_tick_of_finished_work_commits_none_of_its_commands_and_settles(): void
+    {
+        $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
+        $target = new StackTarget($stack->agent_id, $stack->session_id);
+        $this->loader->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
+            new SettleFrameTimes([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
+        );
+        $this->loader->guard->finishedSubjects = ['a'];
+
+        $this->passAt(0.0);
+
+        $this->assertSame([], EngineFrameTime::settledAtFor(['effect-of-a']));
+        $this->assertSame(['a'], array_map(fn ($subject) => $subject->subjectId, $this->loader->guard->checked));
+        $this->assertTrue($this->app->make(FrameBaselines::class)->has('a'));
+    }
+
     public function test_a_failing_frame_does_not_stop_the_next_one(): void
     {
         $this->tickingStack('test.ticking', ['a', 'b'], $this->entry);

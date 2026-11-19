@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Ticks;
 
+use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
@@ -16,10 +17,15 @@ use Closure;
  */
 class TickingLoader implements TickableStateLoader
 {
+    public readonly ScriptedOccurrenceGuard $guard;
+
     /**
      * @param  Closure(StateReference): AgentState  $make
      */
-    public function __construct(private readonly Closure $make) {}
+    public function __construct(private readonly Closure $make)
+    {
+        $this->guard = new ScriptedOccurrenceGuard();
+    }
 
     public function statesFor(StateReferences $references): StateSet
     {
@@ -29,5 +35,10 @@ class TickingLoader implements TickableStateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function occurrenceGuard(): WorkOccurrenceGuard
+    {
+        return $this->guard;
     }
 }

@@ -6,6 +6,7 @@ namespace App\Engine\Values;
 
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\TickableState;
+use App\Hooks\Values\WorkOccurrence;
 use Carbon\CarbonImmutable;
 
 /**
@@ -22,5 +23,6 @@ final readonly class TickCandidate
         public int $position,
         public CarbonImmutable $enteredAt,
         public TickableState $state,
+        public WorkOccurrence $occurrence,
     ) {}
 }

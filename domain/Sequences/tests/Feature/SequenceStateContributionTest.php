@@ -74,7 +74,7 @@ final class SequenceStateContributionTest extends TestCase
         $this->assertSame(1, $run->fresh()?->current_step);
     }
 
-    public function test_a_finished_or_cancelled_run_leaves_on_the_next_hook(): void
+    public function test_a_finished_or_cancelled_run_is_passed_over_and_a_push_pops_the_exposed_one(): void
     {
         $finished = $this->newRun();
         $this->app->make(CommandBus::class)->run(new StartSequence($finished->id, $this->target->sessionId));
@@ -89,7 +89,7 @@ final class SequenceStateContributionTest extends TestCase
         $cancelled->cancel();
 
         $this->assertSame('{}', $this->answerStop('call-2'));
-        $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.main_ready', 'sequences.following'], $this->storedTypeKeys());
     }
 
     private function newRun(): SequenceRun

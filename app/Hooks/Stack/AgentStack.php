@@ -44,10 +44,10 @@ final readonly class AgentStack
             throw MissingBottomState::for($input->methodName());
         }
 
-        $walk = new HookWalk($input->methodName(), $this, $walkFrames[0]);
+        $walk = new HookWalk($input->methodName(), $this, $this->top());
 
         foreach ($walkFrames as $frame) {
-            if ($frame->isFinished() || ! $frame->isEnabled()) {
+            if (! $frame->isLive()) {
                 continue;
             }
 
@@ -106,20 +106,30 @@ final readonly class AgentStack
     }
 
     /**
-     * The stack without every frame whose state reports its work done or is switched off, wherever it sits; a switched-
-     * off frame is only left out, its work is not finished.
+     * The stack without the finished or switched-off frames exposed at its physical top, down to the first live one.
+     * A frame that is not live under a live one is only passed over by a walk, never removed: skipping is not popping.
      */
-    public function withoutInactiveFrames(): self
+    public function withoutExposedInactive(): self
     {
-        $stack = $this;
+        $frames = $this->frames;
 
-        foreach ($this->frames as $frame) {
-            if ($frame->isFinished() || ! $frame->isEnabled()) {
-                $stack = $stack->withoutFrame($frame);
+        foreach (array_reverse($this->frames) as $frame) {
+            if ($frame->isBottom() || $frame->isLive()) {
+                break;
             }
+
+            array_pop($frames);
         }
 
-        return $stack;
+        return new self($frames, $this->factory);
+    }
+
+    /**
+     * The stack after a frame's explicit pop: without the frame, then without the inactive frames that pop exposed.
+     */
+    public function poppedOf(Frame $frame): self
+    {
+        return $this->withoutFrame($frame)->withoutExposedInactive();
     }
 
     /**
@@ -143,14 +153,18 @@ final readonly class AgentStack
     }
 
     /**
-     * The top of this stack when the earlier stack held it covered, so it comes back on top; none for ready, a new
-     * frame or a top that did not change.
+     * The live top of this stack when a live frame covered it in the earlier stack and this change removed that frame,
+     * so it comes back on top; none for ready, a new frame, a top that did not change, or a top only finished or
+     * switched-off frames covered, since it already answered first.
      */
     public function topResumedSince(self $earlier): Frame|null
     {
         $top = $this->top();
+        $earlierTop = $earlier->top();
+        $coverRemoved = ! in_array($earlierTop->id, $this->frameIds(), true);
+        $wasHeld = in_array($top->id, $earlier->frameIds(), true);
 
-        if ($top->isBottom() || ! in_array($top->id, $earlier->frameIds(), true) || $earlier->top()->id === $top->id) {
+        if ($top->isBottom() || ! $wasHeld || $earlierTop->id === $top->id || ! $coverRemoved) {
             return null;
         }
 
@@ -158,13 +172,20 @@ final readonly class AgentStack
     }
 
     /**
-     * The frame on top: the one a hook asks first.
+     * The highest live frame: the one a hook asks first and the only one that may push. Finished and switched-off
+     * frames above it stay stored but are passed over.
      *
-     * @throws MissingBottomState when the stack holds no frame at all
+     * @throws MissingBottomState when the stack holds no live frame at all
      */
     public function top(): Frame
     {
-        return $this->frames[array_key_last($this->frames) ?? throw MissingBottomState::for('top')];
+        foreach (array_reverse($this->frames) as $frame) {
+            if ($frame->isLive()) {
+                return $frame;
+            }
+        }
+
+        throw MissingBottomState::for('top');
     }
 
     /**

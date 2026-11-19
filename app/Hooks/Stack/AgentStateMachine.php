@@ -77,8 +77,7 @@ final readonly class AgentStateMachine
 
                 $this->lifecycle->refuseChangeDuringCallbacks($this->access->target());
                 $stackBefore = $this->restorer->restore($row->frames, $this->access->role());
-                $baseline = $stackBefore->withoutInactiveFrames();
-                $answer = $this->settle($baseline, $input, $capabilities)->withRemindersFirst($reminders);
+                $answer = $this->settle($stackBefore, $input, $capabilities)->withRemindersFirst($reminders);
                 $this->lifecycle->settle($this->access->target(), $stackBefore, $answer->stack);
                 $reply = $render($answer);
 

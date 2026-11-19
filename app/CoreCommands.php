@@ -42,6 +42,7 @@ use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Engine\CommandMiddleware\GuardTickOrigin;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
@@ -297,7 +298,10 @@ final class CoreCommands
      */
     public static function middleware(): array
     {
-        return [MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all())];
+        return [
+            MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all()),
+            MiddlewareDeclaration::inside(GuardTickOrigin::class, CommandScope::all()),
+        ];
     }
 
     /**

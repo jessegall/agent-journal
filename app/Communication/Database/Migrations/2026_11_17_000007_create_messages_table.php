@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('number');
             $table->text('body');
             $table->string('state', 32)->default('sent');
+            $table->unsignedInteger('answer_round')->default(0);
             $table->ulid('agent_id')->nullable();
             $table->ulid('session_id')->nullable();
             $table->timestampsTz();
