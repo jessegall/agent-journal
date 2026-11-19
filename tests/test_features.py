@@ -1967,7 +1967,7 @@ def test_a_worker_whose_run_a_restart_stopped_is_sent_on_in_its_own_session_and_
             assert sent.state == WorkerState.DISPATCHED and sent.brief == RESTART_JOB and sent.resume == session and not sent.token_hash, "a worker out when the journal stopped, clocked in or not, is sent on in its own session, to clock in again"
             assert tasks.holder_task_ids(Ref("workers", n)) == (n,) and RESTART_MOVE in [word for word, _ in sent.moves.steps], "it keeps its task, and its moves say a restart stopped it"
             assert ENDED_UNFINISHED not in [word for word, _ in sent.moves.steps], "a run a restart stopped is no run that ended without clocking out"
-    assert started == [1, 2], "each is started again by the journal itself, without the agent re-sending it"
+    assert sorted(started) == [1, 2], "each is started again by the journal itself, without the agent re-sending it"
 
 
 def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app: App):
