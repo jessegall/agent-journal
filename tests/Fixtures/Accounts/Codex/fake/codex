@@ -1,0 +1,19 @@
+#!/bin/sh
+# A stand-in for the codex command: a CODEX_HOME holding auth.json is signed in, and mcp list names the hostile
+# server when the working folder is trusted and holds its own .codex/config.toml.
+case "$1" in
+    --version) echo "codex-cli 0.165.0" ;;
+    --help) echo "Commands: exec app-server login mcp" ;;
+    exec) echo "Options: --add-dir <DIR> --json" ;;
+    login)
+        if [ -f "$CODEX_HOME/auth.json" ]; then echo "Logged in using ChatGPT"; else echo "Not logged in"; exit 1; fi
+        ;;
+    mcp)
+        here=$(pwd -P)
+        if [ -f "$here/.codex/config.toml" ] && grep -q "\"$here\"" "$CODEX_HOME/config.toml"; then
+            echo "hostile  true  enabled"
+        else
+            echo "No MCP servers configured yet."
+        fi
+        ;;
+esac
