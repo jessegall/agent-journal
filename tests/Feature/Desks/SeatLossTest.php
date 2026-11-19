@@ -64,7 +64,7 @@ final class SeatLossTest extends TestCase
             TestActors::record('communication.message', 1),
             AssigneeIdentity::ofActorIdentity($arriving),
         );
-        $this->assertTrue($taken->toAssignment()->holder()->isSameAs(AssigneeIdentity::ofActorIdentity($arriving)));
+        $this->assertEquals(AssigneeIdentity::ofActorIdentity($arriving), $taken->toAssignment()->holder());
     }
 
     private function seat(DeskRecord $desk, ActorIdentity $actor): SeatChangeResult

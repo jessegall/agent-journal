@@ -12,7 +12,6 @@ use App\Agents\Enums\StartOriginType;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\StartRefused;
-use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\StartRecord;
 use App\Agents\Resolvers\Support\HostStartMaterial;
@@ -25,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
@@ -35,17 +35,9 @@ use Tests\TestCase;
  */
 final class StartAgentTest extends TestCase
 {
+    use HasResearcherAgent;
     use RefreshHookDatabase;
     use StartsOwnerRequest;
-
-    private Agent $agent;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->agent = Agent::named('Researcher', 'read-only-helper');
-    }
 
     public function test_a_session_without_a_selection_cannot_be_written(): void
     {

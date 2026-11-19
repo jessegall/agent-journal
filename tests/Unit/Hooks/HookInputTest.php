@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Hooks\Contracts\HookInput;
+use App\Hooks\Enums\AnswerType;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
@@ -43,9 +44,9 @@ final class HookInputTest extends TestCase
         $plainState = new class extends AgentState {};
 
         $this->assertSame($method, $input->methodName());
-        $this->assertSame('allow', $input->answerBy($recording)->answerType()->value);
+        $this->assertSame(AnswerType::Allow, $input->answerBy($recording)->answerType());
         $this->assertSame([$method], $recording->askedMethods);
-        $this->assertSame('delegate', $input->answerBy($plainState)->answerType()->value);
+        $this->assertSame(AnswerType::Delegate, $input->answerBy($plainState)->answerType());
     }
 
     public function test_an_input_keeps_the_identity_it_was_given(): void

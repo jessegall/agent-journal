@@ -11,7 +11,6 @@ use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\ConversationIncompatible;
-use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
 use App\Agents\Support\StartPolicy;
@@ -20,6 +19,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\HasResearcherAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
@@ -30,17 +30,9 @@ use Tests\TestCase;
  */
 final class ConversationVisitTest extends TestCase
 {
+    use HasResearcherAgent;
     use RefreshHookDatabase;
     use StartsOwnerRequest;
-
-    private Agent $agent;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->agent = Agent::named('Researcher', 'read-only-helper');
-    }
 
     public function test_a_b_a_in_one_process_gives_three_ordered_visits_on_one_session(): void
     {

@@ -129,8 +129,10 @@ final class ShellGrammarTest extends TestCase
             $this->assertSame(ParseOutcome::LimitExceeded, $tree->outcome);
             $this->assertSame([], $tree->executableParts());
         }
-        $this->assertStringContainsString('1024', $tooMany->diagnostic->reason ?? '');
-        $this->assertStringContainsString('depth', $tooDeep->diagnostic->reason ?? '');
+        $this->assertNotNull($tooMany->diagnostic);
+        $this->assertNotNull($tooDeep->diagnostic);
+        $this->assertStringContainsString('1024', $tooMany->diagnostic->reason);
+        $this->assertStringContainsString('depth', $tooDeep->diagnostic->reason);
     }
 
     /**

@@ -23,4 +23,12 @@ final readonly class GatewayOperation
     {
         return $this->configuration->settings;
     }
+
+    /**
+     * The id of the gateway configuration the operation is carried out under.
+     */
+    public function configurationId(): string
+    {
+        return $this->configuration->configurationId;
+    }
 }
