@@ -19,6 +19,7 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Fixtures\Domains\Binders\BinderShareProvider;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\RegistersShareDomains;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -64,7 +65,7 @@ final class ShareScopeTest extends TestCase
         $root = $this->root(1);
         $this->linkTargets($root, 3, 1_000);
         $this->link($root, new RecordIdentity('binders.sheet', BinderShareProvider::INELIGIBLE_ID));
-        $memo = $this->link($root, new RecordIdentity('binders.memo', TestIds::of(5_000)));
+        $memo = $this->link($root, TestActors::record('binders.memo', 5_000));
 
         $candidates = $this->scope()->discover($root, $this->budget());
         $ids = array_map(fn (ShareLinkedCandidate $candidate) => $candidate->card->record->id, $candidates->linked);
@@ -85,7 +86,7 @@ final class ShareScopeTest extends TestCase
 
     public function test_an_unregistered_or_hidden_root_fails_closed(): void
     {
-        $this->assertThrows(fn () => $this->scope()->discover(new RecordIdentity('binders.unknown', TestIds::of(1)), $this->budget()), UnknownShareRecordType::class);
+        $this->assertThrows(fn () => $this->scope()->discover(TestActors::record('binders.unknown', 1), $this->budget()), UnknownShareRecordType::class);
         $this->assertThrows(fn () => $this->scope()->discover(new RecordIdentity('binders.binder', BinderShareProvider::HIDDEN_ROOT_ID), $this->budget()), RecordUnavailable::class);
     }
 
@@ -101,7 +102,7 @@ final class ShareScopeTest extends TestCase
 
     private function root(int $number): RecordIdentity
     {
-        return new RecordIdentity('binders.binder', TestIds::of($number));
+        return TestActors::record('binders.binder', $number);
     }
 
     /**

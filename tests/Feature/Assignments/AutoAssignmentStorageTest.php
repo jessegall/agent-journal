@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\AutoAssignmentWriter;
@@ -20,13 +18,13 @@ use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\PoolReference;
-use App\Records\Support\RecordIdentity;
 use Closure;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -47,7 +45,7 @@ final class AutoAssignmentStorageTest extends TestCase
     {
         parent::setUp();
 
-        $this->key = new AutoAssignmentKey(new ActorIdentity(ActorType::Agent, TestIds::of(7)), 'tasks.task');
+        $this->key = new AutoAssignmentKey(TestActors::agentIdentity(7), 'tasks.task');
     }
 
     public function test_the_table_keeps_one_row_per_actor_and_type(): void
@@ -124,7 +122,7 @@ final class AutoAssignmentStorageTest extends TestCase
 
     public function test_disable_keeps_the_pool_and_size_and_a_missing_one_is_off_at_revision_zero(): void
     {
-        $plan = new PoolReference('plans.tasks', new RecordIdentity('plans.plan', TestIds::of(40)), []);
+        $plan = new PoolReference('plans.tasks', TestActors::record('plans.plan', 40), []);
 
         $this->assertEquals(
             new AutoAssignmentChange(false, 0),
@@ -150,13 +148,13 @@ final class AutoAssignmentStorageTest extends TestCase
     public function test_the_enabled_page_holds_only_enabled_facts_by_id(): void
     {
         foreach (range(1, 3) as $number) {
-            $key = new AutoAssignmentKey(new ActorIdentity(ActorType::Agent, TestIds::of($number)), 'tasks.task');
+            $key = new AutoAssignmentKey(TestActors::agentIdentity($number), 'tasks.task');
             $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable(
                 new AutoAssignmentInput($key, self::open(), 1),
                 0,
             ));
         }
-        $off = new AutoAssignmentKey(new ActorIdentity(ActorType::Agent, TestIds::of(2)), 'tasks.task');
+        $off = new AutoAssignmentKey(TestActors::agentIdentity(2), 'tasks.task');
         $this->write(fn (AutoAssignmentWriter $writer) => $writer->disable($off, 1));
 
         $first = $this->resolver()->enabled(new Page(null, 1));

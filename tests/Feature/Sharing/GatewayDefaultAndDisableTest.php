@@ -29,8 +29,6 @@ use App\Sharing\Support\ShareDuration;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareSummary;
-use App\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
@@ -39,8 +37,9 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
+use Tests\Support\Sharing\TestShares;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -65,9 +64,9 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->instance(BinderPublications::class, new BinderPublications());
-        $this->root = new RecordIdentity('binders.binder', TestIds::of(1));
+        $this->root = TestActors::record('binders.binder', 1);
     }
 
     public function test_switching_the_default_leaves_earlier_shares_on_their_revision(): void
@@ -88,7 +87,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
         ShareGatewayEndpoint::openFor($configuration, 1, self::RUN)->moveTo(GatewayEndpointState::Open);
 
         foreach ([1, 2, 3] as $number) {
-            $share = Share::grant(new RecordIdentity('binders.binder', TestIds::of($number)), TestIds::of(9), $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+            $share = TestShares::grantForADay(TestActors::record('binders.binder', $number), $configuration);
             $share->activate();
         }
 
@@ -113,7 +112,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
     public function test_a_closing_endpoint_version_is_never_opened_again(): void
     {
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
-        $share = Share::grant($this->root, TestIds::of(9), $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $share = TestShares::grantForADay($this->root, $configuration);
         ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
         $this->asSystem(new ClaimGatewayOperation(self::RUN));
         $share->activate();
@@ -124,7 +123,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
 
         $configuration->disabled_at = null;
         $configuration->save();
-        Share::grant(new RecordIdentity('binders.binder', TestIds::of(2)), TestIds::of(9), $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
         ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
 
         $this->assertSame(2, $this->asSystem(new ClaimGatewayOperation(self::RUN))?->operation->endpointVersion);
@@ -158,23 +157,10 @@ final class GatewayDefaultAndDisableTest extends TestCase
     private function asOwner(Command $command, string|null $key = null): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
         $requestKey = $this->app->make(RequestKey::class);
         $requestKey->set($key ?? (string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);
-    }
-
-    /**
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
-    private function asSystem(Command $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry($command);
     }
 }

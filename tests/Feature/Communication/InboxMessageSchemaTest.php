@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssigneeIdentity;
@@ -26,6 +25,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -44,7 +44,7 @@ final class InboxMessageSchemaTest extends TestCase
         parent::setUp();
 
         GlobalGroup::installJournal();
-        $this->author = new ActorIdentity(ActorType::Agent, TestIds::of(7));
+        $this->author = TestActors::agentIdentity(7);
     }
 
     public function test_acknowledging_twice_keeps_the_first_reader(): void
@@ -52,7 +52,7 @@ final class InboxMessageSchemaTest extends TestCase
         $message = $this->ask();
         $first = new InboxMembership($this->author, new AssignmentReference(TestIds::of(1), $this->holder()));
         $second = new InboxMembership(
-            new ActorIdentity(ActorType::Agent, TestIds::of(8)),
+            TestActors::agentIdentity(8),
             new AssignmentReference(TestIds::of(2), $this->holder()),
         );
 

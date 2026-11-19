@@ -10,14 +10,13 @@ use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Ui\Declarations\RegisteredSection;
 use App\Ui\Support\UiDeclarations;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Resolvers\OpenPlansCount;
 use Domain\Plans\Resolvers\WaitingPlansSection;
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -27,17 +26,8 @@ use Tests\TestCase;
  */
 final class DomainSwitchPagesTest extends TestCase
 {
+    use ActsAsOwner;
     use RefreshHookDatabase;
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_pages_and_actions_of_a_switched_off_domain_answer_not_found_and_others_stay(): void
     {

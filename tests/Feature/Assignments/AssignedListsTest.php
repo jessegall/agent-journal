@@ -128,7 +128,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_a_user_reads_its_own_empty_assigned_list_and_a_bad_page_is_refused(): void
     {
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
 
         $this->assertSame(0, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())->total);
         $this->assertThrows(fn () => new NumberedPage(0, 20), InvalidAssignmentPage::class);

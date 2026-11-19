@@ -62,7 +62,7 @@ final readonly class RunWindowResolver implements PageResolver
      */
     private function problemsOf(PartRun $part): array
     {
-        $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+        $assessment = OutputAssessment::latestOf($part);
 
         return $assessment === null ? [] : array_map(ProblemData::fromProblem(...), $assessment->problems);
     }

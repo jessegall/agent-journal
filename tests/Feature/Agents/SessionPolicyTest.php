@@ -15,9 +15,8 @@ use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -28,6 +27,7 @@ use Tests\TestCase;
  */
 final class SessionPolicyTest extends TestCase
 {
+    use ActsAsOwner;
     use RefreshHookDatabase;
     use StartsAgentRequests;
 
@@ -35,9 +35,7 @@ final class SessionPolicyTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->startUserRequestAs($this->owner->id);
     }
 
     public function test_a_launch_freezes_its_policy_with_its_session(): void

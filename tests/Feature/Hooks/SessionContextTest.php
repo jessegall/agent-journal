@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
@@ -21,6 +19,7 @@ use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -39,7 +38,7 @@ final class SessionContextTest extends TestCase
         parent::setUp();
 
         $this->rule = Rule::holding('No phase waits on the user.');
-        new Memory(['text' => 'Use plain words.', 'weight' => 3])->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(1)));
+        new Memory(['text' => 'Use plain words.', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
     }
 
     public function test_a_launch_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void

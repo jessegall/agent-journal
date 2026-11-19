@@ -7,19 +7,15 @@ namespace Tests\Feature\Sharing;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\RequestKey;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Exceptions\GatewayNotReady;
 use App\Sharing\Exceptions\GatewaySecretRefused;
 use App\Sharing\Exceptions\UnknownShareGateway;
-use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\ShareGatewayRegistry;
-use App\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Log\Events\MessageLogged;
@@ -27,9 +23,10 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
+use Tests\Support\Sharing\TestShares;
 use Tests\Support\Sharing\UnreadyShareGateway;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -54,7 +51,7 @@ final class ConfigureShareGatewayTest extends TestCase
         config(['sharing.secrets_dir' => $this->secretsFolder]);
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
         $this->app->make(ShareGatewayRegistry::class)->register(UnreadyShareGateway::KEY, UnreadyShareGateway::class);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
     }
 
     protected function tearDown(): void
@@ -71,7 +68,7 @@ final class ConfigureShareGatewayTest extends TestCase
     public function test_configuring_twice_makes_versions_one_and_two_and_a_share_keeps_the_first(): void
     {
         $first = $this->configure(FakeShareGateway::KEY, false);
-        $share = Share::grant(new RecordIdentity('binders.binder', TestIds::of(1)), TestIds::of(9), ShareGatewayConfiguration::query()->findOrFail($first->configurationId), ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $share = TestShares::grantForADay(TestActors::record('binders.binder', 1), ShareGatewayConfiguration::query()->findOrFail($first->configurationId));
         $second = $this->configure(FakeShareGateway::KEY, true);
 
         $this->assertSame([1, 2], [$first->configurationVersion, $second->configurationVersion]);
@@ -124,7 +121,7 @@ final class ConfigureShareGatewayTest extends TestCase
     {
         $key = (string) Str::ulid();
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(new ConfigureShareGateway($gatewayKey, '1.0.0', 'fake.test', FakeShareGateway::PUBLIC_ORIGIN, 8100, $secretReferences, $makeDefault, $key));

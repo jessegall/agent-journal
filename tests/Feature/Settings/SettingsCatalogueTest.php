@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
 use App\Settings\Contracts\SettingCommands;
@@ -26,8 +24,10 @@ use Closure;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
+use Tests\Support\ActsAsActors;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -38,6 +38,7 @@ use Tests\TestCase;
  */
 final class SettingsCatalogueTest extends TestCase
 {
+    use ActsAsActors;
     use AssertsReadBudget;
     use CommitsHookRows;
 
@@ -155,7 +156,7 @@ final class SettingsCatalogueTest extends TestCase
         $this->actAs(ActorContext::forAgent(TestIds::of(3)));
         $this->assertRefusedWithoutReading();
 
-        $this->actAs(ActorContext::forUser(TestIds::of(8)));
+        $this->actAs(TestActors::user(8));
         $this->assertRefusedWithoutReading();
 
         $this->app->forgetScopedInstances();
@@ -176,11 +177,6 @@ final class SettingsCatalogueTest extends TestCase
 
         $this->assertTrue($refused, 'The catalogue was not refused.');
         $this->assertSame(0, $counts->queriesRun);
-    }
-
-    private function actAs(ActorContext $actor): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
     /**

@@ -17,7 +17,7 @@ final readonly class MessageClaimProvider implements AssignableProvider
 {
     public function requireAssignable(RecordIdentity $record): Assignable
     {
-        return Message::query()->withoutGlobalScopes()->whereKey($record->id)->lock('for key share')->first()
+        return Message::query()->acrossInboxes()->whereKey($record->id)->lock('for key share')->first()
             ?? throw RecordUnavailable::for($record);
     }
 

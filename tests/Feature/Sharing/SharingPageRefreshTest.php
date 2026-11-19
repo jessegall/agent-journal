@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Bus\Contracts\Command;
 use App\Domains\Providers\DomainEventServiceProvider;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\RecordGatewayOutcome;
 use App\Sharing\Enums\GatewayOperationType;
@@ -23,15 +21,15 @@ use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ClaimedGatewayOperation;
-use App\Sharing\Support\ShareToken;
 use App\Web\Events\PageChanged;
 use App\Web\Listeners\BroadcastPageChange;
-use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
+use Tests\Support\Sharing\TestShares;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -64,9 +62,9 @@ final class SharingPageRefreshTest extends TestCase
 
     public function test_activating_a_share_sends_the_owner_a_page_change_with_nothing_in_it(): void
     {
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        Share::grant(new RecordIdentity('binders.binder', TestIds::of(1)), TestIds::of(9), $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
         ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
         $claim = $this->asSystem(new ClaimGatewayOperation(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
@@ -75,18 +73,5 @@ final class SharingPageRefreshTest extends TestCase
         $this->asSystem(new RecordGatewayOutcome(self::RUN, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, GatewayOutcome::Succeeded));
 
         Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->userIds === [TestIds::of(9)] && $change->broadcastWith() === []);
-    }
-
-    /**
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
-    private function asSystem(Command $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry($command);
     }
 }

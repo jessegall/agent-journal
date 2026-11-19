@@ -7,10 +7,8 @@ namespace Tests\Feature\Sharing;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\JournalAdmission;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Models\Share;
@@ -23,6 +21,7 @@ use Carbon\CarbonImmutable;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\RegistersShareDomains;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -74,17 +73,17 @@ final class OwnerSharePolicyTest extends TestCase
         $policy = $this->app->make(SharePolicy::class);
 
         $this->assertTrue($policy->mayManage(ActorContext::forUser($this->ownerId)));
-        $this->assertFalse($policy->mayManage(ActorContext::forUser(TestIds::of(2))));
+        $this->assertFalse($policy->mayManage(TestActors::user(2)));
         $this->assertFalse($policy->mayManage(ActorContext::forAgent($this->ownerId)));
-        $this->assertThrows(fn () => $policy->requireManager(ActorContext::forUser(TestIds::of(2))), SharingNotAllowed::class);
+        $this->assertThrows(fn () => $policy->requireManager(TestActors::user(2)), SharingNotAllowed::class);
         $this->assertThrows(fn () => $policy->requireManager(ActorContext::forAgent(TestIds::of(3))), SharingNotAllowed::class);
     }
 
     public function test_an_owner_change_ends_earlier_grants_and_the_new_owner_still_manages(): void
     {
         $policy = $this->app->make(OwnerSharePolicy::class);
-        $share = Share::grant(new RecordIdentity('pamphlets.pamphlet', TestIds::of(4)), $this->ownerId, $this->configuration(), ShareToken::generate(), CarbonImmutable::now()->addDays(7));
-        $proposal = Share::propose(new RecordIdentity('pamphlets.pamphlet', TestIds::of(4)), new ActorIdentity(ActorType::Agent, TestIds::of(5)), CarbonImmutable::now()->addDays(7));
+        $share = Share::grant(TestActors::record('pamphlets.pamphlet', 4), $this->ownerId, $this->configuration(), ShareToken::generate(), CarbonImmutable::now()->addDays(7));
+        $proposal = Share::propose(TestActors::record('pamphlets.pamphlet', 4), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(7));
 
         $this->assertTrue($policy->grantHolds($share));
         $this->assertFalse($policy->grantHolds($proposal));
@@ -92,8 +91,8 @@ final class OwnerSharePolicyTest extends TestCase
         $this->ownerId = TestIds::of(2);
 
         $this->assertFalse($policy->grantHolds($share));
-        $this->assertTrue($policy->mayManage(ActorContext::forUser(TestIds::of(2))));
-        $this->assertFalse($policy->mayManage(ActorContext::forUser(TestIds::of(1))));
+        $this->assertTrue($policy->mayManage(TestActors::user(2)));
+        $this->assertFalse($policy->mayManage(TestActors::user(1)));
     }
 
     public function test_disclosure_is_the_record_providers_answer(): void
@@ -102,8 +101,8 @@ final class OwnerSharePolicyTest extends TestCase
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $policy = $this->app->make(SharePolicy::class);
 
-        $this->assertTrue($policy->mayDisclose(new RecordIdentity('pamphlets.pamphlet', TestIds::of(4))));
-        $this->assertFalse($policy->mayDisclose(new RecordIdentity('pamphlets.note', TestIds::of(4))));
+        $this->assertTrue($policy->mayDisclose(TestActors::record('pamphlets.pamphlet', 4)));
+        $this->assertFalse($policy->mayDisclose(TestActors::record('pamphlets.note', 4)));
     }
 
     private function configuration(): ShareGatewayConfiguration

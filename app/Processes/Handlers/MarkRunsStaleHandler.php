@@ -12,7 +12,7 @@ final readonly class MarkRunsStaleHandler implements CommandHandler
 {
     public function handle(MarkRunsStale $command): int
     {
-        $runs = ProcessRun::query()->withoutGlobalScopes()->unfinishedIn($command->projectKey)->readLimit(1_000)->get();
+        $runs = ProcessRun::query()->acrossActors()->unfinishedIn($command->projectKey)->readLimit(1_000)->get();
         foreach ($runs as $run) {
             $run->markStale($command->reason);
         }

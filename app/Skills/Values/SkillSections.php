@@ -15,7 +15,7 @@ final readonly class SkillSections
     /**
      * @param  list<SkillSection>|string  $source  the listed sections, or the file they are read from
      */
-    private function __construct(private array|string $source) {}
+    private function __construct(public array|string $source) {}
 
     public static function fromFile(string $file): self
     {

@@ -31,10 +31,10 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
             $built = true;
         });
 
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
         $this->assertRefusedAsDisabled(new StartPlan(TestIds::of(5)));
 
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
+        $this->startTestAgentRequest(2, 20);
         $this->assertRefusedAsDisabled(new StartPlan(TestIds::of(5)));
 
         $this->assertFalse($built, 'The handler of a switched-off domain was built.');
@@ -48,7 +48,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
         $this->app->resolving(RefusesAll::class, function () use (&$built): void {
             $built = true;
         });
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
 
         $this->app->make(CommandBus::class)->run(new ShuffleDeck('red'));
 
@@ -58,7 +58,7 @@ final class DomainDisabledCommandsTest extends CommandBusTestCase
     public function test_with_every_domain_on_the_middleware_runs_as_before(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around(RefusesAll::class, CommandScope::all()));
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
 
         $this->expectException(CommandRefused::class);
 

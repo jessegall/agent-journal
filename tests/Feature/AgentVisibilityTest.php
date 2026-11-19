@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\StackTarget;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Models\SequenceRun;
@@ -18,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -33,21 +31,21 @@ final class AgentVisibilityTest extends TestCase
         $this->giveWorkTo(1, 10);
         $this->giveWorkTo(1, 11);
         $this->giveWorkTo(2, 20);
-        new Memory(['text' => 'Kept by agent 1', 'weight' => 3])->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(1)));
-        new Memory(['text' => 'Kept by agent 2', 'weight' => 3])->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(2)));
+        new Memory(['text' => 'Kept by agent 1', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
+        new Memory(['text' => 'Kept by agent 2', 'weight' => 3])->saveFor(TestActors::agentIdentity(2));
         Task::factory()->create(['title' => 'Write the walk'])->start();
         Rule::holding('No phase waits on the user.');
     }
 
     public function test_an_agent_sees_its_own_runs_and_memories_in_every_session(): void
     {
-        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $this->startTestAgentRequest(1, 10);
 
         $this->assertSame(['Run of agent 1', 'Run of agent 1'], SequenceRun::query()->orderBy('id')->pluck('name')->all());
         $this->assertSame(['Kept by agent 1'], Memory::query()->pluck('text')->all());
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
+        $this->startTestAgentRequest(2, 20);
 
         $this->assertSame(['Run of agent 2'], SequenceRun::query()->pluck('name')->all());
         $this->assertSame(['Kept by agent 2'], Memory::query()->pluck('text')->all());
@@ -55,18 +53,18 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_the_journal_reads_what_it_addressed_to_another_agent_by_name(): void
     {
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
-        $agentOne = new StackTarget(TestIds::of(1), TestIds::of(10));
+        $this->startTestAgentRequest(2, 20);
+        $agentOne = TestActors::stack(1, 10);
 
-        $run = $this->app->make(SequenceRecords::class)->followedBy($agentOne, $this->idOf(SequenceRun::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1)))));
+        $run = $this->app->make(SequenceRecords::class)->followedBy($agentOne, $this->idOf(SequenceRun::query()->ownedBy(TestActors::agentIdentity(1))));
 
         $this->assertSame(TestIds::of(1), $run->actor_id);
-        $this->assertSame(['Kept by agent 1'], Memory::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1)))->pluck('text')->all());
+        $this->assertSame(['Kept by agent 1'], Memory::query()->ownedBy(TestActors::agentIdentity(1))->pluck('text')->all());
     }
 
     public function test_every_agent_reads_every_task_and_rule(): void
     {
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
+        $this->startTestAgentRequest(2, 20);
 
         $this->assertSame(['Write the walk'], Task::query()->pluck('title')->all());
         $this->assertSame(['No phase waits on the user.'], Rule::query()->pluck('text')->all());
@@ -74,7 +72,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_a_query_after_the_request_ended_fails_instead_of_reading_everything(): void
     {
-        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $this->startTestAgentRequest(1, 10);
         Memory::query()->get();
         $this->app->forgetScopedInstances();
 
@@ -85,7 +83,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_the_limit_comes_back_after_the_models_boot_again(): void
     {
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
+        $this->startTestAgentRequest(2, 20);
         SequenceRun::query()->get();
 
         Model::clearBootedModels();
@@ -96,7 +94,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_a_user_reads_every_agents_runs_and_memories_through_the_user_read(): void
     {
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->startTestUserRequest(7);
 
         $this->assertSame(3, SequenceRun::query()->acrossOwners()->count());
         $this->assertSame(['Kept by agent 1', 'Kept by agent 2'], Memory::query()->acrossOwners()->orderBy('id')->pluck('text')->all());
@@ -104,7 +102,7 @@ final class AgentVisibilityTest extends TestCase
 
     public function test_an_agent_cannot_use_the_user_read(): void
     {
-        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $this->startTestAgentRequest(1, 10);
 
         $this->expectException(CrossOwnerReadRefused::class);
 
@@ -115,11 +113,11 @@ final class AgentVisibilityTest extends TestCase
     {
         $runOfAgentOne = $this->runOfAgentOne();
 
-        $this->startUserRequestAs(TestIds::of(7));
+        $this->startTestUserRequest(7);
         $this->assertSame('Run of agent 1', new SequenceRun()->resolveRouteBinding($runOfAgentOne)?->name);
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
+        $this->startTestAgentRequest(2, 20);
         $this->assertNull(new SequenceRun()->resolveRouteBinding($runOfAgentOne));
     }
 
@@ -134,7 +132,7 @@ final class AgentVisibilityTest extends TestCase
 
     private function giveWorkTo(int $agent, int $session): void
     {
-        $target = new StackTarget(TestIds::of($agent), TestIds::of($session));
+        $target = TestActors::stack($agent, $session);
         SequenceRun::written("Run of agent {$agent}", ['Read the brief.'])->startFor($target->actorIdentity());
     }
 
@@ -148,6 +146,6 @@ final class AgentVisibilityTest extends TestCase
 
     private function runOfAgentOne(): string
     {
-        return $this->idOf(SequenceRun::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1))));
+        return $this->idOf(SequenceRun::query()->ownedBy(TestActors::agentIdentity(1)));
     }
 }

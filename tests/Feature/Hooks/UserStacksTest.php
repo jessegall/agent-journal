@@ -7,7 +7,6 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
@@ -27,7 +26,9 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
@@ -37,6 +38,7 @@ use Tests\TestCase;
  */
 final class UserStacksTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links'];
@@ -54,7 +56,7 @@ final class UserStacksTest extends TestCase
 
     public function test_a_user_pushes_a_state_onto_a_running_agents_stack(): void
     {
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
 
         $this->pushInTransaction($this->target);
 
@@ -63,7 +65,7 @@ final class UserStacksTest extends TestCase
 
     public function test_a_user_push_of_a_switched_off_conditional_state_stores_nothing(): void
     {
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
 
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(UserStacks::class)->push($this->target, new StateReference('test.switched_off', NoSubject::None)),
@@ -83,7 +85,7 @@ final class UserStacksTest extends TestCase
 
     public function test_a_guessed_session_is_refused(): void
     {
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
 
         $this->expectException(StackTargetRefused::class);
 
@@ -93,7 +95,7 @@ final class UserStacksTest extends TestCase
     public function test_a_session_of_another_agent_is_refused(): void
     {
         $other = $this->targetOf($this->launch());
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
 
         $this->expectException(StackTargetRefused::class);
 
@@ -102,7 +104,7 @@ final class UserStacksTest extends TestCase
 
     public function test_the_push_runs_only_inside_a_stack_transaction(): void
     {
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
 
         $this->expectException(StackTransactionRequired::class);
 
@@ -114,11 +116,6 @@ final class UserStacksTest extends TestCase
         $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(UserStacks::class)->push($target, new StateReference('notes.writing', NoSubject::None)),
         );
-    }
-
-    private function actAs(ActorContext $actor): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
     /**

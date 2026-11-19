@@ -18,7 +18,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\UserActivity;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -53,7 +53,7 @@ final class AutoAssignmentActivityTest extends TestCase
         $agent->retireAt(CarbonImmutable::now());
 
         $this->assertFalse($activity->mayTakeWork($actor));
-        $this->assertFalse($activity->mayTakeWork(new ActorIdentity(ActorType::Agent, TestIds::of(99))));
+        $this->assertFalse($activity->mayTakeWork(TestActors::agentIdentity(99)));
     }
 
     public function test_an_admitted_user_takes_work_without_a_session(): void
@@ -66,7 +66,7 @@ final class AutoAssignmentActivityTest extends TestCase
         $this->assertInstanceOf(UserActivity::class, $activity);
         $this->assertTrue($activity->mayTakeWork(ActorIdentity::of($owner)));
         $this->assertFalse($activity->mayTakeWork(ActorIdentity::of($other)));
-        $this->assertFalse($activity->mayTakeWork(new ActorIdentity(ActorType::User, TestIds::of(99))));
+        $this->assertFalse($activity->mayTakeWork(TestActors::userIdentity(99)));
     }
 
     public function test_the_engine_has_no_activity(): void

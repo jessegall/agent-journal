@@ -12,7 +12,6 @@ use App\Hooks\Contracts\UserStack;
 use App\Hooks\Support\StackTransaction;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -25,7 +24,7 @@ final class StackContractsTest extends TestCase
 
     public function test_each_stack_contract_resolves_to_its_core_implementation(): void
     {
-        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $this->startTestAgentRequest(1, 10);
 
         $this->assertInstanceOf(AgentStacks::class, $this->app->make(AgentStack::class));
         $this->assertInstanceOf(UserStacks::class, $this->app->make(UserStack::class));

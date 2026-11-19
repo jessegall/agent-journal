@@ -328,4 +328,12 @@ final class CommandRequest extends Model implements ReadableModel
             RequestState::Withdrawn->value,
         ]);
     }
+
+    /**
+     * The request with that id, locked for the change about to be made to it.
+     */
+    public static function lockedForChange(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->sole();
+    }
 }

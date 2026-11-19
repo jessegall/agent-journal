@@ -307,4 +307,12 @@ final class ProcessRun extends Model implements ReadableModel
                 ->where('heartbeat_at', '<', $moment)
                 ->orWhere(fn (Builder $never) => $never->whereNull('heartbeat_at')->where('started_at', '<', $moment)));
     }
+
+    /**
+     * The run with that id whichever actor owns it, for the journal's own work on a run it was handed.
+     */
+    public static function ofAnyActor(string $id): self
+    {
+        return self::query()->acrossActors()->findOrFail($id);
+    }
 }

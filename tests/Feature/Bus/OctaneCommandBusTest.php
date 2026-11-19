@@ -20,7 +20,7 @@ final class OctaneCommandBusTest extends CommandBusTestCase
     public function test_each_request_gets_its_own_bus_with_its_own_actor(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
         $first = $this->app->make(CommandBus::class);
 
         try {
@@ -29,7 +29,7 @@ final class OctaneCommandBusTest extends CommandBusTestCase
         }
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs(TestIds::of(9), TestIds::of(90));
+        $this->startTestAgentRequest(9, 90);
         $second = $this->app->make(CommandBus::class);
         $log = Log::spy();
         $second->run(new WriteNote('second request'));

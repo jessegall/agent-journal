@@ -20,13 +20,13 @@ use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\Support\TestLaunchAuthority;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -37,6 +37,7 @@ final class SkillStatusTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
+    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_publications',
@@ -46,24 +47,13 @@ final class SkillStatusTest extends TestCase
         'agents',
     ];
 
-    private string $root;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
     }
 
     public function test_before_a_refresh_it_says_there_is_no_generation(): void

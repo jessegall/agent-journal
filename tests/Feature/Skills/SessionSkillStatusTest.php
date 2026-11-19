@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\LaunchStarted;
 use App\Agents\Models\Agent;
@@ -27,12 +24,13 @@ use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Values\SessionSkillStatus;
 use Domain\Access\Support\AccessSettings;
-use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\RecordingStack;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -41,8 +39,10 @@ use Tests\TestCase;
  */
 final class SessionSkillStatusTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
+    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_receipts',
@@ -57,17 +57,13 @@ final class SessionSkillStatusTest extends TestCase
         'agent_sessions',
     ];
 
-    private string $root;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->app->instance(AgentStack::class, new RecordingStack());
         $this->artisan('skill:make', [
             'key' => 'user-guide',
@@ -75,13 +71,6 @@ final class SessionSkillStatusTest extends TestCase
             '--body' => "# Guide\n\nFirst text.\n",
         ])->assertSuccessful();
         $this->app->make(SkillPublishing::class)->refresh();
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_a_skill_is_delivered_then_read_and_an_edit_makes_it_unread_with_a_new_digest(): void
@@ -123,7 +112,7 @@ final class SessionSkillStatusTest extends TestCase
     private function guideOf(AgentSession $session): SessionSkillStatus
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->actAs(TestActors::user(7));
         $rows = $this->app->make(SkillStatusResolver::class)->skillsOfSession($session->id);
         $guide = array_values(array_filter($rows, fn (SessionSkillStatus $row) => $row->key === 'user-guide'));
         $this->assertCount(1, $guide);

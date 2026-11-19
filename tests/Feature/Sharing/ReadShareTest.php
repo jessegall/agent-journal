@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\StackLockTimedOut;
@@ -33,6 +32,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -62,8 +62,8 @@ final class ReadShareTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new OwnerAuthority('test'));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
+        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
@@ -96,7 +96,7 @@ final class ReadShareTest extends TestCase
         $this->assertFalse($this->read($expired)->allowed);
 
         $current = $this->activeShare($this->document->shareIdentity(), CarbonImmutable::now()->addDay());
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(8)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(8));
         $denied = $this->read($current);
 
         $this->assertFalse($denied->allowed);
@@ -146,7 +146,7 @@ final class ReadShareTest extends TestCase
 
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Notes', 'What we learned', "# Notes\nKeep it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();

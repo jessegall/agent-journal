@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -123,7 +124,7 @@ final class AssignmentWriterTest extends TestCase
 
         $this->assertThrows(fn () => $this->writer()->assign($this->task, AssigneeIdentity::of($stranger)), AssigneeUnavailable::class);
         $this->assertThrows(fn () => $this->writer()->assign($this->task, AssigneeIdentity::of($this->helper)), AssigneeUnavailable::class);
-        $this->assertThrows(fn () => $this->writer()->assign(new RecordIdentity('tasks.task', TestIds::of(999999)), AssigneeIdentity::of($this->main)), RecordUnavailable::class);
+        $this->assertThrows(fn () => $this->writer()->assign(TestActors::record('tasks.task', 999999), AssigneeIdentity::of($this->main)), RecordUnavailable::class);
     }
 
     public function test_a_retirement_waits_for_an_assignment_in_progress_and_then_sees_it(): void

@@ -362,4 +362,12 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->requested_effort = $effort;
         $this->save();
     }
+
+    /**
+     * The runtime of that session; none before the session opened one.
+     */
+    public static function ofSession(string $sessionId): self|null
+    {
+        return self::query()->where('agent_session_id', $sessionId)->first();
+    }
 }

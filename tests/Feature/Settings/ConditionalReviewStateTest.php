@@ -37,6 +37,7 @@ use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Fixtures\Domains\Reviews\States\ReviewState;
 use Tests\Fixtures\Domains\Reviews\States\ReviewStateType;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -70,7 +71,7 @@ final class ConditionalReviewStateTest extends TestCase
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
-        $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
+        $this->target = TestActors::stack(1, 10);
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
     }

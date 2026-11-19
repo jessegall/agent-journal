@@ -7,6 +7,7 @@ namespace Tests\Feature\Web;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -15,24 +16,17 @@ use Tests\TestCase;
  */
 final class DomainImportsTest extends TestCase
 {
-    private string $root;
+    use UsesTemporaryFolder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/domain-imports-'.getmypid();
+        $this->makeTemporaryFolder('domain-imports');
         File::ensureDirectoryExists("{$this->root}/plans/js");
         File::ensureDirectoryExists("{$this->root}/rules/js");
         File::put("{$this->root}/roots.json", (string) json_encode(['owners' => ['plans' => 'plans/js', 'rules' => 'rules/js']]));
         File::put("{$this->root}/rules/js/RulesView.vue", "<template><div /></template>\n");
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     #[TimeLimit(3, 'It starts the node import check, whose start-up alone can pass a second under load.')]

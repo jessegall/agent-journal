@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Bus\Contracts\Command;
 use App\Skills\Commands\PrepareSkillPublication;
 use App\Skills\Commands\PublishSkills;
 use App\Skills\Contracts\SkillPublisher;
@@ -21,6 +20,7 @@ use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestIds;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -31,26 +31,16 @@ final class SkillPublishingTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
+    use UsesTemporaryFolder;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
-
-    private string $root;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_a_pending_publication_ends_delivered_with_skill_files_and_a_manifest_at_the_target(): void
@@ -120,18 +110,5 @@ final class SkillPublishingTest extends TestCase
     private function publishing(): SkillPublishing
     {
         return $this->app->make(SkillPublishing::class);
-    }
-
-    /**
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
-    private function asSystem(Command $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry($command);
     }
 }

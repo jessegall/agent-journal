@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
@@ -38,7 +35,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\TestIds;
+use Tests\Support\ActsAsActors;
 use Tests\Support\TestRunAdmissions;
 
 /**
@@ -47,6 +44,8 @@ use Tests\Support\TestRunAdmissions;
  */
 trait RunsAcmeRequests
 {
+    use ActsAsActors;
+
     private const string PASSED_OUTPUT = "{\"test\":\"a\",\"status\":\"ok\"}\n{\"passed\":1,\"failed\":0}\n";
 
     private const string FINDINGS_OUTPUT = "{\"test\":\"a\",\"status\":\"fail\"}\n{\"passed\":0,\"failed\":1}\n";
@@ -115,14 +114,6 @@ trait RunsAcmeRequests
     private function asAgent(object $command): mixed
     {
         $this->launch->startRequest($this->app);
-
-        return $this->app->make(CommandBus::class)->run($command);
-    }
-
-    private function asUser(object $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

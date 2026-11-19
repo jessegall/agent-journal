@@ -26,7 +26,6 @@ use Tests\Fixtures\UiDeclarations\Shelf\ShelfChildren;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -51,7 +50,7 @@ final class NavigationTest extends TestCase
         $router = $this->app->make(Router::class);
         new DeclaredRoutes($declarations)->register($router);
         $router->getRoutes()->refreshNameLookups();
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
     }
 
     public function test_static_and_record_children_come_with_their_urls_and_a_heading_links_its_first_child(): void

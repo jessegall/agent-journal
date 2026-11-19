@@ -198,7 +198,11 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     #[Scope]
     protected function inListedOrder(Builder $query, OrderedRecordIds $ids): void
     {
-        $cases = implode(' ', array_fill(0, count($ids->ids), 'when ? then cast(? as integer)'));
+        $cases = $ids->ids
+                |> count(...)
+                |> (fn ($x) => array_fill(0, $x, 'when ? then cast(? as integer)'))
+                |> (fn ($x) => implode(' ', $x));
+
         $bindings = [];
 
         foreach ($ids->ids as $position => $id) {

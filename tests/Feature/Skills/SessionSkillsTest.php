@@ -26,7 +26,8 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -38,6 +39,7 @@ final class SessionSkillsTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
+    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_publications',
@@ -50,29 +52,18 @@ final class SessionSkillsTest extends TestCase
         'agent_sessions',
     ];
 
-    private string $root;
-
     private RecordingStack $stack;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->stack = new RecordingStack();
         $this->app->instance(AgentStack::class, $this->stack);
         $this->app->make(SkillPublishing::class)->refresh();
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_a_skill_that_starts_to_apply_joins_and_a_retargeted_one_leaves_at_the_next_boundary(): void

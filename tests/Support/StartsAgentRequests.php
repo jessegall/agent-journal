@@ -28,6 +28,22 @@ trait StartsAgentRequests
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
     }
 
+    /**
+     * Starts an agent's request as test agent $agent in its test session $session.
+     */
+    protected function startTestAgentRequest(int $agent, int $session): void
+    {
+        $this->startRequestAs(TestIds::of($agent), TestIds::of($session));
+    }
+
+    /**
+     * Starts a user's request as test user $number.
+     */
+    protected function startTestUserRequest(int $number): void
+    {
+        $this->startUserRequestAs(TestIds::of($number));
+    }
+
     protected function startUserRequestAs(string $userId): void
     {
         $this->app->instance(AccessSettings::class, new AccessSettings($userId));

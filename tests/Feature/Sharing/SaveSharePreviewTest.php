@@ -27,6 +27,7 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -51,11 +52,11 @@ final class SaveSharePreviewTest extends TestCase
 
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->publications = new BinderPublications();
         $this->app->instance(BinderPublications::class, $this->publications);
         $this->configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
-        $this->root = new RecordIdentity('binders.binder', TestIds::of(1));
+        $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102, 103] as $number) {
             Link::recorded($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
@@ -75,8 +76,8 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_a_user_who_is_not_the_owner_is_refused(): void
     {
-        $this->startUserRequestAs(TestIds::of(8));
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->startTestUserRequest(8);
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
 
         $this->expectException(SharingNotAllowed::class);
 
@@ -85,7 +86,7 @@ final class SaveSharePreviewTest extends TestCase
 
     public function test_without_a_default_gateway_a_preview_names_one(): void
     {
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
 
         $this->expectExceptionObject(ShareGatewayUnavailable::noDefault());
 
@@ -119,7 +120,7 @@ final class SaveSharePreviewTest extends TestCase
      */
     private function save(array $selectedIds): SavedSharePreview
     {
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
 
         return $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->root->type, $this->root->id, $selectedIds, $this->configuration->id));
     }

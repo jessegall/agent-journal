@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Assignments;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
@@ -21,6 +20,7 @@ use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Support\RecordIdentity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 
 /**
@@ -51,29 +51,29 @@ final class AssignmentValuesTest extends TestCase
 
     public function test_a_user_and_an_agent_with_the_same_id_are_different_actors(): void
     {
-        $user = new ActorIdentity(ActorType::User, TestIds::of(7));
+        $user = TestActors::userIdentity(7);
 
-        $this->assertFalse($user->isSameAs(new ActorIdentity(ActorType::Agent, TestIds::of(7))));
-        $this->assertTrue($user->isSameAs(new ActorIdentity(ActorType::User, TestIds::of(7))));
+        $this->assertFalse($user->isSameAs(TestActors::agentIdentity(7)));
+        $this->assertTrue($user->isSameAs(TestActors::userIdentity(7)));
     }
 
     public function test_a_group_holds_its_root_and_each_record_once(): void
     {
-        $root = new RecordIdentity('plans.plan', TestIds::of(3));
-        $task = new RecordIdentity('tasks.task', TestIds::of(12));
+        $root = TestActors::record('plans.plan', 3);
+        $task = TestActors::record('tasks.task', 12);
 
-        $group = new AssignmentGroup($root, [$task, new RecordIdentity('plans.plan', TestIds::of(3)), new RecordIdentity('tasks.task', TestIds::of(12))]);
+        $group = new AssignmentGroup($root, [$task, TestActors::record('plans.plan', 3), TestActors::record('tasks.task', 12)]);
 
         $this->assertSame([$root, $task], $group->records);
     }
 
     public function test_a_group_of_more_than_a_thousand_records_is_refused(): void
     {
-        $records = array_map(fn (int $number) => new RecordIdentity('tasks.task', TestIds::of($number)), range(1, 1000));
+        $records = array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 1000));
 
         $this->expectException(AssignmentGroupTooLarge::class);
 
-        new AssignmentGroup(new RecordIdentity('plans.plan', TestIds::of(1)), $records);
+        new AssignmentGroup(TestActors::record('plans.plan', 1), $records);
     }
 
     /**
@@ -96,20 +96,20 @@ final class AssignmentValuesTest extends TestCase
 
     public function test_a_set_finds_a_records_assignment_or_answers_none(): void
     {
-        $task = new RecordIdentity('tasks.task', TestIds::of(12));
+        $task = TestActors::record('tasks.task', 12);
         $assignment = new Assignment($task, new AssignmentReference(TestIds::of(42), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7))));
         $set = new AssignmentSet([$assignment]);
 
-        $this->assertSame($assignment, $set->forRecord(new RecordIdentity('tasks.task', TestIds::of(12)))->get());
-        $this->assertTrue($set->forRecord(new RecordIdentity('tasks.task', TestIds::of(13)))->isEmpty());
+        $this->assertSame($assignment, $set->forRecord(TestActors::record('tasks.task', 12))->get());
+        $this->assertTrue($set->forRecord(TestActors::record('tasks.task', 13))->isEmpty());
     }
 
     public function test_a_result_counts_its_outcomes_by_type(): void
     {
         $result = new AssignmentResult([
-            new AssignmentOutcome(new RecordIdentity('tasks.task', TestIds::of(1)), null, AssignmentOutcomeType::Unchanged),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', TestIds::of(2)), null, AssignmentOutcomeType::SkippedFinished),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', TestIds::of(3)), null, AssignmentOutcomeType::SkippedFinished),
+            new AssignmentOutcome(TestActors::record('tasks.task', 1), null, AssignmentOutcomeType::Unchanged),
+            new AssignmentOutcome(TestActors::record('tasks.task', 2), null, AssignmentOutcomeType::SkippedFinished),
+            new AssignmentOutcome(TestActors::record('tasks.task', 3), null, AssignmentOutcomeType::SkippedFinished),
         ], []);
 
         $this->assertSame(2, $result->count(AssignmentOutcomeType::SkippedFinished));

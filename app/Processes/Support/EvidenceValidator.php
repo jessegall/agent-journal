@@ -38,7 +38,7 @@ final readonly class EvidenceValidator
         ReaderCheckpoint $consumed,
         VerificationContract $contract,
     ): OutputValidation {
-        $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
+        $run = ProcessRun::ofAnyActor($part->process_run_id);
         $problems = [...$this->runProblems($run, $part), ...$read->problems];
         if ($consumed->offsets != $part->stream_offsets) {
             $problems[] = $this->problem(ProblemCode::OutputIncomplete, 'The reader left captured bytes unread.');
@@ -72,7 +72,7 @@ final readonly class EvidenceValidator
     public function verify(OutputAssessment $assessment): VerifiedOutput
     {
         $part = PartRun::query()->findOrFail($assessment->part_run_id);
-        $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
+        $run = ProcessRun::ofAnyActor($part->process_run_id);
         if (! $assessment->isValid() || $this->runProblems($run, $part) !== []) {
             throw EvidenceRejected::notValid($assessment->id);
         }

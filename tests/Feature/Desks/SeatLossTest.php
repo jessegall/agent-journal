@@ -15,12 +15,10 @@ use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\SeatChange;
 use App\Desks\Support\SeatChangeResult;
-use App\Records\Support\RecordIdentity;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -29,6 +27,7 @@ use Tests\TestCase;
  */
 final class SeatLossTest extends TestCase
 {
+    use ActsAsOwner;
     use CommitsHookRows;
     use StartsAgentRequests;
 
@@ -47,9 +46,7 @@ final class SeatLossTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->startUserRequestAs($this->owner->id);
     }
 
     public function test_replacing_a_seat_ends_its_claims_and_keeps_the_others(): void
@@ -73,7 +70,7 @@ final class SeatLossTest extends TestCase
 
         $this->assertTrue(AssignmentRecord::stillExists($keptClaim->id));
         $taken = AssignmentRecord::holding(
-            new RecordIdentity('communication.message', TestIds::of(1)),
+            TestActors::record('communication.message', 1),
             AssigneeIdentity::ofActorIdentity($arriving),
         );
         $this->assertTrue($taken->toAssignment()->holder()->isSameAs(AssigneeIdentity::ofActorIdentity($arriving)));
@@ -89,7 +86,7 @@ final class SeatLossTest extends TestCase
     private function claim(int $number, ActorIdentity $actor, SeatChangeResult $seat): AssignmentReference
     {
         $claim = AssignmentRecord::holding(
-            new RecordIdentity('communication.message', TestIds::of($number)),
+            TestActors::record('communication.message', $number),
             AssigneeIdentity::ofActorIdentity($actor),
         )->toAssignment()->reference;
         ClaimAuthorization::forInbox($claim, $seat->reference);

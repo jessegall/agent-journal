@@ -753,19 +753,4 @@ final class AgentDriverLedgerTest extends TestCase
 
         return $this->app->make(CommandBus::class)->run($command);
     }
-
-    /**
-     * Runs a host's command as the journal itself, as the host's authentication does.
-     *
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
-    private function asSystem(Command $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry($command);
-    }
 }

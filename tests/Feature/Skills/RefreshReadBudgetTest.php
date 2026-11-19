@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -18,13 +16,13 @@ use App\Skills\Support\SkillTargets;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
-use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -36,6 +34,7 @@ final class RefreshReadBudgetTest extends TestCase
 {
     use AssertsReadBudget, CommitsHookRows;
     use InstallsBuiltInProfiles;
+    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_publications',
@@ -51,22 +50,12 @@ final class RefreshReadBudgetTest extends TestCase
 
     private const int SESSIONS = 100;
 
-    private string $root;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets((string) realpath($this->root)));
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_a_no_change_refresh_of_1000_skills_stays_within_its_budget_and_reaches_every_session(): void
@@ -109,7 +98,7 @@ final class RefreshReadBudgetTest extends TestCase
 
     private function seedSkills(int $from, int $count): void
     {
-        $author = new ActorIdentity(ActorType::User, TestIds::of(7));
+        $author = TestActors::userIdentity(7);
 
         foreach (range($from + 1, $from + $count) as $number) {
             $skill = Skill::start(SkillKey::from("user-load-{$number}"), $author, null);

@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\ShareStatusResolver;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
@@ -23,6 +22,7 @@ use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -60,7 +60,7 @@ final class ShareStatusTest extends TestCase
     public function test_a_root_or_approved_member_of_a_live_share_is_public_and_an_expired_one_is_not(): void
     {
         $status = $this->app->make(ShareStatusResolver::class);
-        $root = new RecordIdentity('plans.plan', TestIds::of(5));
+        $root = TestActors::record('plans.plan', 5);
 
         $this->assertFalse($status->isPubliclyShared($this->document->shareIdentity()));
 

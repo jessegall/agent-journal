@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -30,26 +31,16 @@ use Tests\TestCase;
 final class SkillSupervisorConsoleTest extends TestCase
 {
     use CommitsHookRows;
+    use UsesTemporaryFolder;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
-
-    private string $root;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_refresh_before_migrating_says_the_tables_are_missing_and_changes_nothing(): void

@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\RetireCommandRule;
 use App\Processes\Commands\SaveCommandRule;
 use App\Processes\Contracts\CommandClassifier;
@@ -33,9 +29,9 @@ use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Fixtures\Processes\StaleAfterFirstEnd;
+use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
-use Tests\Support\TestIds;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -46,6 +42,7 @@ use Tests\TestCase;
  */
 final class StaleAdmissionTest extends TestCase
 {
+    use ActsAsActors;
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
@@ -100,13 +97,5 @@ final class StaleAdmissionTest extends TestCase
             ArgumentGrammar::none(),
             CommandClassSet::of(CommandClass::Read),
         )->ownedBy(RuleScope::project(), 1);
-    }
-
-    private function asUser(object $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

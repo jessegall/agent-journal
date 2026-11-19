@@ -18,7 +18,6 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\LaunchGrant;
 use App\Agents\Support\OpenedRuntime;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Values\ProfileBase;
@@ -30,13 +29,13 @@ use App\Skills\Models\SkillPublication;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
-use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -49,6 +48,7 @@ final class LaunchSkillsTest extends TestCase
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
     use RunsTrustedCommands;
+    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_publications',
@@ -69,24 +69,13 @@ final class LaunchSkillsTest extends TestCase
 
     private const string FOLDER = '/work/project';
 
-    private string $root;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->make(SkillPublishing::class)->refresh();
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_a_codex_launch_gets_its_set_written_before_spawn_and_records_the_generation(): void
@@ -219,18 +208,5 @@ final class LaunchSkillsTest extends TestCase
         $this->app->make(AdmitLaunchSkills::class)->handle(
             new LaunchStarted($session->agent_id, $session->id),
         );
-    }
-
-    /**
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
-    private function asSystem(Command $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry($command);
     }
 }

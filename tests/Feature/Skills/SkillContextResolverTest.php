@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -20,10 +17,11 @@ use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Values\SkillContext;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -32,6 +30,7 @@ use Tests\TestCase;
  */
 final class SkillContextResolverTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
     use StartsAgentRequests;
@@ -104,7 +103,7 @@ final class SkillContextResolverTest extends TestCase
 
     private function activateReviewer(string $instructions): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->actAs(TestActors::user(7));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileBase::readOnlyHelper(), $instructions),
         )));

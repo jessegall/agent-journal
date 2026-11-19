@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\PruneShareAudit;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
@@ -14,12 +12,12 @@ use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\AuditPruning;
-use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\TestIds;
+use Tests\Support\Sharing\TestShares;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -35,8 +33,8 @@ final class PruneShareAuditTest extends TestCase
     public function test_rows_past_retention_go_counted_on_their_share_and_a_second_run_writes_nothing(): void
     {
         $configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $live = Share::grant(new RecordIdentity('binders.binder', TestIds::of(1)), TestIds::of(9), $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
-        $ended = Share::grant(new RecordIdentity('binders.binder', TestIds::of(2)), TestIds::of(9), $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $live = TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
+        $ended = TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
 
         $this->travelTo(CarbonImmutable::now()->subDays(400));
         $this->audit($ended, ShareAuditType::Created);
@@ -64,7 +62,7 @@ final class PruneShareAuditTest extends TestCase
 
     private function audit(Share $share, ShareAuditType $type): void
     {
-        ShareAudit::recordFor($share, $type, $type->isRead() ? ActorIdentity::system() : new ActorIdentity(ActorType::User, TestIds::of(9)), null);
+        ShareAudit::recordFor($share, $type, $type->isRead() ? ActorIdentity::system() : TestActors::userIdentity(9), null);
     }
 
     private function prune(): AuditPruning

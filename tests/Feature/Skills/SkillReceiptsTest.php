@@ -23,10 +23,10 @@ use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillReceipt;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
-use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -37,6 +37,7 @@ final class SkillReceiptsTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
+    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_receipts',
@@ -48,24 +49,13 @@ final class SkillReceiptsTest extends TestCase
         'agent_sessions',
     ];
 
-    private string $root;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->make(SkillPublishing::class)->refresh();
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_a_skill_tool_read_records_one_receipt_with_the_delivered_digest(): void

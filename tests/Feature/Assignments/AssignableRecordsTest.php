@@ -16,6 +16,7 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -37,7 +38,7 @@ final class AssignableRecordsTest extends TestCase
         parent::setUp();
 
         $this->registry = $this->app->make(AssignmentRegistry::class);
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
     }
 
     public function test_a_task_resolves_under_its_alias_and_a_missing_one_is_unavailable(): void
@@ -47,7 +48,7 @@ final class AssignableRecordsTest extends TestCase
         $resolved = $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable($task->assignmentIdentity());
 
         $this->assertTrue($resolved->assignmentIdentity()->isSameAs(new RecordIdentity('tasks.task', $task->id)));
-        $this->assertThrows(fn () => $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable(new RecordIdentity('tasks.task', TestIds::of(999999))), RecordUnavailable::class);
+        $this->assertThrows(fn () => $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable(TestActors::record('tasks.task', 999999)), RecordUnavailable::class);
     }
 
     public function test_visible_records_keep_the_input_order_and_leave_out_missing_ones(): void
@@ -57,7 +58,7 @@ final class AssignableRecordsTest extends TestCase
 
         $visible = $this->registry->recordProvider(Task::LINK_TYPE)->visibleRecords([
             $second->assignmentIdentity(),
-            new RecordIdentity('tasks.task', TestIds::of(999999)),
+            TestActors::record('tasks.task', 999999),
             $first->assignmentIdentity(),
         ]);
 
@@ -114,6 +115,6 @@ final class AssignableRecordsTest extends TestCase
 
         $this->expectException(ActorContextMissing::class);
 
-        $this->app->make(AssignmentRegistry::class)->recordProvider(Task::LINK_TYPE)->visibleRecords([new RecordIdentity('tasks.task', TestIds::of(1))]);
+        $this->app->make(AssignmentRegistry::class)->recordProvider(Task::LINK_TYPE)->visibleRecords([TestActors::record('tasks.task', 1)]);
     }
 }

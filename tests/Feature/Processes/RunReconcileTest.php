@@ -23,7 +23,7 @@ use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PartKey;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -84,7 +84,7 @@ final class RunReconcileTest extends TestCase
     {
         $this->silence();
         $this->artisan('process:reconcile');
-        $this->setActor(ActorContext::forUser(TestIds::of(7)));
+        $this->setActor(TestActors::user(7));
         $bus = $this->app->make(CommandBus::class);
 
         $other = new RetryProcessRun($this->run->id, 'cat README.md', 'key-2');

@@ -21,8 +21,8 @@ use App\Assignments\Support\PoolDescription;
 use App\Assignments\Support\PoolMembers;
 use App\Assignments\Support\PoolReference;
 use App\CoreApi;
-use App\Records\Support\RecordIdentity;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 
 /**
@@ -93,7 +93,7 @@ final class AutoAssignmentValuesTest extends TestCase
 
     public function test_a_pool_reference_keeps_its_key_target_and_ids(): void
     {
-        $plan = new RecordIdentity('plans.plan', TestIds::of(7));
+        $plan = TestActors::record('plans.plan', 7);
         $reference = new PoolReference('plans.tasks', $plan, []);
         $named = new PoolReference('tasks.named', null, [TestIds::of(2), TestIds::of(1)]);
 

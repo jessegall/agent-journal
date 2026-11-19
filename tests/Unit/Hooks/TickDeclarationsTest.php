@@ -12,7 +12,6 @@ use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
 use App\Records\Commands\UnlinkRecords;
-use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +20,7 @@ use ReflectionProperty;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\Ticks\InheritedTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingLoader;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 
 /**
  * A state type ticks only when its loader carries the TickableStateLoader mark, inherited or not; a tick answers a few
@@ -60,6 +59,6 @@ final class TickDeclarationsTest extends TestCase
 
     private function command(int $number): UnlinkRecords
     {
-        return new UnlinkRecords(new RecordIdentity('tasks.task', TestIds::of($number)), new RecordIdentity('tasks.task', TestIds::of($number + 100)));
+        return new UnlinkRecords(TestActors::record('tasks.task', $number), TestActors::record('tasks.task', $number + 100));
     }
 }

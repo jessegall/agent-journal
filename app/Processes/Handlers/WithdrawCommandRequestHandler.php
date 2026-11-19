@@ -22,7 +22,7 @@ final readonly class WithdrawCommandRequestHandler implements CommandHandler
     public function handle(WithdrawCommandRequest $command): string
     {
         $actor = ActorIdentity::of($this->actors->actor());
-        $request = CommandRequest::query()->whereKey($command->requestId)->lockForUpdate()->sole();
+        $request = CommandRequest::lockedForChange($command->requestId);
         if (! $this->administration->isGrantedToCaller() && ! $request->isByActor($actor)) {
             throw RequestTransitionRefused::notTheRequester();
         }

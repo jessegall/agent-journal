@@ -52,7 +52,7 @@ final readonly class RunSnapshotResolver
             ->where('part_run_id', $part->id)
             ->where('purpose', PositionPurpose::Live->value)
             ->first();
-        $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+        $assessment = OutputAssessment::latestOf($part);
         $receipt = $this->receipts->forPart($part->id);
         $receipt = $receipt->isDefined() ? $receipt->get()->receiptId : null;
 

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\DisableShareGateway;
 use App\Sharing\Commands\RecordGatewayOutcome;
@@ -24,8 +22,6 @@ use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ClaimedGatewayOperation;
-use App\Sharing\Support\ShareToken;
-use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -34,7 +30,8 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\TestIds;
+use Tests\Support\Sharing\TestShares;
+use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -80,9 +77,9 @@ final class SharingEventsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->share = Share::grant(new RecordIdentity('binders.binder', TestIds::of(1)), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::request($this->configuration, GatewayOperationType::Open);
         Event::listen([ShareActivated::class, ShareRevoked::class], function (object $event): void {
             $this->heard[] = $event;
@@ -130,23 +127,10 @@ final class SharingEventsTest extends TestCase
      * @param  Command<TResult>  $command
      * @return TResult
      */
-    private function asSystem(Command $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry($command);
-    }
-
-    /**
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
     private function asOwner(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);

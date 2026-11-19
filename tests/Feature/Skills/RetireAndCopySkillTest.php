@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
@@ -22,7 +21,7 @@ use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillRevisionResult;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -73,7 +72,7 @@ final class RetireAndCopySkillTest extends TestCase
     private function as(int $user, Command $command): SkillRevisionResult
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(TestActors::user($user), new OwnerAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }
