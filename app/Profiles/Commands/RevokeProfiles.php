@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Handlers\RevokeProfilesHandler;
+use App\Profiles\Models\Profile;
+use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Values\ProfileKey;
 
 /**
@@ -16,7 +21,8 @@ use App\Profiles\Values\ProfileKey;
  * @implements Command<int>
  */
 #[HandledBy(RevokeProfilesHandler::class)]
-final readonly class RevokeProfiles implements Command
+#[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
+final readonly class RevokeProfiles implements Command, HasAuthorizationSubject
 {
     /**
      * @param  list<ProfileKey>  $keys
@@ -24,4 +30,12 @@ final readonly class RevokeProfiles implements Command
     public function __construct(
         public array $keys,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Profile::class;
+    }
 }

@@ -6,9 +6,14 @@ namespace App\Profiles\Commands;
 
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\ModelSelection;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Handlers\LaunchProfileMainHandler;
+use App\Profiles\Models\Profile;
+use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Values\ProfileKey;
 
 /**
@@ -18,7 +23,8 @@ use App\Profiles\Values\ProfileKey;
  * @implements Command<LaunchReceipt>
  */
 #[HandledBy(LaunchProfileMainHandler::class)]
-final readonly class LaunchProfileMain implements Command
+#[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
+final readonly class LaunchProfileMain implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $requestId,
@@ -27,4 +33,12 @@ final readonly class LaunchProfileMain implements Command
         public ModelSelection $requested,
         public string|null $programKey,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Profile::class;
+    }
 }

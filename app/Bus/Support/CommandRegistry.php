@@ -412,6 +412,12 @@ final readonly class CommandRegistry
             throw CommandAuthorizationInvalid::classSubjectOnInstanceAbility($command, $ability::class);
         }
 
+        $classSubjectFits = $subject === 'string' && self::takesOnly($handle, $command);
+
+        if ($classSubjectFits) {
+            return;
+        }
+
         $second = $handle->getParameters()[1] ?? null;
         $takesBoth = $handle->getNumberOfRequiredParameters() === 2 && self::takesFirst($handle, $command);
 

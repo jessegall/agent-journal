@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Settings\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Settings\Enums\SettingAbility;
 use App\Settings\Handlers\ResetSettingHandler;
+use App\Settings\Models\SettingsRecord;
+use App\Settings\Policies\SettingPolicy;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
 
@@ -16,10 +21,19 @@ use App\Settings\Values\SettingsChange;
  * @implements Command<SettingsChange>
  */
 #[HandledBy(ResetSettingHandler::class)]
-final readonly class ResetSetting implements Command
+#[Authorize(SettingPolicy::class, SettingAbility::Administer)]
+final readonly class ResetSetting implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public SettingReference $setting,
         public int $expectedRevision,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return SettingsRecord::class;
+    }
 }

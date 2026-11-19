@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\RestoreCommandRuleHandler;
+use App\Processes\Models\CommandRequest;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Values\ProposalReceipt;
 
 /**
@@ -16,7 +21,8 @@ use App\Processes\Values\ProposalReceipt;
  * @implements Command<ProposalReceipt>
  */
 #[HandledBy(RestoreCommandRuleHandler::class)]
-final readonly class RestoreCommandRule implements Command
+#[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+final readonly class RestoreCommandRule implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $classificationRuleId,
@@ -24,4 +30,12 @@ final readonly class RestoreCommandRule implements Command
         public int $expectedRevision,
         public string $requestId,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return CommandRequest::class;
+    }
 }

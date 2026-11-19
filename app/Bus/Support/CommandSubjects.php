@@ -61,7 +61,8 @@ final class CommandSubjects
     public function handOver(CommandCall $call, Closure $next): mixed
     {
         $authorized = $call->authorizedSubject() === [] ? $this->authorized($call) : $call;
-        $subjects = $authorized->authorizedSubject();
+        // A class subject was authorized on the class alone; the handler takes only its command.
+        $subjects = array_values(array_filter($authorized->authorizedSubject(), is_object(...)));
 
         foreach ($subjects as $subject) {
             $this->handedOver[] = [$authorized->command(), $subject];

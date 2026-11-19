@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
-use App\Actors\Contracts\CurrentAuthorizer;
 use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Declarations\IntegerSetting;
-use App\Settings\Enums\SettingAbility;
 use App\Settings\Enums\SettingType;
-use App\Settings\Models\SettingsRecord;
-use App\Settings\Policies\SettingPolicy;
 use App\Settings\Support\SettingCodec;
 use App\Settings\Support\SettingsWriter;
 use App\Settings\Support\SettingTargets;
@@ -22,11 +18,10 @@ use App\Settings\Values\SettingsChange;
  */
 final readonly class SetIntegerSettingHandler implements CommandHandler
 {
-    public function __construct(private CurrentAuthorizer $administration, private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
+    public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 
     public function handle(SetIntegerSetting $command): SettingsChange
     {
-        $this->administration->authorize(SettingPolicy::class, SettingsRecord::class, SettingAbility::Administer);
         $setting = $this->targets->setting($command->setting, IntegerSetting::class, SettingType::Integer);
 
         return $this->writer->setValue($setting, $this->codec->encodeInteger($command->setting->owner, $setting, $command->value), $command->expectedRevision);

@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Processes\Enums\CommandClass;
+use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\RevokeCommandPermissionsHandler;
+use App\Processes\Models\CommandRequest;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Values\CommandPattern;
 
 /**
@@ -17,7 +22,8 @@ use App\Processes\Values\CommandPattern;
  * @implements Command<string>
  */
 #[HandledBy(RevokeCommandPermissionsHandler::class)]
-final readonly class RevokeCommandPermissions implements Command
+#[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+final readonly class RevokeCommandPermissions implements Command, HasAuthorizationSubject
 {
     /**
      * @param  list<CommandClass>  $classes
@@ -28,4 +34,12 @@ final readonly class RevokeCommandPermissions implements Command
         public array $classes,
         public array $patterns = [],
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return CommandRequest::class;
+    }
 }

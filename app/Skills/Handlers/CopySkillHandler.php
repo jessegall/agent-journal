@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Skills\Handlers;
 
-use App\Actors\Contracts\CurrentAuthorizer;
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\CopySkill;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Enums\SkillAbility;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyTaken;
 use App\Skills\Models\Skill;
-use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillKey;
@@ -22,14 +19,12 @@ use App\Skills\Values\SkillRevisionResult;
 final readonly class CopySkillHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentAuthorizer $administration,
         private StoredSkillWrites $writes,
         private SkillResolver $skills,
     ) {}
 
     public function handle(CopySkill $command): SkillRevisionResult
     {
-        $this->administration->authorize(SkillAuthoringPolicy::class, Skill::class, SkillAbility::Administer);
         $key = SkillKey::from($command->key);
 
         return $this->writes->once($command->requestId, hash('sha256', "copy|{$command->sourceKey}|{$key->key}"), function () use ($key, $command) {

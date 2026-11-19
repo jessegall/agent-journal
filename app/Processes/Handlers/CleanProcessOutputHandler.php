@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentAuthorizer;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\CleanProcessOutput;
 use App\Processes\Enums\CaptureState;
-use App\Processes\Enums\ProcessAbility;
 use App\Processes\Exceptions\CleanRefused;
-use App\Processes\Models\CommandRequest;
 use App\Processes\Models\OutputChunk;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
-use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CleanPreview;
 use Illuminate\Contracts\Filesystem\Factory;
@@ -24,14 +20,13 @@ use Illuminate\Contracts\Filesystem\Factory;
  */
 final readonly class CleanProcessOutputHandler implements CommandHandler
 {
-    public function __construct(private CurrentAuthorizer $administration, private Factory $disks) {}
+    public function __construct(private Factory $disks) {}
 
     /**
      * @throws CleanRefused
      */
     public function handle(CleanProcessOutput $command): CleanPreview
     {
-        $this->administration->authorize(ProcessAdministrationPolicy::class, CommandRequest::class, ProcessAbility::Administer);
         $runs = ProcessRun::query()->withoutGlobalScopes()->whereKey($command->runIds)->readLimit(100)->get();
         foreach ($runs as $run) {
             if (! $run->lifecycle->isFinal()) {

@@ -4,10 +4,20 @@ declare(strict_types=1);
 
 namespace App\Skills\Enums;
 
+use App\Bus\Contracts\DeclaresClassLevelAbilities;
+
 /**
  * What an actor may do with the stored skills.
  */
-enum SkillAbility: string
+enum SkillAbility: string implements DeclaresClassLevelAbilities
 {
     case Administer = 'administer';
+
+    /**
+     * Each is decided on the model class alone, before the handler loads a record.
+     */
+    public function isClassLevel(): bool
+    {
+        return true;
+    }
 }

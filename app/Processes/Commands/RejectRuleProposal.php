@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Processes\Enums\ProcessAbility;
 use App\Processes\Handlers\RejectRuleProposalHandler;
+use App\Processes\Models\CommandRequest;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 
 /**
  * A project owner rejects a proposal with a reason its author hears; the request it answered is rejected too.
@@ -14,7 +19,16 @@ use App\Processes\Handlers\RejectRuleProposalHandler;
  * @implements Command<string>
  */
 #[HandledBy(RejectRuleProposalHandler::class)]
-final readonly class RejectRuleProposal implements Command
+#[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Administer)]
+final readonly class RejectRuleProposal implements Command, HasAuthorizationSubject
 {
     public function __construct(public string $proposalId, public string $reason) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return CommandRequest::class;
+    }
 }

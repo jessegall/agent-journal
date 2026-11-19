@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Handlers\RequestShareHandler;
+use App\Sharing\Models\Share;
+use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\ShareProposalStatus;
 
 /**
@@ -17,12 +22,21 @@ use App\Sharing\Support\ShareProposalStatus;
  * @implements Command<ShareProposalStatus>
  */
 #[HandledBy(RequestShareHandler::class)]
+#[Authorize(SharingPolicy::class, SharingAbility::Request)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-final readonly class RequestShare implements Command
+final readonly class RequestShare implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $rootType,
         public string $rootId,
         public string $requestKey,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Share::class;
+    }
 }

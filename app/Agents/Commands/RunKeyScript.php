@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\RunKeyScriptHandler;
+use App\Agents\Models\Agent;
+use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Agents\Values\ScriptParameter;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
 
 /**
  * An operator's request to run one registered maintenance key script, such as LoginMcp, on an agent's terminal. The
@@ -18,7 +23,8 @@ use App\Bus\Contracts\Command;
  * @implements Command<DriverReceipt>
  */
 #[HandledBy(RunKeyScriptHandler::class)]
-final readonly class RunKeyScript implements Command
+#[Authorize(AgentPolicy::class, AgentAbility::RunKeyScript)]
+final readonly class RunKeyScript implements Command, HasAuthorizationSubject
 {
     /**
      * @param  list<ScriptParameter>  $parameters
@@ -34,5 +40,13 @@ final readonly class RunKeyScript implements Command
     public function target(): StackTarget
     {
         return new StackTarget($this->agentId, $this->sessionId);
+    }
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Agent::class;
     }
 }

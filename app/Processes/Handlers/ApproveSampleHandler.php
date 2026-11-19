@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentAuthorizer;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ApproveSample;
-use App\Processes\Enums\ProcessAbility;
 use App\Processes\Exceptions\EvidencePermitRefused;
 use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Exceptions\SampleRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleProposalRevision;
-use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Support\EvidenceRuns;
 
 /**
@@ -23,7 +20,7 @@ use App\Processes\Support\EvidenceRuns;
  */
 final readonly class ApproveSampleHandler implements CommandHandler
 {
-    public function __construct(private CurrentAuthorizer $administration, private EvidenceRuns $evidence) {}
+    public function __construct(private EvidenceRuns $evidence) {}
 
     /**
      * @throws SampleRefused
@@ -32,7 +29,6 @@ final readonly class ApproveSampleHandler implements CommandHandler
      */
     public function handle(ApproveSample $command): string
     {
-        $this->administration->authorize(ProcessAdministrationPolicy::class, CommandRequest::class, ProcessAbility::Administer);
         $request = CommandRequest::query()->whereKey($command->commandRequestId)->lockForUpdate()->sole();
         if ($command->commandDigest !== $request->source_digest) {
             throw SampleRefused::otherCommand($request->id);

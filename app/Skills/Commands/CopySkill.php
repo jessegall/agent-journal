@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Skills\Enums\SkillAbility;
 use App\Skills\Handlers\CopySkillHandler;
+use App\Skills\Models\Skill;
+use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Values\SkillRevisionResult;
 
 /**
@@ -16,11 +21,20 @@ use App\Skills\Values\SkillRevisionResult;
  * @implements Command<SkillRevisionResult>
  */
 #[HandledBy(CopySkillHandler::class)]
-final readonly class CopySkill implements Command
+#[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
+final readonly class CopySkill implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $sourceKey,
         public string $key,
         public string $requestId,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Skill::class;
+    }
 }

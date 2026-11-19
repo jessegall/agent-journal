@@ -5,18 +5,15 @@ declare(strict_types=1);
 namespace App\Profiles\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Contracts\ProfileResolver;
-use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Models\Profile;
-use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Support\PolicyResolver;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
@@ -31,7 +28,6 @@ use App\Profiles\Values\ProfileDefinition;
 final readonly class ActivateProfilesHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentAuthorizer $administration,
         private CurrentActor $actors,
         private PolicyResolver $resolver,
         private ProfileResolver $profiles,
@@ -44,7 +40,6 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     public function handle(ActivateProfiles $command): ProfileActivation
     {
-        $this->administration->authorize(ProfileAdministrationPolicy::class, Profile::class, ProfileAbility::Administer);
 
         return $this->activate($command->proposal);
     }
