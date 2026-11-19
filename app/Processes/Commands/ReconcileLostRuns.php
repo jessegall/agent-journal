@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Processes\Handlers\ReconcileLostRunsHandler;
 
 /**
@@ -16,5 +16,5 @@ use App\Processes\Handlers\ReconcileLostRunsHandler;
  * @implements Command<int>
  */
 #[HandledBy(ReconcileLostRunsHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class ReconcileLostRuns implements Command {}

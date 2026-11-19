@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
-use App\Agents\Contracts\CurrentSession;
-use App\Agents\Exceptions\AgentContextMissing;
+use App\Actors\Contracts\WorkStacks;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
@@ -37,8 +34,7 @@ final class AdvisoryStackAdmission implements StackAdmission
 
     public function __construct(
         private readonly DatabaseManager $databases,
-        private readonly CurrentActor $actors,
-        private readonly CurrentSession $session,
+        private readonly WorkStacks $workStacks,
     ) {}
 
     public function admit(string $sessionId, OperationDeadline $deadline, Closure $work): mixed
@@ -61,22 +57,19 @@ final class AdvisoryStackAdmission implements StackAdmission
     }
 
     /**
-     * Only a signed agent call has a session stack to admit: a user, the system, the engine, or an agent acting outside
-     * a signed request runs as it is.
+     * Admits the operation to the stacks its actor works on, in sorted order, before its transaction opens; an
+     * actor that works on no stack runs as it is.
      */
     public function admitCaller(OperationDeadline $deadline, Closure $work): mixed
     {
-        if (! $this->actors->hasActor() || $this->actors->actor()->type !== ActorType::Agent) {
-            return $work();
+        $admitted = $work;
+
+        foreach (array_reverse($this->workStacks->sessionsToAdmit()) as $sessionId) {
+            $inner = $admitted;
+            $admitted = fn () => $this->admit($sessionId, $deadline, $inner);
         }
 
-        try {
-            $sessionId = $this->session->sessionId();
-        } catch (AgentContextMissing) {
-            return $work();
-        }
-
-        return $this->admit($sessionId, $deadline, $work);
+        return $admitted();
     }
 
     /**

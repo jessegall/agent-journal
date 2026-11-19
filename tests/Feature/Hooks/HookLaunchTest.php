@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
@@ -182,7 +182,7 @@ final class HookLaunchTest extends TestCase
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new OwnerAuthority('test'));
 
         try {
             return $work();

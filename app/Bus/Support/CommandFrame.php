@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\CommandMiddleware\AdmitStack;
+use App\Bus\CommandMiddleware\AuthorizeCommand;
 use App\Bus\CommandMiddleware\CheckActor;
+use App\Bus\CommandMiddleware\CheckEntry;
 use App\Bus\CommandMiddleware\LogCommand;
 use App\Bus\CommandMiddleware\RecordReceipt;
 use App\Bus\CommandMiddleware\RecordRefusalReceipt;
@@ -25,7 +27,13 @@ final class CommandFrame
      *
      * @var list<class-string<CommandMiddleware>>
      */
-    public const array FIRST = [LogCommand::class, CheckActor::class, AdmitStack::class, RecordRefusalReceipt::class];
+    public const array FIRST = [
+        LogCommand::class,
+        CheckActor::class,
+        CheckEntry::class,
+        AdmitStack::class,
+        RecordRefusalReceipt::class,
+    ];
 
     /**
      * The Core step that opens or joins the command's transaction.
@@ -39,5 +47,5 @@ final class CommandFrame
      *
      * @var list<class-string<CommandMiddleware>>
      */
-    public const array INSIDE = [RecordReceipt::class];
+    public const array INSIDE = [AuthorizeCommand::class, RecordReceipt::class];
 }

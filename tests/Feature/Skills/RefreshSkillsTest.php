@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorStore;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandNotRegistered;
 use App\Domains\Support\DomainRegistry;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RefreshSkills;
@@ -30,6 +29,7 @@ use App\Skills\Values\SkillOwner;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -40,6 +40,7 @@ use Tests\TestCase;
 final class RefreshSkillsTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsTrustedCommands;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts', 'agent_sessions', 'agents'];
 
@@ -77,7 +78,7 @@ final class RefreshSkillsTest extends TestCase
         $this->refresh();
         SkillPublication::query()->where('session_id', $session->id)->firstOrFail()->supersede();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')));
 
         $pending = SkillPublication::query()->where('session_id', $session->id)->where('state', PublicationState::Pending->value)->firstOrFail();
@@ -88,9 +89,9 @@ final class RefreshSkillsTest extends TestCase
 
     public function test_only_the_system_refreshes(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
 
-        $this->expectException(SystemActorRequired::class);
+        $this->expectException(CommandNotRegistered::class);
 
         $this->app->make(CommandBus::class)->run(new RefreshSkills());
     }
@@ -99,7 +100,7 @@ final class RefreshSkillsTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run(new RefreshSkills()));
+        return $this->throughEntry(new RefreshSkills());
     }
 
     private function launch(): AgentSession

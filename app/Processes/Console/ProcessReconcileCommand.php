@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\Actors\Support\ActorStore;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Processes\Commands\ReconcileLostRuns;
 use Illuminate\Console\Command;
 
@@ -18,9 +18,9 @@ final class ProcessReconcileCommand extends Command
 
     protected $description = 'Mark runs whose supervisor fell silent as lost';
 
-    public function handle(ActorStore $actors, CommandBus $commands): int
+    public function handle(EntryDispatchers $dispatchers): int
     {
-        $lost = $actors->actAsSystem('process reconcile', fn (): int => $commands->run(new ReconcileLostRuns()));
+        $lost = $dispatchers->runAsJournal(CommandEntry::HostControl, 'process reconcile', new ReconcileLostRuns());
         $this->line("{$lost} runs marked lost.");
 
         return self::SUCCESS;

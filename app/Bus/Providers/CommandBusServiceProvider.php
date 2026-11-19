@@ -8,9 +8,11 @@ use App\Bus\Console\PruneReceiptsCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Support\CommandRegistry;
+use App\Bus\Support\ConsoleOwner;
 use App\Bus\Support\LaravelCommandBus;
 use App\Bus\Support\RunningCommand;
 use App\Bus\Support\RunningCommandTransaction;
+use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
@@ -39,11 +41,20 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->commands([PruneReceiptsCommand::class]);
         self::refuseExplicitTransactionsOn($databases->connection());
         $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::refuseExplicitTransactionsOn($event->connection));
+        $events->listen(CommandFinished::class, static fn () => self::finishConsoleOwner());
     }
 
     private static function refuseExplicitTransactionsOn(Connection $connection): void
     {
         // Resolved on each call, never captured: under Octane each request has its own RunningCommand.
         $connection->beforeStartingTransaction(static fn () => Container::getInstance()->make(RunningCommand::class)->refuseExplicitTransaction());
+    }
+
+    /**
+     * A console command's owner leaves with it, so the next command starts with no actor.
+     */
+    private static function finishConsoleOwner(): void
+    {
+        Container::getInstance()->make(ConsoleOwner::class)->finish();
     }
 }

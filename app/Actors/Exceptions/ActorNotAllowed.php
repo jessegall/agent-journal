@@ -7,7 +7,9 @@ namespace App\Actors\Exceptions;
 use App\Contracts\CommandRefusal;
 use BackedEnum;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The actor may not do the ability; the message names the ability and the kind of subject, never its content.
@@ -42,5 +44,13 @@ final class ActorNotAllowed extends RuntimeException implements CommandRefusal
         $refusal = self::to($ability, $subjectType);
 
         return new self($refusal->getMessage(), 0, $denial);
+    }
+
+    /**
+     * Every transport answers a refusal as forbidden: 403 over HTTP, with the safe message alone.
+     */
+    public function render(): JsonResponse
+    {
+        return new JsonResponse(['message' => $this->getMessage()], Response::HTTP_FORBIDDEN);
     }
 }

@@ -17,4 +17,9 @@ final readonly class LaunchProfileAuthority implements AuthoritySource
     {
         return "revision {$this->profile->revision} of profile {$this->profile->key->key}";
     }
+
+    public function mayRunApplicationCommands(): bool
+    {
+        return true;
+    }
 }

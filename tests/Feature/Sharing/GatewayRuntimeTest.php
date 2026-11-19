@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\SystemActor;
-use App\Actors\Values\TrustedEntryAuthority;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\Command;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\RecordGatewayHealth;
@@ -29,6 +25,7 @@ use App\Sharing\Support\ClaimedGatewayOperation;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -41,6 +38,7 @@ use Tests\TestCase;
 final class GatewayRuntimeTest extends TestCase
 {
     use RefreshHookDatabase;
+    use RunsTrustedCommands;
 
     private const string FIRST_RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -146,26 +144,25 @@ final class GatewayRuntimeTest extends TestCase
 
     private function claim(string $runId): ClaimedGatewayOperation|null
     {
-        return $this->asSystem()->run(new ClaimGatewayOperation($runId));
+        return $this->asSystem(new ClaimGatewayOperation($runId));
     }
 
     private function outcome(string $runId, ClaimedGatewayOperation|null $claim, GatewayOutcome $outcome): void
     {
         $this->assertNotNull($claim);
-        $this->asSystem()->run(new RecordGatewayOutcome($runId, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, $outcome));
+        $this->asSystem(new RecordGatewayOutcome($runId, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, $outcome));
     }
 
     private function health(string $runId, int $endpointVersion): void
     {
-        $this->asSystem()->run(new RecordGatewayHealth($runId, $this->configuration->id, $endpointVersion, true));
+        $this->asSystem(new RecordGatewayHealth($runId, $this->configuration->id, $endpointVersion, true));
     }
 
-    private function asSystem(): CommandBus
+    private function asSystem(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
-        return $this->app->make(CommandBus::class);
+        return $this->throughEntry($command);
     }
 
     /**

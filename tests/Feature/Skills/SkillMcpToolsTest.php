@@ -7,7 +7,7 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\ReviseSkill;
@@ -55,10 +55,10 @@ final class SkillMcpToolsTest extends TestCase
 
     public function test_an_agent_edit_is_refused_as_the_bus_refuses_an_agent_and_changes_nothing(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $created = $this->app->make(CommandBus::class)->run(new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')));
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->caller->agent->id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->caller->agent->id), new OwnerAuthority('test'));
 
         try {
             $this->app->make(CommandBus::class)->run(new ReviseSkill($created->skillId, 1, 'revise-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Other.')], '')));

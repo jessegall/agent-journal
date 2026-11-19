@@ -5,41 +5,41 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Exceptions\ConsoleOwnerMissing;
-use App\Actors\Exceptions\ConsoleOwnerRefused;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 
 /**
- * Lets an owner command on the command line act as the journal's configured owner user, once the access policy admits that
- * user, and keys its write so a retry with the same key answers from the receipt.
+ * A console command acting as the journal's configured owner: the owner the admission names, under an owner
+ * authority, until the command finishes, so the next command starts with no actor.
  */
 final readonly class ConsoleOwner
 {
     public function __construct(
-        private JournalAccessPolicy $access,
+        private JournalAdmission $admission,
         private CurrentActorSetter $actors,
         private RequestKey $key,
     ) {}
 
     /**
      * @throws ConsoleOwnerMissing
-     * @throws ConsoleOwnerRefused
      */
     public function actAsOwner(): ActorContext
     {
-        $ownerId = $this->access->allowedUserIds()[0] ?? throw ConsoleOwnerMissing::forConsole();
-        $owner = ActorContext::forUser($ownerId);
-
-        if (! $this->access->allows($owner)) {
-            throw ConsoleOwnerRefused::forActor($owner);
-        }
-
+        $owner = $this->admission->owner();
         $this->actors->set($owner, new OwnerAuthority('the console'));
 
         return $owner;
+    }
+
+    /**
+     * Ends the actor's turn when a console command finishes, so the next command starts with none.
+     */
+    public function finish(): void
+    {
+        $this->actors->clear();
     }
 
     /**

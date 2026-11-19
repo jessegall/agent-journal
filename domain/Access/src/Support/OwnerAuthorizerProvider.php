@@ -7,7 +7,7 @@ namespace Domain\Access\Support;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\AllowsEverything;
 
@@ -17,14 +17,14 @@ use App\Actors\Support\AllowsEverything;
  */
 final readonly class OwnerAuthorizerProvider implements AuthorizerProvider
 {
-    public function __construct(private JournalAccessPolicy $access) {}
+    public function __construct(private JournalAdmission $admission) {}
 
     /**
      * @throws ActorNotAllowed
      */
     public function forActor(Actor $actor): Authorizer
     {
-        return $this->access->allows($actor) ? new AllowsEverything() : throw ActorNotAllowed::asNonOwner();
+        return $this->admission->admits($actor) ? new AllowsEverything() : throw ActorNotAllowed::asNonOwner();
     }
 
     /**

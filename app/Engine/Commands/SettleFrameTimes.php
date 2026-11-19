@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Engine\Commands;
 
-use App\Bus\Attributes\AllowsEngine;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Engine\Handlers\SettleFrameTimesHandler;
 use App\Engine\Values\FrameSettlement;
 
@@ -16,7 +17,7 @@ use App\Engine\Values\FrameSettlement;
  * @implements Command<null>
  */
 #[HandledBy(SettleFrameTimesHandler::class)]
-#[AllowsEngine]
+#[Entry(CommandEntry::EngineMaintenance)]
 final readonly class SettleFrameTimes implements Command
 {
     /**

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Providers;
 
+use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorVisibility;
+use App\Actors\Enums\ActorType;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
@@ -18,6 +20,7 @@ use App\Hooks\Models\Support\AgentSessionScope;
 use App\Hooks\Stack\AdvisoryStackAdmission;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\Support\AgentWorkStack;
 use App\Hooks\Support\ContextBudget;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\RetentionPeriods;
@@ -48,8 +51,9 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(HookRetryWindow::class, fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')));
     }
 
-    public function boot(Dispatcher $events): void
+    public function boot(Dispatcher $events, ActorProviderRegistration $actors): void
     {
+        $actors->registerWorkStack(ActorType::Agent, AgentWorkStack::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/hooks.php');
         $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
         $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily());

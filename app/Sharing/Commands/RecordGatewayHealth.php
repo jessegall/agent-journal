@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Sharing\Handlers\RecordGatewayHealthHandler;
 
 /**
@@ -17,7 +17,7 @@ use App\Sharing\Handlers\RecordGatewayHealthHandler;
  * @implements Command<null>
  */
 #[HandledBy(RecordGatewayHealthHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::ShareGateway)]
 final readonly class RecordGatewayHealth implements Command
 {
     public function __construct(

@@ -18,6 +18,7 @@ final readonly class CommandCall
     /**
      * @param  Command<mixed>  $command
      * @param  Command<mixed>  $original
+     * @param  list<array{Command<mixed>, object|string}>  $authorized  the command and the subject it was authorized on
      */
     private function __construct(
         public Command $command,
@@ -26,6 +27,7 @@ final readonly class CommandCall
         public bool $exported,
         public bool $repeatableRead,
         public ActorContext|null $actor,
+        public array $authorized = [],
     ) {}
 
     /**
@@ -103,5 +105,30 @@ final readonly class CommandCall
         }
 
         return new self($command, $this->original, $this->owner, $this->exported, $this->repeatableRead, $this->actor);
+    }
+
+    /**
+     * The same call with the subject its command was authorized on in this attempt.
+     */
+    public function authorizedOn(object|string $subject): self
+    {
+        $authorized = [$this->command, $subject];
+
+        $repeatableRead = $this->repeatableRead;
+
+        return new self($this->command, $this->original, $this->owner, $this->exported, $repeatableRead, $this->actor, [$authorized]);
+    }
+
+    /**
+     * The subject the call's current command was authorized on; none when it was not, or when a middleware replaced
+     * the command after it was.
+     *
+     * @return list<object|string>
+     */
+    public function authorizedSubject(): array
+    {
+        $authorized = $this->authorized[0] ?? null;
+
+        return $authorized !== null && $authorized[0] === $this->command ? [$authorized[1]] : [];
     }
 }

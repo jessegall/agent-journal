@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Listeners;
 
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\AdmittedRecipients;
 use App\Contracts\Listener;
 use App\Ui\Contracts\UpdatesUserInterface;
 use App\Web\Events\PageChanged;
@@ -17,13 +17,13 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class BroadcastPageChange implements Listener
 {
     public function __construct(
-        private JournalAccessPolicy $access,
+        private AdmittedRecipients $recipients,
         private Dispatcher $events,
     ) {}
 
     public function handle(UpdatesUserInterface $fact): void
     {
-        $userIds = $this->access->allowedUserIds();
+        $userIds = $this->recipients->userIds();
 
         if ($userIds === []) {
             return;

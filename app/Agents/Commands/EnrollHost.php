@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Handlers\EnrollHostHandler;
 use App\Agents\Support\EnrolledHost;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 
 /**
  * Enrolls a machine that may run agent programs, with the folders it may launch in; its secret is given once.
@@ -17,7 +17,7 @@ use App\Bus\Contracts\Command;
  * @implements Command<EnrolledHost>
  */
 #[HandledBy(EnrollHostHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class EnrollHost implements Command
 {
     /**

@@ -27,6 +27,7 @@ use App\Skills\Support\SkillTargets;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\TestCase;
 
 /**
@@ -36,6 +37,7 @@ use Tests\TestCase;
 final class SkillReceiptsTest extends TestCase
 {
     use CommitsHookRows;
+    use InstallsBuiltInProfiles;
 
     private const array TABLES = [
         'skill_receipts',

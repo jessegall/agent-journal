@@ -7,7 +7,7 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Models\RevisionFence;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
@@ -59,7 +59,7 @@ final class ProfilePolicyTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
     }
 
     public function test_a_removed_class_blocks_while_an_exact_grant_passes_and_a_denial_wins(): void
@@ -138,7 +138,7 @@ final class ProfilePolicyTest extends TestCase
 
     public function test_an_agent_cannot_activate(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(9)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(9)), new OwnerAuthority('test'));
 
         $this->expectException(UserActorRequired::class);
 

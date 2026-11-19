@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Support;
 
 use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AutoAssignmentAccess;
@@ -20,7 +20,7 @@ use App\Assignments\Exceptions\AutoAssignmentDenied;
 final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
 {
     public function __construct(
-        private JournalAccessPolicy $access,
+        private JournalAdmission $admission,
         private AgentAuthority $agents,
     ) {}
 
@@ -30,7 +30,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
      */
     public function requireRead(Actor $actor, ActorIdentity $target): void
     {
-        if ($this->access->allows($actor) || self::isSelf($actor, $target)) {
+        if ($this->admission->admits($actor) || self::isSelf($actor, $target)) {
             return;
         }
 
@@ -43,7 +43,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
      */
     public function requireWrite(Actor $actor, ActorIdentity $target): void
     {
-        if ($this->access->allows($actor)) {
+        if ($this->admission->admits($actor)) {
             return;
         }
 
@@ -52,7 +52,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
 
     public function mayReadTotals(Actor $actor, ActorIdentity $target): bool
     {
-        return $this->access->allows($actor) || ! self::isSelf($actor, $target);
+        return $this->admission->admits($actor) || ! self::isSelf($actor, $target);
     }
 
     /**

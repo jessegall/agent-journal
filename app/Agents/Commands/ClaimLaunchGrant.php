@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Handlers\ClaimLaunchGrantHandler;
 use App\Agents\Support\LaunchGrant;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 
 /**
  * Hands a host the launch credential of one of its Starting runtimes, once, with the folders it writes before spawning.
@@ -18,7 +18,7 @@ use App\Bus\Contracts\Command;
  * @implements Command<LaunchGrant|null>
  */
 #[HandledBy(ClaimLaunchGrantHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class ClaimLaunchGrant implements Command
 {
     public function __construct(

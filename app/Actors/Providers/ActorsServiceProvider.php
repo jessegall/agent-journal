@@ -13,9 +13,11 @@ use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
+use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
+use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Support\ActiveActorsResolver;
@@ -26,6 +28,7 @@ use App\Actors\Support\CurrentActorAuthorizer;
 use App\Actors\Support\DatabaseClock;
 use App\Actors\Support\JournalVisibility;
 use App\Actors\Support\PresenceWindow;
+use App\Actors\Support\RegisteredPolicies;
 use App\Actors\Support\SystemActors;
 use App\Actors\Support\SystemAuthorizerProvider;
 use App\Actors\Support\TargetActorAuthorizer;
@@ -43,6 +46,7 @@ final class ActorsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(PolicyCatalogue::class, RegisteredPolicies::class);
         $this->app->bind(ActorContext::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(
             $app->make('config')->integer('actors.presence_seconds'),
@@ -59,6 +63,7 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->alias(ActorProviderRegistry::class, ActorProviderRegistration::class);
         $this->app->alias(ActorProviderRegistry::class, ActorLabels::class);
         $this->app->alias(ActorProviderRegistry::class, ActorVisibility::class);
+        $this->app->alias(ActorProviderRegistry::class, WorkStacks::class);
         $this->app->singleton(AuthorizerProviderRegistry::class);
         $this->app->alias(AuthorizerProviderRegistry::class, AuthorizerProviderRegistration::class);
         $this->app->scoped(CurrentAuthorizer::class, CurrentActorAuthorizer::class);

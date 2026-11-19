@@ -7,7 +7,7 @@ namespace Tests\Feature\Settings;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
 use App\Settings\Contracts\SettingCommands;
@@ -180,7 +180,7 @@ final class SettingsCatalogueTest extends TestCase
 
     private function actAs(ActorContext $actor): void
     {
-        $this->app->make(CurrentActorSetter::class)->set($actor, new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
     /**

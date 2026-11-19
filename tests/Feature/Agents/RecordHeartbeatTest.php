@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\DatabaseClock;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Actions\LaunchSessions;
@@ -117,7 +117,7 @@ final class RecordHeartbeatTest extends TestCase
     private function launch(): LaunchedAgent
     {
         $launched = $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new OwnerAuthority('test'));
 
         return $launched;
     }

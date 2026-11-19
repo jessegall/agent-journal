@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\SystemActor;
-use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ClaimGatewayOperation;
@@ -35,6 +30,7 @@ use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -49,6 +45,7 @@ use Tests\TestCase;
 final class SharingPageRefreshTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsTrustedCommands;
 
     private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations', 'number_groups'];
 
@@ -89,8 +86,7 @@ final class SharingPageRefreshTest extends TestCase
     private function asSystem(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
-        return $this->app->make(CommandBus::class)->run($command);
+        return $this->throughEntry($command);
     }
 }

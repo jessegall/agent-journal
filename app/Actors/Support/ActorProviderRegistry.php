@@ -13,6 +13,8 @@ use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\ActorVisibilityProvider;
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\WorkStackProvider;
+use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
@@ -27,7 +29,7 @@ use Illuminate\Database\Eloquent\Scope;
  * The actor provider of each actor type, registered once at boot; a provider is built per call, so nothing found
  * outlives the request.
  */
-final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistration, ActorResolver, ActorVisibility
+final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistration, ActorResolver, ActorVisibility, WorkStacks
 {
     /**
      * @var array<string, class-string<ActorProvider>>
@@ -43,6 +45,11 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      * @var array<string, class-string<ActorVisibilityProvider>>
      */
     private array $visibilityProviders = [];
+
+    /**
+     * @var array<string, class-string<WorkStackProvider>>
+     */
+    private array $workStackProviders = [];
 
     public function __construct(private readonly Container $container) {}
 
@@ -160,6 +167,34 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
         }
 
         $this->container->make($providerClass)->ownRows($query, $narrowToOwnRows);
+    }
+
+    /**
+     * @param  class-string<WorkStackProvider>  $providerClass
+     */
+    public function registerWorkStack(ActorType $type, string $providerClass): void
+    {
+        if (array_key_exists($type->value, $this->workStackProviders)) {
+            throw ActorProviderRepeated::forType($type->value);
+        }
+
+        $this->workStackProviders[$type->value] = $providerClass;
+    }
+
+    /**
+     * With nobody acting, or a type that works on no stack, there is nothing to admit.
+     *
+     * @return list<string>
+     */
+    public function sessionsToAdmit(): array
+    {
+        $actors = $this->container->make(CurrentActor::class);
+        $type = $actors->hasActor() ? $actors->actor()->actorType()->value : '';
+        $providerClass = $this->workStackProviders[$type] ?? null;
+        $sessions = $providerClass === null ? [] : $this->container->make($providerClass)->sessionsToAdmit();
+        sort($sessions);
+
+        return $sessions;
     }
 
     public function get(ActorIdentity $identity): Actor

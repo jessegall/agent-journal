@@ -6,8 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorStore;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
@@ -33,6 +32,7 @@ use Domain\Plans\Models\Plan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -48,6 +48,7 @@ use Throwable;
 final class ReadShareTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsTrustedCommands;
 
     private const array TABLES = ['share_audits', 'share_members', 'shares', 'share_gateway_configurations', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'phases', 'plans', 'number_groups'];
 
@@ -62,7 +63,7 @@ final class ReadShareTest extends TestCase
         parent::setUp();
 
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
@@ -145,7 +146,7 @@ final class ReadShareTest extends TestCase
 
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Notes', 'What we learned', "# Notes\nKeep it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();
@@ -214,7 +215,7 @@ final class ReadShareTest extends TestCase
     {
         $permit = $this->app->make(ReadPermits::class)->issue($token);
 
-        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run(new ReadShare($permit->reference, $path, $cursor, $head)));
+        return $this->throughEntry(new ReadShare($permit->reference, $path, $cursor, $head));
     }
 
     /**

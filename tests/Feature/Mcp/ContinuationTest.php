@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Mcp\Exceptions\ContinuationInvalid;
@@ -185,6 +185,6 @@ final class ContinuationTest extends TestCase
     {
         $this->app->forgetScopedInstances();
         $this->app->instance(AgentContext::class, $context);
-        $this->app->make(CurrentActorSetter::class)->set($context, new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set($context, new OwnerAuthority('test'));
     }
 }

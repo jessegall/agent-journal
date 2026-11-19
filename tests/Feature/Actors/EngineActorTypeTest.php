@@ -14,7 +14,7 @@ use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
-use App\Bus\Exceptions\EngineNotAllowed;
+use App\Actors\Exceptions\UserActorRequired;
 use App\Engine\Support\EngineActor;
 use App\Web\Commands\RecordUserHeartbeat;
 use Domain\Access\Models\User;
@@ -72,7 +72,7 @@ final class EngineActorTypeTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()), new TrustedEntryAuthority('test'));
 
-        $this->expectException(EngineNotAllowed::class);
+        $this->expectException(UserActorRequired::class);
 
         $this->app->make(CommandBus::class)->run(new RecordUserHeartbeat());
     }

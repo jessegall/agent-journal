@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
-use App\Actors\Support\ActorStore;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\ExpireShares;
 use App\Sharing\Commands\PruneShareAudit;
@@ -35,8 +35,7 @@ final class SharingSupervisor
     public readonly string $runId;
 
     public function __construct(
-        private readonly CommandBus $commands,
-        private readonly ActorStore $actors,
+        private readonly EntryDispatchers $dispatchers,
         private readonly ShareGatewayRegistry $gateways,
         private readonly ConnectionInterface $database,
     ) {
@@ -161,6 +160,6 @@ final class SharingSupervisor
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->actors->actAsSystem('sharing supervisor', fn () => $this->commands->run($command));
+        return $this->dispatchers->runAsJournal(CommandEntry::ShareGateway, 'sharing supervisor', $command);
     }
 }

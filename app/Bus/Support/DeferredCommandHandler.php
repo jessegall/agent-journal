@@ -23,6 +23,8 @@ final readonly class DeferredCommandHandler
      */
     public function handle(Command $command): mixed
     {
-        return $this->container->make($this->handler)->handle($command);
+        $subject = $this->container->make(CommandSubjects::class)->subjectFor($command);
+
+        return $this->container->make($this->handler)->handle($command, ...$subject);
     }
 }

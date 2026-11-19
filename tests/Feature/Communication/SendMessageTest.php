@@ -6,7 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
@@ -51,7 +51,7 @@ final class SendMessageTest extends TestCase
         $agent = Agent::named('Builder', AgentRole::MainAgent);
         $session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
     }
 
     public function test_a_sent_message_keeps_its_text_waits_for_the_agent_and_sits_on_its_stack(): void

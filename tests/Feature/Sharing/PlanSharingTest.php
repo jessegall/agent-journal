@@ -6,7 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Reads\Contracts\ReadMeter;
 use App\Sharing\Support\MeteredShareBudget;
@@ -39,7 +39,7 @@ final class PlanSharingTest extends TestCase
 
     public function test_a_plan_previews_as_a_summary_root_with_its_linked_document_as_a_candidate(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $document = Document::query()->where('number', 1)->sole();
         $plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);

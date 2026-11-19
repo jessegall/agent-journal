@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Console;
 
-use App\Actors\Support\ActorStore;
 use App\Agents\Commands\EnrollHost;
-use App\Agents\Support\EnrolledHost;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use Illuminate\Console\Command;
 
 /**
@@ -19,9 +18,10 @@ final class EnrollHostCommand extends Command
 
     protected $description = 'Enroll a host that runs agent programs and print its secret once';
 
-    public function handle(CommandBus $commands, ActorStore $actors): int
+    public function handle(EntryDispatchers $dispatchers): int
     {
-        $enrolled = $actors->actAsSystem('host enrolment', fn (): EnrolledHost => $commands->run(new EnrollHost($this->installationName(), $this->launchRoots())));
+        $enroll = new EnrollHost($this->installationName(), $this->launchRoots());
+        $enrolled = $dispatchers->runAsJournal(CommandEntry::HostControl, 'host enrolment', $enroll);
 
         $this->line("Host {$enrolled->hostId} is enrolled. Its secret, shown only now:");
         $this->line($enrolled->secret);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AutoAssignmentActivity;
 use Domain\Access\Models\User;
@@ -14,12 +14,12 @@ use Domain\Access\Models\User;
  */
 final readonly class UserActivity implements AutoAssignmentActivity
 {
-    public function __construct(private JournalAccessPolicy $access) {}
+    public function __construct(private JournalAdmission $admission) {}
 
     public function mayTakeWork(ActorIdentity $actor): bool
     {
         $user = User::query()->find($actor->id);
 
-        return $user !== null && $this->access->allows($user);
+        return $user !== null && $this->admission->admits($user);
     }
 }

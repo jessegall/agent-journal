@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Actors\Contracts\ActiveActorCounter;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Enums\ActorType;
 use Carbon\CarbonImmutable;
@@ -17,7 +17,7 @@ use Carbon\CarbonImmutable;
 final readonly class PresentUserCounter implements ActiveActorCounter
 {
     public function __construct(
-        private JournalAccessPolicy $access,
+        private AdmittedRecipients $recipients,
         private UserPresences $presences,
     ) {}
 
@@ -28,6 +28,6 @@ final readonly class PresentUserCounter implements ActiveActorCounter
 
     public function count(CarbonImmutable $observedAt): int
     {
-        return $this->presences->freshCountAmong($this->access->allowedUserIds(), $observedAt);
+        return $this->presences->freshCountAmong($this->recipients->userIds(), $observedAt);
     }
 }

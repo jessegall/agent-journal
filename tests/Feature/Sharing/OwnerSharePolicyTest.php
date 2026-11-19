@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\AdmittedRecipients;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
@@ -40,20 +41,27 @@ final class OwnerSharePolicyTest extends TestCase
         parent::setUp();
 
         $this->ownerId = TestIds::of(1);
-        $this->app->instance(JournalAccessPolicy::class, new class($this) implements JournalAccessPolicy
+        $admission = new class($this) implements AdmittedRecipients, JournalAdmission
         {
             public function __construct(private readonly OwnerSharePolicyTest $test) {}
 
-            public function allows(Actor $actor): bool
+            public function admits(Actor $actor): bool
             {
-                return $actor->actorType() === ActorType::User && in_array($actor->actorId(), $this->allowedUserIds(), true);
+                return ActorIdentity::of($actor)->isSameAs(ActorIdentity::of($this->owner()));
             }
 
-            public function allowedUserIds(): array
+            public function owner(): ActorContext
+            {
+                return ActorContext::forUser($this->test->ownerId());
+            }
+
+            public function userIds(): array
             {
                 return [$this->test->ownerId()];
             }
-        });
+        };
+        $this->app->instance(JournalAdmission::class, $admission);
+        $this->app->instance(AdmittedRecipients::class, $admission);
     }
 
     public function ownerId(): string

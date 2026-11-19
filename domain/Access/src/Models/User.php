@@ -26,7 +26,7 @@ use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
- * A user who can sign in. Only the configured owner gets into the journal (JournalAccess).
+ * A user who can sign in. Only the configured owner gets into the journal (OwnerAdmission).
  *
  * @property string $id
  * @property string $name

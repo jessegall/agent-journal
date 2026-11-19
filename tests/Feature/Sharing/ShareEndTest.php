@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Support\SystemActor;
-use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ExpireShares;
@@ -30,6 +27,7 @@ use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -44,6 +42,7 @@ use Tests\TestCase;
 final class ShareEndTest extends TestCase
 {
     use RefreshHookDatabase;
+    use RunsTrustedCommands;
     use StartsAgentRequests;
 
     private ShareGatewayConfiguration $configuration;
@@ -138,7 +137,7 @@ final class ShareEndTest extends TestCase
     {
         $this->startUserRequestAs(TestIds::of(9));
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new ExpireShares()), SystemActorRequired::class);
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new ExpireShares()), CommandNotRegistered::class);
     }
 
     private function activeShare(CarbonImmutable $expiresAt): Share
@@ -162,9 +161,8 @@ final class ShareEndTest extends TestCase
     private function expire(): ShareExpiry
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
-        return $this->app->make(CommandBus::class)->run(new ExpireShares());
+        return $this->throughEntry(new ExpireShares());
     }
 
     /**

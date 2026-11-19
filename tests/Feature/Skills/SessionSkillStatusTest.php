@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\LaunchStarted;
@@ -32,8 +32,8 @@ use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\InstallsBuiltInProfiles;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -124,7 +124,7 @@ final class SessionSkillStatusTest extends TestCase
     private function guideOf(AgentSession $session): SessionSkillStatus
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $rows = $this->app->make(SkillStatusResolver::class)->skillsOfSession($session->id);
         $guide = array_values(array_filter($rows, fn (SessionSkillStatus $row) => $row->key === 'user-guide'));
         $this->assertCount(1, $guide);

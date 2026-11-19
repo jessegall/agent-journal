@@ -7,7 +7,7 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CreateSkill;
@@ -43,7 +43,7 @@ final class StoredSkillCommandsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
     }
 
     public function test_create_gives_revision_1_and_revise_gives_2_keeping_1_readable(): void
@@ -90,7 +90,7 @@ final class StoredSkillCommandsTest extends TestCase
 
     public function test_an_agent_is_refused_before_any_row_changes(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new OwnerAuthority('test'));
 
         $this->assertRefused(UserActorRequired::class, new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
         $this->assertSame(0, Skill::query()->count());

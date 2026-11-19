@@ -7,8 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorStore;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ClaimDriverRequests;
@@ -59,6 +58,7 @@ use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -69,6 +69,7 @@ use Tests\TestCase;
 final class AgentDriverLedgerTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsTrustedCommands;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'hosts', 'agent_runtimes', 'driver_requests', 'driver_turns'];
 
@@ -299,7 +300,7 @@ final class AgentDriverLedgerTest extends TestCase
         [, $opened] = $this->openRuntime();
         AgentRuntime::query()->findOrFail($opened->runtimeId)->requestEffort('low');
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $status = $this->app->make(RuntimeResolver::class)->forSession($opened->sessionId);
 
         $this->assertSame('low', $status->effort->requested);
@@ -409,7 +410,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_an_agent_cannot_run_a_key_script(): void
     {
         [, $opened] = $this->openRuntime();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)), new OwnerAuthority('test'));
 
         $this->expectException(UserActorRequired::class);
         $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
@@ -487,7 +488,7 @@ final class AgentDriverLedgerTest extends TestCase
      */
     private function asOwner(Command $command): mixed
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }
@@ -502,6 +503,8 @@ final class AgentDriverLedgerTest extends TestCase
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run($command));
+        $this->app->forgetScopedInstances();
+
+        return $this->throughEntry($command);
     }
 }

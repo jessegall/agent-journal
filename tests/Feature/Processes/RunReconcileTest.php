@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\RetryProcessRun;
 use App\Processes\Commands\StopSurvivors;
@@ -108,6 +108,6 @@ final class RunReconcileTest extends TestCase
     private function setActor(ActorContext $actor): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set($actor, new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 }

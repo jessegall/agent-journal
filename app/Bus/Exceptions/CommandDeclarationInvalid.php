@@ -17,9 +17,4 @@ final class CommandDeclarationInvalid extends RuntimeException
     {
         return new self("{$owner} exports the command {$command} but does not register it; register it in its commands, or stop exporting it.");
     }
-
-    public static function engineWithOtherActor(string $command, string $actorType): self
-    {
-        return self::for($command, "it allows the engine but requires a {$actorType} actor; declare one or the other");
-    }
 }

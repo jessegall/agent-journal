@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\SystemActor;
-use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
@@ -40,6 +36,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
@@ -54,6 +51,7 @@ use Tests\TestCase;
 final class GatewayDefaultAndDisableTest extends TestCase
 {
     use RefreshHookDatabase, RegistersShareDomains;
+    use RunsTrustedCommands;
     use StartsAgentRequests;
 
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
@@ -176,8 +174,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
     private function asSystem(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
-        return $this->app->make(CommandBus::class)->run($command);
+        return $this->throughEntry($command);
     }
 }

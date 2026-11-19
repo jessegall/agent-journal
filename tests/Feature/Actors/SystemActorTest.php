@@ -11,7 +11,7 @@ use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorStore;
 use App\Actors\Support\SystemActor;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use Domain\Access\Models\User;
 use RuntimeException;
 use Tests\TestCase;
@@ -33,7 +33,7 @@ final class SystemActorTest extends TestCase
     public function test_acting_as_the_system_lasts_only_for_its_work_even_when_it_throws(): void
     {
         $store = $this->app->make(ActorStore::class);
-        $store->set(new User()->forceFill(['id' => '01jd8x0g9m3qz6v4k2t7r5w1ce']), new TrustedEntryAuthority('test'));
+        $store->set(new User()->forceFill(['id' => '01jd8x0g9m3qz6v4k2t7r5w1ce']), new OwnerAuthority('test'));
 
         $inside = $store->actAsSystem('test', fn () => $store->actor()->actorType());
 

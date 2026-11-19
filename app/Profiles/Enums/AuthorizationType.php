@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Enums;
 
 use App\Actors\Contracts\Authorizer;
+use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Support\AllowsEverything;
 use App\Profiles\Support\PolicyAuthorizer;
 use App\Profiles\Values\ProfileAuthorization;
@@ -21,11 +22,11 @@ enum AuthorizationType: string
     /**
      * The authorizer this strategy gives a profile with these grants.
      */
-    public function authorizerFor(ProfileAuthorization $authorization): Authorizer
+    public function authorizerFor(ProfileAuthorization $authorization, PolicyCatalogue $catalogue): Authorizer
     {
         return match ($this) {
             self::AllowsEverything => new AllowsEverything(),
-            self::Policies => new PolicyAuthorizer($authorization),
+            self::Policies => new PolicyAuthorizer($authorization, $catalogue),
         };
     }
 }

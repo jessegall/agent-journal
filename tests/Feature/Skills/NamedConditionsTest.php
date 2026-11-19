@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Domains\Support\DomainRegistry;
 use App\Numbers\Models\NumberGroup;
@@ -96,7 +96,7 @@ final class NamedConditionsTest extends TestCase
         $this->app->instance(ExceptionHandler::class, $handler);
         $this->useRegistry(ConditionRegistry::of(['Notes' => [new SkillConditionRegistration('notes.writes', 1, NoParameters::class, WritesDuringEvaluation::class)]]));
         $groups = NumberGroup::query()->count();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent('evaluating-agent'), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent('evaluating-agent'), new OwnerAuthority('test'));
 
         $result = $this->app->make(ConditionTree::class)->hydrate(['type' => 'named', 'version' => 1, 'key' => 'notes.writes', 'parameters' => []])->evaluate($this->context());
 

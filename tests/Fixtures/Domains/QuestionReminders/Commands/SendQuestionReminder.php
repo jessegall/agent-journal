@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\QuestionReminders\Commands;
 
 use App\Agents\Support\StackTarget;
-use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
 use Tests\Fixtures\Domains\QuestionReminders\Handlers\SendQuestionReminderHandler;
@@ -16,7 +15,6 @@ use Tests\Fixtures\Domains\QuestionReminders\Handlers\SendQuestionReminderHandle
  * @implements Command<null>
  */
 #[HandledBy(SendQuestionReminderHandler::class)]
-#[AllowsEngine]
 final readonly class SendQuestionReminder implements Command
 {
     public function __construct(

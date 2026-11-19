@@ -8,6 +8,7 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Agents\Models\AgentSession;
 use App\Profiles\Contracts\ProfileResolver;
@@ -23,7 +24,11 @@ use App\Profiles\Values\ProfileKey;
  */
 final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
 {
-    public function __construct(private CurrentActor $actors, private ProfileResolver $profiles) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private ProfileResolver $profiles,
+        private PolicyCatalogue $catalogue,
+    ) {}
 
     /**
      * @throws AgentProfileMissing
@@ -36,7 +41,7 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
             throw AgentProfileMissing::forAuthority($authority->description());
         }
 
-        return $authority->profile->authorization->authorizer();
+        return $authority->profile->authorization->authorizer($this->catalogue);
     }
 
     /**
@@ -56,6 +61,6 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
             throw ActorNotAllowed::withoutStoredAuthority('agent whose profile is no longer admitted');
         }
 
-        return $profile->authorization->authorizer();
+        return $profile->authorization->authorizer($this->catalogue);
     }
 }

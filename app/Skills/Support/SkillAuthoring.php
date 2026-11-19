@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Contracts\JournalAccessPolicy;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
+use App\Actors\Exceptions\ConsoleOwnerMissing;
+use App\Bus\Support\ConsoleOwner;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Data\SkillWriteReceipt;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\ShippedSkillReadOnly;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillMissing;
-use App\Skills\Exceptions\SkillPreviewRefused;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Values\SectionDraft;
@@ -34,18 +31,16 @@ use Illuminate\Support\Str;
 final readonly class SkillAuthoring
 {
     public function __construct(
-        private JournalAccessPolicy $access,
-        private CurrentActorSetter $actors,
+        private ConsoleOwner $console,
         private Container $container,
     ) {}
 
     /**
-     * @throws SkillPreviewRefused when no owner is configured
+     * @throws ConsoleOwnerMissing
      */
     public function actAsOwner(): void
     {
-        $owner = $this->access->allowedUserIds()[0] ?? throw SkillPreviewRefused::noOwner();
-        $this->actors->set(ActorContext::forUser($owner), new OwnerAuthority('skill authoring'));
+        $this->console->actAsOwner();
     }
 
     /**

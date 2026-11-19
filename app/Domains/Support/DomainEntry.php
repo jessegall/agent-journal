@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Support;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AssignableProvider;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Support\AssigneeRegistration;
@@ -417,6 +419,16 @@ final readonly class DomainEntry
     public function shareRecords(): array
     {
         return $this->domain instanceof ProvidesShareRecords ? $this->domain->shareRecords() : [];
+    }
+
+    /**
+     * The policies this domain registers; none without ProvidesPolicies.
+     *
+     * @return list<PolicyRegistration>
+     */
+    public function policies(): array
+    {
+        return $this->domain instanceof ProvidesPolicies ? $this->domain->policies() : [];
     }
 
     /**

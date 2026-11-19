@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sharing;
 
-use App\Actors\Support\ActorStore;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Http\Requests\Sharing\ReadShareRequest;
 use App\Http\Responses\Sharing\SharedPageResponses;
 use App\Sharing\Commands\ReadShare;
@@ -24,12 +24,13 @@ use Illuminate\Http\Response;
  */
 final readonly class ReadShareController
 {
-    public function __invoke(ReadShareRequest $request, ReadPermits $permits, ShareReadLimits $limits, ActorStore $actors, CommandBus $bus, SharedPageResponses $responses): Response
+    public function __invoke(ReadShareRequest $request, ReadPermits $permits, ShareReadLimits $limits, EntryDispatchers $dispatchers, SharedPageResponses $responses): Response
     {
         try {
             $permit = $this->issue($request, $permits, $limits);
             $limits->admitRead($permit->shareId);
-            $page = $actors->actAsSystem('share read', fn () => $bus->run(new ReadShare($permit->reference, $request->sharePath(), $request->cursor(), $request->wantsHeadOnly())));
+            $read = new ReadShare($permit->reference, $request->sharePath(), $request->cursor(), $request->wantsHeadOnly());
+            $page = $dispatchers->runAsJournal(CommandEntry::ShareGateway, 'share read', $read);
         } finally {
             $permits->clear();
         }

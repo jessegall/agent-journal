@@ -7,7 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Processes\Contracts\VerificationTiming;
@@ -49,7 +49,7 @@ final class PhaseTimingTest extends TestCase
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Started->value]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
         $plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->agent));
     }
@@ -81,7 +81,7 @@ final class PhaseTimingTest extends TestCase
     public function test_a_user_is_not_held(): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
 
         $this->assertTrue($this->app->make(VerificationTiming::class)->forCaller()->isAllowed());
     }
@@ -89,7 +89,7 @@ final class PhaseTimingTest extends TestCase
     private function timingForAgent(): TimingVerdict
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), new OwnerAuthority('test'));
 
         return $this->app->make(VerificationTiming::class)->forCaller();
     }

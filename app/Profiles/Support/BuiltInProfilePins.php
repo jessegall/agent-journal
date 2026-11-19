@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use App\Actors\Support\ActorStore;
 use App\Agents\Contracts\BuiltInLaunchProfiles;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Support\SelectedProgram;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\ProfileType;
@@ -22,8 +22,7 @@ final readonly class BuiltInProfilePins implements BuiltInLaunchProfiles
 {
     public function __construct(
         private ProfileResolver $profiles,
-        private CommandBus $commands,
-        private ActorStore $actors,
+        private EntryDispatchers $dispatchers,
     ) {}
 
     public function snapshotFor(ProfileType $type): ProfileSnapshot
@@ -31,7 +30,7 @@ final readonly class BuiltInProfilePins implements BuiltInLaunchProfiles
         $key = BuiltInProfiles::keyFor($type);
 
         if (! $this->profiles->has($key)) {
-            $this->actors->actAsSystem('built-in profiles', fn (): mixed => $this->commands->run(new InstallBuiltInProfiles()));
+            $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'built-in profiles', new InstallBuiltInProfiles());
         }
 
         return $this->profiles->snapshotFor($key);

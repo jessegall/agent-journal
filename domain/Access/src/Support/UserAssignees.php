@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Support;
 
+use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\Assignee;
@@ -24,7 +25,8 @@ final readonly class UserAssignees implements AssigneeProvider
 {
     public function __construct(
         private CurrentActor $actors,
-        private JournalAccessPolicy $access,
+        private JournalAdmission $admission,
+        private AdmittedRecipients $recipients,
     ) {}
 
     /**
@@ -36,7 +38,7 @@ final readonly class UserAssignees implements AssigneeProvider
         $user = User::query()->whereKey($recipient->id)->sharedLock()->first()
             ?? throw AssigneeUnavailable::forActor($recipient);
 
-        if (! $this->access->allows($user)) {
+        if (! $this->admission->admits($user)) {
             throw AssigneeUnavailable::forActor($recipient);
         }
 
@@ -60,7 +62,7 @@ final readonly class UserAssignees implements AssigneeProvider
     public function eligible(Page $page): AssigneeList
     {
         $this->actors->actor();
-        $ids = array_values(array_filter($this->access->allowedUserIds(), fn (string $id) => $page->afterId === null || $id > $page->afterId));
+        $ids = array_values(array_filter($this->recipients->userIds(), fn (string $id) => $page->afterId === null || $id > $page->afterId));
         sort($ids);
         $shownIds = array_slice($ids, 0, $page->limit);
 

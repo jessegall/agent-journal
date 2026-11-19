@@ -6,7 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
@@ -38,7 +38,7 @@ final class LibraryReadCostTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
         $bus = $this->app->make(CommandBus::class);
 
         foreach (range(1, 12) as $number) {

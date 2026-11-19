@@ -6,7 +6,7 @@ namespace Domain\Access\Http\Middleware;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Values\OwnerAuthority;
 use Closure;
 use Domain\Access\Exceptions\JournalAccessDenied;
@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class AuthenticateUser
 {
     public function __construct(
-        private JournalAccessPolicy $access,
+        private JournalAdmission $admission,
         private CurrentActorSetter $actors,
     ) {}
 
@@ -31,7 +31,7 @@ final readonly class AuthenticateUser
     {
         $user = $request->user();
 
-        if (! $user instanceof Actor || ! $this->access->allows($user)) {
+        if (! $user instanceof Actor || ! $this->admission->admits($user)) {
             throw JournalAccessDenied::forUser();
         }
 

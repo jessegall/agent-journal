@@ -6,7 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Numbers\Support\RecordReference;
 use App\Reads\Values\PageSize;
@@ -40,7 +40,7 @@ final class TextResolverTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
     }
 
     public function test_the_current_version_names_its_id_label_and_line_count(): void

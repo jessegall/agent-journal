@@ -6,7 +6,7 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Models\AgentStackRow;
@@ -42,7 +42,7 @@ final class PlanWorkingStateTest extends TestCase
     public function test_an_agent_starting_a_plan_gets_its_working_frame_once(): void
     {
         $plan = $this->plan();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), new OwnerAuthority('test'));
 
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
@@ -54,7 +54,7 @@ final class PlanWorkingStateTest extends TestCase
     public function test_a_user_starting_a_plan_changes_no_stack(): void
     {
         $plan = $this->plan();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
 
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
 

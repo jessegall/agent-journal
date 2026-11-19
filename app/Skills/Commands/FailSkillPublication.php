@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Skills\Handlers\FailSkillPublicationHandler;
 
 /**
@@ -16,7 +16,7 @@ use App\Skills\Handlers\FailSkillPublicationHandler;
  * @implements Command<null>
  */
 #[HandledBy(FailSkillPublicationHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::SkillPublisher)]
 final readonly class FailSkillPublication implements Command
 {
     public function __construct(

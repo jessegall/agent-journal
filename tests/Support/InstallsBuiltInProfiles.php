@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Actors\Support\ActorStore;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\InstallBuiltInProfiles as InstallCommand;
 
 /**
@@ -15,7 +16,7 @@ trait InstallsBuiltInProfiles
 {
     protected function setUpInstallsBuiltInProfiles(): void
     {
-        $commands = $this->app->make(CommandBus::class);
-        $this->app->make(ActorStore::class)->actAsSystem('test', fn (): mixed => $commands->run(new InstallCommand()));
+        $host = $this->app->make(EntryDispatchers::class)->for(CommandEntry::HostControl);
+        $this->app->make(ActorStore::class)->actAsSystem('test', fn (): mixed => $host->run(new InstallCommand()));
     }
 }

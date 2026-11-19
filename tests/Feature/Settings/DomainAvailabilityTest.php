@@ -6,7 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\DomainAvailability;
 use App\Domains\Exceptions\DomainNotFound;
@@ -47,7 +47,7 @@ final class DomainAvailabilityTest extends TestCase
 
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
     }
 
     public function test_switching_tasks_off_makes_plans_unavailable_while_its_own_switch_stays_on_and_back(): void
@@ -122,7 +122,7 @@ final class DomainAvailabilityTest extends TestCase
     private function availability(): SettingsDomainAvailability
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $availability = $this->app->make(DomainAvailability::class);
         $this->assertInstanceOf(SettingsDomainAvailability::class, $availability);
 

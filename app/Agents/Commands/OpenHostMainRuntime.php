@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Enums\DriverType;
 use App\Agents\Handlers\OpenHostMainRuntimeHandler;
 use App\Agents\Support\OpenedRuntime;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 
 /**
  * Opens an agent's main runtime as a terminal on the host the person attached from, for journal-agent attach. Run for
@@ -19,7 +19,7 @@ use App\Bus\Contracts\Command;
  * @implements Command<OpenedRuntime>
  */
 #[HandledBy(OpenHostMainRuntimeHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class OpenHostMainRuntime implements Command
 {
     public function __construct(

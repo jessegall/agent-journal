@@ -17,4 +17,9 @@ final readonly class TrustedEntryAuthority implements AuthoritySource
     {
         return "the trusted entry {$this->entry}";
     }
+
+    public function mayRunApplicationCommands(): bool
+    {
+        return false;
+    }
 }

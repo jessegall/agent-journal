@@ -6,7 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Reads\Contracts\ReadMeter;
 use App\Records\Exceptions\RecordUnavailable;
@@ -62,7 +62,7 @@ final class SharingTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new CreateDocument('Design', 'What we build', self::BODY));
         $bus->run(new CreateReport('Check', 'What we found', "# Found\nAll good.\n"));

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Handlers\ReportDriverTurnHandler;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 
 /**
  * Records a native turn a host saw start or finish, by the program's own prompt id, with its settings. Run for an authenticated host by the journal itself (internal, not exported).
@@ -16,7 +16,7 @@ use App\Bus\Contracts\Command;
  * @implements Command<null>
  */
 #[HandledBy(ReportDriverTurnHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class ReportDriverTurn implements Command
 {
     public function __construct(

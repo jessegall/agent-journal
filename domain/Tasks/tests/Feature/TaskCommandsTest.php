@@ -6,7 +6,7 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
@@ -46,7 +46,7 @@ final class TaskCommandsTest extends TestCase
         parent::setUp();
 
         Event::fake([TaskFinished::class, TaskBlocked::class, TaskCancelled::class]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
     }
 
     public function test_finish_block_and_cancel_each_announce_their_change_once(): void

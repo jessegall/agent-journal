@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
@@ -28,10 +30,12 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         private CurrentActor $actors,
         private PolicyResolver $resolver,
         private ProfileResolver $profiles,
+        private PolicyCatalogue $catalogue,
     ) {}
 
     /**
      * @throws ProfilePolicyRefused
+     * @throws AbilityNotRegistered
      */
     public function handle(ActivateProfiles $command): ProfileActivation
     {
@@ -47,6 +51,10 @@ final readonly class ActivateProfilesHandler implements CommandHandler
             fn (ProposedProfile $profile) => $this->resolver->resolve($proposal, $profile, $hash),
             $proposal->profiles,
         );
+        foreach ($definitions as $definition) {
+            $definition->authorization->requireGrantableIn($this->catalogue);
+        }
+
         $changes = array_map($this->changeOf(...), $definitions);
         $author = ActorIdentity::of($this->actors->actor());
 

@@ -6,7 +6,7 @@ namespace Tests\Feature\Links;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
@@ -167,12 +167,12 @@ final class RecordLinksTest extends TestCase
 
     private function actAsUser(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
     }
 
     private function actAsAgent(int $agent): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), new OwnerAuthority('test'));
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), 'hooks.main_ready', new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Agents\Enums\AgentRole;
@@ -12,12 +12,12 @@ use App\Agents\Models\Agent;
 use Domain\Access\Database\Factories\UserFactory;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Access\Support\JournalAccess;
+use Domain\Access\Support\OwnerAdmission;
 use Domain\Access\Tests\TestCase;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\RefreshHookDatabase;
 
-final class JournalAccessTest extends TestCase
+final class JournalAdmissionTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -62,13 +62,13 @@ final class JournalAccessTest extends TestCase
         $owner = User::factory()->create();
         $agent = Agent::named('Planner', AgentRole::MainAgent);
         $this->configureOwner($owner->id);
-        $policy = $this->app->make(JournalAccessPolicy::class);
+        $admission = $this->app->make(JournalAdmission::class);
 
-        $this->assertInstanceOf(JournalAccess::class, $policy);
+        $this->assertInstanceOf(OwnerAdmission::class, $admission);
         $this->assertSame([ActorType::User, $owner->id], [$owner->actorType(), $owner->actorId()]);
         $this->assertSame(ActorType::Agent, $agent->actorType());
-        $this->assertTrue($policy->allows($owner));
-        $this->assertFalse($policy->allows($agent));
+        $this->assertTrue($admission->admits($owner));
+        $this->assertFalse($admission->admits($agent));
     }
 
     private function configureOwner(string|null $ownerId): void

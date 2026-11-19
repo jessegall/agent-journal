@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Sharing\Handlers\ClaimGatewayOperationHandler;
 use App\Sharing\Support\ClaimedGatewayOperation;
 
@@ -18,7 +18,7 @@ use App\Sharing\Support\ClaimedGatewayOperation;
  * @implements Command<ClaimedGatewayOperation|null>
  */
 #[HandledBy(ClaimGatewayOperationHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::ShareGateway)]
 final readonly class ClaimGatewayOperation implements Command
 {
     public function __construct(

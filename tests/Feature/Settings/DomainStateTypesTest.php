@@ -6,7 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainStateType;
 use App\Domains\Support\DomainTickableStateType;
@@ -63,7 +63,7 @@ final class DomainStateTypesTest extends TestCase
     {
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
         $working = $this->app->make(StateTypes::class)->registry()->get('tasks.working');
         $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertTrue($working->isEnabled());

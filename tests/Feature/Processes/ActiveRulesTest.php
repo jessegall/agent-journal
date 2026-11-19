@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainEntry;
 use App\Processes\Commands\ApproveRuleBundle;
@@ -142,7 +142,7 @@ final class ActiveRulesTest extends TestCase
     private function asUser(object $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

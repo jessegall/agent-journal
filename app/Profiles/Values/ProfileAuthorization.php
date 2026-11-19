@@ -6,6 +6,8 @@ namespace App\Profiles\Values;
 
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\Policy;
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Profiles\Enums\AuthorizationType;
 use BackedEnum;
@@ -34,11 +36,23 @@ final readonly class ProfileAuthorization
     }
 
     /**
+     * Refuses a grant that names an ability no available policy grants.
+     *
+     * @throws AbilityNotRegistered
+     */
+    public function requireGrantableIn(PolicyCatalogue $catalogue): void
+    {
+        foreach ($this->grants as $grant) {
+            $catalogue->requireGrantable($grant->policy, $grant->ability);
+        }
+    }
+
+    /**
      * The authorizer this profile's strategy gives it.
      */
-    public function authorizer(): Authorizer
+    public function authorizer(PolicyCatalogue $catalogue): Authorizer
     {
-        return $this->type->authorizerFor($this);
+        return $this->type->authorizerFor($this, $catalogue);
     }
 
     /**

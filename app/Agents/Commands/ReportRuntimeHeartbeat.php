@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Handlers\ReportRuntimeHeartbeatHandler;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 
 /**
  * Records a host's liveness evidence for a runtime as its session's heartbeat. Run for an authenticated host by the journal itself (internal, not exported).
@@ -16,7 +16,7 @@ use App\Bus\Contracts\Command;
  * @implements Command<void>
  */
 #[HandledBy(ReportRuntimeHeartbeatHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class ReportRuntimeHeartbeat implements Command
 {
     public function __construct(

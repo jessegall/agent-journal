@@ -26,6 +26,14 @@ final class CommandNesting
         $this->depth++;
     }
 
+    /**
+     * Whether the command running now was dispatched from another command's handler.
+     */
+    public function isNested(): bool
+    {
+        return $this->depth > 1;
+    }
+
     public function leave(): void
     {
         $this->depth--;

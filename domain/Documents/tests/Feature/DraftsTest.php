@@ -6,7 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Text\Exceptions\SectionMissing;
 use App\Text\Exceptions\TextMatchInvalid;
@@ -158,7 +158,7 @@ final class DraftsTest extends TestCase
 
     private function actAsUser(int $user): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new OwnerAuthority('test'));
     }
 
     private function documents(): DocumentResolver

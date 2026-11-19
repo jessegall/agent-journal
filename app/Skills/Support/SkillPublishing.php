@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Actors\Support\ActorStore;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Skills\Commands\ActivateSkillPublication;
 use App\Skills\Commands\FailSkillPublication;
 use App\Skills\Commands\PrepareSkillPublication;
@@ -31,8 +31,7 @@ final readonly class SkillPublishing
     private const int MOST_PUBLICATIONS = 100;
 
     public function __construct(
-        private CommandBus $commands,
-        private ActorStore $actors,
+        private EntryDispatchers $dispatchers,
     ) {}
 
     /**
@@ -107,6 +106,6 @@ final readonly class SkillPublishing
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->actors->actAsSystem('skill publishing', fn () => $this->commands->run($command));
+        return $this->dispatchers->runAsJournal(CommandEntry::SkillPublisher, 'skill publishing', $command);
     }
 }

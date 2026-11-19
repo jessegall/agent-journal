@@ -25,6 +25,7 @@ final readonly class MiddlewareRunner
         private CommandRegistry $registry,
         private CurrentActor $actors,
         private CommandNesting $nesting,
+        private CommandSubjects $subjects,
     ) {}
 
     /**
@@ -48,7 +49,7 @@ final readonly class MiddlewareRunner
                 $inside,
             ];
 
-            return $this->through($steps, $call, fn (CommandCall $current) => $next($current->command()));
+            return $this->through($steps, $call, fn (CommandCall $current) => $this->subjects->handOver($current, $next));
         } finally {
             $this->nesting->leave();
         }

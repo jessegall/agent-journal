@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Engine\Commands;
 
-use App\Bus\Attributes\AllowsEngine;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Engine\Handlers\MarkSilentSessionsHandler;
 
 /**
@@ -15,7 +16,7 @@ use App\Engine\Handlers\MarkSilentSessionsHandler;
  * @implements Command<null>
  */
 #[HandledBy(MarkSilentSessionsHandler::class)]
-#[AllowsEngine]
+#[Entry(CommandEntry::EngineMaintenance)]
 final readonly class MarkSilentSessions implements Command
 {
     /**

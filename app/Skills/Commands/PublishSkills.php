@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Skills\Handlers\PublishSkillsHandler;
 use App\Skills\Values\PublicationClaim;
 
@@ -18,7 +18,7 @@ use App\Skills\Values\PublicationClaim;
  * @implements Command<PublicationClaim>
  */
 #[HandledBy(PublishSkillsHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::SkillPublisher)]
 final readonly class PublishSkills implements Command
 {
     public function __construct(

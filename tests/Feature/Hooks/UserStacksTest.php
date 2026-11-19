@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
@@ -118,7 +118,7 @@ final class UserStacksTest extends TestCase
 
     private function actAs(ActorContext $actor): void
     {
-        $this->app->make(CurrentActorSetter::class)->set($actor, new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
     private function launch(): LaunchedAgent

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Handlers\RecordGatewayOutcomeHandler;
 use App\Sharing\Support\GatewayOperation;
@@ -19,7 +19,7 @@ use App\Sharing\Support\GatewayOperation;
  * @implements Command<null>
  */
 #[HandledBy(RecordGatewayOutcomeHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::ShareGateway)]
 final readonly class RecordGatewayOutcome implements Command
 {
     public function __construct(

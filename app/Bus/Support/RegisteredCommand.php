@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Actors\Enums\ActorType;
+use App\Bus\Enums\CommandEntry;
 
 /**
  * One registered command as the bus runs it: its handler, owner, whether it is exported, its isolation, the actor
@@ -14,6 +15,7 @@ use App\Actors\Enums\ActorType;
 final readonly class RegisteredCommand
 {
     /**
+     * @param  CommandAuthorization|null  $authorization  null while the command declares no Authorize yet
      * @param  class-string  $handler
      * @param  list<RegisteredMiddleware>  $middleware
      */
@@ -23,9 +25,10 @@ final readonly class RegisteredCommand
         public bool $exported,
         public bool $repeatableRead,
         public ActorType|null $actor,
-        public bool $allowsEngine,
         public bool $requiresRequestKey,
         public ReceiptRetention $retention,
         public array $middleware,
+        public CommandAuthorization|null $authorization = null,
+        public CommandEntry $entry = CommandEntry::Application,
     ) {}
 }

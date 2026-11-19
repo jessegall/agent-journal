@@ -32,4 +32,11 @@ interface ActorProviderRegistration
      * @throws ActorProviderRepeated
      */
     public function registerVisibility(ActorType $type, string $providerClass): void;
+
+    /**
+     * @param  class-string<WorkStackProvider>  $providerClass
+     *
+     * @throws ActorProviderRepeated
+     */
+    public function registerWorkStack(ActorType $type, string $providerClass): void;
 }

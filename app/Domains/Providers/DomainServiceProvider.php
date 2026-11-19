@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Providers;
 
+use App\Actors\Contracts\PolicyCatalogue;
 use App\Bus\Support\CommandRegistry;
 use App\Contracts\DomainAvailability;
 use App\CoreApi;
@@ -57,17 +58,24 @@ class DomainServiceProvider extends ServiceProvider
     }
 
     /**
-     * Asking for the command and settings registries and the MCP catalogue here makes a declaration the application
-     * cannot start with fail the boot.
+     * Policies are registered first, since command declarations are checked against them; asking for the command and
+     * settings registries and the MCP catalogue here makes a declaration the application cannot start with fail the
+     * boot.
      */
     public function boot(
         DomainRegistry $registry,
-        CommandRegistry $commands,
-        SettingRegistry $settings,
-        McpCatalogue $mcp,
+        PolicyCatalogue $policies,
         ShareRecordRegistry $shareRecords,
         ShareGatewayRegistry $shareGateways,
     ): void {
+        foreach ($registry->all() as $entry) {
+            foreach ($entry->policies() as $policy) {
+                $policies->register($entry->name, $policy);
+            }
+        }
+        $this->app->make(CommandRegistry::class);
+        $this->app->make(SettingRegistry::class);
+        $this->app->make(McpCatalogue::class);
         foreach ($registry->all() as $entry) {
             foreach ($entry->shareRecords() as $registration) {
                 $shareRecords->register($registration);

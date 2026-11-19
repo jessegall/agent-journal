@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Actors\Contracts\Policy;
 use App\Actors\Enums\ActorType;
-use App\Bus\Attributes\AllowsEngine;
+use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
+use App\Bus\Exceptions\CommandAuthorizationInvalid;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandHandlerTwice;
@@ -84,10 +90,11 @@ final readonly class CommandRegistry
                 exported: $owner->exportsCommand($command),
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
                 actor: self::requiredActorOf($reflection),
-                allowsEngine: $reflection->getAttributes(AllowsEngine::class) !== [],
                 requiresRequestKey: $reflection->getAttributes(RequiresRequestKey::class) !== [],
                 retention: self::declaredRetentionOf($reflection),
                 middleware: self::orderedFor($command, $owner, $middleware, $owners),
+                authorization: self::authorizationDeclaredBy($reflection),
+                entry: self::entryDeclaredBy($reflection),
             );
         }
 
@@ -135,6 +142,22 @@ final readonly class CommandRegistry
         return $this->entry($command)->handler;
     }
 
+    /**
+     * The policy and ability the command declared; null while it declares no Authorize yet.
+     */
+    public function authorizationOf(string $command): CommandAuthorization|null
+    {
+        return $this->entry($command)->authorization;
+    }
+
+    /**
+     * The entry the command belongs to; an application command unless it declares a trusted one.
+     */
+    public function entryOf(string $command): CommandEntry
+    {
+        return $this->entry($command)->entry;
+    }
+
     public function ownerOf(string $command): string
     {
         return $this->entry($command)->owner;
@@ -153,11 +176,6 @@ final readonly class CommandRegistry
     public function requiredActor(string $command): ActorType|null
     {
         return $this->entry($command)->actor;
-    }
-
-    public function allowsEngine(string $command): bool
-    {
-        return $this->entry($command)->allowsEngine;
     }
 
     public function requiresRequestKey(string $command): bool
@@ -235,17 +253,21 @@ final readonly class CommandRegistry
             throw CommandDeclarationInvalid::for($command, 'queueing a command is not supported yet; take ShouldQueue off');
         }
 
-        foreach ([RepeatableRead::class, RequiresActor::class, AllowsEngine::class, RequiresRequestKey::class] as $attribute) {
+        $attributes = [
+            RepeatableRead::class,
+            RequiresActor::class,
+            RequiresRequestKey::class,
+            Authorize::class,
+            Entry::class,
+        ];
+
+        foreach ($attributes as $attribute) {
             if (count($reflection->getAttributes($attribute)) > 1) {
                 throw CommandDeclarationInvalid::for($command, 'it repeats '.class_basename($attribute));
             }
         }
 
         $requiredActor = self::requiredActorOf($reflection);
-
-        if ($reflection->getAttributes(AllowsEngine::class) !== [] && $requiredActor !== null && $requiredActor !== ActorType::Engine) {
-            throw CommandDeclarationInvalid::engineWithOtherActor($command, $requiredActor->value);
-        }
 
         $problem = self::grammarFor($owner, $owners)->problemWithProperties($command);
 
@@ -268,6 +290,7 @@ final readonly class CommandRegistry
 
     /**
      * @param  list<CommandOwner>  $owners
+     * @param  class-string  $command
      */
     private static function checkHandler(CommandOwner $owner, array $owners, string $command, string $handler): void
     {
@@ -292,8 +315,14 @@ final readonly class CommandRegistry
             throw CommandDeclarationInvalid::for($handler, 'it needs a public, non-static handle method');
         }
 
-        if (! self::takesOnly($handle, $command)) {
+        $authorization = self::authorizationDeclaredBy(new ReflectionClass($command));
+
+        if ($authorization === null && ! self::takesOnly($handle, $command)) {
             throw CommandDeclarationInvalid::for($handler, "handle takes exactly one required parameter, typed {$command}");
+        }
+
+        if ($authorization !== null) {
+            self::checkAuthorization($command, $authorization, $handler, $handle);
         }
 
         $problem = self::grammarFor($owner, $owners)->problemWithResult($handle->getReturnType());
@@ -301,6 +330,115 @@ final readonly class CommandRegistry
         if ($problem !== null) {
             throw CommandDeclarationInvalid::for($handler, "its result {$problem}");
         }
+    }
+
+    /**
+     * The trusted entry the command declares; a command without Entry is an application command.
+     *
+     * @param  ReflectionClass<object>  $command
+     */
+    private static function entryDeclaredBy(ReflectionClass $command): CommandEntry
+    {
+        foreach ($command->getAttributes(Entry::class) as $declared) {
+            return $declared->newInstance()->entry;
+        }
+
+        return CommandEntry::Application;
+    }
+
+    /**
+     * @param  ReflectionClass<object>  $command
+     */
+    private static function authorizationDeclaredBy(ReflectionClass $command): CommandAuthorization|null
+    {
+        $declared = $command->getAttributes(Authorize::class)[0] ?? null;
+
+        if ($declared === null) {
+            return null;
+        }
+
+        $authorize = $declared->newInstance();
+
+        return new CommandAuthorization($authorize->policy, $authorize->ability);
+    }
+
+    /**
+     * The command, its policy, its subject and its handler must fit together: the subject's type is what the policy's
+     * authorize takes, the ability is a case of its enum, a class subject pairs only with a class-level ability, and
+     * the handler takes the command and the subject.
+     *
+     * @param  class-string  $command
+     * @param  class-string  $handler
+     *
+     * @throws CommandAuthorizationInvalid
+     */
+    private static function checkAuthorization(
+        string $command,
+        CommandAuthorization $authorization,
+        string $handler,
+        ReflectionMethod $handle,
+    ): void {
+        if (! is_subclass_of($command, HasAuthorizationSubject::class)) {
+            throw CommandAuthorizationInvalid::subjectMissing($command);
+        }
+
+        $policy = $authorization->policy;
+        $authorize = is_subclass_of($policy, Policy::class) && method_exists($policy, 'authorize')
+            ? new ReflectionMethod($policy, 'authorize')
+            : null;
+        $parameters = $authorize?->getParameters() ?? [];
+
+        if ($authorize === null || ! $authorize->isPublic() || count($parameters) !== 3) {
+            throw CommandAuthorizationInvalid::policyInvalid($command, $policy);
+        }
+
+        $subject = (string) new ReflectionMethod($command, 'subject')->getReturnType();
+        $accepted = (string) $parameters[1]->getType();
+
+        if (! self::typeFits($subject, $accepted)) {
+            throw CommandAuthorizationInvalid::subjectMismatched($command, $subject, $accepted);
+        }
+
+        $abilityType = (string) $parameters[2]->getType();
+        $ability = $authorization->ability;
+
+        if (! $ability instanceof $abilityType) {
+            throw CommandAuthorizationInvalid::abilityMismatched($command, $ability::class, $abilityType);
+        }
+
+        $classLevel = $ability instanceof DeclaresClassLevelAbilities && $ability->isClassLevel();
+
+        if ($subject === 'string' && ! $classLevel) {
+            throw CommandAuthorizationInvalid::classSubjectOnInstanceAbility($command, $ability::class);
+        }
+
+        $second = $handle->getParameters()[1] ?? null;
+        $takesBoth = $handle->getNumberOfRequiredParameters() === 2 && self::takesFirst($handle, $command);
+
+        if (! $takesBoth || $second === null || ! self::typeFits($subject, (string) $second->getType())) {
+            throw CommandAuthorizationInvalid::handlerShape($command, $handler, $subject);
+        }
+    }
+
+    /**
+     * Whether a value of the given type is accepted by a parameter of the other, a union or a parent included.
+     */
+    private static function typeFits(string $given, string $accepted): bool
+    {
+        foreach (explode('|', $accepted) as $type) {
+            if ($type === $given || (class_exists($given) && is_a($given, $type, true))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function takesFirst(ReflectionMethod $handle, string $command): bool
+    {
+        $type = ($handle->getParameters()[0] ?? null)?->getType();
+
+        return $type instanceof ReflectionNamedType && $type->getName() === $command;
     }
 
     private static function takesOnly(ReflectionMethod $handle, string $command): bool

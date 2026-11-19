@@ -4,13 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Support\SystemActor;
-use App\Actors\Values\TrustedEntryAuthority;
-use App\Bus\Contracts\CommandBus;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\PruneShareAudit;
 use App\Sharing\Enums\ShareAuditType;
@@ -22,6 +17,7 @@ use App\Sharing\Support\AuditPruning;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -34,6 +30,7 @@ use Tests\TestCase;
 final class PruneShareAuditTest extends TestCase
 {
     use RefreshHookDatabase;
+    use RunsTrustedCommands;
 
     public function test_rows_past_retention_go_counted_on_their_share_and_a_second_run_writes_nothing(): void
     {
@@ -73,9 +70,8 @@ final class PruneShareAuditTest extends TestCase
     private function prune(): AuditPruning
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
-        return $this->app->make(CommandBus::class)->run(new PruneShareAudit());
+        return $this->throughEntry(new PruneShareAudit());
     }
 
     /**

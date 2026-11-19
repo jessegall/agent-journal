@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\SessionResolver;
@@ -101,7 +101,7 @@ final class AgentResolversTest extends TestCase
         $this->assertSame(['Builder', 'Reviewer'], [$labels[$this->builder->id]->name, $labels[$this->reviewer->id]->name]);
         $this->assertArrayNotHasKey(TestIds::of(999999), $labels);
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->reviewer->id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->reviewer->id), new OwnerAuthority('test'));
         $this->assertSame([$this->reviewer->id], array_keys($this->app->make(AgentResolver::class)->labelsFor([$this->builder->id, $this->reviewer->id])));
     }
 
@@ -114,7 +114,7 @@ final class AgentResolversTest extends TestCase
 
     private function actAs(ActorContext $actor): void
     {
-        $this->app->make(CurrentActorSetter::class)->set($actor, new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
     private function sessions(): SessionResolver

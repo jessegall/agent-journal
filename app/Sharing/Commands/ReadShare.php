@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Sharing\Handlers\ReadShareHandler;
 use App\Sharing\Support\SharedPage;
 
@@ -19,7 +19,7 @@ use App\Sharing\Support\SharedPage;
  * @implements Command<SharedPage>
  */
 #[HandledBy(ReadShareHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::ShareGateway)]
 #[RepeatableRead]
 final readonly class ReadShare implements Command
 {

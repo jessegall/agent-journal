@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Handlers\ReportRequestProgressHandler;
 use App\Agents\Values\ScriptProgress;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 
 /**
  * Records how a host carried out a request in one attempt: its progress, actual binding and outcome. Run for an authenticated host by the journal itself (internal, not exported).
@@ -19,7 +19,7 @@ use App\Bus\Contracts\Command;
  * @implements Command<null>
  */
 #[HandledBy(ReportRequestProgressHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::HostControl)]
 final readonly class ReportRequestProgress implements Command
 {
     public function __construct(

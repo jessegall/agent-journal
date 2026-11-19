@@ -112,7 +112,10 @@ final class CommandReceipt extends Model implements ReadableModel
         $taken = self::lockedFor($caller, $command::class, $requestKey);
 
         if ($taken !== null) {
-            $taken->fill($refusal)->save();
+            // A refusal now, such as revoked rights on a replay, never replaces the result the key already has.
+            if ($taken->state !== ReceiptState::Completed) {
+                $taken->fill($refusal)->save();
+            }
 
             return;
         }

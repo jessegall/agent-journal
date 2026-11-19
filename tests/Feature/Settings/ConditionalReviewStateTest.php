@@ -6,7 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
@@ -70,7 +70,7 @@ final class ConditionalReviewStateTest extends TestCase
 
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
         $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target, ReadyStateType::MainAgent));

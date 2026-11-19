@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Skills\Listeners;
 
-use App\Actors\Support\ActorStore;
-use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
 use App\Contracts\Listener;
 use App\Skills\Commands\RefreshSkills;
 use App\Skills\Events\SkillsChanged;
@@ -17,12 +17,11 @@ use App\Skills\Events\SkillsChanged;
 final readonly class RefreshOnSkillsChanged implements Listener
 {
     public function __construct(
-        private ActorStore $actors,
-        private CommandBus $commands,
+        private EntryDispatchers $dispatchers,
     ) {}
 
     public function handle(SkillsChanged $event): void
     {
-        $this->actors->actAsSystem('skill refresh', fn () => $this->commands->run(new RefreshSkills()));
+        $this->dispatchers->runAsJournal(CommandEntry::SkillPublisher, 'skill refresh', new RefreshSkills());
     }
 }

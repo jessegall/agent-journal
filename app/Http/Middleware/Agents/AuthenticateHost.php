@@ -10,6 +10,8 @@ use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Agents\Models\Host;
 use App\Agents\Support\HostContext;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\CommandEntrance;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Cache\Repository;
@@ -31,6 +33,7 @@ final readonly class AuthenticateHost
         private Container $container,
         private Repository $cache,
         private ActorStore $actors,
+        private CommandEntrance $entrance,
     ) {}
 
     /**
@@ -47,7 +50,12 @@ final readonly class AuthenticateHost
         $this->container->instance(HostContext::class, $context);
 
         try {
-            return $this->actors->actAsSystem('host request', fn (): Response => $next($request));
+            $handle = fn (): Response => $next($request);
+
+            return $this->entrance->through(
+                CommandEntry::HostControl,
+                fn (): Response => $this->actors->actAsSystem('host request', $handle),
+            );
         } finally {
             $this->container->forgetInstance(HostContext::class);
         }

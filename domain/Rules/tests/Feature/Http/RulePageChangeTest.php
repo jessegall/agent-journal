@@ -6,7 +6,7 @@ namespace Domain\Rules\Tests\Feature\Http;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Web\Events\PageChanged;
 use App\Web\Support\UserChannel;
@@ -40,7 +40,7 @@ final class RulePageChangeTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
         Event::fake([PageChanged::class]);
     }
 

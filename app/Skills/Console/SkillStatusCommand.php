@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Console;
 
-use App\Skills\Exceptions\SkillPreviewRefused;
+use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\SkillAuthoring;
@@ -31,7 +31,7 @@ final class SkillStatusCommand extends Command
     {
         try {
             $authoring->actAsOwner();
-        } catch (SkillPreviewRefused $refusal) {
+        } catch (ConsoleOwnerMissing $refusal) {
             $this->error($refusal->getMessage());
 
             return self::FAILURE;

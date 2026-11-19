@@ -8,6 +8,8 @@ use App\Actors\Contracts\ActiveActors;
 use App\Actors\Contracts\ServerClock;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\CommandEntrance;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EnginePass;
@@ -119,7 +121,8 @@ final class DueWorkOnTickTest extends TestCase
 
         $this->app->make(EnginePass::class)->run(function () use ($target, $question): void {
             $this->app->make(EngineAccess::class)->grantFrame($target, $question->id);
-            $this->app->make(CommandBus::class)->run(new SendQuestionReminder($target, $question->id));
+            $remind = fn (): mixed => $this->app->make(CommandBus::class)->run(new SendQuestionReminder($target, $question->id));
+            $this->app->make(CommandEntrance::class)->through(CommandEntry::Application, $remind);
         });
 
         $this->assertNull($question->refresh()->reminded_at);

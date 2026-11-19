@@ -6,7 +6,7 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use Database\Seeders\DatabaseSeeder;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
@@ -57,7 +57,7 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_tasks_count_progress_by_id_including_none(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $done = $this->task('Done');
         $done->finish();
         $started = $this->task('Started');

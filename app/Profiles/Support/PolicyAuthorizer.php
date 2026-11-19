@@ -7,6 +7,8 @@ namespace App\Profiles\Support;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\Policy;
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Profiles\Values\ProfileAuthorization;
 use BackedEnum;
@@ -17,15 +19,17 @@ use BackedEnum;
  */
 final readonly class PolicyAuthorizer implements Authorizer
 {
-    public function __construct(private ProfileAuthorization $grants) {}
+    public function __construct(private ProfileAuthorization $grants, private PolicyCatalogue $catalogue) {}
 
     /**
      * @param  object|class-string  $subject
      *
      * @throws ActorNotAllowed
+     * @throws AbilityNotRegistered
      */
     public function authorize(Policy $policy, Actor $actor, object|string $subject, BackedEnum $ability): void
     {
+        $this->catalogue->requireGrantable($policy::class, $ability);
         $this->grants->requireGranted($policy::class, $ability);
         $decide = [$policy, 'authorize'];
 

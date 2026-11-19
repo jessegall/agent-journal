@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
@@ -45,7 +45,7 @@ final class SkillPreviewTest extends TestCase
         parent::setUp();
 
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileType::ReadOnlyHelper, 'Review.'),
         )));

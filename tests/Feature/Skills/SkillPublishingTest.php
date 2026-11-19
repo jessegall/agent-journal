@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Support\ActorStore;
 use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\PrepareSkillPublication;
 use App\Skills\Commands\PublishSkills;
 use App\Skills\Contracts\SkillPublisher;
@@ -21,6 +19,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -31,6 +30,7 @@ use Tests\TestCase;
 final class SkillPublishingTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsTrustedCommands;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
 
@@ -130,6 +130,8 @@ final class SkillPublishingTest extends TestCase
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run($command));
+        $this->app->forgetScopedInstances();
+
+        return $this->throughEntry($command);
     }
 }

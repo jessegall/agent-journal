@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Agents\Support\StackTarget;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\CommandEntrance;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EnginePass;
 use App\Hooks\Support\StackTransaction;
@@ -16,13 +18,17 @@ use Closure;
 trait RunsAsEngine
 {
     /**
+     * Runs the work as a tick's own work: in an engine pass, with the frame granted and the application's entrance
+     * opened for its commands.
+     *
      * @param  Closure(): void  $work
      */
     private function asEngineFor(StackTarget $target, Closure $work): void
     {
         $this->app->make(EnginePass::class)->run(function () use ($target, $work): void {
             $this->app->make(EngineAccess::class)->grantFrame($target, 'frame-of-the-tick');
-            $this->app->make(StackTransaction::class)->run($work);
+            $tickWork = fn (): mixed => $this->app->make(StackTransaction::class)->run($work);
+            $this->app->make(CommandEntrance::class)->through(CommandEntry::Application, $tickWork);
         });
     }
 }

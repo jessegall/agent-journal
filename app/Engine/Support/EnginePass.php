@@ -6,6 +6,8 @@ namespace App\Engine\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Values\TrustedEntryAuthority;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\CommandEntrance;
 use App\Bus\Support\OperationDeadline;
 use App\Engine\Contracts\MonotonicClock;
 use App\Reads\Support\ReadLog;
@@ -48,7 +50,7 @@ final readonly class EnginePass
             $authority = new TrustedEntryAuthority('engine pass');
             $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), $authority);
 
-            return $work();
+            return $this->app->make(CommandEntrance::class)->through(CommandEntry::EngineMaintenance, $work(...));
         } finally {
             $this->app->make(CurrentActorSetter::class)->clear();
             $this->app->make(EngineAccess::class)->clear();

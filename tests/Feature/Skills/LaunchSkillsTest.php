@@ -6,8 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorStore;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
@@ -38,6 +37,7 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
+use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
 
 /**
@@ -49,6 +49,7 @@ final class LaunchSkillsTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
+    use RunsTrustedCommands;
 
     private const array TABLES = [
         'skill_publications',
@@ -166,7 +167,7 @@ final class LaunchSkillsTest extends TestCase
      */
     private function activateReviewer(array $requiredSkills): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',
@@ -184,7 +185,7 @@ final class LaunchSkillsTest extends TestCase
     {
         $host = $this->asSystem(new EnrollHost('test host', [self::FOLDER]));
         $agent = Agent::named('Codex agent', AgentRole::MainAgent);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,
             $host->hostId,
@@ -229,6 +230,8 @@ final class LaunchSkillsTest extends TestCase
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run($command));
+        $this->app->forgetScopedInstances();
+
+        return $this->throughEntry($command);
     }
 }

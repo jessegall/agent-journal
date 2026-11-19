@@ -14,4 +14,10 @@ interface AuthoritySource
      * The source in words, for a refusal or a log line.
      */
     public function description(): string;
+
+    /**
+     * Whether an actor under this authority may run the application's own commands at the top level; a trusted entry
+     * of the journal runs only its own entry's commands.
+     */
+    public function mayRunApplicationCommands(): bool;
 }

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -25,7 +25,7 @@ final class TaskReadsTest extends TestCase
 
     public function test_every_named_task_must_exist_or_the_whole_check_fails(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new OwnerAuthority('test'));
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Test the walk']);
 
@@ -37,7 +37,7 @@ final class TaskReadsTest extends TestCase
 
     public function test_progress_counts_finished_tasks_and_leaves_out_missing_ids(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $done = Task::factory()->create(['title' => 'Write the walk']);
         $done->finish();
         $open = Task::factory()->create(['title' => 'Test the walk']);

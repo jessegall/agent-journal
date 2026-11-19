@@ -6,8 +6,9 @@ namespace Domain\Access\Providers;
 
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActorProviderRegistration;
+use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
 use App\Web\Contracts\CurrentUserResolver;
 use Domain\Access\Actions\CreateNewUser;
@@ -16,7 +17,8 @@ use Domain\Access\Models\Passkey;
 use Domain\Access\Models\User;
 use Domain\Access\Resolvers\CurrentUserRecords;
 use Domain\Access\Support\AccessSettings;
-use Domain\Access\Support\JournalAccess;
+use Domain\Access\Support\AdmittedUsers;
+use Domain\Access\Support\OwnerAdmission;
 use Domain\Access\Support\OwnerAuthorizerProvider;
 use Domain\Access\Support\PresentUserCounter;
 use Domain\Access\Support\UserActors;
@@ -40,7 +42,8 @@ class AccessServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(CurrentUserResolver::class, CurrentUserRecords::class);
-        $this->app->bind(JournalAccessPolicy::class, JournalAccess::class);
+        $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
+        $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => new ReflectionClass(AccessSettings::class)->newLazyGhost(function (AccessSettings $settings): void {
             $ownerEmail = $this->app->make('config')->get('access.owner_email');

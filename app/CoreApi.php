@@ -14,6 +14,7 @@ use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\ActorVisibilityProvider;
+use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\AuthoritySource;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\AuthorizerProvider;
@@ -21,13 +22,17 @@ use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Contracts\Policy;
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\ProvidesPolicies;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
+use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Enums\ActorType;
+use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\ActorNotAllowed;
@@ -35,9 +40,11 @@ use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Exceptions\AuthorizerProviderRepeated;
+use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\EngineActorRequired;
 use App\Actors\Exceptions\InvalidActorText;
+use App\Actors\Exceptions\PolicyRegistrationConflict;
 use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Models\Support\BelongsToOneActor;
@@ -47,6 +54,7 @@ use App\Actors\Support\ActorLabelSet;
 use App\Actors\Support\AllowsEverything;
 use App\Actors\Support\CurrentUser;
 use App\Actors\Values\OwnerAuthority;
+use App\Actors\Values\PolicyRegistration;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Console\Concerns\SendsSignedWrites;
@@ -244,7 +252,7 @@ use App\Assignments\Support\PoolDescription;
 use App\Assignments\Support\PoolMembers;
 use App\Assignments\Support\PoolReference;
 use App\Assignments\Support\RecordIds;
-use App\Bus\Attributes\AllowsEngine;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
@@ -253,6 +261,8 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Contracts\DeclaresClassLevelAbilities;
+use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
@@ -900,6 +910,11 @@ final class CoreApi
                 ActorProviderRegistration::class,
                 ActorLabels::class,
                 Policy::class,
+                PolicyCatalogue::class,
+                ProvidesPolicies::class,
+                WorkStackProvider::class,
+                HasAuthorizationSubject::class,
+                DeclaresClassLevelAbilities::class,
                 Authorizer::class,
                 AuthorizerProvider::class,
                 AuthorizerProviderRegistration::class,
@@ -961,7 +976,8 @@ final class CoreApi
                 McpCall::class,
                 NumberedPages::class,
                 ProvidesCommandMiddleware::class,
-                JournalAccessPolicy::class,
+                AdmittedRecipients::class,
+                JournalAdmission::class,
                 UpdatesUserInterface::class,
                 CountResolver::class,
                 NavigationChildren::class,
@@ -1195,6 +1211,7 @@ final class CoreApi
                 ToolResult::class,
                 ToolOutcome::class,
                 ActorIdentity::class,
+                PolicyRegistration::class,
                 ActorLabelSet::class,
                 AllowsEverything::class,
                 LaunchProfileAuthority::class,
@@ -1237,13 +1254,13 @@ final class CoreApi
                 RepeatableRead::class,
                 RequiresActor::class,
                 RequiresRequestKey::class,
-                AllowsEngine::class,
                 ElapsedTime::class,
                 FrameSettlement::class,
                 MiddlewareStage::class,
                 CommandScopeType::class,
                 CommandScope::class,
                 MiddlewareDeclaration::class,
+                Authorize::class,
                 CommandCall::class,
                 CurrentUser::class,
                 ActionRoute::class,
@@ -1534,6 +1551,9 @@ final class CoreApi
                 UserActorRequired::class,
                 CrossOwnerReadRefused::class,
                 ActorNotAllowed::class,
+                AbilityNotRegistered::class,
+                ConsoleOwnerMissing::class,
+                PolicyRegistrationConflict::class,
                 AuthorizerProviderRepeated::class,
                 StateTypeRepeated::class,
                 StateTypesFrozen::class,

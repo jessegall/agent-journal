@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use Tests\Fixtures\Modules\Notes\Policies\NotePolicy;
+use Tests\Fixtures\Modules\Notes\Enums\NoteAbility;
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
@@ -75,7 +79,7 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommandRules, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesSkillConditions, ProvidesSkills, ProvidesStates
+final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommandRules, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesSkillConditions, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -106,6 +110,11 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function linkRecords(): array
     {
         return [Note::LINK_TYPE => NoteLinkRecords::class, NotePage::LINK_TYPE => NotePageLinkRecords::class, NoteSnapshot::LINK_TYPE => NoteSnapshotLinkRecords::class];
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(Note::class, NotePolicy::class, NoteAbility::class)];
     }
 
     public function states(): array

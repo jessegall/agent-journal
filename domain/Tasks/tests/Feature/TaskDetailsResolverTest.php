@@ -7,7 +7,7 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\TrustedEntryAuthority;
+use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
@@ -115,12 +115,12 @@ final class TaskDetailsResolverTest extends TestCase
     {
         $this->app->forgetScopedInstances();
         $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, 'hooks.main_ready', new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), new OwnerAuthority('test'));
     }
 
     private function asUser(): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
     }
 }

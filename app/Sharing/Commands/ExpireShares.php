@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
-use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
+use App\Bus\Enums\CommandEntry;
 use App\Sharing\Handlers\ExpireSharesHandler;
 use App\Sharing\Support\ShareExpiry;
 
@@ -18,5 +18,5 @@ use App\Sharing\Support\ShareExpiry;
  * @implements Command<ShareExpiry>
  */
 #[HandledBy(ExpireSharesHandler::class)]
-#[RequiresActor(ActorType::System)]
+#[Entry(CommandEntry::ShareGateway)]
 final readonly class ExpireShares implements Command {}

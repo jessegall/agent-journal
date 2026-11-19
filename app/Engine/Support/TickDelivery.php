@@ -6,6 +6,8 @@ namespace App\Engine\Support;
 
 use App\Actors\Contracts\ServerClock;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\CommandEntrance;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Models\EngineFrameTime;
@@ -44,6 +46,7 @@ final readonly class TickDelivery
         private CommandBus $commands,
         private EngineSettings $settings,
         private TickOrigins $origins,
+        private CommandEntrance $entrance,
         private LoggerInterface $log,
     ) {}
 
@@ -108,7 +111,8 @@ final readonly class TickDelivery
 
             foreach ($commands->all() as $command) {
                 $locks = WorkLockSet::for($candidate->occurrence, $command);
-                $this->origins->runWith($locks, fn (): mixed => $this->commands->run($command));
+                $run = fn (): mixed => $this->commands->run($command);
+                $this->origins->runWith($locks, fn (): mixed => $this->entrance->through(CommandEntry::Application, $run));
             }
 
             return true;

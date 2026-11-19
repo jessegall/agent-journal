@@ -17,4 +17,9 @@ final readonly class OwnerAuthority implements AuthoritySource
     {
         return "an owner admitted through {$this->entry}";
     }
+
+    public function mayRunApplicationCommands(): bool
+    {
+        return true;
+    }
 }
