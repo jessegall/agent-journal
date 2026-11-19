@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
-use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartedAgent;
 use App\Domains\Support\DomainEntry;
 use App\Hooks\Actions\UserStacks;
 use App\Hooks\Decisions\StateReference;
@@ -41,7 +41,7 @@ final class UserStacksTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -61,7 +61,7 @@ final class UserStacksTest extends TestCase
                 new ClosureStateLoader(fn () => new SwitchableState(false)),
             ),
         );
-        $this->target = $this->targetOf($this->launch());
+        $this->target = $this->targetOf($this->start());
     }
 
     public function test_a_user_pushes_a_state_onto_a_running_agents_stack(): void
@@ -107,7 +107,7 @@ final class UserStacksTest extends TestCase
 
     public function test_a_session_of_another_agent_is_refused(): void
     {
-        $other = $this->targetOf($this->launch());
+        $other = $this->targetOf($this->start());
         $this->actAs(TestActors::user(7));
 
         $this->expectException(StackTargetRefused::class);
@@ -135,22 +135,22 @@ final class UserStacksTest extends TestCase
     }
 
     /**
-     * Acts as the agent under the profile it launches with, as a real agent call does.
+     * Acts as the agent under the profile it starts with, as a real agent call does.
      */
-    private function launch(): LaunchedAgent
+    private function start(): StartedAgent
     {
         $agent = Agent::named('Test agent', 'main-agent');
 
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );
     }
 
-    private function targetOf(LaunchedAgent $launched): StackTarget
+    private function targetOf(StartedAgent $started): StackTarget
     {
-        return new StackTarget($launched->session->agent_id, $launched->session->id);
+        return new StackTarget($started->session->agent_id, $started->session->id);
     }
 
     /**

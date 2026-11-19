@@ -19,7 +19,7 @@ use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellCommand;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -130,7 +130,7 @@ final class CommandFactsTest extends TestCase
     private function answer(string $profileKey, string $line): AnswerType
     {
         config(['processes.runner' => true]);
-        TestLaunch::start($profileKey)->startRequest($this->app);
+        TestStart::start($profileKey)->startRequest($this->app);
         $context = ExecutionContext::inFolder(base_path());
         $admission = $this->app->make(ShellAdmission::class)->admit(
             $line,

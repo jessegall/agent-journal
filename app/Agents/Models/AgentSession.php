@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * One launch of an agent: one journal session, its parent session for a child, and the program's own session once
+ * One start of an agent: one journal session, its parent session for a child, and the program's own session once
  * verified.
  *
  * @property string $id
@@ -42,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property ProgramSourceType $program_source
  * @property string $profile_key
  * @property int $profile_revision
- * @property string $launch_request_id
+ * @property string $start_request_id
  * @property string|null $skill_generation_id
  * @property SessionStatus $status
  * @property CarbonImmutable|null $ended_at
@@ -53,7 +53,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $agent
- * @property-read LaunchCredential|null $credential
+ * @property-read StartToken|null $startToken
  */
 #[Fillable([
     'program',
@@ -65,7 +65,7 @@ use Illuminate\Support\Carbon;
     'program_source',
     'profile_key',
     'profile_revision',
-    'launch_request_id',
+    'start_request_id',
     'skill_generation_id',
 ])]
 final class AgentSession extends Model implements ReadableModel
@@ -91,7 +91,7 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * Starts the session of one launch with the program and model it runs and the request that launched it.
+     * Starts the session of one start with the program and model it runs and the request that started it.
      *
      * @throws SessionSelectionFixed
      */
@@ -104,7 +104,7 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * Records the selection and the launch request once; a session never changes the program or model it ran.
+     * Records the selection and the start request once; a session never changes the program or model it ran.
      *
      * @throws SessionSelectionFixed
      */
@@ -121,12 +121,12 @@ final class AgentSession extends Model implements ReadableModel
         $this->program_source = $selection->source->programSource;
         $this->profile_key = $selection->source->profileKey;
         $this->profile_revision = $selection->source->profileRevision;
-        $this->launch_request_id = $requestId;
+        $this->start_request_id = $requestId;
         $this->save();
     }
 
     /**
-     * The selection this session was launched with, rebuilt from its row.
+     * The selection this session was started with, rebuilt from its row.
      */
     public function selection(): SelectedProgram
     {
@@ -174,7 +174,7 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * The agent's most recent session, or null when it never launched.
+     * The agent's most recent session, or null when it never started.
      */
     public static function latestOf(string $agentId): self|null
     {
@@ -265,15 +265,15 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * Locks the session's row, with its credential and agent, so a heartbeat waits for an end or a retirement.
+     * Locks the session's row, with its start token and agent, so a heartbeat waits for an end or a retirement.
      */
     public static function lockedForHeartbeat(string $sessionId): self
     {
-        return self::query()->whereKey($sessionId)->with(['credential', 'agent'])->lockForUpdate()->firstOrFail();
+        return self::query()->whereKey($sessionId)->with(['startToken', 'agent'])->lockForUpdate()->firstOrFail();
     }
 
     /**
-     * Records the launched program's tool discovery at its signed issue time; an older discovery never moves it back.
+     * Records the started program's tool discovery at its signed issue time; an older discovery never moves it back.
      */
     public static function recordDiscoveryAt(string $sessionId, CarbonImmutable $signedAt): void
     {
@@ -343,16 +343,16 @@ final class AgentSession extends Model implements ReadableModel
     {
         $query->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
             ->where('last_heartbeat_at', '>', $observedAt->subSeconds($window->presenceSeconds))
-            ->whereHas('credential', fn (Builder $credential) => $credential->whereNull('revoked_at'))
+            ->whereHas('startToken', fn (Builder $startToken) => $startToken->whereNull('revoked_at'))
             ->whereHas('agent', fn (Builder $agent) => $agent->whereNull('retired_at'));
     }
 
     /**
-     * @return HasOne<LaunchCredential, $this>
+     * @return HasOne<StartToken, $this>
      */
-    public function credential(): HasOne
+    public function startToken(): HasOne
     {
-        return $this->hasOne(LaunchCredential::class, 'agent_session_id');
+        return $this->hasOne(StartToken::class, 'agent_session_id');
     }
 
     /**

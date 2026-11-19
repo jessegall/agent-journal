@@ -7,7 +7,7 @@ namespace App\Profiles\Enums;
 use App\Bus\Contracts\DeclaresClassLevelAbilities;
 
 /**
- * What an actor may do with agent profiles and the main launch.
+ * What an actor may do with agent profiles and the main start.
  */
 enum ProfileAbility: string implements DeclaresClassLevelAbilities
 {

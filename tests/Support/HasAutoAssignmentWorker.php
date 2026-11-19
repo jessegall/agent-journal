@@ -7,24 +7,24 @@ namespace Tests\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AutoAssignmentKey;
 use Domain\Tasks\Api\TaskType;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 
 /**
- * A launched writing helper whose auto-assignment of tasks the test works with, under a request of the owner.
+ * A started writing helper whose auto-assignment of tasks the test works with, under a request of the owner.
  */
 trait HasAutoAssignmentWorker
 {
     use ActsAsOwner;
     use StartsAgentRequests;
 
-    private TestLaunch $worker;
+    private TestStart $worker;
 
     private AutoAssignmentKey $key;
 
     protected function setUpHasAutoAssignmentWorker(): void
     {
         $this->setUpActsAsOwner();
-        $this->worker = TestLaunch::start('writing-helper');
+        $this->worker = TestStart::start('writing-helper');
         $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::VALUE);
         $this->startUserRequestAs($this->owner->id);
     }

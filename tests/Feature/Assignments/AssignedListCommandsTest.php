@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\AgentRequests\Exceptions\LaunchSettingMissing;
+use App\AgentRequests\Exceptions\StartSettingMissing;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
-use App\AgentRequests\Support\LaunchEnvironment;
+use App\AgentRequests\Support\StartEnvironment;
 use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -16,7 +16,7 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
@@ -24,9 +24,9 @@ use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
- * The console client of a launched program: "journal task assigned" and "journal plan assigned" ask the real
- * endpoints over a signed call with the launch's token and print only what that agent holds; an empty list succeeds,
- * and a refusal, an unreachable journal or missing launch settings fail with a message that never shows the token.
+ * The console client of a started program: "journal task assigned" and "journal plan assigned" ask the real
+ * endpoints over a signed call with the start's token and print only what that agent holds; an empty list succeeds,
+ * and a refusal, an unreachable journal or missing start settings fail with a message that never shows the token.
  */
 final class AssignedListCommandsTest extends TestCase
 {
@@ -38,13 +38,13 @@ final class AssignedListCommandsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'plans',
         'assignments',
     ];
 
-    private TestLaunch $caller;
+    private TestStart $caller;
 
     protected function setUp(): void
     {
@@ -52,11 +52,11 @@ final class AssignedListCommandsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->caller = TestLaunch::start('read-only-helper');
+        $this->caller = TestStart::start('read-only-helper');
         $this->startUserRequestAs($owner->id);
     }
 
-    public function test_the_commands_print_what_the_launched_agent_holds(): void
+    public function test_the_commands_print_what_the_started_agent_holds(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $task = Task::factory()->create(['title' => 'Write the client']);
@@ -94,10 +94,10 @@ final class AssignedListCommandsTest extends TestCase
 
     public function test_a_refusal_or_an_unreachable_journal_fails_without_showing_the_token(): void
     {
-        $this->runCommandsAs($this->caller, 'not-a-launch-token');
+        $this->runCommandsAs($this->caller, 'not-a-start-token');
         $this->artisan('task:assigned')
             ->expectsOutputToContain('The journal refused the call (unauthenticated)')
-            ->doesntExpectOutputToContain('not-a-launch-token')
+            ->doesntExpectOutputToContain('not-a-start-token')
             ->assertExitCode(1);
 
         $this->runCommandsAs($this->caller);
@@ -110,17 +110,17 @@ final class AssignedListCommandsTest extends TestCase
         $this->artisan('task:assigned')->expectsOutputToContain('did not answer')->assertExitCode(1);
     }
 
-    public function test_the_launcher_turns_subject_and_verb_into_the_command_and_needs_the_launch_settings(): void
+    public function test_the_starter_turns_subject_and_verb_into_the_command_and_needs_the_start_settings(): void
     {
         $this->assertThrows(
-            fn () => new EnvironmentCredentialSource(new LaunchEnvironment([]))->forThisLaunch(),
-            LaunchSettingMissing::class,
+            fn () => new EnvironmentCredentialSource(new StartEnvironment([]))->forThisStart(),
+            StartSettingMissing::class,
         );
 
         $process = new Process(
             [base_path('bin/journal'), 'task', 'assigned'],
             base_path(),
-            ['JOURNAL_URL' => false, 'JOURNAL_LAUNCH_TOKEN' => false],
+            ['JOURNAL_URL' => false, 'JOURNAL_START_TOKEN' => false],
         );
         $process->run();
 

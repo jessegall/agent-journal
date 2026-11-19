@@ -191,16 +191,20 @@ final class ReadShareTest extends TestCase
         $token = $this->activeShare($this->plan->shareIdentity(), CarbonImmutable::now()->addDay());
         $share = Share::query()->sole();
 
-        foreach ([$this->document, $sibling] as $document) {
-            $linkId = Link::query()
-                ->where('target_id', $document->id)
-                ->orWhere('source_id', $document->id)
-                ->sole()
-                ->id;
+        $documents = [$this->document, $sibling];
+        $documentIds = array_map(fn (Document $document) => $document->id, $documents);
+        $links = Link::query()
+            ->whereIn('target_id', $documentIds)
+            ->orWhereIn('source_id', $documentIds)
+            ->readLimit(count($documents))
+            ->get();
+
+        foreach ($documents as $document) {
+            $link = $links->sole(fn (Link $link) => in_array($document->id, [$link->target_id, $link->source_id], true));
             ShareMember::approve(
                 $share,
                 $this->plan->shareIdentity(),
-                new ShareSelectedTarget($document->shareIdentity(), $linkId, '1'),
+                new ShareSelectedTarget($document->shareIdentity(), $link->id, '1'),
             );
         }
 

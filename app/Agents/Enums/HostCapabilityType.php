@@ -10,7 +10,7 @@ use App\Agents\Exceptions\HostCapabilityUnsupported;
 use App\Agents\Support\HostCapability;
 
 /**
- * What a launch needs the host and the program to do: reach the provider without a credential, keep hook callbacks
+ * What a start needs the host and the program to do: reach the provider without a credential, keep hook callbacks
  * apart from MCP and tools, keep relay material from the model, track every descendant, fence completion, and keep the
  * Stop hook's deadline and continuation behaviour.
  */
@@ -25,7 +25,7 @@ enum HostCapabilityType: string
     case ContainerRuntime = 'container-runtime';
 
     /**
-     * The refusal of a launch that needs this capability where the evidence does not prove it.
+     * The refusal of a start that needs this capability where the evidence does not prove it.
      */
     public function refusalFor(
         HostCapability $capability,

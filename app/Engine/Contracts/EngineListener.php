@@ -14,7 +14,7 @@ use App\Engine\Events\EngineTicked;
 interface EngineListener
 {
     /**
-     * The maintenance capability its commands check, such as launches.silence.
+     * The maintenance capability its commands check, such as starts.silence.
      */
     public function maintenanceScope(): string;
 

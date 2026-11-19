@@ -188,8 +188,8 @@ function corpusRecords(): array
     eachLine(CORPUS.'/session-commands.jsonl', fn (string $line) => $add('session-commands.jsonl', json_decode($line, true, 512, JSON_THROW_ON_ERROR)['source'] ?? null));
     eachLine(CORPUS.'/docker-build-commands.jsonl', fn (string $line) => $add('docker-build-commands.jsonl', json_decode($line, true, 512, JSON_THROW_ON_ERROR)['source'] ?? null));
     foreach (glob(CORPUS.'/helper-report-*.txt') ?: [] as $path) {
-        eachLine($path, function (string $line) use ($add): void {
-            $line = trim($line);
+        eachLine($path, function (string $written) use ($add): void {
+            $line = trim($written);
             if (str_starts_with($line, '"')) {
                 $decoded = json_decode($line, true);
                 $add('helper-written', is_string($decoded) ? $decoded : null);

@@ -9,7 +9,7 @@ use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\HostCapabilityType;
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
@@ -21,7 +21,7 @@ use Tests\TestCase;
 /**
  * The host capabilities answer from the checked-in matrix: every pinned client has an explicit status with its
  * evidence for its account transport in both execution modes and for every container capability, and nothing
- * unproven may launch.
+ * unproven may start.
  */
 final class HostCapabilitiesTest extends TestCase
 {
@@ -86,7 +86,7 @@ final class HostCapabilitiesTest extends TestCase
         }
     }
 
-    public function test_a_launch_of_an_unproven_account_transport_is_refused_as_account_container_unsupported(): void
+    public function test_a_start_of_an_unproven_account_transport_is_refused_as_account_container_unsupported(): void
     {
         $capability = $this->app->make(HostCapabilities::class)->capability(
             $this->capabilityQuery(
@@ -100,12 +100,12 @@ final class HostCapabilitiesTest extends TestCase
             $capability->requireSupported();
             $this->fail('An unproven combination was admitted.');
         } catch (AccountContainerUnsupported $refusal) {
-            $this->assertSame(LaunchRefusalType::AccountContainerUnsupported, $refusal->reason());
+            $this->assertSame(StartRefusalType::AccountContainerUnsupported, $refusal->reason());
             $this->assertStringStartsWith(
-                'The journal cannot launch account-transport for codex with a subscription account in required_container mode: ',
+                'The journal cannot start account-transport for codex with a subscription account in required_container mode: ',
                 $refusal->getMessage(),
             );
-            $this->assertStringEndsWith('Nothing was launched.', $refusal->getMessage());
+            $this->assertStringEndsWith('Nothing was started.', $refusal->getMessage());
         }
     }
 
@@ -123,7 +123,7 @@ final class HostCapabilitiesTest extends TestCase
             $capability->requireSupported();
             $this->fail('An unproven stop guarantee was admitted.');
         } catch (HostCapabilityUnsupported $refusal) {
-            $this->assertSame(LaunchRefusalType::CapabilityUnsupported, $refusal->reason());
+            $this->assertSame(StartRefusalType::CapabilityUnsupported, $refusal->reason());
             $this->assertStringStartsWith(
                 'The journal cannot guarantee stop-deadline for claude-code with a subscription account in required_container mode: ',
                 $refusal->getMessage(),

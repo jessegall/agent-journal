@@ -13,7 +13,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * List an actor's auto-assignments a page at a time, over a signed call as the agent of the launch.
+ * List an actor's auto-assignments a page at a time, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Read)]
 final class ListAutoAssignmentsCommand extends Command

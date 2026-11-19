@@ -13,13 +13,13 @@ use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
 use App\Records\Commands\UnlinkRecords;
 use Carbon\CarbonImmutable;
-use LogicException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionProperty;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\Ticks\InheritedTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingLoader;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestActors;
 
 /**
@@ -30,7 +30,7 @@ final class TickDeclarationsTest extends TestCase
 {
     public function test_only_marked_loaders_and_their_subclasses_tick(): void
     {
-        $make = fn (): AgentState => throw new LogicException('No state is built here.');
+        $make = fn (): AgentState => throw SimulatedFailure::of('No state is built here.');
         $registry = new StateTypeRegistry();
         $registry->register('test.ticking', new TickingLoader($make));
         $registry->register('test.inherited', new InheritedTickingLoader($make));

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
@@ -40,7 +40,7 @@ final class MessageAttentionTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'agent_runtimes',
         'driver_requests',
@@ -72,9 +72,9 @@ final class MessageAttentionTest extends TestCase
         }
 
         foreach ($running as $agent) {
-            $launched = $this->app->make(LaunchSessions::class)
-                ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
-            $this->openDriverRuntime($launched->session);
+            $started = $this->app->make(StartSessions::class)
+                ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
+            $this->openDriverRuntime($started->session);
         }
 
         $source = $this->inboxOf(ActorIdentity::of($owner))->inboxId();

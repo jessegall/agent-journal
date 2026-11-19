@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Hooks\Relay;
 
 use App\AgentRequests\Support\AgentClientSettings;
-use App\AgentRequests\Support\LaunchEnvironment;
-use App\AgentRequests\Support\LaunchProfilePin;
+use App\AgentRequests\Support\StartEnvironment;
+use App\AgentRequests\Support\StartProfilePin;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Exceptions\OfflineReplySealInvalid;
 use App\Agents\Support\OfflineReplySeal;
 
 /**
- * What the relay of one launch needs, given to the program's environment by the launch: where the journal
- * answers, the launch token, the sealed offline reply and the host's bypass file.
+ * What the relay of one start needs, given to the program's environment by the start: where the journal
+ * answers, the start token, the sealed offline reply and the host's bypass file.
  */
 final readonly class RelaySettings
 {
     public function __construct(
         public string $journalUrl,
         public string $token,
-        public LaunchProfilePin $profile,
+        public StartProfilePin $profile,
         public bool $passesOutages,
         public string $bypassLogPath,
         public int $timeoutSeconds = 10,
@@ -28,39 +28,39 @@ final readonly class RelaySettings
     ) {}
 
     /**
-     * The launch's credential with the offline reply and bypass file its environment names; the reply counts only
-     * under the seal the journal issued for this launch.
+     * The start's credential with the offline reply and bypass file its environment names; the reply counts only
+     * under the seal the journal issued for this start.
      *
      * @throws OfflineReplySealInvalid
      */
-    public static function forLaunch(
+    public static function forStart(
         AgentClientSettings $client,
-        LaunchEnvironment $launch,
+        StartEnvironment $start,
         OfflineReplySeal $seal,
     ): self {
-        $mode = OfflineReplyMode::fromLaunch($launch->value('JOURNAL_OFFLINE_REPLY'));
-        $seal->verify($client->token, $client->profile, $mode, $launch->value('JOURNAL_OFFLINE_REPLY_SEAL'));
+        $mode = OfflineReplyMode::fromStart($start->value('JOURNAL_OFFLINE_REPLY'));
+        $seal->verify($client->token, $client->profile, $mode, $start->value('JOURNAL_OFFLINE_REPLY_SEAL'));
 
         return new self(
             $client->journalUrl,
             $client->token,
             $client->profile,
             $mode->passesOutages(),
-            $launch->value('JOURNAL_BYPASS_LOG'),
-            processGeneration: self::processGenerationOf($launch),
+            $start->value('JOURNAL_BYPASS_LOG'),
+            processGeneration: self::processGenerationOf($start),
         );
     }
 
     /**
      * The process generation the host gave this program, or 0 when the host gave none.
      */
-    private static function processGenerationOf(LaunchEnvironment $launch): int
+    private static function processGenerationOf(StartEnvironment $start): int
     {
-        if (! $launch->has('JOURNAL_PROCESS_GENERATION')) {
+        if (! $start->has('JOURNAL_PROCESS_GENERATION')) {
             return 0;
         }
 
-        return (int) $launch->value('JOURNAL_PROCESS_GENERATION');
+        return (int) $start->value('JOURNAL_PROCESS_GENERATION');
     }
 
     /**

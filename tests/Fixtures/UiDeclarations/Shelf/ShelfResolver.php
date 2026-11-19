@@ -24,8 +24,8 @@ final readonly class ShelfResolver implements PageResolver
         $this->calls->readers[] = 'shelf';
 
         return new RecentNotesData([
-            $this->request->string('q')->toString(),
-            (string) $this->request->route('shelf'),
+            $this->request->queryWords(),
+            $this->request->shelf(),
             (string) $this->actors->actor()->actorId(),
         ]);
     }

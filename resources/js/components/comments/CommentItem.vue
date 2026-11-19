@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RecordCommentView, TextCommentView } from '@/generated/types/core';
-import SwitchVariant from '@/components/kit/SwitchVariant.vue';
+import SwitchItem from '@/components/kit/SwitchItem.vue';
 
 /**
  * One comment in a list: who left it and when, what it is about, and its text. A whole-record comment offers to open
@@ -16,17 +16,17 @@ const comment = props.item.comment;
 <template>
     <article class="flex flex-col gap-1">
         <p class="text-small text-text-3">{{ comment.authorType }} {{ comment.authorId }} · {{ comment.createdAt }}</p>
-        <SwitchVariant :subject="item" by="type">
+        <SwitchItem :item="item" by="type">
             <template #record>
                 <button type="button" class="text-small text-left underline" @click="$emit('open', comment.id)">On the whole record: open record</button>
             </template>
-            <template #text="{ subject: textItem }">
+            <template #text="{ item: text }">
                 <button type="button" class="text-small text-left underline" @click="$emit('open', comment.id)">
-                    On {{ textItem.anchor.versionLabel }}, lines {{ textItem.anchor.firstLine }}–{{ textItem.anchor.lastLine }}
-                    <template v-if="currentVersion !== undefined && textItem.anchor.versionId !== currentVersion"> (an older version): open original location</template>
+                    On {{ text.anchor.versionLabel }}, lines {{ text.anchor.firstLine }}–{{ text.anchor.lastLine }}
+                    <template v-if="currentVersion !== undefined && text.anchor.versionId !== currentVersion"> (an older version): open original location</template>
                 </button>
             </template>
-        </SwitchVariant>
+        </SwitchItem>
         <div class="prose" v-html="comment.bodyHtml" />
     </article>
 </template>

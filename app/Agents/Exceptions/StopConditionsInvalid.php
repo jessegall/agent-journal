@@ -15,7 +15,7 @@ final class StopConditionsInvalid extends InvalidArgumentException implements Co
 {
     public static function tooMany(int $count): self
     {
-        return new self("A launch has at most 16 stop conditions, not {$count}.");
+        return new self("A start has at most 16 stop conditions, not {$count}.");
     }
 
     public static function attemptTime(int $seconds): self

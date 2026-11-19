@@ -8,7 +8,7 @@ use App\AgentRequests\Exceptions\KeyedWriteWithoutReceipt;
 use App\AgentRequests\Support\CallRoutes;
 use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\AgentRequests\WriteNoteController;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -22,7 +22,7 @@ final class CallRoutesTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
@@ -31,7 +31,7 @@ final class CallRoutesTest extends TestCase
         Route::middleware('journal.agent')->prefix('agent')->group(function (): void {
             $this->app->make(CallRoutes::class)->register(WriteNoteController::class)->name('test.notes.write');
         });
-        $this->launch = TestLaunch::start();
+        $this->start = TestStart::start();
     }
 
     public function test_the_route_takes_its_path_from_the_call_and_keeps_its_name(): void
@@ -45,11 +45,11 @@ final class CallRoutesTest extends TestCase
     {
         $unknown = ['text' => 'Hi.', 'request_key' => 'key-1', 'notebookId' => 'other'];
 
-        $this->signed($this->launch, '/agent/notes/book-1/write', $unknown)
+        $this->signed($this->start, '/agent/notes/book-1/write', $unknown)
             ->assertStatus(422)
             ->assertJsonPath('code', 'invalid_input')
             ->assertJsonPath('details.fields.notebookId.0', 'is not a field of this call');
-        $this->signed($this->launch, '/agent/notes/book-1/write', ['text' => 'Hi.'])
+        $this->signed($this->start, '/agent/notes/book-1/write', ['text' => 'Hi.'])
             ->assertStatus(422)
             ->assertJsonPath('details.fields.request_key.0', 'is required for a keyed write');
     }
@@ -59,6 +59,6 @@ final class CallRoutesTest extends TestCase
         $this->withoutExceptionHandling();
         $this->expectException(KeyedWriteWithoutReceipt::class);
 
-        $this->signed($this->launch, '/agent/notes/book-1/write', ['text' => 'Hi.', 'request_key' => 'key-1']);
+        $this->signed($this->start, '/agent/notes/book-1/write', ['text' => 'Hi.', 'request_key' => 'key-1']);
     }
 }

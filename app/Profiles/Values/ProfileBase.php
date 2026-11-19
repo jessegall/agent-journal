@@ -109,7 +109,7 @@ final readonly class ProfileBase
     }
 
     /**
-     * Where a launch runs unless its profile says otherwise.
+     * Where a start runs unless its profile says otherwise.
      */
     public function defaultExecutionMode(): ExecutionModeType
     {
@@ -117,7 +117,7 @@ final readonly class ProfileBase
     }
 
     /**
-     * Whether launches from this base must stay in a required container whatever their profile says.
+     * Whether starts from this base must stay in a required container whatever their profile says.
      */
     public function isContainerRequired(): bool
     {
@@ -154,7 +154,7 @@ final readonly class ProfileBase
     }
 
     /**
-     * How a launch answers while the journal is unreachable.
+     * How a start answers while the journal is unreachable.
      */
     public function offlineReply(): OfflineReplyMode
     {

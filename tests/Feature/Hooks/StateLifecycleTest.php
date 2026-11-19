@@ -13,7 +13,7 @@ use App\Agents\Support\StackTarget;
 use App\Engine\Support\EngineAccess;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\EngineStacks;
-use App\Hooks\Actions\LaunchStacks;
+use App\Hooks\Actions\StartStacks;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -33,7 +33,7 @@ use Tests\Fixtures\Hooks\Lifecycle\RecordingStateLoader;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -67,7 +67,7 @@ final class StateLifecycleTest extends TestCase
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(1)),
-            TestLaunchAuthority::forAgent(TestIds::of(1)),
+            TestStartAuthority::forAgent(TestIds::of(1)),
         );
         $this->log = new LifecycleLog();
         $this->tasks = new RecordingStateLoader($this->log);
@@ -76,7 +76,7 @@ final class StateLifecycleTest extends TestCase
             $event->registry->register('test.tasks', $this->tasks);
             $event->registry->register('test.plans', $plans);
         });
-        $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
+        $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
     }
 
     protected function tearDown(): void

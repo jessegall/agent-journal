@@ -7,7 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\SendsMcpFrames;
 
@@ -47,7 +47,7 @@ final class MessageEntryRoutesTest extends MessagingTestCase
 
     public function test_an_agent_reads_replies_and_pages_history_over_mcp(): void
     {
-        $caller = TestLaunch::start();
+        $caller = TestStart::start();
         $callerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $caller->agent->id))->inboxId();
         $questionId = $this->ownerAsks($callerInboxId, 'Which port?');
 

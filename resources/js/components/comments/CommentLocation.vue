@@ -4,7 +4,7 @@ import { onMounted, ref } from 'vue';
 import type { RecordCommentLocation, TextCommentLocation } from '@/generated/types/core';
 import { location } from '@/routes/comments';
 import Button from '@/components/kit/Button.vue';
-import SwitchVariant from '@/components/kit/SwitchVariant.vue';
+import SwitchItem from '@/components/kit/SwitchItem.vue';
 import CommentSource from './CommentSource.vue';
 
 /**
@@ -30,24 +30,24 @@ onMounted(async () => {
 
 <template>
     <section class="flex flex-col gap-2" aria-live="polite">
-        <SwitchVariant :subject="loaded" by="state">
+        <SwitchItem :item="loaded" by="state">
             <template #loading>
                 <p class="text-small text-text-3">Opening the comment's place…</p>
             </template>
-            <template #unavailable="{ subject: unavailable }">
+            <template #unavailable="{ item: unavailable }">
                 <p class="text-small text-warn">The place this comment points at is not available: {{ unavailable.message }}</p>
             </template>
-            <template #found="{ subject: found }">
-                <SwitchVariant :subject="found.place" by="type">
-                    <template #record="{ subject: place }">
-                        <a :href="place.target.route ?? undefined" class="text-small underline">Open {{ place.target.label }}</a>
+            <template #found="{ item: found }">
+                <SwitchItem :item="found.place" by="type">
+                    <template #record="{ item: record }">
+                        <a :href="record.target.route ?? undefined" class="text-small underline">Open {{ record.target.label }}</a>
                     </template>
-                    <template #text="{ subject: place }">
-                        <CommentSource :location="place" />
+                    <template #text="{ item: text }">
+                        <CommentSource :location="text" />
                     </template>
-                </SwitchVariant>
+                </SwitchItem>
             </template>
-        </SwitchVariant>
+        </SwitchItem>
         <div>
             <Button @click="$emit('close')">Close</Button>
         </div>

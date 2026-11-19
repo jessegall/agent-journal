@@ -7,7 +7,7 @@ namespace App\Agents\Exceptions;
 use RuntimeException;
 
 /**
- * A call whose id, issue time or body does not match the signature made with its launch token.
+ * A call whose id, issue time or body does not match the signature made with its start token.
  */
 final class CallSignatureInvalid extends RuntimeException
 {

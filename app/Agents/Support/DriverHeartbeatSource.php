@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Actors\Support\ActorContext;
-use App\Agents\Actions\LaunchHeartbeats;
+use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\HostReportRefused;
@@ -16,11 +16,11 @@ use App\Agents\Models\AgentSession;
 /**
  * The driver side of the heartbeat: evidence from the host that runs the session's current process refreshes its
  * presence by RecordHeartbeat's own rule, inside the host's command and for its actor, and a verified exit ends it
- * through the launch lifecycle. Silence ends nothing.
+ * through the start lifecycle. Silence ends nothing.
  */
 final readonly class DriverHeartbeatSource
 {
-    public function __construct(private RecordHeartbeatHandler $beats, private LaunchHeartbeats $heartbeats) {}
+    public function __construct(private RecordHeartbeatHandler $beats, private StartHeartbeats $heartbeats) {}
 
     public function record(AgentSession $session, RuntimeEvidence $evidence, ActorContext $actor): void
     {

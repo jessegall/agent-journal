@@ -15,11 +15,11 @@ use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\AgentProfileMissing;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
-use App\Profiles\Values\LaunchProfileAuthority;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\StartProfileAuthority;
 
 /**
- * An agent's authorizer comes from the exact profile revision its launch was pinned to, loaded once when the request
+ * An agent's authorizer comes from the exact profile revision its start was pinned to, loaded once when the request
  * was admitted; no class or profile name the agent sends is read.
  */
 final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
@@ -37,7 +37,7 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
     {
         $authority = $this->actors->authority();
 
-        if (! $authority instanceof LaunchProfileAuthority) {
+        if (! $authority instanceof StartProfileAuthority) {
             throw AgentProfileMissing::forAuthority($authority->description());
         }
 

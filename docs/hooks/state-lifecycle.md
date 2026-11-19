@@ -37,7 +37,7 @@ frame. Ending a task or answering a message changes only that record; no stack c
 
 The stack after each of these is the stack before: no frame is removed, reordered or re-timed.
 
-Ready never gets a lifecycle call. Closing a stack or timing a launch out calls none either. A restore and a read only
+Ready never gets a lifecycle call. Closing a stack or timing a start out calls none either. A restore and a read only
 read: they call nothing.
 
 Only explicit transitions change a stack. Each removes the frame it names plus the finished or switched-off frames that

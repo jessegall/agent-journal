@@ -13,7 +13,7 @@ import (
 	"journal-agent/profiles/contracts"
 )
 
-// Codex is the launch profile of codex-cli 0.165.0: an isolated CODEX_HOME whose config turns every agent-spawning
+// Codex is the start profile of codex-cli 0.165.0: an isolated CODEX_HOME whose config turns every agent-spawning
 // feature off, a workspace-write sandbox, native approvals in the terminal and none asked in a one-shot turn, and a
 // resume only by the conversation ID Codex acknowledged.
 type Codex struct{}
@@ -47,38 +47,38 @@ func (Codex) AllowedTools() []string {
 	return nil
 }
 
-func (Codex) Arguments(launch contracts.Launch) ([]string, error) {
-	if launch.Resume && launch.SessionID == "" {
+func (Codex) Arguments(start contracts.Start) ([]string, error) {
+	if start.Resume && start.SessionID == "" {
 		return nil, errors.New("a codex resume needs the conversation ID codex acknowledged; the latest is never resumed")
 	}
 
 	arguments := []string{}
-	if launch.Mode == contracts.ProcessMode {
+	if start.Mode == contracts.ProcessMode {
 		arguments = append(arguments, "exec")
 	}
-	if launch.Resume {
-		arguments = append(arguments, "resume", launch.SessionID)
+	if start.Resume {
+		arguments = append(arguments, "resume", start.SessionID)
 	}
 
 	arguments = append(arguments, "--sandbox", "workspace-write")
-	if launch.Model != "" {
-		arguments = append(arguments, "-m", launch.Model)
+	if start.Model != "" {
+		arguments = append(arguments, "-m", start.Model)
 	}
-	if launch.Effort != "" {
-		arguments = append(arguments, "-c", "model_reasoning_effort="+launch.Effort)
+	if start.Effort != "" {
+		arguments = append(arguments, "-c", "model_reasoning_effort="+start.Effort)
 	}
-	if launch.Mode == contracts.ProcessMode {
+	if start.Mode == contracts.ProcessMode {
 		arguments = append(arguments, "--json", "--skip-git-repo-check")
 	}
 	for _, feature := range codexAgentFeatures {
 		arguments = append(arguments, "-c", "features."+feature+"=false")
 	}
-	if foreignSkills := foreignSkillsSwitchedOff(launch.WorkFolder); foreignSkills != "" {
+	if foreignSkills := foreignSkillsSwitchedOff(start.WorkFolder); foreignSkills != "" {
 		arguments = append(arguments, "-c", foreignSkills)
 	}
 
-	if launch.Prompt != "" {
-		arguments = append(arguments, launch.Prompt)
+	if start.Prompt != "" {
+		arguments = append(arguments, start.Prompt)
 	}
 
 	return arguments, nil
@@ -107,7 +107,7 @@ func skillsSwitchedOff(folders ...string) string {
 			continue
 		}
 		for _, file := range files {
-			log.Printf("codex would offer %s, which the journal did not select: it is switched off for this launch "+
+			log.Printf("codex would offer %s, which the journal did not select: it is switched off for this start "+
 				"and left unchanged; move it out of .agents/skills to keep it off for good", file)
 			path, _ := json.Marshal(file)
 			entries = append(entries, "{path="+string(path)+", enabled=false}")
@@ -121,7 +121,7 @@ func skillsSwitchedOff(folders ...string) string {
 
 // Environment points Codex at the isolated home and drops inherited Codex variables; the login is a link in the isolated home,
 // never a copy.
-func (Codex) Environment(inherited []string, launch contracts.Launch) []string {
+func (Codex) Environment(inherited []string, start contracts.Start) []string {
 	kept := make([]string, 0, len(inherited)+1)
 
 	for _, entry := range inherited {
@@ -131,10 +131,10 @@ func (Codex) Environment(inherited []string, launch contracts.Launch) []string {
 		kept = append(kept, entry)
 	}
 
-	return append(kept, "CODEX_HOME="+launch.SettingsFolder)
+	return append(kept, "CODEX_HOME="+start.SettingsFolder)
 }
 
-func (Codex) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFile, error) {
+func (Codex) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile, error) {
 	var config strings.Builder
 	config.WriteString("[features]\n")
 	for _, feature := range codexAgentFeatures {
@@ -142,9 +142,9 @@ func (Codex) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFile, e
 	}
 
 	files := []contracts.SettingsFile{}
-	if launch.HookCommand != "" {
-		hookFile := filepath.Join(launch.SettingsFolder, "hooks.json")
-		hooks, trust, err := codexHooks(hookFile, relayCommand(launch.HookCommand, codexJournalName))
+	if start.HookCommand != "" {
+		hookFile := filepath.Join(start.SettingsFolder, "hooks.json")
+		hooks, trust, err := codexHooks(hookFile, relayCommand(start.HookCommand, codexJournalName))
 		if err != nil {
 			return nil, err
 		}

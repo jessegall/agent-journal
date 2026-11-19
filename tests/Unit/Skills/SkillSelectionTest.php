@@ -15,12 +15,12 @@ use App\Skills\Contracts\SkillCondition;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Support\SkillSelection;
-use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\RenderedSkill;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillKey;
-use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use App\Skills\Values\StartProfile;
+use Tests\Fixtures\Profiles\TestStartPolicies;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -57,7 +57,7 @@ final class SkillSelectionTest extends TestCase
     public function test_a_required_skill_outside_the_selection_is_refused_with_its_key_and_reason(): void
     {
         $this->expectException(SkillSelectionConflict::class);
-        $this->expectExceptionMessage('requires the skill journal-main, but it is not selected for this launch (no_match:ability-not-granted)');
+        $this->expectExceptionMessage('requires the skill journal-main, but it is not selected for this start (no_match:ability-not-granted)');
 
         new SkillSelection()->select($this->skills(), $this->helper(null, ['journal-main']));
     }
@@ -127,7 +127,7 @@ final class SkillSelectionTest extends TestCase
             'model' => 'opus',
             'skillAllowlist' => $allowlist,
             'requiredSkills' => $required,
-            'launch' => TestLaunchPolicies::for(ProfileBase::readOnlyHelper()),
+            'start' => TestStartPolicies::for(ProfileBase::readOnlyHelper()),
             'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
@@ -135,7 +135,7 @@ final class SkillSelectionTest extends TestCase
             TestActors::agentIdentity(2),
             TestIds::of(3),
             'main',
-            LaunchProfile::of($snapshot),
+            StartProfile::of($snapshot),
             ProgramKey::from('gemini-cli'),
             null,
         );

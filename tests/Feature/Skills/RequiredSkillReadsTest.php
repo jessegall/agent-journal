@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Agents\Enums\SessionStatus;
-use App\Agents\Events\LaunchStarted;
+use App\Agents\Events\SessionOpened;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
@@ -16,7 +16,7 @@ use App\Hooks\Events\ContextStarted;
 use App\Hooks\Support\ContextReminders;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Values\ProfileBase;
-use App\Skills\Listeners\AdmitLaunchSkills;
+use App\Skills\Listeners\AdmitStartSkills;
 use App\Skills\Listeners\RefreshSessionSkills;
 use App\Skills\Listeners\RemindRequiredSkills;
 use App\Skills\Support\SkillPublishing;
@@ -80,7 +80,7 @@ final class RequiredSkillReadsTest extends TestCase
 
     public function test_an_edited_required_skill_is_asked_for_again_and_reading_it_clears_the_reminder(): void
     {
-        $session = $this->launchedReviewer();
+        $session = $this->startedReviewer();
 
         $this->assertReminded($this->boundary($session));
 
@@ -103,7 +103,7 @@ final class RequiredSkillReadsTest extends TestCase
         $this->assertReminded($this->boundary($session));
     }
 
-    private function launchedReviewer(): AgentSession
+    private function startedReviewer(): AgentSession
     {
         $this->actAs(TestActors::user(7));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
@@ -123,8 +123,8 @@ final class RequiredSkillReadsTest extends TestCase
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
         $session->save();
-        $this->app->make(AdmitLaunchSkills::class)->handle(
-            new LaunchStarted($agent->id, $session->id),
+        $this->app->make(AdmitStartSkills::class)->handle(
+            new SessionOpened($agent->id, $session->id),
         );
 
         return $session;

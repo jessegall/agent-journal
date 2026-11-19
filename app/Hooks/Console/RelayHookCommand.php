@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Console;
 
-use App\AgentRequests\Contracts\LaunchCredentialSource;
-use App\AgentRequests\Support\LaunchEnvironment;
+use App\AgentRequests\Contracts\StartTokenSource;
+use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Support\OfflineReplySeal;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
@@ -13,7 +13,7 @@ use App\Programs\Enums\HookProgram;
 use Illuminate\Console\Command;
 
 /**
- * The command a launched program's isolated settings run for every hook: it reads the payload on standard input.
+ * The command a started program's isolated settings run for every hook: it reads the payload on standard input.
  */
 final class RelayHookCommand extends Command
 {
@@ -23,11 +23,11 @@ final class RelayHookCommand extends Command
 
     public function handle(
         HookRelay $relay,
-        LaunchCredentialSource $credentials,
-        LaunchEnvironment $launch,
+        StartTokenSource $credentials,
+        StartEnvironment $start,
         OfflineReplySeal $seal,
     ): int {
-        $settings = RelaySettings::forLaunch($credentials->forThisLaunch(), $launch, $seal);
+        $settings = RelaySettings::forStart($credentials->forThisStart(), $start, $seal);
         $program = HookProgram::from((string) $this->argument('program'));
         $reply = $relay->relay($program, (string) stream_get_contents(STDIN), $settings);
 

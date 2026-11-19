@@ -32,7 +32,7 @@ final readonly class TimeBudget
      */
     private static function processorMilliseconds(): float
     {
-        $usage = getrusage() ?: throw ProcessorTimeUnreadable::now();
+        $usage = getrusage() ?: throw ProcessorTimeUnreadable::forThisProcess();
 
         return ($usage['ru_utime.tv_sec'] + $usage['ru_stime.tv_sec']) * 1_000
             + ($usage['ru_utime.tv_usec'] + $usage['ru_stime.tv_usec']) / 1_000;

@@ -14,13 +14,13 @@ use Illuminate\Console\Command;
  */
 final class EnrollHostCommand extends Command
 {
-    protected $signature = 'agents:host-enroll {name : The installation name of the host} {--root=* : A folder the host may launch agents in}';
+    protected $signature = 'agents:host-enroll {name : The installation name of the host} {--root=* : A folder the host may start agents in}';
 
     protected $description = 'Enroll a host that runs agent programs and print its secret once';
 
     public function handle(EntryDispatchers $dispatchers): int
     {
-        $enroll = new EnrollHost($this->installationName(), $this->launchRoots());
+        $enroll = new EnrollHost($this->installationName(), $this->startRoots());
         $enrolled = $dispatchers->runAsJournal(CommandEntry::HostControl, 'host enrolment', $enroll);
 
         $this->line("Host {$enrolled->hostId} is enrolled. Its secret, shown only now:");
@@ -40,7 +40,7 @@ final class EnrollHostCommand extends Command
     /**
      * @return list<string>
      */
-    private function launchRoots(): array
+    private function startRoots(): array
     {
         return array_values(array_filter((array) $this->option('root'), is_string(...)));
     }

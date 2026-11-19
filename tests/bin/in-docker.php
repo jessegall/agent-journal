@@ -6,7 +6,12 @@ declare(strict_types=1);
  * Runs a composer script inside the project's queue container: on the host it hands the script and its arguments to
  * docker compose; inside the container it runs the script directly. The tests have no database outside Docker.
  */
-$script = $argv[1] ?? throw new InvalidArgumentException('Name the composer script to run.');
+if (! isset($argv[1])) {
+    fwrite(STDERR, "Name the composer script to run.\n");
+    exit(2);
+}
+
+$script = $argv[1];
 $arguments = array_slice($argv, 2);
 $command = ['composer', 'run-script', $script, '--', ...$arguments];
 

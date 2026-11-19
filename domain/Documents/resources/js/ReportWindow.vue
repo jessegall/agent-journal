@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { RecordPageData } from '@generated/types/documents';
 import CommentsPanel from '@kit/CommentsPanel';
-import LinksPanel from '@kit/LinksPanel';
 import ShareButton from '@kit/ShareButton';
+import LinksPanel from './LinksPanel.vue';
 import RecordStatus from './RecordStatus.vue';
 import RecordWindow from './RecordWindow.vue';
 

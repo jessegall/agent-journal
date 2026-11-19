@@ -14,7 +14,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Hooks\Actions\AgentStacks;
-use App\Hooks\Actions\LaunchStacks;
+use App\Hooks\Actions\StartStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\NoSubject;
@@ -81,7 +81,7 @@ final class ConditionalReviewStateTest extends TestCase
                 null,
             ),
         );
-        $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
+        $this->transaction()->run(fn () => $this->app->make(StartStacks::class)->open($this->target));
     }
 
     public function test_while_the_group_is_on_a_push_adds_the_review_frame(): void

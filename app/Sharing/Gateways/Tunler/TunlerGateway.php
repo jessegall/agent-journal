@@ -10,7 +10,7 @@ use App\Sharing\Exceptions\GatewayOpenFailed;
 use App\Sharing\Exceptions\TunlerStatusUnreadable;
 use App\Sharing\Gateways\Support\ChallengeProbe;
 use App\Sharing\Gateways\Support\GatewayChildren;
-use App\Sharing\Gateways\Support\GatewayLaunches;
+use App\Sharing\Gateways\Support\GatewayStarts;
 use App\Sharing\Gateways\Support\PublicOriginCheck;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
@@ -23,7 +23,7 @@ use Illuminate\Process\Factory as Processes;
 
 /**
  * The Tunler gateway: the pinned tunler program run with the journal's own configuration folder, opened as
- * tunler <port> --domain=<subdomain> --inspect=0, its address taken only from that launch's own "tunnel up" line and
+ * tunler <port> --domain=<subdomain> --inspect=0, its address taken only from that start's own "tunnel up" line and
  * accepted only as the configured HTTPS origin. It never repeats a line the program printed.
  */
 final readonly class TunlerGateway implements ShareGateway
@@ -37,7 +37,7 @@ final readonly class TunlerGateway implements ShareGateway
     public function __construct(
         private Processes $processes,
         private GatewayChildren $children,
-        private GatewayLaunches $launches,
+        private GatewayStarts $starts,
         private PublicOriginCheck $origins,
         private ChallengeProbe $probe,
         #[Config('sharing.tunler.binary')] private string $binary,
@@ -96,7 +96,7 @@ final readonly class TunlerGateway implements ShareGateway
         $child = $this->processes->newPendingProcess()->env($this->environment())->timeout(0)
             ->start([$this->binary, (string) $settings->listenerPort, "--domain={$this->subdomain}", '--inspect=0']);
 
-        return $this->launches->open(
+        return $this->starts->open(
             self::KEY,
             $operation,
             $child,
@@ -119,7 +119,7 @@ final readonly class TunlerGateway implements ShareGateway
     }
 
     /**
-     * What the launch's newest output says: nothing yet, the configured origin, or another address.
+     * What the start's newest output says: nothing yet, the configured origin, or another address.
      */
     private function lookAt(string $output, string $publicOrigin, string $providerHost): GatewayAddressCheck
     {
@@ -137,7 +137,7 @@ final readonly class TunlerGateway implements ShareGateway
     }
 
     /**
-     * The address of the newest "tunnel up" line in the launch's own output, without the rest of the line.
+     * The address of the newest "tunnel up" line in the start's own output, without the rest of the line.
      */
     private function addressIn(string $output): string|null
     {

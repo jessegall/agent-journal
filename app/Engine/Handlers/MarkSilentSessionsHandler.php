@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Engine\Handlers;
 
-use App\Agents\Contracts\RecordsLaunchHeartbeats;
+use App\Agents\Contracts\RecordsStartHeartbeats;
 use App\Contracts\CommandHandler;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Support\EngineAccess;
@@ -16,13 +16,13 @@ final readonly class MarkSilentSessionsHandler implements CommandHandler
 {
     public function __construct(
         private EngineAccess $access,
-        private RecordsLaunchHeartbeats $heartbeats,
+        private RecordsStartHeartbeats $heartbeats,
     ) {}
 
     public function handle(MarkSilentSessions $command): void
     {
         $this->access->checkMaintenance(MarkSilentSessions::MAINTENANCE_SCOPE);
 
-        $this->heartbeats->markSilentLaunches();
+        $this->heartbeats->markSilentStarts();
     }
 }

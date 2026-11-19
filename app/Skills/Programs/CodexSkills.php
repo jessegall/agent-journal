@@ -11,7 +11,7 @@ use App\Skills\Values\SkillDelivery;
 use App\Skills\Values\SkillKey;
 
 /**
- * Codex 0.165.0 finds a session's skills in the skills folder of its isolated CODEX_HOME, which is the launch's
+ * Codex 0.165.0 finds a session's skills in the skills folder of its isolated CODEX_HOME, which is the start's
  * settings folder, so the host writes them there and adds no argument (report 171); never the legacy .codex/skills.
  * It lists them when a turn's process starts.
  */

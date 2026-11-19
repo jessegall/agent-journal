@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
-use App\Agents\Commands\LaunchAgent;
+use App\Agents\Actions\StartSessions;
+use App\Agents\Commands\StartAgent;
 use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\LaunchOriginType;
+use App\Agents\Enums\StartOriginType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Models\LaunchRecord;
-use App\Agents\Support\LaunchPolicy;
-use App\Agents\Support\LaunchRequest;
+use App\Agents\Models\StartRecord;
+use App\Agents\Support\StartPolicy;
+use App\Agents\Support\StartRequest;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
 use App\Desks\Models\DeskRecord;
@@ -31,7 +31,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A run or a helper launch started by the actor at main answers to main's inbox, and keeps that inbox after main's
+ * A run or a helper start made by the actor at main answers to main's inbox, and keeps that inbox after main's
  * occupant changes.
  */
 final class DispatchReplyInboxTest extends TestCase
@@ -45,7 +45,7 @@ final class DispatchReplyInboxTest extends TestCase
         'task_runs',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -56,19 +56,19 @@ final class DispatchReplyInboxTest extends TestCase
         'assignments',
         'claim_authorizations',
         'command_receipts',
-        'launch_records',
+        'start_records',
         'session_policies',
         'capacity_reservations',
     ];
 
-    #[TimeLimit(seconds: 5, reason: 'It launches two agent sessions and seats a desk before it dispatches.')]
+    #[TimeLimit(seconds: 5, reason: 'It starts two agent sessions and seats a desk before it dispatches.')]
     public function test_a_run_keeps_mains_inbox_after_mains_occupant_changes(): void
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
-        $first = $this->launched('First');
-        $second = $this->launched('Second');
+        $first = $this->started('First');
+        $second = $this->started('Second');
         $task = Task::factory()->create();
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
@@ -96,14 +96,14 @@ final class DispatchReplyInboxTest extends TestCase
         $this->assertSame($main->inbox_id, $run->refresh()->replyInboxId()->get());
     }
 
-    #[TimeLimit(seconds: 5, reason: 'It launches two agent sessions and seats a desk before it dispatches.')]
-    public function test_a_helper_launch_keeps_mains_inbox_after_mains_occupant_changes(): void
+    #[TimeLimit(seconds: 5, reason: 'It starts two agent sessions and seats a desk before it dispatches.')]
+    public function test_a_helper_start_keeps_mains_inbox_after_mains_occupant_changes(): void
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
-        $first = $this->launched('First');
-        $second = $this->launched('Second');
+        $first = $this->started('First');
+        $second = $this->started('Second');
         $helper = Agent::named('Researcher', 'read-only-helper');
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
@@ -113,19 +113,19 @@ final class DispatchReplyInboxTest extends TestCase
             ),
         );
         $this->startRequestAs($first->agent_id, $first->id);
-        $request = new LaunchRequest(
+        $request = new StartRequest(
             TestSelections::requestId(),
             $helper->id,
             TestSelections::of(),
-            LaunchOriginType::OwnerRequest,
+            StartOriginType::OwnerRequest,
             'helpers.job 1',
             null,
             ConversationModeType::New,
             null,
-            LaunchPolicy::withoutProfile(TestSelections::onHost()),
+            StartPolicy::withoutProfile(TestSelections::onHost()),
         );
-        $this->app->make(CommandBus::class)->run(new LaunchAgent($request));
-        $record = LaunchRecord::query()->where('request_id', $request->requestId)->sole();
+        $this->app->make(CommandBus::class)->run(new StartAgent($request));
+        $record = StartRecord::query()->where('request_id', $request->requestId)->sole();
 
         $this->assertSame($main->inbox_id, $record->replyInboxId()->get());
 
@@ -142,10 +142,10 @@ final class DispatchReplyInboxTest extends TestCase
         $this->assertSame($main->inbox_id, $record->refresh()->replyInboxId()->get());
     }
 
-    private function launched(string $name): AgentSession
+    private function started(string $name): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)
-            ->launch(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
+        return $this->app->make(StartSessions::class)
+            ->start(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

@@ -16,12 +16,12 @@ use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
 use Domain\Access\Support\AccessSettings;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TestActors;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -44,18 +44,18 @@ final class SkillMcpToolsTest extends TestCase
         'command_receipts',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
     ];
 
-    private TestLaunch $caller;
+    private TestStart $caller;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
-        $this->caller = TestLaunch::start();
+        $this->caller = TestStart::start();
     }
 
     public function test_an_agent_lists_and_shows_skills_as_the_reader_does(): void
@@ -90,7 +90,7 @@ final class SkillMcpToolsTest extends TestCase
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($this->caller->agent->id),
-            TestLaunchAuthority::forAgent($this->caller->agent->id),
+            TestStartAuthority::forAgent($this->caller->agent->id),
         );
 
         try {

@@ -29,7 +29,7 @@ final class OutsideModuleStateTest extends TestCase
     }
 
     /**
-     * The module boots with the application, before the launch builds the state registry once.
+     * The module boots with the application, before the start builds the state registry once.
      */
     protected function refreshApplication(): void
     {

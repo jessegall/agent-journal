@@ -14,7 +14,7 @@ use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Bus\Support\Command;
 
 /**
- * Retains the intent to fence every session launched from a revoked configuration revision, named by an opaque
+ * Retains the intent to fence every session started from a revoked configuration revision, named by an opaque
  * reference, in the transaction that revokes it, so a lost event cannot lose the revocation.
  *
  * @extends Command<string>

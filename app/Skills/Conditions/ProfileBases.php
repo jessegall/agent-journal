@@ -10,7 +10,7 @@ use App\Skills\Values\ConditionResult;
 use App\Skills\Values\SkillContext;
 
 /**
- * Matches a session whose launch profile starts from one of these built-in profiles; a profile-free session never
+ * Matches a session whose start profile is built on one of these built-in profiles; a profile-free session never
  * matches.
  */
 final readonly class ProfileBases implements SkillCondition

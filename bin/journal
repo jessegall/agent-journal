@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# The journal's command for a launched program: "journal task assigned --page 2" runs "artisan task:assigned --page 2".
-# It signs its calls with the launch's JOURNAL_URL and JOURNAL_LAUNCH_TOKEN; it holds no journal logic of its own.
+# The journal's command for a started program: "journal task assigned --page 2" runs "artisan task:assigned --page 2".
+# It signs its calls with the start's JOURNAL_URL and JOURNAL_START_TOKEN; it holds no journal logic of its own.
 if [ "$#" -lt 2 ]; then
     echo "usage: journal <subject> <verb> [options]" >&2
     exit 2
