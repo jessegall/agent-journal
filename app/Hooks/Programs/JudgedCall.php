@@ -6,6 +6,7 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolResult;
@@ -34,7 +35,7 @@ final readonly class JudgedCall implements ProgramCall
 
         return new self(
             new ToolFinished($hook, $result),
-            fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
+            fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::PostToolUse, $answer),
         );
     }
 

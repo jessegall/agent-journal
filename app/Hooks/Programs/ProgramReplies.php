@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Programs;
 
 use App\Hooks\Enums\AnswerType;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\ProgramPermission;
 use App\Hooks\Enums\ProgramStopDecision;
 use App\Hooks\Enums\RewriteSupport;
@@ -95,7 +96,7 @@ final class ProgramReplies
                 'decision' => ProgramStopDecision::Block,
                 'reason' => $answer->decision->refusalReason(),
             ])),
-            AnswerType::Allow => self::observation('UserPromptSubmit', $answer),
+            AnswerType::Allow => self::observation(HookEvent::UserPromptSubmit, $answer),
             AnswerType::Delegate, AnswerType::Rewrite => throw InvalidObservationAnswer::forAnswer($type->value),
         };
     }
@@ -103,7 +104,7 @@ final class ProgramReplies
     /**
      * The reply to a hook that only reports: an empty object, or the context for the agent to read.
      */
-    public static function observation(string $hookEventName, HookAnswer $answer): ProgramReply
+    public static function observation(HookEvent $event, HookAnswer $answer): ProgramReply
     {
         $type = $answer->decision->answerType();
 
@@ -116,7 +117,7 @@ final class ProgramReplies
         }
 
         return ProgramReply::json(ContextBody::from(['hookSpecificOutput' => [
-            'hookEventName' => $hookEventName,
+            'hookEventName' => $event->value,
             'additionalContext' => implode("\n", $answer->context),
         ]]));
     }

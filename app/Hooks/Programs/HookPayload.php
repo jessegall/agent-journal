@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
@@ -67,7 +68,7 @@ final class HookPayload extends Data
      */
     public function callsAnyOf(array $toolNames): bool
     {
-        return $this->hookEventName === 'PreToolUse' && is_string($this->toolName) && in_array(
+        return $this->event()?->isToolCall() === true && is_string($this->toolName) && in_array(
             $this->toolName,
             $toolNames,
             true,
@@ -76,7 +77,15 @@ final class HookPayload extends Data
 
     public function isSessionStart(): bool
     {
-        return $this->hookEventName === 'SessionStart';
+        return $this->event()?->startsSession() === true;
+    }
+
+    /**
+     * The native event the call was sent for, or null for an event the journal maps for no program.
+     */
+    public function event(): HookEvent|null
+    {
+        return HookEvent::tryFrom($this->hookEventName);
     }
 
     public function promptText(): string

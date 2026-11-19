@@ -8,6 +8,7 @@ use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Enums\CodexTool;
 use App\Hooks\Enums\FileOperation;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
@@ -62,12 +63,15 @@ final readonly class CodexAdapter implements ProgramAdapter
 
     public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
-        return match ($payload->hookEventName) {
-            'SessionStart' => new JudgedCall(
+        $event = $payload->event()
+            ?? throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName);
+
+        return match ($event) {
+            HookEvent::SessionStart => new JudgedCall(
                 new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $payload->startSource())),
-                fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
+                fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
             ),
-            'UserPromptSubmit' => new JudgedCall(
+            HookEvent::UserPromptSubmit => new JudgedCall(
                 new PromptSubmitted(
                     $hook,
                     new PromptDetails(
@@ -78,19 +82,18 @@ final readonly class CodexAdapter implements ProgramAdapter
                 ),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
-            'PreToolUse' => $this->toolCall($payload, $hook),
-            'PostToolUse' => $this->callsJournalTools($payload)
+            HookEvent::PreToolUse => $this->toolCall($payload, $hook),
+            HookEvent::PostToolUse => $this->callsJournalTools($payload)
                 ? JournalToolCall::finished()
                 : JudgedCall::forFinishedTool($hook, $payload),
-            'Stop' => new JudgedCall(
+            HookEvent::Stop => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
-            'SessionEnd' => new JudgedCall(
+            HookEvent::SessionEnd => new JudgedCall(
                 new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
-                fn (HookAnswer $answer) => ProgramReplies::observation('SessionEnd', $answer),
+                fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionEnd, $answer),
             ),
-            default => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
         };
     }
 

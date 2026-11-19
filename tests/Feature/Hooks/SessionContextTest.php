@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Events\ContextStarted;
@@ -101,7 +102,7 @@ final class SessionContextTest extends TestCase
             $start,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
+            fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
         );
 
         return $reply->stdout;

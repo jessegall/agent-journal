@@ -7,6 +7,7 @@ namespace App\Hooks\Programs;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Enums\ClaudeCodeTool;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Exceptions\UnsupportedHook;
@@ -69,9 +70,12 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
 
     public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
-        return match ($payload->hookEventName) {
-            'SessionStart' => $this->startCall($payload, $hook),
-            'UserPromptSubmit' => new JudgedCall(
+        $event = $payload->event()
+            ?? throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName);
+
+        return match ($event) {
+            HookEvent::SessionStart => $this->startCall($payload, $hook),
+            HookEvent::UserPromptSubmit => new JudgedCall(
                 new PromptSubmitted(
                     $hook,
                     new PromptDetails(
@@ -82,19 +86,18 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
                 ),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
-            'PreToolUse' => $this->toolCall($payload, $hook),
-            'PostToolUse' => $this->callsJournalTools($payload)
+            HookEvent::PreToolUse => $this->toolCall($payload, $hook),
+            HookEvent::PostToolUse => $this->callsJournalTools($payload)
                 ? JournalToolCall::finished()
                 : JudgedCall::forFinishedTool($hook, $payload),
-            'Stop' => new JudgedCall(
+            HookEvent::Stop => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
-            'SessionEnd' => new JudgedCall(
+            HookEvent::SessionEnd => new JudgedCall(
                 new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
-                fn (HookAnswer $answer) => ProgramReplies::observation('SessionEnd', $answer),
+                fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionEnd, $answer),
             ),
-            default => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
         };
     }
 
@@ -118,7 +121,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
             : new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $source));
 
-        return new JudgedCall($input, fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));
+        return new JudgedCall($input, fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer));
     }
 
     /**

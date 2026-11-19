@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Programs;
 
 use App\Hooks\Enums\CallFailure;
+use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\ProgramStopDecision;
 
 /**
@@ -32,14 +33,16 @@ final class OutageReply
 
     private static function neutral(string $nativeEvent): ProgramReply
     {
-        return $nativeEvent === 'PreToolUse' ? ProgramReplies::allowTool([]) : ProgramReply::emptyObject();
+        return HookEvent::tryFrom($nativeEvent)?->isToolCall() === true
+            ? ProgramReplies::allowTool([])
+            : ProgramReply::emptyObject();
     }
 
     private static function refusal(string $nativeEvent, string $reason): ProgramReply
     {
-        return match ($nativeEvent) {
-            'PreToolUse' => ProgramReplies::denyTool($reason, []),
-            'UserPromptSubmit' => ProgramReply::json(
+        return match (HookEvent::tryFrom($nativeEvent)) {
+            HookEvent::PreToolUse => ProgramReplies::denyTool($reason, []),
+            HookEvent::UserPromptSubmit => ProgramReply::json(
                 BlockBody::from(['decision' => ProgramStopDecision::Block, 'reason' => $reason]),
             ),
             default => ProgramReply::emptyObject(),
