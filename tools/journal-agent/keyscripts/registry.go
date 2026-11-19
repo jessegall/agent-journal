@@ -3,6 +3,8 @@ package keyscripts
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 // ErrUnknownScript refuses a script name nobody registered for the profile.
@@ -25,12 +27,56 @@ func NewRegistry(scripts ...KeyScript) *Registry {
 	return registry
 }
 
-// Find gives the registered script of the profile, or ErrUnknownScript.
+// Find gives the registered script of the profile (program@build); a build with no script of that name falls back
+// to the newest registered build of the same program, whose script then runs unchanged, each step still waiting for
+// its own screen. The script's Profile says which build's script it is. ErrUnknownScript when no build has it.
 func (registry *Registry) Find(profile, name string) (KeyScript, error) {
-	script, found := registry.scripts[profile][name]
+	if script, found := registry.scripts[profile][name]; found {
+		return script, nil
+	}
+
+	program, _, _ := strings.Cut(profile, "@")
+	newest, found := KeyScript{}, false
+	for registered, scripts := range registry.scripts {
+		script, has := scripts[name]
+		registeredProgram, build, _ := strings.Cut(registered, "@")
+		if !has || registeredProgram != program {
+			continue
+		}
+		_, newestBuild, _ := strings.Cut(newest.Profile, "@")
+		if !found || newerBuild(build, newestBuild) {
+			newest, found = script, true
+		}
+	}
 	if !found {
 		return KeyScript{}, fmt.Errorf("%w: %s for %s", ErrUnknownScript, name, profile)
 	}
 
-	return script, nil
+	return newest, nil
+}
+
+// newerBuild is whether one dotted build number is newer than the other, part by part, so 2.1.330 is newer than
+// 2.1.323 and 2.10.0 newer than 2.9.9.
+func newerBuild(build, than string) bool {
+	parts, others := strings.Split(build, "."), strings.Split(than, ".")
+	for at := 0; at < max(len(parts), len(others)); at++ {
+		part, other := buildPart(parts, at), buildPart(others, at)
+		if part != other {
+			return part > other
+		}
+	}
+
+	return false
+}
+
+func buildPart(parts []string, at int) int {
+	if at >= len(parts) {
+		return 0
+	}
+	number, err := strconv.Atoi(parts[at])
+	if err != nil {
+		return 0
+	}
+
+	return number
 }

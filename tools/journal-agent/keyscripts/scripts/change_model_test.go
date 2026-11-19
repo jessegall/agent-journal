@@ -179,3 +179,15 @@ func TestNoRecordedScriptClaimsToProveItsResult(t *testing.T) {
 		}
 	}
 }
+
+func TestANewBuildOfAProgramRunsTheNewestRegisteredScript(t *testing.T) {
+	registry := Registered()
+
+	script, err := registry.Find("claude@2.1.330", "ChangeModel")
+	if err != nil || script.Profile != claudeCode {
+		t.Fatalf("a new build found %q, %v", script.Profile, err)
+	}
+	if _, err := registry.Find("gemini@1.0.0", "ChangeModel"); err == nil {
+		t.Fatal("another program found a script")
+	}
+}

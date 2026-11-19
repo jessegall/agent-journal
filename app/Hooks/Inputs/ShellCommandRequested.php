@@ -50,6 +50,11 @@ final readonly class ShellCommandRequested implements HookInput
         return $state->onShellCommand($this);
     }
 
+    public function leavesAgentIdle(AnswerType $type): bool
+    {
+        return false;
+    }
+
     public function contextStart(): Option
     {
         return None::create();
