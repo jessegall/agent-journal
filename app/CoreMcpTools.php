@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Communication\Mcp\InboxCountsTool;
+use App\Communication\Mcp\InboxHistoryTool;
+use App\Communication\Mcp\MessageAskTool;
+use App\Communication\Mcp\MessageDismissTool;
+use App\Communication\Mcp\MessageReadTool;
+use App\Communication\Mcp\MessageReplyTool;
+use App\Communication\Mcp\MessageSendTool;
+use App\Communication\Mcp\MessageShowTool;
+use App\Communication\Mcp\MessageTakeNextTool;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Resources\OperationResource;
@@ -37,6 +46,9 @@ final class CoreMcpTools
     {
         return [
             OverviewReadTool::class, CapabilitiesReadTool::class, OperationsReadTool::class, AssignmentReadTool::class, AssigneesListTool::class,
+            MessageSendTool::class, MessageAskTool::class, MessageReplyTool::class, MessageReadTool::class,
+            MessageTakeNextTool::class, MessageDismissTool::class, MessageShowTool::class, InboxHistoryTool::class,
+            InboxCountsTool::class,
             SkillsListTool::class, SkillShowTool::class, SkillPreviewTool::class, SkillRevisionsTool::class, SkillRevisionTool::class,
             SkillMakeTool::class, SkillEditTool::class, SkillRestoreTool::class, SkillRetireTool::class, SkillCopyTool::class,
         ];

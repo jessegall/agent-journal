@@ -23,6 +23,8 @@ final class ConversationData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $sessionId,
+        public readonly string $sourceInboxId,
+        public readonly string $destinationInboxId,
         #[DataCollectionOf(MessageData::class)] public readonly array $messages,
     ) {}
 
@@ -30,11 +32,13 @@ final class ConversationData extends Data
      * The messages between the person's inbox and the chosen agent's inbox, shown for the session the window has
      * chosen; the session is only the window's choice.
      */
-    public static function fromPage(string $pairId, MessagePage $page, string $sessionId): self
+    public static function fromPage(string $sourceInboxId, string $destinationInboxId, MessagePage $page, string $sessionId): self
     {
         return self::from([
-            'id' => $pairId,
+            'id' => "{$sourceInboxId}-{$destinationInboxId}",
             'sessionId' => $sessionId,
+            'sourceInboxId' => $sourceInboxId,
+            'destinationInboxId' => $destinationInboxId,
             'messages' => MessageData::collect($page->messages),
         ]);
     }

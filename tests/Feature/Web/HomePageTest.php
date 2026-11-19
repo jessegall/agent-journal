@@ -116,7 +116,7 @@ final class HomePageTest extends TestCase
 
         $home = route('home', ['window' => ['chat.conversation' => ['session' => (string) $this->session->id]], 'session' => (string) $this->session->id], false);
 
-        $this->actingAs($this->owner)->post('/chat/messages', ['body' => $body, 'session' => (string) $this->session->id])
+        $this->actingAs($this->owner)->post('/chat/messages', [...$this->pair(), 'body' => $body, 'session' => (string) $this->session->id])
             ->assertStatus(303)
             ->assertRedirect($home);
 
@@ -161,17 +161,31 @@ final class HomePageTest extends TestCase
 
     public function test_a_blank_message_is_refused_on_its_body(): void
     {
-        $this->actingAs($this->owner)->from('/')->post('/chat/messages', ['body' => "  \n\t ", 'session' => (string) $this->session->id])
+        $this->actingAs($this->owner)->from('/')->post('/chat/messages', [...$this->pair(), 'body' => "  \n\t ", 'session' => (string) $this->session->id])
             ->assertRedirect('/')
             ->assertSessionHasErrors('body');
 
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_a_guessed_session_is_refused_on_the_session(): void
+    public function test_a_guessed_destination_inbox_is_refused_and_leaves_no_message(): void
     {
-        $this->actingAs($this->owner)->from('/')->post('/chat/messages', ['body' => 'Hello', 'session' => TestIds::of(99999)])
+        $guessed = [...$this->pair(), 'destinationInboxId' => TestIds::of(99999)];
+
+        $this->actingAs($this->owner)->from('/')
+            ->post('/chat/messages', [...$guessed, 'body' => 'Hello', 'session' => (string) $this->session->id])
             ->assertRedirect('/')
-            ->assertSessionHasErrors('session');
+            ->assertSessionHasErrors('command');
+        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
+    }
+
+    /**
+     * @return array{sourceInboxId: string, destinationInboxId: string}
+     */
+    private function pair(): array
+    {
+        [$sourceInboxId, $destinationInboxId] = explode('-', $this->pairId);
+
+        return ['sourceInboxId' => $sourceInboxId, 'destinationInboxId' => $destinationInboxId];
     }
 }

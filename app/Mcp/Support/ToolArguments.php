@@ -81,6 +81,22 @@ final readonly class ToolArguments
     }
 
     /**
+     * A whole number that may be zero, such as a version the caller read.
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function wholeNumber(string $name): int
+    {
+        $value = $this->arguments[$name] ?? null;
+
+        if (! is_int($value) || $value < 0) {
+            throw ToolArgumentInvalid::for($name, 'a whole number of at least 0');
+        }
+
+        return $value;
+    }
+
+    /**
      * The whole number the caller sent, or the tool's default when it sent none.
      *
      * @throws ToolArgumentInvalid

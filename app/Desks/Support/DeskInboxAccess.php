@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Desks\Support;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Support\ActorIdentity;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Communication\Contracts\Inbox;
@@ -70,5 +71,10 @@ final readonly class DeskInboxAccess implements InboxAccess
         $assignment = $seat->toAssignment();
 
         return new InboxMembership(SeatOccupant::of($assignment), $assignment->reference);
+    }
+
+    public function memberInboxIds(ActorIdentity $actor): Builder
+    {
+        return DeskRecord::query()->occupiedBy($actor)->select('inbox_id');
     }
 }

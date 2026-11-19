@@ -4,22 +4,25 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
+use App\Actors\Support\ActorIdentity;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxAccess;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Contracts\MemberInboxes;
 use App\Communication\Contracts\NamesInboxes;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\InboxRecord;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The inbox providers registered at boot, each under one key with the access that guards it, and the resolution of
  * an inbox id through the provider its record names.
  */
-final class RegisteredInboxes implements InboxRegistration, InboxResolver
+final class RegisteredInboxes implements InboxRegistration, InboxResolver, MemberInboxes
 {
     /**
      * @var array<string, array{class-string<InboxProvider>, class-string<InboxAccess>}>
@@ -83,5 +86,19 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
     public function membersOf(Inbox $inbox): array
     {
         return $this->accessFor($inbox)->members($inbox)->memberships;
+    }
+
+    /**
+     * Every registered provider's inboxes the actor is seated at, as one query.
+     */
+    public function inboxIdsOf(ActorIdentity $actor): Builder
+    {
+        $queries = array_map(
+            fn (array $provider) => $this->container->make($provider[1])->memberInboxIds($actor),
+            array_values($this->providers),
+        );
+        $first = array_shift($queries) ?? InboxRecord::query()->whereKey([])->select('id');
+
+        return array_reduce($queries, fn (Builder $all, Builder $more) => $all->union($more), $first);
     }
 }

@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+use Illuminate\Support\Str;
+use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\MessagingTestCase;
+use Tests\Support\SendsMcpFrames;
 
 /**
  * A person sends, asks and pages through messages over Core's own HTTP entries, named by inbox ids and answered with
@@ -12,6 +17,8 @@ use Tests\Support\MessagingTestCase;
  */
 final class MessageEntryRoutesTest extends MessagingTestCase
 {
+    use SendsMcpFrames;
+
     public function test_a_person_sends_asks_and_reads_back_over_http(): void
     {
         $pair = ['sourceInboxId' => $this->ownerInboxId(), 'destinationInboxId' => $this->inboxIdOf($this->builder)];
@@ -36,6 +43,35 @@ final class MessageEntryRoutesTest extends MessagingTestCase
             ->getJson('/communication/wake-status?'.http_build_query(['messageId' => $asked->json('messageId')]))
             ->assertOk()
             ->assertJsonCount(1);
+    }
+
+    public function test_an_agent_reads_replies_and_pages_history_over_mcp(): void
+    {
+        $caller = TestLaunch::start();
+        $callerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $caller->agent->id))->inboxId();
+        $questionId = $this->ownerAsks($callerInboxId, 'Which port?');
+
+        $read = $this->callMcpTool($caller, 'messages_read', [
+            'inbox_id' => $callerInboxId,
+            'message_ids' => [$questionId],
+            'request_key' => (string) Str::ulid(),
+        ]);
+        $this->assertFalse($read->json('result.isError'), (string) json_encode($read->json('result')));
+        $showing = $this->callMcpTool($caller, 'messages_show', ['message_id' => $questionId]);
+        $this->assertFalse($showing->json('result.isError'), (string) json_encode($showing->json('result')));
+        $shown = $showing->json('result.structuredContent.message');
+        $replied = $this->callMcpTool($caller, 'messages_reply', [
+            'message_id' => $questionId,
+            'state_version' => $shown['stateVersion'],
+            'body' => 'Port 8080.',
+            'request_key' => (string) Str::ulid(),
+        ]);
+        $this->assertFalse($replied->json('result.isError'), (string) json_encode($replied->json('result')));
+        $history = $this->callMcpTool($caller, 'inbox_history', ['inbox_id' => $callerInboxId])
+            ->json('result.structuredContent.page.messages');
+
+        $this->assertTrue($read->json('result.structuredContent.results.0.takenUp'));
+        $this->assertSame(['Which port?', 'Port 8080.'], array_column($history, 'body'));
     }
 
     public function test_a_send_named_by_session_instead_of_inboxes_is_refused(): void

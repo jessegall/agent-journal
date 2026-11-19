@@ -11,16 +11,26 @@ import { send as sendRoute } from '@generated/routes/chat';
 import type { MessageInput } from '@generated/types/chat';
 
 /**
- * Writes a message to one agent session (doc 4, 6.5). The text is the draft of this conversation, so switching
+ * Asks the agent of the chosen conversation, from the person's inbox to the agent's (doc 4, 6.5). The text is the draft of this conversation, so switching
  * conversations or reloading keeps it; a send keeps the target it was sent to, even when the user switches while it
  * is on its way, and clears only that draft, only if it was not typed on since.
  */
-const props = defineProps<{ draftKey: string; session: string }>();
+const props = defineProps<{
+    draftKey: string;
+    session: string;
+    sourceInboxId: string;
+    destinationInboxId: string;
+}>();
 
 const drafts = useMessageDrafts();
 const body = ref('');
 const textarea = ref<HTMLTextAreaElement | null>(null);
-const form = useForm<MessageInput>({ body: '', session: props.session });
+const form = useForm<MessageInput>({
+    body: '',
+    session: props.session,
+    sourceInboxId: props.sourceInboxId,
+    destinationInboxId: props.destinationInboxId,
+});
 const hasText = computed(() => body.value.trim() !== '');
 
 useComposerHeight(textarea, body);
@@ -46,8 +56,15 @@ function submit(): void {
         key: props.draftKey,
         body: body.value,
         session: props.session,
+        sourceInboxId: props.sourceInboxId,
+        destinationInboxId: props.destinationInboxId,
     };
-    form.transform(() => ({ body: sent.body, session: sent.session })).submit(
+    form.transform(() => ({
+        body: sent.body,
+        session: sent.session,
+        sourceInboxId: sent.sourceInboxId,
+        destinationInboxId: sent.destinationInboxId,
+    })).submit(
         sendRoute(),
         {
             preserveScroll: true,

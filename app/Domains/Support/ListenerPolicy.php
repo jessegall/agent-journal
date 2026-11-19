@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Support;
 
 use App\Contracts\Event;
+use App\Contracts\LogsListenerFailures;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
 use App\Ui\Contracts\UpdatesUserInterface;
@@ -79,7 +80,7 @@ final readonly class ListenerPolicy
      * listeners as they are. The map itself keeps every declaration.
      *
      * @param  array<string, list<string>>  $events
-     * @return array<string, list<string|AvailableListener>>
+     * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
      *
      * @throws InvalidListener
      */
@@ -97,7 +98,10 @@ final readonly class ListenerPolicy
 
                 $file = (string) new ReflectionClass($class)->getFileName();
                 $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsListenerFile($file));
-                $gated[$event][] = $domain === null ? $listener : new AvailableListener($domain->name, $listener);
+                $available = $domain === null ? $listener : new AvailableListener($domain->name, $listener);
+                $gated[$event][] = is_subclass_of($event, LogsListenerFailures::class)
+                    ? new FailureLoggingListener($event, $available)
+                    : $available;
             }
         }
 

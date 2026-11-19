@@ -4,13 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Http\Controllers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Agents\Contracts\SessionResolver;
-use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
-use App\Communication\Commands\SendMessage;
-use App\Communication\Contracts\ActorInboxResolver;
-use App\Communication\Contracts\InboxDestinationResolver;
+use App\Communication\Commands\AskMessage;
 use Domain\Chat\Data\MessageInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -22,21 +17,15 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SendMessageController
 {
-    public function __invoke(
-        MessageInput $input,
-        CommandBus $commands,
-        SessionResolver $sessions,
-        CurrentActor $actors,
-        ActorInboxResolver $ownInboxes,
-        InboxDestinationResolver $destinations,
-        Redirector $redirect,
-    ): RedirectResponse {
-        $agent = $sessions->requireActive((string) $input->session)->actorIdentity();
-        $source = $ownInboxes->preferredFor($actors->actor());
-        $destination = $destinations->resolve(AssigneeIdentity::ofActorIdentity($agent));
-        $commands->run(new SendMessage($source->inboxId(), $destination->inboxId(), $input->body));
+    /**
+     * Asks from the pair of inboxes the conversation showed, so a send keeps its target even when the window has
+     * moved on, and returns to Home with the same session chosen.
+     */
+    public function __invoke(MessageInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
+    {
+        $commands->run(new AskMessage($input->sourceInboxId, $input->destinationInboxId, $input->body));
+        $window = ['window' => ['chat.conversation' => ['session' => $input->session]], 'session' => $input->session];
 
-        // Back to Home with the session chosen for the chat window and for the sections that read it.
-        return $redirect->route('home', ['window' => ['chat.conversation' => ['session' => $input->session]], 'session' => $input->session], 303);
+        return $redirect->route('home', $window, 303);
     }
 }

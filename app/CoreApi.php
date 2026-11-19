@@ -355,13 +355,21 @@ use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageAnswered;
+use App\Communication\Events\MessageAnswerRequired;
+use App\Communication\Events\MessageClaimReleased;
 use App\Communication\Events\MessageDismissed;
+use App\Communication\Events\MessageRead;
 use App\Communication\Events\MessageSent;
+use App\Communication\Events\MessageTakenUp;
 use App\Communication\Exceptions\ActorCannotSend;
+use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageBodyEmpty;
+use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
+use App\Communication\Exceptions\MessageStateConflict;
+use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageAddress;
@@ -370,6 +378,7 @@ use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
 use App\Contracts\Listener;
+use App\Contracts\LogsListenerFailures;
 use App\Desks\Commands\CreateDesk;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Commands\ProvisionActorDesk;
@@ -904,6 +913,10 @@ final class CoreApi
                 MessageSent::class,
                 MessageAnswered::class,
                 MessageDismissed::class,
+                MessageRead::class,
+                MessageTakenUp::class,
+                MessageAnswerRequired::class,
+                MessageClaimReleased::class,
                 ContextStarted::class,
                 StateTypesRequested::class,
                 AssignmentsChanged::class,
@@ -976,6 +989,7 @@ final class CoreApi
                 ProvidesInternalAssignables::class,
                 ProvidesIncomingWork::class,
                 IncomingWork::class,
+                LogsListenerFailures::class,
                 IncomingWorkRegistration::class,
                 Desk::class,
                 ForwardsToDesk::class,
@@ -1651,6 +1665,10 @@ final class CoreApi
                 AbilityNotRegistered::class,
                 ConsoleOwnerMissing::class,
                 InboxUnavailable::class,
+                AnswerImpossible::class,
+                MessageBodyTooLong::class,
+                MessageStateConflict::class,
+                MessageToSelf::class,
                 IncomingWorkRepeated::class,
                 DeskUnavailable::class,
                 DeskSeatCountInvalid::class,

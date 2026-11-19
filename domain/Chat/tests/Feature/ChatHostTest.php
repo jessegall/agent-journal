@@ -20,7 +20,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\WritesInboxMessages;
 
 /**
- * Chat sends from the person's own inbox to the chosen agent's inbox and shows the exchange between those two
+ * Chat asks from the person's own inbox to the chosen agent's inbox and shows the exchange between those two
  * inboxes, so Core's messages are the conversation Chat displays.
  */
 final class ChatHostTest extends TestCase
@@ -56,7 +56,12 @@ final class ChatHostTest extends TestCase
         $window = ['window' => ['chat.conversation' => ['session' => $session->id]], 'session' => $session->id];
 
         $this->actingAs($owner)
-            ->post('/chat/messages', ['body' => 'Is the build green?', 'session' => $session->id])
+            ->post('/chat/messages', [
+                'sourceInboxId' => $ownInboxId,
+                'destinationInboxId' => $agentInboxId,
+                'body' => 'Is the build green?',
+                'session' => $session->id,
+            ])
             ->assertRedirect(route('home', $window, false));
 
         $message = Message::query()->withoutGlobalScopes()->sole();

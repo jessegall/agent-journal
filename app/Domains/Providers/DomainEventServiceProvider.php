@@ -7,6 +7,7 @@ namespace App\Domains\Providers;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\AvailableListener;
+use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerPolicy;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
@@ -39,7 +40,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
      * The checked map as the dispatcher registers it, from discovery or the cache alike, with each domain listener
      * gated by its domain's availability.
      *
-     * @return array<string, list<string|AvailableListener>>
+     * @return array<string, list<string|AvailableListener|FailureLoggingListener>>
      *
      * @throws InvalidListener
      */

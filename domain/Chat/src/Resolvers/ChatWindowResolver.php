@@ -54,6 +54,6 @@ final readonly class ChatWindowResolver implements PageResolver
         $theirs = $this->destinations->resolve($agent)->inboxId();
         $page = $this->messages->between($own, $theirs, null, MessagePage::DEFAULT_LIMIT);
 
-        return ConversationData::fromPage("{$own}-{$theirs}", $page, (string) $session->sessionId);
+        return ConversationData::fromPage($own, $theirs, $page, (string) $session->sessionId);
     }
 }

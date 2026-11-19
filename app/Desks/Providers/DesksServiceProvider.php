@@ -17,7 +17,6 @@ use App\Assignments\Support\AssigneeRegistration;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxRegistration;
-use App\Communication\Contracts\MemberInboxes;
 use App\Desks\Console\InstallDesksCommand;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Contracts\ForwardingSeatResolver;
@@ -49,7 +48,6 @@ use App\Desks\Support\PreferredDeskInboxes;
 use App\Desks\Support\RegisteredAssignmentDestinations;
 use App\Desks\Support\RegisteredInboxDestinations;
 use App\Desks\Support\SeatedDesks;
-use App\Desks\Support\SeatedInboxes;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 
@@ -70,7 +68,6 @@ final class DesksServiceProvider extends ServiceProvider
         $this->app->scoped(MainSeatTakeover::class, MainTakeover::class);
         $this->app->scoped(ReplyInboxes::class, DeskReplyInboxes::class);
         $this->app->scoped(SharedHolders::class, SeatedDesks::class);
-        $this->app->scoped(MemberInboxes::class, SeatedInboxes::class);
         $this->app->singleton(DestinationRegistry::class);
         $this->app->scoped(AssignmentDestinationResolver::class, RegisteredAssignmentDestinations::class);
         $this->app->scoped(InboxDestinationResolver::class, RegisteredInboxDestinations::class);

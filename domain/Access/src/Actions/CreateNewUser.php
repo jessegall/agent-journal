@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Access\Actions;
 
+use App\Actors\Contracts\ActorProvisioning;
+use App\Actors\Support\ActorIdentity;
+use App\Assignments\Contracts\AssignmentTransaction;
 use Domain\Access\Concerns\PasswordValidationRules;
 use Domain\Access\Models\User;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
@@ -16,10 +19,12 @@ final class CreateNewUser implements CreatesNewUsers
 
     public function __construct(
         private readonly ValidationFactory $validation,
+        private readonly AssignmentTransaction $assignments,
+        private readonly ActorProvisioning $desks,
     ) {}
 
     /**
-     * Validate and create a newly registered user.
+     * Validates and registers the person, then gives them their own desk, so they have an inbox from the start.
      *
      * @param  array<string, string>  $input
      */
@@ -31,6 +36,11 @@ final class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::register($input['name'], $input['email'], $input['password']);
+        return $this->assignments->run(function () use ($input): User {
+            $user = User::register($input['name'], $input['email'], $input['password']);
+            $this->desks->provision(ActorIdentity::of($user), $user->name);
+
+            return $user;
+        });
     }
 }

@@ -59,7 +59,12 @@ const key = computed(() =>
         <template v-if="conversation && key">
             <MessageList :messages="conversation.messages" />
             <slot name="dock" />
-            <Composer :draft-key="key" :session="conversation.sessionId" />
+            <Composer
+                :draft-key="key"
+                :session="conversation.sessionId"
+                :source-inbox-id="conversation.sourceInboxId"
+                :destination-inbox-id="conversation.destinationInboxId"
+            />
         </template>
         <template v-else>
             <p class="m-auto text-empty text-text-3">

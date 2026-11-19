@@ -98,7 +98,12 @@ final readonly class MessageSending
             new AcceptedOperation($this->accepted->requireFor(self::class)),
         );
         $this->attention->requestFor($destination, AttentionOrigin::message($message->id, $message->origin_receipt_id));
-        $this->events->dispatch(new MessageSent($message->id, $source->inboxId(), $destination->inboxId()));
+        $this->events->dispatch(new MessageSent(
+            $message->id,
+            ActorIdentity::of($author),
+            $source->inboxId(),
+            $destination->inboxId(),
+        ));
 
         return $message;
     }

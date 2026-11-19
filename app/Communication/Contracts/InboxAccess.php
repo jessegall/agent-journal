@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Communication\Contracts;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Support\ActorIdentity;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Who may use an inbox and the locks that keep membership still while a message is sent or read; lifecycle locks
@@ -25,4 +27,11 @@ interface InboxAccess
     public function membership(Inbox $inbox, Actor $actor): InboxMembership;
 
     public function members(Inbox $inbox): InboxMembers;
+
+    /**
+     * The ids of this provider's inboxes the actor is seated at now, as a query to read them by.
+     *
+     * @return Builder<*>
+     */
+    public function memberInboxIds(ActorIdentity $actor): Builder;
 }
