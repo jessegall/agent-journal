@@ -10,6 +10,11 @@ namespace App\Profiles\Values;
  */
 final readonly class CleanupProgress
 {
+    /**
+     * How many times a host tries a cleanup on its own before it waits for the owner's Retry.
+     */
+    public const int MOST_TRIES = 3;
+
     public function __construct(
         public bool $isStoreRemoved,
         public bool $isDirectoryRemoved,

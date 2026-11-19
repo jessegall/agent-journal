@@ -9,6 +9,8 @@ use App\Profiles\Http\Controllers\CancelSignInController;
 use App\Profiles\Http\Controllers\DismissAccountNoticeController;
 use App\Profiles\Http\Controllers\RemoveAccountController;
 use App\Profiles\Http\Controllers\RenameAccountController;
+use App\Profiles\Http\Controllers\RetryAccountCleanupController;
+use App\Profiles\Http\Controllers\RetryAttemptCleanupController;
 use App\Profiles\Http\Controllers\SignInAgainController;
 use App\Profiles\Http\Controllers\SignInChallengeController;
 use App\Profiles\Http\Controllers\StartSignInController;
@@ -45,6 +47,12 @@ final class ProfilesPages implements ProvidesNavigation, ProvidesPages, Provides
                     ActionRoute::post('sign-ins', StartSignInController::class, 'start-sign-in'),
                     ActionRoute::post('{account}/sign-in-again', SignInAgainController::class, 'sign-in-again'),
                     ActionRoute::delete('{account}', RemoveAccountController::class, 'remove'),
+                    ActionRoute::post('{account}/cleanup/retry', RetryAccountCleanupController::class, 'retry-cleanup'),
+                    ActionRoute::post(
+                        'sign-ins/{attempt}/cleanup/retry',
+                        RetryAttemptCleanupController::class,
+                        'retry-sign-in-cleanup',
+                    ),
                     ActionRoute::post('notices/{notice}/dismiss', DismissAccountNoticeController::class, 'dismiss'),
                     ActionRoute::post('sign-ins/{attempt}/challenge', SignInChallengeController::class, 'challenge'),
                     ActionRoute::post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code'),

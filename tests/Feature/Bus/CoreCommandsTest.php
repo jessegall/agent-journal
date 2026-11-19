@@ -129,6 +129,8 @@ use App\Profiles\Commands\ReleaseSignInAgain;
 use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\ReportSignIn;
+use App\Profiles\Commands\RetryAccountCleanup;
+use App\Profiles\Commands\RetryAttemptCleanup;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Commands\SwitchAccount;
@@ -300,6 +302,8 @@ final class CoreCommandsTest extends CommandBusTestCase
             BeginSignIn::class,
             BeginSignInAgain::class,
             RemoveAccount::class,
+            RetryAccountCleanup::class,
+            RetryAttemptCleanup::class,
             CancelSignIn::class,
             SubmitSignInCode::class,
             PublishSignInChallenge::class,

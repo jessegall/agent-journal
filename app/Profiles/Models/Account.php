@@ -10,6 +10,7 @@ use App\Agents\Support\SelectedAccount;
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountState;
+use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Support\HumanAccounts;
@@ -48,6 +49,8 @@ use Illuminate\Support\Str;
  * @property bool $cleanup_pending
  * @property bool $cleanup_released
  * @property bool $store_removed
+ * @property int $cleanup_tries
+ * @property CleanupProblem|null $cleanup_problem
  * @property int|null $check_requested_generation
  * @property CarbonImmutable|null $checked_at
  * @property Carbon|null $created_at
@@ -77,6 +80,8 @@ final class Account extends Model implements ReadableModel
             'cleanup_pending' => 'boolean',
             'cleanup_released' => 'boolean',
             'store_removed' => 'boolean',
+            'cleanup_tries' => 'integer',
+            'cleanup_problem' => CleanupProblem::class,
             'check_requested_generation' => 'integer',
             'checked_at' => 'immutable_datetime',
         ];
@@ -446,6 +451,28 @@ final class Account extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The owner asks for the cleanup again after its tries ran out; it still waits for the account's processes and
+     * keeps its generation, so nothing newer is cleaned.
+     */
+    public function retryCleanup(): void
+    {
+        if ($this->state !== AccountState::Removing) {
+            return;
+        }
+
+        $this->cleanup_tries = 0;
+        $this->save();
+    }
+
+    /**
+     * Whether the host stopped trying the cleanup on its own and waits for the owner's Retry.
+     */
+    public function awaitsCleanupRetry(): bool
+    {
+        return $this->state === AccountState::Removing && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
+    }
+
     public function isBeingRemoved(): bool
     {
         return in_array($this->state, [AccountState::Removing, AccountState::Removed], true);
@@ -471,12 +498,16 @@ final class Account extends Model implements ReadableModel
         }
 
         $this->store_removed = $this->store_removed || $progress->isStoreRemoved;
-        $this->save();
 
         if (! $this->store_removed || ! $progress->isDirectoryRemoved) {
+            $this->cleanup_tries++;
+            $this->cleanup_problem = CleanupProblem::of($this->store_removed);
+            $this->save();
+
             return false;
         }
 
+        $this->cleanup_problem = null;
         $this->finishRemoval();
 
         return true;
@@ -491,6 +522,7 @@ final class Account extends Model implements ReadableModel
             ->withoutGlobalScope(HumanAccounts::class)
             ->where('state', AccountState::Removing->value)
             ->where('cleanup_released', true)
+            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
             ->whereNotNull('directory')
             ->orderBy('updated_at')
             ->first();

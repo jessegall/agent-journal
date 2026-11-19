@@ -26,6 +26,8 @@ return new class extends Migration
             $table->boolean('cleanup_pending')->default(false);
             $table->boolean('cleanup_released')->default(false);
             $table->boolean('store_removed')->default(false);
+            $table->unsignedSmallInteger('cleanup_tries')->default(0);
+            $table->string('cleanup_problem', 32)->nullable();
             $table->unsignedBigInteger('check_requested_generation')->nullable();
             $table->timestampTz('checked_at')->nullable();
             $table->timestampsTz();
@@ -57,6 +59,8 @@ return new class extends Migration
             $table->boolean('cleanup_pending')->default(false);
             $table->boolean('waits_for_uses')->default(false);
             $table->boolean('store_removed')->default(false);
+            $table->unsignedSmallInteger('cleanup_tries')->default(0);
+            $table->string('cleanup_problem', 32)->nullable();
             $table->timestampTz('expires_at');
             $table->timestampsTz();
 

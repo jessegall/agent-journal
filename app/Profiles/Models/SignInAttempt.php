@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Models;
 
 use App\Links\Support\Linkable;
+use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Enums\SignInType;
 use App\Profiles\Exceptions\SignInAttemptMissing;
@@ -41,6 +42,8 @@ use Illuminate\Support\Carbon;
  * @property bool $cleanup_pending
  * @property bool $waits_for_uses
  * @property bool $store_removed
+ * @property int $cleanup_tries
+ * @property CleanupProblem|null $cleanup_problem
  * @property CarbonImmutable $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -69,6 +72,8 @@ final class SignInAttempt extends Model implements ReadableModel
             'cleanup_pending' => 'boolean',
             'waits_for_uses' => 'boolean',
             'store_removed' => 'boolean',
+            'cleanup_tries' => 'integer',
+            'cleanup_problem' => CleanupProblem::class,
             'expires_at' => 'immutable_datetime',
         ];
     }
@@ -343,6 +348,7 @@ final class SignInAttempt extends Model implements ReadableModel
             ->withoutGlobalScope(HumanAccounts::class)
             ->where('cleanup_pending', true)
             ->whereNull('account_id')
+            ->where('cleanup_tries', '<', CleanupProgress::MOST_TRIES)
             ->whereNotNull('directory')
             ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
             ->orderBy('updated_at')
@@ -363,12 +369,53 @@ final class SignInAttempt extends Model implements ReadableModel
 
         if ($this->store_removed && $progress->isDirectoryRemoved) {
             $this->cleanup_pending = false;
+            $this->cleanup_problem = null;
             $this->directory = null;
+        } else {
+            $this->cleanup_tries++;
+            $this->cleanup_problem = CleanupProblem::of($this->store_removed);
         }
 
         $this->save();
 
         return ! $this->cleanup_pending;
+    }
+
+    /**
+     * The owner asks for the cleanup of an unfinished new account's sign-in again, by the attempt alone, even when its
+     * folder is already gone: the host still has to show the program's sign-in is gone.
+     */
+    public function retryCleanup(): void
+    {
+        if (! $this->cleanup_pending || $this->account_id !== null) {
+            return;
+        }
+
+        $this->cleanup_tries = 0;
+        $this->save();
+    }
+
+    /**
+     * The owner's unfinished new-account sign-ins whose folder still waits for its cleanup, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function pendingCleanups(): array
+    {
+        $attempts = self::query()
+            ->where('cleanup_pending', true)
+            ->whereNull('account_id')
+            ->whereNotIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->orderBy('created_at')
+            ->readLimit(50)
+            ->get();
+
+        return array_values($attempts->all());
+    }
+
+    public function awaitsCleanupRetry(): bool
+    {
+        return $this->cleanup_pending && $this->cleanup_tries >= CleanupProgress::MOST_TRIES;
     }
 
     /**

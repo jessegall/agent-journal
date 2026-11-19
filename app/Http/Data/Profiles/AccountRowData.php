@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Data\Profiles;
 
 use App\Profiles\Enums\AccountState;
+use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Models\Account;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -25,6 +26,8 @@ final class AccountRowData extends Data
         public readonly bool $isActive,
         public readonly int $runningCount,
         public readonly string|null $checkedAt,
+        public readonly CleanupProblem|null $cleanupProblem,
+        public readonly bool $awaitsCleanupRetry,
     ) {}
 
     public static function fromAccount(Account $account, bool $isActive, int $runningCount): self
@@ -38,6 +41,8 @@ final class AccountRowData extends Data
             $isActive,
             $runningCount,
             $account->checked_at?->toIso8601String(),
+            $account->cleanup_problem,
+            $account->awaitsCleanupRetry(),
         );
     }
 }
