@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
@@ -13,11 +15,14 @@ use App\Exports\Support\Exports;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
+use Tests\Fixtures\Modules\Cards\Enums\DeckAbility;
+use Tests\Fixtures\Modules\Cards\Models\Deck;
+use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 
 /**
  * A second test module standing in for another owner of commands: one exported, one private.
  */
-final class CardsDomain extends Domain implements ProvidesCommandMiddleware, ProvidesCommands
+final class CardsDomain extends Domain implements ProvidesCommandMiddleware, ProvidesCommands, ProvidesPolicies
 {
     public function description(): string
     {
@@ -44,5 +49,10 @@ final class CardsDomain extends Domain implements ProvidesCommandMiddleware, Pro
     public function commandMiddleware(): array
     {
         return [MiddlewareDeclaration::around(RecordCards::class, CommandScope::all())];
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(Deck::class, DeckPolicy::class, DeckAbility::class)];
     }
 }

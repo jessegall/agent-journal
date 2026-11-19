@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Enums\CommandEntry;
 
 /**
@@ -24,7 +23,6 @@ final readonly class RegisteredCommand
         public string $owner,
         public bool $exported,
         public bool $repeatableRead,
-        public ActorType|null $actor,
         public bool $requiresRequestKey,
         public bool $actorScopedReceipt,
         public ReceiptRetention $retention,

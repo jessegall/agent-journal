@@ -266,7 +266,6 @@ use App\Assignments\Support\RecordIds;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\CodedRefusal;
@@ -1360,7 +1359,6 @@ final class CoreApi
                 AssignmentHolder::class,
                 HandledBy::class,
                 RepeatableRead::class,
-                RequiresActor::class,
                 RequiresRequestKey::class,
                 RetainedActorRequestKey::class,
                 ElapsedTime::class,

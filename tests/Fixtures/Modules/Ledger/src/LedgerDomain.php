@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
@@ -13,13 +15,15 @@ use App\Numbers\Support\NumberedModel;
 use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger;
 use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry;
+use Tests\Fixtures\Modules\Ledger\Enums\LedgerAbility;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
+use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
 
 /**
  * A test module of numbered records: ledgers numbered across the journal, and entries numbered within their ledger.
  */
-final class LedgerDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels
+final class LedgerDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesPolicies
 {
     use HasNumberedModels;
 
@@ -52,5 +56,10 @@ final class LedgerDomain extends Domain implements ProvidesCommands, ProvidesNum
     public function numberedModels(): array
     {
         return [NumberedModel::global(Ledger::class), NumberedModel::within(LedgerEntry::class, Ledger::class)];
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(Ledger::class, LedgerPolicy::class, LedgerAbility::class)];
     }
 }

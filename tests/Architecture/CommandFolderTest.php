@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Attributes\RequiresRequestKey;
+use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\RegisteredMiddleware;
 use ReflectionClass;
@@ -54,7 +56,7 @@ final class CommandFolderTest extends TestCase
         foreach ($this->allClasses() as $class) {
             $reflection = new ReflectionClass($class);
 
-            foreach ([HandledBy::class, RepeatableRead::class, RequiresActor::class, RequiresRequestKey::class] as $attribute) {
+            foreach ([HandledBy::class, RepeatableRead::class, Authorize::class, Entry::class, RequiresRequestKey::class] as $attribute) {
                 if ($reflection->getAttributes($attribute) !== [] && ! $registry->has($class)) {
                     $misplaced[] = "{$class} carries ".class_basename($attribute);
                 }
@@ -62,6 +64,18 @@ final class CommandFolderTest extends TestCase
         }
 
         $this->assertSame([], $misplaced, 'Command attributes on a class no owner lists as a command do nothing.');
+    }
+
+    public function test_every_registered_command_declares_its_authorization_or_a_trusted_entry(): void
+    {
+        $registry = $this->app->make(CommandRegistry::class);
+        $undeclared = array_filter(
+            array_keys($registry->handlerMap()),
+            fn (string $command) => $registry->authorizationOf($command) === null
+                && $registry->entryOf($command) === CommandEntry::Application,
+        );
+
+        $this->assertSame([], array_values($undeclared), 'These commands declare neither Authorize nor a trusted entry.');
     }
 
     public function test_no_handler_or_command_middleware_keeps_static_state(): void

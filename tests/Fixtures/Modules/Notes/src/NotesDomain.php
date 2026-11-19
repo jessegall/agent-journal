@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use Tests\Fixtures\Modules\Notes\Policies\NotePolicy;
-use Tests\Fixtures\Modules\Notes\Enums\NoteAbility;
 use App\Actors\Contracts\ProvidesPolicies;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
@@ -54,20 +52,24 @@ use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
 use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
-use Tests\Fixtures\Modules\Notes\Commands\RetainNote;
 use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
+use Tests\Fixtures\Modules\Notes\Commands\RetainNote;
 use Tests\Fixtures\Modules\Notes\Commands\SystemNote;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
+use Tests\Fixtures\Modules\Notes\Enums\NoteAbility;
+use Tests\Fixtures\Modules\Notes\Enums\NoteWorkAbility;
 use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
+use Tests\Fixtures\Modules\Notes\Policies\NotePolicy;
+use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 use Tests\Fixtures\Modules\Notes\Resolvers\CollectionChildren;
 use Tests\Fixtures\Modules\Notes\Resolvers\CollectionWindowResolver;
 use Tests\Fixtures\Modules\Notes\Resolvers\NoteSectionResolver;
@@ -115,7 +117,10 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function policies(): array
     {
-        return [new PolicyRegistration(Note::class, NotePolicy::class, NoteAbility::class)];
+        return [
+            new PolicyRegistration(Note::class, NotePolicy::class, NoteAbility::class),
+            new PolicyRegistration(NotePage::class, NoteWorkPolicy::class, NoteWorkAbility::class),
+        ];
     }
 
     public function states(): array

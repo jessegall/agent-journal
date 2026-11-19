@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Commands\RetireAgent;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
@@ -14,6 +13,7 @@ use App\Bus\Exceptions\HandlerInOtherOwner;
 use App\Bus\Exceptions\HandlerServesTwoCommands;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
+use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
@@ -22,9 +22,11 @@ use App\Bus\Support\RegisteredMiddleware;
 use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
 use App\Exports\Support\Exports;
+use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Garden\CommandMiddleware\Fence;
 use Tests\Fixtures\Bus\Garden\Commands\Water;
 use Tests\Fixtures\Bus\Garden\Handlers\WaterHandler;
+use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\CheckStock;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\LogShop;
 use Tests\Fixtures\Bus\Shop\CommandMiddleware\NotMiddleware;
@@ -64,8 +66,10 @@ final class CommandRegistryTest extends TestCase
         $this->assertTrue($registry->isExported(AddItem::class));
         $this->assertFalse($registry->isExported(RemoveItem::class));
         $this->assertTrue($registry->needsRepeatableRead(AddItem::class));
-        $this->assertSame(ActorType::User, $registry->requiredActor(AddItem::class));
-        $this->assertNull($registry->requiredActor(RemoveItem::class));
+        $this->assertEquals(
+            new CommandAuthorization(FixturePolicy::class, FixtureAbility::Work),
+            $registry->authorizationOf(AddItem::class),
+        );
         $this->assertSame(CommandEntry::Application, $registry->entryOf(AddItem::class));
         $this->assertSame([LogShop::class, Fence::class, CheckStock::class], array_map(fn (RegisteredMiddleware $entry) => $entry->declaration->middleware, $registry->middlewareFor(AddItem::class)));
     }

@@ -4,19 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Exceptions\UserActorRequired;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\TrustedEntryAuthority;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Models\AssignmentRecord;
-use App\Bus\Contracts\CommandBus;
 use App\Engine\Support\EngineActor;
-use App\Web\Commands\RecordUserHeartbeat;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -24,8 +18,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
- * The engine is an actor of its own type that no request or command line may name, that never holds work, and that a
- * command that does not allow it refuses.
+ * The engine is an actor of its own type that no request or command line may name and that never holds work.
  */
 final class EngineActorTypeTest extends TestCase
 {
@@ -66,14 +59,5 @@ final class EngineActorTypeTest extends TestCase
         $this->expectException(AssignmentTypeUnavailable::class);
 
         $this->app->make(AssignmentProviders::class)->assigneeProvider(ActorType::Engine->value);
-    }
-
-    public function test_a_command_for_users_refuses_the_engine(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()), new TrustedEntryAuthority('test'));
-
-        $this->expectException(UserActorRequired::class);
-
-        $this->app->make(CommandBus::class)->run(new RecordUserHeartbeat());
     }
 }

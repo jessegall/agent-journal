@@ -4,15 +4,29 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Tests\Fixtures\Modules\Cards\Enums\DeckAbility;
 use Tests\Fixtures\Modules\Cards\Handlers\ShuffleDeckHandler;
+use Tests\Fixtures\Modules\Cards\Models\Deck;
+use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 
 /**
  * @implements Command<string>
  */
 #[HandledBy(ShuffleDeckHandler::class)]
-final readonly class ShuffleDeck implements Command
+#[Authorize(DeckPolicy::class, DeckAbility::Work)]
+final readonly class ShuffleDeck implements Command, HasAuthorizationSubject
 {
     public function __construct(public string $deck) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Deck::class;
+    }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\MiddlewareDeclaration;
@@ -13,6 +15,9 @@ use App\Domains\Support\DomainRegistry;
 use App\Numbers\Support\NumberedTypeRegistry;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Tests\Fixtures\Bus\Enums\FixtureAbility;
+use Tests\Fixtures\Bus\Models\FixtureWork;
+use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Ledger\LedgerDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
@@ -65,7 +70,38 @@ trait InstallsCommandModules
             : $owner, $owners);
 
         $this->app->instance(CommandRegistry::class, CommandRegistry::from([CoreCommands::owner(), ...$owners]));
+        $this->registerPoliciesOf($domains, [CardsDomain::class, LedgerDomain::class, NotesDomain::class]);
         $this->app->forgetScopedInstances();
+    }
+
+    /**
+     * Registers the test modules' policies as the application's boot does, so their commands' declarations can be
+     * granted; the domains the application booted, and an earlier install, registered theirs already.
+     *
+     * @param  list<class-string>  $moduleClasses
+     */
+    private function registerPoliciesOf(DomainRegistry $domains, array $moduleClasses): void
+    {
+        $catalogue = $this->app->make(PolicyCatalogue::class);
+        $registered = array_map(fn (PolicyRegistration $policy) => $policy->policy, $catalogue->grantable());
+
+        if (! in_array(FixturePolicy::class, $registered, true)) {
+            $catalogue->register('Core', new PolicyRegistration(FixtureWork::class, FixturePolicy::class, FixtureAbility::class));
+        }
+
+        foreach ($domains->all() as $entry) {
+            if (! in_array($entry->className(), $moduleClasses, true)) {
+                continue;
+            }
+
+            foreach ($entry->policies() as $policy) {
+                if (in_array($policy->policy, $registered, true)) {
+                    continue;
+                }
+
+                $catalogue->register($entry->name, $policy);
+            }
+        }
     }
 
     /**

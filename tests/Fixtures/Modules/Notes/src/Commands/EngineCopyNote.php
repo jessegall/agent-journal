@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Tests\Fixtures\Modules\Notes\Enums\NoteWorkAbility;
 use Tests\Fixtures\Modules\Notes\Handlers\EngineCopyNoteHandler;
+use Tests\Fixtures\Modules\Notes\Models\NotePage;
+use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 
 /**
  * An engine command that runs WriteNote, which does not allow the engine, as a nested command.
@@ -14,7 +19,16 @@ use Tests\Fixtures\Modules\Notes\Handlers\EngineCopyNoteHandler;
  * @implements Command<int>
  */
 #[HandledBy(EngineCopyNoteHandler::class)]
-final readonly class EngineCopyNote implements Command
+#[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
+final readonly class EngineCopyNote implements Command, HasAuthorizationSubject
 {
     public function __construct(public string $text) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return NotePage::class;
+    }
 }

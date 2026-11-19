@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Actors\Contracts\Policy;
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\Command;
@@ -21,6 +19,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Exceptions\CommandAuthorizationInvalid;
+use App\Bus\Exceptions\CommandAuthorizationMissing;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandHandlerTwice;
@@ -90,7 +89,6 @@ final readonly class CommandRegistry
                 owner: $owner->name,
                 exported: $owner->exportsCommand($command),
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
-                actor: self::requiredActorOf($reflection),
                 requiresRequestKey: self::requiresKey($reflection),
                 actorScopedReceipt: $reflection->getAttributes(RetainedActorRequestKey::class) !== [],
                 retention: self::declaredRetentionOf($reflection),
@@ -175,11 +173,6 @@ final readonly class CommandRegistry
         return $this->entry($command)->repeatableRead;
     }
 
-    public function requiredActor(string $command): ActorType|null
-    {
-        return $this->entry($command)->actor;
-    }
-
     public function requiresRequestKey(string $command): bool
     {
         return $this->entry($command)->requiresRequestKey;
@@ -211,18 +204,6 @@ final readonly class CommandRegistry
     private function entry(string $command): RegisteredCommand
     {
         return $this->commands[$command];
-    }
-
-    /**
-     * The actor type a command's RequiresActor names, or null when any actor may run it.
-     *
-     * @param  ReflectionClass<*>  $command
-     */
-    private static function requiredActorOf(ReflectionClass $command): ActorType|null
-    {
-        $attribute = $command->getAttributes(RequiresActor::class)[0] ?? null;
-
-        return $attribute === null ? null : $attribute->newInstance()->type;
     }
 
     /**
@@ -287,7 +268,6 @@ final readonly class CommandRegistry
 
         $attributes = [
             RepeatableRead::class,
-            RequiresActor::class,
             RequiresRequestKey::class,
             RetainedActorRequestKey::class,
             Authorize::class,
@@ -299,8 +279,6 @@ final readonly class CommandRegistry
                 throw CommandDeclarationInvalid::for($command, 'it repeats '.class_basename($attribute));
             }
         }
-
-        $requiredActor = self::requiredActorOf($reflection);
 
         $problem = self::grammarFor($owner, $owners)->problemWithProperties($command);
 
@@ -348,7 +326,8 @@ final readonly class CommandRegistry
             throw CommandDeclarationInvalid::for($handler, 'it needs a public, non-static handle method');
         }
 
-        $authorization = self::authorizationDeclaredBy(new ReflectionClass($command));
+        $declaration = new ReflectionClass($command);
+        $authorization = self::authorizationDeclaredBy($declaration);
 
         if ($authorization === null && ! self::takesOnly($handle, $command)) {
             throw CommandDeclarationInvalid::for($handler, "handle takes exactly one required parameter, typed {$command}");
@@ -362,6 +341,10 @@ final readonly class CommandRegistry
 
         if ($problem !== null) {
             throw CommandDeclarationInvalid::for($handler, "its result {$problem}");
+        }
+
+        if ($authorization === null && self::entryDeclaredBy($declaration) === CommandEntry::Application) {
+            throw CommandAuthorizationMissing::for($command);
         }
     }
 
