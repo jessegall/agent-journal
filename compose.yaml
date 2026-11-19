@@ -5,6 +5,10 @@ services:
             context: .
             dockerfile: .docker/app/Dockerfile
             target: app
+        environment:
+            # The most worker threads FrankenPHP grows to under load: about one per two active actors. The threads
+            # started at boot (two per processor) are the floor and are never removed.
+            OCTANE_MAX_THREADS: ${OCTANE_MAX_THREADS:-32}
         ports:
             - '127.0.0.1:${APP_PORT:-54700}:8000'
         depends_on:
