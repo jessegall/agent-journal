@@ -16,4 +16,4 @@ class TaskDelivery:
         raise NotImplementedError
 
     def offers(self) -> list[Task]:
-        return [*self.planned_offers(self.plans.running_plans()), *self.plans.free()]
+        return [*self.planned_offers(self.plans.offering_plans()), *self.plans.free()]

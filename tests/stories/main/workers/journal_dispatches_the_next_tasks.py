@@ -1,6 +1,7 @@
 from journal.features.tasks.states.ready import Ready
 from journal.features.workers.states.orchestrating import Orchestrating
 from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
+from journal.features.tasks.states.external_wait import ExternalWait
 from journal.features.workers.workers_nudges import WorkersNudges
 from journal.features.workers.workers_options import BUILDER_MODE, ORCHESTRATOR_MODE, WorkersOptions
 from journal.models.plan_state import PlanState
@@ -146,3 +147,60 @@ def test_a_task_a_clocked_out_worker_holds_keeps_its_delegated_mark(story):
     story.expect_task(held, delegated=True)
     assert story.newest("workers") == workers, "no second worker is sent on a task a clocked-out worker holds"
     story.expect_stack(story.agents.subject, Orchestrating)
+
+
+@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
+@setting(WorkersOptions.AUTO_DISPATCH, True)
+@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
+@setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE, True)
+def test_with_places_free_a_task_queued_behind_a_busy_worker_goes_out_to_a_worker_of_its_own(story):
+    """On the hosted journal four open tasks sat behind two busy workers while 18 of 30 places stood free (19 Nov)."""
+    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
+    story.agent_runs(story.agents.subject, f"worker queue {story.agents.workers.first()} {printer}")
+    story.expect_task(printer, delegated=True)
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task_logged(printer, "taken out of a busy worker's queue so a worker of its own takes it")
+    story.expect_task(printer, delegated=False)
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task(printer, delegated=True)
+    story.expect_worker(story.newest("workers"), state=WorkerState.DISPATCHED)
+    story.expect_stack(story.agents.subject, Orchestrating)
+
+
+@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
+@setting(WorkersOptions.AUTO_DISPATCH, True)
+@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
+def test_with_the_switch_off_a_queued_task_waits_for_its_worker(story):
+    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
+    story.agent_runs(story.agents.subject, f"worker queue {story.agents.workers.first()} {printer}")
+    workers = story.newest("workers")
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task(printer, delegated=True)
+    assert story.newest("workers") == workers, "no worker of its own is sent"
+    story.expect_stack(story.agents.subject, Orchestrating)
+
+
+@story(OrchestratorTwoPhasePlan, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
+@setting(WorkersOptions.AUTO_DISPATCH, True)
+@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, 3)
+@setting(WorkersOptions.AUTO_DISPATCH_UNQUEUE, True)
+def test_a_plan_handed_to_one_worker_still_gets_another_worker_for_its_other_task_in_the_phase_at_work(story):
+    """Redmar, 19 Nov: one worker doing all of a plan's work is no parallel strategy; a free place takes the plan's next task."""
+    header = story.agent_adds_plan_task(story.agents.subject, story.plans.first, "the header")
+    story.agent_runs(story.agents.subject, f"plan todos {story.plans.first} 1 {header}")
+    plan_worker = story.agent_dispatches_worker_on_plan(story.agents.subject, "Worker 1", story.plans.first)
+    story.expect_plan(story.plans.first, state=PlanState.DELEGATED)
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task_logged(header, "taken out of a busy worker's queue")
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    assert story.newest("workers") != plan_worker, "a second worker is sent"
+    story.expect_task(story.tasks.first_phase, delegated=True)
+    story.expect_task(header, delegated=True)
+    story.expect_task(story.tasks.second_phase, delegated=True)
+    assert story.newest("workers") == plan_worker + 1, "the later phase's task stays in the plan worker's queue: one extra worker only"
+    story.expect_stack(story.agents.subject, Orchestrating, ExternalWait)
