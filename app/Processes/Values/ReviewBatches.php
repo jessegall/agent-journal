@@ -31,7 +31,8 @@ final readonly class ReviewBatches
                 continue;
             }
             if ($batch !== []
-                && (count($batch) === ReviewLimit::BatchShapes->value || ReviewLimit::BatchCharacters->isPassedBy($characters + $shape->length()))) {
+
+                    && (count($batch) === ReviewLimit::BatchShapes->value || ReviewLimit::BatchCharacters->isPassedBy($characters + $shape->length()))) {
                 $batches[] = $batch;
                 $batch = [];
                 $characters = 0;

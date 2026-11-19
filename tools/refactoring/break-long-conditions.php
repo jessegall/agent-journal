@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 /*
  * Breaks a PHP line wider than 120 characters before each of its outermost logical or ternary operators (&&, ||, and,
- * or, ?, :, ??), each continuation on its own line one indent deeper, the operator first.
+ * or, ?, :, ??), each continuation on its own line one indent deeper, the operator first; a line with none breaks its
+ * method chain one call per line.
  *
  * Usage: php tools/refactoring/break-long-conditions.php <folder or file>...
  */
@@ -49,6 +50,44 @@ function phpFiles(array $paths): array
 function breaksBefore(PhpToken $token): bool
 {
     return in_array($token->id, BREAK_BEFORE, true) || $token->text === '?';
+}
+
+/**
+ * The arrows of a method chain on the line at its outermost depth, after the first call: a line with no operator to
+ * break at breaks its chain one call per line instead, keeping the first call on the receiver's line.
+ *
+ * @param  list<int>  $indexes
+ * @return list<array{0: int, 1: int}>
+ */
+function chainSteps(array $tokens, array $indexes): array
+{
+    $depth = 0;
+    $arrows = [];
+
+    foreach ($indexes as $index) {
+        $token = $tokens[$index];
+
+        if (in_array($token->text, ['(', '[', '{'], true) && $token->id < 256) {
+            $depth++;
+        }
+
+        if (in_array($token->text, [')', ']', '}'], true) && $token->id < 256) {
+            $depth--;
+        }
+
+        if ($token->id === T_OBJECT_OPERATOR || $token->id === T_NULLSAFE_OBJECT_OPERATOR) {
+            $arrows[] = [$index, $depth];
+        }
+    }
+
+    if ($arrows === []) {
+        return [];
+    }
+
+    $outermost = min(array_column($arrows, 1));
+    $atOutermost = array_values(array_filter($arrows, fn (array $arrow) => $arrow[1] === $outermost));
+
+    return count($atOutermost) > 2 ? array_slice($atOutermost, 1) : [];
 }
 
 $changedFiles = 0;
@@ -101,6 +140,10 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
                 $openTernaries[$depth]--;
                 $candidates[] = [$index, $depth];
             }
+        }
+
+        if ($candidates === []) {
+            $candidates = chainSteps($tokens, $byLine[$lineNumber] ?? []);
         }
 
         if ($candidates === []) {

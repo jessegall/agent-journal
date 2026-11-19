@@ -138,7 +138,13 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function approvesOverLiveLink(Share $share, RecordIdentity $source, RecordIdentity $target): bool
     {
-        $linkIds = self::query()->ofScope($share)->stillApproved()->fromSource($source)->targeting($target)->readLimit(1)->pluck('link_id')->all();
+        $linkIds = self::query()->ofScope($share)
+            ->stillApproved()
+            ->fromSource($source)
+            ->targeting($target)
+            ->readLimit(1)
+            ->pluck('link_id')
+            ->all();
 
         return $linkIds !== [] && Link::query()->whereKey($linkIds)->exists();
     }

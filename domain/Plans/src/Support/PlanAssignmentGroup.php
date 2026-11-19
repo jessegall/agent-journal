@@ -65,7 +65,11 @@ final readonly class PlanAssignmentGroup
                 PhaseTask::query()->whereIn(
                     'phase_id',
                     $phases->modelKeys(),
-                )->readAll('every task of the plan is assigned')->orderBy('phase_id')->orderBy('position')->pluck('task_id')->all(),
+                )->readAll('every task of the plan is assigned')
+                    ->orderBy('phase_id')
+                    ->orderBy('position')
+                    ->pluck('task_id')
+                    ->all(),
             ),
         );
     }

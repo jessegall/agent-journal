@@ -96,7 +96,8 @@ enum ViolationType: string
                 .'typed listener in a Listeners folder',
             self::RawRowAccess => "calls {$violation->used}, which reaches rows past their model; use the model's "
                 .'scopes and methods (rule 25)',
-            self::ModelNotLinkable => "declares model {$violation->used}, which cannot be linked; use Linkable (rule 29)",
+            self::ModelNotLinkable => "declares model {$violation->used}, which cannot be linked; use Linkable (rule "
+                .'29)',
             self::EventOutsideListener => "names {$violation->used}, an event of {$violation->owner}; only a "
                 ."listener of {$violation->usingDomain} may name it, as an import, a type or ::class",
         };

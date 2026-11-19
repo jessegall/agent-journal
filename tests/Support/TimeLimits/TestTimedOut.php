@@ -14,7 +14,8 @@ final class TestTimedOut extends RuntimeException
     public static function after(string $test, int $seconds): self
     {
         return new self(
-            "{$test} ran longer than its {$seconds} second limit; make it faster, or give it #[TimeLimit] with a reason.",
+            "{$test} ran longer than its {$seconds} second limit; make it faster, or give it #[TimeLimit] with a "
+                .'reason.',
         );
     }
 

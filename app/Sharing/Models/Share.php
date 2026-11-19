@@ -287,7 +287,7 @@ final class Share extends Model implements Numbered, ReadableModel
     {
         return $this->share_gateway_configuration_id !== null
 
-                && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
+                    && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
     }
 
     /**

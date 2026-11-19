@@ -68,7 +68,8 @@ return new class extends Migration
         foreach (['document_revisions', 'reports'] as $searched) {
             foreach (['title', 'abstract', 'body'] as $column) {
                 DB::statement(
-                    "CREATE INDEX {$searched}_{$column}_search ON {$searched} USING gin (({$column}::text) gin_trgm_ops)",
+                    "CREATE INDEX {$searched}_{$column}_search ON {$searched} USING gin (({$column}::text) "
+                        .'gin_trgm_ops)',
                 );
             }
         }

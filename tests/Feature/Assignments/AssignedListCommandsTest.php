@@ -94,7 +94,10 @@ final class AssignedListCommandsTest extends TestCase
     public function test_a_refusal_or_an_unreachable_journal_fails_without_showing_the_token(): void
     {
         $this->runCommandsAs($this->caller, 'not-a-launch-token');
-        $this->artisan('task:assigned')->expectsOutputToContain('The journal refused the call (unauthenticated)')->doesntExpectOutputToContain('not-a-launch-token')->assertExitCode(1);
+        $this->artisan('task:assigned')
+            ->expectsOutputToContain('The journal refused the call (unauthenticated)')
+            ->doesntExpectOutputToContain('not-a-launch-token')
+            ->assertExitCode(1);
 
         $this->runCommandsAs($this->caller);
         $this->artisan(

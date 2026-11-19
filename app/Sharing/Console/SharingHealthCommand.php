@@ -18,7 +18,8 @@ final class SharingHealthCommand extends Command
 
     protected $signature = 'sharing:health';
 
-    protected $description = 'Say whether the share-only listener answers and the sharing supervisor holds the gateways';
+    protected $description = 'Say whether the share-only listener answers and the sharing supervisor holds the '
+        .'gateways';
 
     public function handle(
         #[Config('sharing.listener.host'),

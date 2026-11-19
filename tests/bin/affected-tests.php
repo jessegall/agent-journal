@@ -134,7 +134,8 @@ function configurationFor(string $root, array $folders): string
         );
         $configuration = (string) preg_replace(
             '#<testsuites>.*</testsuites>#s',
-            "<testsuites>\n        <testsuite name=\"Affected\">\n{$directories}        </testsuite>\n    </testsuites>",
+            "<testsuites>\n        <testsuite name=\"Affected\">\n{$directories}        </testsuite>\n    "
+                .'</testsuites>',
             $configuration,
         );
     }

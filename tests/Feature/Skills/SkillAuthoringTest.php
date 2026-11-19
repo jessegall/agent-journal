@@ -66,7 +66,9 @@ final class SkillAuthoringTest extends TestCase
             new SkillOwner('Copy', $root, [RenamedGuideSkill::class], true),
         );
 
-        $this->artisan('skill:list')->expectsOutputToContain('Guide and Copy both declare the skill key journal-guide')->assertFailed();
+        $this->artisan('skill:list')
+            ->expectsOutputToContain('Guide and Copy both declare the skill key journal-guide')
+            ->assertFailed();
     }
 
     /**

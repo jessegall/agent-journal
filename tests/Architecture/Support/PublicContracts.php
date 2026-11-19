@@ -164,7 +164,8 @@ final readonly class PublicContracts
         }
 
         if ($owner->isCore()
-            && ($class->isTrait() || $class->isAbstract() || in_array($class->getName(), self::CORE_ELOQUENT_ADAPTERS, true))) {
+
+                && ($class->isTrait() || $class->isAbstract() || in_array($class->getName(), self::CORE_ELOQUENT_ADAPTERS, true))) {
             return null;
         }
 
@@ -384,7 +385,8 @@ final readonly class PublicContracts
         }
 
         if ($owner->exportsName($name)
-            || array_any($this->owners, fn (PublicOwner $candidate) => $candidate->isCore() && $candidate->exportsName($name))) {
+
+                || array_any($this->owners, fn (PublicOwner $candidate) => $candidate->isCore() && $candidate->exportsName($name))) {
             return null;
         }
 

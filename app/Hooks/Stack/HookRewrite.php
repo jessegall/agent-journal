@@ -30,7 +30,10 @@ final readonly class HookRewrite
         $second = $first->stack->answer($replacement);
 
         if ($second->isRewrite()) {
-            throw RepeatedCommandRewrite::for($first->decision->replacementLine(), $second->decision->replacementLine());
+            throw RepeatedCommandRewrite::for($first->decision
+                ->replacementLine(), $second
+                ->decision
+                ->replacementLine());
         }
 
         if ($second->isAllowed()) {

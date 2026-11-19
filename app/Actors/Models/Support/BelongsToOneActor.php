@@ -88,6 +88,6 @@ trait BelongsToOneActor
     {
         return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
 
-                ?? static::query()->withoutGlobalScope(static::ownerScope())->whereNull('actor_id')->whereKey($id)->lockForUpdate()->first();
+                    ?? static::query()->withoutGlobalScope(static::ownerScope())->whereNull('actor_id')->whereKey($id)->lockForUpdate()->first();
     }
 }

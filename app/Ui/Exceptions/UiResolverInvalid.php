@@ -25,7 +25,8 @@ final class UiResolverInvalid extends UiDeclarationError
     public static function controllerNotOwned(string $declaration, string $controller): self
     {
         return new self(
-            "{$declaration} names the controller {$controller}, which is not an invokable class of the declaring domain.",
+            "{$declaration} names the controller {$controller}, which is not an invokable class of the declaring "
+                .'domain.',
         );
     }
 }

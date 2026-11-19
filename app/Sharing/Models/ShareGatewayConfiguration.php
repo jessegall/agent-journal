@@ -134,7 +134,10 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     public static function allRevisions(): array
     {
         return array_values(
-            self::query()->orderByDesc('id')->readAll('an installation keeps a handful of gateway revisions')->get()->all(),
+            self::query()->orderByDesc('id')
+                ->readAll('an installation keeps a handful of gateway revisions')
+                ->get()
+                ->all(),
         );
     }
 

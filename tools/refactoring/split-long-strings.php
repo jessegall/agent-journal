@@ -96,7 +96,7 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
         }
 
         if ($insideDoubleQuotes && $token->id === T_ENCAPSED_AND_WHITESPACE && strlen($line) > LIMIT
-            && ! str_contains($text, "\n") && $column + strlen($text) > LIMIT) {
+            && ! str_contains($text, "\n") && $column + strlen($text) + 3 > LIMIT) {
             preg_match('/^\s*/', $line, $indent);
             $cut = strrpos(substr($text, 0, max(1, LIMIT - $column - 3)), ' ');
 
@@ -108,7 +108,7 @@ foreach (phpFiles(array_slice($argv, 1)) as $file) {
         }
 
         if ($token->id === T_CONSTANT_ENCAPSED_STRING && strlen($line) > LIMIT && strlen($text) > 40
-            && ! str_contains($text, "\n") && $column + strlen($text) > LIMIT) {
+            && ! str_contains($text, "\n") && $column + strlen($text) + 3 > LIMIT) {
             preg_match('/^\s*/', $line, $indent);
             $split = splitLiteral($text, $column, $indent[0].'    ');
 
