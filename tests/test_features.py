@@ -7533,3 +7533,25 @@ def test_a_release_line_a_brief_tells_about_is_no_base(app: App, monkeypatch):
     _, folder, _ = worktree_worker(app, monkeypatch, "platform: built and merged on release/0.5 through task 3762; check 2174 fails on release/0.5. Base the carry on main.")
     assert not (folder / "platform" / "release.php").exists(), "told about, release/0.5 is no base"
     assert not (app.config.home / "bases").exists()
+
+
+def test_a_worker_cut_from_a_base_keeps_it_when_a_later_instruction_replaces_its_brief(app: App, monkeypatch):
+    """A worker's brief is replaced by every later instruction; on 19 Nov a payroll worker told 'The journal restarted while you
+    were at work' was rebased onto main at its clock-out, which would have put the whole v2 branch on main."""
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "main-only.php", "<?php\n")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2. Payroll totals")
+    assert (folder / "platform" / "payroll.php").is_file()
+    from journal.repositories.workers import Workers
+    workers = app.container.get(Workers)
+    workers.save(workers.find(worker_row(app).row_id).with_(brief="The journal restarted while you were at work; carry on."), Actor.system())
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert not (root / "platform" / "totals.php").exists() and not (root / "platform" / "payroll.php").exists(), "main gets neither"
+    tree = git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout
+    assert "totals.php" in tree and "main-only.php" not in tree, "the work lands on feature/payroll-v2 and main is not poured in"
