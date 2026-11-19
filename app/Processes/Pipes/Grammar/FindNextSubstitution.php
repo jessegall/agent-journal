@@ -44,7 +44,7 @@ final readonly class FindNextSubstitution implements Pipe
             }
         }
 
-        return $queue->emptied();
+        return $queue->empty();
     }
 
     /**

@@ -31,7 +31,7 @@ final readonly class SubstitutionQueue
         return new self($this->owner, $pending, $substitution);
     }
 
-    public function emptied(): self
+    public function empty(): self
     {
         return new self($this->owner, [], null);
     }
