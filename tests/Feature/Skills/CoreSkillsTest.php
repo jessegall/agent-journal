@@ -27,6 +27,20 @@ final class CoreSkillsTest extends TestCase
         $this->assertSame(['shipped', 'shipped', 'shipped', 'shipped'], array_column($core, 'source'));
     }
 
+    public function test_the_shell_skill_publishes_every_heading_of_its_file_in_the_file_order(): void
+    {
+        $rendered = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-shell'))->rendered->markdown;
+
+        preg_match_all('/^## (.+)$/m', $rendered, $headings);
+
+        $this->assertSame(
+            ['Purpose', 'Running commands', 'Tests and checks', 'Reading output', 'Understanding a command line'],
+            $headings[1],
+        );
+        $this->assertStringContainsString("## Purpose\n\nCommands run through the journal, which keeps their output.\n", $rendered);
+        $this->assertStringContainsString("## Tests and checks\n\nA test, check or build runs only when its rule has an approved, proven reader.", $rendered);
+    }
+
     public function test_show_prints_the_rendered_journal_skills_text(): void
     {
         $rendered = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'))->rendered->markdown;

@@ -7,8 +7,6 @@ namespace App\Skills\Shipped;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
-use App\Skills\Values\MarkdownPart;
-use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 
 /**
@@ -16,8 +14,6 @@ use App\Skills\Values\SkillSections;
  */
 final class ShellSkill implements Skill
 {
-    private const string FILE = 'core/shell.md';
-
     public function key(): string
     {
         return 'journal-shell';
@@ -40,11 +36,6 @@ final class ShellSkill implements Skill
 
     public function sections(): SkillSections
     {
-        return SkillSections::listed(
-            SkillSection::text('purpose', 'Purpose', 'Commands run through the journal, which keeps their output.'),
-            SkillSection::markdown('running-commands', 'Running commands', MarkdownPart::heading(self::FILE, ['Shell', 'Running commands'])),
-            SkillSection::markdown('reading-output', 'Reading output', MarkdownPart::heading(self::FILE, ['Shell', 'Reading output'])),
-            SkillSection::markdown('understanding-a-command-line', 'Understanding a command line', MarkdownPart::heading(self::FILE, ['Shell', 'Understanding a command line'])),
-        );
+        return SkillSections::fromFile('core/shell.md');
     }
 }
