@@ -113,3 +113,36 @@ def test_a_task_the_orchestrator_just_made_is_left_for_its_grace_and_dispatched_
     story.journal_dispatches_the_next_tasks()
     story.expect_task(printer, delegated=True)
     story.expect_stack(story.agents.subject, Orchestrating)
+
+
+@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
+@setting(WorkersOptions.AUTO_DISPATCH, True)
+@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
+def test_an_open_task_still_marked_delegated_that_no_worker_holds_is_handed_out_again(story):
+    """On the hosted journal 17 open tasks kept their delegated mark after their last worker was released, so the journal
+    passed them over and the orchestrator took them for handed out (19 Nov)."""
+    from journal.repositories.scope import Scope
+    from journal.repositories.tasks import Tasks
+    from journal.support.actor import Actor
+    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
+    with story.app.container.get(Scope).environment(1):
+        tasks = story.app.container.get(Tasks)
+        tasks.save(tasks.find(printer).with_(delegated=True), Actor.system())
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task_logged(printer, "no worker holds it any more, so the journal hands it out again")
+    story.expect_worker(story.newest("workers"), state=WorkerState.DISPATCHED)
+    story.expect_task(printer, delegated=True)
+    story.expect_stack(story.agents.subject, Orchestrating)
+
+
+@story(OrchestratorWorkerDelivered, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
+@setting(WorkersOptions.AUTO_DISPATCH, True)
+@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
+def test_a_task_a_clocked_out_worker_holds_keeps_its_delegated_mark(story):
+    held = story.newest("tasks")
+    story.expect_task(held, delegated=True)
+    workers = story.newest("workers")
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task(held, delegated=True)
+    assert story.newest("workers") == workers, "no second worker is sent on a task a clocked-out worker holds"
+    story.expect_stack(story.agents.subject, Orchestrating)

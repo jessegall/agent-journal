@@ -80,19 +80,17 @@ class WorkerBranch:
         return InnerRepositories(self.config.root).names()
 
     def inner_checkout(self, worker: Worker, name: str) -> Path:
-        """The checkout of the inner repository name that the worker's branch is cut from and merged into: the project's own, or, when the brief names a branch this repository holds and the project's checkout is not on it, a checkout of that branch the journal keeps under its home (bases/<name>/<branch>), made once from the local branch or from origin's; a branch git has out elsewhere already is used where it is."""
+        """The checkout of the inner repository name that the worker's branch is cut from and merged into: the project's own, or a checkout of another branch the journal keeps under its home (bases/<name>/<branch>). A worker whose branch is there already keeps the base it was cut from, whatever its brief says now: a brief is replaced by every later instruction ("The journal restarted while you were at work"), and on 19 Nov such a worker was rebased onto main. A worker not started yet takes the branch its brief names, when this repository holds it and the project's checkout is not on it, made once from the local branch or from origin's; a branch git has out elsewhere already is used where it is."""
         checkout = self.config.root / name
         own = f"refs/heads/{self.name(worker)}"
-        started = None
+        if self.git("rev-parse", "--verify", "-q", own, cwd=checkout).returncode == 0:
+            bases = self.config.home / BASES / name
+            held = sorted(path for path in bases.iterdir() if (path / ".git").exists()) if bases.is_dir() else []
+            return next((base for base in held if self.is_cut_from(own, base, checkout)), checkout)
         for branch in dict.fromkeys(BRIEF_BRANCH.findall(worker.brief or "")):
             base = self.base_checkout(checkout, name, branch)
-            if base is None:
-                continue
-            if started is None:
-                started = self.git("rev-parse", "--verify", "-q", own, cwd=checkout).returncode == 0
-            if started and not self.is_cut_from(own, base, checkout):
-                continue
-            return base
+            if base is not None:
+                return base
         return checkout
 
     def is_cut_from(self, own: str, base: Path, checkout: Path) -> bool:

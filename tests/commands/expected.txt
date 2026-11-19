@@ -1661,7 +1661,7 @@ dumps.dump_still_open_carry_on  [dumps]  dump {{n}} is not filed; what is left: 
 dumps.the_user_answered_on_the_dump  [dumps]  dump {{n}}: to "{{question|cap=600}}" the user answered {{answer|cap=600}}. act on it and log it on the dump
 dumps.the_user_chose_a_step  [dumps]  the user chose {{label}} for dump {{n}}. do that step and log it on the dump
 engine.guard_failed  [engine]  a guard failed and let this through: {{text|cap=22}}. the journal recorded it; tell the user if it happens again
-engine.helper_has_no_job  [engine]  you have no job yet. wait for the journal to give you one, or run the journal command it gave you
+engine.helper_has_no_job  [engine]  you have no job yet. run `journal clock-in`, or the journal command you were given, alone in its line: a line joining it to anything else is refused whole
 engine.journal_answers_again  [engine]  your journal was down for {{seconds}} seconds and is back. tools wait a few seconds until it is steady; try again then
 engine.stop_held_in_a_loop  [engine]  stop held five times; the next goes through. fix the state with `journal panic <state>`, then `journal panic report`
 engine.worker_ends_after_the_grace  [engine]  your journal was down {{seconds}} seconds, past a worker's {{grace}}-second limit. stop now; you will be sent again
