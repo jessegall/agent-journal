@@ -62,7 +62,8 @@ final class McpCatalogueTest extends TestCase
 
         $this->expectException(McpToolNameTaken::class);
         $this->expectExceptionMessage(
-            'The MCP tool name ledger_read is declared by both '.LedgerReadTool::class.' and '.SecondLedgerReadTool::class.'.',
+            'The MCP tool name ledger_read is declared by both '.LedgerReadTool::class
+                .' and '.SecondLedgerReadTool::class.'.',
         );
 
         $catalogue->registerTool(SecondLedgerReadTool::class);

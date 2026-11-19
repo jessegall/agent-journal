@@ -24,9 +24,17 @@ final class OneLineTest extends TestCase
 
     public function test_leading_and_trailing_blanks_pass(): void
     {
-        $title = $this->titled("\n  Release notes \r\n ");
+        $title = $this->titled(<<<TEXT
 
-        $this->assertSame("\n  Release notes \r\n ", $title->title);
+              Release notes \r
+             
+            TEXT);
+
+        $this->assertSame(<<<TEXT
+
+              Release notes \r
+             
+            TEXT, $title->title);
     }
 
     public function test_a_line_break_between_two_words_fails(): void

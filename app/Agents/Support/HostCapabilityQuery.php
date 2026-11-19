@@ -23,6 +23,7 @@ final readonly class HostCapabilityQuery
 
     public function describe(): string
     {
-        return "{$this->capability->value} for {$this->program->value} with a {$this->accountMode->value} account in {$this->executionMode->value} mode";
+        return "{$this->capability->value} for {$this->program->value} with a {$this->accountMode->value} account in "
+            ."{$this->executionMode->value} mode";
     }
 }

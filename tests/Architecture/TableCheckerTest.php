@@ -75,11 +75,12 @@ final class TableCheckerTest extends TestCase
         );
 
         $this->assertContains(
-            'creates table notes, which '.$this->folder('Chat/Database/Migrations/2026_01_01_000000_create_tasks_table.php').' also creates',
+            'creates table notes, which '.$this->chatTasksMigration().' also creates',
             $reasons,
         );
         $this->assertContains(
-            'has the migration file name 2026_01_01_000000_create_tasks_table.php, as does '.$this->folder('Chat/Database/Migrations/2026_01_01_000000_create_tasks_table.php'),
+            'has the migration file name 2026_01_01_000000_create_tasks_table.php, as does '
+                .$this->chatTasksMigration(),
             $reasons,
         );
         $this->assertContains('changes table tasks of Tasks from database/migrations', $reasons);
@@ -121,5 +122,10 @@ final class TableCheckerTest extends TestCase
     private function folder(string $path): string
     {
         return dirname($this->registry()->get('Tasks')->folder).'/'.$path;
+    }
+
+    private function chatTasksMigration(): string
+    {
+        return $this->folder('Chat/Database/Migrations/2026_01_01_000000_create_tasks_table.php');
     }
 }

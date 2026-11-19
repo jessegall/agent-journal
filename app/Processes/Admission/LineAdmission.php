@@ -127,7 +127,12 @@ final readonly class LineAdmission implements ShellAdmission
         if (! $this->outputs->check($classification)->isAllowed()) {
             $correction = 'Run it unpiped and read its stored output.';
 
-            return $this->refusal(AdmissionRefusalCode::OutputHidden, $tree, 'Required output would be hidden.', $correction);
+            return $this->refusal(
+                AdmissionRefusalCode::OutputHidden,
+                $tree,
+                'Required output would be hidden.',
+                $correction,
+            );
         }
         $permissions = $this->permissions->forActor($actor);
         foreach ($classification->parts as $part) {
@@ -153,12 +158,22 @@ final readonly class LineAdmission implements ShellAdmission
         if (! $this->capacity->hasRoom()) {
             $correction = 'Free space on the output disk, then run it again.';
 
-            return $this->refusal(AdmissionRefusalCode::RunnerUnavailable, $tree, 'The output disk is full.', $correction);
+            return $this->refusal(
+                AdmissionRefusalCode::RunnerUnavailable,
+                $tree,
+                'The output disk is full.',
+                $correction,
+            );
         }
         if (! $this->runner->isOn()) {
             $correction = 'Use a host with its runner on.';
 
-            return $this->refusal(AdmissionRefusalCode::RunnerUnavailable, $tree, 'This host does not run lines.', $correction);
+            return $this->refusal(
+                AdmissionRefusalCode::RunnerUnavailable,
+                $tree,
+                'This host does not run lines.',
+                $correction,
+            );
         }
 
         return null;
@@ -185,7 +200,9 @@ final readonly class LineAdmission implements ShellAdmission
         if ($permissions->admits($classes, $argv)) {
             return null;
         }
-        $code = $permissions->deniedPatterns->matchesAny($argv) ? AdmissionRefusalCode::CommandDenied : AdmissionRefusalCode::ClassDenied;
+        $code = $permissions->deniedPatterns->matchesAny($argv)
+            ? AdmissionRefusalCode::CommandDenied
+            : AdmissionRefusalCode::ClassDenied;
         $classes = implode(', ', $classes->toArray());
 
         $reason = "Your permissions do not admit {$classes}.";
@@ -264,7 +281,12 @@ final readonly class LineAdmission implements ShellAdmission
             return $this->refused(AdmissionRefusalCode::RuleRevisionChanged, $tree, $reason, 'Use a new key.');
         }
         if ($earlier->isStale()) {
-            return $this->refused(AdmissionRefusalCode::RuleRevisionChanged, $tree, $earlier->stale_reason, 'Use a new key.');
+            return $this->refused(
+                AdmissionRefusalCode::RuleRevisionChanged,
+                $tree,
+                $earlier->stale_reason,
+                'Use a new key.',
+            );
         }
 
         $run = $this->runOf($earlier, $earlier->plan, $tree, $actor, []);
@@ -297,8 +319,12 @@ final readonly class LineAdmission implements ShellAdmission
         );
     }
 
-    private function refusal(AdmissionRefusalCode $code, ShellTree $tree, string $reason, string $correction): AdmissionRefusal
-    {
+    private function refusal(
+        AdmissionRefusalCode $code,
+        ShellTree $tree,
+        string $reason,
+        string $correction,
+    ): AdmissionRefusal {
         return AdmissionRefusal::of($code, $tree->root, $tree->source, $reason, $correction);
     }
 

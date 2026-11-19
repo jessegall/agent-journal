@@ -52,7 +52,17 @@ final class DomainSkillsTest extends TestCase
             $this->app->make(SkillResolver::class)->find(SkillKey::from($key))->rendered->markdown,
             $shown,
         );
-        $this->assertStringContainsString("\n## Purpose\n\n", $shown);
-        $this->assertStringContainsString("\n{$heading}\n\n", $shown);
+        $this->assertStringContainsString(<<<'TEXT'
+
+            ## Purpose
+
+
+            TEXT, $shown);
+        $this->assertStringContainsString(<<<TEXT
+
+            {$heading}
+
+
+            TEXT, $shown);
     }
 }

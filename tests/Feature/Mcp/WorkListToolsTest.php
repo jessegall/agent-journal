@@ -59,8 +59,12 @@ final class WorkListToolsTest extends TestCase
     {
         $references = [];
 
-        foreach (['Write the tool', 'Test the tool'] as $title) {
-            $task = Task::factory()->create(['title' => $title]);
+        $tasks = Task::factory()->count(2)->sequence(
+            ['title' => 'Write the tool'],
+            ['title' => 'Test the tool'],
+        )->create();
+
+        foreach ($tasks as $task) {
             $references[$task->id] = $this->writer->assign(
                 $task->assignmentIdentity(),
                 AssigneeIdentity::of($this->caller->agent),

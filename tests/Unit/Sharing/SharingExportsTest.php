@@ -43,7 +43,13 @@ final class SharingExportsTest extends TestCase
     {
         $exports = CoreApi::exports();
 
-        foreach ([Share::class, ShareRecordRegistry::class, ShareGatewayRegistry::class, OwnerSharePolicy::class, ShareToken::class] as $private) {
+        foreach ([
+            Share::class,
+            ShareRecordRegistry::class,
+            ShareGatewayRegistry::class,
+            OwnerSharePolicy::class,
+            ShareToken::class,
+        ] as $private) {
             $this->assertFalse($exports->has($private), "{$private} is exported.");
         }
     }

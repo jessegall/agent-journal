@@ -45,7 +45,14 @@ use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Skills\RulesSkill;
 
-final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSkills
+final class RulesDomain extends Domain implements
+    ProvidesCommands,
+    ProvidesMcpTools,
+    ProvidesNavigation,
+    ProvidesNumberedModels,
+    ProvidesPages,
+    ProvidesPolicies,
+    ProvidesSkills
 {
     use HasNumberedModels;
 

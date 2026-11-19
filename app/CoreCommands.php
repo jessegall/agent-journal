@@ -156,7 +156,13 @@ final class CoreCommands
     {
         return [
             AssignRecord::class, ReassignRecord::class, UnassignRecord::class,
-            InstallDesks::class, ProvisionActorDesk::class, RestoreActorDesk::class, CreateDesk::class, SeatActor::class, ReplaceSeatOccupant::class, ReleaseSeat::class,
+            InstallDesks::class,
+            ProvisionActorDesk::class,
+            RestoreActorDesk::class,
+            CreateDesk::class,
+            SeatActor::class,
+            ReplaceSeatOccupant::class,
+            ReleaseSeat::class,
             EnableAutoAssignment::class, ConfigureAutoAssignment::class, DisableAutoAssignment::class,
             RetireAgent::class,
             FenceProfileRevision::class,

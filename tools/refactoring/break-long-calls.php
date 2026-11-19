@@ -30,13 +30,13 @@ function tokensOf(string $source): array
 }
 
 /**
- * Whether the line is one the script leaves alone: a condition, a comment, or a line made long by a string.
+ * Whether the line is one the script leaves alone: a comment, or a line that continues a condition.
  */
 function isLeftForAPerson(string $line): bool
 {
     $trimmed = ltrim($line);
 
-    return preg_match('/^(if|elseif|} elseif|while|foreach|for|\*|\/\/|\/\*|&&|\|\||\?|:)/', $trimmed) === 1;
+    return preg_match('/^(\*|\/\/|\/\*|&&|\|\||\?|:)/', $trimmed) === 1;
 }
 
 /**

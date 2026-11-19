@@ -23,7 +23,12 @@ use Domain\Sequences\Skills\SequencesSkill;
 use Domain\Sequences\States\Support\FollowingSequenceStateFactory;
 use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
-final class SequencesDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills, ProvidesStates
+final class SequencesDomain extends Domain implements
+    ProvidesCommands,
+    ProvidesNumberedModels,
+    ProvidesPolicies,
+    ProvidesSkills,
+    ProvidesStates
 {
     use HasNumberedModels, HasStates;
 

@@ -49,7 +49,11 @@ final class SkillAuthoringConsoleTest extends TestCase
                 'key' => 'user-review-notes',
                 '--description' => 'Review project notes',
                 '--conditions' => self::REVIEWERS,
-                '--body' => "## Notes\n\nRead the notes first.",
+                '--body' => <<<'TEXT'
+                    ## Notes
+
+                    Read the notes first.
+                    TEXT,
             ],
         )
             ->expectsOutputToContain('Request id: ')
@@ -60,7 +64,11 @@ final class SkillAuthoringConsoleTest extends TestCase
 
         $this->artisan(
             'skill:edit',
-            ['number' => $number, '--expected-revision' => 1, '--body' => "## Notes\n\nRead the notes twice."],
+            ['number' => $number, '--expected-revision' => 1, '--body' => <<<'TEXT'
+                ## Notes
+
+                Read the notes twice.
+                TEXT],
         )
             ->expectsOutputToContain('revision 2 saved; publication pending.')
             ->assertSuccessful();

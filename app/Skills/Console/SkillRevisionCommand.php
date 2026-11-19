@@ -35,7 +35,11 @@ final class SkillRevisionCommand extends Command
                 "Description: {$revision->description}",
                 'Condition: '.json_encode($revision->condition, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
                 ...array_map(
-                    fn (SkillSection $section) => "## {$section->heading}\n\n{$section->storedText()}",
+                    fn (SkillSection $section) => <<<TEXT
+                        ## {$section->heading}
+
+                        {$section->storedText()}
+                        TEXT,
                     $revision->sections,
                 ),
             ];

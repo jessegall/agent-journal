@@ -33,7 +33,10 @@ final class TestRunAdmissions
             'rules-1',
             'policy-1',
             $workingFolder,
-            $plan ?? new ExecutionPlan(new PlanStep(StepType::Sequence, 0, 0), str_repeat('b', 64)),
+            $plan ?? ExecutionPlan::from([
+                'root' => PlanStep::from(['type' => StepType::Sequence, 'node' => 0, 'context' => 0]),
+                'tree_digest' => str_repeat('b', 64),
+            ]),
         );
     }
 }

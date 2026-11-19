@@ -790,9 +790,12 @@ final class LexerScan
 
                 continue;
             }
-            if ($this->startsWord($position, 'esac')
+            $isBareEsac = $this->startsWord($position, 'esa') === false
+                && substr_compare($this->source, 'esac', $position, 4) === 0
+                && in_array($this->at($position + 4), ['', ')', ' ', ';', "\n"], true)
+                && str_contains(" \t\n;", $this->source[$position - 1] ?? ' ');
 
-                    || ($this->startsWord($position, 'esa') === false && substr_compare($this->source, 'esac', $position, 4) === 0 && in_array($this->at($position + 4), ['', ')', ' ', ';', "\n"], true) && str_contains(" \t\n;", $this->source[$position - 1] ?? ' '))) {
+            if ($this->startsWord($position, 'esac') || $isBareEsac) {
                 if (--$depth === 0) {
                     return $position + 4;
                 }

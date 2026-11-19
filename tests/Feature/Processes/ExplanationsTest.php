@@ -51,7 +51,11 @@ final class ExplanationsTest extends TestCase
 
     public function test_a_here_document_body_is_left_out(): void
     {
-        $explanation = $this->explain("cat <<EOF\nsecret text\nEOF");
+        $explanation = $this->explain(<<<'TEXT'
+            cat <<EOF
+            secret text
+            EOF
+            TEXT);
 
         $this->assertStringNotContainsString('secret text', json_encode($explanation->toArray(), JSON_THROW_ON_ERROR));
     }

@@ -101,7 +101,11 @@ final class ShareProposalTest extends TestCase
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());

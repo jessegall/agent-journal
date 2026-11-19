@@ -48,11 +48,14 @@ enum ViolationType: string
     public function reason(Violation $violation): string
     {
         return match ($this) {
-            self::UndeclaredDomain => "uses {$violation->used}, but {$violation->usingDomain} does not require {$violation->owner}",
-            self::PrivateType => "uses {$violation->used}, which {$violation->owner} does not export; add it to {$violation->owner}'s exports() if it is meant to be public, or use what {$violation->owner} exports",
+            self::UndeclaredDomain => "uses {$violation->used}, but {$violation->usingDomain} does not require "
+                ."{$violation->owner}",
+            self::PrivateType => "uses {$violation->used}, which {$violation->owner} does not export; add it to "
+                ."{$violation->owner}'s exports() if it is meant to be public, or use what {$violation->owner} exports",
             self::PrivateCoreType => "uses {$violation->used}, which is private to Core; list it in CoreApi if it is "
                 .'meant to be public, or use what CoreApi lists',
-            self::PrivateTypeInSignature => "shows {$violation->used} at {$violation->detail}, but it is private to {$violation->owner}; export it or keep it out of the public signature",
+            self::PrivateTypeInSignature => "shows {$violation->used} at {$violation->detail}, but it is private to "
+                ."{$violation->owner}; export it or keep it out of the public signature",
             self::DisallowedCategory => "exports {$violation->used}, which is {$violation->detail}; an owner "
                 .'publishes only interfaces, enums, immutable values and its own exceptions',
             self::CompositionMisuse => "names {$violation->used} of {$violation->owner}, but a composition file "
@@ -61,7 +64,8 @@ enum ViolationType: string
             self::PrivateEventHeard => "hears {$violation->used}, an event {$violation->owner} does not publish",
             self::OutsideEveryDomain => "uses {$violation->used}, which is project code outside every domain",
             self::TableOfNoDomain => "uses table {$violation->used}, which no domain owns",
-            self::OtherOwnersTable => "uses table {$violation->used} of {$violation->owner}; only {$violation->owner} reads, joins, keys or changes its tables, so use what {$violation->owner} exports",
+            self::OtherOwnersTable => "uses table {$violation->used} of {$violation->owner}; only {$violation->owner} "
+                ."reads, joins, keys or changes its tables, so use what {$violation->owner} exports",
             self::ChangesOtherTable => "changes table {$violation->used}, which {$violation->owner} owns",
             self::TableNotWritten => "names a table with {$violation->used}; write the table name out",
             self::PivotNotWritten => "leaves the pivot table of {$violation->used} to Laravel; write it out",

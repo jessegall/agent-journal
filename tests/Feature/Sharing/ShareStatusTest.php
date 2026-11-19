@@ -70,7 +70,11 @@ final class ShareStatusTest extends TestCase
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
         $this->configuration = ShareGatewayConfiguration::configure(

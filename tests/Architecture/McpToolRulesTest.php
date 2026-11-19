@@ -169,7 +169,10 @@ final class McpToolRulesTest extends TestCase
             $violations[] = "{$class} has no snake_case #[Name]";
         }
 
-        foreach (array_intersect(array_keys($type->newInstanceWithoutConstructor()->schema(new JsonSchemaTypeFactory())), self::IDENTITY_PROPERTIES) as $property) {
+        foreach (array_intersect(
+            array_keys($type->newInstanceWithoutConstructor()->schema(new JsonSchemaTypeFactory())),
+            self::IDENTITY_PROPERTIES,
+        ) as $property) {
             $violations[] = "{$class} asks for {$property}";
         }
 

@@ -35,7 +35,12 @@ enum HoldReason: string
         return match ($this) {
             self::PermissionRequired, self::TrustRequired, self::OnboardingRequired, self::LoginRequired,
             self::UpdateRequired, self::UnknownScreen, self::ScreenUnreadable, self::NeedsAttention => true,
-            self::None, self::Interrupted, self::Compacting, self::HumanInput, self::DriverInput, self::UsageLimited => false,
+            self::None,
+            self::Interrupted,
+            self::Compacting,
+            self::HumanInput,
+            self::DriverInput,
+            self::UsageLimited => false,
         };
     }
 }

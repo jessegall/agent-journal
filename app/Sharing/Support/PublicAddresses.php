@@ -18,7 +18,11 @@ class PublicAddresses
         }
 
         foreach ($addresses as $address) {
-            if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+            if (filter_var(
+                $address,
+                FILTER_VALIDATE_IP,
+                FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE,
+            ) === false) {
                 return false;
             }
         }

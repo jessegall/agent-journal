@@ -39,7 +39,12 @@ enum RequestProgress: string
     {
         return match ($this) {
             self::Accepted, self::Staged, self::Applying => false,
-            self::Applied, self::Superseded, self::Cancelled, self::Failed, self::Unavailable, self::DeliveryUncertain => true,
+            self::Applied,
+            self::Superseded,
+            self::Cancelled,
+            self::Failed,
+            self::Unavailable,
+            self::DeliveryUncertain => true,
         };
     }
 }

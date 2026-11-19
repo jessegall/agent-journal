@@ -70,7 +70,12 @@ final class RequiredSkillReadsTest extends TestCase
         $this->artisan('skill:make', [
             'key' => 'user-guide',
             '--description' => 'The review guide',
-            '--body' => "# Guide\n\nFirst text.\n",
+            '--body' => <<<'TEXT'
+                # Guide
+
+                First text.
+
+                TEXT,
         ])->assertSuccessful();
         $this->app->make(SkillPublishing::class)->refresh();
     }
@@ -90,7 +95,12 @@ final class RequiredSkillReadsTest extends TestCase
         $this->artisan('skill:edit', [
             'number' => 'user-guide',
             '--expected-revision' => 1,
-            '--body' => "# Guide\n\nSecond text.\n",
+            '--body' => <<<'TEXT'
+                # Guide
+
+                Second text.
+
+                TEXT,
         ])->assertSuccessful();
         $this->assertReminded($this->boundary($session));
     }

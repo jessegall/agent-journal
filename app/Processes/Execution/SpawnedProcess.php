@@ -51,7 +51,7 @@ final class SpawnedProcess
         });
         pcntl_signal(SIGPIPE, SIG_DFL);
         try {
-            // @phpstan-ignore argument.type (proc_open takes ['redirect', <descriptor>], which its stub does not describe)
+            // @phpstan-ignore argument.type (proc_open takes ['redirect', <descriptor>]; its stub does not say so)
             $process = proc_open($command, $descriptors, $pipes, $folder, $environment);
         } finally {
             restore_error_handler();

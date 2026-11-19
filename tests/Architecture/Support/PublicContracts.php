@@ -163,9 +163,11 @@ final readonly class PublicContracts
             return 'an Eloquent model';
         }
 
-        if ($owner->isCore()
+        $isCoreBase = $class->isTrait()
+            || $class->isAbstract()
+            || in_array($class->getName(), self::CORE_ELOQUENT_ADAPTERS, true);
 
-                && ($class->isTrait() || $class->isAbstract() || in_array($class->getName(), self::CORE_ELOQUENT_ADAPTERS, true))) {
+        if ($owner->isCore() && $isCoreBase) {
             return null;
         }
 
@@ -384,9 +386,12 @@ final readonly class PublicContracts
             return null;
         }
 
-        if ($owner->exportsName($name)
+        $coreExports = array_any(
+            $this->owners,
+            fn (PublicOwner $candidate) => $candidate->isCore() && $candidate->exportsName($name),
+        );
 
-                || array_any($this->owners, fn (PublicOwner $candidate) => $candidate->isCore() && $candidate->exportsName($name))) {
+        if ($owner->exportsName($name) || $coreExports) {
             return null;
         }
 

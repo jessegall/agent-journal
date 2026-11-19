@@ -31,7 +31,12 @@ final readonly class ProcessRules
                 OptionGrammar::valued(
                     OperandType::Text,
                     '-s',
-                ), OptionGrammar::flag('-l'), OptionGrammar::flag('-TERM'), OptionGrammar::flag('-KILL'), OptionGrammar::flag('-INT'), OptionGrammar::flag('-HUP'),
+                ),
+                OptionGrammar::flag('-l'),
+                OptionGrammar::flag('-TERM'),
+                OptionGrammar::flag('-KILL'),
+                OptionGrammar::flag('-INT'),
+                OptionGrammar::flag('-HUP'),
             ), $control),
             CommandRule::forProgram(
                 'core.wait',

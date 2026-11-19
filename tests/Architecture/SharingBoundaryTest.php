@@ -101,7 +101,10 @@ final class SharingBoundaryTest extends TestCase
         $offending = [];
 
         foreach ($this->sharingFiles() as $file) {
-            if (preg_match('/(^use\s+\\\\?Domain\\\\|[^A-Za-z]\\\\Domain\\\\)/m', (string) file_get_contents($file)) === 1) {
+            if (preg_match(
+                '/(^use\s+\\\\?Domain\\\\|[^A-Za-z]\\\\Domain\\\\)/m',
+                (string) file_get_contents($file),
+            ) === 1) {
                 $offending[] = $file;
             }
         }

@@ -68,7 +68,9 @@ final class PlanBuilder
                 $runnable,
             );
 
-            return PlanStep::from(['type' => $control, 'node' => $node->id, 'context' => $context, 'children' => $children]);
+            return PlanStep::from(
+                ['type' => $control, 'node' => $node->id, 'context' => $context, 'children' => $children],
+            );
         }
         if ($node->type !== NodeType::SimpleCommand) {
             throw ExecutionPlanRefused::unsupportedNode($node->type->value, $node->id);

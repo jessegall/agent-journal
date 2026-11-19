@@ -113,6 +113,11 @@ final class ShippedSkillFilesTest extends TestCase
         preg_match_all('/^## (.+)$/m', (string) file_get_contents(base_path($file)), $written);
 
         $this->assertSame($purpose === '' ? $written[1] : ['Purpose', ...$written[1]], $published[1]);
-        $this->assertStringContainsString($purpose === '' ? "\n# " : "## Purpose\n\n{$purpose}\n", $rendered);
+        $this->assertStringContainsString($purpose === '' ? "\n# " : <<<TEXT
+            ## Purpose
+
+            {$purpose}
+
+            TEXT, $rendered);
     }
 }

@@ -61,7 +61,14 @@ final readonly class CommentLinkRecords implements RecordProvider
         )->readLimit(count($records))->get(['id', 'target_type', 'target_id']);
         $visibleTargets = [];
 
-        foreach ($this->records->visibleCards(array_values($targets->map(fn (Comment $comment) => $comment->target())->unique(fn (RecordIdentity $target) => $target->type.' '.$target->id)->all())) as $card) {
+        foreach ($this->records->visibleCards(
+            array_values(
+                $targets
+                    ->map(fn (Comment $comment) => $comment->target())
+                    ->unique(fn (RecordIdentity $target) => $target->type.' '.$target->id)
+                    ->all(),
+            ),
+        ) as $card) {
             $visibleTargets["{$card->type} {$card->id}"] = $card;
         }
 

@@ -45,12 +45,24 @@ final class CoreMcpTools
     public static function tools(): array
     {
         return [
-            OverviewReadTool::class, CapabilitiesReadTool::class, OperationsReadTool::class, AssignmentReadTool::class, AssigneesListTool::class,
+            OverviewReadTool::class,
+            CapabilitiesReadTool::class,
+            OperationsReadTool::class,
+            AssignmentReadTool::class,
+            AssigneesListTool::class,
             MessageSendTool::class, MessageAskTool::class, MessageReplyTool::class, MessageReadTool::class,
             MessageTakeNextTool::class, MessageDismissTool::class, MessageShowTool::class, InboxHistoryTool::class,
             InboxCountsTool::class,
-            SkillsListTool::class, SkillShowTool::class, SkillPreviewTool::class, SkillRevisionsTool::class, SkillRevisionTool::class,
-            SkillMakeTool::class, SkillEditTool::class, SkillRestoreTool::class, SkillRetireTool::class, SkillCopyTool::class,
+            SkillsListTool::class,
+            SkillShowTool::class,
+            SkillPreviewTool::class,
+            SkillRevisionsTool::class,
+            SkillRevisionTool::class,
+            SkillMakeTool::class,
+            SkillEditTool::class,
+            SkillRestoreTool::class,
+            SkillRetireTool::class,
+            SkillCopyTool::class,
         ];
     }
 

@@ -29,7 +29,12 @@ use Illuminate\Database\Eloquent\Scope;
  * The actor provider of each actor type, registered once at boot; a provider is built per call, so nothing found
  * outlives the request.
  */
-final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistration, ActorResolver, ActorVisibility, WorkStacks
+final class ActorProviderRegistry implements
+    ActorLabels,
+    ActorProviderRegistration,
+    ActorResolver,
+    ActorVisibility,
+    WorkStacks
 {
     /**
      * @var array<string, class-string<ActorProvider>>

@@ -63,8 +63,12 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
             'program_pinned' => $value->programPinned,
             'allowed_models' => self::encode($value->allowedModels),
             'access_policy' => self::encode(StoredAccessPolicy::fromAccessPolicy($value->access)->toArray()),
-            'stop_conditions' => self::encode(StoredStopConditions::fromStopConditions($value->stopConditions)->toArray()),
-            'execution_policy' => self::encode(StoredExecutionPolicy::fromExecutionPolicy($value->execution)->toArray()),
+            'stop_conditions' => self::encode(
+                StoredStopConditions::fromStopConditions($value->stopConditions)->toArray(),
+            ),
+            'execution_policy' => self::encode(
+                StoredExecutionPolicy::fromExecutionPolicy($value->execution)->toArray(),
+            ),
             'configuration_hash' => $value->provenance->configurationHash,
             'provenance' => self::encode(array_map(
                 fn (FieldOrigin $origin) => ['field' => $origin->field, 'origin' => $origin->origin->value],

@@ -286,8 +286,11 @@ final class Share extends Model implements Numbered, ReadableModel
     public function isLastLiveOfItsConfiguration(): bool
     {
         return $this->share_gateway_configuration_id !== null
-
-                    && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
+            && ! self::query()
+                ->liveNow()
+                ->servedBy($this->share_gateway_configuration_id)
+                ->whereKeyNot($this->id)
+                ->exists();
     }
 
     /**

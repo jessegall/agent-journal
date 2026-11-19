@@ -10,7 +10,6 @@ use App\AgentRequests\Exceptions\CallTooLarge;
 use App\AgentRequests\Exceptions\JournalUnavailable;
 use App\AgentRequests\Exceptions\StateBlocked;
 use App\AgentRequests\Support\AgentClientSettings;
-use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Support\LaunchProfilePin;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -41,7 +40,9 @@ final class SendSignedCallsTest extends TestCase
     {
         Http::fake(['*' => Http::response(['noteId' => 'note-7'])]);
 
-        $answer = $this->sender()->send(new WriteNoteCall('book 1', 'Hello.', new CallKey('key-1')));
+        $answer = $this->sender()->send(
+            WriteNoteCall::from(['notebookId' => 'book 1', 'text' => 'Hello.', 'request_key' => 'key-1']),
+        );
 
         $this->assertInstanceOf(NoteAnswer::class, $answer);
         $this->assertSame('note-7', $answer->noteId);
@@ -70,7 +71,9 @@ final class SendSignedCallsTest extends TestCase
         Http::fake(['*' => Http::response($body, $status)]);
 
         $this->assertThrows(
-            fn () => $this->sender()->send(new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1'))),
+            fn () => $this->sender()->send(
+                WriteNoteCall::from(['notebookId' => 'book-1', 'text' => 'Hi.', 'request_key' => 'key-1']),
+            ),
             $class,
         );
     }
@@ -81,7 +84,9 @@ final class SendSignedCallsTest extends TestCase
             ->push(['code' => 'busy', 'message' => 'Busy.'], 429)
             ->push(['noteId' => 'note-8']);
 
-        $answer = $this->sender()->send(new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1')));
+        $answer = $this->sender()->send(
+            WriteNoteCall::from(['notebookId' => 'book-1', 'text' => 'Hi.', 'request_key' => 'key-1']),
+        );
 
         $this->assertSame('note-8', $answer->noteId);
         $ids = [];
@@ -99,7 +104,9 @@ final class SendSignedCallsTest extends TestCase
         Http::fake(['*' => Http::response(['code' => 'state_blocked', 'message' => 'Blocked.'], 409)]);
 
         $this->assertThrows(
-            fn () => $this->sender()->send(new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1'))),
+            fn () => $this->sender()->send(
+                WriteNoteCall::from(['notebookId' => 'book-1', 'text' => 'Hi.', 'request_key' => 'key-1']),
+            ),
             StateBlocked::class,
         );
         Http::assertSentCount(1);
