@@ -142,6 +142,6 @@ final class SettingsRecordTest extends TestCase
 
     private function storedText(): string
     {
-        return (string) DB::table('settings_records')->where('owner', 'Library')->value('document');
+        return (string) SettingsRecord::query()->where('owner', 'Library')->sole()->getRawOriginal('document');
     }
 }

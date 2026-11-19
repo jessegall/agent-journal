@@ -12,6 +12,18 @@
             },
             {
                 "testCode": true
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "nameLike": "assert*"
+                        }
+                    ]
+                }
             }
         ],
         "reject": [
@@ -21,7 +33,7 @@
         ]
     },
     "sin": {
-        "description": "A test measures elapsed time, which passes or fails with the machine's load.",
+        "description": "A test asserts on elapsed time, which passes or fails with the machine's load.",
         "name": "elapsed-time-assertion",
         "rule": "Assert counts, states and refusals; a ceiling on a test's run belongs in #[TimeLimit].",
         "skill": "bounded-reads"

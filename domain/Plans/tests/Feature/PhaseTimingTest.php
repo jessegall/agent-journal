@@ -69,9 +69,9 @@ final class PhaseTimingTest extends TestCase
 
     public function test_once_the_phase_tasks_ended_the_agent_may_run_its_checks(): void
     {
-        foreach ($this->tasks as $task) {
-            Task::query()->whereKey($task->id)->update(['state' => TaskState::Finished->value]);
-        }
+        Task::query()
+            ->whereKey(array_map(fn (Task $task) => $task->id, $this->tasks))
+            ->update(['state' => TaskState::Finished->value]);
 
         $this->assertTrue($this->timingForAgent()->isAllowed());
     }

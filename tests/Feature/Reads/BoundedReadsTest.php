@@ -57,9 +57,7 @@ final class BoundedReadsTest extends TestCase
 
     public function test_reading_every_row_without_a_name_is_refused(): void
     {
-        $this->expectException(ModelReadAllRefused::class);
-
-        Task::all();
+        $this->assertThrows(fn () => Task::all(), ModelReadAllRefused::class);
     }
 
     public function test_a_plain_read_above_the_largest_page_is_refused(): void

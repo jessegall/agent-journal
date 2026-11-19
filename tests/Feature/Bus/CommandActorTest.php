@@ -16,7 +16,6 @@ use App\Bus\Support\CommandEntrance;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineActor;
 use Closure;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
 use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
@@ -47,7 +46,7 @@ final class CommandActorTest extends CommandBusTestCase
             fn () => $this->app->make(ActorStore::class)->actAsSystem('test', $run),
             CommandNotRegistered::class,
         );
-        $this->assertSame(0, DB::table('module_command_rows')->count());
+        $this->assertSame(0, $this->rowCount());
     }
 
     public function test_each_command_logs_its_name_owner_actor_and_outcome_and_no_field(): void
@@ -92,7 +91,7 @@ final class CommandActorTest extends CommandBusTestCase
 
         $this->asTick(fn () => $this->app->make(CommandBus::class)->run(new EngineCopyNote('nested')));
 
-        $this->assertGreaterThan(0, DB::table('module_command_rows')->count());
+        $this->assertGreaterThan(0, $this->rowCount());
     }
 
     /**

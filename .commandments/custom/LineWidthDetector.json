@@ -8,14 +8,73 @@
                 "lineLonger": 120
             },
             {
-                "fileMatches": "^(app|domain|tests|config)/"
+                "fileMatches": "^(app|domain|tests|config|\\.commandments/custom/samples)/"
+            }
+        ],
+        "reject": [
+            {
+                "all": [
+                    {
+                        "lines": {
+                            "atMost": 1
+                        }
+                    },
+                    {
+                        "any": [
+                            {
+                                "all": [
+                                    {
+                                        "is": "literal"
+                                    },
+                                    {
+                                        "textMatches": "^.{60,}$"
+                                    }
+                                ]
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "is": "literal"
+                                        },
+                                        {
+                                            "textMatches": "^.{60,}$"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "role": "member"
+                        },
+                        {
+                            "name": "signature"
+                        }
+                    ]
+                }
+            },
+            {
+                "all": [
+                    {
+                        "role": "member"
+                    },
+                    {
+                        "name": "signature"
+                    }
+                ]
             }
         ]
     },
     "sin": {
         "description": "A line of PHP code wider than 120 characters.",
         "name": "line-too-wide",
-        "rule": "No PHP line goes past 120 characters: break a long call one argument per line, or name its argument first (rule 38).",
+        "rule": "No PHP line goes past 120 characters: break a long call one argument per line, or name its argument first (rule 38). A line that carries one message, a string of 60 characters or more, stays one line (user question 28), and a console $signature stays one line because Laravel reads its options only within one line.",
         "skill": "line-width"
     }
 }

@@ -121,7 +121,10 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
             : new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $source));
 
-        return new JudgedCall($input, fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer));
+        return new JudgedCall(
+            $input,
+            fn (HookAnswer $answer) => ProgramReplies::observation(HookEvent::SessionStart, $answer),
+        );
     }
 
     /**

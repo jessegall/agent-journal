@@ -12,7 +12,20 @@
                 "extendsAny": "Illuminate\\Database\\Eloquent\\Model"
             }
         ],
-        "reject": []
+        "reject": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "name": "assertThrows"
+                        }
+                    ]
+                }
+            }
+        ]
     },
     "sin": {
         "description": "Model::all() reads every row of a table with no bound.",

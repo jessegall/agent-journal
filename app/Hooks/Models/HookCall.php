@@ -83,6 +83,17 @@ final class HookCall extends Model implements ReadableModel
     }
 
     /**
+     * The administrator's read across every agent and session, which lifts the current-agent limit.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function acrossEveryAgent(Builder $query): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class);
+    }
+
+    /**
      * The administrator's read of hook calls past their retention, across every agent; calls of a held stack are left
      * out.
      *
@@ -91,7 +102,7 @@ final class HookCall extends Model implements ReadableModel
     #[Scope]
     protected function prunableBefore(Builder $query, CarbonImmutable $cutoff): void
     {
-        $query->withoutGlobalScope(AgentSessionScope::class)
+        $query->acrossEveryAgent()
             ->where('created_at', '<', $cutoff)
             ->whereNotExists(fn (QueryBuilder $held) => $held->selectRaw('1')
                 ->from('agent_stacks')
