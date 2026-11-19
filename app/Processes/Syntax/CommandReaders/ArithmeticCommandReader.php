@@ -4,27 +4,22 @@ declare(strict_types=1);
 
 namespace App\Processes\Syntax\CommandReaders;
 
-use App\Processes\Contracts\CommandReader;
 use App\Processes\Syntax\TokenCursor;
-use App\Processes\Syntax\UnsupportedConstructs;
-use App\Processes\Values\Grammar\CommandReading;
 
 /**
- * (( arithmetic )) is not supported: read past it as one Unsupported node.
+ * (( expression )): an arithmetic command is not supported.
  */
-final readonly class ArithmeticCommandReader implements CommandReader
+final readonly class ArithmeticCommandReader extends UnsupportedCommandReader
 {
-    public function __construct(private UnsupportedConstructs $unsupported) {}
-
-    public function reads(TokenCursor $cursor): bool
+    public static function reads(TokenCursor $cursor): bool
     {
         $literal = $cursor->currentLiteral();
 
         return $literal !== null && str_starts_with($literal, '((');
     }
 
-    public function read(CommandReading $reading): int
+    protected function reason(): string
     {
-        return $this->unsupported->skip($reading->context, 'An arithmetic command (( )) is not supported.', null);
+        return 'An arithmetic command (( )) is not supported.';
     }
 }

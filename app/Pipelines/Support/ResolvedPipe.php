@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Pipelines\Support;
 
 use App\Pipelines\Contracts\Pipe;
+use App\Pipelines\Exceptions\NotAPipelineStep;
 use App\Pipelines\Exceptions\StepOutOfOrder;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -22,8 +23,14 @@ final readonly class ResolvedPipe
         private string|null $takes,
     ) {}
 
-    public static function of(Pipe $pipe): self
+    /**
+     * @throws NotAPipelineStep when a pipeline lists a class that is no pipe
+     */
+    public static function of(object $pipe): self
     {
+        if (! $pipe instanceof Pipe) {
+            throw NotAPipelineStep::named($pipe::class);
+        }
         $type = new ReflectionMethod($pipe, 'handle')->getParameters()[0]->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return new self($pipe, null);

@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
-use App\Processes\Pipes\Grammar\ReadRedirect;
+use App\Processes\Pipes\Grammar\ReadRedirectSubstitutions;
+use App\Processes\Pipes\Grammar\ReadRedirectTarget;
 
 /**
- * A redirect: its operator, its target or here-document, and the substitutions in them.
+ * A redirect operator with its target word or here-document; the substitutions in either are read as children.
  */
 final readonly class ReadRedirectPipeline implements PipelineDefinition
 {
     public function pipes(): array
     {
         return [
-            ReadRedirect::class,
+            ReadRedirectTarget::class,
+            ReadRedirectSubstitutions::class,
         ];
     }
 }

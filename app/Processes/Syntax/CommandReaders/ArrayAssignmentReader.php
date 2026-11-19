@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace App\Processes\Syntax\CommandReaders;
 
-use App\Processes\Contracts\CommandReader;
 use App\Processes\Enums\TokenType;
 use App\Processes\Syntax\TokenCursor;
-use App\Processes\Syntax\UnsupportedConstructs;
-use App\Processes\Values\Grammar\CommandReading;
 
 /**
- * name=( ... ) is not supported: read past it as one Unsupported node.
+ * name=( ... ): an array assignment is not supported.
  */
-final readonly class ArrayAssignmentReader implements CommandReader
+final readonly class ArrayAssignmentReader extends UnsupportedCommandReader
 {
-    public function __construct(private UnsupportedConstructs $unsupported) {}
-
-    public function reads(TokenCursor $cursor): bool
+    public static function reads(TokenCursor $cursor): bool
     {
         return $cursor->is(TokenType::Word)
             && $cursor->peekIs(1, TokenType::OpenParen)
             && $cursor->word('A word is missing.')->isArrayName();
     }
 
-    public function read(CommandReading $reading): int
+    protected function reason(): string
     {
-        return $this->unsupported->skip($reading->context, 'An array assignment is not supported.', null);
+        return 'An array assignment is not supported.';
     }
 }

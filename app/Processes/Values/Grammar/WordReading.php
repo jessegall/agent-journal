@@ -47,11 +47,18 @@ final readonly class WordReading
         return $this->word->range->end;
     }
 
+    public function isArrayAssignment(): bool
+    {
+        return $this->place === WordPlace::ArrayAssignment;
+    }
+
     /**
-     * The word's substitutions, read as children of its command.
+     * The word's substitutions, read as children of its command; an array assignment's are not read.
      */
     public function substitutions(): SubstitutionsReading
     {
-        return new SubstitutionsReading($this->context, $this->word, $this->command, $this->depth);
+        $word = $this->isArrayAssignment() ? new Word([], $this->word->range) : $this->word;
+
+        return new SubstitutionsReading($this->context, $word, $this->command, $this->depth);
     }
 }

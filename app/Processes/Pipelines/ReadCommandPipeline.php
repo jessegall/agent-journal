@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
-use App\Processes\Pipes\Grammar\ReadCommand;
+use App\Pipelines\Support\Step;
 use App\Processes\Pipes\Grammar\StartCommand;
+use App\Processes\Syntax\CommandReaders\CommandReaderResolver;
+use App\Processes\Values\Grammar\CommandReading;
 
 /**
- * A command: the budget and 'time' are checked first, then the reader for the command's kind reads it.
+ * command: the time budget and the start checked, then the reader for its kind.
  */
 final readonly class ReadCommandPipeline implements PipelineDefinition
 {
@@ -17,7 +19,7 @@ final readonly class ReadCommandPipeline implements PipelineDefinition
     {
         return [
             StartCommand::class,
-            ReadCommand::class,
+            Step::resolvedBy(fn (CommandReading $reading) => CommandReaderResolver::readerAt($reading->cursor())),
         ];
     }
 }

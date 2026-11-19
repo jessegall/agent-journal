@@ -10,4 +10,4 @@ namespace App\Pipelines\Contracts;
  *
  * @method object handle(object $input)
  */
-interface Pipe {}
+interface Pipe extends Pipable {}

@@ -9,7 +9,7 @@ use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Pipelines\ShellAnalysisPipeline;
+use App\Processes\Pipelines\BuildShellTreePipeline;
 use App\Processes\Values\Lines\ShellLine;
 use App\Processes\Values\ShellNode;
 use App\Processes\Values\ShellTree;
@@ -27,7 +27,7 @@ final readonly class TreeParser implements ShellSyntax
     public function parse(string $line, ShellDialect $dialect): ShellTree
     {
         try {
-            return $this->pipelines->run(ShellAnalysisPipeline::class, new ShellLine($line, $dialect), ShellTree::class);
+            return $this->pipelines->run(BuildShellTreePipeline::class, new ShellLine($line, $dialect), ShellTree::class);
         } catch (ShellGrammarStopped $stopped) {
             $root = new ShellNode(0, NodeType::Sequence, new SourceRange(0, strlen($line)), true, 0);
 

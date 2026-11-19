@@ -6,52 +6,41 @@ namespace App\Processes\Syntax\CommandReaders;
 
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Exceptions\ShellGrammarStopped;
+use App\Processes\Pipelines\ReadKeywordFunctionPipeline;
+use App\Processes\Pipelines\ReadNamedFunctionPipeline;
+use App\Processes\Pipelines\ReadOptionStatementPipeline;
+use App\Processes\Pipelines\ReadSimpleCommandPipeline;
 use App\Processes\Syntax\TokenCursor;
 
 /**
- * Picks the reader for the command at the cursor: the first that reads it, and a simple command when none does.
+ * Picks the reader for the command at the cursor: the first whose kind it is, and a simple command when none is.
  */
-final readonly class CommandReaderResolver
+final class CommandReaderResolver
 {
-    /**
-     * @var list<CommandReader>
-     */
-    private array $readers;
-
-    public function __construct(
-        CompoundCommandReader $compound,
-        ReservedWordReader $reservedWord,
-        KeywordFunctionReader $keywordFunction,
-        ArithmeticCommandReader $arithmetic,
-        OptionStatementReader $optionStatement,
-        UnsupportedKeywordReader $unsupportedKeyword,
-        ArrayAssignmentReader $arrayAssignment,
-        NamedFunctionReader $namedFunction,
-        private SimpleCommandReader $simpleCommand,
-    ) {
-        $this->readers = [
-            $compound,
-            $reservedWord,
-            $keywordFunction,
-            $arithmetic,
-            $optionStatement,
-            $unsupportedKeyword,
-            $arrayAssignment,
-            $namedFunction,
-        ];
-    }
+    private const array READERS = [
+        CompoundCommandReader::class,
+        ReservedWordReader::class,
+        ReadKeywordFunctionPipeline::class,
+        ArithmeticCommandReader::class,
+        ReadOptionStatementPipeline::class,
+        UnsupportedKeywordReader::class,
+        ArrayAssignmentReader::class,
+        ReadNamedFunctionPipeline::class,
+    ];
 
     /**
+     * @return class-string<CommandReader>
+     *
      * @throws ShellGrammarStopped
      */
-    public function readerFor(TokenCursor $cursor): CommandReader
+    public static function readerAt(TokenCursor $cursor): string
     {
-        foreach ($this->readers as $reader) {
-            if ($reader->reads($cursor)) {
+        foreach (self::READERS as $reader) {
+            if ($reader::reads($cursor)) {
                 return $reader;
             }
         }
 
-        return $this->simpleCommand;
+        return ReadSimpleCommandPipeline::class;
     }
 }
