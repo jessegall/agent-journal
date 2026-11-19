@@ -21,6 +21,7 @@ use App\Bus\Exceptions\CommandResultChanged;
 use App\Bus\Exceptions\ContinuationCalledTwice;
 use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
+use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\RequestKey;
@@ -87,6 +88,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         DeskRecord::query()->delete();
         InboxRecord::query()->delete();
         Agent::query()->delete();
+        CommandReceipt::query()->delete();
 
         parent::tearDown();
     }
