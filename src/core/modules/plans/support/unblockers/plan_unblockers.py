@@ -3,6 +3,7 @@ from collections.abc import Sequence
 
 from engine.query.conditions.among import Among
 from engine.query.conditions.is_null import IsNull
+from engine.database.database import Database
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.assignments.support.assignments import Assignments
@@ -29,15 +30,21 @@ class PlanUnblockers:
     their waits that the agent can take now, each with the number of plan tasks that wait on it, and a line
     for each task the agent cannot take. It reads the open waits once and follows them in memory."""
 
-    def __init__(self, queries: Queries, tasks: TaskQuery, assignments: Assignments) -> None:
-        self.queries, self.tasks, self.assignments = queries, tasks, assignments
+    def __init__(self, queries: Queries, tasks: TaskQuery, assignments: Assignments, database: Database) -> None:
+        self.queries, self.tasks, self.assignments, self.database = queries, tasks, assignments, database
 
     def unblockers(self, plan_id: int, agent: Agent) -> Unblockers:
         return self.plan_unblockers([plan_id], agent)[plan_id]
 
+    # the waits and the tasks they end at are read in one snapshot, so a task closed between two reads never leaves a
+    # wait ending at a task that is no longer there
     def plan_unblockers(self, plan_ids: Sequence[int], agent: Agent) -> dict[int, Unblockers]:
         if not plan_ids:
             return {}
+        with self.database.consistent_read():
+            return self.read_unblockers(plan_ids, agent)
+
+    def read_unblockers(self, plan_ids: Sequence[int], agent: Agent) -> dict[int, Unblockers]:
         unfinished_ids: dict[int, list[int]] = defaultdict(list)
         blocked_ids: dict[int, list[int]] = defaultdict(list)
         plan_rows: dict[int, list[PlanTask]] = defaultdict(list)
