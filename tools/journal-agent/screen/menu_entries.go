@@ -18,31 +18,50 @@ type MenuEntries struct {
 // entryNumber is the "3. " a program puts before an entry's label.
 var entryNumber = regexp.MustCompile(`^\d+\.\s+`)
 
+// EntryMatch is how many entries hold what was looked for: none, exactly one, or more than one.
+type EntryMatch string
+
+const (
+	NotShown  EntryMatch = "not shown"
+	ShownOnce EntryMatch = "shown once"
+	Ambiguous EntryMatch = "ambiguous"
+)
+
 // Find is the index of the one entry whose label is the given one, as labelOf reads it; found is false when no entry
 // or more than one holds it, so a neighbour is never taken for it.
 func (entries MenuEntries) Find(label string) (index int, found bool) {
-	return entries.findOne(func(text string) bool { return labelOf(text, label) })
+	index, match := entries.Locate(label)
+
+	return index, match == ShownOnce
 }
 
-// FindMarked is the index of the one entry whose text carries the note, such as "(current)"; found is false when
-// no entry or more than one carries it.
-func (entries MenuEntries) FindMarked(note string) (index int, found bool) {
-	return entries.findOne(func(text string) bool { return strings.Contains(text, note) })
+// Locate is the index of the entry whose label is the given one and how many entries hold it; the index is -1
+// unless exactly one does.
+func (entries MenuEntries) Locate(label string) (int, EntryMatch) {
+	return entries.locate(func(text string) bool { return labelOf(text, label) })
 }
 
-func (entries MenuEntries) findOne(holds func(text string) bool) (int, bool) {
+// LocateMarked is the index of the entry whose text carries the note, such as "(current)", and how many carry it.
+func (entries MenuEntries) LocateMarked(note string) (int, EntryMatch) {
+	return entries.locate(func(text string) bool { return strings.Contains(text, note) })
+}
+
+func (entries MenuEntries) locate(holds func(text string) bool) (int, EntryMatch) {
 	index := -1
 	for position, text := range entries.Labels {
 		if !holds(text) {
 			continue
 		}
 		if index >= 0 {
-			return -1, false
+			return -1, Ambiguous
 		}
 		index = position
 	}
+	if index < 0 {
+		return -1, NotShown
+	}
 
-	return index, index >= 0
+	return index, ShownOnce
 }
 
 // HighlightedLabel is the text of the highlighted entry.

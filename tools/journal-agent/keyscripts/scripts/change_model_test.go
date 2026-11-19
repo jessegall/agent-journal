@@ -126,11 +126,12 @@ func TestClaudeCodeChangeEffortMovesTheSliderAndEndsWhenClaudeCodeSaysItIsSet(t 
 	}
 }
 
-func TestALevelTheSliderDoesNotShowIsRefusedBeforeAnyMove(t *testing.T) {
+func TestALevelTheSliderDoesNotShowNeedsNavigationBeforeAnyMove(t *testing.T) {
 	result, keys := replayScript(t, profiles.ClaudeCode{}.Screens(), "claude-code/2.1.323/keyscripts/effort-change",
 		21*time.Second, claudeCodeChangeEffort(), map[string]string{"effort": "turbo"})
 
-	if result.Outcome != keyscripts.EntryUnavailable || keys != "/effort"+enter {
+	missing := result.Uncertainty != nil && result.Uncertainty.Reason == keyscripts.LabelMissing
+	if result.Outcome != keyscripts.NavigationNeeded || !missing || keys != "/effort"+enter {
 		t.Fatalf("an unknown level ended %+v after keys %q", result, keys)
 	}
 }

@@ -60,11 +60,15 @@ type Clock interface {
 	Sleep(duration time.Duration)
 }
 
-// errEntryNotShown is a label the menu on screen shows on no entry, or on more than one.
-var errEntryNotShown = errors.New("the menu on screen shows no single entry with that label")
+// errLabelMissing is a label no entry of the menu on screen holds.
+var errLabelMissing = errors.New("the menu on screen shows no entry with that label")
 
-// errHighlightAstray is a highlight that did not move one entry toward the wanted entry after a key.
-var errHighlightAstray = errors.New("the highlight did not move one entry toward the wanted entry")
+// errLabelAmbiguous is a label more than one entry of the menu on screen holds.
+var errLabelAmbiguous = errors.New("the menu on screen shows more than one entry with that label")
+
+// errHighlightAstray is a highlight that did not move one entry toward the wanted entry after a key, or that is not
+// on the wanted entry when it is to be confirmed.
+var errHighlightAstray = errors.New("the highlight is not where the wanted entry is")
 
 // pollInterval is how often a waiting step reads the screen again.
 const pollInterval = 50 * time.Millisecond
@@ -123,9 +127,7 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		}
 
 		if err := runner.act(step, values); err != nil {
-			outcome, cause := stoppedBy(err)
-
-			return Result{Outcome: outcome, Step: index, Name: step.Name, Seen: seen}, cause
+			return runner.stopped(err, index, step, seen)
 		}
 		runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 	}
@@ -200,12 +202,45 @@ func (runner *Runner) waitFor(
 	}
 }
 
+// stopped is how a run ends whose step failed with err: a label the menu does not show once or a highlight that is
+// not on the wanted entry needs navigation, on a screen that may leave the host, before any Enter; anything else
+// ends with its outcome, and the error the run gives back, if any.
+func (runner *Runner) stopped(err error, index int, step KeyStep, seen screen.Classification) (Result, error) {
+	reason, uncertain := uncertaintyOf(err)
+	snapshot := runner.screen.Snapshot()
+	if uncertain && runner.program.Layout.Exportable(snapshot) {
+		now := runner.screen.Classify(runner.clock.Now())
+		uncertainty := runner.uncertainty(reason, index, step, now, snapshot)
+
+		return Result{Outcome: NavigationNeeded, Step: index, Name: step.Name, Seen: now, Uncertainty: &uncertainty}, nil
+	}
+
+	outcome, cause := stoppedBy(err)
+
+	return Result{Outcome: outcome, Step: index, Name: step.Name, Seen: seen}, cause
+}
+
+// uncertaintyOf is the reason a refusal of the label helper gives the main agent; uncertain is false for any other
+// failure.
+func uncertaintyOf(err error) (UncertaintyReason, bool) {
+	switch {
+	case errors.Is(err, errLabelMissing):
+		return LabelMissing, true
+	case errors.Is(err, errLabelAmbiguous):
+		return Ambiguous, true
+	case errors.Is(err, errHighlightAstray):
+		return HighlightWrong, true
+	}
+
+	return "", false
+}
+
 // stoppedBy is the outcome of a run whose step failed with err, and the error the run gives back, if any.
 func stoppedBy(err error) (Outcome, error) {
 	switch {
 	case errors.Is(err, terminal.ErrPersonTyping):
 		return Paused, nil
-	case errors.Is(err, errEntryNotShown):
+	case errors.Is(err, errLabelMissing), errors.Is(err, errLabelAmbiguous):
 		return EntryUnavailable, nil
 	case errors.Is(err, errHighlightAstray):
 		return ScriptFailed, nil
@@ -243,6 +278,19 @@ func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error 
 			return errHighlightAstray
 		}
 		entries, distance = moved, next
+	}
+
+	return runner.highlightIsOn(step, values)
+}
+
+// highlightIsOn reads the menu afresh and refuses a highlight that is not on the step's entry, before any Enter.
+func (runner *Runner) highlightIsOn(step KeyStep, values map[string]string) error {
+	distance, err := distanceTo(step, runner.view.MenuEntries(), values)
+	if err != nil {
+		return err
+	}
+	if distance != 0 {
+		return errHighlightAstray
 	}
 
 	return nil

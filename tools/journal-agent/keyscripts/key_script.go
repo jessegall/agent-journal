@@ -130,24 +130,32 @@ func Choose(menu, label string, deadline time.Duration) KeyStep {
 }
 
 // target is the index of the entry the step looks for in these entries: the one carrying its marked note, or the
-// one its label names; an entry the menu does not show exactly once is errEntryNotShown.
+// one its label names; an entry no entry holds is errLabelMissing, one two entries hold errLabelAmbiguous.
 func (step KeyStep) target(entries screen.MenuEntries, values map[string]string) (int, error) {
 	if step.Marked != "" {
-		if index, found := entries.FindMarked(step.Marked); found {
-			return index, nil
-		}
+		index, match := entries.LocateMarked(step.Marked)
 
-		return 0, fmt.Errorf("%w: %q", errEntryNotShown, step.Marked)
+		return located(index, match, step.Marked)
 	}
 	label, err := step.label(values)
 	if err != nil {
 		return 0, err
 	}
-	if index, found := entries.Find(label); found {
-		return index, nil
+	index, match := entries.Locate(label)
+
+	return located(index, match, label)
+}
+
+// located is the entry found exactly once, or the refusal that says why there is none.
+func located(index int, match screen.EntryMatch, wanted string) (int, error) {
+	switch match {
+	case screen.NotShown:
+		return 0, fmt.Errorf("%w: %q", errLabelMissing, wanted)
+	case screen.Ambiguous:
+		return 0, fmt.Errorf("%w: %q", errLabelAmbiguous, wanted)
 	}
 
-	return 0, fmt.Errorf("%w: %q", errEntryNotShown, label)
+	return index, nil
 }
 
 // label is the entry the step looks for: its parameter's value, or its fixed label when it names no parameter.
