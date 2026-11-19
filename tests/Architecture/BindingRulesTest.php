@@ -85,7 +85,7 @@ final class BindingRulesTest extends TestCase
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }
 
-    public function test_a_wrong_target_another_owners_contract_and_a_singleton_keeping_the_actor_fail(): void
+    public function test_a_bound_interface_a_wrong_target_a_foreign_contract_and_an_actor_keeping_singleton_fail(): void
     {
         $fixtures = base_path('tests/Fixtures/Bindings');
         $owners = [
@@ -97,9 +97,10 @@ final class BindingRulesTest extends TestCase
         $violations = new BindingRules($owners, DomainFiles::in([$fixtures]))->violations();
 
         $this->assertSame([
-            'PlanResolver.php:10 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanResolver, but Tests\\Fixtures\\Bindings\\Plans\\PlanNotes does not implement it',
-            "PlansServiceProvider.php:17 binds Tests\\Fixtures\\Bindings\\Tasks\\Contracts\\TaskResolver, but Tasks owns it; only Core's public contracts are filled by another owner",
-            'PlansServiceProvider.php:18 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanCounter, but the target Tests\\Fixtures\\Bindings\\Tasks\\TaskList belongs to Tasks',
+            "PlanResolver.php:10 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanResolver, but an interface names no implementation; its area's service provider binds it",
+            'PlansServiceProvider.php:18 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanResolver, but Tests\\Fixtures\\Bindings\\Plans\\PlanNotes does not implement it',
+            "PlansServiceProvider.php:19 binds Tests\\Fixtures\\Bindings\\Tasks\\Contracts\\TaskResolver, but Tasks owns it; only Core's public contracts are filled by another owner",
+            'PlansServiceProvider.php:20 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanCounter, but the target Tests\\Fixtures\\Bindings\\Tasks\\TaskList belongs to Tasks',
             'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Actors\\Contracts\\CurrentActor beyond its request',
         ], array_map(
             fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}",

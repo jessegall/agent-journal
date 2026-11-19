@@ -9,10 +9,14 @@ use App\Actors\Values\PolicyRegistration;
 use App\Comments\Console\CommentListCommand;
 use App\Comments\Console\CommentLocationCommand;
 use App\Comments\Console\CommentPostCommand;
+use App\Comments\Contracts\CommentResolver;
+use App\Comments\Contracts\PublicCommentResolver;
 use App\Comments\Enums\CommentAbility;
 use App\Comments\Models\Comment;
 use App\Comments\Policies\CommentPolicy;
 use App\Comments\Resolvers\CommentLinkRecords;
+use App\Comments\Resolvers\CommentRecords;
+use App\Comments\Resolvers\PublicComments;
 use App\Comments\Support\CommentShareProvider;
 use App\Records\Contracts\RecordProviderRegistration;
 use App\Sharing\Support\ShareRecordRegistration;
@@ -26,6 +30,12 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CommentsServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(CommentResolver::class, CommentRecords::class);
+        $this->app->bind(PublicCommentResolver::class, PublicComments::class);
+    }
+
     public function boot(
         RecordProviderRegistration $records,
         ShareRecordRegistry $shares,

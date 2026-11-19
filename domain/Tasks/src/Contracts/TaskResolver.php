@@ -6,14 +6,11 @@ namespace Domain\Tasks\Contracts;
 
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Resolvers\VisibleTasks;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Checks that tasks named by id exist and may be read by whoever acts in this request. It changes nothing; a check
  * that passed says so for that moment only.
  */
-#[Bind(VisibleTasks::class)]
 interface TaskResolver
 {
     /**

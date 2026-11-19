@@ -6,12 +6,18 @@ namespace Domain\Documents\Providers;
 
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
+use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\DraftResolver;
+use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\RecordSettlement;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Resolvers\DocumentRecords;
+use Domain\Documents\Resolvers\DraftRecords;
+use Domain\Documents\Resolvers\ReportRecords;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +26,13 @@ use Illuminate\Support\ServiceProvider;
  */
 final class DocumentsServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(DocumentResolver::class, DocumentRecords::class);
+        $this->app->bind(DraftResolver::class, DraftRecords::class);
+        $this->app->bind(ReportResolver::class, ReportRecords::class);
+    }
+
     public function boot(LinkTypeRegistry $links): void
     {
         $links->register([

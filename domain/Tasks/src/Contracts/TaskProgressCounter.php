@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace Domain\Tasks\Contracts;
 
 use Domain\Tasks\Api\TaskProgress;
-use Domain\Tasks\Resolvers\TaskCounts;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Counts how far tasks named by id have got, for a domain that groups tasks without reading them.
  */
-#[Bind(TaskCounts::class)]
 interface TaskProgressCounter
 {
     /**

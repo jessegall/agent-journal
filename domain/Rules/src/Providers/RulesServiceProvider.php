@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Domain\Rules\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
+use Domain\Rules\Contracts\RuleDetailsResolver;
+use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Resolvers\RuleDetailRecords;
+use Domain\Rules\Resolvers\RuleRecords;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Routing\Redirector;
@@ -19,6 +23,12 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class RulesServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(RuleDetailsResolver::class, RuleDetailRecords::class);
+        $this->app->bind(RuleResolver::class, RuleRecords::class);
+    }
+
     public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
     {
         // A missing rule is not found; a rule no longer proposed is a review error on the review buttons.

@@ -6,6 +6,7 @@ namespace App\Settings\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsResolver;
@@ -15,6 +16,7 @@ use App\Settings\Policies\SettingPolicy;
 use App\Settings\Support\DatabaseSettingsCatalogue;
 use App\Settings\Support\DatabaseSettingsResolver;
 use App\Settings\Support\DenyAllSettingsAccess;
+use App\Settings\Support\RegisteredSettingCommands;
 use App\Settings\Support\SettingCodec;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,6 +27,7 @@ final class SettingsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(SettingCommands::class, RegisteredSettingCommands::class);
         $this->app->bindIf(SettingsAccessPolicy::class, DenyAllSettingsAccess::class);
         $this->app->singleton(SettingCodec::class);
         // One reader per request or job, so each owner's record is read once there; the writer forgets what it changes.

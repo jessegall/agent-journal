@@ -24,16 +24,13 @@ use App\Settings\Declarations\StringSetting;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Exceptions\SettingValueInvalid;
-use App\Settings\Support\RegisteredSettingCommands;
 use App\Settings\Values\Decimal;
 use BackedEnum;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Builds the settings commands from the registered declarations, addressing each by its registered owner and key.
  * Building a command grants nothing: its handler checks who runs it, the value and the revision again.
  */
-#[Bind(RegisteredSettingCommands::class)]
 interface SettingCommands
 {
     /**

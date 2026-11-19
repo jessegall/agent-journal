@@ -9,14 +9,11 @@ use App\Numbers\Support\RecordReference;
 use App\Records\Data\RecordCard;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
-use App\Records\Support\RecordProviders;
-use Illuminate\Container\Attributes\Bind;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Reads any record by its link alias through the provider its owner domain registered, never naming a domain.
  */
-#[Bind(RecordProviders::class)]
 interface RecordResolver
 {
     /**

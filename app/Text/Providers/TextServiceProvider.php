@@ -7,6 +7,8 @@ namespace App\Text\Providers;
 use App\Text\Console\TextReadCommand;
 use App\Text\Console\TextSectionsCommand;
 use App\Text\Console\TextVersionCommand;
+use App\Text\Contracts\TextResolver;
+use App\Text\Resolvers\TextRecords;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -14,6 +16,11 @@ use Illuminate\Support\ServiceProvider;
  */
 final class TextServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(TextResolver::class, TextRecords::class);
+    }
+
     public function boot(): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/text.php');

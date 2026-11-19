@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorContext;
 use Illuminate\Container\Attributes\Bind;
 use Illuminate\Container\Attributes\Scoped;
@@ -19,8 +20,9 @@ use ReflectionNamedType;
 use Tests\Support\ScanCache\ScanCache;
 
 /**
- * Judges the container bindings the code states: a #[Bind] target and a provider's class-string binding implement
- * what they are bound to and belong to the owner that binds them, and no singleton keeps a per-request service alive
+ * Judges the container bindings the code states: no interface names its implementation with #[Bind], since its
+ * area's service provider binds it; a #[Bind] target and a provider's class-string binding implement what they are
+ * bound to and belong to the owner that binds them, and no singleton keeps a per-request service alive
  * beyond its request. A binding made by a closure is not judged: what it builds cannot be read from the code.
  */
 final readonly class BindingRules
@@ -32,9 +34,10 @@ final readonly class BindingRules
     private const array SCOPED_METHODS = ['scoped', 'scopedIf'];
 
     /**
-     * Values of one request that Core builds by a closure on each resolution, so no scoped binding names them.
+     * Values of one request that Core builds by a closure on each resolution, and the contract of the request's actor,
+     * whose scoped store Core's provider binds, so they are per-request wherever the provider is not judged.
      */
-    private const array PER_REQUEST_VALUES = [ActorContext::class];
+    private const array PER_REQUEST_VALUES = [ActorContext::class, CurrentActor::class];
 
     /**
      * @param  list<PublicOwner>  $owners
@@ -78,6 +81,16 @@ final readonly class BindingRules
         $userOwner = $this->ownerNameOf($registration->file);
         $abstractOwner = $this->ownerNameOfClass($registration->abstract);
         $concreteOwner = $this->ownerNameOfClass($registration->concrete);
+
+        if (! str_ends_with($registration->file, 'ServiceProvider.php') && interface_exists($registration->abstract)) {
+            return [
+                $registration->violation(
+                    $userOwner,
+                    $abstractOwner,
+                    "an interface names no implementation; its area's service provider binds it",
+                ),
+            ];
+        }
 
         if (! self::exists($registration->concrete) || ! is_a($registration->concrete, $registration->abstract, true)) {
             return [

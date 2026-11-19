@@ -8,16 +8,13 @@ use App\Reads\Values\PageSize;
 use App\Records\Support\RecordIdentity;
 use App\Text\Data\TextSections;
 use App\Text\Data\TextVersionInfo;
-use App\Text\Resolvers\TextRecords;
 use App\Text\Support\TextPart;
 use App\Text\Support\TextSelection;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Reads the text of a record the caller may read, one version at a time and a bounded part at a time: which version,
  * its sections, and a part of its lines. A missing record and one the caller may not read look the same.
  */
-#[Bind(TextRecords::class)]
 interface TextResolver
 {
     /**

@@ -7,13 +7,10 @@ namespace Domain\Documents\Contracts;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Exceptions\DraftMissing;
-use Domain\Documents\Resolvers\DraftRecords;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Reads the draft the editor of this request holds; it never stands in for a document's published text.
  */
-#[Bind(DraftRecords::class)]
 interface DraftResolver
 {
     /**

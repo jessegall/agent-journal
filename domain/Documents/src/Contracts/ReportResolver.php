@@ -13,13 +13,10 @@ use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Exceptions\ReportMissing;
-use Domain\Documents\Resolvers\ReportRecords;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Reads the filed reports: a page of them, or one by its number.
  */
-#[Bind(ReportRecords::class)]
 interface ReportResolver
 {
     public function list(DocumentFilters $filters): ReportList;

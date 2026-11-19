@@ -11,6 +11,7 @@ use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ServerClock;
@@ -21,6 +22,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorProviderRegistry;
+use App\Actors\Support\ActorStore;
 use App\Actors\Support\AuthorizerProviderRegistry;
 use App\Actors\Support\CurrentActorAuthorizer;
 use App\Actors\Support\DatabaseClock;
@@ -35,16 +37,17 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Lets the readers that take ActorContext directly read it from this request's actor store. The store itself is
- * scoped and both its interfaces name it (#[Bind]), so a long-running worker forgets the actor between requests. The
- * presence window is read once from config/actors.php; the owners of actors register their counters of present ones,
- * and
- * the viewer's heartbeat route is loaded here.
+ * Binds the actor contracts to this request's actor store, which is scoped, so a long-running worker forgets the
+ * actor between requests, and lets the readers that take ActorContext directly read it from that store. The presence
+ * window is read once from config/actors.php; the owners of actors register their counters of present ones, and the
+ * viewer's heartbeat route is loaded here.
  */
 final class ActorsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(CurrentActor::class, ActorStore::class);
+        $this->app->bind(CurrentActorSetter::class, ActorStore::class);
         $this->app->singleton(PolicyCatalogue::class, RegisteredPolicies::class);
         $this->app->bind(ActorContext::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(

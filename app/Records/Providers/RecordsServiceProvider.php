@@ -9,8 +9,13 @@ use App\Actors\Values\PolicyRegistration;
 use App\Links\Models\Link;
 use App\Records\Console\LinkAddCommand;
 use App\Records\Console\LinkRemoveCommand;
+use App\Records\Contracts\RecordLinker;
+use App\Records\Contracts\RecordProviderRegistration;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Enums\RecordLinkAbility;
 use App\Records\Policies\RecordLinkPolicy;
+use App\Records\Support\RecordProviders;
+use App\Records\Support\TransactionalRecordLinker;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -18,6 +23,13 @@ use Illuminate\Support\ServiceProvider;
  */
 final class RecordsServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(RecordLinker::class, TransactionalRecordLinker::class);
+        $this->app->bind(RecordProviderRegistration::class, RecordProviders::class);
+        $this->app->bind(RecordResolver::class, RecordProviders::class);
+    }
+
     public function boot(PolicyCatalogue $policies): void
     {
         $policies->register(

@@ -8,6 +8,8 @@ use App\Bus\Console\PruneReceiptsCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Contracts\MapsRefusals;
+use App\Bus\Contracts\OperationResolver;
+use App\Bus\Resolvers\CallerOperations;
 use App\Bus\Support\AcceptedReceipt;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\ConsoleOwner;
@@ -36,6 +38,7 @@ final class CommandBusServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(OperationResolver::class, CallerOperations::class);
         $this->app->bind(MapsRefusals::class, RefusalMapper::class);
         $this->app->scoped(AcceptedReceipt::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);

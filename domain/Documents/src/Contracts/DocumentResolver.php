@@ -16,13 +16,10 @@ use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\StaleRead;
-use Domain\Documents\Resolvers\DocumentRecords;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Reads the published documents: a page of them, or one by its number with its current text.
  */
-#[Bind(DocumentRecords::class)]
 interface DocumentResolver
 {
     public function list(DocumentFilters $filters): DocumentList;

@@ -7,14 +7,11 @@ namespace App\Agents\Contracts;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Exceptions\StackTargetRefused;
-use App\Agents\Resolvers\RuntimeRecords;
-use Illuminate\Container\Attributes\Bind;
 
 /**
  * Reads the stored status of agent runtimes and their requests for the current actor, who sees only the sessions
  * it may see. Nothing here calls a host: inspecting a runtime is reading what hosts last reported.
  */
-#[Bind(RuntimeRecords::class)]
 interface RuntimeResolver
 {
     /**

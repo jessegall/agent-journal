@@ -11,14 +11,21 @@ use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\LaunchTransaction;
+use App\Hooks\Actions\AgentStacks;
+use App\Hooks\Actions\CurrentStates;
+use App\Hooks\Actions\UserStacks;
 use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
 use App\Hooks\Contracts\ActorWorkStacks;
+use App\Hooks\Contracts\AgentStack;
+use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\InspectsStacks;
 use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Contracts\RunsStackTransactions;
+use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StateFactory;
+use App\Hooks\Contracts\UserStack;
 use App\Hooks\Inspection\StackInspectionQuery;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
@@ -46,6 +53,10 @@ final class HooksServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(AgentStack::class, AgentStacks::class);
+        $this->app->bind(CurrentState::class, CurrentStates::class);
+        $this->app->bind(StackTransactionRunner::class, StackTransaction::class);
+        $this->app->bind(UserStack::class, UserStacks::class);
         $this->app->bind(InspectsStacks::class, StackInspectionQuery::class);
         $this->app->bind(RunsStackTransactions::class, StackTransaction::class);
         $this->app->bind(ResolvesStateTypes::class, StateTypes::class);

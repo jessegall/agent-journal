@@ -12,11 +12,13 @@ use App\Numbers\Support\NumberedTypeRegistry;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Contracts\ShareStatusResolver;
 use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Gateways\Ngrok\NgrokGateway;
 use App\Sharing\Gateways\Tunler\TunlerGateway;
 use App\Sharing\Models\Share;
 use App\Sharing\Policies\SharingPolicy;
+use App\Sharing\Support\LiveShareStatus;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
@@ -33,6 +35,7 @@ final class SharingServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(ShareStatusResolver::class, LiveShareStatus::class);
         $this->app->singleton(ShareRecordRegistry::class);
         $this->app->singleton(ShareGatewayRegistry::class);
         $this->app->bind(SharePolicy::class, OwnerSharePolicy::class);
