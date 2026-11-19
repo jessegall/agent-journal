@@ -6,6 +6,7 @@ use App\Http\Controllers\Agents\Host\ActivityReportController;
 use App\Http\Controllers\Agents\Host\ClaimRequestsController;
 use App\Http\Controllers\Agents\Host\ExitReportController;
 use App\Http\Controllers\Agents\Host\HeartbeatReportController;
+use App\Http\Controllers\Agents\Host\InterruptNavigationController;
 use App\Http\Controllers\Agents\Host\LaunchGrantController;
 use App\Http\Controllers\Agents\Host\OpenMainRuntimeController;
 use App\Http\Controllers\Agents\Host\RaiseNavigationController;
@@ -18,6 +19,8 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/runtimes', OpenMainRuntimeController::class)->name('runtimes.open');
     Route::post('/runtimes/{runtime}/launch', LaunchGrantController::class)->name('launch');
     Route::post('/runtimes/{runtime}/navigation', RaiseNavigationController::class)->name('navigation.raise');
+    Route::post('/navigation/{navigation}/interrupt', InterruptNavigationController::class)
+        ->name('navigation.interrupt');
     Route::post('/reports/activity', ActivityReportController::class)->name('reports.activity');
     Route::post('/reports/request', RequestReportController::class)->name('reports.request');
     Route::post('/reports/turn', TurnReportController::class)->name('reports.turn');

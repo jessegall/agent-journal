@@ -51,9 +51,9 @@ enum NavigationState: string
     private function nextStates(): array
     {
         return match ($this) {
-            self::Open => [self::Answering, self::Cancelled, self::Expired],
+            self::Open => [self::Answering, self::Cancelled, self::Expired, self::Interrupted],
             self::Answering => [self::Proving, self::Abandoned, self::Cancelled, self::Expired, self::Interrupted],
-            self::Proving => [self::Proven, self::Answering],
+            self::Proving => [self::Proven, self::Answering, self::Cancelled],
             self::Proven, self::Abandoned, self::Interrupted, self::Cancelled, self::Expired => [],
         };
     }

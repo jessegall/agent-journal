@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * A key script run that could not be certain, put to the main agent: the stalled driver request and its runtime,
@@ -123,6 +124,37 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $navigation->save();
 
         return $navigation;
+    }
+
+    /**
+     * @return BelongsTo<DriverRequest, $this>
+     */
+    public function driverRequest(): BelongsTo
+    {
+        return $this->belongsTo(DriverRequest::class);
+    }
+
+    /**
+     * @return BelongsTo<AgentRuntime, $this>
+     */
+    public function runtime(): BelongsTo
+    {
+        return $this->belongsTo(AgentRuntime::class, 'agent_runtime_id');
+    }
+
+    /**
+     * Cancels the open navigation request of a driver request that was cancelled or ended with its runtime, in the
+     * same transaction; a driver request with none is left as it is.
+     */
+    public static function cancelOpenFor(DriverRequest $request): void
+    {
+        $open = self::query()
+            ->acrossActors()
+            ->open()
+            ->where('driver_request_id', $request->id)
+            ->lockForUpdate()
+            ->first();
+        $open?->cancel();
     }
 
     public function assignmentIdentity(): RecordIdentity

@@ -17,6 +17,11 @@ final class NavigationRaiseRefused extends RuntimeException implements CommandRe
         return new self("Request {$requestId} runs no key script, so it has no goal to navigate to.");
     }
 
+    public static function unknownRequest(string $navigationId): self
+    {
+        return new self("There is no navigation request {$navigationId}.");
+    }
+
     public static function notOfRuntime(string $requestId, string $runtimeId): self
     {
         return new self("Request {$requestId} is not a request of runtime {$runtimeId}.");
