@@ -34,7 +34,9 @@ type connection struct {
 	written bytes.Buffer
 }
 
-func (connection *connection) Write(content []byte) (int, error) { return connection.written.Write(content) }
+func (connection *connection) Write(content []byte) (int, error) {
+	return connection.written.Write(content)
+}
 
 func TestAStartRequestReachesTheExecutorAndItsReplyIsWritten(t *testing.T) {
 	executor := &recordingExecutor{}

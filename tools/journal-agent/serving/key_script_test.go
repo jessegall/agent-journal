@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"journal-agent/client"
-	"journal-agent/host"
 	"journal-agent/drivers/contracts"
+	"journal-agent/host"
 	"journal-agent/keyscripts"
 	"journal-agent/screen"
 )

@@ -37,7 +37,7 @@ func (journal *startJournal) ClaimStart(_ context.Context, sessionID string) (cl
 func preparation(t *testing.T, journal *startJournal, prerequisites error) StartPreparation {
 	t.Helper()
 	return StartPreparation{
-		Journal:       journal,
+		Journal:        journal,
 		States:         StartStates{Folder: filepath.Join(t.TempDir(), "starts")},
 		Prerequisites:  func(client.Grant, client.ClaimedStart) error { return prerequisites },
 		RuntimesFolder: filepath.Join(t.TempDir(), "runtimes"),

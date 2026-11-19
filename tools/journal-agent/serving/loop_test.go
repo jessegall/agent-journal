@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"journal-agent/client"
-	"journal-agent/host"
 	"journal-agent/drivers/contracts"
+	"journal-agent/host"
 )
 
 type fakeJournal struct {

@@ -72,7 +72,7 @@ var (
 func (request StartRequest) Check() error {
 	fields := map[string]string{
 		"startId": request.StartID, "runtimeId": request.RuntimeID, "sessionId": request.SessionID,
-		"policyReference": request.PolicyReference,
+		"policyReference":  request.PolicyReference,
 		"accountReference": request.AccountReference,
 	}
 	for name, value := range fields {

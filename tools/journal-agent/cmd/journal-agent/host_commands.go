@@ -27,6 +27,7 @@ import (
 	"journal-agent/host"
 	"journal-agent/keyscripts"
 	"journal-agent/keyscripts/scripts"
+	"journal-agent/profiles"
 	"journal-agent/profiles/contracts"
 	"journal-agent/screen"
 	"journal-agent/serving"
@@ -93,7 +94,7 @@ func serve(arguments []string) error {
 	defer listener.Close()
 	journal := client.New(enrollment)
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
-		journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket}
+		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket}
 	loop := serving.NewLoop(journal, startPreparation(journal, *stateFolder, *installationFolder), opener.open)
 	watcher, err := host.NewScreenWatcher(ctx, journal, socket)
 	if err != nil {
@@ -118,6 +119,8 @@ func serve(arguments []string) error {
 type runtimeOpener struct {
 	stateFolder        string
 	installationFolder string
+	// codexOwners keeps the one app-server of each Codex account generation, shared by its runtimes' threads.
+	codexOwners *host.CodexOwners
 	journalURL  string
 	hookCommand string
 	socket      *host.AttachSocket
@@ -142,6 +145,9 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if err != nil {
 		return nil, err
 	}
+	if profile.Program() == "codex" {
+		return opener.codexRuntime(runtimeID, prepared, environment)
+	}
 	switch grant.Runtime.DriverType {
 	case drivers.ProcessDriverType:
 		return opener.processRuntime(runtimeID, prepared, profile, environment)
@@ -151,6 +157,47 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 
 	return nil, fmt.Errorf("runtime %s runs under the %s driver, which this host has no driver for", runtimeID,
 		grant.Runtime.DriverType)
+}
+
+// codexRuntime opens a Codex runtime as one thread on its account generation's shared app-server, in an empty root
+// the account trusts, with the work folder as its writable root. It never opens a second interactive Codex: a
+// terminal-only operation answers that it needs a terminal.
+func (opener runtimeOpener) codexRuntime(
+	runtimeID string,
+	prepared host.PreparedStart,
+	environment []string,
+) (serving.Runtime, error) {
+	ctx := context.Background()
+	account := prepared.Claim.Directory
+	installation := host.Installation{Folder: opener.installationFolder}
+	workingRoots := filepath.Join(opener.stateFolder, "codex-roots")
+	ownerRoot := filepath.Join(workingRoots, "owner-"+strconv.Itoa(prepared.Claim.Generation))
+	if err := os.MkdirAll(ownerRoot, 0o700); err != nil {
+		return nil, err
+	}
+	hooks, tables, err := profiles.CodexAccountHooks(account, opener.hookCommand)
+	if err != nil {
+		return nil, err
+	}
+	root, err := host.CodexPreparationOf(installation).PrepareRoot(ctx, host.CodexRootRequest{
+		Account: account, WorkingRoots: workingRoots, Root: runtimeID, Hooks: hooks, HookTables: tables,
+	})
+	if err != nil {
+		return nil, err
+	}
+	executable := installedProgram(opener.installationFolder, profiles.Codex{})
+	owner, err := opener.codexOwners.Of(ctx, account, prepared.Claim.Generation,
+		func(ctx context.Context) (*host.CodexOwner, error) {
+			return host.StartCodexOwner(ctx, executable, environment, ownerRoot)
+		})
+	if err != nil {
+		return nil, err
+	}
+	settings := host.CodexThreadSettings{Root: root, WritableRoots: []string{prepared.Grant.Runtime.Folder}}
+	if prepared.Grant.Runtime.Model != nil {
+		settings.Model = *prepared.Grant.Runtime.Model
+	}
+	return drivers.NewCodexDriver(owner, settings, prepared.Grant.Runtime.ProcessGeneration), nil
 }
 
 // processRuntime opens a runtime run one child per turn from its launch grant, with a conversation of its own, the
@@ -182,6 +229,7 @@ func (opener runtimeOpener) processRuntime(
 		Environment:    environment,
 		Account:        accountOf(prepared),
 		RelayVariables: prepared.RelayVariables(settingsFolder),
+		Executable:     installedProgram(opener.installationFolder, profile),
 	}, grant.Runtime.ProcessGeneration)
 	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
 	if grant.Runtime.Model != nil {
@@ -206,7 +254,8 @@ func (opener runtimeOpener) terminalRuntime(
 ) (serving.Runtime, error) {
 	grant := prepared.Grant
 	request, err := startOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant,
-		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(opener.stateFolder, "runtimes", runtimeID)))
+		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(opener.stateFolder, "runtimes", runtimeID)),
+		installedProgram(opener.installationFolder, profile))
 	if err != nil {
 		return nil, err
 	}
@@ -331,6 +380,16 @@ func forwardKeys(in io.Reader, connection net.Conn) {
 	}
 }
 
+// errCodexHasNoTerminal refuses to attach to Codex: its runtimes are threads on the account's shared app-server, and
+// a second interactive Codex for the person to type into would be a second sign-in owner.
+var errCodexHasNoTerminal = errors.New("a Codex runtime runs as a thread on its account's shared app-server and has " +
+	"no terminal to attach to")
+
+// installedProgram is the absolute path of the program in the protected installation, which a prepared start runs.
+func installedProgram(installationFolder string, profile contracts.ProgramProfile) string {
+	return host.Installation{Folder: installationFolder}.Path(filepath.Join("bin", profile.Program()))
+}
+
 // accountOf is the saved account a prepared start signs in with.
 func accountOf(prepared host.PreparedStart) *contracts.AccountStart {
 	return &contracts.AccountStart{
@@ -357,7 +416,7 @@ func cleanEnvironmentOf(
 // and the start refused unless it runs from the verified installation under a protected arrangement the host proved.
 func startPreparation(journal *client.Client, stateFolder, installationFolder string) host.StartPreparation {
 	return host.StartPreparation{
-		Journal: journal,
+		Journal:        journal,
 		States:         host.StartStates{Folder: filepath.Join(stateFolder, "starts")},
 		RuntimesFolder: filepath.Join(stateFolder, "runtimes"),
 		Prerequisites: func(grant client.Grant, claim client.ClaimedStart) error {
@@ -405,6 +464,9 @@ func openMainRuntime(
 	if !known || agentID == "" || folder == "" {
 		return host.AttachRequest{}, errors.New("attach needs --agent, --folder and --program claude or codex")
 	}
+	if profile.Program() == "codex" {
+		return host.AttachRequest{}, errCodexHasNoTerminal
+	}
 	enrollment, err := (host.State{Folder: stateFolder}).Load()
 	if err != nil {
 		return host.AttachRequest{}, err
@@ -428,7 +490,8 @@ func openMainRuntime(
 		return host.AttachRequest{}, err
 	}
 	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant,
-		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(stateFolder, "runtimes", opened.RuntimeID)))
+		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(stateFolder, "runtimes", opened.RuntimeID)),
+		installedProgram(installationFolder, profile))
 }
 
 // startOf builds the program's terminal start for a runtime from its pinned profile and its start grant: the
@@ -442,6 +505,7 @@ func startOf(
 	environment []string,
 	account *contracts.AccountStart,
 	relayVariables []string,
+	executable string,
 ) (host.AttachRequest, error) {
 	conversationID, err := newConversationID()
 	if err != nil {
@@ -478,7 +542,7 @@ func startOf(
 	environment = append(environment, relayVariables...)
 	return host.AttachRequest{
 		RuntimeID: runtimeID,
-		Command:   append([]string{profile.Program()}, startArguments...),
+		Command:   append([]string{executable}, startArguments...),
 		Folder:    grant.Runtime.Folder,
 		Env:       environment,
 	}, nil

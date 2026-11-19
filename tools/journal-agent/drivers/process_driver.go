@@ -46,6 +46,9 @@ type ProcessRuntime struct {
 	Account *profilecontracts.AccountStart
 	// RelayVariables tell the hook relay the start's key and where its sealed output grants are.
 	RelayVariables []string
+	// Executable is the absolute path of the program in the protected installation; an account start runs nothing
+	// else.
+	Executable string
 }
 
 // ProcessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
@@ -60,6 +63,8 @@ type ProcessDriver struct {
 	child      *exec.Cmd
 	childGroup host.OwnedGroup
 	finished   chan error
+	// signedIn is set once a Claude account start's sign-in was checked.
+	signedIn bool
 }
 
 // NewProcessDriver returns a driver for one runtime, starting at the generation the journal last recorded.
@@ -175,6 +180,15 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 	)
 	command.Env = append(command.Env, driver.runtime.ProfilePin...)
 	command.Env = append(command.Env, driver.runtime.RelayVariables...)
+	if err := driver.checkSignIn(command); err != nil {
+		driver.generation--
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}, err
+	}
+	result, err := driver.resultOf(command)
+	if err != nil {
+		driver.generation--
+		return contracts.OperationResult{}, err
+	}
 	if err := command.Start(); err != nil {
 		driver.generation--
 		return contracts.OperationResult{}, err
@@ -184,7 +198,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 	driver.child = command
 	driver.childGroup = host.OwnedGroupOf(command.Process.Pid)
 	driver.finished = make(chan error, 1)
-	go driver.wait(command, driver.finished)
+	go driver.wait(command, result, driver.finished)
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying, Hold: contracts.HoldNone}, nil
 }
@@ -208,14 +222,59 @@ func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, e
 		return nil, err
 	}
 	command := exec.Command(profile.Program(), arguments...)
+	if driver.runtime.Executable != "" {
+		command.Path, command.Args[0] = driver.runtime.Executable, driver.runtime.Executable
+	}
 	command.Dir = driver.runtime.WorkingFolder
 	command.Env = profile.Environment(WithoutJournalVariables(driver.runtime.Environment), start)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return command, nil
 }
 
-func (driver *ProcessDriver) wait(command *exec.Cmd, finished chan<- error) {
+// claudeAccountStart is whether the runtime runs Claude Code on a saved account, whose sign-in and turn results the
+// driver checks itself.
+func (driver *ProcessDriver) claudeAccountStart() bool {
+	return driver.runtime.Account != nil && driver.runtime.Profile.Program() == "claude"
+}
+
+// checkSignIn refuses the first turn of a Claude account start whose account is not signed in to claude.ai in its
+// own folder.
+func (driver *ProcessDriver) checkSignIn(command *exec.Cmd) error {
+	if !driver.claudeAccountStart() || driver.signedIn {
+		return nil
+	}
+	if err := CheckClaudeSignIn(context.Background(), command.Path, command.Env, driver.runtime.Account.Folder); err != nil {
+		return err
+	}
+	driver.signedIn = true
+	return nil
+}
+
+// resultOf reads a Claude account turn's result from its output; other starts have none to read.
+func (driver *ProcessDriver) resultOf(command *exec.Cmd) (<-chan error, error) {
+	if !driver.claudeAccountStart() {
+		return nil, nil
+	}
+	output, err := command.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	result := make(chan error, 1)
+	go func() { result <- readClaudeResult(output) }()
+	return result, nil
+}
+
+// wait ends the turn with the process exit, or with the turn's own failure when the process exited cleanly but its
+// result was an error.
+func (driver *ProcessDriver) wait(command *exec.Cmd, result <-chan error, finished chan<- error) {
+	var turnFailure error
+	if result != nil {
+		turnFailure = <-result
+	}
 	err := command.Wait()
+	if err == nil {
+		err = turnFailure
+	}
 	driver.mutex.Lock()
 	driver.child = nil
 	driver.mutex.Unlock()

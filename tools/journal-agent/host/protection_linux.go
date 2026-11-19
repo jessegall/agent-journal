@@ -17,7 +17,7 @@ func platformMechanisms() map[string]map[BoundaryItem]BoundaryMechanism {
 				"so a command can read other threads' sessions"),
 			Keychain: unavailable("Codex has no setting that refuses the session D-Bus secret service to its " +
 				"commands"),
-			ControlSockets: unavailable("Codex's seccomp filter refuses network sockets but not Unix sockets"),
+			ControlSockets:    unavailable("Codex's seccomp filter refuses network sockets but not Unix sockets"),
 			ProcessInspection: unavailable("Codex's sandbox shares the process namespace of the host"),
 			InstallWrites: native("the workspace-write Landlock sandbox: writes only in the work folder " +
 				"and the thread's writable roots"),
@@ -43,7 +43,7 @@ func claudeOnLinux() map[BoundaryItem]BoundaryMechanism {
 			"and a native read rule cannot tell this session's history from another's"),
 		Keychain: native("sandbox.enabled bubblewrap namespace without the session D-Bus socket, " +
 			"and permissions.deny on Bash(secret-tool:*)"),
-		ControlSockets: native("sandbox.enabled bubblewrap namespace with no allowed Unix sockets"),
+		ControlSockets:    native("sandbox.enabled bubblewrap namespace with no allowed Unix sockets"),
 		ProcessInspection: native("sandbox.enabled bubblewrap PID namespace"),
 		InstallWrites: native("sandbox.enabled writes only in the work folder, and permissions.deny Edit " +
 			"on the accounts folder"),

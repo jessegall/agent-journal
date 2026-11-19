@@ -1,0 +1,79 @@
+package drivers
+
+import (
+	"bufio"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"os/exec"
+	"path/filepath"
+)
+
+// ErrNotSignedIn refuses a Claude account start whose account is not signed in to claude.ai in its own folder: it
+// never falls back to another sign-in or an API key.
+var ErrNotSignedIn = errors.New("the Claude account is not signed in to claude.ai in its own folder")
+
+// ErrProviderTurnFailed is the end of a turn whose program exited but whose result was an error, such as a refused
+// sign-in or an API failure: the exit alone never makes a turn succeed.
+var ErrProviderTurnFailed = errors.New("the program ended the turn with an error")
+
+// claudeAuthStatus is what `claude auth status --json` of 2.1.323 answers (docs/accounts/claude-integration.md).
+type claudeAuthStatus struct {
+	LoggedIn        bool   `json:"loggedIn"`
+	AuthMethod      string `json:"authMethod"`
+	ConfigDirectory string `json:"configDirectory"`
+}
+
+// CheckClaudeSignIn asks the protected executable, in the start's own environment, whether the account is signed in
+// to claude.ai in exactly its folder. Nothing it prints is kept beyond those three fields.
+func CheckClaudeSignIn(ctx context.Context, executable string, environment []string, accountFolder string) error {
+	command := exec.CommandContext(ctx, executable, "auth", "status", "--json")
+	command.Env = environment
+	output, err := command.Output()
+	if err != nil && len(output) == 0 {
+		return errors.Join(ErrNotSignedIn, err)
+	}
+	var status claudeAuthStatus
+	if err := json.Unmarshal(output, &status); err != nil {
+		return errors.Join(ErrNotSignedIn, err)
+	}
+	if !status.LoggedIn || status.AuthMethod != "claude.ai" ||
+		filepath.Clean(status.ConfigDirectory) != filepath.Clean(accountFolder) {
+		return ErrNotSignedIn
+	}
+	return nil
+}
+
+// claudeResult is the last result line of a stream-json turn.
+type claudeResult struct {
+	Type      string `json:"type"`
+	Subtype   string `json:"subtype"`
+	IsError   bool   `json:"is_error"`
+	SessionID string `json:"session_id"`
+}
+
+// readClaudeResult reads a turn's stream-json output to its end and answers ErrProviderTurnFailed when its result
+// was an error or never came; the output itself is not kept.
+func readClaudeResult(output io.Reader) error {
+	scanner := bufio.NewScanner(output)
+	scanner.Buffer(make([]byte, 64*1024), 16*1024*1024)
+	var last *claudeResult
+	for scanner.Scan() {
+		var line claudeResult
+		if json.Unmarshal(scanner.Bytes(), &line) == nil && line.Type == "result" {
+			last = &line
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return errors.Join(ErrProviderTurnFailed, err)
+	}
+	if last == nil {
+		return fmt.Errorf("%w: no result", ErrProviderTurnFailed)
+	}
+	if last.IsError || last.Subtype != "success" {
+		return fmt.Errorf("%w: %s", ErrProviderTurnFailed, last.Subtype)
+	}
+	return nil
+}

@@ -24,7 +24,7 @@ func platformMechanisms() map[string]map[BoundaryItem]BoundaryMechanism {
 				"so a command can read auth.json under CODEX_HOME"),
 			ForeignHistory: unavailable("the workspace-write Seatbelt sandbox limits writes only, " +
 				"so a command can read other threads' sessions"),
-			Keychain: unavailable("Codex has no setting that refuses Keychain services to its commands"),
+			Keychain:       unavailable("Codex has no setting that refuses Keychain services to its commands"),
 			ControlSockets: unavailable("Codex has no setting that refuses Unix sockets to its commands"),
 			ProcessInspection: unavailable("Codex's Seatbelt sandbox has no setting that hides the other " +
 				"processes of the same user"),
