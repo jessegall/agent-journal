@@ -49,5 +49,6 @@ final class CoreSkillsTest extends TestCase
 
         $this->assertSame($rendered, Artisan::output());
         $this->assertStringContainsString("## Reading skills\n\n- `skill:list` lists every skill", $rendered);
+        $this->assertStringContainsString('a second `#` title, a title that differs from the skill\'s name', $rendered);
     }
 }
