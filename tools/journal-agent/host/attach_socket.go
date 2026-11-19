@@ -135,7 +135,7 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	if err != nil {
 		return nil, err
 	}
-	reader, err := screen.NewEmulatorReader(int(request.Columns), int(request.Rows), screen.DefaultLimits, layout.Regions())
+	reader, err := layout.NewReader(int(request.Columns), int(request.Rows), screen.DefaultLimits)
 	if err != nil {
 		return nil, err
 	}

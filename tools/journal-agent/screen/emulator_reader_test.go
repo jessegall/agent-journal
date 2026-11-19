@@ -179,3 +179,29 @@ func TestFollowFeedsEveryChunkOfALiveSource(t *testing.T) {
 		t.Fatalf("after %d chunks the screen reads %q", chunks, reader.Snapshot().Rows)
 	}
 }
+
+func TestTheScreenGenerationCountsAChangeUndoneBetweenTwoReadsAndNotARepeatedRead(t *testing.T) {
+	spinner := MarkedRow{Label: "spinner", Prefixes: []string{"✻ "}, Contains: "…"}
+	layout := Layout{Composer: FencedRow{Label: "composer", Marker: "❯ "}, Others: []contracts.Region{spinner}}
+	reader, err := layout.NewReader(40, 5, DefaultLimits)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader.Feed([]byte("\x1b[1;1HPick a colour"))
+	before := reader.ScreenGeneration()
+
+	if reader.ScreenGeneration() != before {
+		t.Fatal("a repeated read raised the screen generation")
+	}
+	reader.Feed([]byte("\x1b[1;1HPick a shade "))
+	reader.Feed([]byte("\x1b[1;1HPick a colour\x1b[K"))
+	if reader.ScreenGeneration() != before+2 {
+		t.Fatalf("a change undone before the next read moved the generation from %d to %d", before,
+			reader.ScreenGeneration())
+	}
+	reader.Feed([]byte("\x1b[4;1H✻ Thinking…"))
+	reader.Feed([]byte("\x1b[4;1H✻ Pondering…"))
+	if reader.ScreenGeneration() != before+2 {
+		t.Fatalf("a spinner redraw moved the screen generation to %d", reader.ScreenGeneration())
+	}
+}
