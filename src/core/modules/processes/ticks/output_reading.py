@@ -1,3 +1,4 @@
+from contextlib import suppress
 from engine.ticker.tick_handler import TIMED_JOB_REASON
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
@@ -59,10 +60,10 @@ class OutputReading:
         with container.get(Scopes).opened(None, process.environment_id):
             advance = container.get(ReaderStep).advance(process, output, False)
         if advance is not None:
-            try:
+            # a row another write changed since this read, most often the run's own end, which reads the rest itself,
+            # is left for the next tick to read again from the rows as they are then
+            with suppress(StaleRowError):
                 container.get(Bus).run(ReadNewOutput(process.id, prepared=PreparedRead(output, advance)), Actor.core(), environment_id=process.environment_id)
-            except StaleRowError:
-                container.get(Bus).run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
 
     def warn_if_slow(self, container: Container, cost: Points, limit_points: int) -> None:
         points = cost.total
