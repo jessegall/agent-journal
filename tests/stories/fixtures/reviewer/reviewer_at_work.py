@@ -25,4 +25,6 @@ class ReviewerAtWork(StateFixture):
         story.agent_starts_a_session(story.agents.reviewers.first())
 
     def expected(self, story) -> None:
+        story.expect_no_test_turn_open()
+        story.expect_row_count("reviewers", 1)
         story.expect_stack(story.agents.main, Orchestrating)

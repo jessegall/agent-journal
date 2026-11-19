@@ -90,9 +90,9 @@ class TestTurns:
         limit.start()
         try:
             output, text = self.whole_run(turn.command, turn.folder, caller, worker.environment_id)
+            self.recorded(turn, TestRunResult.printed(text, self.readers.reading(turn.command)))
             if output is not None:
                 self.turns.save(self.turns.find(turn.id).with_(output=output.row_id), Actor.system())
-            self.recorded(turn, TestRunResult.printed(text, self.readers.reading(turn.command)))
         finally:
             limit.cancel()
             self.turns.save(self.turns.find(turn.id).ended().with_run_event(self.time_source.seconds()), Actor.system())
