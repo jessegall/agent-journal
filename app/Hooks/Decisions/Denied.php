@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Hooks\Decisions;
 
-use App\Hooks\Contracts\Refusal;
+use App\Hooks\Contracts\Answer;
 use App\Hooks\Enums\AnswerType;
 
-final readonly class Denied implements Refusal
+/**
+ * An answer that refuses with a reason the agent reads: a denied tool, prompt or stop.
+ */
+final readonly class Denied implements Answer
 {
     public function __construct(private Reason $reason) {}
 

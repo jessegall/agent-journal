@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 use App\Processes\Contracts\AliasReader;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Values\ExecutionContext;
@@ -27,7 +27,7 @@ $app = require __DIR__.'/../../bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
 $app->instance(AliasReader::class, new NoAliases());
 
-$syntax = $app->make(ShellSyntax::class);
+$syntax = $app->make(TreeParser::class);
 $classifier = $app->make(CommandClassifier::class);
 $context = new ExecutionContext(ShellDialect::Bash, '/work', '/work');
 $input = fopen('php://stdin', 'r') ?: exit(1);

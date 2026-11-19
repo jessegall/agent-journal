@@ -38,23 +38,13 @@ final readonly class ProgressPolicy
     }
 
     /**
-     * @return array{type: string, listing: list<string>, selection_fingerprint: string}
+     * The policy as it was stored, read back without the checks of a new one.
+     *
+     * @param  list<string>  $listing
      */
-    public function toArray(): array
+    public static function stored(ProgressType $type, array $listing, string $selectionFingerprint): self
     {
-        return [
-            'type' => $this->type->value,
-            'listing' => $this->listing,
-            'selection_fingerprint' => $this->selectionFingerprint,
-        ];
-    }
-
-    /**
-     * @param  array{type: string, listing: list<string>, selection_fingerprint: string}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(ProgressType::from($fields['type']), $fields['listing'], $fields['selection_fingerprint']);
+        return new self($type, $listing, $selectionFingerprint);
     }
 
     public static function toolPercent(): self
