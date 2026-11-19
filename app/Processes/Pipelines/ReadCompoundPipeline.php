@@ -24,7 +24,9 @@ final readonly class ReadCompoundPipeline implements PipelineDefinition
             OpenCompound::class,
             ReadCompoundList::class,
             CloseCompound::class,
-            Step::repeated(ReadCompoundRedirect::class, while: fn (CompoundParts $parts) => $parts->isAtRedirect()),
+            Step::repeated(ReadCompoundRedirect::class,
+                while: fn (CompoundParts $parts) => $parts->isAtRedirect()
+            ),
             FinishCompound::class,
         ];
     }

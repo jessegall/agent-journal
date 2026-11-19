@@ -16,8 +16,13 @@ final readonly class CountLastWordPipeline implements PipelineDefinition
     public function pipes(): array
     {
         return [
-            Step::repeated(DropFirstWord::class, while: fn (Words $words) => str_word_count($words->text) > 1),
-            Step::chosen(fn (Words $words) => $words->text, then: CountWordsPipeline::class, else: CountNothing::class),
+            Step::repeated(DropFirstWord::class,
+                while: fn (Words $words) => str_word_count($words->text) > 1
+            ),
+            Step::chosen(fn (Words $words) => $words->text,
+                then: CountWordsPipeline::class,
+                else: CountNothing::class
+            ),
         ];
     }
 }

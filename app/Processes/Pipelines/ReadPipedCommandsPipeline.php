@@ -23,9 +23,8 @@ final readonly class ReadPipedCommandsPipeline implements PipelineDefinition
         return [
             ReadNegation::class,
             ReadFirstPipedCommand::class,
-            Step::repeated(
-                [StepPastPipeSymbol::class, ReadNextPipedCommand::class],
-                while: fn (PipedCommands $commands) => $commands->isAtPipeSymbol(),
+            Step::repeated([StepPastPipeSymbol::class, ReadNextPipedCommand::class],
+                while: fn (PipedCommands $commands) => $commands->isAtPipeSymbol()
             ),
             JoinPipedCommands::class,
         ];

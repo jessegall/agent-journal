@@ -23,9 +23,8 @@ final readonly class ReadListPipeline implements PipelineDefinition
         return [
             StartList::class,
             StepPastListSeparator::class,
-            Step::repeated(
-                [ReadListItem::class, PlaceListItem::class, StepPastListSeparator::class],
-                while: fn (ListItems $items) => ! $items->reading->isAtItsEnd(),
+            Step::repeated([ReadListItem::class, PlaceListItem::class, StepPastListSeparator::class],
+                while: fn (ListItems $items) => ! $items->reading->isAtItsEnd()
             ),
             FinishList::class,
         ];

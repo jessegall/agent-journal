@@ -21,9 +21,8 @@ final readonly class ReadAndOrPipeline implements PipelineDefinition
     {
         return [
             ReadFirstAndOrPart::class,
-            Step::repeated(
-                [StepPastAndOr::class, ReadLinkedAndOrPart::class],
-                while: fn (AndOrChain $chain) => $chain->isAtAndOr(),
+            Step::repeated([StepPastAndOr::class, ReadLinkedAndOrPart::class],
+                while: fn (AndOrChain $chain) => $chain->isAtAndOr()
             ),
             FinishAndOr::class,
         ];

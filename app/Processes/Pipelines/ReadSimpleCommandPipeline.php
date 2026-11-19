@@ -31,12 +31,11 @@ final readonly class ReadSimpleCommandPipeline implements CommandReader, Pipelin
         return [
             OpenSimpleCommand::class,
             Step::repeated(
-                Step::chosen(
-                    fn (SimpleCommandReading $command) => $command->isAtRedirect(),
+                Step::chosen(fn (SimpleCommandReading $command) => $command->isAtRedirect(),
                     then: ReadSimpleCommandRedirect::class,
-                    else: ReadSimpleCommandWord::class,
+                    else: ReadSimpleCommandWord::class
                 ),
-                while: fn (SimpleCommandReading $command) => $command->continues(),
+                while: fn (SimpleCommandReading $command) => $command->continues()
             ),
             FinishSimpleCommand::class,
         ];

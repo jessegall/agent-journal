@@ -22,9 +22,8 @@ final readonly class ReadSubstitutionsPipeline implements PipelineDefinition
         return [
             StartSubstitutions::class,
             FindNextSubstitution::class,
-            Step::repeated(
-                [ReadFoundSubstitution::class, FindNextSubstitution::class],
-                while: fn (SubstitutionQueue $queue) => $queue->hasFound(),
+            Step::repeated([ReadFoundSubstitution::class, FindNextSubstitution::class],
+                while: fn (SubstitutionQueue $queue) => $queue->hasFound()
             ),
             FinishSubstitutions::class,
         ];
