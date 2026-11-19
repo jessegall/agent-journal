@@ -279,7 +279,7 @@ class WorkerRunner:
         return tuple(name for name in names if self.inner_worktree(worker, name))
 
     def inner_worktree(self, worker: Worker, name: str) -> bool:
-        checkout, path, branch = self.config.root / name, self.branch.folder(worker) / name, self.branch.name(worker)
+        checkout, path, branch = self.branch.inner_checkout(worker, name), self.branch.folder(worker) / name, self.branch.name(worker)
         if (path / ".git").exists():
             return True
         self.branch.worktree_list_pruned(checkout)

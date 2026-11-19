@@ -7449,3 +7449,45 @@ def test_a_resting_docked_card_older_than_its_chats_first_page_is_taken_down_and
     ScrolledDocksUndock().apply(connection)
     docked = [row["id"] for row in connection.all("SELECT id FROM messages WHERE json_extract(data, '$.docked') = 1 ORDER BY id")]
     assert docked == [2, 3, SHOWN_MESSAGE_COUNT + 4], "the old resting card goes; the running one, the leaving one and the card on the first page stay"
+
+
+def test_a_brief_naming_the_branch_of_its_work_cuts_the_inner_worktree_from_it_and_merges_into_it_never_into_main(app: App, monkeypatch):
+    root = workspace_made(app, ("platform", "mobile"))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2. Payroll totals")
+    assert (folder / "platform" / "payroll.php").is_file(), "the worker's platform is cut from feature/payroll-v2"
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert git_run(root / "platform", "rev-parse", "--abbrev-ref", "HEAD").stdout.strip() == "main", "the project's checkout stays on main"
+    assert not (root / "platform" / "totals.php").exists() and not (root / "platform" / "payroll.php").exists(), "main gets neither the work nor payroll v2"
+    assert "totals.php" in git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout, "the work is merged into feature/payroll-v2"
+    base = app.config.home / "bases" / "platform" / "feature--payroll-v2"
+    assert (base / "totals.php").is_file(), "the journal's checkout of feature/payroll-v2 holds the merged work"
+
+
+def test_a_brief_branch_only_origin_holds_is_fetched_and_checked_out_and_a_repository_without_it_stays_on_its_own(app: App, monkeypatch):
+    root = workspace_made(app, ("platform", "mobile"))
+    origin = app.config.root.parent / "platform-origin.git"
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    git_run(app.config.root.parent, "clone", "-q", "--bare", str(root / "platform"), str(origin))
+    git_run(root / "platform", "branch", "-D", "feature/payroll-v2")
+    git_run(root / "platform", "remote", "add", "origin", str(origin))
+    _, folder, _ = worktree_worker(app, monkeypatch, "platform and mobile, on feature/payroll-v2")
+    assert (folder / "platform" / "payroll.php").is_file(), "fetched from origin and cut from it"
+    assert git_run(root / "platform", "rev-parse", "--abbrev-ref", "feature/payroll-v2@{upstream}").stdout.strip() == "origin/feature/payroll-v2"
+    assert (folder / "mobile" / "app.php").is_file() and git_run(root / "mobile", "rev-parse", "--verify", "-q", "refs/heads/feature/payroll-v2").returncode != 0, "mobile, without the branch, is cut from its own checkout"
+
+
+def test_a_branch_a_brief_only_mentions_is_no_base(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    _, folder, _ = worktree_worker(app, monkeypatch, "platform: port the fix that feature/payroll-v2 made to main")
+    assert not (folder / "platform" / "payroll.php").exists(), "named in passing, the branch is not the base"
