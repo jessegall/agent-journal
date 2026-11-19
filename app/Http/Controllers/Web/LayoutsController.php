@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Web;
 
 use App\Http\Requests\Web\LayoutRequest;
-use App\Web\Contracts\CurrentUserReader;
+use App\Web\Contracts\CurrentUserResolver;
 use App\Web\Models\Layout;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -17,7 +17,7 @@ use Illuminate\Routing\Redirector;
 final readonly class LayoutsController
 {
     public function __construct(
-        private CurrentUserReader $users,
+        private CurrentUserResolver $users,
         private Redirector $redirect,
     ) {}
 

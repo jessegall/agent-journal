@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Text;
 
 use App\Http\Requests\Text\TextSectionsRequest;
-use App\Records\Contracts\RecordReader;
-use App\Text\Contracts\TextReader;
+use App\Records\Contracts\RecordResolver;
+use App\Text\Contracts\TextResolver;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class TextSectionsController
 {
-    public function __invoke(TextSectionsRequest $request, TextReader $text, RecordReader $records): JsonResponse
+    public function __invoke(TextSectionsRequest $request, TextResolver $text, RecordResolver $records): JsonResponse
     {
         return new JsonResponse($text->sections($request->target($records), $request->version(), $request->afterSection(), $request->pageSize()));
     }

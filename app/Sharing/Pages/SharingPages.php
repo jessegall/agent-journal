@@ -14,10 +14,10 @@ use App\Sharing\Http\Controllers\RetryShareController;
 use App\Sharing\Http\Controllers\RevealShareLinkController;
 use App\Sharing\Http\Controllers\RevokeShareController;
 use App\Sharing\Http\Controllers\SharePreviewController;
-use App\Sharing\Readers\GatewaySettingsReader;
-use App\Sharing\Readers\ShareDetailReader;
-use App\Sharing\Readers\ShareListReader;
-use App\Sharing\Readers\SharePreviewReader;
+use App\Sharing\Resolvers\GatewaySettingsResolver;
+use App\Sharing\Resolvers\ShareDetailResolver;
+use App\Sharing\Resolvers\ShareListResolver;
+use App\Sharing\Resolvers\SharePreviewResolver;
 use App\Sharing\Support\SharingOwnerCheck;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
@@ -35,10 +35,10 @@ final class SharingPages implements ProvidesPages
     public function pages(): array
     {
         return [
-            Page::make('shares', 'Shares', Icon::Docs, ShareListReader::class, 'SharesWindow.vue')
+            Page::make('shares', 'Shares', Icon::Docs, ShareListResolver::class, 'SharesWindow.vue')
                 ->at('')
                 ->visibleWhen(SharingOwnerCheck::class),
-            Page::make('share', 'Share', Icon::Docs, ShareDetailReader::class, 'ShareWindow.vue')
+            Page::make('share', 'Share', Icon::Docs, ShareDetailResolver::class, 'ShareWindow.vue')
                 ->at('shares/{share}')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(
@@ -46,7 +46,7 @@ final class SharingPages implements ProvidesPages
                     ActionRoute::post('shares/{share}/retry', RetryShareController::class, 'retry-share'),
                     ActionRoute::delete('shares/{share}', RevokeShareController::class, 'revoke-share'),
                 ),
-            Page::make('gateways', 'Share gateways', Icon::Docs, GatewaySettingsReader::class, 'GatewaySettingsWindow.vue')
+            Page::make('gateways', 'Share gateways', Icon::Docs, GatewaySettingsResolver::class, 'GatewaySettingsWindow.vue')
                 ->at('gateways')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(
@@ -54,7 +54,7 @@ final class SharingPages implements ProvidesPages
                     ActionRoute::post('gateways/{configuration}/default', MakeShareGatewayDefaultController::class, 'make-share-gateway-default'),
                     ActionRoute::delete('gateways/{configuration}', DisableShareGatewayController::class, 'disable-share-gateway'),
                 ),
-            Page::make('share-preview', 'Share', Icon::Docs, SharePreviewReader::class, 'SharePreview.vue')
+            Page::make('share-preview', 'Share', Icon::Docs, SharePreviewResolver::class, 'SharePreview.vue')
                 ->at('{reference}')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(

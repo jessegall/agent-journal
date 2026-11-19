@@ -28,7 +28,7 @@ use App\Sharing\Models\ShareMember;
 use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareDuration;
-use App\Sharing\Support\ShareLinkReader;
+use App\Sharing\Support\ShareLinkResolver;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
@@ -93,7 +93,7 @@ final class CreateShareTest extends TestCase
         $this->assertSame(ShareToken::digestOf((string) $share->token_ciphertext), $share->token_digest);
         $this->assertEqualsWithDelta(CarbonImmutable::now()->addMinutes(ShareDuration::STANDARD_MINUTES)->getTimestamp(), $share->expires_at->getTimestamp(), 5);
 
-        $links = $this->app->make(ShareLinkReader::class);
+        $links = $this->app->make(ShareLinkResolver::class);
         $this->assertTrue($links->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->isEmpty(), 'A pending share has no address yet.');
 
         $share->state = ShareState::Active;

@@ -7,14 +7,14 @@ namespace App\Http\Controllers\Links;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Links\LinkRecordsRequest;
 use App\Records\Commands\UnlinkRecords;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 final readonly class UnlinkRecordsController
 {
-    public function __invoke(LinkRecordsRequest $request, CommandBus $commands, RecordReader $records, Redirector $redirect): JsonResponse|RedirectResponse
+    public function __invoke(LinkRecordsRequest $request, CommandBus $commands, RecordResolver $records, Redirector $redirect): JsonResponse|RedirectResponse
     {
         $commands->run(new UnlinkRecords($request->source($records), $request->target($records)));
 

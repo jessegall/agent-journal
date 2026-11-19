@@ -16,7 +16,7 @@ use App\Links\Models\Link;
 use App\Numbers\Support\RecordReference;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
@@ -175,9 +175,9 @@ final class RecordLinksTest extends TestCase
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), 'hooks.main_ready', new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 
-    private function records(): RecordReader
+    private function records(): RecordResolver
     {
-        return $this->app->make(RecordReader::class);
+        return $this->app->make(RecordResolver::class);
     }
 
     private function bus(): CommandBus

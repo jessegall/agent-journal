@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
-use App\Agents\Contracts\RuntimeReader;
+use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ShellCommandRequested;
@@ -29,7 +29,7 @@ final readonly class HookShellAdmission
 
     public function __construct(
         private ShellAdmission $admission,
-        private RuntimeReader $runtimes,
+        private RuntimeResolver $runtimes,
         private StackAccess $access,
     ) {}
 

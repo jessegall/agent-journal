@@ -10,7 +10,7 @@ use App\Hooks\Events\ContextStarted;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillReceipt;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 
 /**
  * At every boundary, asks the agent to read each required skill of its profile whose delivered text it has not read
@@ -20,7 +20,7 @@ use App\Skills\Readers\Support\SkillContextReader;
 final readonly class RemindRequiredSkills implements Listener
 {
     public function __construct(
-        private SkillContextReader $contexts,
+        private SkillContextResolver $contexts,
     ) {}
 
     public function handle(ContextStarted $event): void

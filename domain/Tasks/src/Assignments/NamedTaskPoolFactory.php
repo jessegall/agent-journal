@@ -11,7 +11,7 @@ use App\Assignments\Enums\PoolInputType;
 use App\Assignments\Support\PoolDescription;
 use App\Assignments\Support\PoolMembers;
 use App\Assignments\Support\PoolReference;
-use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskPoolRefused;
 use Illuminate\Container\Attributes\Scoped;
@@ -25,7 +25,7 @@ final readonly class NamedTaskPoolFactory implements AssignmentPoolFactory
 {
     public const string KEY = 'tasks.named';
 
-    public function __construct(private TaskAssignmentReader $tasks) {}
+    public function __construct(private TaskAssignmentResolver $tasks) {}
 
     /**
      * @throws TaskPoolRefused

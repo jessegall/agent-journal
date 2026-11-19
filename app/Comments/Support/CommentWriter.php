@@ -13,7 +13,7 @@ use App\Comments\Events\CommentPosted;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Models\Comment;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use App\Text\Contracts\TextContent;
 use App\Text\Exceptions\TargetHasNoText;
@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 final readonly class CommentWriter
 {
     public function __construct(
-        private RecordReader $records,
+        private RecordResolver $records,
         private CurrentActor $actors,
         private CurrentSession $session,
         private CommentEvents $events,

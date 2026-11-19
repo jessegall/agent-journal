@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\CapabilitiesReader;
+use App\Mcp\Support\CapabilitiesResolver;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -22,7 +22,7 @@ final class CapabilitiesReadTool extends JournalReadTool
 {
     protected array|null $meta = ['anthropic/alwaysLoad' => true];
 
-    public function __construct(private readonly CapabilitiesReader $capabilities) {}
+    public function __construct(private readonly CapabilitiesResolver $capabilities) {}
 
     public function outputSchema(JsonSchema $schema): array
     {

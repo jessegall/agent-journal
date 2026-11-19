@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Classification;
 
-use App\Processes\Contracts\AliasReader;
+use App\Processes\Contracts\AliasResolver;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\AnalysisLimit;
@@ -74,7 +74,7 @@ final readonly class TreeClassifier implements CommandClassifier
         private ShellSyntax $syntax,
         private ProgramClassifiers $programClassifiers,
         private PackageScripts $scripts,
-        private AliasReader $aliases,
+        private AliasResolver $aliases,
     ) {}
 
     public function classify(ShellTree $tree, ExecutionContext $context): Classification

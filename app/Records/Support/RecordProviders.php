@@ -9,7 +9,7 @@ use App\Links\Models\Link;
 use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordProviderRegistration;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Data\RecordCard;
 use App\Records\Exceptions\RecordProviderInvalid;
 use Illuminate\Container\Attributes\Singleton;
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * registered is refused by name before any class is resolved.
  */
 #[Singleton]
-final class RecordProviders implements RecordProviderRegistration, RecordReader
+final class RecordProviders implements RecordProviderRegistration, RecordResolver
 {
     public const int MOST_LINKS_SHOWN = 200;
 

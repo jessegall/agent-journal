@@ -8,7 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Assignments\Commands\ConfigureAutoAssignment;
 use App\Assignments\Commands\DisableAutoAssignment;
 use App\Assignments\Commands\EnableAutoAssignment;
-use App\Assignments\Contracts\AutoAssignmentReader;
+use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Exceptions\AutoAssignmentDenied;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnknown;
 use App\Assignments\Exceptions\InvalidRecordIds;
@@ -96,7 +96,7 @@ final class AutoAssignmentCommandsTest extends TestCase
             ),
             AutoAssignmentDenied::class,
         );
-        $this->assertTrue($this->reader()->forActor($this->key)->isEmpty());
+        $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
     }
 
     public function test_a_pool_that_is_not_offered_or_not_valid_leaves_the_fact_as_it_was(): void
@@ -141,14 +141,14 @@ final class AutoAssignmentCommandsTest extends TestCase
         return $this->app->make(CommandBus::class)->run($command);
     }
 
-    private function reader(): AutoAssignmentReader
+    private function resolver(): AutoAssignmentResolver
     {
-        return $this->app->make(AutoAssignmentReader::class);
+        return $this->app->make(AutoAssignmentResolver::class);
     }
 
     private function fact(): AutoAssignmentFact
     {
-        return $this->reader()->forActor($this->key)->get();
+        return $this->resolver()->forActor($this->key)->get();
     }
 
     private static function open(): PoolReference

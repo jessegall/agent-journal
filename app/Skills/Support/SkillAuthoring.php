@@ -7,7 +7,7 @@ namespace App\Skills\Support;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Support\ActorContext;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Data\SkillWriteReceipt;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\ShippedSkillReadOnly;
@@ -68,7 +68,7 @@ final readonly class SkillAuthoring
             return $stored;
         }
 
-        return $this->container->make(SkillReader::class)->find($key)->origin === SkillOrigin::Shipped ? throw ShippedSkillReadOnly::for($key->key) : throw SkillMissing::for($key);
+        return $this->container->make(SkillResolver::class)->find($key)->origin === SkillOrigin::Shipped ? throw ShippedSkillReadOnly::for($key->key) : throw SkillMissing::for($key);
     }
 
     /**

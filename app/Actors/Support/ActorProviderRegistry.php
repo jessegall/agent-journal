@@ -7,7 +7,7 @@ namespace App\Actors\Support;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ActorProvider;
 use App\Actors\Contracts\ActorProviderRegistration;
-use App\Actors\Contracts\ActorReader;
+use App\Actors\Contracts\ActorResolver;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
@@ -17,7 +17,7 @@ use Illuminate\Contracts\Container\Container;
  * The actor provider of each actor type, registered once at boot; a provider is built per call, so nothing found
  * outlives the request.
  */
-final class ActorProviderRegistry implements ActorProviderRegistration, ActorReader
+final class ActorProviderRegistry implements ActorProviderRegistration, ActorResolver
 {
     /**
      * @var array<string, class-string<ActorProvider>>

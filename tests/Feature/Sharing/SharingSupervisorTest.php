@@ -17,7 +17,7 @@ use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ShareGatewayRegistry;
-use App\Sharing\Support\ShareLinkReader;
+use App\Sharing\Support\ShareLinkResolver;
 use App\Sharing\Support\ShareToken;
 use App\Sharing\Support\SharingSupervisor;
 use Carbon\CarbonImmutable;
@@ -91,7 +91,7 @@ final class SharingSupervisorTest extends TestCase
         $first->begin();
         $first->work();
         $digest = Share::query()->findOrFail($share->id)->token_digest;
-        $link = $this->app->make(ShareLinkReader::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->get();
+        $link = $this->app->make(ShareLinkResolver::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->get();
 
         $restarted = $this->supervisor();
 
@@ -101,7 +101,7 @@ final class SharingSupervisorTest extends TestCase
 
         $this->assertSame(ShareState::Active, Share::query()->findOrFail($share->id)->state);
         $this->assertSame($digest, Share::query()->findOrFail($share->id)->token_digest);
-        $this->assertSame($link, $this->app->make(ShareLinkReader::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->get());
+        $this->assertSame($link, $this->app->make(ShareLinkResolver::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->get());
         $this->assertCount(2, $this->gateway->opened);
         $reopened = ShareGatewayEndpoint::query()->where('run_id', $restarted->runId)->sole();
         $this->assertSame(2, $reopened->endpoint_version);

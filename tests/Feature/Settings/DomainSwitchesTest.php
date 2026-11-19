@@ -10,7 +10,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainSwitches;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Commands\SetStringSetting;
-use App\Settings\Contracts\SettingsReader;
+use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\SettingsOutcome;
 use App\Settings\Exceptions\SettingUnavailable;
@@ -69,7 +69,7 @@ final class DomainSwitchesTest extends TestCase
 
         $this->assertSame([1, SettingsOutcome::Changed], [$change->revision, $change->outcome]);
         $this->app->forgetScopedInstances();
-        $this->assertInstanceOf(DisabledSettingsGroup::class, $this->app->make(SettingsReader::class)->group($this->app->make(DomainSwitches::class)->of('Plans')->get()));
+        $this->assertInstanceOf(DisabledSettingsGroup::class, $this->app->make(SettingsResolver::class)->group($this->app->make(DomainSwitches::class)->of('Plans')->get()));
     }
 
     public function test_access_has_no_switch(): void
@@ -90,6 +90,6 @@ final class DomainSwitchesTest extends TestCase
         $this->assertInstanceOf(CoreSettings::class, $core);
 
         $this->assertSame(SettingsOutcome::Changed, $change->outcome);
-        $this->assertSame('My journal', $this->app->make(SettingsReader::class)->string($core->displayName));
+        $this->assertSame('My journal', $this->app->make(SettingsResolver::class)->string($core->displayName));
     }
 }

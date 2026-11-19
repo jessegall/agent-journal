@@ -9,14 +9,14 @@ use App\Contracts\Listener;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Events\ContextStarted;
 use App\Programs\Values\ProgramKey;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\SkillReload;
 use App\Skills\Events\SessionSkillsIntended;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\States\Support\AwaitingSkillsStateReference;
 use App\Skills\Support\LaunchProgram;
 use App\Skills\Support\SkillSelection;
@@ -33,7 +33,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class RefreshSessionSkills implements Listener
 {
     public function __construct(
-        private SkillContextReader $contexts,
+        private SkillContextResolver $contexts,
         private SkillSelection $selection,
         private ProgramSkillAdapters $adapters,
         private SkillTargets $targets,
@@ -97,7 +97,7 @@ final readonly class RefreshSessionSkills implements Listener
     private function select(AgentSession $session): SelectedSkills
     {
         return $this->selection->select(
-            $this->container->make(SkillReader::class)->all(),
+            $this->container->make(SkillResolver::class)->all(),
             $this->contexts->forSession($session),
         );
     }

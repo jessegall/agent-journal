@@ -7,7 +7,7 @@ namespace App\Processes\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Processes\Admission\OutputPolicy;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\CommandPermissionReader;
+use App\Processes\Contracts\CommandPermissionResolver;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\ParseOutcome;
@@ -18,12 +18,12 @@ use App\Processes\Exceptions\PhaseTimingRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\ProcessRun;
-use App\Processes\Values\RunAdmission;
 use App\Processes\Values\Classification;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PermitLimits;
 use App\Processes\Values\PermittedLine;
+use App\Processes\Values\RunAdmission;
 use App\Processes\Values\TimingVerdict;
 
 /**
@@ -39,7 +39,7 @@ final readonly class EvidenceRuns
         private CommandClassifier $classifier,
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,
-        private CommandPermissionReader $permissions,
+        private CommandPermissionResolver $permissions,
         private ProjectKey $projects,
         private VerificationTiming $timing,
     ) {}

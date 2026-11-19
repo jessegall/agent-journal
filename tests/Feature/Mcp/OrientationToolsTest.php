@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Actors\Support\ActorIdentity;
-use App\Mcp\Support\CapabilitiesReader;
+use App\Mcp\Support\CapabilitiesResolver;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -66,7 +66,7 @@ final class OrientationToolsTest extends TestCase
     {
         $result = $this->callTool('capabilities_read', ['HTTP_MCP_PROTOCOL_VERSION' => '2025-11-25'])->json('result.structuredContent');
 
-        $this->assertSame(CapabilitiesReader::CONTRACT_VERSION, $result['contract_version']);
+        $this->assertSame(CapabilitiesResolver::CONTRACT_VERSION, $result['contract_version']);
         $this->assertIsString($result['server_build']);
         $this->assertSame('2025-11-25', $result['protocol_version']);
         $this->assertSame('main', $result['job_profile']);

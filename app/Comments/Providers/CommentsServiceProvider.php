@@ -8,7 +8,7 @@ use App\Comments\Console\CommentListCommand;
 use App\Comments\Console\CommentLocationCommand;
 use App\Comments\Console\CommentPostCommand;
 use App\Comments\Models\Comment;
-use App\Comments\Readers\CommentLinkRecords;
+use App\Comments\Resolvers\CommentLinkRecords;
 use App\Comments\Support\CommentShareProvider;
 use App\Records\Contracts\RecordProviderRegistration;
 use App\Sharing\Support\ShareRecordRegistration;

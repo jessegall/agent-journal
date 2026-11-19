@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Http\Controllers;
 
-use Domain\Memory\Contracts\MemoryReader;
+use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Http\Requests\ListMemoriesRequest;
 use Illuminate\Http\JsonResponse;
 
@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ListMemoriesController
 {
-    public function __invoke(ListMemoriesRequest $request, MemoryReader $memories): JsonResponse
+    public function __invoke(ListMemoriesRequest $request, MemoryResolver $memories): JsonResponse
     {
         $page = $memories->own($request->page());
 

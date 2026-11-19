@@ -10,13 +10,13 @@ use App\Assignments\Support\Page;
 use App\Bus\Contracts\CommandBus;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
-use App\Comments\Contracts\CommentReader;
+use App\Comments\Contracts\CommentResolver;
 use App\Comments\Data\RecordCommentLocation;
 use App\Comments\Data\RecordCommentView;
 use App\Comments\Models\Comment;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
-use App\Text\Contracts\TextReader;
+use App\Text\Contracts\TextResolver;
 use App\Text\Exceptions\TargetHasNoText;
 use App\Text\Values\TextRange;
 use Domain\Access\Models\User;
@@ -71,8 +71,8 @@ final class WholeRecordCommentTest extends TestCase
     {
         $commentId = $this->app->make(CommandBus::class)->run(new PostComment($this->target(), 'Is this still open?', (string) Str::uuid()));
 
-        $items = $this->app->make(CommentReader::class)->list($this->target(), new Page())->items;
-        $location = $this->app->make(CommentReader::class)->location($this->target(), $commentId);
+        $items = $this->app->make(CommentResolver::class)->list($this->target(), new Page())->items;
+        $location = $this->app->make(CommentResolver::class)->location($this->target(), $commentId);
 
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);
         $this->assertSame('Is this still open?', $items[0]->comment->body);
@@ -131,7 +131,7 @@ final class WholeRecordCommentTest extends TestCase
     {
         $this->expectException(TargetHasNoText::class);
 
-        $this->app->make(TextReader::class)->version($this->target());
+        $this->app->make(TextResolver::class)->version($this->target());
     }
 
     public function test_the_text_routes_refuse_a_record_without_text(): void
@@ -148,7 +148,7 @@ final class WholeRecordCommentTest extends TestCase
         $wanted = [...array_map(fn (string $id) => new RecordIdentity(Comment::LINK_TYPE, $id), $ids), new RecordIdentity(Comment::LINK_TYPE, strtolower((string) Str::ulid()))];
 
         DB::enableQueryLog();
-        $cards = $this->app->make(RecordReader::class)->visibleCards($wanted);
+        $cards = $this->app->make(RecordResolver::class)->visibleCards($wanted);
         $queries = count(DB::getQueryLog());
 
         $this->assertSame(array_fill(0, 3, "comment on note {$this->note->number}"), array_map(fn ($card) => $card->label, $cards));

@@ -6,7 +6,7 @@ namespace App\Sharing\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Sharing\SaveSharePreviewRequest;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Sharing\Commands\SaveSharePreview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -16,7 +16,7 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class SharePreviewController
 {
-    public function __invoke(SaveSharePreviewRequest $request, RecordReader $records, CommandBus $commands, Redirector $redirect): RedirectResponse
+    public function __invoke(SaveSharePreviewRequest $request, RecordResolver $records, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $root = $request->shareRoot($records);
         $commands->run(new SaveSharePreview($root->type, $root->id, $request->selectedIds()));

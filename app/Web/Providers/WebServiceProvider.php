@@ -13,7 +13,7 @@ use App\Links\Support\LinkTypeRegistry;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
-use App\Web\Contracts\CurrentUserReader;
+use App\Web\Contracts\CurrentUserResolver;
 use App\Web\Models\Layout;
 use App\Web\Models\Support\CurrentUserScope;
 use App\Web\Routes\DeclaredRoutes;
@@ -61,7 +61,7 @@ final class WebServiceProvider extends ServiceProvider
     {
         $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);
-        $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserReader::class));
+        $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserResolver::class));
         $events->listen('eloquent.booted: '.Layout::class, fn () => Layout::addGlobalScope($scope));
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/web.php');

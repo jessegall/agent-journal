@@ -10,7 +10,7 @@ use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\PoolReference;
 use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Validation\Rule;
 
@@ -72,7 +72,7 @@ trait ReadsAutoAssignmentInput
     /**
      * The input with every named record turned into its id; a name that reads as no record is refused here.
      */
-    public function autoAssignmentInput(RecordReader $records): AutoAssignmentInput
+    public function autoAssignmentInput(RecordResolver $records): AutoAssignmentInput
     {
         $ids = array_map(
             fn (string $name) => $records->identify(RecordReference::parse($name))->id,
@@ -94,7 +94,7 @@ trait ReadsAutoAssignmentInput
     /**
      * The record the pool is about, when the call names one.
      */
-    private function target(RecordReader $records): RecordIdentity|null
+    private function target(RecordResolver $records): RecordIdentity|null
     {
         if (! $this->filled('target')) {
             return null;

@@ -24,7 +24,7 @@ use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
 use Domain\Documents\Commands\SettleReport;
-use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftConflict;
@@ -207,9 +207,9 @@ final class SettleAndRecoverTest extends TestCase
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($session), 'hooks.main_ready', new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 
-    private function documents(): DocumentReader
+    private function documents(): DocumentResolver
     {
-        return $this->app->make(DocumentReader::class);
+        return $this->app->make(DocumentResolver::class);
     }
 
     private function bus(): CommandBus

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
-use App\Processes\Contracts\CommandRuleReader;
+use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Exceptions\ClassificationUnavailable;
 use App\Processes\Exceptions\CommandRuleConflict;
 use App\Processes\Models\ModuleRuleBundle;
@@ -20,7 +20,7 @@ use App\Processes\Values\RuleReference;
  */
 final readonly class ActiveRules
 {
-    public function __construct(private CommandRuleRegistry $startup, private CommandRuleReader $project) {}
+    public function __construct(private CommandRuleRegistry $startup, private CommandRuleResolver $project) {}
 
     /**
      * @throws ClassificationUnavailable

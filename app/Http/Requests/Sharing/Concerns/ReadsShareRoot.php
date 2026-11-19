@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Sharing\Concerns;
 
 use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -13,7 +13,7 @@ use App\Records\Support\RecordIdentity;
  */
 trait ReadsShareRoot
 {
-    public function shareRoot(RecordReader $records): RecordIdentity
+    public function shareRoot(RecordResolver $records): RecordIdentity
     {
         return $records->identify(RecordReference::parse($this->rootReference()));
     }

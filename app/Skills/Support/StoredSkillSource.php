@@ -7,7 +7,7 @@ namespace App\Skills\Support;
 use App\Skills\Contracts\SkillSource;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 
 /**
  * The current revision of every unretired stored skill visible in this environment, read in two queries.
@@ -22,7 +22,7 @@ final readonly class StoredSkillSource implements SkillSource
 
     public function skills(): array
     {
-        $skills = Skill::activeIn(SkillContextReader::ENVIRONMENT, self::MOST_SKILLS);
+        $skills = Skill::activeIn(SkillContextResolver::ENVIRONMENT, self::MOST_SKILLS);
         $revisions = SkillRevision::currentOfEach($skills);
 
         return array_values(array_map(

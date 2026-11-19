@@ -11,7 +11,7 @@ use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Contracts\AssignedTaskReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Http\Data\AssignedTaskCardData;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -27,7 +27,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 final class AssignedTasksTool extends JournalReadTool
 {
-    public function __construct(private readonly AssignedTaskReader $tasks, private readonly NumberedPages $pages) {}
+    public function __construct(private readonly AssignedTaskResolver $tasks, private readonly NumberedPages $pages) {}
 
     public function schema(JsonSchema $schema): array
     {

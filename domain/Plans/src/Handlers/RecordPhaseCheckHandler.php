@@ -14,7 +14,7 @@ use Domain\Plans\Exceptions\PhaseCheckRefused;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
 use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Contracts\TaskReader;
+use Domain\Tasks\Contracts\TaskResolver;
 
 /**
  * Accepts a check result for a phase only through Core's one result gate: a current receipt (never an evidence run,
@@ -25,7 +25,7 @@ final readonly class RecordPhaseCheckHandler implements CommandHandler
     public function __construct(
         private CurrentActor $actors,
         private ResultReceipts $receipts,
-        private TaskReader $tasks,
+        private TaskResolver $tasks,
     ) {}
 
     /**

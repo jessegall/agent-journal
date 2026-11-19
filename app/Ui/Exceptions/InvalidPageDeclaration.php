@@ -9,9 +9,9 @@ namespace App\Ui\Exceptions;
  */
 final class InvalidPageDeclaration extends UiDeclarationError
 {
-    public static function readerReturnsNoData(string $page, string $reader): self
+    public static function resolverReturnsNoData(string $page, string $resolver): self
     {
-        return new self("Page {$page} names the reader {$reader}, whose read method does not declare a concrete Data class as its return type.");
+        return new self("Page {$page} names the resolver {$resolver}, whose read method does not declare a concrete Data class as its return type.");
     }
 
     public static function recordSlotWithoutParameter(string $slot): self

@@ -20,7 +20,7 @@ final class AffectedTestsTest extends TestCase
 
     public function test_a_change_to_an_export_also_runs_every_domain_that_requires_it(): void
     {
-        $this->assertSame(['tests/Architecture', 'domain/Plans/tests', 'domain/Tasks/tests'], $this->affectedBy('domain/Tasks/src/Contracts/TaskReader.php'));
+        $this->assertSame(['tests/Architecture', 'domain/Plans/tests', 'domain/Tasks/tests'], $this->affectedBy('domain/Tasks/src/Contracts/TaskResolver.php'));
     }
 
     public function test_a_change_to_a_domains_own_tests_runs_only_those(): void

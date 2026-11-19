@@ -13,13 +13,13 @@ use App\Assignments\Support\Page;
 use App\Bus\Contracts\CommandBus;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
-use App\Comments\Contracts\CommentReader;
+use App\Comments\Contracts\CommentResolver;
 use App\Comments\Data\RecordCommentView;
 use App\Comments\Data\TextCommentLocation;
 use App\Comments\Data\TextCommentView;
 use App\Comments\Enums\WholeRecord;
 use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use App\Text\Exceptions\AnchorMismatch;
 use App\Text\Support\TextSelection;
@@ -31,8 +31,8 @@ use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\ReplaceDocumentText;
-use Domain\Documents\Contracts\DocumentReader;
-use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Tests\TestCase;
@@ -185,14 +185,14 @@ final class CommentsAndReadsTest extends TestCase
         return new DraftTarget($draft->documentNumber, $draft->token, $draft->version);
     }
 
-    private function documents(): DocumentReader
+    private function documents(): DocumentResolver
     {
-        return $this->app->make(DocumentReader::class);
+        return $this->app->make(DocumentResolver::class);
     }
 
-    private function reports(): ReportReader
+    private function reports(): ReportResolver
     {
-        return $this->app->make(ReportReader::class);
+        return $this->app->make(ReportResolver::class);
     }
 
     private function bus(): CommandBus
@@ -212,11 +212,11 @@ final class CommentsAndReadsTest extends TestCase
 
     private function documentNumbered(int $number): RecordIdentity
     {
-        return $this->app->make(RecordReader::class)->identify(RecordReference::of('doc', $number));
+        return $this->app->make(RecordResolver::class)->identify(RecordReference::of('doc', $number));
     }
 
-    private function comments(): CommentReader
+    private function comments(): CommentResolver
     {
-        return $this->app->make(CommentReader::class);
+        return $this->app->make(CommentResolver::class);
     }
 }

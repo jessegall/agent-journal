@@ -43,12 +43,12 @@ use Domain\Tasks\Commands\CreateTask;
 use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
-use Domain\Tasks\Contracts\AssignedTaskReader;
-use Domain\Tasks\Contracts\TaskAssignmentReader;
-use Domain\Tasks\Contracts\TaskDetailsReader;
-use Domain\Tasks\Contracts\TaskListReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
+use Domain\Tasks\Contracts\TaskAssignmentResolver;
+use Domain\Tasks\Contracts\TaskDetailsResolver;
+use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
-use Domain\Tasks\Contracts\TaskReader;
+use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Enums\TaskWorkState;
@@ -57,8 +57,8 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Mcp\AssignedTasksTool;
 use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Readers\TaskAssignments;
-use Domain\Tasks\Readers\TaskRecords;
+use Domain\Tasks\Resolvers\TaskAssignments;
+use Domain\Tasks\Resolvers\TaskRecords;
 use Domain\Tasks\Skills\TasksSkill;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
@@ -106,11 +106,11 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesA
             )
             ->contracts(
                 TaskProgressCounter::class,
-                TaskReader::class,
-                TaskAssignmentReader::class,
-                AssignedTaskReader::class,
-                TaskListReader::class,
-                TaskDetailsReader::class,
+                TaskResolver::class,
+                TaskAssignmentResolver::class,
+                AssignedTaskResolver::class,
+                TaskListResolver::class,
+                TaskDetailsResolver::class,
             )
             ->values(
                 TaskProgress::class,

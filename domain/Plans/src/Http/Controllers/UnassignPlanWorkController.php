@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Controllers;
 
-use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Bus\Contracts\CommandBus;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Http\Data\PlanWorkResultData;
@@ -16,7 +16,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class UnassignPlanWorkController
 {
-    public function __invoke(UnassignPlanWorkRequest $request, CommandBus $commands, AssigneeReader $assignees): JsonResponse
+    public function __invoke(UnassignPlanWorkRequest $request, CommandBus $commands, AssigneeResolver $assignees): JsonResponse
     {
         $root = $request->rootRecord();
         $result = $commands->run(new UnassignPlanWork($root, $request->expectedRoot()));

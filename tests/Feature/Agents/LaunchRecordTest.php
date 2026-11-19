@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Contracts\LaunchRecordReader;
+use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchDisposition;
@@ -92,14 +92,14 @@ final class LaunchRecordTest extends TestCase
         LaunchRecord::accept($otherRequest, ActorIdentity::system());
         $session = $this->app->make(LaunchSessions::class)->launch($own, TestSelections::of(), TestSelections::requestId())->session;
         $this->startRequestAs($own->id, $session->id);
-        $reader = $this->app->make(LaunchRecordReader::class);
+        $resolver = $this->app->make(LaunchRecordResolver::class);
 
-        $this->assertSame($own->id, $reader->own($ownRequest->requestId)->agentId);
-        $this->assertSame([$ownRequest->requestId], array_map(fn ($record) => $record->requestId, $reader->forOwnerReference('helpers.job 7')));
+        $this->assertSame($own->id, $resolver->own($ownRequest->requestId)->agentId);
+        $this->assertSame([$ownRequest->requestId], array_map(fn ($record) => $record->requestId, $resolver->forOwnerReference('helpers.job 7')));
 
         $this->expectException(LaunchRecordMissing::class);
 
-        $reader->own($otherRequest->requestId);
+        $resolver->own($otherRequest->requestId);
     }
 
     private function agent(string $name): Agent

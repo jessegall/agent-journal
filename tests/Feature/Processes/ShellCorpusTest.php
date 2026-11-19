@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\AliasReader;
+use App\Processes\Contracts\AliasResolver;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ParseOutcome;
@@ -71,7 +71,7 @@ final class ShellCorpusTest extends TestCase
     #[TimeLimit(15, 'It classifies all 1,591 complete corpus cases with the real classifier.')]
     public function test_every_complete_case_classifies_as_its_frozen_expectation(): void
     {
-        $this->app->instance(AliasReader::class, new NoAliases());
+        $this->app->instance(AliasResolver::class, new NoAliases());
         $syntax = $this->app->make(ShellSyntax::class);
         $classifier = $this->app->make(CommandClassifier::class);
         $context = new ExecutionContext(ShellDialect::Bash, '/work', '/work');

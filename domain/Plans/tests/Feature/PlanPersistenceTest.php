@@ -14,7 +14,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Readers\TaskCounts;
+use Domain\Tasks\Resolvers\TaskCounts;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;

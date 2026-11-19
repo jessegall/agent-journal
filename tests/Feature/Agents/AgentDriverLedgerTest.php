@@ -24,7 +24,7 @@ use App\Agents\Commands\ReportRuntimeHeartbeat;
 use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
-use App\Agents\Contracts\RuntimeReader;
+use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
@@ -299,7 +299,7 @@ final class AgentDriverLedgerTest extends TestCase
         AgentRuntime::query()->findOrFail($opened->runtimeId)->requestEffort('low');
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
-        $status = $this->app->make(RuntimeReader::class)->forSession($opened->sessionId);
+        $status = $this->app->make(RuntimeResolver::class)->forSession($opened->sessionId);
 
         $this->assertSame('low', $status->effort->requested);
         $this->assertInstanceOf(Optional::class, $status->effort->observed);

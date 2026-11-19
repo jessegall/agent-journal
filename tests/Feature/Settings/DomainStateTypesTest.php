@@ -14,7 +14,7 @@ use App\Hooks\Stack\StateTypes;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Values\GroupReference;
 use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Readers\Support\TaskRecords;
+use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;

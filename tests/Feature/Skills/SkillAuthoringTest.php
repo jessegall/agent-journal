@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Domains\Support\DomainRegistry;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Support\CoreSkills;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Values\SkillKey;
@@ -34,7 +34,7 @@ final class SkillAuthoringTest extends TestCase
 
         Artisan::call('skill:list', ['--json' => true]);
         $listed = array_column(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR), 'key');
-        $catalogued = array_map(fn ($skill) => $skill->key->key, $this->app->make(SkillReader::class)->all());
+        $catalogued = array_map(fn ($skill) => $skill->key->key, $this->app->make(SkillResolver::class)->all());
 
         $this->assertSame($catalogued, $listed);
         $this->assertContains('notes-writing', $listed);
@@ -43,7 +43,7 @@ final class SkillAuthoringTest extends TestCase
     public function test_show_prints_the_bytes_the_renderer_produced(): void
     {
         $this->useOwners(...$this->installedOwners());
-        $rendered = $this->app->make(SkillReader::class)->find(SkillKey::from('notes-writing'))->rendered->markdown;
+        $rendered = $this->app->make(SkillResolver::class)->find(SkillKey::from('notes-writing'))->rendered->markdown;
 
         Artisan::call('skill:show', ['key' => 'notes-writing']);
 

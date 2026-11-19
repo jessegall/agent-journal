@@ -16,7 +16,7 @@ use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Readers\PlanRecords;
+use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;

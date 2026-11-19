@@ -14,10 +14,10 @@ use App\Web\Support\UiManifest;
 use App\Web\Types\PagePropTypes;
 use App\Web\Types\TypeOwners;
 use Illuminate\Support\Facades\File;
-use Tests\Fixtures\UiDeclarations\Library\BooksReader;
+use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
-use Tests\Fixtures\UiDeclarations\Shelf\ShelfReader;
+use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
 use Tests\TestCase;
 
 /**
@@ -115,14 +115,14 @@ final class UiManifestTest extends TestCase
     private function library(): DomainUi
     {
         return DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
-            Page::make('index', 'Library', Icon::Docs, BooksReader::class, 'Index.vue')->at(''),
+            Page::make('index', 'Library', Icon::Docs, BooksResolver::class, 'Index.vue')->at(''),
         ]);
     }
 
     private function shelf(): DomainUi
     {
         return DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
-            Page::make('index', 'Shelf', Icon::Docs, ShelfReader::class, 'Index.vue')->at(''),
+            Page::make('index', 'Shelf', Icon::Docs, ShelfResolver::class, 'Index.vue')->at(''),
         ]);
     }
 }

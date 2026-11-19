@@ -11,7 +11,7 @@ use App\Records\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
-use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
@@ -105,7 +105,7 @@ final class AssignableRecordsTest extends TestCase
 
         $this->expectException(TaskMissing::class);
 
-        $this->app->make(TaskAssignmentReader::class)->completionOf(['phase' => [$task->id, TestIds::of(999999)]]);
+        $this->app->make(TaskAssignmentResolver::class)->completionOf(['phase' => [$task->id, TestIds::of(999999)]]);
     }
 
     public function test_nothing_is_read_without_someone_acting(): void

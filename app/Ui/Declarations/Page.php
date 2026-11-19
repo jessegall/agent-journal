@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Ui\Declarations;
 
 use App\Ui\Contracts\PageOption;
-use App\Ui\Contracts\PageReader;
+use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\PageDestination;
@@ -14,14 +14,14 @@ use App\Ui\Exceptions\InvalidPageDeclaration;
 use Spatie\LaravelData\Data;
 
 /**
- * A page a domain owns, keyed within its domain: where it lives under the domain's prefix, the reader and component
+ * A page a domain owns, keyed within its domain: where it lives under the domain's prefix, the resolver and component
  * that draw it, how it shows on Home, and the slots and actions it offers. Each change returns a new page.
  */
 final class Page
 {
     /**
-     * @param  class-string<PageReader>  $reader
-     * @param  class-string<Data>  $dataClass  the Data class the reader's read method declares
+     * @param  class-string<PageResolver>  $resolver
+     * @param  class-string<Data>  $dataClass  the Data class the resolver's read method declares
      * @param  int|null  $homePosition  null when the page is not in Home's Default preset
      * @param  list<PageOption>  $options
      * @param  list<Slot>  $slots
@@ -33,7 +33,7 @@ final class Page
         public readonly string $title,
         public readonly Icon $icon,
         public readonly string $path,
-        public readonly string $reader,
+        public readonly string $resolver,
         public readonly string $dataClass,
         public readonly string $component,
         public readonly FloatSize $floatSize,
@@ -47,19 +47,19 @@ final class Page
     ) {}
 
     /**
-     * A page at the path of its own key, read by the reader and drawn by the component in the domain's script folder (resources/js).
+     * A page at the path of its own key, read by the resolver and drawn by the component in the domain's script folder (resources/js).
      *
-     * @param  class-string<PageReader>  $reader
+     * @param  class-string<PageResolver>  $resolver
      */
-    public static function make(string $key, string $title, Icon $icon, string $reader, string $component): self
+    public static function make(string $key, string $title, Icon $icon, string $resolver, string $component): self
     {
-        $dataClass = ReaderDataClass::of($reader);
+        $dataClass = ResolverDataClass::of($resolver);
 
         if ($dataClass === null) {
-            throw InvalidPageDeclaration::readerReturnsNoData($key, $reader);
+            throw InvalidPageDeclaration::resolverReturnsNoData($key, $resolver);
         }
 
-        return new self($key, $title, $icon, $key, $reader, $dataClass, $component, FloatSize::standard());
+        return new self($key, $title, $icon, $key, $resolver, $dataClass, $component, FloatSize::standard());
     }
 
     /**

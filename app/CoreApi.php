@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Processes\Data\PartSummaryData;
-use App\Processes\Data\ClassificationSummaryData;
 use App\Actors\Contracts\ActiveActorCounter;
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ActorProvider;
 use App\Actors\Contracts\ActorProviderRegistration;
-use App\Actors\Contracts\ActorReader;
+use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
@@ -57,18 +55,18 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
-use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
-use App\Agents\Contracts\LaunchRecordReader;
+use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\NativeTurnRecords;
-use App\Agents\Contracts\ProgramConversationReader;
-use App\Agents\Contracts\RuntimeReader;
-use App\Agents\Contracts\SessionReader;
+use App\Agents\Contracts\ProgramConversationResolver;
+use App\Agents\Contracts\RuntimeResolver;
+use App\Agents\Contracts\SessionResolver;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
@@ -165,15 +163,15 @@ use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\AssignableProvider;
 use App\Assignments\Contracts\AssignedWorkProvider;
-use App\Assignments\Contracts\AssignedWorkReader;
+use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Contracts\AssigneeProvider;
-use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentPool;
 use App\Assignments\Contracts\AssignmentPoolFactory;
 use App\Assignments\Contracts\AssignmentQuery;
-use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\AutoAssigner;
@@ -237,7 +235,7 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandMiddleware;
-use App\Bus\Contracts\OperationReader;
+use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Enums\CommandScopeType;
@@ -277,8 +275,8 @@ use App\Bus\Support\Operation;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\Commentable;
-use App\Comments\Contracts\CommentReader;
-use App\Comments\Contracts\PublicCommentReader;
+use App\Comments\Contracts\CommentResolver;
+use App\Comments\Contracts\PublicCommentResolver;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Data\CommentList;
 use App\Comments\Data\RecordCommentLocation;
@@ -298,8 +296,8 @@ use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
-use App\Communication\Contracts\ConversationReader;
-use App\Communication\Contracts\MessageAddressReader;
+use App\Communication\Contracts\ConversationResolver;
+use App\Communication\Contracts\MessageAddressResolver;
 use App\Communication\Data\Conversation;
 use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
@@ -429,6 +427,8 @@ use App\Processes\Contracts\ProvidesCommandRules;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\VerificationTiming;
+use App\Processes\Data\ClassificationSummaryData;
+use App\Processes\Data\PartSummaryData;
 use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\BindingType;
@@ -502,7 +502,7 @@ use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
-use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
@@ -564,7 +564,7 @@ use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
 use App\Records\Contracts\RecordLinker;
 use App\Records\Contracts\RecordProvider;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Data\RecordCard;
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
@@ -591,7 +591,7 @@ use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsDefinition;
-use App\Settings\Contracts\SettingsReader;
+use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Contracts\SettingsSnapshot;
 use App\Settings\Data\BooleanValueData;
 use App\Settings\Data\DecimalConstraintsData;
@@ -642,7 +642,7 @@ use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Exceptions\SettingsUnavailable;
 use App\Settings\Exceptions\SettingUnavailable;
 use App\Settings\Exceptions\SettingValueInvalid;
-use App\Settings\Support\CurrentSettingsReader;
+use App\Settings\Support\CurrentSettingsResolver;
 use App\Settings\Support\DisabledSettingsGroup;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
@@ -665,7 +665,7 @@ use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Contracts\ShareStatusReader;
+use App\Sharing\Contracts\ShareStatusResolver;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Events\ShareActivated;
@@ -726,7 +726,7 @@ use App\Skills\Contracts\ProvidesSkills;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillConditionEvaluator;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\ShippedSkillReadOnly;
@@ -754,7 +754,7 @@ use App\Skills\Values\SkillOwner;
 use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Text\Contracts\TextContent;
-use App\Text\Contracts\TextReader;
+use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
 use App\Text\Data\TextVersionInfo;
 use App\Text\Enums\TextAnchorType;
@@ -778,14 +778,14 @@ use App\Text\Support\TextSelection;
 use App\Text\Values\TextAnchor;
 use App\Text\Values\TextRange;
 use App\Text\Values\TextVersion;
-use App\Ui\Contracts\CountReader;
+use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
-use App\Ui\Contracts\PageReader;
+use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
-use App\Ui\Contracts\SectionReader;
+use App\Ui\Contracts\SectionResolver;
 use App\Ui\Contracts\UpdatesUserInterface;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ActionRoute;
@@ -803,7 +803,7 @@ use App\Ui\Enums\PageDestination;
 use App\Ui\Enums\PageSkeleton;
 use App\Ui\Enums\SlotContextType;
 use App\Web\Commands\RecordUserHeartbeat;
-use App\Web\Contracts\CurrentUserReader;
+use App\Web\Contracts\CurrentUserResolver;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -841,7 +841,7 @@ final class CoreApi
             )
             ->contracts(
                 RecordProvider::class,
-                RecordReader::class,
+                RecordResolver::class,
                 RecordLinker::class,
                 CurrentSession::class,
                 ConversationVisits::class,
@@ -852,16 +852,16 @@ final class CoreApi
                 Actor::class,
                 CurrentActor::class,
                 CurrentActorSetter::class,
-                AgentReader::class,
-                SessionReader::class,
+                AgentResolver::class,
+                SessionResolver::class,
                 LaunchReadiness::class,
                 LaunchExecutor::class,
                 HostCapabilities::class,
-                LaunchRecordReader::class,
-                ProgramConversationReader::class,
+                LaunchRecordResolver::class,
+                ProgramConversationResolver::class,
                 HelperImages::class,
                 RecordVisibility::class,
-                RuntimeReader::class,
+                RuntimeResolver::class,
                 AgentStack::class,
                 UserStack::class,
                 StackTransactionRunner::class,
@@ -873,19 +873,19 @@ final class CoreApi
                 CurrentState::class,
                 WorkedOnStack::class,
                 TextContent::class,
-                TextReader::class,
+                TextResolver::class,
                 Commentable::class,
                 SendsMessages::class,
                 ReceivesMessages::class,
-                ActorReader::class,
+                ActorResolver::class,
                 ActorProvider::class,
                 ActorProviderRegistration::class,
                 ActiveActorRegistration::class,
                 ActiveActorCounter::class,
                 UserPresences::class,
-                MessageAddressReader::class,
-                ConversationReader::class,
-                CommentReader::class,
+                MessageAddressResolver::class,
+                ConversationResolver::class,
+                CommentResolver::class,
                 ShellCommandParser::class,
                 CommandClassifier::class,
                 ProvidesCommandRules::class,
@@ -904,22 +904,22 @@ final class CoreApi
                 Assignable::class,
                 AssignableProvider::class,
                 AssigneeProvider::class,
-                AssignmentReader::class,
+                AssignmentResolver::class,
                 AssignmentRegistration::class,
                 AgentRequestSender::class,
                 Numbered::class,
                 ProvidesNumberedModels::class,
-                AssigneeReader::class,
+                AssigneeResolver::class,
                 AssignmentWriter::class,
                 AssignmentTransaction::class,
                 AutoAssigner::class,
                 AssignmentPool::class,
                 AssignmentPoolFactory::class,
-                AssignedWorkReader::class,
+                AssignedWorkResolver::class,
                 AssignedWorkProvider::class,
                 AssignmentQuery::class,
                 ProvidesAutoAssignments::class,
-                CurrentUserReader::class,
+                CurrentUserResolver::class,
                 Command::class,
                 CommandBus::class,
                 CommandMiddleware::class,
@@ -934,14 +934,14 @@ final class CoreApi
                 ProvidesCommandMiddleware::class,
                 JournalAccessPolicy::class,
                 UpdatesUserInterface::class,
-                CountReader::class,
+                CountResolver::class,
                 NavigationChildren::class,
                 PageOption::class,
-                PageReader::class,
+                PageResolver::class,
                 ProvidesNavigation::class,
                 ProvidesPages::class,
                 ProvidesSections::class,
-                SectionReader::class,
+                SectionResolver::class,
                 VisibilityCheck::class,
                 ProvidesSettings::class,
                 Setting::class,
@@ -957,24 +957,24 @@ final class CoreApi
                 ProvidesShareRecords::class,
                 ProvidesShareGateways::class,
                 SharePolicy::class,
-                ShareStatusReader::class,
-                PublicCommentReader::class,
-                SettingsReader::class,
+                ShareStatusResolver::class,
+                PublicCommentResolver::class,
+                SettingsResolver::class,
                 SettingCommands::class,
                 SettingsSnapshot::class,
                 EnabledSettingsGroup::class,
                 SettingsCatalogue::class,
                 SettingsAccessPolicy::class,
                 CodedRefusal::class,
-                OperationReader::class,
+                OperationResolver::class,
                 OverviewContribution::class,
-                ProfileReader::class,
+                ProfileResolver::class,
                 ProfileSelections::class,
                 ProvidesSkills::class,
                 Skill::class,
                 SkillCondition::class,
                 ProvidesSkillConditions::class,
-                SkillReader::class,
+                SkillResolver::class,
                 SkillConditionEvaluator::class,
             )
             ->values(
@@ -1262,7 +1262,7 @@ final class CoreApi
                 PublicComment::class,
                 PublicCommentPage::class,
                 SettingSource::class,
-                CurrentSettingsReader::class,
+                CurrentSettingsResolver::class,
                 SettingTarget::class,
                 GroupAvailability::class,
                 SettingAvailability::class,

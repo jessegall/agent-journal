@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Support;
 
 use App\Ui\Contracts\VisibilityCheck;
-use App\Ui\Declarations\ReaderDefinition;
+use App\Ui\Declarations\ResolverDefinition;
 use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
@@ -36,7 +36,7 @@ final readonly class WindowResults
      * @param  list<class-string<VisibilityCheck>>  $checks
      * @param  Closure(): Data  $read
      */
-    public function result(string $key, array $checks, ReaderDefinition $reader, Closure $read): Data
+    public function result(string $key, array $checks, ResolverDefinition $resolver, Closure $read): Data
     {
         if (! $this->visibility->allow($checks)) {
             return DeniedWindow::make();
@@ -45,8 +45,8 @@ final readonly class WindowResults
         try {
             $data = $read();
 
-            if (! $data instanceof $reader->dataClass) {
-                throw ReaderDataMismatch::for($key, $reader->dataClass, $data::class);
+            if (! $data instanceof $resolver->dataClass) {
+                throw ReaderDataMismatch::for($key, $resolver->dataClass, $data::class);
             }
 
             return ReadyWindow::of($data->toArray());

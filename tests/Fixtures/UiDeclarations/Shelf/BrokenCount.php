@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Ui\Contracts\CountReader;
+use App\Ui\Contracts\CountResolver;
 use RuntimeException;
 
-final class BrokenCount implements CountReader
+final class BrokenCount implements CountResolver
 {
     public function count(): int
     {

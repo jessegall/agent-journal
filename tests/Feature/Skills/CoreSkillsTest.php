@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\RefreshHookDatabase;
@@ -29,7 +29,7 @@ final class CoreSkillsTest extends TestCase
 
     public function test_show_prints_the_rendered_journal_skills_text(): void
     {
-        $rendered = $this->app->make(SkillReader::class)->find(SkillKey::from('journal-skills'))->rendered->markdown;
+        $rendered = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'))->rendered->markdown;
 
         Artisan::call('skill:show', ['key' => 'journal-skills']);
 

@@ -27,11 +27,11 @@ final class DomainClassesTest extends TestCase
      */
     public static function domains(): iterable
     {
-        yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskSummary', 'TaskMissing', 'TaskAssignmentReader', 'TaskAssignmentCompletion', 'AssignedTaskReader', 'TaskCard', 'TaskFilters', 'TaskList', 'TaskState', 'TaskWorkState', 'TaskListReader', 'TaskDetailsReader', 'TaskExecution', 'TaskDetails', 'TaskView', 'TaskType']];
-        yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'StartPlan', 'AssignPlanWork', 'ReassignPlanWork', 'UnassignPlanWork', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'AssignedPlanFilters', 'AssignedPlanList', 'PlanProgress', 'PlanType', 'PlanState', 'PlanFinished', 'PlanCancelled', 'PlanDetailsReader', 'PlanDetails', 'PlanPhaseTasks', 'PhaseDetails', 'PlanView', 'PhaseMissing']];
+        yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskResolver', 'TaskSummary', 'TaskMissing', 'TaskAssignmentResolver', 'TaskAssignmentCompletion', 'AssignedTaskResolver', 'TaskCard', 'TaskFilters', 'TaskList', 'TaskState', 'TaskWorkState', 'TaskListResolver', 'TaskDetailsResolver', 'TaskExecution', 'TaskDetails', 'TaskView', 'TaskType']];
+        yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanResolver', 'StartPlan', 'AssignPlanWork', 'ReassignPlanWork', 'UnassignPlanWork', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'AssignedPlanFilters', 'AssignedPlanList', 'PlanProgress', 'PlanType', 'PlanState', 'PlanFinished', 'PlanCancelled', 'PlanDetailsResolver', 'PlanDetails', 'PlanPhaseTasks', 'PhaseDetails', 'PlanView', 'PhaseMissing']];
         yield 'Chat' => [ChatDomain::class, [], []];
-        yield 'Memory' => [MemoryDomain::class, [], ['MemoryReader', 'MemoryPage', 'MemoryCard', 'MemoryUnavailable', 'MemoryInvalid', 'MemoryRevisionChanged']];
-        yield 'Rules' => [RulesDomain::class, [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleReader', 'ApproveRule', 'DenyRule', 'RuleFilters', 'RuleList', 'RuleView', 'RuleState', 'RuleMissing', 'RuleNotProposed', 'RuleDetailsReader', 'RuleDetails']];
+        yield 'Memory' => [MemoryDomain::class, [], ['MemoryResolver', 'MemoryPage', 'MemoryCard', 'MemoryUnavailable', 'MemoryInvalid', 'MemoryRevisionChanged']];
+        yield 'Rules' => [RulesDomain::class, [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleResolver', 'ApproveRule', 'DenyRule', 'RuleFilters', 'RuleList', 'RuleView', 'RuleState', 'RuleMissing', 'RuleNotProposed', 'RuleDetailsResolver', 'RuleDetails']];
         yield 'Sequences' => [SequencesDomain::class, [], []];
         yield 'Reminders' => [RemindersDomain::class, [], []];
         yield 'Access' => [AccessDomain::class, [], []];

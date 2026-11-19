@@ -17,8 +17,8 @@ use App\Skills\Contracts\ProvidesSkills;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillPublisher;
-use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Contracts\SkillSource;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillKeyInvalid;
@@ -40,7 +40,7 @@ final class SkillContractsTest extends TestCase
     {
         $exports = CoreApi::exports();
 
-        foreach ([ProvidesSkills::class, Skill::class, SkillCondition::class, ProvidesSkillConditions::class, SkillReader::class] as $contract) {
+        foreach ([ProvidesSkills::class, Skill::class, SkillCondition::class, ProvidesSkillConditions::class, SkillResolver::class] as $contract) {
             $this->assertContains($contract, $exports->contracts);
         }
 

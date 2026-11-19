@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents;
 
 use App\Http\Data\Sharing\ShareProposalStatusData;
-use App\Sharing\Support\ProposalStatusReader;
+use App\Sharing\Support\ProposalStatusResolver;
 use App\Sharing\Support\ShareProposalStatus;
 use Illuminate\Http\JsonResponse;
 
@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ShareStatusController
 {
-    public function __invoke(ProposalStatusReader $proposals): JsonResponse
+    public function __invoke(ProposalStatusResolver $proposals): JsonResponse
     {
         return new JsonResponse(['proposals' => array_map(fn (ShareProposalStatus $status) => ShareProposalStatusData::fromStatus($status), $proposals->ownProposals())]);
     }

@@ -7,13 +7,13 @@ namespace App\Actors\Providers;
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActiveActors;
 use App\Actors\Contracts\ActorProviderRegistration;
-use App\Actors\Contracts\ActorReader;
+use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
-use App\Actors\Support\ActiveActorsReader;
+use App\Actors\Support\ActiveActorsResolver;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorProviderRegistry;
 use App\Actors\Support\DatabaseClock;
@@ -43,9 +43,9 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->singleton(ActiveActorCounterRegistry::class);
         $this->app->bind(ActiveActorRegistration::class, ActiveActorCounterRegistry::class);
         $this->app->bind(UserPresences::class, UserPresenceRecords::class);
-        $this->app->bind(ActiveActors::class, ActiveActorsReader::class);
+        $this->app->bind(ActiveActors::class, ActiveActorsResolver::class);
         $this->app->singleton(ActorProviderRegistry::class);
-        $this->app->alias(ActorProviderRegistry::class, ActorReader::class);
+        $this->app->alias(ActorProviderRegistry::class, ActorResolver::class);
         $this->app->alias(ActorProviderRegistry::class, ActorProviderRegistration::class);
     }
 

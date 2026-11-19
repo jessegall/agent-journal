@@ -17,12 +17,12 @@ use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
 use Illuminate\Validation\ValidationException;
-use Tests\Fixtures\UiDeclarations\Desk\NotesReader;
+use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;
-use Tests\Fixtures\UiDeclarations\Shelf\BrokenReader;
+use Tests\Fixtures\UiDeclarations\Shelf\BrokenResolver;
 use Tests\Fixtures\UiDeclarations\Shelf\ReaderCalls;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
-use Tests\Fixtures\UiDeclarations\Shelf\ShelfReader;
+use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -122,19 +122,19 @@ final class PagePropsTest extends TestCase
     private function declarations(): UiDeclarations
     {
         $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
-            Page::make('shelves', 'Shelves', Icon::Docs, ShelfReader::class, 'Shelf.vue')
+            Page::make('shelves', 'Shelves', Icon::Docs, ShelfResolver::class, 'Shelf.vue')
                 ->at('')
                 ->slots(Slot::make('aside', SlotContextType::Nothing)),
-            Page::make('hidden', 'Hidden', Icon::Docs, ShelfReader::class, 'Shelf.vue')
+            Page::make('hidden', 'Hidden', Icon::Docs, ShelfResolver::class, 'Shelf.vue')
                 ->at('hidden')
                 ->visibleWhen(NobodySees::class),
-            Page::make('shelf', 'Shelf', Icon::Docs, ShelfReader::class, 'Record/Reader.vue')
+            Page::make('shelf', 'Shelf', Icon::Docs, ShelfResolver::class, 'Record/Reader.vue')
                 ->at('{shelf}')
                 ->inInspector(),
         ], sections: [
-            Section::make('broken', 'Broken', 'shelf.aside', SlotContextType::Nothing, BrokenReader::class, 'Aside.vue'),
-            Section::make('notes', 'Notes', 'shelf.aside', SlotContextType::Nothing, NotesReader::class, 'Aside.vue'),
-            Section::make('secret', 'Secret', 'shelf.aside', SlotContextType::Nothing, NotesReader::class, 'Aside.vue')
+            Section::make('broken', 'Broken', 'shelf.aside', SlotContextType::Nothing, BrokenResolver::class, 'Aside.vue'),
+            Section::make('notes', 'Notes', 'shelf.aside', SlotContextType::Nothing, NotesResolver::class, 'Aside.vue'),
+            Section::make('secret', 'Secret', 'shelf.aside', SlotContextType::Nothing, NotesResolver::class, 'Aside.vue')
                 ->visibleWhen(NobodySees::class),
         ]);
 

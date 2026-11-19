@@ -7,7 +7,7 @@ namespace App\Skills\Mcp;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Support\SkillPreview;
 use App\Skills\Values\SkillKey;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -24,7 +24,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 final class SkillPreviewTool extends JournalReadTool
 {
     public function __construct(
-        private readonly SkillReader $skills,
+        private readonly SkillResolver $skills,
         private readonly SkillPreview $preview,
     ) {}
 

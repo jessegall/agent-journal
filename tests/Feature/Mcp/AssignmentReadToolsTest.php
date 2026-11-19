@@ -6,7 +6,7 @@ namespace Tests\Feature\Mcp;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Page;
@@ -80,14 +80,14 @@ final class AssignmentReadToolsTest extends TestCase
     {
         $afterId = (string) Str::ulid();
         $nextAfterId = (string) Str::ulid();
-        $reader = Mockery::mock(AssigneeReader::class);
-        $reader->shouldReceive('eligible')->once()
+        $resolver = Mockery::mock(AssigneeResolver::class);
+        $resolver->shouldReceive('eligible')->once()
             ->withArgs(fn (ActorType $type, Page $page): bool => $type === ActorType::Agent && $page->afterId === $afterId && $page->limit === 20)
             ->andReturn(new AssigneeList([new AssigneeName(new ActorIdentity(ActorType::Agent, $nextAfterId), 'Worker')], $nextAfterId));
-        $reader->shouldReceive('eligible')->once()
+        $resolver->shouldReceive('eligible')->once()
             ->withArgs(fn (ActorType $type, Page $page): bool => $type === ActorType::Agent && $page->afterId === $nextAfterId && $page->limit === 20)
             ->andReturn(new AssigneeList([], null));
-        $this->app->scoped(AssigneeReader::class, fn (): AssigneeReader => $reader);
+        $this->app->scoped(AssigneeResolver::class, fn (): AssigneeResolver => $resolver);
 
         $first = $this->callMcpTool($this->caller, 'assignees_list', ['type' => 'agent', 'after_id' => $afterId, 'limit' => 20])->json('result.structuredContent');
         $this->assertSame([['type' => 'agent', 'id' => $nextAfterId, 'name' => 'Worker']], $first['assignees']);

@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
-use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
@@ -50,7 +50,7 @@ final class ProfileStorageTest extends TestCase
         $this->assertSame(2, $second->profiles[0]->revision);
         $this->assertSame(1, Profile::query()->count());
 
-        $snapshot = $this->app->make(ProfileReader::class)->snapshotFor(ProfileKey::from('journal-reviewer'));
+        $snapshot = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('journal-reviewer'));
         $this->assertSame(2, $snapshot->revision);
         $this->assertSame('Review the change twice.', $snapshot->instructions);
         $this->assertSame([], $snapshot->skillAllowlist);
@@ -76,28 +76,28 @@ final class ProfileStorageTest extends TestCase
     {
         $this->activate($this->reviewer('Review the change.', null));
         $id = Profile::byKey(ProfileKey::from('journal-reviewer'))->id;
-        $reader = $this->app->make(ProfileReader::class);
+        $resolver = $this->app->make(ProfileResolver::class);
 
         $revoke = new RevokeProfiles([ProfileKey::from('journal-reviewer')]);
 
         $this->assertSame(1, $this->app->make(CommandBus::class)->run($revoke));
-        $this->assertFalse($reader->has(ProfileKey::from('journal-reviewer')));
+        $this->assertFalse($resolver->has(ProfileKey::from('journal-reviewer')));
 
         try {
-            $reader->snapshotFor(ProfileKey::from('journal-reviewer'));
+            $resolver->snapshotFor(ProfileKey::from('journal-reviewer'));
             $this->fail('A retired profile was read.');
         } catch (ProfileRetired) {
         }
 
         $this->activate($this->reviewer('Back again.', null));
-        $this->assertTrue($reader->has(ProfileKey::from('journal-reviewer')));
+        $this->assertTrue($resolver->has(ProfileKey::from('journal-reviewer')));
         $this->assertSame($id, Profile::byKey(ProfileKey::from('journal-reviewer'))->id);
-        $this->assertSame(2, $reader->snapshotFor(ProfileKey::from('journal-reviewer'))->revision);
+        $this->assertSame(2, $resolver->snapshotFor(ProfileKey::from('journal-reviewer'))->revision);
     }
 
     public function test_an_unknown_key_is_refused_by_the_reader_and_by_revocation(): void
     {
-        $this->assertFalse($this->app->make(ProfileReader::class)->has(ProfileKey::from('journal-nobody')));
+        $this->assertFalse($this->app->make(ProfileResolver::class)->has(ProfileKey::from('journal-nobody')));
 
         $this->expectException(ProfileMissing::class);
 

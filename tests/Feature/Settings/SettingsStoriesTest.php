@@ -12,7 +12,7 @@ use App\Domains\Support\DomainRegistry;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsDefinition;
-use App\Settings\Contracts\SettingsReader;
+use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Declarations\SettingGroup;
 use App\Settings\Declarations\StringSetting;
@@ -316,11 +316,11 @@ final class SettingsStoriesTest extends TestCase
         $this->fail("The catalogue has no setting {$key} in group {$group}.");
     }
 
-    private function freshReader(): SettingsReader
+    private function freshReader(): SettingsResolver
     {
         $this->app->forgetScopedInstances();
 
-        return $this->app->make(SettingsReader::class);
+        return $this->app->make(SettingsResolver::class);
     }
 
     /**

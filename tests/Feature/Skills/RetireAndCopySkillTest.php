@@ -11,7 +11,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CopySkill;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RetireSkill;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Exceptions\SkillOwnerRequired;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
@@ -55,7 +55,7 @@ final class RetireAndCopySkillTest extends TestCase
 
     public function test_copying_journal_plans_snapshots_its_text_and_source_digest(): void
     {
-        $source = $this->app->make(SkillReader::class)->find(SkillKey::from('journal-plans'));
+        $source = $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-plans'));
         $copied = $this->as(7, new CopySkill('journal-plans', 'user-plans', 'copy-1'));
         $revision = SkillRevision::currentOf(Skill::query()->whereKey($copied->skillId)->firstOrFail());
 

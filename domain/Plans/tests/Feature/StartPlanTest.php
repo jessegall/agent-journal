@@ -17,7 +17,7 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Readers\PlanRecords;
+use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\TestFailure;

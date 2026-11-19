@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Requests;
 
 use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -44,7 +44,7 @@ final class CreateRecordRequest extends FormRequest
      *
      * @return list<RecordIdentity>
      */
-    public function about(RecordReader $records): array
+    public function about(RecordResolver $records): array
     {
         return array_values(array_map(fn (string $reference) => $records->identify(RecordReference::parse(trim($reference))), array_filter((array) $this->input('about', []), is_string(...))));
     }

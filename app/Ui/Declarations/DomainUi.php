@@ -9,7 +9,7 @@ use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
 use App\Ui\Exceptions\UiComponentMissing;
 use App\Ui\Exceptions\UiKeyInvalid;
-use App\Ui\Exceptions\UiReaderInvalid;
+use App\Ui\Exceptions\UiResolverInvalid;
 use Illuminate\Support\Str;
 
 /**
@@ -117,7 +117,7 @@ final readonly class DomainUi
     public function checkImplements(string $declaration, string $className, string $interface): void
     {
         if (! is_subclass_of($className, $interface)) {
-            throw UiReaderInvalid::notA($declaration, $className, $interface);
+            throw UiResolverInvalid::notA($declaration, $className, $interface);
         }
     }
 
@@ -127,7 +127,7 @@ final readonly class DomainUi
     public function checkController(string $declaration, string $controller): void
     {
         if (! str_starts_with($controller, $this->namespace.'\\') || ! method_exists($controller, '__invoke')) {
-            throw UiReaderInvalid::controllerNotOwned($declaration, $controller);
+            throw UiResolverInvalid::controllerNotOwned($declaration, $controller);
         }
     }
 }

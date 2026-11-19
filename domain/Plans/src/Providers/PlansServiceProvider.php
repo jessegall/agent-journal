@@ -12,14 +12,14 @@ use Domain\Plans\Console\PhaseCheckCommand;
 use Domain\Plans\Console\PhaseShowCommand;
 use Domain\Plans\Console\ReassignPlanWorkCommand;
 use Domain\Plans\Console\UnassignPlanWorkCommand;
-use Domain\Plans\Contracts\PlanDetailsReader;
-use Domain\Plans\Contracts\PlanReader;
+use Domain\Plans\Contracts\PlanDetailsResolver;
+use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Readers\PlanDetailRecords;
-use Domain\Plans\Readers\PlanRecords;
+use Domain\Plans\Resolvers\PlanDetailRecords;
+use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\Support\PhaseTiming;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -34,8 +34,8 @@ final class PlansServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(PlanReader::class, PlanRecords::class);
-        $this->app->scoped(PlanDetailsReader::class, PlanDetailRecords::class);
+        $this->app->scoped(PlanResolver::class, PlanRecords::class);
+        $this->app->scoped(PlanDetailsResolver::class, PlanDetailRecords::class);
         $this->app->scoped(VerificationTiming::class, PhaseTiming::class);
     }
 

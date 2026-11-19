@@ -9,10 +9,10 @@ use App\Profiles\Console\ProfileListCommand;
 use App\Profiles\Console\ProfileRevokeCommand;
 use App\Profiles\Console\ProfileShowCommand;
 use App\Profiles\Contracts\KnownOperations;
-use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
-use App\Profiles\Readers\ProfilePrograms;
-use App\Profiles\Readers\ProfileRecords;
+use App\Profiles\Resolvers\ProfilePrograms;
+use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\ConfiguredOperations;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,7 +24,7 @@ final class ProfilesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(ProfileReader::class, ProfileRecords::class);
+        $this->app->bind(ProfileResolver::class, ProfileRecords::class);
         $this->app->bind(KnownOperations::class, ConfiguredOperations::class);
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
     }

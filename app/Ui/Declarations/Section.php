@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
-use App\Ui\Contracts\SectionReader;
+use App\Ui\Contracts\SectionResolver;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Enums\SlotContextType;
 use App\Ui\Exceptions\InvalidSectionDeclaration;
@@ -17,8 +17,8 @@ use Spatie\LaravelData\Data;
 final class Section
 {
     /**
-     * @param  class-string<SectionReader>  $reader
-     * @param  class-string<Data>  $dataClass  the Data class the reader's read method declares
+     * @param  class-string<SectionResolver>  $resolver
+     * @param  class-string<Data>  $dataClass  the Data class the resolver's read method declares
      * @param  list<ActionRoute>  $actions
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone who sees the host page sees the section
      */
@@ -27,7 +27,7 @@ final class Section
         public readonly string $title,
         public readonly string $slot,
         public readonly SlotContextType $takes,
-        public readonly string $reader,
+        public readonly string $resolver,
         public readonly string $dataClass,
         public readonly string $component,
         public readonly int $position = 0,
@@ -37,21 +37,21 @@ final class Section
 
     /**
      * @param  string  $slot  the slot's full key, such as plans.inspector
-     * @param  class-string<SectionReader>  $reader
+     * @param  class-string<SectionResolver>  $resolver
      */
-    public static function make(string $key, string $title, string $slot, SlotContextType $takes, string $reader, string $component): self
+    public static function make(string $key, string $title, string $slot, SlotContextType $takes, string $resolver, string $component): self
     {
         if (preg_match('/^[a-z0-9-]+\.[a-z0-9-]+$/', $slot) !== 1) {
             throw InvalidSectionDeclaration::slotNotFullKey($key, $slot);
         }
 
-        $dataClass = ReaderDataClass::of($reader);
+        $dataClass = ResolverDataClass::of($resolver);
 
         if ($dataClass === null) {
-            throw InvalidSectionDeclaration::readerReturnsNoData($key, $reader);
+            throw InvalidSectionDeclaration::resolverReturnsNoData($key, $resolver);
         }
 
-        return new self($key, $title, $slot, $takes, $reader, $dataClass, $component);
+        return new self($key, $title, $slot, $takes, $resolver, $dataClass, $component);
     }
 
     public function at(int $position): self

@@ -15,9 +15,9 @@ use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports as DeclaredExports;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Contracts\TaskReader;
+use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Readers\VisibleTasks;
+use Domain\Tasks\Resolvers\VisibleTasks;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Leaky\LeakyDomain;
@@ -37,9 +37,9 @@ final class ExportsTest extends TestCase
 
     public function test_each_name_comes_back_without_its_leading_backslash(): void
     {
-        $checked = Exports::check('Tasks', 'Domain\\Tasks', DeclaredExports::make()->contracts('\\'.TaskReader::class)->build());
+        $checked = Exports::check('Tasks', 'Domain\\Tasks', DeclaredExports::make()->contracts('\\'.TaskResolver::class)->build());
 
-        $this->assertSame([TaskReader::class], $checked->contracts);
+        $this->assertSame([TaskResolver::class], $checked->contracts);
     }
 
     public function test_a_name_that_does_not_exist_is_refused_with_its_list(): void
@@ -51,9 +51,9 @@ final class ExportsTest extends TestCase
 
     public function test_a_name_of_a_neighbouring_namespace_with_the_same_start_is_refused(): void
     {
-        $this->expectExceptionObject(InvalidExports::outsideOwner('Task', TaskReader::class, 'Domain\\Task'));
+        $this->expectExceptionObject(InvalidExports::outsideOwner('Task', TaskResolver::class, 'Domain\\Task'));
 
-        Exports::check('Task', 'Domain\\Task', DeclaredExports::make()->contracts(TaskReader::class)->build());
+        Exports::check('Task', 'Domain\\Task', DeclaredExports::make()->contracts(TaskResolver::class)->build());
     }
 
     public function test_a_domain_exporting_another_owners_class_cannot_be_registered(): void

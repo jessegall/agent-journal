@@ -7,7 +7,7 @@ namespace App\Skills\Mcp;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Values\SkillKey;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -23,7 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 final class SkillShowTool extends JournalReadTool
 {
     public function __construct(
-        private readonly SkillReader $skills,
+        private readonly SkillResolver $skills,
     ) {}
 
     public function schema(JsonSchema $schema): array

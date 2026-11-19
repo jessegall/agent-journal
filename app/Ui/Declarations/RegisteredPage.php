@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
-use App\Ui\Contracts\PageReader;
+use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Exceptions\UiSlotMismatch;
 
@@ -28,7 +28,7 @@ final readonly class RegisteredPage
         public string $key,
         public RoutePath $path,
         public string $uri,
-        public ReaderDefinition $reader,
+        public ResolverDefinition $resolver,
         public string $componentFile,
         public string $propName,
         public array $slots,
@@ -49,7 +49,7 @@ final readonly class RegisteredPage
             key: $key,
             path: $path,
             uri: $owner->uri($path),
-            reader: ReaderDefinition::of($owner, $key, $page->reader, PageReader::class, $page->dataClass),
+            resolver: ResolverDefinition::of($owner, $key, $page->resolver, PageResolver::class, $page->dataClass),
             componentFile: $owner->componentFile($key, $page->component),
             propName: 'window_'.str_replace(['.', '-'], '_', $key),
             slots: self::checkedSlots($owner, $key, $path, $page->slots),

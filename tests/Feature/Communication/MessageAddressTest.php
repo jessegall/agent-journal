@@ -9,7 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Communication\Contracts\MessageAddressReader;
+use App\Communication\Contracts\MessageAddressResolver;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\DB;
@@ -80,8 +80,8 @@ final class MessageAddressTest extends TestCase
         $this->assertSame([$this->first->id, $this->secondSession->id], [$sender->actor->id, $sender->sessionId]);
     }
 
-    private function addresses(): MessageAddressReader
+    private function addresses(): MessageAddressResolver
     {
-        return $this->app->make(MessageAddressReader::class);
+        return $this->app->make(MessageAddressResolver::class);
     }
 }

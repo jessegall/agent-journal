@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Console;
 
 use App\Bus\Support\ConsoleOwner;
-use App\Sharing\Support\ShareLinkReader;
+use App\Sharing\Support\ShareLinkResolver;
 use Illuminate\Console\Command;
 
 /**
@@ -18,7 +18,7 @@ final class ShareUrlCommand extends Command
 
     protected $description = 'Print the public address of an active share';
 
-    public function handle(ConsoleOwner $owner, ShareLinkReader $links): int
+    public function handle(ConsoleOwner $owner, ShareLinkResolver $links): int
     {
         $url = $links->linkFor($owner->actAsOwner(), (string) $this->argument('share'));
 

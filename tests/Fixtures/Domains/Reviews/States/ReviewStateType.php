@@ -8,7 +8,7 @@ use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\States\AgentState;
-use App\Settings\Support\CurrentSettingsReader;
+use App\Settings\Support\CurrentSettingsResolver;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 
 /**
@@ -19,11 +19,11 @@ final readonly class ReviewStateType implements StateLoader
 {
     public const string TYPE_KEY = 'reviews.reviewing';
 
-    public function __construct(private ReviewSettings $settings, private CurrentSettingsReader $currentSettings) {}
+    public function __construct(private ReviewSettings $settings, private CurrentSettingsResolver $currentSettings) {}
 
     public function statesFor(StateReferences $references): StateSet
     {
-        $review = $this->currentSettings->reader()->group($this->settings->review);
+        $review = $this->currentSettings->resolver()->group($this->settings->review);
 
         return StateSet::build($references, fn (): AgentState => new ReviewState($review, $this->settings));
     }

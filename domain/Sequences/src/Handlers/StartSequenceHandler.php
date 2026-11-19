@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Handlers;
 
-use App\Agents\Contracts\SessionReader;
+use App\Agents\Contracts\SessionResolver;
 use App\Contracts\CommandHandler;
 use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Events\SequenceStarted;
@@ -17,7 +17,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class StartSequenceHandler implements CommandHandler
 {
     public function __construct(
-        private SessionReader $sessions,
+        private SessionResolver $sessions,
         private Dispatcher $events,
     ) {}
 

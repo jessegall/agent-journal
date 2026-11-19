@@ -6,11 +6,11 @@ namespace App\Skills\Handlers;
 
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\CopySkill;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyTaken;
 use App\Skills\Models\Skill;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;
@@ -20,7 +20,7 @@ final readonly class CopySkillHandler implements CommandHandler
 {
     public function __construct(
         private StoredSkillWrites $writes,
-        private SkillReader $skills,
+        private SkillResolver $skills,
     ) {}
 
     public function handle(CopySkill $command): SkillRevisionResult
@@ -40,7 +40,7 @@ final readonly class CopySkillHandler implements CommandHandler
             $draft = $source->copyDraft();
             $author = $this->writes->author();
 
-            return Skill::start($key, $author, SkillContextReader::ENVIRONMENT)->appendRevision($draft, $this->writes->checkedCondition($key->key, $draft), $author, $source->key->key, $source->rendered->digest);
+            return Skill::start($key, $author, SkillContextResolver::ENVIRONMENT)->appendRevision($draft, $this->writes->checkedCondition($key->key, $draft), $author, $source->key->key, $source->rendered->digest);
         });
     }
 }

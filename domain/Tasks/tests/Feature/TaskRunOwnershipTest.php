@@ -19,7 +19,7 @@ use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
-use Domain\Tasks\Contracts\AssignedTaskReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskCancelRefused;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
@@ -77,7 +77,7 @@ final class TaskRunOwnershipTest extends TestCase
         $this->bus()->run(new FinishTask($this->task->id, $run, 'Built and tested.'));
 
         $this->assertSame([TaskState::Finished, 'Built and tested.'], [$this->task->fresh()?->state, $this->task->fresh()?->result_note]);
-        $this->assertTrue($this->app->make(AssignedTaskReader::class)->currentForCaller()->isEmpty());
+        $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
     public function test_blocking_keeps_the_reason_and_another_session_cannot_block_or_finish_the_run(): void

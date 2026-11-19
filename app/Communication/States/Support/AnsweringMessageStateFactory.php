@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\States\Support;
 
-use App\Communication\Readers\MessageRecords;
+use App\Communication\Resolvers\MessageRecords;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;

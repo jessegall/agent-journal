@@ -15,7 +15,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
-use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Events\ProfileRevisionRevoked;
@@ -71,7 +71,7 @@ final class ProfilePolicyTest extends TestCase
             'profiles' => ['journal-worker' => self::WORKER],
         ]);
 
-        $launch = $this->reader()->snapshotFor(ProfileKey::from('journal-worker'))->launch;
+        $launch = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'))->launch;
         $access = $launch->access;
 
         $this->assertFalse($access->decide(self::operation('file.delete', AccessType::Delete, 'workspace'))->allowed);
@@ -98,7 +98,7 @@ final class ProfilePolicyTest extends TestCase
         ];
 
         $this->assertThrows(fn () => $this->activate($proposal), ProfilePolicyRefused::class, 'writing_helper');
-        $this->assertFalse($this->reader()->has(ProfileKey::from('journal-researcher')));
+        $this->assertFalse($this->resolver()->has(ProfileKey::from('journal-researcher')));
     }
 
     public function test_unknown_operations_and_unsupported_fields_are_refused(): void
@@ -130,9 +130,9 @@ final class ProfilePolicyTest extends TestCase
         $this->assertSame(ProfileChangeType::Added, $first->profiles[0]->change);
         $this->assertSame(ProfileChangeType::Changed, $second->profiles[0]->change);
         $this->assertSame(ProfileChangeType::Unchanged, $third->profiles[0]->change);
-        $this->assertSame('opus', $this->reader()->snapshotAt($key, 1)->model);
-        $this->assertSame('sonnet', $this->reader()->snapshotFor($key)->model);
-        $this->assertSame(3, $this->reader()->snapshotFor($key)->revision);
+        $this->assertSame('opus', $this->resolver()->snapshotAt($key, 1)->model);
+        $this->assertSame('sonnet', $this->resolver()->snapshotFor($key)->model);
+        $this->assertSame(3, $this->resolver()->snapshotFor($key)->revision);
     }
 
     public function test_an_agent_cannot_activate(): void
@@ -148,7 +148,7 @@ final class ProfilePolicyTest extends TestCase
     {
         Event::fake([ProfileRevisionRevoked::class]);
         $this->activate(['profiles' => ['journal-worker' => self::WORKER]]);
-        $revision = $this->reader()->snapshotFor(ProfileKey::from('journal-worker'));
+        $revision = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'));
 
         $this->app->make(CommandBus::class)->run(new RevokeProfiles([ProfileKey::from('journal-worker')]));
 
@@ -169,9 +169,9 @@ final class ProfilePolicyTest extends TestCase
         return $this->app->make(CommandBus::class)->run(new ActivateProfiles($proposal));
     }
 
-    private function reader(): ProfileReader
+    private function resolver(): ProfileResolver
     {
-        return $this->app->make(ProfileReader::class);
+        return $this->app->make(ProfileResolver::class);
     }
 
     private static function operation(

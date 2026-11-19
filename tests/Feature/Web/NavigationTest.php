@@ -15,7 +15,7 @@ use App\Web\Support\NavigationRecords;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Tests\Fixtures\UiDeclarations\Library\BookCount;
-use Tests\Fixtures\UiDeclarations\Library\BooksReader;
+use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;
 use Tests\Fixtures\UiDeclarations\Library\ShelfItems;
@@ -24,7 +24,7 @@ use Tests\Fixtures\UiDeclarations\Shelf\CountedShelves;
 use Tests\Fixtures\UiDeclarations\Shelf\ReaderCalls;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfChildren;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
-use Tests\Fixtures\UiDeclarations\Shelf\ShelfReader;
+use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -117,19 +117,19 @@ final class NavigationTest extends TestCase
     private function declarations(): UiDeclarations
     {
         $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
-            Page::make('books', 'Books', Icon::Docs, BooksReader::class, 'Books.vue')->at(''),
-            Page::make('book', 'Book', Icon::Docs, BooksReader::class, 'Book/Reader.vue')->at('{book}'),
+            Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')->at(''),
+            Page::make('book', 'Book', Icon::Docs, BooksResolver::class, 'Book/Reader.vue')->at('{book}'),
         ], navigation: [
             NavigationItem::page('books', 'Books', Icon::Docs, group: 'Work', position: 100)
                 ->count(BookCount::class)
                 ->children([
                     NavigationItem::page('first-book', 'First book', page: 'book', route: ['book' => '1']),
-                    NavigationItem::heading('shelves', 'Shelves', childrenReader: ShelfItems::class),
+                    NavigationItem::heading('shelves', 'Shelves', childrenResolver: ShelfItems::class),
                 ]),
         ]);
         $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
-            Page::make('shelves', 'Shelves', Icon::Docs, ShelfReader::class, 'Shelf.vue')->at(''),
-            Page::make('shelf', 'Shelf', Icon::Docs, ShelfReader::class, 'Record/Reader.vue')->at('{shelf}'),
+            Page::make('shelves', 'Shelves', Icon::Docs, ShelfResolver::class, 'Shelf.vue')->at(''),
+            Page::make('shelf', 'Shelf', Icon::Docs, ShelfResolver::class, 'Record/Reader.vue')->at('{shelf}'),
         ], navigation: [
             NavigationItem::page('open', 'Open', Icon::Docs, page: 'shelves', group: 'Work', position: 200)->count(BrokenCount::class),
             NavigationItem::page('secret', 'Secret', Icon::Docs, page: 'shelves', group: 'Work', position: 300)

@@ -10,7 +10,7 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The selected plan in the reader: its card, the start when it is offered, and whether it is among the listed results.
+ * The selected plan in the resolver: its card, the start when it is offered, and whether it is among the listed results.
  */
 #[TypeScript]
 final class PlanReaderData extends Data

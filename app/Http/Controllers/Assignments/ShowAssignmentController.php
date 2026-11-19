@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Assignments;
 
-use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Requests\Assignments\ShowAssignmentRequest;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +14,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ShowAssignmentController
 {
-    public function __invoke(ShowAssignmentRequest $request, AssigneeReader $assignees): JsonResponse
+    public function __invoke(ShowAssignmentRequest $request, AssigneeResolver $assignees): JsonResponse
     {
         $record = $request->record();
         $holders = $assignees->holdersOfRecords([$record]);

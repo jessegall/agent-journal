@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -45,7 +45,7 @@ final class DomainSkillsTest extends TestCase
         Artisan::call('skill:show', ['key' => $key]);
         $shown = Artisan::output();
 
-        $this->assertSame($this->app->make(SkillReader::class)->find(SkillKey::from($key))->rendered->markdown, $shown);
+        $this->assertSame($this->app->make(SkillResolver::class)->find(SkillKey::from($key))->rendered->markdown, $shown);
         $this->assertStringContainsString("\n## Purpose\n\n", $shown);
         $this->assertStringContainsString("\n{$heading}\n\n", $shown);
     }

@@ -7,7 +7,7 @@ namespace App\Sharing\Handlers;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\RequestShare;
 use App\Sharing\Enums\ShareAuditType;
@@ -29,7 +29,7 @@ final readonly class RequestShareHandler implements CommandHandler
 {
     public function __construct(
         private CurrentActor $actors,
-        private RecordReader $records,
+        private RecordResolver $records,
         private ShareRecordRegistry $shareable,
         private Dispatcher $events,
     ) {}

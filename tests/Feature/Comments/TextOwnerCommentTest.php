@@ -8,14 +8,14 @@ use App\Assignments\Support\Page;
 use App\Bus\Contracts\CommandBus;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
-use App\Comments\Contracts\CommentReader;
+use App\Comments\Contracts\CommentResolver;
 use App\Comments\Data\RecordCommentView;
 use App\Comments\Data\TextCommentView;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Models\Comment;
 use App\Reads\Values\PageSize;
 use App\Records\Support\RecordIdentity;
-use App\Text\Contracts\TextReader;
+use App\Text\Contracts\TextResolver;
 use App\Text\Support\TextSelection;
 use App\Text\Values\TextRange;
 use Domain\Access\Models\User;
@@ -68,7 +68,7 @@ final class TextOwnerCommentTest extends TestCase
 
         $this->bus()->run(new PostTextComment($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()));
         $this->bus()->run(new PostComment($page, 'About the page.', (string) Str::uuid()));
-        $items = $this->app->make(CommentReader::class)->list($page, new Page())->items;
+        $items = $this->app->make(CommentResolver::class)->list($page, new Page())->items;
 
         $this->assertInstanceOf(TextCommentView::class, $items[0]);
         $this->assertInstanceOf(RecordCommentView::class, $items[1]);
@@ -93,9 +93,9 @@ final class TextOwnerCommentTest extends TestCase
         return new RecordIdentity($record::LINK_TYPE, $record->id);
     }
 
-    private function text(): TextReader
+    private function text(): TextResolver
     {
-        return $this->app->make(TextReader::class);
+        return $this->app->make(TextResolver::class);
     }
 
     private function bus(): CommandBus

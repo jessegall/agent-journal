@@ -15,7 +15,7 @@ use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareInstallation;
-use App\Sharing\Support\ShareAuditReader;
+use App\Sharing\Support\ShareAuditResolver;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -79,9 +79,9 @@ final class ShareAuditViewTest extends TestCase
         $this->share->pruned_allowed_reads = 7;
         $this->share->last_pruned_at = CarbonImmutable::now();
         $this->share->save();
-        $reader = $this->app->make(ShareAuditReader::class);
-        $first = $reader->page(Share::query()->findOrFail($this->share->id), null);
-        $second = $reader->page(Share::query()->findOrFail($this->share->id), $first->nextAfter);
+        $resolver = $this->app->make(ShareAuditResolver::class);
+        $first = $resolver->page(Share::query()->findOrFail($this->share->id), null);
+        $second = $resolver->page(Share::query()->findOrFail($this->share->id), $first->nextAfter);
 
         $this->assertCount(50, $first->entries);
         $this->assertNotNull($first->nextAfter);

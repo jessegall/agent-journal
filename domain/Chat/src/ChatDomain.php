@@ -18,8 +18,8 @@ use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use Domain\Chat\Http\Controllers\SendMessageController;
-use Domain\Chat\Readers\ChatWindowReader;
-use Domain\Chat\Readers\ChosenAgentSection;
+use Domain\Chat\Resolvers\ChatWindowResolver;
+use Domain\Chat\Resolvers\ChosenAgentSection;
 use Domain\Chat\Skills\ChatSkill;
 
 final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesSkills
@@ -45,7 +45,7 @@ final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPag
     public function pages(): array
     {
         return [
-            Page::make('conversation', 'Chat', Icon::Chat, ChatWindowReader::class, 'ChatWindow.vue')
+            Page::make('conversation', 'Chat', Icon::Chat, ChatWindowResolver::class, 'ChatWindow.vue')
                 ->at('')
                 ->onHome(10)
                 ->slots(Slot::make('dock', SlotContextType::Session))

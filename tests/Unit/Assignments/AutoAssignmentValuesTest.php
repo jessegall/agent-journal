@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Assignments;
 
 use App\Assignments\Contracts\AssignedWorkProvider;
-use App\Assignments\Contracts\AssignedWorkReader;
+use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentPool;
 use App\Assignments\Contracts\AssignmentPoolFactory;
 use App\Assignments\Contracts\AssignmentQuery;
@@ -111,7 +111,7 @@ final class AutoAssignmentValuesTest extends TestCase
             AutoAssigner::class,
             AssignmentPool::class,
             AssignmentPoolFactory::class,
-            AssignedWorkReader::class,
+            AssignedWorkResolver::class,
             AssignedWorkProvider::class,
             AssignmentQuery::class,
             ProvidesAutoAssignments::class,

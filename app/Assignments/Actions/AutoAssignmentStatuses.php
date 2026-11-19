@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Actions;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Contracts\AssignedWorkReader;
+use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentRoom;
 use App\Assignments\Contracts\AutoAssignmentAccess;
@@ -36,7 +36,7 @@ final readonly class AutoAssignmentStatuses
         private AutoAssignmentAccess $access,
         private AssignmentProviders $providers,
         private DomainAvailability $domains,
-        private AssignedWorkReader $work,
+        private AssignedWorkResolver $work,
         private AssignmentRoom $room,
     ) {}
 

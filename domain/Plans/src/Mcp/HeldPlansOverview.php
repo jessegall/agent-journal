@@ -9,7 +9,7 @@ use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use Domain\Plans\Api\AssignedPlanFilters;
-use Domain\Plans\Contracts\PlanReader;
+use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanState;
 
 /**
@@ -17,7 +17,7 @@ use Domain\Plans\Enums\PlanState;
  */
 final readonly class HeldPlansOverview implements OverviewContribution
 {
-    public function __construct(private PlanReader $plans) {}
+    public function __construct(private PlanResolver $plans) {}
 
     public function section(): string
     {

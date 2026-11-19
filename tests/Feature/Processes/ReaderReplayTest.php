@@ -15,7 +15,7 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Models\ResultReceipt;
-use App\Processes\Readers\Support\ActivityProjection;
+use App\Processes\Resolvers\Support\ActivityProjection;
 use App\Processes\Values\PartKey;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;

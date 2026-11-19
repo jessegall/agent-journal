@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Resources;
 
-use App\Mcp\Support\OverviewReader;
+use App\Mcp\Support\OverviewResolver;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Attributes\Uri;
 #[MimeType('application/json')]
 final class OverviewResource extends JournalResource
 {
-    public function __construct(private readonly OverviewReader $overview) {}
+    public function __construct(private readonly OverviewResolver $overview) {}
 
     protected function read(Request $request): Response
     {

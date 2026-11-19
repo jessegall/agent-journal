@@ -8,12 +8,12 @@ use App\Agents\Events\LaunchStarted;
 use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Models\AgentSession;
 use App\Contracts\Listener;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Events\SessionSkillsIntended;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\LaunchProgram;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
@@ -28,7 +28,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class AdmitLaunchSkills implements Listener
 {
     public function __construct(
-        private SkillContextReader $contexts,
+        private SkillContextResolver $contexts,
         private SkillSelection $selection,
         private ProgramSkillAdapters $adapters,
         private SkillTargets $targets,
@@ -52,7 +52,7 @@ final readonly class AdmitLaunchSkills implements Listener
         }
 
         $context = $this->contexts->forSession($session);
-        $selected = $this->selection->select($this->container->make(SkillReader::class)->all(), $context);
+        $selected = $this->selection->select($this->container->make(SkillResolver::class)->all(), $context);
         $publication = SkillPublication::intend(
             $session->id,
             $program->key,

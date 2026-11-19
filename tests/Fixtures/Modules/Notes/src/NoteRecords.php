@@ -6,12 +6,12 @@ namespace Tests\Fixtures\Modules\Notes;
 
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
-use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
+use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 
 /**
  * The module's private reader of its own table.
  */
-final readonly class NoteRecords implements NoteReader
+final readonly class NoteRecords implements NoteResolver
 {
     public function __construct(private ConnectionInterface $database) {}
 

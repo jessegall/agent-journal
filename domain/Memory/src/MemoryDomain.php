@@ -16,7 +16,7 @@ use Domain\Memory\Api\MemoryPage;
 use Domain\Memory\Commands\EditMemory;
 use Domain\Memory\Commands\RemoveMemory;
 use Domain\Memory\Commands\SaveMemory;
-use Domain\Memory\Contracts\MemoryReader;
+use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryInvalid;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
@@ -43,7 +43,7 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
     public function exports(): Exports
     {
         return Exports::make()
-            ->contracts(MemoryReader::class)
+            ->contracts(MemoryResolver::class)
             ->values(MemoryPage::class, MemoryCard::class)
             ->exceptions(MemoryUnavailable::class, MemoryInvalid::class, MemoryRevisionChanged::class)
             ->build();

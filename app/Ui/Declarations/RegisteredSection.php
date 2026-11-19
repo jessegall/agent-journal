@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
-use App\Ui\Contracts\SectionReader;
+use App\Ui\Contracts\SectionResolver;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Exceptions\UiSlotMismatch;
 
@@ -20,7 +20,7 @@ final readonly class RegisteredSection
         public string $key,
         public RegisteredPage $host,
         public Slot $slot,
-        public ReaderDefinition $reader,
+        public ResolverDefinition $resolver,
         public string $componentFile,
         public string $propName,
     ) {}
@@ -44,7 +44,7 @@ final readonly class RegisteredSection
             key: $key,
             host: $host,
             slot: $slot,
-            reader: ReaderDefinition::of($owner, $key, $section->reader, SectionReader::class, $section->dataClass),
+            resolver: ResolverDefinition::of($owner, $key, $section->resolver, SectionResolver::class, $section->dataClass),
             componentFile: $owner->componentFile($key, $section->component),
             propName: 'section_'.str_replace(['.', '-'], '_', "{$section->slot}.{$key}"),
         );

@@ -7,7 +7,7 @@ namespace Domain\Memory\Tests\Feature;
 use App\Actors\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Memory\Contracts\MemoryReader;
+use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
@@ -118,15 +118,15 @@ final class MemoryCommandsTest extends TestCase
     {
         $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
         $memory = Memory::keep(ActorIdentity::of($this->owner->agent), 'Read me.', 4);
-        $reader = $this->app->make(MemoryReader::class);
+        $resolver = $this->app->make(MemoryResolver::class);
 
-        $this->assertSame(['Read me.', 1], [$reader->memory($memory->id)->text, $reader->memory($memory->id)->revision]);
+        $this->assertSame(['Read me.', 1], [$resolver->memory($memory->id)->text, $resolver->memory($memory->id)->revision]);
 
         $this->app->forgetScopedInstances();
         $this->startRequestAs($this->other->agent->id, $this->other->session->id);
 
         $this->expectException(MemoryUnavailable::class);
 
-        $this->app->make(MemoryReader::class)->memory($memory->id);
+        $this->app->make(MemoryResolver::class)->memory($memory->id);
     }
 }

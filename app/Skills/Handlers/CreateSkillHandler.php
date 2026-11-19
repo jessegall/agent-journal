@@ -9,7 +9,7 @@ use App\Skills\Commands\CreateSkill;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyTaken;
 use App\Skills\Models\Skill;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;
@@ -37,7 +37,7 @@ final readonly class CreateSkillHandler implements CommandHandler
             $condition = $this->writes->checkedCondition($key->key, $command->draft);
             $author = $this->writes->author();
 
-            return Skill::start($key, $author, SkillContextReader::ENVIRONMENT)->appendRevision($command->draft, $condition, $author);
+            return Skill::start($key, $author, SkillContextResolver::ENVIRONMENT)->appendRevision($command->draft, $condition, $author);
         });
     }
 }

@@ -10,7 +10,7 @@ use App\Settings\Contracts\SettingsSnapshot;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Exceptions\SettingsUnavailable;
-use App\Settings\Support\CurrentSettingsReader;
+use App\Settings\Support\CurrentSettingsResolver;
 use App\Settings\Support\DisabledSettingsGroup;
 use App\Settings\Support\SettingRegistry;
 
@@ -24,7 +24,7 @@ final readonly class SettingsDomainAvailability implements DomainAvailability
         private DomainRegistry $domains,
         private DomainSwitches $switches,
         private SettingRegistry $settings,
-        private CurrentSettingsReader $currentSettings,
+        private CurrentSettingsResolver $currentSettings,
     ) {}
 
     /**
@@ -50,7 +50,7 @@ final readonly class SettingsDomainAvailability implements DomainAvailability
             return new DomainStatus($owner, true, true, []);
         }
 
-        return $this->statusIn($this->currentSettings->reader()->snapshot($this->settings->definition(SettingRegistry::CORE)), $this->domains->get($owner));
+        return $this->statusIn($this->currentSettings->resolver()->snapshot($this->settings->definition(SettingRegistry::CORE)), $this->domains->get($owner));
     }
 
     private function statusIn(SettingsSnapshot $snapshot, DomainEntry $domain): DomainStatus

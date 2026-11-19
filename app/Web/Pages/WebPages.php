@@ -10,8 +10,8 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
-use App\Web\Readers\HomeWindowReader;
-use App\Web\Readers\RuntimeStatusReader;
+use App\Web\Resolvers\HomeWindowResolver;
+use App\Web\Resolvers\RuntimeStatusResolver;
 
 /**
  * The pages Core's Web declares itself, served beside the domains' pages: Home, at /, and the read-only runtime
@@ -22,10 +22,10 @@ final class WebPages implements ProvidesPages
     public function pages(): array
     {
         return [
-            Page::make('home', 'Home', Icon::Home, HomeWindowReader::class, 'Home.vue')
+            Page::make('home', 'Home', Icon::Home, HomeWindowResolver::class, 'Home.vue')
                 ->at('')
                 ->slots(Slot::make('bar', SlotContextType::Session)),
-            Page::make('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusReader::class, 'Runtimes.vue')
+            Page::make('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class, 'Runtimes.vue')
                 ->at('runtimes'),
         ];
     }

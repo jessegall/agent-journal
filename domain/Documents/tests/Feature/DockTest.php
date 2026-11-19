@@ -28,7 +28,7 @@ use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
 use Domain\Documents\Data\DockData;
 use Domain\Documents\Models\RecordDock;
-use Domain\Documents\Readers\DocumentDockReader;
+use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Tests\TestCase;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
@@ -121,7 +121,7 @@ final class DockTest extends TestCase
     {
         $this->actAsUser();
 
-        return $this->app->make(DocumentDockReader::class)->read(SlotContext::session($session->id));
+        return $this->app->make(DocumentDockResolver::class)->read(SlotContext::session($session->id));
     }
 
     private function target(DraftReference $draft): DraftTarget

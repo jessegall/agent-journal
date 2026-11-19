@@ -13,7 +13,7 @@ use App\Processes\Enums\ProblemCode;
 use App\Processes\Enums\RecordRole;
 use App\Processes\Enums\StreamUse;
 use App\Processes\Enums\SummaryRule;
-use App\Processes\Readers\DeclarativeReader;
+use App\Processes\Support\DeclarativeReader;
 use App\Processes\Values\EmptyRunPolicy;
 use App\Processes\Values\OutputContract;
 use App\Processes\Values\OutputFrame;

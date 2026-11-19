@@ -10,7 +10,7 @@ use App\Skills\Data\SkillAgentSelection;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillSelectionConflict;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Values\ExcludedSkill;
 use App\Skills\Values\SkillEntry;
 
@@ -23,7 +23,7 @@ final readonly class SkillPreview
     private const int MOST_AGENTS = 200;
 
     public function __construct(
-        private SkillContextReader $contexts,
+        private SkillContextResolver $contexts,
         private SkillSelection $selection,
     ) {}
 

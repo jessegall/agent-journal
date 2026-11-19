@@ -10,8 +10,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Text\Exceptions\ContentMissing;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Contracts\DocumentReader;
-use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Exceptions\ReportMissing;
@@ -48,8 +48,8 @@ final class DocumentsTest extends TestCase
 
         $this->assertSame('doc 1', $first->label());
         $this->assertSame('doc 2', $second->label());
-        $this->assertSame(['1'], [$this->app->make(DocumentReader::class)->show(2)->revision]);
-        $this->assertSame("# Goal\nShip it.\n", $this->app->make(DocumentReader::class)->show(1)->body);
+        $this->assertSame(['1'], [$this->app->make(DocumentResolver::class)->show(2)->revision]);
+        $this->assertSame("# Goal\nShip it.\n", $this->app->make(DocumentResolver::class)->show(1)->body);
     }
 
     public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void
@@ -58,10 +58,10 @@ final class DocumentsTest extends TestCase
         $report = $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
 
         $this->assertSame('report 1', $report->label());
-        $this->assertSame('All good'."\n", $this->app->make(ReportReader::class)->show(1)->body);
-        $this->assertCount(1, $this->app->make(DocumentReader::class)->list(new DocumentFilters())->rows);
+        $this->assertSame('All good'."\n", $this->app->make(ReportResolver::class)->show(1)->body);
+        $this->assertCount(1, $this->app->make(DocumentResolver::class)->list(new DocumentFilters())->rows);
         $this->expectException(ReportMissing::class);
-        $this->app->make(ReportReader::class)->show(2);
+        $this->app->make(ReportResolver::class)->show(2);
     }
 
     public function test_an_empty_title_leaves_no_row_and_names_the_field(): void

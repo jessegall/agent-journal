@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\OverviewReader;
+use App\Mcp\Support\OverviewResolver;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -22,7 +22,7 @@ final class OverviewReadTool extends JournalReadTool
 {
     protected array|null $meta = ['anthropic/alwaysLoad' => true];
 
-    public function __construct(private readonly OverviewReader $overview) {}
+    public function __construct(private readonly OverviewResolver $overview) {}
 
     public function outputSchema(JsonSchema $schema): array
     {

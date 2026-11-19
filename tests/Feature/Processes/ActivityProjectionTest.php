@@ -9,7 +9,7 @@ use App\Processes\Enums\OutputStream;
 use App\Processes\Events\RunChanged;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
-use App\Processes\Readers\Support\ActivityProjection;
+use App\Processes\Resolvers\Support\ActivityProjection;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartActivity;

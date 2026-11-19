@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Assignments;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Contracts\AutoAssignmentAccess;
-use App\Assignments\Contracts\AutoAssignmentReader;
+use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Http\Data\Assignments\AutoAssignmentPageData;
 use App\Http\Requests\Assignments\ListAutoAssignmentsRequest;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +20,7 @@ final readonly class ListAutoAssignmentsController
         ListAutoAssignmentsRequest $request,
         CurrentActor $actors,
         AutoAssignmentAccess $access,
-        AutoAssignmentReader $autoAssignments,
+        AutoAssignmentResolver $autoAssignments,
     ): JsonResponse {
         $actor = $request->actor();
         $access->requireRead($actors->actor(), $actor);

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Modules\Notes\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
-use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
+use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
@@ -20,7 +20,7 @@ final class NotesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(NoteReader::class, NoteRecords::class);
+        $this->app->bind(NoteResolver::class, NoteRecords::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

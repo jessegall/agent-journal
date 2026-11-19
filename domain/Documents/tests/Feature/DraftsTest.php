@@ -17,7 +17,7 @@ use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\ReplaceDocumentSection;
 use Domain\Documents\Commands\ReplaceDocumentText;
-use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Exceptions\DraftMissing;
@@ -160,9 +160,9 @@ final class DraftsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)));
     }
 
-    private function documents(): DocumentReader
+    private function documents(): DocumentResolver
     {
-        return $this->app->make(DocumentReader::class);
+        return $this->app->make(DocumentResolver::class);
     }
 
     private function bus(): CommandBus

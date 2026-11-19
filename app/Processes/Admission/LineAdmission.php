@@ -9,7 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\CommandPermissionReader;
+use App\Processes\Contracts\CommandPermissionResolver;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Contracts\VerificationTiming;
@@ -59,7 +59,7 @@ final readonly class LineAdmission implements ShellAdmission
         private ShellSyntax $syntax,
         private Container $container,
         private OutputPolicy $outputs,
-        private CommandPermissionReader $permissions,
+        private CommandPermissionResolver $permissions,
         private VerificationTiming $timing,
         private ActiveRules $rules,
         private ExecutionPlanner $planner,

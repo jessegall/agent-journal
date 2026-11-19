@@ -8,12 +8,12 @@ use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
-use App\Web\Contracts\CurrentUserReader;
+use App\Web\Contracts\CurrentUserResolver;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Actions\ResetUserPassword;
 use Domain\Access\Models\Passkey;
 use Domain\Access\Models\User;
-use Domain\Access\Readers\CurrentUserRecords;
+use Domain\Access\Resolvers\CurrentUserRecords;
 use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\JournalAccess;
 use Domain\Access\Support\PresentUserCounter;
@@ -35,7 +35,7 @@ class AccessServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(CurrentUserReader::class, CurrentUserRecords::class);
+        $this->app->bind(CurrentUserResolver::class, CurrentUserRecords::class);
         $this->app->bind(JournalAccessPolicy::class, JournalAccess::class);
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
         $this->app->singleton(AccessSettings::class, fn (): AccessSettings => new ReflectionClass(AccessSettings::class)->newLazyGhost(function (AccessSettings $settings): void {

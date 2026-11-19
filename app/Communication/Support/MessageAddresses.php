@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
-use App\Actors\Contracts\ActorReader;
+use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
@@ -13,18 +13,18 @@ use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Exceptions\StackTargetRefused;
-use App\Agents\Readers\SessionRecords;
-use App\Communication\Contracts\MessageAddressReader;
+use App\Agents\Resolvers\SessionRecords;
+use App\Communication\Contracts\MessageAddressResolver;
 use App\Communication\Exceptions\ActorCannotSend;
 
 /**
  * Checks message addresses inside the running transaction: the recipient through the actor reader and, for an agent,
  * its locked session; the sender from the request's own actor and session.
  */
-final readonly class MessageAddresses implements MessageAddressReader
+final readonly class MessageAddresses implements MessageAddressResolver
 {
     public function __construct(
-        private ActorReader $actors,
+        private ActorResolver $actors,
         private CurrentActor $current,
         private CurrentSession $session,
         private SessionRecords $sessions,

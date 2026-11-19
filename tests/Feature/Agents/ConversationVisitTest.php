@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Commands\LaunchAgent;
-use App\Agents\Contracts\ProgramConversationReader;
+use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchOriginType;
@@ -93,10 +93,10 @@ final class ConversationVisitTest extends TestCase
         $session = $this->launch('helpers.job 1');
         $this->app->make(RecordConversationVisit::class)->entered($session->id, 'native-a', 'call-1', CarbonImmutable::now());
 
-        $conversations = $this->app->make(ProgramConversationReader::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 1');
+        $conversations = $this->app->make(ProgramConversationResolver::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 1');
 
         $this->assertSame([['native-a', TestSelections::MODEL]], array_map(fn ($conversation) => [$conversation->nativeId, $conversation->lastModel], $conversations));
-        $this->assertSame([], $this->app->make(ProgramConversationReader::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 2'));
+        $this->assertSame([], $this->app->make(ProgramConversationResolver::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 2'));
     }
 
     private function launch(string $context): AgentSession

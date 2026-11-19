@@ -9,9 +9,9 @@ use Domain\Memory\Console\MemoryEditCommand;
 use Domain\Memory\Console\MemoryListCommand;
 use Domain\Memory\Console\MemoryRemoveCommand;
 use Domain\Memory\Console\MemorySaveCommand;
-use Domain\Memory\Contracts\MemoryReader;
+use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Models\Memory;
-use Domain\Memory\Readers\OwnMemories;
+use Domain\Memory\Resolvers\OwnMemories;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -22,7 +22,7 @@ final class MemoryServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(MemoryReader::class, OwnMemories::class);
+        $this->app->scoped(MemoryResolver::class, OwnMemories::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

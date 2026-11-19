@@ -7,12 +7,12 @@ namespace App\Records\Support;
 use App\Bus\Contracts\CommandTransaction;
 use App\Links\Models\Link;
 use App\Records\Contracts\RecordLinker;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Database\Eloquent\Model;
 
 final readonly class TransactionalRecordLinker implements RecordLinker
 {
-    public function __construct(private RecordReader $records, private CommandTransaction $transaction) {}
+    public function __construct(private RecordResolver $records, private CommandTransaction $transaction) {}
 
     public function linkFrom(Model $source, array $targets): void
     {

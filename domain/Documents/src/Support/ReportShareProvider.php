@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Comments\Contracts\PublicCommentReader;
+use App\Comments\Contracts\PublicCommentResolver;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\ShareBudget;
@@ -26,7 +26,7 @@ final readonly class ReportShareProvider implements ShareRecordProvider
 
     private const array CARD_COLUMNS = ['id', 'number', 'title', 'filed_at'];
 
-    public function __construct(private PublicCommentReader $comments) {}
+    public function __construct(private PublicCommentResolver $comments) {}
 
     public function mayDisclose(RecordIdentity $record): bool
     {

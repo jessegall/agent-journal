@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Agents\Commands\CreateAgent;
-use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\AgentResolver;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Models\Agent;
@@ -37,12 +37,12 @@ final class AgentCreationTest extends TestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $reader = $bus->run(new CreateAgent('Researcher', AgentRole::ReadOnlyHelper));
+        $resolver = $bus->run(new CreateAgent('Researcher', AgentRole::ReadOnlyHelper));
         $writer = $bus->run(new CreateAgent('Builder', AgentRole::WritingHelper));
-        $labels = $this->app->make(AgentReader::class)->labelsFor([$reader, $writer]);
+        $labels = $this->app->make(AgentResolver::class)->labelsFor([$resolver, $writer]);
 
-        $this->assertSame(['Researcher', 'Builder'], [$labels[$reader]->name, $labels[$writer]->name]);
-        $this->assertSame([AgentRole::ReadOnlyHelper->value, AgentRole::WritingHelper->value], [Agent::query()->findOrFail($reader)->role, Agent::query()->findOrFail($writer)->role]);
+        $this->assertSame(['Researcher', 'Builder'], [$labels[$resolver]->name, $labels[$writer]->name]);
+        $this->assertSame([AgentRole::ReadOnlyHelper->value, AgentRole::WritingHelper->value], [Agent::query()->findOrFail($resolver)->role, Agent::query()->findOrFail($writer)->role]);
     }
 
     public function test_a_blank_name_is_refused(): void

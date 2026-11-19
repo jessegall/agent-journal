@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
-use App\Agents\Contracts\SessionReader;
+use App\Agents\Contracts\SessionResolver;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\MessageBodyEmpty;
@@ -20,7 +20,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class SendMessageHandler implements CommandHandler
 {
     public function __construct(
-        private SessionReader $sessions,
+        private SessionResolver $sessions,
         private UserStack $stacks,
         private Dispatcher $events,
     ) {}

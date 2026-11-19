@@ -56,17 +56,17 @@ use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\SystemNote;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
-use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
+use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\Models\NotePage;
 use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
-use Tests\Fixtures\Modules\Notes\Readers\CollectionChildren;
-use Tests\Fixtures\Modules\Notes\Readers\CollectionWindowReader;
-use Tests\Fixtures\Modules\Notes\Readers\NoteSectionReader;
-use Tests\Fixtures\Modules\Notes\Readers\NotesWindowReader;
+use Tests\Fixtures\Modules\Notes\Resolvers\CollectionChildren;
+use Tests\Fixtures\Modules\Notes\Resolvers\CollectionWindowResolver;
+use Tests\Fixtures\Modules\Notes\Resolvers\NoteSectionResolver;
+use Tests\Fixtures\Modules\Notes\Resolvers\NotesWindowResolver;
 use Tests\Fixtures\Modules\Notes\Skills\HasNotesCondition;
 use Tests\Fixtures\Modules\Notes\Skills\HasNotesParameters;
 use Tests\Fixtures\Modules\Notes\Skills\NotesSkill;
@@ -92,7 +92,7 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function exports(): Exports
     {
         return Exports::make()
-            ->contracts(NoteReader::class)
+            ->contracts(NoteResolver::class)
             ->values(NoteValue::class)
             ->commands(WriteNote::class)
             ->build();
@@ -121,8 +121,8 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function pages(): array
     {
         return [
-            Page::make('index', 'Notes', Icon::Docs, NotesWindowReader::class, 'Index.vue')->at(''),
-            Page::make('collection', 'Collection', Icon::Docs, CollectionWindowReader::class, 'Collection.vue')
+            Page::make('index', 'Notes', Icon::Docs, NotesWindowResolver::class, 'Index.vue')->at(''),
+            Page::make('collection', 'Collection', Icon::Docs, CollectionWindowResolver::class, 'Collection.vue')
                 ->at('collections/{collection}')
                 ->slots(Slot::record('note', 'collection')),
         ];
@@ -132,14 +132,14 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
     {
         return [
             NavigationItem::page('index', 'Notes', Icon::Docs, position: 50)->children([
-                NavigationItem::heading('collections', 'Collections', childrenReader: CollectionChildren::class),
+                NavigationItem::heading('collections', 'Collections', childrenResolver: CollectionChildren::class),
             ]),
         ];
     }
 
     public function sections(): array
     {
-        return [Section::make('count', 'Notes', 'chat.dock', SlotContextType::Session, NoteSectionReader::class, 'NoteSection.vue')];
+        return [Section::make('count', 'Notes', 'chat.dock', SlotContextType::Session, NoteSectionResolver::class, 'NoteSection.vue')];
     }
 
     public function commands(): array

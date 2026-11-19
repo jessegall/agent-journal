@@ -9,8 +9,8 @@ use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
-use Domain\Documents\Contracts\DocumentReader;
-use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Tests\TestCase;
@@ -52,8 +52,8 @@ final class LibraryReadCostTest extends TestCase
 
     public function test_a_page_runs_the_same_number_of_queries_whatever_its_size(): void
     {
-        $documents = $this->app->make(DocumentReader::class);
-        $reports = $this->app->make(ReportReader::class);
+        $documents = $this->app->make(DocumentResolver::class);
+        $reports = $this->app->make(ReportResolver::class);
 
         foreach ([
             'document list' => fn (int $size) => $documents->list(new DocumentFilters(perPage: $size)),
@@ -66,7 +66,7 @@ final class LibraryReadCostTest extends TestCase
 
     public function test_a_list_page_reads_one_row_past_its_size_and_no_body(): void
     {
-        $documents = $this->app->make(DocumentReader::class);
+        $documents = $this->app->make(DocumentResolver::class);
         $queries = $this->queriesOf(fn () => $documents->list(new DocumentFilters(perPage: 5)));
 
         $this->assertNotEmpty($queries);

@@ -24,7 +24,7 @@ use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayOperation;
-use App\Sharing\Support\ProposalStatusReader;
+use App\Sharing\Support\ProposalStatusResolver;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareDuration;
 use App\Sharing\Support\ShareProposalStatus;
@@ -134,7 +134,7 @@ final class ShareProposalTest extends TestCase
         $this->assertTrue(ShareAudit::query()->readAll('two audits')->get()->contains(fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved));
 
         $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
-        $this->assertEquals([new ShareProposalStatus($granted->number, ShareState::Pending)], $this->app->make(ProposalStatusReader::class)->ownProposals());
+        $this->assertEquals([new ShareProposalStatus($granted->number, ShareState::Pending)], $this->app->make(ProposalStatusResolver::class)->ownProposals());
     }
 
     public function test_an_agent_never_sees_another_agents_proposal(): void
@@ -144,7 +144,7 @@ final class ShareProposalTest extends TestCase
 
         $this->startRequestAs($other->agent->id, $other->session->id);
 
-        $this->assertSame([], $this->app->make(ProposalStatusReader::class)->ownProposals());
+        $this->assertSame([], $this->app->make(ProposalStatusResolver::class)->ownProposals());
     }
 
     public function test_the_hundred_and_first_proposal_is_refused_and_an_expired_one_frees_a_slot(): void

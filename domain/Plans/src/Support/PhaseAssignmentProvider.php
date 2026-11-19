@@ -11,7 +11,7 @@ use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
-use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
@@ -23,7 +23,7 @@ final readonly class PhaseAssignmentProvider implements AssignableProvider
 {
     public function __construct(
         private CurrentActor $actors,
-        private TaskAssignmentReader $tasks,
+        private TaskAssignmentResolver $tasks,
     ) {}
 
     public function requireAssignable(RecordIdentity $record): Assignable

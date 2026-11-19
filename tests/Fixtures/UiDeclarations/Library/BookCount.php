@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
-use App\Ui\Contracts\CountReader;
+use App\Ui\Contracts\CountResolver;
 
-final class BookCount implements CountReader
+final class BookCount implements CountResolver
 {
     public function count(): int
     {

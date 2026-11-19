@@ -31,11 +31,11 @@ final readonly class PagePropTypes
         $inspectors = $this->resultOf(array_values(array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Inspector)));
 
         foreach ($this->declarations->pages() as $page) {
-            $members = ['page: WindowResult<'.$this->dataName($page->reader->dataClass).'>'];
+            $members = ['page: WindowResult<'.$this->dataName($page->resolver->dataClass).'>'];
 
             foreach ($this->declarations->sections() as $section) {
                 if ($section->host->key === $page->key) {
-                    $members[] = "{$section->propName}?: WindowResult<".$this->dataName($section->reader->dataClass).'> | null';
+                    $members[] = "{$section->propName}?: WindowResult<".$this->dataName($section->resolver->dataClass).'> | null';
                 }
             }
 
@@ -57,7 +57,7 @@ final readonly class PagePropTypes
     public function windowProps(): array
     {
         return array_values(array_map(
-            fn (RegisteredPage $page) => "{$page->propName}?: WindowResult<".$this->dataName($page->reader->dataClass).'>',
+            fn (RegisteredPage $page) => "{$page->propName}?: WindowResult<".$this->dataName($page->resolver->dataClass).'>',
             array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->opensIn === PageDestination::Page),
         ));
     }
@@ -72,7 +72,7 @@ final readonly class PagePropTypes
         $imports = [];
 
         foreach ([...$this->declarations->pages(), ...$this->declarations->sections()] as $declaration) {
-            $imports[$this->owners->ownerOf($declaration->reader->dataClass)][] = $this->dataName($declaration->reader->dataClass);
+            $imports[$this->owners->ownerOf($declaration->resolver->dataClass)][] = $this->dataName($declaration->resolver->dataClass);
         }
 
         ksort($imports);
@@ -85,7 +85,7 @@ final readonly class PagePropTypes
      */
     public function dataTypeOf(RegisteredPage $page): string
     {
-        return $this->dataName($page->reader->dataClass);
+        return $this->dataName($page->resolver->dataClass);
     }
 
     public function typeName(RegisteredPage $page): string
@@ -106,7 +106,7 @@ final readonly class PagePropTypes
      */
     private function resultOf(array $pages): string|null
     {
-        $names = array_values(array_unique(array_map(fn (RegisteredPage $page) => $this->dataName($page->reader->dataClass), $pages)));
+        $names = array_values(array_unique(array_map(fn (RegisteredPage $page) => $this->dataName($page->resolver->dataClass), $pages)));
 
         return $names === [] ? null : implode(' | ', $names);
     }

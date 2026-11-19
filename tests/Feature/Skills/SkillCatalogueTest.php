@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Domains\Support\DomainRegistry;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Contracts\SkillSource;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
-use App\Skills\Readers\SkillCatalogue;
+use App\Skills\Resolvers\SkillCatalogue;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\CoreSkills;
@@ -71,12 +71,12 @@ final class SkillCatalogueTest extends TestCase
 
     public function test_each_request_scope_builds_its_own_catalogue(): void
     {
-        $first = $this->app->make(SkillReader::class);
-        $this->assertSame($first, $this->app->make(SkillReader::class));
+        $first = $this->app->make(SkillResolver::class);
+        $this->assertSame($first, $this->app->make(SkillResolver::class));
 
         $this->app->forgetScopedInstances();
 
-        $this->assertNotSame($first, $this->app->make(SkillReader::class));
+        $this->assertNotSame($first, $this->app->make(SkillResolver::class));
     }
 
     /**

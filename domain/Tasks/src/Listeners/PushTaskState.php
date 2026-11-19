@@ -7,7 +7,7 @@ namespace Domain\Tasks\Listeners;
 use App\Contracts\Listener;
 use App\Hooks\Contracts\AgentStack;
 use Domain\Tasks\Events\TaskStarted;
-use Domain\Tasks\Readers\Support\TaskRecords;
+use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
 /**

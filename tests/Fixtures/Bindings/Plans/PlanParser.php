@@ -5,6 +5,6 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Bindings\Plans;
 
 use App\Processes\Contracts\ShellCommandParser;
-use Tests\Fixtures\Bindings\Tasks\Contracts\TaskReader;
+use Tests\Fixtures\Bindings\Tasks\Contracts\TaskResolver;
 
-abstract class PlanParser implements ShellCommandParser, TaskReader {}
+abstract class PlanParser implements ShellCommandParser, TaskResolver {}

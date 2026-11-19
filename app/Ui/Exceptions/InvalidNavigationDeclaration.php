@@ -11,7 +11,7 @@ final class InvalidNavigationDeclaration extends UiDeclarationError
 {
     public static function nothingToOpen(string $item): self
     {
-        return new self("Navigation item {$item} needs a page, child items or a children reader.");
+        return new self("Navigation item {$item} needs a page, child items or a children resolver.");
     }
 
     public static function valuesNotStrings(string $item, string $values): self

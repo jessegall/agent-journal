@@ -22,7 +22,7 @@ use App\Communication\Events\MessageDismissed;
 use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Models\Message;
-use App\Communication\Readers\MessageRecords;
+use App\Communication\Resolvers\MessageRecords;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use Illuminate\Support\Facades\Event;

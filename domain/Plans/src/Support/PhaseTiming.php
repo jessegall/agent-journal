@@ -7,13 +7,13 @@ namespace Domain\Plans\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentReader;
+use App\Assignments\Contracts\AssignmentResolver;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Contracts\TaskReader;
+use Domain\Tasks\Contracts\TaskResolver;
 
 /**
  * Holds an agent's tests and checks while the current phase of a started plan it holds still has open or started
@@ -23,8 +23,8 @@ final readonly class PhaseTiming implements VerificationTiming
 {
     public function __construct(
         private CurrentActor $actors,
-        private AssignmentReader $assignments,
-        private TaskReader $tasks,
+        private AssignmentResolver $assignments,
+        private TaskResolver $tasks,
     ) {}
 
     public function forCaller(): TimingVerdict

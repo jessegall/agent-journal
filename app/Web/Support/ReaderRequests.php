@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
-use App\Ui\Contracts\PageReader;
-use App\Ui\Contracts\SectionReader;
-use App\Ui\Declarations\ReaderDefinition;
-use App\Ui\Exceptions\UiReaderInvalid;
+use App\Ui\Contracts\PageResolver;
+use App\Ui\Contracts\SectionResolver;
+use App\Ui\Declarations\ResolverDefinition;
+use App\Ui\Exceptions\UiResolverInvalid;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -31,34 +31,34 @@ final readonly class ReaderRequests
     /**
      * @param  array<string, mixed>  $query
      */
-    public function pageReader(string $key, ReaderDefinition $reader, Request $current, array $query, Route|null $route = null): PageReader
+    public function pageReader(string $key, ResolverDefinition $resolver, Request $current, array $query, Route|null $route = null): PageResolver
     {
-        $built = $this->build($reader, $current, $query, $route);
+        $built = $this->build($resolver, $current, $query, $route);
 
-        return $built instanceof PageReader ? $built : throw UiReaderInvalid::notA($key, $reader->reader, PageReader::class);
+        return $built instanceof PageResolver ? $built : throw UiResolverInvalid::notA($key, $resolver->resolver, PageResolver::class);
     }
 
     /**
      * A section reads the page's plain query.
      */
-    public function sectionReader(string $key, ReaderDefinition $reader, Request $current): SectionReader
+    public function sectionReader(string $key, ResolverDefinition $resolver, Request $current): SectionResolver
     {
-        $built = $this->build($reader, $current, $current->query->all(), null);
+        $built = $this->build($resolver, $current, $current->query->all(), null);
 
-        return $built instanceof SectionReader ? $built : throw UiReaderInvalid::notA($key, $reader->reader, SectionReader::class);
+        return $built instanceof SectionResolver ? $built : throw UiResolverInvalid::notA($key, $resolver->resolver, SectionResolver::class);
     }
 
     /**
      * @param  array<string, mixed>  $query
      * @param  Route|null  $route  the route the reader reads its parameters from, when not the current one
      */
-    private function build(ReaderDefinition $reader, Request $current, array $query, Route|null $route): object
+    private function build(ResolverDefinition $resolver, Request $current, array $query, Route|null $route): object
     {
-        if ($reader->request === null) {
-            return $this->container->make($reader->reader);
+        if ($resolver->request === null) {
+            return $this->container->make($resolver->resolver);
         }
 
-        $request = $reader->request::createFrom($current, new $reader->request());
+        $request = $resolver->request::createFrom($current, new $resolver->request());
         $request->query->replace($query);
 
         if ($route !== null) {
@@ -68,7 +68,7 @@ final readonly class ReaderRequests
         $request->setContainer($this->container)->setRedirector($this->redirector);
         $request->validateResolved();
 
-        return $this->container->makeWith($reader->reader, [$this->parameterFor($reader->reader, $request) => $request]);
+        return $this->container->makeWith($resolver->resolver, [$this->parameterFor($resolver->resolver, $request) => $request]);
     }
 
     /**

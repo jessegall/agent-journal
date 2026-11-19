@@ -14,7 +14,7 @@ use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\SettingCommands;
-use App\Settings\Contracts\SettingsReader;
+use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Enums\SettingsOutcome;
 use App\Settings\Enums\SettingTarget;
 use App\Settings\Events\SettingsChanged;
@@ -281,7 +281,7 @@ final class SettingsCommandsTest extends TestCase
     private function reviewGroup(): EnabledSettingsGroup
     {
         $this->app->forgetScopedInstances();
-        $group = $this->app->make(SettingsReader::class)->group($this->reviews->review);
+        $group = $this->app->make(SettingsResolver::class)->group($this->reviews->review);
         $this->assertInstanceOf(EnabledSettingsGroup::class, $group);
 
         return $group;

@@ -6,7 +6,7 @@ namespace App\Http\Middleware\Web;
 
 use App\Actors\Support\ActorContext;
 use App\Sharing\Contracts\SharePolicy;
-use App\Web\Contracts\CurrentUserReader;
+use App\Web\Contracts\CurrentUserResolver;
 use App\Web\Data\CurrentUserData;
 use App\Web\Data\SharedData;
 use App\Web\Support\NavigationRecords;
@@ -31,7 +31,7 @@ class HandleInertiaRequests extends Middleware
 
     public function __construct(
         #[Config('app.name')] private readonly string $appName,
-        private readonly CurrentUserReader $users,
+        private readonly CurrentUserResolver $users,
         private readonly NavigationRecords $navigation,
         private readonly ResponseFactory $inertia,
         private readonly SharePolicy $sharing,

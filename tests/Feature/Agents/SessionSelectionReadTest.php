@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
-use App\Agents\Contracts\SessionReader;
+use App\Agents\Contracts\SessionResolver;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
@@ -46,7 +46,7 @@ final class SessionSelectionReadTest extends TestCase
 
     public function test_the_session_list_shows_the_requested_default_and_the_resolved_model(): void
     {
-        $option = $this->app->make(SessionReader::class)->active()[0];
+        $option = $this->app->make(SessionResolver::class)->active()[0];
 
         $this->assertSame([HookProgram::ClaudeCode, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null], [$option->selection->program, $option->selection->model, $option->selection->requested->type, $option->selection->requested->model]);
         $this->assertSame([ProgramSourceType::Profile, 'journal-researcher', 4], [$option->selection->source->programSource, $option->selection->source->profileKey, $option->selection->source->profileRevision]);
@@ -61,7 +61,7 @@ final class SessionSelectionReadTest extends TestCase
         $visits->entered($this->session->id, 'native-b', 'call-2', CarbonImmutable::now());
         $visits->entered($this->session->id, 'native-a', 'call-3', CarbonImmutable::now());
 
-        $option = $this->app->make(SessionReader::class)->active()[0];
+        $option = $this->app->make(SessionResolver::class)->active()[0];
 
         $this->assertSame(['native-a', 3], [$option->conversationNativeId, $option->visitCount]);
     }

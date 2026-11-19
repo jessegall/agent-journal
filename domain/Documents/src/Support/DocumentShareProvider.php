@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use App\Comments\Contracts\PublicCommentReader;
+use App\Comments\Contracts\PublicCommentResolver;
 use App\Reads\Support\ReadBuilder;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
@@ -27,7 +27,7 @@ final readonly class DocumentShareProvider implements ShareRecordProvider
 {
     use SharesPublishedRecords;
 
-    public function __construct(private PublicCommentReader $comments) {}
+    public function __construct(private PublicCommentResolver $comments) {}
 
     public function mayDisclose(RecordIdentity $record): bool
     {

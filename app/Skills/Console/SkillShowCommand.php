@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Console;
 
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyInvalid;
@@ -26,7 +26,7 @@ final class SkillShowCommand extends Command
     public function handle(Container $container): int
     {
         try {
-            $skill = $container->make(SkillReader::class)->find(SkillKey::from((string) $this->argument('key')));
+            $skill = $container->make(SkillResolver::class)->find(SkillKey::from((string) $this->argument('key')));
         } catch (SkillKeyInvalid|SkillMissing|SkillSourceInvalid|SkillConflict|SkillDeclarationInvalid $failure) {
             $this->error($failure->getMessage());
 

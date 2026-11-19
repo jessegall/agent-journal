@@ -6,14 +6,14 @@ namespace App\Http\Controllers\Comments;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Comments\PostCommentRequest;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 final readonly class PostCommentController
 {
-    public function __invoke(PostCommentRequest $request, CommandBus $commands, RecordReader $records, Redirector $redirect): JsonResponse|RedirectResponse
+    public function __invoke(PostCommentRequest $request, CommandBus $commands, RecordResolver $records, Redirector $redirect): JsonResponse|RedirectResponse
     {
         $commentId = $commands->run($request->command($records));
 

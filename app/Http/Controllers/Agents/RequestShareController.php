@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Agents;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Sharing\ShareProposalStatusData;
 use App\Http\Requests\Agents\RequestShareRequest;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Sharing\Commands\RequestShare;
 use Illuminate\Http\JsonResponse;
 
@@ -16,7 +16,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class RequestShareController
 {
-    public function __invoke(RequestShareRequest $request, RecordReader $records, CommandBus $commands): JsonResponse
+    public function __invoke(RequestShareRequest $request, RecordResolver $records, CommandBus $commands): JsonResponse
     {
         $root = $records->identify($request->reference());
 

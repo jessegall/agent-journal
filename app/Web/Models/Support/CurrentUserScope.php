@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Models\Support;
 
-use App\Web\Contracts\CurrentUserReader;
+use App\Web\Contracts\CurrentUserResolver;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Scope;
 final readonly class CurrentUserScope implements Scope
 {
     /**
-     * @param  Closure(): CurrentUserReader  $users
+     * @param  Closure(): CurrentUserResolver  $users
      */
     public function __construct(private Closure $users) {}
 

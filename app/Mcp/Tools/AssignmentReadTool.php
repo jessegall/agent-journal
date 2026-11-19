@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Support\AssignmentData;
 use App\Assignments\Support\AssignmentHolder;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -25,8 +25,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 final class AssignmentReadTool extends JournalReadTool
 {
     public function __construct(
-        private readonly AssigneeReader $assignees,
-        private readonly RecordReader $records,
+        private readonly AssigneeResolver $assignees,
+        private readonly RecordResolver $records,
     ) {}
 
     public function schema(JsonSchema $schema): array

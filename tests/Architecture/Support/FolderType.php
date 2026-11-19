@@ -19,7 +19,7 @@ use Throwable;
 enum FolderType: string
 {
     case States = 'States';
-    case Readers = 'Readers';
+    case Resolvers = 'Resolvers';
     case Actions = 'Actions';
     case Enums = 'Enums';
     case Models = 'Models';
@@ -45,7 +45,7 @@ enum FolderType: string
     {
         $fits = match ($this) {
             self::States => $class->getName() === AgentState::class || $class->isSubclassOf(AgentState::class),
-            self::Readers => ! $class->isInterface() && array_any($class->getInterfaceNames(), fn (string $name) => str_contains($name, '\\Contracts\\')),
+            self::Resolvers => ! $class->isInterface() && array_any($class->getInterfaceNames(), fn (string $name) => str_contains($name, '\\Contracts\\')),
             self::Actions => $class->isFinal() && ! $class->isEnum() && ! $class->isSubclassOf(Throwable::class) && ! $class->isSubclassOf(Model::class),
             self::Enums => $class->isEnum(),
             self::Models => $class->isSubclassOf(Model::class),
@@ -65,7 +65,7 @@ enum FolderType: string
     {
         return match ($this) {
             self::States => 'a state (it extends AgentState)',
-            self::Readers => 'a reader (it implements a contract)',
+            self::Resolvers => 'a resolver (it implements a contract)',
             self::Actions => 'an action (a final class that is no enum, exception or model)',
             self::Enums => 'an enum',
             self::Models => 'a model (it extends Eloquent Model)',

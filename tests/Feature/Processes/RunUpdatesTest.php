@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Processes\Events\RunChanged;
-use App\Processes\Readers\Support\RunSnapshotReader;
+use App\Processes\Resolvers\Support\RunSnapshotResolver;
 use App\Processes\Support\RunUpdates;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -58,7 +58,7 @@ final class RunUpdatesTest extends TestCase
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
         $this->app->make(RunUpdates::class)->settled($part);
 
-        $snapshot = $this->app->make(RunSnapshotReader::class)->snapshot($part->process_run_id);
+        $snapshot = $this->app->make(RunSnapshotResolver::class)->snapshot($part->process_run_id);
 
         $this->assertSame($part->id, $snapshot->parts[0]->id);
         $this->assertSame('ended', $snapshot->parts[0]->lifecycle);
@@ -66,7 +66,7 @@ final class RunUpdatesTest extends TestCase
 
         config(['processes.project_key' => 'another-project']);
         $this->assertThrows(
-            fn () => $this->app->make(RunSnapshotReader::class)->snapshot($part->process_run_id),
+            fn () => $this->app->make(RunSnapshotResolver::class)->snapshot($part->process_run_id),
             NotFoundHttpException::class,
         );
     }

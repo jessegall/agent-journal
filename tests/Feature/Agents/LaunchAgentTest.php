@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\RetireAgent;
-use App\Agents\Contracts\LaunchMaterialReader;
+use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchDisposition;
@@ -90,7 +90,7 @@ final class LaunchAgentTest extends TestCase
         $request = $this->request();
 
         $receipt = $this->launch($request);
-        $material = $this->app->make(LaunchMaterialReader::class)->material($request->requestId);
+        $material = $this->app->make(LaunchMaterialResolver::class)->material($request->requestId);
 
         $this->assertSame($receipt->sessionId, $material->sessionId);
         $this->assertStringNotContainsString($material->token, serialize($receipt));

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Ui\Contracts\CountReader;
+use App\Ui\Contracts\CountResolver;
 
-final readonly class CountedShelves implements CountReader
+final readonly class CountedShelves implements CountResolver
 {
     public function __construct(private ReaderCalls $calls) {}
 

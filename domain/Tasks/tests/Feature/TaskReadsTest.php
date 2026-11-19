@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
 use Domain\Tasks\Contracts\TaskProgressCounter;
-use Domain\Tasks\Contracts\TaskReader;
+use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
@@ -28,10 +28,10 @@ final class TaskReadsTest extends TestCase
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Test the walk']);
 
-        $this->app->make(TaskReader::class)->requireAllVisible([$first->id, $second->id, $first->id]);
+        $this->app->make(TaskResolver::class)->requireAllVisible([$first->id, $second->id, $first->id]);
 
         $this->expectExceptionObject(TaskMissing::forId(TestIds::of(999999)));
-        $this->app->make(TaskReader::class)->requireAllVisible([$first->id, TestIds::of(999999)]);
+        $this->app->make(TaskResolver::class)->requireAllVisible([$first->id, TestIds::of(999999)]);
     }
 
     public function test_progress_counts_finished_tasks_and_leaves_out_missing_ids(): void

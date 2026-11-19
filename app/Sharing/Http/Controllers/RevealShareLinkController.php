@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Http\Data\Sharing\ShareLinkData;
 use App\Http\Requests\Sharing\ShareRequest;
 use App\Sharing\Exceptions\ShareLinkRefused;
-use App\Sharing\Support\ShareLinkReader;
+use App\Sharing\Support\ShareLinkResolver;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -16,7 +16,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class RevealShareLinkController
 {
-    public function __invoke(ShareRequest $request, CurrentActor $actors, ShareLinkReader $links): JsonResponse
+    public function __invoke(ShareRequest $request, CurrentActor $actors, ShareLinkResolver $links): JsonResponse
     {
         $url = $links->linkFor($actors->actor(), $request->shareId())->getOrThrow(ShareLinkRefused::unknown());
 

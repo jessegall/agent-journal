@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Profiles;
 
 use App\CoreApi;
-use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
@@ -23,7 +23,7 @@ final class ProfilesExportsTest extends TestCase
     {
         $exports = CoreApi::exports();
 
-        $this->assertContains(ProfileReader::class, $exports->contracts);
+        $this->assertContains(ProfileResolver::class, $exports->contracts);
         $this->assertContains(ProfileKey::class, $exports->values);
         $this->assertContains(ProfileType::class, $exports->values);
         $this->assertContains(ProfileSnapshot::class, $exports->values);

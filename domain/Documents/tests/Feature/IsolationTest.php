@@ -11,7 +11,7 @@ use App\Text\Exceptions\ContentMissing;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Contracts\DraftReader;
+use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
@@ -39,12 +39,12 @@ final class IsolationTest extends TestCase
         $this->actAsUser(1);
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Private draft text\n"));
         $this->bus()->run(new OpenDocument(1));
-        $this->assertSame(EditingState::Yours, $this->app->make(DraftReader::class)->stateOf(1)->state);
+        $this->assertSame(EditingState::Yours, $this->app->make(DraftResolver::class)->stateOf(1)->state);
 
         $this->app->forgetScopedInstances();
         $this->actAsUser(2);
 
-        $state = $this->app->make(DraftReader::class)->stateOf(1);
+        $state = $this->app->make(DraftResolver::class)->stateOf(1);
         $this->assertSame(EditingState::Held, $state->state);
         $this->assertNotSame(TestIds::of(2), Document::query()->sole()->creator_id);
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Support;
 
-use App\Ui\Contracts\CountReader;
+use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Declarations\RegisteredNavigation;
 use App\Ui\Exceptions\UiKeyRepeated;
@@ -116,13 +116,13 @@ final readonly class NavigationRecords
      */
     private function childrenOf(RegisteredNavigation $item): array
     {
-        if ($item->item->childrenReader === null) {
+        if ($item->item->childrenResolver === null) {
             return $item->children;
         }
 
-        $reader = $this->container->make($item->item->childrenReader);
+        $resolver = $this->container->make($item->item->childrenResolver);
 
-        return [...$item->children, ...($reader instanceof NavigationChildren ? $this->declarations->childrenOf($item, $reader->children()) : [])];
+        return [...$item->children, ...($resolver instanceof NavigationChildren ? $this->declarations->childrenOf($item, $resolver->children()) : [])];
     }
 
     private function urlOf(RegisteredNavigation $item): string
@@ -241,7 +241,7 @@ final readonly class NavigationRecords
                 continue;
             }
 
-            if ($item->item->count !== null && is_subclass_of($item->item->count, CountReader::class)) {
+            if ($item->item->count !== null && is_subclass_of($item->item->count, CountResolver::class)) {
                 $counted[] = $item;
             }
 

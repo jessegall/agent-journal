@@ -13,7 +13,7 @@ use App\Agents\Enums\LaunchRefusalType;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
-use App\Agents\Readers\RecordedHostCapabilities;
+use App\Agents\Resolvers\RecordedHostCapabilities;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Programs\Enums\HookProgram;
 use Tests\TestCase;

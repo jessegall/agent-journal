@@ -35,7 +35,7 @@ final readonly class SettingsWriter
         private CommandTransaction $transaction,
         private SettingRegistry $registry,
         private SettingCodec $codec,
-        private DatabaseSettingsReader $reader,
+        private DatabaseSettingsResolver $resolver,
         private Dispatcher $events,
     ) {}
 
@@ -171,7 +171,7 @@ final readonly class SettingsWriter
     private function revise(SettingsRecord $record, SettingsDocument $document, SettingTarget $target, string $key): SettingsChange
     {
         $record->revise($document);
-        $this->reader->forget($record->owner);
+        $this->resolver->forget($record->owner);
         $this->events->dispatch(new SettingsChanged($record->owner, $target, $key, $record->revision));
 
         return new SettingsChange($record->owner, $record->revision, SettingsOutcome::Changed);

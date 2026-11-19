@@ -23,7 +23,7 @@ use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ShareExpiry;
-use App\Sharing\Support\ShareLinkReader;
+use App\Sharing\Support\ShareLinkResolver;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -69,7 +69,7 @@ final class ShareEndTest extends TestCase
         $this->assertNotNull($revoked->terminal_at);
         $close = ShareGatewayOperation::query()->readAll('one close')->sole();
         $this->assertSame([GatewayOperationType::Close, null], [$close->type, $close->run_id]);
-        $this->assertTrue($this->app->make(ShareLinkReader::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->isEmpty());
+        $this->assertTrue($this->app->make(ShareLinkResolver::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->isEmpty());
         $this->assertSame([ShareAuditType::Revoked], $this->auditTypes());
     }
 

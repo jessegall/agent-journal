@@ -29,8 +29,8 @@ use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Commands\DenyRule;
 use Domain\Rules\Commands\ProposeRule;
 use Domain\Rules\Commands\RemoveRule;
-use Domain\Rules\Contracts\RuleDetailsReader;
-use Domain\Rules\Contracts\RuleReader;
+use Domain\Rules\Contracts\RuleDetailsResolver;
+use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
@@ -38,7 +38,7 @@ use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Mcp\ActiveRulesOverview;
 use Domain\Rules\Models\Rule;
-use Domain\Rules\Readers\RulesWindowReader;
+use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Skills\RulesSkill;
 
 final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSkills
@@ -62,7 +62,7 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpT
     {
         return Exports::make()
             ->events(RuleApproved::class, RuleDenied::class, RuleRemoved::class)
-            ->contracts(RuleReader::class, RuleDetailsReader::class)
+            ->contracts(RuleResolver::class, RuleDetailsResolver::class)
             ->values(
                 RuleFilters::class,
                 RuleDetails::class,
@@ -86,7 +86,7 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpT
     public function pages(): array
     {
         return [
-            Page::make('list', 'Rules', Icon::Rules, RulesWindowReader::class, 'RulesWindow.vue')
+            Page::make('list', 'Rules', Icon::Rules, RulesWindowResolver::class, 'RulesWindow.vue')
                 ->at('')
                 ->onHome(30)
                 ->actions(

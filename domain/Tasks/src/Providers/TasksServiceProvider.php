@@ -6,15 +6,15 @@ namespace Domain\Tasks\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Tasks\Console\AssignedTasksCommand;
-use Domain\Tasks\Contracts\AssignedTaskReader;
-use Domain\Tasks\Contracts\TaskAssignmentReader;
-use Domain\Tasks\Contracts\TaskDetailsReader;
-use Domain\Tasks\Contracts\TaskListReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
+use Domain\Tasks\Contracts\TaskAssignmentResolver;
+use Domain\Tasks\Contracts\TaskDetailsResolver;
+use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Readers\AssignedTasks;
-use Domain\Tasks\Readers\ListedTasks;
-use Domain\Tasks\Readers\TaskAssignmentRecords;
-use Domain\Tasks\Readers\TaskDetailRecords;
+use Domain\Tasks\Resolvers\AssignedTasks;
+use Domain\Tasks\Resolvers\ListedTasks;
+use Domain\Tasks\Resolvers\TaskAssignmentRecords;
+use Domain\Tasks\Resolvers\TaskDetailRecords;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -25,10 +25,10 @@ final class TasksServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(TaskAssignmentReader::class, TaskAssignmentRecords::class);
-        $this->app->scoped(AssignedTaskReader::class, AssignedTasks::class);
-        $this->app->scoped(TaskListReader::class, ListedTasks::class);
-        $this->app->scoped(TaskDetailsReader::class, TaskDetailRecords::class);
+        $this->app->scoped(TaskAssignmentResolver::class, TaskAssignmentRecords::class);
+        $this->app->scoped(AssignedTaskResolver::class, AssignedTasks::class);
+        $this->app->scoped(TaskListResolver::class, ListedTasks::class);
+        $this->app->scoped(TaskDetailsResolver::class, TaskDetailRecords::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

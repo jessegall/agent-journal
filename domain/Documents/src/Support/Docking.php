@@ -7,7 +7,7 @@ namespace Domain\Documents\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Contracts\SessionReader;
+use App\Agents\Contracts\SessionResolver;
 use App\Agents\Support\SessionOption;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\Events\RecordDockChanged;
@@ -23,7 +23,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class Docking
 {
-    public function __construct(private SessionReader $sessions, private CurrentActor $actors, private CurrentSession $session, private Dispatcher $events) {}
+    public function __construct(private SessionResolver $sessions, private CurrentActor $actors, private CurrentSession $session, private Dispatcher $events) {}
 
     public function dockDocument(int $number, string $sessionId): void
     {

@@ -10,10 +10,10 @@ use App\Processes\Http\Controllers\ApproveSamplePageController;
 use App\Processes\Http\Controllers\CleanRunPageController;
 use App\Processes\Http\Controllers\RejectProposalPageController;
 use App\Processes\Http\Controllers\StopRunPageController;
-use App\Processes\Readers\RequestListReader;
-use App\Processes\Readers\RequestWindowReader;
-use App\Processes\Readers\RunsWindowReader;
-use App\Processes\Readers\RunWindowReader;
+use App\Processes\Resolvers\RequestListResolver;
+use App\Processes\Resolvers\RequestWindowResolver;
+use App\Processes\Resolvers\RunsWindowResolver;
+use App\Processes\Resolvers\RunWindowResolver;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
@@ -46,7 +46,7 @@ final class ProcessPages implements ProvidesPages
 
     private function listPage(): Page
     {
-        return Page::make('command-requests', 'Command review', Icon::Rules, RequestListReader::class, self::LIST_VIEW)
+        return Page::make('command-requests', 'Command review', Icon::Rules, RequestListResolver::class, self::LIST_VIEW)
             ->at('')
             ->actions(ActionRoute::post('bundles/approval', ApproveBundlePageController::class, 'approve-rule-bundle'));
     }
@@ -69,19 +69,19 @@ final class ProcessPages implements ProvidesPages
             'reject-proposal',
         );
 
-        return Page::make('command-request', 'Command request', Icon::Rules, RequestWindowReader::class, self::WINDOW)
+        return Page::make('command-request', 'Command request', Icon::Rules, RequestWindowResolver::class, self::WINDOW)
             ->at('requests/{request}')
             ->actions($sample, $approve, $reject);
     }
 
     private function runsPage(): Page
     {
-        return Page::make('runs', 'Runs', Icon::Rules, RunsWindowReader::class, 'RunsWindow.vue')->at('runs');
+        return Page::make('runs', 'Runs', Icon::Rules, RunsWindowResolver::class, 'RunsWindow.vue')->at('runs');
     }
 
     private function runPage(): Page
     {
-        return Page::make('run', 'Run', Icon::Rules, RunWindowReader::class, 'RunView.vue')
+        return Page::make('run', 'Run', Icon::Rules, RunWindowResolver::class, 'RunView.vue')
             ->at('runs/{run}')
             ->actions(
                 ActionRoute::post('runs/{run}/stop', StopRunPageController::class, 'stop-run'),

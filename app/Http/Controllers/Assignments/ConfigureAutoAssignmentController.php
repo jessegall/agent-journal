@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Assignments;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Data\Assignments\AutoAssignmentChangeData;
 use App\Http\Requests\Assignments\ChangeAutoAssignmentRequest;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ConfigureAutoAssignmentController
 {
     public function __invoke(
         ChangeAutoAssignmentRequest $request,
-        RecordReader $records,
+        RecordResolver $records,
         CommandBus $commands,
     ): JsonResponse {
         return new JsonResponse(AutoAssignmentChangeData::of($commands->run($request->configureCommand($records))));

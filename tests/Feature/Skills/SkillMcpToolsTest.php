@@ -10,7 +10,7 @@ use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\ReviseSkill;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
@@ -49,7 +49,7 @@ final class SkillMcpToolsTest extends TestCase
         $shown = $this->callMcpTool($this->caller, 'skills_show', ['key' => 'journal-skills'])->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
         $this->assertContains('journal-skills', array_column($listed, 'key'));
-        $this->assertSame($this->app->make(SkillReader::class)->find(SkillKey::from('journal-skills'))->rendered->markdown, $shown['markdown']);
+        $this->assertSame($this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'))->rendered->markdown, $shown['markdown']);
     }
 
     public function test_an_agent_edit_is_refused_as_the_bus_refuses_an_agent_and_changes_nothing(): void

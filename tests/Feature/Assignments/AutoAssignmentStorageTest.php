@@ -7,7 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Contracts\AutoAssignmentReader;
+use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Assignments\Exceptions\AutoAssignmentMissing;
@@ -76,7 +76,7 @@ final class AutoAssignmentStorageTest extends TestCase
 
     public function test_the_first_enable_creates_revision_one(): void
     {
-        $this->assertTrue($this->reader()->forActor($this->key)->isEmpty());
+        $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
 
         $change = $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable($this->input(self::open(), 2), 0));
 
@@ -130,7 +130,7 @@ final class AutoAssignmentStorageTest extends TestCase
             new AutoAssignmentChange(false, 0),
             $this->write(fn (AutoAssignmentWriter $writer) => $writer->disable($this->key, 0)),
         );
-        $this->assertTrue($this->reader()->forActor($this->key)->isEmpty());
+        $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
         $this->assertThrows(
             fn () => $this->write(
                 fn (AutoAssignmentWriter $writer) => $writer->configure($this->input($plan, 3), 0),
@@ -159,8 +159,8 @@ final class AutoAssignmentStorageTest extends TestCase
         $off = new AutoAssignmentKey(new ActorIdentity(ActorType::Agent, TestIds::of(2)), 'tasks.task');
         $this->write(fn (AutoAssignmentWriter $writer) => $writer->disable($off, 1));
 
-        $first = $this->reader()->enabled(new Page(null, 1));
-        $second = $this->reader()->enabled(new Page($first->nextAfterId, 1));
+        $first = $this->resolver()->enabled(new Page(null, 1));
+        $second = $this->resolver()->enabled(new Page($first->nextAfterId, 1));
 
         $this->assertCount(1, $first->facts);
         $this->assertNotNull($first->nextAfterId);
@@ -170,7 +170,7 @@ final class AutoAssignmentStorageTest extends TestCase
             [TestIds::of(1), TestIds::of(3)],
             self::sorted([$first->facts[0]->key->actor->id, $second->facts[0]->key->actor->id]),
         );
-        $this->assertCount(1, $this->reader()->listFor($off->actor, new Page())->facts);
+        $this->assertCount(1, $this->resolver()->listFor($off->actor, new Page())->facts);
     }
 
     public function test_a_size_outside_one_to_a_hundred_is_refused(): void
@@ -215,14 +215,14 @@ final class AutoAssignmentStorageTest extends TestCase
             ->run(fn () => $work($this->app->make(AutoAssignmentWriter::class)));
     }
 
-    private function reader(): AutoAssignmentReader
+    private function resolver(): AutoAssignmentResolver
     {
-        return $this->app->make(AutoAssignmentReader::class);
+        return $this->app->make(AutoAssignmentResolver::class);
     }
 
     private function fact(): AutoAssignmentFact
     {
-        return $this->reader()->forActor($this->key)->get();
+        return $this->resolver()->forActor($this->key)->get();
     }
 
     /**

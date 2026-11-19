@@ -75,7 +75,7 @@ final readonly class PageProps
      */
     private function pageResult(RegisteredPage $page, DeclaredPageRequest $request, array $query, Route|null $route = null): Data
     {
-        return $this->results->result($page->key, $page->visibilityChecks(), $page->reader, fn (): Data => $this->readers->pageReader($page->key, $page->reader, $request, $query, $route)->read());
+        return $this->results->result($page->key, $page->visibilityChecks(), $page->resolver, fn (): Data => $this->readers->pageReader($page->key, $page->resolver, $request, $query, $route)->read());
     }
 
     /**
@@ -107,7 +107,7 @@ final readonly class PageProps
             return null;
         }
 
-        return $this->results->result($section->key, $section->visibilityChecks(), $section->reader, fn (): Data => $this->readers->sectionReader($section->key, $section->reader, $request)->read($context->get()));
+        return $this->results->result($section->key, $section->visibilityChecks(), $section->resolver, fn (): Data => $this->readers->sectionReader($section->key, $section->resolver, $request)->read($context->get()));
     }
 
     /**

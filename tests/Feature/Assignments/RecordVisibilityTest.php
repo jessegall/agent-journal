@@ -32,7 +32,7 @@ final class RecordVisibilityTest extends TestCase
 
     private Agent $writer;
 
-    private Agent $reader;
+    private Agent $resolver;
 
     private Note $note;
 
@@ -45,7 +45,7 @@ final class RecordVisibilityTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->writer = Agent::named('Writer', AgentRole::MainAgent);
-        $this->reader = Agent::named('Reader', AgentRole::MainAgent);
+        $this->resolver = Agent::named('Reader', AgentRole::MainAgent);
         $this->note = new Note(['text' => 'Check the lock order']);
         $this->note->saveFor($this->writer->id);
     }
@@ -61,7 +61,7 @@ final class RecordVisibilityTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the reader']);
 
-        foreach ([$this->writer, $this->reader] as $agent) {
+        foreach ([$this->writer, $this->resolver] as $agent) {
             $this->startRequestAs($agent->id, TestIds::of(50));
             $visibility = $this->app->make(RecordVisibility::class);
 
@@ -72,7 +72,7 @@ final class RecordVisibilityTest extends TestCase
 
     public function test_a_hidden_record_answers_no_to_one_actor_and_yes_to_its_owner(): void
     {
-        $this->startRequestAs($this->reader->id, TestIds::of(50));
+        $this->startRequestAs($this->resolver->id, TestIds::of(50));
         $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible($this->note->assignmentIdentity()));
 
         $this->startRequestAs($this->writer->id, TestIds::of(51));

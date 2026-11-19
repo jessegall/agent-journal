@@ -24,7 +24,7 @@ use Tests\Architecture\Support\TableUse;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
-use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
+use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
@@ -48,7 +48,7 @@ final class RegisteredModuleTest extends TestCase
 
         $this->app->register(NotesServiceProvider::class);
 
-        $this->assertInstanceOf(NoteRecords::class, $this->app->make(NoteReader::class));
+        $this->assertInstanceOf(NoteRecords::class, $this->app->make(NoteResolver::class));
     }
 
     public function test_the_module_passes_every_boundary_check(): void

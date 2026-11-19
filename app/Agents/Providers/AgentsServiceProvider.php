@@ -17,16 +17,16 @@ use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Console\RunKeyScriptCommand;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Contracts\LaunchMaterialReader;
-use App\Agents\Contracts\LaunchRecordReader;
-use App\Agents\Contracts\ProgramConversationReader;
+use App\Agents\Contracts\LaunchMaterialResolver;
+use App\Agents\Contracts\LaunchRecordResolver;
+use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Readers\AgentAuthorityRecords;
-use App\Agents\Readers\HostLaunchMaterial;
-use App\Agents\Readers\LaunchRecords;
-use App\Agents\Readers\ProgramConversationRecords;
-use App\Agents\Readers\RecordedHostCapabilities;
-use App\Agents\Readers\VerifiedHelperImages;
+use App\Agents\Resolvers\AgentAuthorityRecords;
+use App\Agents\Resolvers\HostLaunchMaterial;
+use App\Agents\Resolvers\LaunchRecords;
+use App\Agents\Resolvers\ProgramConversationRecords;
+use App\Agents\Resolvers\RecordedHostCapabilities;
+use App\Agents\Resolvers\VerifiedHelperImages;
 use App\Agents\Support\AgentActivity;
 use App\Agents\Support\AgentActors;
 use App\Agents\Support\AgentAssignees;
@@ -36,13 +36,13 @@ use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\RequestSession;
-use App\Agents\Support\RolePermissionReader;
+use App\Agents\Support\RolePermissionResolver;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Bus\Contracts\CallerSession;
 use App\Contracts\LaunchTransaction;
-use App\Processes\Contracts\CommandPermissionReader;
+use App\Processes\Contracts\CommandPermissionResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -53,12 +53,12 @@ final class AgentsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(CommandPermissionReader::class, RolePermissionReader::class);
+        $this->app->scoped(CommandPermissionResolver::class, RolePermissionResolver::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
-        $this->app->bind(LaunchRecordReader::class, LaunchRecords::class);
-        $this->app->bind(ProgramConversationReader::class, ProgramConversationRecords::class);
+        $this->app->bind(LaunchRecordResolver::class, LaunchRecords::class);
+        $this->app->bind(ProgramConversationResolver::class, ProgramConversationRecords::class);
         $this->app->bind(HelperImages::class, fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')));
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
@@ -66,7 +66,7 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
         ));
         $this->app->scoped(HostLaunchMaterial::class);
-        $this->app->bind(LaunchMaterialReader::class, HostLaunchMaterial::class);
+        $this->app->bind(LaunchMaterialResolver::class, HostLaunchMaterial::class);
         $this->app->bind(HostCapabilities::class, fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')));
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
         $this->app->bind(LaunchCredentialSource::class, fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))));

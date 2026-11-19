@@ -8,7 +8,7 @@ use App\Contracts\CommandHandler;
 use App\Processes\Commands\ReadPartLive;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ReaderPosition;
-use App\Processes\Readers\DeclarativeReader;
+use App\Processes\Support\DeclarativeReader;
 use App\Processes\Support\PartAssessments;
 use App\Processes\Support\RunUpdates;
 use App\Processes\Support\StoredOutput;

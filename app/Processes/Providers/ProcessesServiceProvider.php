@@ -29,9 +29,9 @@ use App\Processes\Console\ReaderProveCommand;
 use App\Processes\Console\ReaderSampleApproveCommand;
 use App\Processes\Console\ReaderSampleRunCommand;
 use App\Processes\Console\RunProcessCommand;
-use App\Processes\Contracts\AliasReader;
+use App\Processes\Contracts\AliasResolver;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\CommandRuleReader;
+use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Contracts\OutputRecorder;
 use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Contracts\ResultReceipts;
@@ -85,7 +85,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(ShellCommandParser::class, ShellParser::class);
         $this->app->singleton(ShellSyntax::class, TreeParser::class);
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
-        $this->app->scoped(CommandRuleReader::class, ProjectRules::class);
+        $this->app->scoped(CommandRuleResolver::class, ProjectRules::class);
         $this->app->scoped(ActiveRules::class);
         $this->app->scoped(ShellAdmission::class, LineAdmission::class);
         $this->app->scoped(VerificationTiming::class, OpenTiming::class);
@@ -94,7 +94,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->when(TreeClassifier::class)
             ->needs(CommandRuleRegistry::class)
             ->give(fn (Application $app): CommandRuleRegistry => $app->make(ActiveRules::class)->registry());
-        $this->app->scoped(AliasReader::class, CommandAliases::class);
+        $this->app->scoped(AliasResolver::class, CommandAliases::class);
         $this->app->scoped(OutputRecorder::class, SpoolRecorder::class);
         $this->app->singleton(
             JournalRoutes::class,

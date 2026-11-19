@@ -11,7 +11,7 @@ use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use Domain\Sequences\Readers\Support\SequenceRecords;
+use Domain\Sequences\Resolvers\Support\SequenceRecords;
 use Domain\Sequences\States\FollowingSequenceState;
 
 /**

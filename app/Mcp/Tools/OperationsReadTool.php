@@ -6,7 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Bus\Support\RequestKey;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\OperationsReader;
+use App\Mcp\Support\OperationsResolver;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -23,7 +23,7 @@ final class OperationsReadTool extends JournalReadTool
 {
     protected array|null $meta = ['anthropic/alwaysLoad' => true];
 
-    public function __construct(private readonly OperationsReader $operations) {}
+    public function __construct(private readonly OperationsResolver $operations) {}
 
     public function schema(JsonSchema $schema): array
     {

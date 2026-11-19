@@ -55,7 +55,7 @@ final class PolicyValuesTest extends TestCase
     public function test_each_role_gets_its_section_51_grants(): void
     {
         $main = AccessPolicy::defaultsFor(AgentRole::MainAgent);
-        $reader = AccessPolicy::defaultsFor(AgentRole::ReadOnlyHelper);
+        $resolver = AccessPolicy::defaultsFor(AgentRole::ReadOnlyHelper);
         $writer = AccessPolicy::defaultsFor(AgentRole::WritingHelper);
 
         $this->assertTrue($main->grants(AccessType::Delete, ResourceAreaType::Workspace));
@@ -63,12 +63,12 @@ final class PolicyValuesTest extends TestCase
         $this->assertFalse($main->grants(AccessType::Publish, ResourceAreaType::Workspace));
         $this->assertFalse($main->grants(AccessType::Admin, ResourceAreaType::JournalControl));
 
-        $this->assertTrue($reader->grants(AccessType::Read, ResourceAreaType::Workspace));
-        $this->assertTrue($reader->grants(AccessType::Create, ResourceAreaType::JournalContent));
-        $this->assertFalse($reader->grants(AccessType::Edit, ResourceAreaType::Workspace));
-        $this->assertFalse($reader->grants(AccessType::Test, ResourceAreaType::Workspace));
-        $this->assertFalse($reader->grants(AccessType::Delete, ResourceAreaType::JournalContent));
-        $this->assertFalse($reader->grants(AccessType::Delegate, ResourceAreaType::JournalWork));
+        $this->assertTrue($resolver->grants(AccessType::Read, ResourceAreaType::Workspace));
+        $this->assertTrue($resolver->grants(AccessType::Create, ResourceAreaType::JournalContent));
+        $this->assertFalse($resolver->grants(AccessType::Edit, ResourceAreaType::Workspace));
+        $this->assertFalse($resolver->grants(AccessType::Test, ResourceAreaType::Workspace));
+        $this->assertFalse($resolver->grants(AccessType::Delete, ResourceAreaType::JournalContent));
+        $this->assertFalse($resolver->grants(AccessType::Delegate, ResourceAreaType::JournalWork));
 
         $this->assertTrue($writer->grants(AccessType::Edit, ResourceAreaType::Workspace));
         $this->assertTrue($writer->grants(AccessType::Build, ResourceAreaType::Scratch));

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Console;
 
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSourceInvalid;
@@ -25,7 +25,7 @@ final class SkillListCommand extends Command
     public function handle(Container $container): int
     {
         try {
-            $skills = $container->make(SkillReader::class)->all();
+            $skills = $container->make(SkillResolver::class)->all();
         } catch (SkillSourceInvalid|SkillConflict|SkillDeclarationInvalid $failure) {
             $this->error($failure->getMessage());
 

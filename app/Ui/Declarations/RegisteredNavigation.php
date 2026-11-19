@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Ui\Declarations;
 
-use App\Ui\Contracts\CountReader;
+use App\Ui\Contracts\CountResolver;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Exceptions\InvalidNavigationDeclaration;
@@ -34,7 +34,7 @@ final readonly class RegisteredNavigation
     {
         $key = $owner->fullKey('navigation', $item->key);
 
-        $namedClasses = [NavigationChildren::class => $item->childrenReader, CountReader::class => $item->count, VisibilityCheck::class => $item->visibility];
+        $namedClasses = [NavigationChildren::class => $item->childrenResolver, CountResolver::class => $item->count, VisibilityCheck::class => $item->visibility];
 
         foreach (array_filter($namedClasses) as $interface => $className) {
             $owner->checkImplements($key, $className, $interface);

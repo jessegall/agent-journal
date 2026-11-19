@@ -8,12 +8,12 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignedWorkProvider;
-use App\Assignments\Contracts\AssignedWorkReader;
+use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Readers\RegisteredAssignedWork;
 use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Resolvers\RegisteredAssignedWork;
 use App\Assignments\Storage\DatabaseAssignmentQuery;
 use App\Domains\Bootstrappers\RegisterAssignables;
 use App\Domains\Support\DomainEntry;
@@ -109,7 +109,7 @@ final class AssignmentQueryTest extends TestCase
     {
         $registry = new AssignmentRegistry($this->app);
         new RegisterAssignables($registry)(DomainEntry::fromClass(ErrandsDomain::class));
-        $reader = new RegisteredAssignedWork($registry);
+        $resolver = new RegisteredAssignedWork($registry);
         $this->app->scoped(ErrandWork::class, fn () => new class implements AssignedWorkProvider
         {
             public function countFor(ActorIdentity $holder): int
@@ -118,15 +118,15 @@ final class AssignmentQueryTest extends TestCase
             }
         });
 
-        $this->assertInstanceOf(RegisteredAssignedWork::class, $this->app->make(AssignedWorkReader::class));
-        $this->assertSame(3, $reader->count(ErrandsDomain::ERRAND, $this->builder));
+        $this->assertInstanceOf(RegisteredAssignedWork::class, $this->app->make(AssignedWorkResolver::class));
+        $this->assertSame(3, $resolver->count(ErrandsDomain::ERRAND, $this->builder));
         $this->assertThrows(
-            fn () => $reader->count(ErrandsDomain::ERRAND, $this->reviewer),
+            fn () => $resolver->count(ErrandsDomain::ERRAND, $this->reviewer),
             RuntimeException::class,
             'The count failed.',
         );
         $this->assertThrows(
-            fn () => $reader->count('errands.unknown', $this->builder),
+            fn () => $resolver->count('errands.unknown', $this->builder),
             AssignmentTypeUnavailable::class,
         );
     }

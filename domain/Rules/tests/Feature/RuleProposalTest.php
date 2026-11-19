@@ -13,7 +13,7 @@ use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Commands\DenyRule;
 use Domain\Rules\Commands\ProposeRule;
 use Domain\Rules\Commands\RemoveRule;
-use Domain\Rules\Contracts\RuleDetailsReader;
+use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Support\ActiveRules;
@@ -42,10 +42,10 @@ final class RuleProposalTest extends TestCase
 
         $id = $this->app->make(CommandBus::class)->run(new ProposeRule('New rule.', 'The old one is too vague.', $old->id));
 
-        $details = $this->app->make(RuleDetailsReader::class)->rule($id);
+        $details = $this->app->make(RuleDetailsResolver::class)->rule($id);
         $this->assertSame([RuleState::Proposed, 'The old one is too vague.', ActorType::Agent, $launch->agent->id, $old->number], [$details->state, $details->reason, $details->proposerType, $details->proposerId, $details->replacesRuleNumber]);
         $this->assertSame(["Rule {$old->id}: Old rule."], $this->app->make(ActiveRules::class)->reminders());
-        $this->assertSame(1, $this->app->make(RuleDetailsReader::class)->activeCount());
+        $this->assertSame(1, $this->app->make(RuleDetailsResolver::class)->activeCount());
     }
 
     public function test_an_agent_is_refused_removal_approval_and_denial(): void

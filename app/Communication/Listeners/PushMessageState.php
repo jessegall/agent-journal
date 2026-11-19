@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Communication\Listeners;
 
 use App\Communication\Events\MessageNeedsAnswer;
-use App\Communication\Readers\MessageRecords;
+use App\Communication\Resolvers\MessageRecords;
 use App\Communication\States\Support\AnsweringMessageStateReference;
 use App\Contracts\Listener;
 use App\Hooks\Contracts\AgentStack;

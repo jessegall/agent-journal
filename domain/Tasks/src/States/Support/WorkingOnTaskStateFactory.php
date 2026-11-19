@@ -11,7 +11,7 @@ use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use Domain\Tasks\Readers\Support\TaskRecords;
+use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\States\WorkingOnTaskState;
 
 /**

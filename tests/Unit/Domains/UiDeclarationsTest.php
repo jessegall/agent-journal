@@ -21,7 +21,7 @@ use App\Ui\Exceptions\UiKeyInvalid;
 use App\Ui\Exceptions\UiKeyRepeated;
 use App\Ui\Exceptions\UiPathInvalid;
 use App\Ui\Exceptions\UiPathRepeated;
-use App\Ui\Exceptions\UiReaderInvalid;
+use App\Ui\Exceptions\UiResolverInvalid;
 use App\Ui\Exceptions\UiRouteConflict;
 use App\Ui\Exceptions\UiSlotMismatch;
 use App\Ui\Exceptions\UiSlotMissing;
@@ -29,14 +29,14 @@ use App\Ui\Support\UiDeclarations;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\UiDeclarations\Desk\DeskDomain;
-use Tests\Fixtures\UiDeclarations\Desk\NotesReader;
+use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\UiDeclarations\Library\AddBook;
 use Tests\Fixtures\UiDeclarations\Library\BookCount;
-use Tests\Fixtures\UiDeclarations\Library\BooksReader;
 use Tests\Fixtures\UiDeclarations\Library\BooksRequest;
+use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\UiDeclarations\Library\ShelfItems;
-use Tests\Fixtures\UiDeclarations\Library\TwoRequestsReader;
+use Tests\Fixtures\UiDeclarations\Library\TwoRequestsResolver;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 
 /**
@@ -51,7 +51,7 @@ final class UiDeclarationsTest extends TestCase
         [$books, $book] = $declarations->pages();
         $this->assertSame(['library.books', 'library', 'window_library_books'], [$books->key, $books->uri, $books->propName]);
         $this->assertSame(['library.book', 'library/{book}', ['book']], [$book->key, $book->uri, $book->path->parameters]);
-        $this->assertSame([BooksReader::class, RecentNotesData::class, BooksRequest::class], [$books->reader->reader, $books->reader->dataClass, $books->reader->request]);
+        $this->assertSame([BooksResolver::class, RecentNotesData::class, BooksRequest::class], [$books->resolver->resolver, $books->resolver->dataClass, $books->resolver->request]);
         $this->assertStringEndsWith('Library/Resources/js/Book/Reader.vue', $book->componentFile);
 
         [$notes, $draft] = $declarations->sections();
@@ -126,26 +126,26 @@ final class UiDeclarationsTest extends TestCase
     {
         $this->expectExceptionObject(UiComponentMissing::outsideOwner('library.books', '../../Desk/Resources/js/Notes.vue'));
 
-        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, BooksReader::class, '../../Desk/Resources/js/Notes.vue')]);
+        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../Desk/Resources/js/Notes.vue')]);
     }
 
     public function test_a_missing_component_is_refused(): void
     {
         $this->expectException(UiComponentMissing::class);
 
-        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, BooksReader::class, 'Missing.vue')]);
+        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Missing.vue')]);
     }
 
     public function test_a_reader_with_two_requests_is_refused(): void
     {
-        $this->expectExceptionObject(UiReaderInvalid::manyRequests('library.books', TwoRequestsReader::class));
+        $this->expectExceptionObject(UiResolverInvalid::manyRequests('library.books', TwoRequestsResolver::class));
 
-        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, TwoRequestsReader::class, 'Books.vue')]);
+        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, TwoRequestsResolver::class, 'Books.vue')]);
     }
 
     public function test_a_visibility_check_that_is_no_check_is_refused(): void
     {
-        $this->expectExceptionObject(UiReaderInvalid::notA('library.books', BookCount::class, VisibilityCheck::class));
+        $this->expectExceptionObject(UiResolverInvalid::notA('library.books', BookCount::class, VisibilityCheck::class));
 
         $this->check(pages: [$this->page('books')->visibleWhen(BookCount::class)]);
     }
@@ -164,7 +164,7 @@ final class UiDeclarationsTest extends TestCase
     {
         $this->expectExceptionObject(UiSlotMissing::for('library.notes', 'library.nowhere'));
 
-        $this->check(sections: [Section::make('notes', 'Notes', 'library.nowhere', SlotContextType::Nothing, NotesReader::class, 'Books.vue')]);
+        $this->check(sections: [Section::make('notes', 'Notes', 'library.nowhere', SlotContextType::Nothing, NotesResolver::class, 'Books.vue')]);
     }
 
     public function test_a_section_taking_other_than_its_slot_is_refused(): void
@@ -173,7 +173,7 @@ final class UiDeclarationsTest extends TestCase
 
         $library = DomainEntry::fromClass(LibraryDomain::class)->ui();
         $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
-            Section::make('notes', 'Notes', 'library.aside', SlotContextType::Record, NotesReader::class, 'Notes.vue'),
+            Section::make('notes', 'Notes', 'library.aside', SlotContextType::Record, NotesResolver::class, 'Notes.vue'),
         ]);
 
         UiDeclarations::check([$library, $desk]);
@@ -191,7 +191,7 @@ final class UiDeclarationsTest extends TestCase
 
     private function page(string $key): Page
     {
-        return Page::make($key, 'Books', Icon::Docs, BooksReader::class, 'Books.vue');
+        return Page::make($key, 'Books', Icon::Docs, BooksResolver::class, 'Books.vue');
     }
 
     /**

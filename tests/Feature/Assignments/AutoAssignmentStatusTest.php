@@ -8,7 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Contracts\AutoAssignmentReader;
+use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Enums\AutoAssignmentState;
 use App\Assignments\Models\AssignmentRecord;
@@ -185,7 +185,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
     private function currentStatus(): AutoAssignmentStatus
     {
-        return $this->app->make(AutoAssignmentReader::class)->status($this->key);
+        return $this->app->make(AutoAssignmentResolver::class)->status($this->key);
     }
 
     private static function open(): PoolReference

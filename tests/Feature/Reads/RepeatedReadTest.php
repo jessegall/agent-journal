@@ -10,7 +10,7 @@ use App\Reads\Contracts\ReadMeter;
 use App\Reads\Exceptions\RepeatedReadRefused;
 use App\Reads\Support\ScopedReadMeter;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Readers\TaskRecords;
+use Domain\Tasks\Resolvers\TaskRecords;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;

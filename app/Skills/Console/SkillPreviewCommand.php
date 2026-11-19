@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Console;
 
 use App\Agents\Models\Agent;
-use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillResolver;
 use App\Skills\Data\SkillAgentSelection;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillConditionInvalid;
@@ -37,11 +37,11 @@ final class SkillPreviewCommand extends Command
         $authoring->actAsOwner();
 
         try {
-            $reader = $container->make(SkillReader::class);
-            $skill = $reader->find(SkillKey::from((string) $this->argument('key')));
+            $resolver = $container->make(SkillResolver::class);
+            $skill = $resolver->find(SkillKey::from((string) $this->argument('key')));
 
             if ($this->option('agent') !== null) {
-                $answer = $preview->forAgent($skill, $reader->all(), Agent::query()->whereKey((string) $this->option('agent'))->firstOrFail());
+                $answer = $preview->forAgent($skill, $resolver->all(), Agent::query()->whereKey((string) $this->option('agent'))->firstOrFail());
 
                 return $this->printAnswer($answer);
             }

@@ -9,9 +9,9 @@ namespace App\Ui\Exceptions;
  */
 final class InvalidSectionDeclaration extends UiDeclarationError
 {
-    public static function readerReturnsNoData(string $section, string $reader): self
+    public static function resolverReturnsNoData(string $section, string $resolver): self
     {
-        return new self("Section {$section} names the reader {$reader}, whose read method does not declare a concrete Data class as its return type.");
+        return new self("Section {$section} names the resolver {$resolver}, whose read method does not declare a concrete Data class as its return type.");
     }
 
     public static function slotNotFullKey(string $section, string $slot): self

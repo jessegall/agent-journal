@@ -7,7 +7,7 @@ namespace App\Http\Requests\Comments;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Http\Requests\RecordTargetRequest;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Text\Enums\TextAnchorType;
 use App\Text\Values\TextRange;
 use Illuminate\Validation\Validator;
@@ -78,7 +78,7 @@ final class PostCommentRequest extends RecordTargetRequest
      * The command for the comment asked for: about the whole record when no anchor field is given, otherwise about
      * the one place the fields describe.
      */
-    public function command(RecordReader $records): PostComment|PostTextComment
+    public function command(RecordResolver $records): PostComment|PostTextComment
     {
         $target = $this->target($records);
 

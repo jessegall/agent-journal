@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Links;
 
 use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,12 +25,12 @@ final class LinkRecordsRequest extends FormRequest
         ];
     }
 
-    public function source(RecordReader $records): RecordIdentity
+    public function source(RecordResolver $records): RecordIdentity
     {
         return $records->identify(RecordReference::parse($this->sourceReference()));
     }
 
-    public function target(RecordReader $records): RecordIdentity
+    public function target(RecordResolver $records): RecordIdentity
     {
         return $records->identify(RecordReference::parse($this->targetReference()));
     }

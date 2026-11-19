@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Numbers\Support\RecordReference;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,7 +22,7 @@ abstract class RecordTargetRequest extends FormRequest
         return ['target' => ['required', 'string', 'max:64']];
     }
 
-    public function target(RecordReader $records): RecordIdentity
+    public function target(RecordResolver $records): RecordIdentity
     {
         return $records->identify(RecordReference::parse($this->string('target')->toString()));
     }

@@ -58,8 +58,8 @@ use Domain\Plans\Commands\ReassignPlanWork;
 use Domain\Plans\Commands\RecordPhaseCheck;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
-use Domain\Plans\Contracts\PlanDetailsReader;
-use Domain\Plans\Contracts\PlanReader;
+use Domain\Plans\Contracts\PlanDetailsResolver;
+use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Enums\PlanView;
@@ -72,12 +72,12 @@ use Domain\Plans\Mcp\HeldPlansOverview;
 use Domain\Plans\Mcp\PlansListTool;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
-use Domain\Plans\Readers\OpenPlansCount;
-use Domain\Plans\Readers\PhaseWindowReader;
-use Domain\Plans\Readers\PlansWindowReader;
-use Domain\Plans\Readers\PlanWindowReader;
-use Domain\Plans\Readers\WaitingPlansCount;
-use Domain\Plans\Readers\WaitingPlansSection;
+use Domain\Plans\Resolvers\OpenPlansCount;
+use Domain\Plans\Resolvers\PhaseWindowResolver;
+use Domain\Plans\Resolvers\PlansWindowResolver;
+use Domain\Plans\Resolvers\PlanWindowResolver;
+use Domain\Plans\Resolvers\WaitingPlansCount;
+use Domain\Plans\Resolvers\WaitingPlansSection;
 use Domain\Plans\Skills\PlanSkill;
 use Domain\Plans\States\Support\WorkingOnPlanStateFactory;
 use Domain\Plans\States\Support\WorkingOnPlanStateReference;
@@ -110,7 +110,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesA
     {
         return Exports::make()
             ->events(PlanStarted::class, PlanFinished::class, PlanCancelled::class, PlanProgressChanged::class)
-            ->contracts(PlanReader::class, PlanDetailsReader::class)
+            ->contracts(PlanResolver::class, PlanDetailsResolver::class)
             ->values(
                 PlanFilters::class,
                 PlanList::class,
@@ -205,15 +205,15 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesA
     public function pages(): array
     {
         return [
-            Page::make('list', 'Plans', Icon::Plan, PlansWindowReader::class, 'PlansWindow.vue')
+            Page::make('list', 'Plans', Icon::Plan, PlansWindowResolver::class, 'PlansWindow.vue')
                 ->at('')
                 ->onHome(20)
                 ->actions(ActionRoute::post('{plan}/start', StartPlanController::class, 'start')),
-            Page::make('plan', 'Plan', Icon::Plan, PlanWindowReader::class, 'PlanWindow.vue')
+            Page::make('plan', 'Plan', Icon::Plan, PlanWindowResolver::class, 'PlanWindow.vue')
                 ->at('{plan}')
                 ->inInspector()
                 ->slots(Slot::record('inspector', 'plan')),
-            Page::make('phase', 'Phase', Icon::Plan, PhaseWindowReader::class, 'PhaseWindow.vue')
+            Page::make('phase', 'Phase', Icon::Plan, PhaseWindowResolver::class, 'PhaseWindow.vue')
                 ->at('{plan}/phases/{phase}'),
         ];
     }

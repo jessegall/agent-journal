@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
-use App\Agents\Contracts\SessionReader;
+use App\Agents\Contracts\SessionResolver;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Events\MessageNeedsAnswer;
 use App\Communication\Models\Message;
@@ -17,7 +17,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class RequireMessageAnswerHandler implements CommandHandler
 {
     public function __construct(
-        private SessionReader $sessions,
+        private SessionResolver $sessions,
         private Dispatcher $events,
     ) {}
 

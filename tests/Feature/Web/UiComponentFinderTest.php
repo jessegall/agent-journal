@@ -9,7 +9,7 @@ use App\Ui\Declarations\Page;
 use App\Ui\Enums\Icon;
 use App\Ui\Support\UiDeclarations;
 use InvalidArgumentException;
-use Tests\Fixtures\UiDeclarations\Library\BooksReader;
+use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\TestCase;
 
@@ -25,7 +25,7 @@ final class UiComponentFinderTest extends TestCase
 
         $this->app->instance(UiDeclarations::class, UiDeclarations::check([
             DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
-                Page::make('index', 'Library', Icon::Docs, BooksReader::class, 'Index.vue')->at(''),
+                Page::make('index', 'Library', Icon::Docs, BooksResolver::class, 'Index.vue')->at(''),
             ]),
         ]));
     }

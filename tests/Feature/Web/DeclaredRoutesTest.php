@@ -21,10 +21,10 @@ use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\UiDeclarations\Desk\DeskDomain;
-use Tests\Fixtures\UiDeclarations\Desk\NotesReader;
+use Tests\Fixtures\UiDeclarations\Desk\NotesResolver;
 use Tests\Fixtures\UiDeclarations\Desk\SaveDraft;
 use Tests\Fixtures\UiDeclarations\Library\AddBook;
-use Tests\Fixtures\UiDeclarations\Library\BooksReader;
+use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;
 use Tests\Support\RefreshHookDatabase;
@@ -126,17 +126,17 @@ final class DeclaredRoutesTest extends TestCase
     private function declarations(): UiDeclarations
     {
         $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
-            Page::make('books', 'Books', Icon::Docs, BooksReader::class, 'Books.vue')
+            Page::make('books', 'Books', Icon::Docs, BooksResolver::class, 'Books.vue')
                 ->at('')
                 ->slots(Slot::make('aside', SlotContextType::Nothing))
                 ->actions(ActionRoute::post('books', AddBook::class, 'add')),
-            Page::make('hidden', 'Hidden', Icon::Docs, BooksReader::class, 'Books.vue')
+            Page::make('hidden', 'Hidden', Icon::Docs, BooksResolver::class, 'Books.vue')
                 ->at('hidden')
                 ->visibleWhen(NobodySees::class)
                 ->actions(ActionRoute::post('hidden/books', AddBook::class, 'add-hidden')),
         ]);
         $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
-            Section::make('draft', 'Draft', 'library.aside', SlotContextType::Nothing, NotesReader::class, 'Notes.vue')
+            Section::make('draft', 'Draft', 'library.aside', SlotContextType::Nothing, NotesResolver::class, 'Notes.vue')
                 ->visibleWhen(NobodySees::class)
                 ->actions(ActionRoute::post('drafts', SaveDraft::class, 'save')),
         ]);

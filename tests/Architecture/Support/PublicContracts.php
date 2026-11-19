@@ -29,7 +29,7 @@ final readonly class PublicContracts
     /**
      * Core's Eloquent adapters: LinkAccess holds the model whose links it reads and hands back the caller's own query,
      * ReadBuilder bounds a domain's reads, and HasComments gives a Commentable model its comments relation, while
-     * domains read comment content only through CommentReader.
+     * domains read comment content only through CommentResolver.
      */
     private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class, ReadBuilder::class, HasComments::class];
 

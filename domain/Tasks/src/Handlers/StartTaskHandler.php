@@ -6,7 +6,7 @@ namespace Domain\Tasks\Handlers;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\SessionReader;
+use App\Agents\Contracts\SessionResolver;
 use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Events\TaskStarted;
@@ -22,7 +22,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class StartTaskHandler implements CommandHandler
 {
     public function __construct(
-        private SessionReader $sessions,
+        private SessionResolver $sessions,
         private Dispatcher $events,
     ) {}
 

@@ -12,11 +12,11 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Support\NumberedPage;
 use Domain\Plans\Api\AssignedPlanFilters;
-use Domain\Plans\Contracts\PlanReader;
+use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Contracts\AssignedTaskReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Connection;
@@ -74,9 +74,9 @@ final class AssignedListsTest extends TestCase
         $writer->assign($held->assignmentIdentity(), ActorIdentity::of($this->main));
         $writer->assign($othersTask->assignmentIdentity(), ActorIdentity::of($this->other));
 
-        $list = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters());
-        $finishedOnly = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters(states: [TaskState::Finished]));
-        $searched = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters(search: 'READER', page: new NumberedPage(1, 1)));
+        $list = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
+        $finishedOnly = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters(states: [TaskState::Finished]));
+        $searched = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters(search: 'READER', page: new NumberedPage(1, 1)));
 
         $this->assertSame([$held->id, $finished->id], array_map(fn ($card) => $card->id, $list->cards));
         $this->assertSame(2, $list->total);
@@ -95,7 +95,7 @@ final class AssignedListsTest extends TestCase
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->main));
         $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->main));
 
-        $list = $this->app->make(PlanReader::class)->assignedToCaller(new AssignedPlanFilters());
+        $list = $this->app->make(PlanResolver::class)->assignedToCaller(new AssignedPlanFilters());
 
         $this->assertSame([$plan->id], array_map(fn ($card) => $card->id, $list->cards));
         $this->assertSame(1, $list->total);
@@ -105,7 +105,7 @@ final class AssignedListsTest extends TestCase
     {
         Task::factory()->create(['title' => 'Someone elses']);
 
-        $list = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters());
+        $list = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
 
         $this->assertSame([[], 0], [$list->cards, $list->total]);
     }
@@ -118,10 +118,10 @@ final class AssignedListsTest extends TestCase
         $other = $this->otherConnection();
 
         [$before, $after] = $this->app->make(AssignmentTransaction::class)->run(function () use ($other, $late): array {
-            $before = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters());
+            $before = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
             $other->table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
 
-            return [$before, $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters())];
+            return [$before, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())];
         });
 
         $this->assertSame([1, 1], [$before->total, $after->total]);
@@ -132,7 +132,7 @@ final class AssignedListsTest extends TestCase
     {
         $this->startUserRequestAs(TestIds::of(1));
 
-        $this->assertThrows(fn () => $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters()), AgentActorRequired::class);
+        $this->assertThrows(fn () => $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters()), AgentActorRequired::class);
         $this->assertThrows(fn () => new NumberedPage(0, 20), InvalidAssignmentPage::class);
         $this->assertThrows(fn () => new NumberedPage(1, 101), InvalidAssignmentPage::class);
     }

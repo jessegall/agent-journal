@@ -51,9 +51,9 @@ use Domain\Documents\Commands\ReplaceDocumentSection;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
 use Domain\Documents\Commands\SettleReport;
-use Domain\Documents\Contracts\DocumentReader;
-use Domain\Documents\Contracts\DraftReader;
-use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\DraftResolver;
+use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DockData;
@@ -101,11 +101,11 @@ use Domain\Documents\Links\ReportLinkRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Readers\DocumentDockReader;
-use Domain\Documents\Readers\DocumentWindowReader;
-use Domain\Documents\Readers\LibraryWindowReader;
-use Domain\Documents\Readers\ReportWindowReader;
-use Domain\Documents\Readers\RevisionWindowReader;
+use Domain\Documents\Resolvers\DocumentDockResolver;
+use Domain\Documents\Resolvers\DocumentWindowResolver;
+use Domain\Documents\Resolvers\LibraryWindowResolver;
+use Domain\Documents\Resolvers\ReportWindowResolver;
+use Domain\Documents\Resolvers\RevisionWindowResolver;
 use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\ReportShareProvider;
 
@@ -129,7 +129,7 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     {
         return Exports::make()
             ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordSettled::class, RecordDockChanged::class)
-            ->contracts(DraftReader::class, DocumentReader::class, ReportReader::class)
+            ->contracts(DraftResolver::class, DocumentResolver::class, ReportResolver::class)
             ->values(DockSession::class, DockCard::class, DockData::class, CloseCard::class, RecordInspection::class, SettlementCard::class, RevisionPageData::class, RecordText::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
             ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class, DockDocument::class, DockReport::class, HideDocumentDock::class, HideReportDock::class)
             ->exceptions(SettlementDenied::class, StaleRead::class, DraftMissing::class, DraftHeld::class, DraftConflict::class, DocumentMissing::class, ReportMissing::class)
@@ -165,13 +165,13 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function pages(): array
     {
         return [
-            Page::make('library', 'Documents', Icon::Docs, LibraryWindowReader::class, 'LibraryWindow.vue')
+            Page::make('library', 'Documents', Icon::Docs, LibraryWindowResolver::class, 'LibraryWindow.vue')
                 ->at('')
                 ->actions(
                     ActionRoute::post('docs', CreateDocumentPageController::class, 'create-document'),
                     ActionRoute::post('reports', CreateReportPageController::class, 'create-report'),
                 ),
-            Page::make('document', 'Document', Icon::Docs, DocumentWindowReader::class, 'DocumentWindow.vue')
+            Page::make('document', 'Document', Icon::Docs, DocumentWindowResolver::class, 'DocumentWindow.vue')
                 ->at('docs/{document}')
                 ->inInspector()
                 ->actions(
@@ -182,9 +182,9 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
                     ActionRoute::post('docs/{document}/recover', RecoverDocumentPageController::class, 'recover-draft'),
                 )
                 ->slots(Slot::record('inspector', 'document')),
-            Page::make('revision', 'Revision', Icon::Docs, RevisionWindowReader::class, 'RevisionWindow.vue')
+            Page::make('revision', 'Revision', Icon::Docs, RevisionWindowResolver::class, 'RevisionWindow.vue')
                 ->at('docs/{document}/revisions/{revision}'),
-            Page::make('report', 'Report', Icon::Docs, ReportWindowReader::class, 'ReportWindow.vue')
+            Page::make('report', 'Report', Icon::Docs, ReportWindowResolver::class, 'ReportWindow.vue')
                 ->at('reports/{report}')
                 ->actions(
                     ActionRoute::post('reports/{report}/settle', SettleReportPageController::class, 'settle-report'),
@@ -195,7 +195,7 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function sections(): array
     {
         return [
-            Section::make('records', 'Documents and reports', 'chat.dock', SlotContextType::Session, DocumentDockReader::class, 'DocumentDock.vue')
+            Section::make('records', 'Documents and reports', 'chat.dock', SlotContextType::Session, DocumentDockResolver::class, 'DocumentDock.vue')
                 ->actions(
                     ActionRoute::post('dock', DockRecordController::class, 'dock-record'),
                     ActionRoute::post('dock/hide', HideDockController::class, 'hide-dock'),

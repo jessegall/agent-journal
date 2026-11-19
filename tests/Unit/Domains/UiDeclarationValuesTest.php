@@ -22,9 +22,9 @@ use App\Ui\Exceptions\InvalidNavigationDeclaration;
 use App\Ui\Exceptions\InvalidPageDeclaration;
 use App\Ui\Exceptions\InvalidSectionDeclaration;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\UiDeclarations\LooseReader;
+use Tests\Fixtures\UiDeclarations\LooseResolver;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
-use Tests\Fixtures\UiDeclarations\RecentNotesReader;
+use Tests\Fixtures\UiDeclarations\RecentNotesResolver;
 use Tests\Support\TestIds;
 use ValueError;
 
@@ -36,7 +36,7 @@ final class UiDeclarationValuesTest extends TestCase
 {
     public function test_a_parameterised_page_records_its_reader_data_class_slots_and_actions(): void
     {
-        $page = Page::make('plan', 'Plan', Icon::Plan, RecentNotesReader::class, 'PlanReader.vue')
+        $page = Page::make('plan', 'Plan', Icon::Plan, RecentNotesResolver::class, 'PlanResolver.vue')
             ->at('{plan}')
             ->inInspector()
             ->loadingAs(PageSkeleton::Reader)
@@ -44,7 +44,7 @@ final class UiDeclarationValuesTest extends TestCase
             ->floating(FloatSize::of(400, 500))
             ->options(ToggleOption::make('wide', 'Wide'), ChoiceOption::make('sort', 'Sort', ['new' => 'Newest', 'old' => 'Oldest'], 'new'))
             ->slots(Slot::record('inspector', 'plan'))
-            ->actions(ActionRoute::post('start', LooseReader::class, 'start'));
+            ->actions(ActionRoute::post('start', LooseResolver::class, 'start'));
 
         $this->assertSame('{plan}', $page->path);
         $this->assertSame(RecentNotesData::class, $page->dataClass);
@@ -59,7 +59,7 @@ final class UiDeclarationValuesTest extends TestCase
 
     public function test_a_page_starts_at_its_own_key_off_home_and_a_change_leaves_the_original_untouched(): void
     {
-        $page = Page::make('list', 'Plans', Icon::Plan, RecentNotesReader::class, 'PlansView.vue');
+        $page = Page::make('list', 'Plans', Icon::Plan, RecentNotesResolver::class, 'PlansView.vue');
         $moved = $page->at('');
 
         $this->assertSame('list', $page->path);
@@ -71,9 +71,9 @@ final class UiDeclarationValuesTest extends TestCase
 
     public function test_a_reader_without_a_concrete_data_return_type_is_refused(): void
     {
-        $this->expectExceptionObject(InvalidPageDeclaration::readerReturnsNoData('list', LooseReader::class));
+        $this->expectExceptionObject(InvalidPageDeclaration::resolverReturnsNoData('list', LooseResolver::class));
 
-        Page::make('list', 'Plans', Icon::Plan, LooseReader::class, 'PlansView.vue');
+        Page::make('list', 'Plans', Icon::Plan, LooseResolver::class, 'PlansView.vue');
     }
 
     public function test_a_record_slot_needs_its_route_parameter(): void
@@ -100,12 +100,12 @@ final class UiDeclarationValuesTest extends TestCase
     public function test_navigation_nests_static_children_with_query_values_and_a_children_reader(): void
     {
         $plans = NavigationItem::page('list', 'Plans', Icon::Plan, group: 'Work', position: 200)
-            ->count(LooseReader::class)
+            ->count(LooseResolver::class)
             ->children([
                 NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open']),
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
             ]);
-        $collections = NavigationItem::heading('collections', 'Collections', childrenReader: LooseReader::class);
+        $collections = NavigationItem::heading('collections', 'Collections', childrenResolver: LooseResolver::class);
 
         $this->assertSame('list', $plans->page);
         $this->assertSame('Work', $plans->group);
@@ -113,7 +113,7 @@ final class UiDeclarationValuesTest extends TestCase
         $this->assertSame(['state' => 'open'], $plans->children[0]->queryValues);
         $this->assertSame('list', $plans->children[0]->page);
         $this->assertNull($collections->page);
-        $this->assertSame(LooseReader::class, $collections->childrenReader);
+        $this->assertSame(LooseResolver::class, $collections->childrenResolver);
     }
 
     public function test_an_item_with_nothing_to_open_is_refused(): void
@@ -139,7 +139,7 @@ final class UiDeclarationValuesTest extends TestCase
 
     public function test_a_section_names_its_slot_by_full_key_and_records_its_reader_data_class(): void
     {
-        $section = Section::make('on-plan', 'Notes', 'plans.inspector', SlotContextType::Record, RecentNotesReader::class, 'OnPlan.vue')->at(5);
+        $section = Section::make('on-plan', 'Notes', 'plans.inspector', SlotContextType::Record, RecentNotesResolver::class, 'OnPlan.vue')->at(5);
 
         $this->assertSame(RecentNotesData::class, $section->dataClass);
         $this->assertSame(5, $section->position);
@@ -150,7 +150,7 @@ final class UiDeclarationValuesTest extends TestCase
     {
         $this->expectExceptionObject(InvalidSectionDeclaration::slotNotFullKey('on-plan', 'inspector'));
 
-        Section::make('on-plan', 'Notes', 'inspector', SlotContextType::Record, RecentNotesReader::class, 'OnPlan.vue');
+        Section::make('on-plan', 'Notes', 'inspector', SlotContextType::Record, RecentNotesResolver::class, 'OnPlan.vue');
     }
 
     public function test_a_slot_context_carries_a_decimal_id_only_for_a_session_or_record(): void

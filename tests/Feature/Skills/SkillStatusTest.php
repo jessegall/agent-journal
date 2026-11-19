@@ -15,7 +15,7 @@ use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Readers\Support\SkillStatusReader;
+use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
@@ -102,13 +102,13 @@ final class SkillStatusTest extends TestCase
         $agentId = AgentSession::byId($own->session_id)->agent_id;
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId));
 
-        $status = $this->app->make(SkillStatusReader::class)->status();
+        $status = $this->app->make(SkillStatusResolver::class)->status();
 
         $this->assertCount(1, $status->publications);
         $this->assertSame($own->id, $status->publications[0]->publicationId);
 
         try {
-            $this->app->make(SkillStatusReader::class)->statusOfSession($other->session_id);
+            $this->app->make(SkillStatusResolver::class)->statusOfSession($other->session_id);
             $this->fail('Another session\'s status was shown to the agent.');
         } catch (SkillSessionHidden $hidden) {
             $this->assertSame('No skill delivery was found for that session.', $hidden->getMessage());

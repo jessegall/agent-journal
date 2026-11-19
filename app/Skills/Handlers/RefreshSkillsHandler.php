@@ -16,8 +16,8 @@ use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
-use App\Skills\Readers\SkillCatalogue;
-use App\Skills\Readers\Support\SkillContextReader;
+use App\Skills\Resolvers\SkillCatalogue;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Support\SkillSelection;
@@ -37,7 +37,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         private SkillRenderer $renderer,
         private ConditionTree $conditions,
         private SkillSource $stored,
-        private SkillContextReader $contexts,
+        private SkillContextResolver $contexts,
         private SkillSelection $selection,
         private SkillTargets $targets,
         private ProgramSkillAdapters $adapters,

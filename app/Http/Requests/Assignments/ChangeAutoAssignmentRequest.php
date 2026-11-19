@@ -7,7 +7,7 @@ namespace App\Http\Requests\Assignments;
 use App\Assignments\Commands\ConfigureAutoAssignment;
 use App\Assignments\Commands\EnableAutoAssignment;
 use App\Http\Requests\Assignments\Concerns\ReadsAutoAssignmentInput;
-use App\Records\Contracts\RecordReader;
+use App\Records\Contracts\RecordResolver;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -25,12 +25,12 @@ final class ChangeAutoAssignmentRequest extends FormRequest
         return [...$this->keyRules(), ...$this->poolRules(), ...$this->revisionRules()];
     }
 
-    public function enableCommand(RecordReader $records): EnableAutoAssignment
+    public function enableCommand(RecordResolver $records): EnableAutoAssignment
     {
         return new EnableAutoAssignment($this->autoAssignmentInput($records), $this->expectedRevision());
     }
 
-    public function configureCommand(RecordReader $records): ConfigureAutoAssignment
+    public function configureCommand(RecordResolver $records): ConfigureAutoAssignment
     {
         return new ConfigureAutoAssignment($this->autoAssignmentInput($records), $this->expectedRevision());
     }

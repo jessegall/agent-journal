@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Controllers;
 
-use Domain\Tasks\Contracts\AssignedTaskReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Http\Data\AssignedTaskListData;
 use Domain\Tasks\Http\Requests\AssignedTasksRequest;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +17,7 @@ final readonly class AssignedTasksController
     /**
      * A plain 200: the call is a POST only because its body is signed, and it reads without creating anything.
      */
-    public function __invoke(AssignedTasksRequest $request, AssignedTaskReader $tasks): JsonResponse
+    public function __invoke(AssignedTasksRequest $request, AssignedTaskResolver $tasks): JsonResponse
     {
         return new JsonResponse(AssignedTaskListData::from($tasks->assignedToCaller($request->filters())));
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Resources;
 
-use App\Mcp\Support\OperationsReader;
+use App\Mcp\Support\OperationsResolver;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -24,7 +24,7 @@ final class OperationResource extends JournalResource implements HasUriTemplate
 {
     private const string TEMPLATE = 'journal://v1/operations/{request_key}';
 
-    public function __construct(private readonly OperationsReader $operations) {}
+    public function __construct(private readonly OperationsResolver $operations) {}
 
     public function uriTemplate(): UriTemplate
     {

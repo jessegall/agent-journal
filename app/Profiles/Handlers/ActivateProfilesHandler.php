@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Models\Profile;
@@ -27,7 +27,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     public function __construct(
         private CurrentActor $actors,
         private PolicyResolver $resolver,
-        private ProfileReader $profiles,
+        private ProfileResolver $profiles,
     ) {}
 
     /**

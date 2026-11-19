@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web;
 
-use App\Web\Contracts\CurrentUserReader;
+use App\Web\Contracts\CurrentUserResolver;
 use App\Web\Models\Layout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -19,7 +19,7 @@ final class LayoutRequest extends FormRequest
     /**
      * @return array<string, list<string|Unique>>
      */
-    public function rules(CurrentUserReader $users): array
+    public function rules(CurrentUserResolver $users): array
     {
         $unique = Rule::unique('layouts', 'name')->where('user_id', $users->currentUser()->get()->id);
         $layout = $this->route('layout');

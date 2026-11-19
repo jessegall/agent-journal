@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Actors\Enums\ActorType;
-use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Page;
 use App\Mcp\Data\NextAction;
@@ -28,7 +28,7 @@ final class AssigneesListTool extends JournalReadTool
 {
     private const int DEFAULT_LIMIT = 20;
 
-    public function __construct(private readonly AssigneeReader $assignees, private readonly Continuations $continuations) {}
+    public function __construct(private readonly AssigneeResolver $assignees, private readonly Continuations $continuations) {}
 
     public function schema(JsonSchema $schema): array
     {

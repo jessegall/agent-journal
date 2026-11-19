@@ -16,7 +16,7 @@ use Tests\Fixtures\PublicContracts\Plans\Api\PlanCard;
 use Tests\Fixtures\PublicContracts\Plans\Api\PlanData;
 use Tests\Fixtures\PublicContracts\Plans\Api\PlanStatus;
 use Tests\Fixtures\PublicContracts\Plans\Api\PlanSummary;
-use Tests\Fixtures\PublicContracts\Plans\Contracts\PlanReader;
+use Tests\Fixtures\PublicContracts\Plans\Contracts\PlanResolver;
 use Tests\Fixtures\PublicContracts\Plans\Models\Plan;
 use Tests\Fixtures\PublicContracts\Plans\PlanMissing;
 use Tests\Fixtures\PublicContracts\Plans\PlanService;
@@ -28,7 +28,7 @@ final class PublicContractRulesTest extends TestCase
 {
     public function test_an_interface_an_enum_and_a_data_value_showing_only_public_types_pass(): void
     {
-        $this->assertSame([], $this->violationsOf([PlanReader::class, PlanData::class, PlanStatus::class]));
+        $this->assertSame([], $this->violationsOf([PlanResolver::class, PlanData::class, PlanStatus::class]));
     }
 
     public function test_a_private_type_reached_through_an_export_fails_at_the_member_that_shows_it(): void

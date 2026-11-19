@@ -10,7 +10,7 @@ use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use Domain\Plans\Api\PlanFilters;
-use Domain\Plans\Contracts\PlanReader;
+use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Enums\PlanState;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -26,7 +26,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 final class PlansListTool extends JournalReadTool
 {
-    public function __construct(private readonly PlanReader $plans, private readonly NumberedPages $pages) {}
+    public function __construct(private readonly PlanResolver $plans, private readonly NumberedPages $pages) {}
 
     public function schema(JsonSchema $schema): array
     {

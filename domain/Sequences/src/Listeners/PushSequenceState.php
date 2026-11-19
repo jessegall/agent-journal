@@ -7,7 +7,7 @@ namespace Domain\Sequences\Listeners;
 use App\Contracts\Listener;
 use App\Hooks\Contracts\AgentStack;
 use Domain\Sequences\Events\SequenceStarted;
-use Domain\Sequences\Readers\Support\SequenceRecords;
+use Domain\Sequences\Resolvers\Support\SequenceRecords;
 use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
 /**

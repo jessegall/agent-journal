@@ -9,7 +9,7 @@ use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use Domain\Tasks\Api\TaskFilters;
-use Domain\Tasks\Contracts\AssignedTaskReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 
 /**
@@ -17,7 +17,7 @@ use Domain\Tasks\Enums\TaskState;
  */
 final readonly class HeldTasksOverview implements OverviewContribution
 {
-    public function __construct(private AssignedTaskReader $tasks) {}
+    public function __construct(private AssignedTaskResolver $tasks) {}
 
     public function section(): string
     {

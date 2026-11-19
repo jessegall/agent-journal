@@ -22,7 +22,7 @@ use App\Hooks\Support\ContextReminders;
 use App\Skills\Listeners\AdmitLaunchSkills;
 use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
-use App\Skills\Readers\Support\SkillStatusReader;
+use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Values\SessionSkillStatus;
@@ -122,7 +122,7 @@ final class SessionSkillStatusTest extends TestCase
     {
         $this->app->forgetScopedInstances();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $rows = $this->app->make(SkillStatusReader::class)->skillsOfSession($session->id);
+        $rows = $this->app->make(SkillStatusResolver::class)->skillsOfSession($session->id);
         $guide = array_values(array_filter($rows, fn (SessionSkillStatus $row) => $row->key === 'user-guide'));
         $this->assertCount(1, $guide);
 

@@ -6,7 +6,7 @@ namespace App\Skills\Console;
 
 use App\Skills\Exceptions\SkillPreviewRefused;
 use App\Skills\Exceptions\SkillSessionHidden;
-use App\Skills\Readers\Support\SkillStatusReader;
+use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\SkillAuthoring;
 use App\Skills\Values\GenerationStatus;
 use App\Skills\Values\PublicationStatus;
@@ -37,12 +37,12 @@ final class SkillStatusCommand extends Command
             return self::FAILURE;
         }
 
-        $reader = $container->make(SkillStatusReader::class);
+        $resolver = $container->make(SkillStatusResolver::class);
         $session = $this->option('session');
 
         try {
-            $status = is_string($session) ? $reader->statusOfSession($session) : $reader->status();
-            $skills = is_string($session) ? $reader->skillsOfSession($session) : [];
+            $status = is_string($session) ? $resolver->statusOfSession($session) : $resolver->status();
+            $skills = is_string($session) ? $resolver->skillsOfSession($session) : [];
         } catch (SkillSessionHidden $hidden) {
             $this->error($hidden->getMessage());
 

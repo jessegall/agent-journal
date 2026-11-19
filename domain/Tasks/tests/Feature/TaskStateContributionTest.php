@@ -14,7 +14,7 @@ use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
-use Domain\Tasks\Contracts\AssignedTaskReader;
+use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Models\Task;
@@ -95,7 +95,7 @@ final class TaskStateContributionTest extends TestCase
         $second = Task::factory()->create(['title' => 'Fix the hook']);
         $this->app->make(CommandBus::class)->run(new StartTask($first->id, $this->target->sessionId));
         $this->app->make(CommandBus::class)->run(new StartTask($second->id, $this->target->sessionId));
-        $tasks = $this->app->make(AssignedTaskReader::class);
+        $tasks = $this->app->make(AssignedTaskResolver::class);
 
         $this->assertSame($second->number, $tasks->currentForCaller()->get()->number);
 
@@ -117,7 +117,7 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new BlockTask($blocked->id, 1, 'Waits for review.'));
 
         $this->assertSame([], $this->taskFrames());
-        $this->assertTrue($this->app->make(AssignedTaskReader::class)->currentForCaller()->isEmpty());
+        $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
     public function test_an_agent_finishing_a_task_it_never_started_is_refused_and_leaves_the_stack_alone(): void

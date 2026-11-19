@@ -10,7 +10,7 @@ use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
-use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Collection;
  */
 final readonly class PlanAssignmentGroup
 {
-    public function __construct(private TaskAssignmentReader $tasks) {}
+    public function __construct(private TaskAssignmentResolver $tasks) {}
 
     public function for(RecordIdentity $root): AssignmentGroup
     {
