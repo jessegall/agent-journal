@@ -108,6 +108,15 @@ put_on_path() {
   echo "$1 is on the PATH in $profile: open a new terminal for the journal command, or run $line"
 }
 
+# names the release just installed for the update check, when the download said which it was
+record_installed_release() {
+  [ -n "${JOURNAL_INSTALLED_CHECKSUM:-}" ] || return 0
+  mkdir -p "$ROOT/.journal/runtime"
+  printf '{"checksum": "%s", "tag": "%s", "at": "%s"}\n' "$JOURNAL_INSTALLED_CHECKSUM" "${JOURNAL_INSTALLED_TAG:-}" "$(date -u +%Y-%m-%dT%H:%M:%S+00:00)" > "$ROOT/.journal/runtime/installed-release.json"
+  # the newest release kept from before the install may be older than the one installed: the check asks again
+  rm -f "$ROOT/.journal/runtime/newest-release.json"
+}
+
 find_python() {
   for candidate in python3.14 python3.15 python3 python; do
     if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' >/dev/null 2>&1; then
@@ -127,6 +136,10 @@ if [ ! -f "$HERE/src/engine/cli/journal.py" ] && [ -z "${JOURNAL_RELEASE_URL:-}"
   branch=$(mktemp -d)
   trap 'rm -rf "$branch"' EXIT
   archive_url="${JOURNAL_SOURCE_URL:-https://codeload.github.com/jessegall/agent-journal/tar.gz/refs/heads/version-5}"
+  # the archive's ETag names the code installed, as the update check reads it, so an installed update is not offered again
+  JOURNAL_INSTALLED_CHECKSUM=$(curl -fsSI "$archive_url" 2>/dev/null | awk 'tolower($1) == "etag:" {gsub(/["\r]/, "", $2); print $2}')
+  JOURNAL_INSTALLED_TAG="${archive_url##*/}"
+  export JOURNAL_INSTALLED_CHECKSUM JOURNAL_INSTALLED_TAG
   curl -fsSL "$archive_url" | tar -xzf - -C "$branch" --strip-components 1 || fail "the journal could not be downloaded from $archive_url"
   sh "$branch/install.sh" "$@"
   exit 0
@@ -168,7 +181,9 @@ if [ "${1:-}" = "update" ]; then
     build_programs
   fi
   record_python
-  exec env PYTHONPATH="$SOURCE" "$python" -m install.working_tree_install "$ROOT" "$SOURCE"
+  env PYTHONPATH="$SOURCE" "$python" -m install.working_tree_install "$ROOT" "$SOURCE" || exit $?
+  record_installed_release
+  exit 0
 fi
 # a plain install in a project whose version 4 database is still in .journal upgrades it, as sh install.sh upgrade --yes
 # does; an upgrade that stopped half way is finished the same way, since only a finished upgrade moves journal.db aside

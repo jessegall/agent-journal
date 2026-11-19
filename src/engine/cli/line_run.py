@@ -11,10 +11,11 @@ from engine.cli.module_add_line import MODULE_ADDITION_ARGUMENTS, ModuleAddLine
 from engine.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
 from engine.container.container import Container
 from engine.database.database import BUSY_TIMEOUT_SECONDS, Database
+from engine.database.database_pool import DatabasePool
 from engine.database.reported_findings import ReportedFindings
 from engine.database.request_watch import RequestWatch
 from engine.time.deadline import Deadline
-from engine.module.journal_container import opened_container, synced_container
+from engine.module.journal_container import synced_database_container, opened_container, synced_container
 from engine.journal.journal_home import JournalHome
 from engine.cli.caller_stream import CallerStream
 from engine.command.script_policy import ScriptPolicy
@@ -48,6 +49,7 @@ class LineRun:
         self.fingerprint = CodeFingerprint()
         self.completion_callback = completion_callback
         self.turns = turns
+        self.pool = DatabasePool(home, turns)
 
     def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None,
             timing: Timing | None = None) -> int:
@@ -57,7 +59,7 @@ class LineRun:
                 line = ModuleAddLine if argv[:2] == MODULE_ADDITION_ARGUMENTS else ModuleSyncLine
                 return container.get(line).run(argv, stream)
             finally:
-                self.close(container, argv)
+                self.closed(container, argv)
         try:
             container = self.synced(deadline, timing)
         except StaleRegistryError as error:
@@ -93,10 +95,17 @@ class LineRun:
         try:
             self.completion_callback(container, argv)
         finally:
+            self.pool.returned(container.get(Database))
+
+    # a module sync runs on a connection of its own, bound to its thread, which is closed rather than kept
+    def closed(self, container: Container, argv: list[str]) -> None:
+        try:
+            self.completion_callback(container, argv)
+        finally:
             container.get(Database).close()
 
     def synced(self, deadline: Deadline | None, timing: Timing | None) -> Container:
-        container = synced_container(self.home, self.turns)
+        container = synced_database_container(self.home, self.pool.taken())
         container.bind(CodeFingerprint, self.fingerprint)
         container.bind(ReportedFindings, self.reported)
         remaining_seconds = deadline.remaining_seconds() if deadline else None

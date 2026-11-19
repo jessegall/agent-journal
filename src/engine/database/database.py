@@ -53,6 +53,17 @@ class Database:
         self.read_cuts: list[ReadCutError] = []
         self.cuts_raise = False
 
+    # a kept connection serves its next request as a new one would: no write left open, no scope, no limit or
+    # finding of the last request
+    def reset_request_state(self) -> None:
+        if self.connection.in_transaction:
+            self.connection.execute("ROLLBACK")
+        self.nested.clear()
+        self.repeated_work = PointTally()
+        self.read_actor_id, self.row_owner, self.environment_scope_passed, self.unscoped_reads_raise = None, None, False, False
+        self.read_limit_rows, self.collected_large_reads, self.read_cuts, self.cuts_raise = None, None, [], False
+        self.set_busy_timeout(BUSY_TIMEOUT_SECONDS)
+
     @property
     def scope_environment_id(self) -> int | None:
         return self.row_owner.environment_id if self.row_owner is not None else None
