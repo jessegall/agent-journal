@@ -23,6 +23,13 @@ func claudeCodeMenu(name, hold string, keywords ...string) screen.MenuFamily {
 	}
 }
 
+// asksForSecret marks a family whose screen asks the person for a key or password, so no text of it leaves the host.
+func asksForSecret(family screen.MenuFamily) screen.MenuFamily {
+	family.Secret = true
+
+	return family
+}
+
 // Screens is how Claude Code 2.1.323 draws its terminal, measured from testdata/recordings/claude-code/2.1.323: the
 // composer is the ❯ row fenced by two rules on the normal buffer, empty while the cursor sits after the ❯. A spinner
 // redraw lands about every 100 ms, so 300 ms of stillness is three missed frames. The menu families come from report
@@ -41,7 +48,8 @@ func (ClaudeCode) Screens() screen.Layout {
 			claudeCodeMenu("folder-trust", "trust_required", "trust", "folder", "safety", "workspace", "security"),
 			claudeCodeMenu("login-method", "login_required", "select login method", "subscription", "console account",
 				"3rd-party platform"),
-			claudeCodeMenu("api-key", "login_required", "custom api key", "anthropic_api_key", "use this api key"),
+			asksForSecret(claudeCodeMenu("api-key", "login_required", "custom api key", "anthropic_api_key",
+				"use this api key")),
 			claudeCodeMenu("theme", "onboarding_required", "text style", "dark mode", "light mode", "colorblind"),
 			claudeCodeMenu("terms", "onboarding_required", "consumer terms", "policies", "help improve",
 				"accept terms"),

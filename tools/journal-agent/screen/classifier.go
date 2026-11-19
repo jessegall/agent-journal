@@ -41,6 +41,8 @@ type MenuFamily struct {
 	Hold string
 	// LaterKeys are the recorded keys that choose a menu's harmless Later; empty means nothing is answered.
 	LaterKeys string
+	// Secret is whether this family's screen asks the person for a password, key or other secret.
+	Secret bool
 }
 
 // matches is whether the snapshot shows this family: its option list is drawn and enough keywords appear.
@@ -49,6 +51,11 @@ func (family MenuFamily) matches(snapshot contracts.Snapshot) bool {
 		return false
 	}
 
+	return family.matchesWords(snapshot)
+}
+
+// matchesWords is whether enough of the family's keywords appear on the screen, with or without its option list.
+func (family MenuFamily) matchesWords(snapshot contracts.Snapshot) bool {
 	text := strings.ToLower(strings.Join(snapshot.Rows, "\n"))
 	present := 0
 	for _, keyword := range family.Keywords {

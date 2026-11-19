@@ -96,6 +96,18 @@ func TestAnUnmatchedScreenReportsUnknownWithItsBuildRequestAndAge(t *testing.T) 
 	}
 }
 
+func TestASecretScreenStillHoldsForItsFamilysReason(t *testing.T) {
+	reading := drawn(t, "\x1b[2;1HDetected a custom API key in your environment\x1b[3;1HDo you want to use this API key?"+
+		"\x1b[5;1H❯ 1. Yes\x1b[6;1H  2. No (recommended)")
+	reader, _ := replayed(t, "claude-code/2.1.323/screens/folder-trust")
+	holds, program := newHolds(t, reader)
+
+	report, err := holds.Observe(reading, "request-3", 0)
+	if err != nil || reading.Menu != "api-key" || report.Reason != "login_required" || program.Len() != 0 {
+		t.Fatalf("the api key screen read %+v and reported %+v, %v, keys %q", reading, report, err, program.String())
+	}
+}
+
 func TestOnlyARecordedLaterIsAnswered(t *testing.T) {
 	reader, _ := replayed(t, "claude-code/2.1.323/screens/folder-trust")
 	layout := profiles.ClaudeCode{}.Screens()
