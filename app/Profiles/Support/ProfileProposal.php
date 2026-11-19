@@ -52,22 +52,12 @@ final readonly class ProfileProposal
     {
         try {
             $written = ProfileConfigurationData::from($configuration);
-            $overrides = [];
+            $profiles = array_map(
+                fn (string $key): ProposedProfile => self::profile($key, $written->profiles[$key]),
+                array_map(strval(...), array_keys($written->profiles)),
+            );
 
-            foreach ($written->baseOverrides as $base => $override) {
-                $overrides[] = new BaseOverride(
-                    ProfileBase::of((string) $base),
-                    PolicyOverrideData::from($override)->toPolicyOverride(),
-                );
-            }
-
-            $profiles = [];
-
-            foreach ($written->profiles as $key => $profile) {
-                $profiles[] = self::profile((string) $key, $profile);
-            }
-
-            return new self($written->revision, $overrides, $profiles);
+            return new self($written->revision, $written->toBaseOverrides(), $profiles);
         } catch (TypeError|ValueError|CannotCreateData|CannotCastEnum $failure) {
             throw ProfileProposalRefused::unreadable($failure);
         }

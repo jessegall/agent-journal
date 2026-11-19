@@ -8,12 +8,9 @@ use App\Settings\Data\BooleanValueData;
 use App\Settings\Data\DecimalConstraintsData;
 use App\Settings\Data\DecimalValueData;
 use App\Settings\Data\IntegerChoiceConstraintsData;
-use App\Settings\Data\IntegerChoiceOptionData;
 use App\Settings\Data\IntegerChoiceValueData;
 use App\Settings\Data\InvalidValueData;
 use App\Settings\Data\PlainGroupAvailabilityData;
-use App\Settings\Data\SettingData;
-use App\Settings\Data\SettingGroupData;
 use App\Settings\Data\SettingIdentityData;
 use App\Settings\Data\SettingsCatalogueData;
 use App\Settings\Data\ToggleGroupAvailabilityData;
@@ -41,14 +38,14 @@ final class SettingsCatalogueDataTest extends TestCase
             'title' => 'Settings',
             'revision' => 3,
             'groups' => [
-                SettingGroupData::from([
+                [
                     'identity' => $this->identity('review'),
                     'label' => 'Review',
                     'availability' => ToggleGroupAvailabilityData::from(
                         ['state' => GroupAvailability::Disabled, 'defaultEnabled' => true],
                     ),
                     'settings' => [
-                        SettingData::from([
+                        [
                             'identity' => $this->identity('notify_owner'),
                             'label' => 'Notify the owner',
                             'type' => SettingType::Boolean,
@@ -56,8 +53,8 @@ final class SettingsCatalogueDataTest extends TestCase
                             'availability' => SettingAvailability::GroupDisabled,
                             'default' => BooleanValueData::from(['value' => true]),
                             'configured' => BooleanValueData::from(['value' => false]),
-                        ]),
-                        SettingData::from([
+                        ],
+                        [
                             'identity' => $this->identity('weight'),
                             'label' => 'Weight',
                             'type' => SettingType::Decimal,
@@ -68,15 +65,15 @@ final class SettingsCatalogueDataTest extends TestCase
                                 ['precision' => 5, 'scale' => 2],
                             ),
                             'configured' => InvalidValueData::from([]),
-                        ]),
+                        ],
                     ],
-                ]),
-                SettingGroupData::from([
+                ],
+                [
                     'identity' => $this->identity('general'),
                     'label' => 'General',
                     'availability' => PlainGroupAvailabilityData::from([]),
                     'settings' => [
-                        SettingData::from([
+                        [
                             'identity' => $this->identity('priority'),
                             'label' => 'Priority',
                             'type' => SettingType::Choice,
@@ -86,13 +83,13 @@ final class SettingsCatalogueDataTest extends TestCase
                             'constraints' => IntegerChoiceConstraintsData::from(
                                 [
                                     'options' => [
-                                        IntegerChoiceOptionData::from(['value' => 0, 'label' => 'Normal']),
+                                        ['value' => 0, 'label' => 'Normal'],
                                     ],
                                 ],
                             ),
-                        ]),
+                        ],
                     ],
-                ]),
+                ],
             ],
         ])->toArray();
 

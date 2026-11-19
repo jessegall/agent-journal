@@ -16,19 +16,11 @@ final readonly class EmptyRunPolicy
     private function __construct(public EmptyPolicy $policy, public string $summary) {}
 
     /**
-     * @return array{policy: string, summary: string}
+     * The policy as it was stored, read back without the checks of a new one.
      */
-    public function toArray(): array
+    public static function stored(EmptyPolicy $policy, string $summary): self
     {
-        return ['policy' => $this->policy->value, 'summary' => $this->summary];
-    }
-
-    /**
-     * @param  array{policy: string, summary: string}  $fields
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(EmptyPolicy::from($fields['policy']), $fields['summary']);
+        return new self($policy, $summary);
     }
 
     public static function invalid(): self

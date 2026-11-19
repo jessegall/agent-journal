@@ -95,13 +95,18 @@ final class McpInstructionsTest extends TestCase
             RewriteSupport::WithoutApproval,
         );
 
-        $reply = $this->machine()->answer(
+        $context = [];
+        $this->machine()->answer(
             $start,
             $capabilities,
             new OperationDeadline(3000),
-            fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0),
+            function (HookAnswer $answer) use (&$context): ProgramReply {
+                $context = $answer->context;
+
+                return new ProgramReply('', '', 0);
+            },
         );
 
-        return json_decode($reply->stdout, true, flags: JSON_THROW_ON_ERROR);
+        return $context;
     }
 }

@@ -14,6 +14,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
+use App\Processes\Values\ProcessEventPayload;
 use Carbon\CarbonImmutable;
 
 /**
@@ -33,7 +34,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function queued(PartKey $part): void
     {
-        if (! $this->note('part_queued', $part)) {
+        if (! $this->note('part_queued', new ProcessEventPayload(part: $part->name()))) {
             return;
         }
         $this->parts[$part->name()] = PartRun::queue($this->run, $part);
@@ -41,7 +42,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function started(PartKey $part, int $pid, string $host): void
     {
-        if (! $this->note('part_started', $part, ['pid' => $pid])) {
+        if (! $this->note('part_started', new ProcessEventPayload(part: $part->name(), pid: $pid))) {
             return;
         }
         $this->part($part)->start($pid, $host);
@@ -49,7 +50,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function startedInside(PartKey $part, string $host): void
     {
-        if (! $this->note('part_started', $part)) {
+        if (! $this->note('part_started', new ProcessEventPayload(part: $part->name()))) {
             return;
         }
         $this->part($part)->startInside($host);
@@ -62,7 +63,9 @@ final class RecordedRunEvents implements RunEvents
 
     public function ended(PartKey $part, PartEnd $end, bool $drained): void
     {
-        if (! $this->note('part_ended', $part, ['end' => $end->type->value, 'code' => $end->code])) {
+        $payload = new ProcessEventPayload(part: $part->name(), end: $end->type->value, code: $end->code);
+
+        if (! $this->note('part_ended', $payload)) {
             return;
         }
         $record = $this->part($part);
@@ -76,7 +79,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function skipped(PartKey $part, string $controllingResult): void
     {
-        if (! $this->note('part_skipped', $part, ['because' => $controllingResult])) {
+        if (! $this->note('part_skipped', new ProcessEventPayload(part: $part->name(), because: $controllingResult))) {
             return;
         }
         $this->part($part)->skip($controllingResult);
@@ -84,7 +87,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function spawnFailed(PartKey $part, string $reason): void
     {
-        if (! $this->note('part_start_failed', $part, ['reason' => $reason])) {
+        if (! $this->note('part_start_failed', new ProcessEventPayload(part: $part->name(), reason: $reason))) {
             return;
         }
         $this->part($part)->failToSpawn($reason);
@@ -92,7 +95,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function stopped(PartKey $part, string $reason): void
     {
-        if (! $this->note('part_stopped', $part, ['reason' => $reason])) {
+        if (! $this->note('part_stopped', new ProcessEventPayload(part: $part->name(), reason: $reason))) {
             return;
         }
         $this->part($part)->stop($reason);
@@ -100,7 +103,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function lost(PartKey $part): void
     {
-        if (! $this->note('part_lost', $part)) {
+        if (! $this->note('part_lost', new ProcessEventPayload(part: $part->name()))) {
             return;
         }
         $this->part($part)->lose();
@@ -113,7 +116,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function runStopped(string $reason): void
     {
-        if (! $this->note('run_stopped', null, ['reason' => $reason])) {
+        if (! $this->note('run_stopped', new ProcessEventPayload(reason: $reason))) {
             return;
         }
         $this->run->markStopped($reason);
@@ -148,13 +151,10 @@ final class RecordedRunEvents implements RunEvents
 
     /**
      * Keeps the event under its number and reports whether it is new: a repeat or a conflicting event changes nothing.
-     *
-     * @param  array<string, string|int>  $details
      */
-    private function note(string $type, PartKey|null $part, array $details = []): bool
+    private function note(string $type, ProcessEventPayload $payload): bool
     {
-        $recorded = $part === null ? $details : ['part' => $part->name(), ...$details];
-        $event = ProcessEvent::record($this->run, ++$this->sequence, $type, $recorded);
+        $event = ProcessEvent::record($this->run, ++$this->sequence, $type, $payload->toArray());
 
         return $event->wasRecentlyCreated && $event->sequence === $this->sequence;
     }

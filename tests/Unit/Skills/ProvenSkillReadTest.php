@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\Hooks\Enums\ToolOutcome;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\ToolResult;
 use App\Skills\Enums\ReadEvidence;
 use App\Skills\Values\ProvenSkillRead;
@@ -44,7 +45,9 @@ final class ProvenSkillReadTest extends TestCase
         yield 'a listing' => [self::call('Bash', ['command' => 'ls '.dirname(self::FILE, 2)])];
         yield 'a partial read' => [self::call('Read', ['file_path' => self::FILE, 'limit' => 10])];
         yield 'another file' => [self::call('Read', ['file_path' => '/work/README.md'])];
-        yield 'a failed read' => [new ToolResult('Read', ToolOutcome::Failed, ['file_path' => self::FILE])];
+        yield 'a failed read' => [
+            new ToolResult('Read', ToolOutcome::Failed, new ProgramToolInput(['file_path' => self::FILE])),
+        ];
     }
 
     #[DataProvider('proofs')]
@@ -68,6 +71,6 @@ final class ProvenSkillReadTest extends TestCase
      */
     private static function call(string $tool, array $arguments): ToolResult
     {
-        return new ToolResult($tool, ToolOutcome::Succeeded, $arguments);
+        return new ToolResult($tool, ToolOutcome::Succeeded, new ProgramToolInput($arguments));
     }
 }
