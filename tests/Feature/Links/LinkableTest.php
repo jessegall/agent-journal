@@ -39,8 +39,8 @@ final class LinkableTest extends TestCase
 
     public function test_two_model_types_are_linked_and_found_from_both_sides(): void
     {
-        $note = Note::query()->create(['owner' => 'visible']);
-        $label = Label::query()->create(['name' => 'urgent']);
+        $note = Note::ownedBy('visible');
+        $label = Label::named('urgent');
 
         $note->linkTo($label);
 
@@ -52,8 +52,8 @@ final class LinkableTest extends TestCase
 
     public function test_linking_again_in_either_direction_keeps_one_link(): void
     {
-        $note = Note::query()->create(['owner' => 'visible']);
-        $label = Label::query()->create(['name' => 'urgent']);
+        $note = Note::ownedBy('visible');
+        $label = Label::named('urgent');
 
         $note->linkTo($label);
         $note->linkTo($label);
@@ -65,8 +65,8 @@ final class LinkableTest extends TestCase
 
     public function test_the_table_refuses_a_second_row_for_the_same_link(): void
     {
-        $note = Note::query()->create(['owner' => 'visible']);
-        $label = Label::query()->create(['name' => 'urgent']);
+        $note = Note::ownedBy('visible');
+        $label = Label::named('urgent');
         $note->linkTo($label);
 
         $this->expectException(QueryException::class);
@@ -76,8 +76,8 @@ final class LinkableTest extends TestCase
 
     public function test_unlinking_removes_the_link_from_both_sides(): void
     {
-        $note = Note::query()->create(['owner' => 'visible']);
-        $label = Label::query()->create(['name' => 'urgent']);
+        $note = Note::ownedBy('visible');
+        $label = Label::named('urgent');
         $label->linkTo($note);
 
         $note->unlinkFrom($label);
@@ -88,9 +88,9 @@ final class LinkableTest extends TestCase
 
     public function test_linked_models_are_found_only_among_the_models_the_caller_may_see(): void
     {
-        $visible = Note::query()->create(['owner' => 'visible']);
-        $hidden = Note::query()->create(['owner' => 'someone else']);
-        $label = Label::query()->create(['name' => 'urgent']);
+        $visible = Note::ownedBy('visible');
+        $hidden = Note::ownedBy('someone else');
+        $label = Label::named('urgent');
         $label->linkTo($visible);
         $this->insertRawLink($hidden, $label);
 
@@ -100,9 +100,9 @@ final class LinkableTest extends TestCase
 
     public function test_only_models_of_the_queried_type_are_found(): void
     {
-        $note = Note::query()->create(['owner' => 'visible']);
-        $label = Label::query()->create(['name' => 'urgent']);
-        $otherLabel = Label::query()->create(['name' => 'later']);
+        $note = Note::ownedBy('visible');
+        $label = Label::named('urgent');
+        $otherLabel = Label::named('later');
         $note->linkTo($label);
         $otherLabel->linkTo($label);
 
@@ -111,8 +111,8 @@ final class LinkableTest extends TestCase
 
     public function test_a_link_can_itself_be_linked_through_the_same_table(): void
     {
-        $note = Note::query()->create(['owner' => 'visible']);
-        $label = Label::query()->create(['name' => 'urgent']);
+        $note = Note::ownedBy('visible');
+        $label = Label::named('urgent');
         $note->linkTo($label);
         $link = Link::query()->sole();
 

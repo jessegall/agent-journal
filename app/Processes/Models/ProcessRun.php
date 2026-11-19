@@ -11,6 +11,7 @@ use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Exceptions\RetryRefused;
 use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\RunAdmission;
 use App\Reads\Contracts\ReadableModel;
@@ -144,6 +145,18 @@ final class ProcessRun extends Model implements ReadableModel
         $parts = $this->parts()->readLimit(500)->get();
 
         return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+    }
+
+    /**
+     * A user stops what survived a lost run; only a lost run has survivors to stop.
+     */
+    public function stopSurvivors(): void
+    {
+        if ($this->lifecycle !== LifecycleState::Lost) {
+            throw RetryRefused::notLost($this->id);
+        }
+
+        $this->markStale('stopped: the run was lost and a user stopped what survived');
     }
 
     /**

@@ -45,10 +45,10 @@ final readonly class CommentRecords implements CommentResolver
             ->get();
         $shown = $comments->take($page->limit);
 
-        return new CommentList(
-            array_values($shown->map(fn (Comment $comment) => self::viewOf($card, $comment))->all()),
-            $comments->count() > $page->limit ? $shown->last()?->id : null,
-        );
+        return CommentList::from([
+            'items' => array_values($shown->map(fn (Comment $comment) => self::viewOf($card, $comment))->all()),
+            'nextAfter' => $comments->count() > $page->limit ? $shown->last()?->id : null,
+        ]);
     }
 
     public function location(RecordIdentity $target, string $commentId, TextSelection $selection = new TextSelection()): RecordCommentLocation|TextCommentLocation

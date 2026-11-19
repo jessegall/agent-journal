@@ -41,4 +41,10 @@ final class LedgerEntry extends Model implements Numbered, ReadableModel
     {
         return $this->relationLoaded('ledger') ? $this->ledger : $this->ledger()->sole();
     }
+
+    public static function write(string $ledgerId, string $text): self
+    {
+        return self::query()->create(['ledger_id' => $ledgerId, 'text' => $text]);
+    }
+
 }

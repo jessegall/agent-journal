@@ -12,6 +12,6 @@ final readonly class OpenLedgerHandler implements CommandHandler
 {
     public function handle(OpenLedger $command): string
     {
-        return Ledger::query()->create(['title' => $command->title])->id;
+        return Ledger::open($command->title)->id;
     }
 }

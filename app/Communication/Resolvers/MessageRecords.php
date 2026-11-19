@@ -141,10 +141,10 @@ final readonly class MessageRecords implements ConversationResolver
             ->get();
         $shown = $rows->take($pageSize);
 
-        return new MessagePage(
-            $this->viewsOf(array_values($shown->reverse()->all())),
-            $rows->count() > $pageSize ? $shown->last()?->id : null,
-        );
+        return MessagePage::from([
+            'messages' => $this->viewsOf(array_values($shown->reverse()->all())),
+            'olderCursor' => $rows->count() > $pageSize ? $shown->last()?->id : null,
+        ]);
     }
 
     /**
