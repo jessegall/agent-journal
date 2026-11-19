@@ -121,7 +121,8 @@ class WorkerBranch:
             if self.git("rev-parse", "--verify", "-q", remote, cwd=checkout).returncode != 0:
                 self.missing_bases.add((checkout, branch))
                 return None
-            argv = ("--track", "-b", branch, str(path), f"origin/{branch}")
+            # no --track: a checkout cloned with one branch fetches only it, and git sets no tracking on a ref it fetched by hand
+            argv = ("--no-track", "-b", branch, str(path), remote)
         path.parent.mkdir(parents=True, exist_ok=True)
         added = self.checkout_git("worktree", "add", "-q", *argv, cwd=checkout)
         if added.returncode != 0:
