@@ -260,6 +260,27 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
+     * The live attempts the host took that it says it no longer runs, locked; another host's attempts are left alone.
+     *
+     * @param  list<string>  $runningAttemptIds
+     * @return list<self>
+     */
+    public static function lostBy(string $hostId, array $runningAttemptIds): array
+    {
+        $attempts = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->where('process_reference', $hostId)
+            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->whereNotIn('id', $runningAttemptIds)
+            ->orderBy('created_at')
+            ->lockForUpdate()
+            ->readAll('a host reconciles the few sign-ins it took')
+            ->get();
+
+        return array_values($attempts->all());
+    }
+
+    /**
      * The attempt this host runs, read before its locks are taken in their order; another host's attempt is as unknown
      * as a missing one.
      *

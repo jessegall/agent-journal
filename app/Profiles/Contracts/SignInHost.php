@@ -29,6 +29,13 @@ interface SignInHost
 
     public function claimCleanup(): ClaimedCleanup|null;
 
+    /**
+     * Tells the journal which sign-ins the runner still runs, so the others it took end as interrupted.
+     *
+     * @param  list<string>  $runningAttemptIds
+     */
+    public function reconcileSignIns(array $runningAttemptIds): void;
+
     public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void;
 
     /**

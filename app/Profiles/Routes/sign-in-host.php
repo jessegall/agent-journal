@@ -6,6 +6,7 @@ use App\Http\Controllers\Profiles\ClaimAccountCheckController;
 use App\Http\Controllers\Profiles\ClaimCleanupController;
 use App\Http\Controllers\Profiles\ClaimSignInController;
 use App\Http\Controllers\Profiles\PublishSignInChallengeController;
+use App\Http\Controllers\Profiles\ReconcileSignInsController;
 use App\Http\Controllers\Profiles\ReportAccountCheckController;
 use App\Http\Controllers\Profiles\ReportAccountCleanupController;
 use App\Http\Controllers\Profiles\ReportSignInCleanupController;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('host/sign-ins')->middleware('journal.host')->name('profiles.sign-in-host.')->group(function (): void {
     Route::post('/claim', ClaimSignInController::class)->name('claim');
+    Route::post('/reconcile', ReconcileSignInsController::class)->name('reconcile');
     Route::post('/{attempt}/report', ReportSignInController::class)->name('report');
     Route::post('/{attempt}/challenge', PublishSignInChallengeController::class)->name('challenge');
     Route::post('/{attempt}/code', TakeSignInCodeController::class)->name('code');

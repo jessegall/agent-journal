@@ -61,6 +61,16 @@ final class RecordingSignInHost implements SignInHost
 
     public ClaimedCleanup|null $nextCleanup = null;
 
+    /**
+     * @var list<list<string>>
+     */
+    public array $reconciled = [];
+
+    public function reconcileSignIns(array $runningAttemptIds): void
+    {
+        $this->reconciled[] = $runningAttemptIds;
+    }
+
     public function claimCleanup(): ClaimedCleanup|null
     {
         [$claimed, $this->nextCleanup] = [$this->nextCleanup, null];

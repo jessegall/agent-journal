@@ -64,6 +64,14 @@ final readonly class PrivateSignInProcesses
     }
 
     /**
+     * Tells the journal, as the runner starts, that it runs no sign-in: one it took before a restart was lost with it.
+     */
+    public function reconcileAtStart(): void
+    {
+        $this->host->reconcileSignIns([]);
+    }
+
+    /**
      * Runs the next account check with the program's own status check and answers whether there was one; only a
      * certain answer is reported as signed in or out.
      */

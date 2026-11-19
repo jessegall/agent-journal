@@ -92,6 +92,11 @@ final readonly class SignedSignInHost implements SignInHost
         $this->send("/host/accounts/{$claimed->accountId}/check", $body);
     }
 
+    public function reconcileSignIns(array $runningAttemptIds): void
+    {
+        $this->send('/host/sign-ins/reconcile', (string) json_encode(['running' => $runningAttemptIds]));
+    }
+
     public function claimCleanup(): ClaimedCleanup|null
     {
         $response = $this->send('/host/accounts/cleanups/claim', '');

@@ -28,6 +28,8 @@ final class RunSignInsCommand extends Command
             static fn () => usleep(500_000),
         );
 
+        $runner->reconcileAtStart();
+
         do {
             $ran = $runner->runNext() || $runner->checkNext() || $runner->cleanNext();
 

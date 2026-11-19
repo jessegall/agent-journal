@@ -122,6 +122,7 @@ use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\PublishSignInChallenge;
 use App\Profiles\Commands\ReconcileAccounts;
+use App\Profiles\Commands\ReconcileSignIns;
 use App\Profiles\Commands\RecordAccountFailure;
 use App\Profiles\Commands\ReleaseAccountRemoval;
 use App\Profiles\Commands\ReleaseSignInAgain;
@@ -311,6 +312,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             CompleteSignIn::class,
             ExpireSignInAttempt::class,
             ReleaseAccountRemoval::class,
+            ReconcileSignIns::class,
             ClaimCleanup::class,
             CleanAccount::class,
             CleanSignInAttempt::class,
@@ -399,6 +401,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             CompleteSignIn::class,
             ExpireSignInAttempt::class,
             ReleaseAccountRemoval::class,
+            ReconcileSignIns::class,
             ClaimCleanup::class,
             CleanAccount::class,
             CleanSignInAttempt::class,
