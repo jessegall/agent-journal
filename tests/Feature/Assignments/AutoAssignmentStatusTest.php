@@ -8,9 +8,9 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AutoAssignmentResolver;
-use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Enums\AutoAssignmentState;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Storage\DatabaseAutoAssignments;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentTotals;
 use App\Assignments\Support\AutoAssignmentInput;
@@ -100,6 +100,7 @@ final class AutoAssignmentStatusTest extends TestCase
                 return $owner !== 'Tasks';
             }
         });
+        $this->app->forgetInstance(DatabaseAutoAssignments::class);
 
         $this->assertSame(AutoAssignmentState::DomainUnavailable, $this->currentStatus()->state);
     }
@@ -113,7 +114,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
         $large = Plan::factory()->create(['state' => PlanState::Started]);
         $large->addPhase('Build')->addTasks(array_map(fn () => strtolower((string) Str::ulid()), range(1, 1001)));
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->configure(
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->configure(
             new AutoAssignmentInput($this->key, new PoolReference('plans.tasks', $large->assignmentIdentity(), []), 2),
             1,
         ));
@@ -165,7 +166,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
     private function enable(PoolReference $pool, int $size): void
     {
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable(
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable(
             new AutoAssignmentInput($this->key, $pool, $size),
             0,
         ));
@@ -174,7 +175,7 @@ final class AutoAssignmentStatusTest extends TestCase
     private function write(callable $work): void
     {
         $this->app->make(AssignmentTransaction::class)
-            ->run(fn () => $work($this->app->make(AutoAssignmentWriter::class)));
+            ->run(fn () => $work($this->app->make(DatabaseAutoAssignments::class)));
     }
 
     private function hold(TaskState $state): void

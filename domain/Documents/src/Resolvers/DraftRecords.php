@@ -6,7 +6,6 @@ namespace Domain\Documents\Resolvers;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use Domain\Documents\Contracts\DraftResolver;
-use Domain\Documents\Contracts\EditorContext;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\DocumentAbility;
@@ -15,12 +14,13 @@ use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Domain\Documents\Support\RequestEditor;
 use Illuminate\Container\Attributes\Scoped;
 
 #[Scoped]
 final readonly class DraftRecords implements DraftResolver
 {
-    public function __construct(private EditorContext $editors, private CurrentAuthorizer $authorizer) {}
+    public function __construct(private RequestEditor $editors, private CurrentAuthorizer $authorizer) {}
 
     public function current(int $documentNumber): DraftView
     {

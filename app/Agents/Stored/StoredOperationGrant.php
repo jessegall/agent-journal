@@ -27,7 +27,7 @@ final class StoredOperationGrant extends Data
     {
         return self::from([
             'operation' => $grant->operation,
-            'resources' => array_map(StoredResource::fromResourceRequest(...), $grant->resources),
+            'resources' => $grant->resources,
         ]);
     }
 

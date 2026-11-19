@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getJson } from '@/composables/jsonRequests';
 import { onMounted, ref } from 'vue';
 import type { RecordCommentLocation, TextCommentLocation } from '@/generated/types/core';
 import { location } from '@/routes/comments';
@@ -19,11 +20,11 @@ type Loaded = { state: 'loading' } | { state: 'unavailable'; message: string } |
 const loaded = ref<Loaded>({ state: 'loading' });
 
 onMounted(async () => {
-    const reply = await fetch(location.url({ query: { target: props.target, comment: props.commentId } }), { headers: { Accept: 'application/json' } });
+    const reply = await getJson<RecordCommentLocation | TextCommentLocation>(
+        location.url({ query: { target: props.target, comment: props.commentId } }),
+    );
 
-    loaded.value = reply.ok
-        ? { state: 'found', place: (await reply.json()) as RecordCommentLocation | TextCommentLocation }
-        : { state: 'unavailable', message: ((await reply.json()) as { message: string }).message };
+    loaded.value = reply.ok ? { state: 'found', place: reply.value } : { state: 'unavailable', message: reply.message };
 });
 </script>
 

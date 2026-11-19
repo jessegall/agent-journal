@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Numbers\Support;
 
 use App\Bus\Contracts\CommandTransaction;
-use App\Numbers\Contracts\NumberAllocator;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Exceptions\NumberHolderUnsaved;
 use App\Numbers\Models\NumberGroup;
@@ -16,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * group under the holder's lock, and takes the group's next number. It never opens, commits or retries a
  * transaction, and reads the group fresh every time, so a retried command numbers again from the database.
  */
-final readonly class LockingNumberAllocator implements NumberAllocator
+final readonly class LockingNumberAllocator
 {
     public function __construct(
         private CommandTransaction $transaction,

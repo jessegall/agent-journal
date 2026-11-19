@@ -8,16 +8,16 @@ use App\Contracts\CommandHandler;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Contracts\EditorContext;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
+use Domain\Documents\Support\RequestEditor;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class OpenDocumentHandler implements CommandHandler
 {
-    public function __construct(private EditorContext $editors, private Dispatcher $events) {}
+    public function __construct(private RequestEditor $editors, private Dispatcher $events) {}
 
     public function handle(OpenDocument $command): DraftReference
     {

@@ -7,7 +7,7 @@ namespace App\Communication\Models\Scopes;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Communication\Contracts\MemberInboxes;
+use App\Communication\Support\RegisteredInboxes;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +24,7 @@ final readonly class MessageVisibility implements Scope
     /**
      * @param  Closure(): ActorVisibility  $visibility
      * @param  Closure(): CurrentActor  $actors
-     * @param  Closure(): MemberInboxes  $inboxes
+     * @param  Closure(): RegisteredInboxes  $inboxes
      */
     public function __construct(private Closure $visibility, private Closure $actors, private Closure $inboxes) {}
 

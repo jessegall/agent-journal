@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
-use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Exceptions\ClassificationUnavailable;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\ModuleRuleBundle;
@@ -15,10 +14,15 @@ use Illuminate\Database\QueryException;
  * The current project's active rule revisions, with the reader and proof each check was approved with, and its
  * approved module bundles, read through named scopes; a store that cannot be read refuses classification.
  */
-final readonly class ProjectRules implements CommandRuleResolver
+final readonly class ProjectRules
 {
     public function __construct(private ProjectKey $projects) {}
 
+    /**
+     * @return list<RuleRevision>
+     *
+     * @throws ClassificationUnavailable
+     */
     public function activeRevisions(): array
     {
         try {
@@ -35,6 +39,11 @@ final readonly class ProjectRules implements CommandRuleResolver
         }
     }
 
+    /**
+     * @return list<ModuleRuleBundle>
+     *
+     * @throws ClassificationUnavailable
+     */
     public function approvedBundles(): array
     {
         try {

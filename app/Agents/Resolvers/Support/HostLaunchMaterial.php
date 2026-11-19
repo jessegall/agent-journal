@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Resolvers;
+namespace App\Agents\Resolvers\Support;
 
 use App\Agents\Exceptions\LaunchMaterialMissing;
 use App\Agents\Support\LaunchedAgent;

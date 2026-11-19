@@ -10,7 +10,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
 use App\Engine\Exceptions\EngineAccessRefused;
-use App\Hooks\Contracts\EngineStack;
+use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Events\StateTypesRequested;
@@ -59,7 +59,7 @@ final class EngineStackTest extends TestCase
 
         $this->asEngineFor(
             $this->targetOf($launched),
-            fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A')),
+            fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($launched), $this->task('A')),
         );
 
         $this->assertSame(['enter:A'], $this->log->calls);
@@ -74,7 +74,7 @@ final class EngineStackTest extends TestCase
         $this->assertThrows(
             fn () => $this->asEngineFor(
                 $this->targetOf($granted),
-                fn () => $this->app->make(EngineStack::class)->push($this->targetOf($other), $this->task('B')),
+                fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($other), $this->task('B')),
             ),
             EngineAccessRefused::class,
         );
@@ -90,7 +90,7 @@ final class EngineStackTest extends TestCase
         $this->assertThrows(
             fn () => $this->asEngineFor(
                 $this->targetOf($launched),
-                fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A')),
+                fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($launched), $this->task('A')),
             ),
             StackTargetRefused::class,
         );
@@ -102,10 +102,10 @@ final class EngineStackTest extends TestCase
     {
         $launched = $this->launch();
         $target = $this->targetOf($launched);
-        $this->asEngineFor($target, fn () => $this->app->make(EngineStack::class)->push($target, $this->task('A')));
+        $this->asEngineFor($target, fn () => $this->app->make(EngineStacks::class)->push($target, $this->task('A')));
         $this->tasks->finished = ['A'];
 
-        $this->asEngineFor($target, fn () => $this->app->make(EngineStack::class)->popExposed($target));
+        $this->asEngineFor($target, fn () => $this->app->make(EngineStacks::class)->popExposed($target));
 
         $this->assertSame(['enter:A', 'exit:A'], $this->log->calls);
         $this->assertSame([], $this->storedSubjects($launched));

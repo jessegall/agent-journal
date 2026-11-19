@@ -28,7 +28,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\LaunchRecord;
 use App\Agents\Models\SessionPolicy;
-use App\Agents\Resolvers\HostLaunchMaterial;
+use App\Agents\Resolvers\Support\HostLaunchMaterial;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\HostCapacityLock;

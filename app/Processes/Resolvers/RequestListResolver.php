@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Resolvers;
 
-use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Data\BundleRowData;
 use App\Processes\Data\ClassificationRuleRowData;
 use App\Processes\Data\RequestListData;
@@ -14,6 +13,7 @@ use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ModuleRuleBundle;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\ProjectKey;
+use App\Processes\Support\ProjectRules;
 use App\Processes\Values\RuleBundle;
 use App\Ui\Contracts\PageResolver;
 
@@ -26,7 +26,7 @@ final readonly class RequestListResolver implements PageResolver
     public function __construct(
         private ProjectKey $projects,
         private CommandRuleRegistry $rules,
-        private CommandRuleResolver $approved,
+        private ProjectRules $approved,
     ) {}
 
     public function read(): RequestListData

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
-use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Events\EvidenceInvalid;
 use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\PartRun;
@@ -26,7 +25,7 @@ final readonly class PartAssessments
         private ActiveRules $rules,
         private ReaderReplay $replays,
         private EvidenceValidator $validator,
-        private ResultPublisher $publisher,
+        private ReceiptPublisher $publisher,
         private Dispatcher $events,
         private RunUpdates $updates,
     ) {}

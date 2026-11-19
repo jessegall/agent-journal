@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
 /**
  * The one result a consumer may rely on (doc 21 revision 6, sections 69 and 72): it binds the run, part and attempt,
  * the work it saw, the declaration, reader and exit-policy revisions, the capture manifest and the valid assessment it
- * was published from. Only the ResultPublisher writes it; a newer receipt for the same part supersedes it.
+ * was published from. Only the ReceiptPublisher writes it; a newer receipt for the same part supersedes it.
  *
  * @property string $id
  * @property string $project_key

@@ -12,7 +12,6 @@ use App\Actors\Support\AttentionOrigin;
 use App\Assignments\Support\ProvedClaims;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Contracts\MemberInboxes;
 use App\Communication\Data\InboxCounts;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
@@ -25,6 +24,7 @@ use App\Communication\Models\Message;
 use App\Communication\Models\MessageAttention;
 use App\Communication\Policies\MessagePolicy;
 use App\Communication\Support\InboxMembers;
+use App\Communication\Support\RegisteredInboxes;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -38,7 +38,7 @@ final readonly class MessageRecords implements ConversationResolver
         private CurrentActor $actors,
         private InboxResolver $inboxes,
         private ActorLabels $labels,
-        private MemberInboxes $members,
+        private RegisteredInboxes $members,
         private CurrentAuthorizer $authorizer,
     ) {}
 

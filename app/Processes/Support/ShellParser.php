@@ -6,12 +6,12 @@ namespace App\Processes\Support;
 
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellCommandParser;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\PartJoin;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ClassFact;
 use App\Processes\Values\Classification;
 use App\Processes\Values\CommandPart;
@@ -30,7 +30,7 @@ use App\Processes\Values\Word;
  */
 final readonly class ShellParser implements ShellCommandParser
 {
-    public function __construct(private ShellSyntax $syntax, private CommandClassifier $classifier) {}
+    public function __construct(private TreeParser $syntax, private CommandClassifier $classifier) {}
 
     public function parse(string $line, ShellDialect $dialect): ShellCommand
     {

@@ -13,7 +13,7 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Actions\AgentStacks;
-use App\Hooks\Contracts\EngineStack;
+use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Events\StateTypesRequested;
@@ -83,7 +83,7 @@ final class TickingStackFlagTest extends TestCase
         $this->finished = ['T'];
         $this->asEngineFor(
             $this->targetOf($launched),
-            fn () => $this->app->make(EngineStack::class)->popExposed($this->targetOf($launched)),
+            fn () => $this->app->make(EngineStacks::class)->popExposed($this->targetOf($launched)),
         );
         $this->assertFalse($this->stackOf($launched)->has_ticking_frames);
     }

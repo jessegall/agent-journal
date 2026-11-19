@@ -14,18 +14,16 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentResult;
-use App\Desks\Contracts\SeatAdmission;
-use App\Desks\Contracts\SeatingWriter;
 
 /**
  * Seats, replaces and releases desk occupants through Core's own responsibility writer, advancing the desk's seating
  * revision with every change, ending the claims a lost seat proved, and giving an actor that lost its last seat a
  * new personal desk. Occupant attention joins here as its own constructor-injected contract.
  */
-final readonly class DeskSeating implements SeatingWriter
+final readonly class DeskSeating
 {
     public function __construct(
-        private SeatAdmission $admission,
+        private DeskSeatAdmission $admission,
         private ResponsibilityWriter $responsibilities,
         private SeatLossRepair $repair,
         private ClaimRelease $claims,

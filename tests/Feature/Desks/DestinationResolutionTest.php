@@ -15,8 +15,8 @@ use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxResolver;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Contracts\ActorDesks;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\CommitsHookRows;
@@ -59,7 +59,7 @@ final class DestinationResolutionTest extends TestCase
         $agent = Agent::named('Main', 'main-agent');
         $this->provision($agent);
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat($main->id, ActorIdentity::of($agent)),
+            fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
         );
 
         $this->assertSame($main->id, $this->holderId($agent->assigneeIdentity()));

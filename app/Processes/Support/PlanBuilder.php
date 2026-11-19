@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\StepType;
 use App\Processes\Enums\WordSegmentType;
 use App\Processes\Exceptions\ExecutionPlanRefused;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\HereDocument;
 use App\Processes\Values\PlanRedirect;
 use App\Processes\Values\PlanStep;
@@ -39,7 +39,7 @@ final class PlanBuilder
      */
     public function __construct(
         private readonly ShellTree $tree,
-        private readonly ShellSyntax $syntax,
+        private readonly TreeParser $syntax,
         private readonly array $positional,
     ) {}
 

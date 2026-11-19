@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Syntax;
 
 use App\Pipelines\Contracts\RunsPipelines;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\ShellGrammarStopped;
@@ -20,7 +19,7 @@ use App\Processes\Values\TreeDiagnostic;
  * Core's shell syntax: runs the line through the shell analysis pipeline. Invalid syntax or a limit keeps only a
  * diagnostic, never a partial tree. Every call opens its own draft, so it holds no request data.
  */
-final readonly class TreeParser implements ShellSyntax
+final readonly class TreeParser
 {
     public function __construct(private RunsPipelines $pipelines) {}
 

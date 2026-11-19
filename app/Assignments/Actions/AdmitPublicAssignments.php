@@ -7,7 +7,6 @@ namespace App\Assignments\Actions;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Assignments\Contracts\AssigneeLocks;
-use App\Assignments\Contracts\AssignmentAdmission;
 use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Enums\AssignmentAbility;
@@ -21,7 +20,7 @@ use App\Records\Support\RecordIdentity;
  * recipient's lock, one resolution of the recipient, the final holder's lock and the record. The caller's own seat
  * never takes part.
  */
-final readonly class AdmitPublicAssignments implements AssignmentAdmission
+final readonly class AdmitPublicAssignments
 {
     public function __construct(
         private CurrentActor $actors,

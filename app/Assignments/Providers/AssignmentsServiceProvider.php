@@ -22,18 +22,15 @@ use App\Assignments\Console\UnassignRecordCommand;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssigneeLocks;
 use App\Assignments\Contracts\AssigneeResolver;
-use App\Assignments\Contracts\AssignmentAdmission;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentResolver;
-use App\Assignments\Contracts\AssignmentRoom;
 use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentResolver;
-use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\ClaimRelease;
 use App\Assignments\Contracts\PublishesAssignmentFacts;
 use App\Assignments\Contracts\RecordVisibility;
@@ -77,7 +74,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AssignmentWriter::class, WriteAssignments::class);
         $this->app->scoped(ResponsibilityWriter::class, WriteResponsibilities::class);
         $this->app->scoped(AssigneeLocks::class, OrderedAssigneeLocks::class);
-        $this->app->scoped(AssignmentAdmission::class, AdmitPublicAssignments::class);
+        $this->app->scoped(AdmitPublicAssignments::class);
         $this->app->scoped(ClaimRelease::class, ProvedClaimRelease::class);
         $this->app->scoped(AssignmentResolver::class, AssignmentRecords::class);
         $this->app->scoped(AssigneeResolver::class, AssigneeRecords::class);
@@ -85,8 +82,8 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AssignmentQuery::class, DatabaseAssignmentQuery::class);
         $this->app->scoped(AssignedWorkResolver::class, RegisteredAssignedWork::class);
         $this->app->scoped(AutoAssignmentResolver::class, DatabaseAutoAssignments::class);
-        $this->app->scoped(AssignmentRoom::class, SizeAssignmentRoom::class);
-        $this->app->scoped(AutoAssignmentWriter::class, DatabaseAutoAssignments::class);
+        $this->app->scoped(SizeAssignmentRoom::class);
+        $this->app->scoped(DatabaseAutoAssignments::class);
     }
 
     public function boot(PolicyCatalogue $policies): void

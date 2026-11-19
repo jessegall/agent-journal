@@ -7,7 +7,6 @@ namespace App\Desks\Support;
 use App\Actors\Contracts\Actor;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
-use App\Desks\Contracts\ForwardingSeatResolver;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use PhpOption\None;
@@ -17,8 +16,11 @@ use PhpOption\Some;
 /**
  * The seat an actor holds at a forwarding desk, read once: an actor holds one such seat at most.
  */
-final readonly class OccupiedForwardingSeats implements ForwardingSeatResolver
+final readonly class OccupiedForwardingSeats
 {
+    /**
+     * @return Option<OccupiedSeat>
+     */
     public function forActor(Actor $actor): Option
     {
         $seats = DeskSeat::query()->select('id')->whereIn('desk_id', DeskRecord::query()->forwarding()->select('id'));

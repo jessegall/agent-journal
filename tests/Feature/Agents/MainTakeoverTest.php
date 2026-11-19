@@ -10,7 +10,7 @@ use App\Agents\Models\AgentSession;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
-use App\Communication\Contracts\MemberInboxes;
+use App\Communication\Support\RegisteredInboxes;
 use App\Desks\Commands\InstallDesks;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\BuiltInDesks;
@@ -51,7 +51,7 @@ final class MainTakeoverTest extends MessagingTestCase
     private function seatedAtMain(AgentSession $session): bool
     {
         $mainInboxId = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole()->inboxId();
-        $seated = $this->app->make(MemberInboxes::class)->inboxIdsOf($this->actorOf($session));
+        $seated = $this->app->make(RegisteredInboxes::class)->inboxIdsOf($this->actorOf($session));
         $inboxIds = $seated->pluck('inbox_id')->all();
 
         return in_array($mainInboxId, $inboxIds, true);

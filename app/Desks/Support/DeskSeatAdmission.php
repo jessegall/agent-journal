@@ -11,7 +11,6 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
-use App\Desks\Contracts\SeatAdmission;
 use App\Desks\Exceptions\SeatCapacityReached;
 use App\Desks\Exceptions\SeatConflict;
 use App\Desks\Exceptions\SecondForwardingSeat;
@@ -25,7 +24,7 @@ use PhpOption\Some;
  * Admits seat changes in one lock order: the involved actors exclusively, sorted, then the desk, then the seat's
  * current assignment. Nothing is written here.
  */
-final readonly class DeskSeatAdmission implements SeatAdmission
+final readonly class DeskSeatAdmission
 {
     public function __construct(
         private AssigneeLocks $locks,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Numbers\Observers;
 
-use App\Numbers\Contracts\NumberAllocator;
 use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\LockingNumberAllocator;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 final readonly class NumberObserver
 {
-    public function __construct(private NumberAllocator $allocator) {}
+    public function __construct(private LockingNumberAllocator $allocator) {}
 
     public function creating(Model&Numbered $record): void
     {

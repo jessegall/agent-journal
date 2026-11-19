@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Data\ExplainedNodeData;
 use App\Processes\Data\ExplanationData;
 use App\Processes\Data\HeldPartData;
@@ -14,6 +13,7 @@ use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ClassFact;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
@@ -35,7 +35,7 @@ final readonly class Explanations
     private const int SNIPPET_BYTES = 200;
 
     public function __construct(
-        private ShellSyntax $syntax,
+        private TreeParser $syntax,
         private CommandClassifier $classifier,
         private ActiveRules $rules,
     ) {}

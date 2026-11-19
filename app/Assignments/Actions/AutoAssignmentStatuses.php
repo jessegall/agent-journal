@@ -7,7 +7,6 @@ namespace App\Assignments\Actions;
 use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentProviders;
-use App\Assignments\Contracts\AssignmentRoom;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Enums\AutoAssignmentState;
 use App\Assignments\Exceptions\AssignmentPoolTooLarge;
@@ -20,6 +19,7 @@ use App\Assignments\Support\AssignmentTotals;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentStatus;
 use App\Assignments\Support\PoolDescription;
+use App\Assignments\Support\SizeAssignmentRoom;
 use App\Contracts\DomainAvailability;
 use PhpOption\None;
 use PhpOption\Option;
@@ -38,7 +38,7 @@ final readonly class AutoAssignmentStatuses
         private AssignmentProviders $providers,
         private DomainAvailability $domains,
         private AssignedWorkResolver $work,
-        private AssignmentRoom $room,
+        private SizeAssignmentRoom $room,
     ) {}
 
     public function of(AutoAssignment $row): AutoAssignmentStatus

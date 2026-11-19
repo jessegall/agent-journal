@@ -6,12 +6,12 @@ namespace Tests\Feature\Assignments;
 
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AutoAssignmentResolver;
-use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Assignments\Exceptions\AutoAssignmentMissing;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Assignments\Exceptions\AutoAssignmentRevisionChanged;
 use App\Assignments\Exceptions\AutoAssignmentSizeInvalid;
+use App\Assignments\Storage\DatabaseAutoAssignments;
 use App\Assignments\Support\AutoAssignmentChange;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentInput;
@@ -63,7 +63,7 @@ final class AutoAssignmentStorageTest extends TestCase
         ]));
         $this->assertFalse(Schema::hasColumn('auto_assignments', 'session_id'));
 
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable($this->input(self::open(), 2), 0));
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0));
 
         $row = (array) DB::table('auto_assignments')->sole();
 
@@ -76,7 +76,7 @@ final class AutoAssignmentStorageTest extends TestCase
     {
         $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
 
-        $change = $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable($this->input(self::open(), 2), 0));
+        $change = $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0));
 
         $this->assertEquals(new AutoAssignmentChange(true, 1), $change);
         $fact = $this->fact();
@@ -88,17 +88,17 @@ final class AutoAssignmentStorageTest extends TestCase
 
     public function test_a_stale_revision_fails_and_changes_nothing_even_for_the_same_values(): void
     {
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable($this->input(self::open(), 2), 0));
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0));
 
         $this->assertThrows(
             fn () => $this->write(
-                fn (AutoAssignmentWriter $writer) => $writer->configure($this->input(self::open(), 2), 0),
+                fn (DatabaseAutoAssignments $writer) => $writer->configure($this->input(self::open(), 2), 0),
             ),
             AutoAssignmentRevisionChanged::class,
         );
         $this->assertThrows(
             fn () => $this->write(
-                fn (AutoAssignmentWriter $writer) => $writer->enable($this->input(self::open(), 5), 3),
+                fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 5), 3),
             ),
             AutoAssignmentRevisionChanged::class,
         );
@@ -108,11 +108,11 @@ final class AutoAssignmentStorageTest extends TestCase
 
     public function test_pool_and_size_changed_together_move_one_revision_and_the_same_values_none(): void
     {
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable($this->input(self::open(), 2), 0));
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0));
         $named = new PoolReference('tasks.named', null, [TestIds::of(3), TestIds::of(1)]);
 
-        $changed = $this->write(fn (AutoAssignmentWriter $writer) => $writer->configure($this->input($named, 4), 1));
-        $same = $this->write(fn (AutoAssignmentWriter $writer) => $writer->configure($this->input($named, 4), 2));
+        $changed = $this->write(fn (DatabaseAutoAssignments $writer) => $writer->configure($this->input($named, 4), 1));
+        $same = $this->write(fn (DatabaseAutoAssignments $writer) => $writer->configure($this->input($named, 4), 2));
 
         $this->assertEquals(new AutoAssignmentChange(true, 2), $changed);
         $this->assertEquals(new AutoAssignmentChange(false, 2), $same);
@@ -126,18 +126,18 @@ final class AutoAssignmentStorageTest extends TestCase
 
         $this->assertEquals(
             new AutoAssignmentChange(false, 0),
-            $this->write(fn (AutoAssignmentWriter $writer) => $writer->disable($this->key, 0)),
+            $this->write(fn (DatabaseAutoAssignments $writer) => $writer->disable($this->key, 0)),
         );
         $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
         $this->assertThrows(
             fn () => $this->write(
-                fn (AutoAssignmentWriter $writer) => $writer->configure($this->input($plan, 3), 0),
+                fn (DatabaseAutoAssignments $writer) => $writer->configure($this->input($plan, 3), 0),
             ),
             AutoAssignmentMissing::class,
         );
 
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable($this->input($plan, 3), 0));
-        $off = $this->write(fn (AutoAssignmentWriter $writer) => $writer->disable($this->key, 1));
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input($plan, 3), 0));
+        $off = $this->write(fn (DatabaseAutoAssignments $writer) => $writer->disable($this->key, 1));
 
         $this->assertEquals(new AutoAssignmentChange(true, 2), $off);
         $this->assertFalse($this->fact()->enabled);
@@ -149,13 +149,13 @@ final class AutoAssignmentStorageTest extends TestCase
     {
         foreach (range(1, 3) as $number) {
             $key = new AutoAssignmentKey(TestActors::agentIdentity($number), 'tasks.task');
-            $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable(
+            $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable(
                 new AutoAssignmentInput($key, self::open(), 1),
                 0,
             ));
         }
         $off = new AutoAssignmentKey(TestActors::agentIdentity(2), 'tasks.task');
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->disable($off, 1));
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->disable($off, 1));
 
         $first = $this->resolver()->enabled(new Page(null, 1));
         $second = $this->resolver()->enabled(new Page($first->nextAfterId, 1));
@@ -181,12 +181,12 @@ final class AutoAssignmentStorageTest extends TestCase
     {
         $this->expectException(AssignmentTransactionRequired::class);
 
-        $this->app->make(AutoAssignmentWriter::class)->enable($this->input(self::open(), 1), 0);
+        $this->app->make(DatabaseAutoAssignments::class)->enable($this->input(self::open(), 1), 0);
     }
 
     public function test_a_corrupt_pool_column_is_a_named_failure_not_a_default_pool(): void
     {
-        $this->write(fn (AutoAssignmentWriter $writer) => $writer->enable($this->input(self::open(), 1), 0));
+        $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 1), 0));
         DB::table('auto_assignments')->update(['pool' => json_encode(['type' => 'tasks.open'])]);
 
         $this->expectException(AutoAssignmentPoolUnreadable::class);
@@ -205,12 +205,12 @@ final class AutoAssignmentStorageTest extends TestCase
     }
 
     /**
-     * @param  Closure(AutoAssignmentWriter): AutoAssignmentChange  $work
+     * @param  Closure(DatabaseAutoAssignments): AutoAssignmentChange  $work
      */
     private function write(Closure $work): AutoAssignmentChange
     {
         return $this->app->make(AssignmentTransaction::class)
-            ->run(fn () => $work($this->app->make(AutoAssignmentWriter::class)));
+            ->run(fn () => $work($this->app->make(DatabaseAutoAssignments::class)));
     }
 
     private function resolver(): AutoAssignmentResolver

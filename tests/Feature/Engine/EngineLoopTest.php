@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Engine\Contracts\EngineLock;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Contracts\Sleeper;
 use App\Engine\Contracts\Watchdog;
+use App\Engine\Support\AdvisoryEngineLock;
 use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineLoop;
 use App\Engine\Support\EngineSettings;
@@ -96,7 +96,7 @@ final class EngineLoopTest extends TestCase
         );
         $this->assertSame(3, $this->watchdog->armings);
         $this->assertFalse($this->watchdog->armed);
-        $this->assertFalse($this->app->make(EngineLock::class)->isHeld());
+        $this->assertFalse($this->app->make(AdvisoryEngineLock::class)->isHeld());
     }
 
     public function test_a_lost_lock_ends_the_engine_with_a_failing_exit_code_before_the_next_pass(): void

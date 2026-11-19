@@ -10,7 +10,6 @@ use App\Assignments\Actions\AutoAssignmentStatuses;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentResolver;
-use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Exceptions\AutoAssignmentMissing;
 use App\Assignments\Exceptions\AutoAssignmentRevisionChanged;
 use App\Assignments\Models\AutoAssignment;
@@ -28,7 +27,7 @@ use PhpOption\Some;
  * The auto-assignments kept in their table: read by key or by page, and changed only inside the bus's repeatable-read
  * transaction against the revision the caller read.
  */
-final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, AutoAssignmentWriter
+final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver
 {
     public function __construct(
         private AssignmentTransaction $transaction,

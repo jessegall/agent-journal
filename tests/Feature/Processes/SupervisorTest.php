@@ -6,7 +6,6 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Support\ActorIdentity;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Enums\ShellDialect;
@@ -17,6 +16,7 @@ use App\Processes\Execution\Supervisor;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\ExecutionPlanner;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Support\RefreshHookDatabase;
@@ -127,7 +127,7 @@ final class SupervisorTest extends TestCase
             $this->folder,
             ['PATH' => (string) getenv('PATH')],
         );
-        $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
+        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
         $plan = $this->app->make(ExecutionPlanner::class)->plan(
             $tree,
             $this->app->make(CommandClassifier::class)->classify($tree, $context),
