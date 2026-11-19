@@ -1178,6 +1178,7 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                FolderClasses::class,
                 Endpoint::class,
                 CallKeyCast::class,
                 CallKeyTransformer::class,
@@ -1935,7 +1936,6 @@ final class CoreApi
                 NamesRecipient::class,
                 NamesExpectedAssignment::class,
                 BaseCommand::class,
-                FolderClasses::class,
             )
             ->build();
     }
