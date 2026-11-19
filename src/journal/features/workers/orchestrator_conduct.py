@@ -38,7 +38,7 @@ class OrchestratorConduct(Conduct):
         return Transition.merged(self, [crew_stop(self, event, settings), self.none(*plan_lines(event.data, event.time, settings), *suite_lines(event.data, settings))])
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
-        return self.none(*priorities_lines(event, settings), *unmoved_task_lines(event, settings), *unordered_lines(event, settings), *news_lines(event, settings))
+        return self.none(*priorities_lines(event, settings), *unmoved_task_lines(event, settings), *unordered_lines(event, settings), *news_lines(event, settings), *finished_work_lines(event))
 
     def on_turn_displayed(self, event: TurnDisplayed, settings: Settings) -> Transition:
         return self.none(*text_wait_lines(event.content, settings)) if event.final else self.none()
@@ -159,6 +159,22 @@ def open_work_check(state: BaseState, event: ToolStarting, settings: Settings) -
             return state.none()
         return state.none(WorkersNudges.PLACES_FULL.create(n=min(workers.ready_work, key=lambda work: work.delivered_at).worker))
     return state.none()
+
+
+# finished work that waits this long on the orchestrator is named while it works, not only when it stops
+FINISHED_WAIT_SECONDS = 600
+
+
+def finished_work_lines(event: Ticked) -> tuple[Nudge, ...]:
+    """Workers clocked out ten minutes or more ago that wait on this orchestrator, named on its tick every ten minutes: it is
+    told so at a stop, but an orchestrator busy for hours never stops, and on the hosted journal 12 to 15 finished workers
+    waited on it up to 15 hours while their tasks held the work behind them (19 Nov)."""
+    workers = event.data.part(WorkersPart)
+    waiting = [worker for worker in workers.delivered_workers if not worker.mention().is_other_dispatcher(event.session)
+               and event.time - worker.delivery_time() >= FINISHED_WAIT_SECONDS]
+    if not waiting:
+        return ()
+    return (WorkersNudges.FINISHED_WORK_WAITS.create(count=len(waiting), numbers=" ".join(str(worker.id) for worker in waiting)),)
 
 
 def news_lines(event: Ticked, settings: Settings) -> tuple[Nudge, ...]:

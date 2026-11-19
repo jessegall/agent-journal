@@ -23,6 +23,7 @@ class WorkersNudges:
     STARTED_PLANS = Nudge("workers", "started_plans", "started plans: {{plans|cap=400}}", repeat=Timeout.minutes(10), blocks_regardless=True, longest_characters=425, longest_reason="it lists every started plan with its counts", kind=NudgeKind.REMARK)
     PLAN_STALLED = Nudge("workers", "plan_stalled", "plan {{n}} stalled since {{since}}, {{minutes}} min", repeat=Timeout.minutes(525600))
     SUITE_BROKEN = Nudge("workers", "suite_failed_after_merges", "suite output {{run}} failed after merging {{workers|cap=22}}", "send it back: `journal worker send {{n}} \"<what failed>\"`", repeat=Timeout.minutes(525600))
+    FINISHED_WORK_WAITS = Nudge("workers", "finished_work_waits", "{{count}} finished workers wait on you: {{numbers|cap=60}}", "decide each now through checker subagents: merge, send back or release", repeat=Timeout.minutes(10))
     DELIVERED_WAITING = Nudge("workers", "clocked_out_work_waits", "{{workers|cap=16}} clocked out", "check each point with `journal worker check <n> <point>`, then `journal worker merge <n>`", repeat=Timeout.seconds(0))
     ACTIVE_WORKERS = Nudge("workers", "wait_for_running_workers", "{{workers|cap=19}} are still out and nothing waits to be checked", "wait with `journal worker wait {{numbers|cap=19}}`", repeat=Timeout.seconds(0), kind=NudgeKind.REMARK)
     MEMORY_WARNING = Nudge("workers", "worker_uses_much_memory", "worker {{n}} uses {{megabytes}} MB, over the {{budget}} MB warning", "check what it runs; it stops at the memory limit", repeat=Timeout.seconds(0))
