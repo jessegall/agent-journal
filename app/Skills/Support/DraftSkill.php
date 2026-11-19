@@ -8,6 +8,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
+use App\Skills\Values\SkillSections;
 
 /**
  * A submitted draft seen as a skill, so it is rendered and checked against every limit before anything is saved.
@@ -40,8 +41,8 @@ final readonly class DraftSkill implements Skill
         return $this->condition;
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return array_map(fn (SectionDraft $section) => $section->toSection(), $this->draft->sections);
+        return SkillSections::listed(...array_map(fn (SectionDraft $section) => $section->toSection(), $this->draft->sections));
     }
 }
