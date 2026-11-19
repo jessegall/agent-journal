@@ -1933,6 +1933,43 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App, tmp_
     assert any(t.startswith("Mr. Brunel reports: ") for t in texts) and not workers.find(dropped.id).is_running(), "a worker whose process ended while the journal was down is not left out"
 
 
+def test_a_worker_whose_run_a_restart_stopped_is_sent_on_in_its_own_session_and_worktree_with_its_task(app: App, monkeypatch):
+    from journal.features.workers.jobs.worker_watch import WorkerWatch
+    from journal.features.workers.seeds.workers_seed import WorkersSeed
+    from journal.features.workers.support.worker_actions import RESTART_JOB
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.support.ref import Ref
+    from journal.models.worker import ENDED_UNFINISHED, RESTART_MOVE
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    started = []
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker.id))
+    kept_conversation(app, monkeypatch)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "the parser is written"], AGENT)
+    console.run(["task", "create", "the lexer", "--brief", "the lexer is written"], AGENT)
+    for name, task in (("Lady Lovelace", "1"), ("Mr. Babbage", "2")):
+        console.run(["worker", "dispatch", name, "--task", task, "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    gone = 2 ** 22 + 7
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(token_hash="h", resume="lovelace-session", pid=gone, began=timing.time()).ready(timing.time()), Actor.system())
+        workers.save(workers.find(2).with_(resume="babbage-session", pid=gone, began=timing.time()), Actor.system())
+    started.clear()
+    app.container.get(WorkersSeed).run()
+    app.container.get(WorkerWatch).tick(timing.time())
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        workers, tasks = app.container.get(Workers), app.container.get(Tasks)
+        for n, session in ((1, "lovelace-session"), (2, "babbage-session")):
+            sent = workers.find(n)
+            assert sent.state == WorkerState.DISPATCHED and sent.brief == RESTART_JOB and sent.resume == session and not sent.token_hash, "a worker out when the journal stopped, clocked in or not, is sent on in its own session, to clock in again"
+            assert tasks.holder_task_ids(Ref("workers", n)) == (n,) and RESTART_MOVE in [word for word, _ in sent.moves.steps], "it keeps its task, and its moves say a restart stopped it"
+            assert ENDED_UNFINISHED not in [word for word, _ in sent.moves.steps], "a run a restart stopped is no run that ended without clocking out"
+    assert started == [1, 2], "each is started again by the journal itself, without the agent re-sending it"
+
+
 def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app: App):
     from journal.features.workers.feature import Workers as WorkersFeature
     from journal.features.workers.support.worker_runner import WorkerRunner
@@ -4981,9 +5018,49 @@ def test_a_worker_sent_back_whose_runs_end_twice_without_clocking_out_is_named_t
     assert first.state == "dispatched" and CLOCK_OUT_REQUEST in first.brief and "Go on with your task" not in first.brief, "a run sent back that ends without moving on in its queue is no turn of the queue: the journal asks it once to clock out"
     second = ended()
     assert second.state == WorkerState.UNFINISHED and CLOCK_OUT_REQUEST in second.brief, "its second run ended the same way, so it is not sent again"
+    assert second.parked == second.run_end, "it is parked with the end of its run as the cause"
     with app.container.get(Scope).environment(MAIN):
-        told = [entry.data["values"]["n"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.run_unfinished"]
-    assert told == ["1"], "the agent that dispatched it is told once, naming it"
+        told = [entry.data["values"]["n"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.worker_parked"]
+    assert told == ["1"], "the agent that dispatched it is told once that it is parked, naming it"
+
+
+def test_a_worker_that_ends_twice_without_clocking_out_is_parked_with_its_cause_and_sent_again_only_once_it_is_fixed(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.entries import Entries
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    kept_conversation(app, monkeypatch)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "the parser is written"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    runner = app.container.get(WorkerRunner)
+
+    def ended(printed: str):
+        with app.container.get(Scope).environment(MAIN):
+            workers = app.container.get(Workers)
+            worker = workers.save(workers.find(1).with_(token_hash="h", resume="lovelace-session"), Actor.system())
+            output, _ = runner.outputs(worker)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(printed)
+            runner.finish(worker, 0, Actor.system())
+        app.runtime().deferred.drain()
+        return worker_row(app)
+
+    first = ended("npm ci failed: package-lock.json is out of sync")
+    assert first.state == WorkerState.DISPATCHED and not first.parked, "the first end without clocking out is asked once to clock out, not parked"
+    second = ended("npm ci failed: package-lock.json is out of sync")
+    assert second.state == WorkerState.UNFINISHED and "package-lock.json" in second.parked, "the second end parks it with the cause it ended on"
+    with app.container.get(Scope).environment(MAIN):
+        told = [entry.data["line"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.worker_parked"]
+    assert len(told) == 1 and "package-lock.json" in told[0] and "--fixed" in told[0], "the agent that dispatched it is told it is parked, with the cause and how to send it again"
+    refused = console.run(["worker", "send", "1", "go on with the parser"], AGENT)
+    assert refused.code != 0 and "parked" in refused.error and "package-lock.json" in refused.error, "a parked worker is not sent into the same fault again"
+    assert worker_row(app).state == WorkerState.UNFINISHED
+    fixed = console.run(["worker", "send", "1", "go on with the parser", "--fixed", "the lock file is regenerated on main"], AGENT)
+    assert fixed.code == 0, fixed.error
+    sent = worker_row(app)
+    assert sent.state == WorkerState.DISPATCHED and not sent.parked and "the lock file is regenerated on main" in sent.brief, "once its cause is fixed it is sent on, told what was fixed"
 
 
 def test_npm_exec_is_labelled_by_the_program_it_runs_and_one_title_given_to_different_work_raises_a_report(app: App, tmp_path):

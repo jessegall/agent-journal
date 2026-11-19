@@ -17,6 +17,7 @@ class WorkersNudges:
     OPEN_TODOS = Nudge("workers", "open_todos", "{{count}} to-dos open: {{items|cap=34}}", "finish them, or say why in `journal clock-out \"<report>\"`", repeat=Timeout.seconds(0))
     WORK_READY = Nudge("workers", "work_ready", "worker {{n}} ready: task {{task}}", repeat=Timeout.seconds(0))
     BRANCH_KEEPS_CLASHING = Nudge("workers", "branch_keeps_clashing", "worker {{n}}'s branch rebased {{clashes}} times in a row, clashing in {{clashing|cap=25}}", "let it merge before the others", repeat=Timeout.seconds(0))
+    WORKER_PARKED = Nudge("workers", "worker_parked", "worker {{n}} ended twice without clocking out and is parked; it last ended on: {{cause|cap=160}}", "fix that cause, then `journal worker send {{n}} \"<job>\" --fixed \"<what you fixed>\"`, or `journal worker release {{n}}`", repeat=Timeout.seconds(0), longest_characters=260, longest_reason="it names the cause the worker ended on")
     RUN_UNFINISHED = Nudge("workers", "run_unfinished", "worker {{n}} ended without clocking out{{cause|cap=82}}", repeat=Timeout.seconds(0))
     WORKER_REPORTED = Nudge("workers", "worker_reported", "worker {{n}} reported", repeat=Timeout.seconds(0))
     STARTED_PLANS = Nudge("workers", "started_plans", "started plans: {{plans|cap=400}}", repeat=Timeout.minutes(10), blocks_regardless=True, longest_characters=425, longest_reason="it lists every started plan with its counts", kind=NudgeKind.REMARK)

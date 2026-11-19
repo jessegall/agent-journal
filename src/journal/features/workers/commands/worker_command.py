@@ -114,6 +114,7 @@ class WorkerCommand(Command):
         line.add_argument("--task", type=int, help="the task this job works on, which its plan then leaves to it")
         line.add_argument("--model", help="the model it runs the job on from now, in the same session and worktree")
         line.add_argument("--profile", help="the worker profile it works by from now, and its model unless --model sets one")
+        line.add_argument("--fixed", default="", help="for a parked worker, which ended twice without clocking out: what you fixed of the cause it ended on")
         queue = self.verb(verbs, "queue", "hand a worker open tasks to take next, in order, a started or paused one in your own hands let go to it: each is delegated to it at once, and the next is sent to it when its work is merged")
         queue.add_argument("n", type=int)
         queue.add_argument("tasks", type=int, nargs="+")
@@ -253,7 +254,8 @@ class WorkerCommand(Command):
         holdings = self.actions.task_holdings(args.n, args.task)
         if not args.task and not holdings:
             raise Rejection(f"worker {args.n} has no task: `journal worker send {args.n} --task <task> '<job>'`")
-        worker = self.actions.resend(args.n, args.brief, *self.staffing(args), caller.session, caller.actor, self.tasks.find(args.task) if args.task else None)
+        task = self.tasks.find(args.task) if args.task else None
+        worker = self.actions.fixed_resend(args.n, args.brief, args.fixed, *self.staffing(args), caller.session, caller.actor, task) if args.fixed else self.actions.resend(args.n, args.brief, *self.staffing(args), caller.session, caller.actor, task)
         print(f"worker {worker.id} {worker.name} told, on {worker.model}; it reports in the chat when it ends")
         return 0
 

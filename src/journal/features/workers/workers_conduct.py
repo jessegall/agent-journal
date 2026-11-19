@@ -86,7 +86,9 @@ class WorkersConduct(Conduct):
     def on_worker_unfinished(self, event: WorkerUnfinished, settings: Settings) -> Transition:
         if event.worker.is_other_dispatcher(event.session):
             return self.none()
-        if event.times < 2 and event.worker.id in event.data.part(WorkersPart).resumable:
+        if event.parked:
+            return self.none(WorkersNudges.WORKER_PARKED.create(n=event.worker.id, cause=event.parked))
+        if event.worker.id in event.data.part(WorkersPart).resumable:
             return self.none()
         return self.none(WorkersNudges.RUN_UNFINISHED.create(n=event.worker.id, cause=RUN_LIMIT_CAUSE if event.is_run_limit else ""))
 
