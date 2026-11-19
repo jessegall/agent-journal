@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Agents\Commands\CloseTerminalView;
@@ -17,6 +18,7 @@ use App\Agents\Models\TerminalView;
 use App\Agents\Support\WatchedRuntimes;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
+use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
@@ -108,10 +110,11 @@ final class TerminalViewCommandsTest extends TestCase
     public function test_renewing_moves_the_expiry_and_a_closed_view_is_opened_anew(): void
     {
         $runtime = $this->runtimeOn('host-1');
-        $this->travelTo(CarbonImmutable::parse('2026-11-19 12:00:00'));
+        $clock = new FakeServerClock(CarbonImmutable::parse('2026-11-19 12:00:00'));
+        $this->app->instance(ServerClock::class, $clock);
         $first = $this->asOwner($this->open($runtime));
 
-        $this->travel(10)->seconds();
+        $clock->set(CarbonImmutable::parse('2026-11-19 12:00:10'));
         $renewed = $this->asOwner($this->renew($runtime));
         $this->assertSame($first->viewId, $renewed->viewId);
         $this->assertTrue(
@@ -168,11 +171,13 @@ final class TerminalViewCommandsTest extends TestCase
         $first = TerminalView::open(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
         TerminalView::open(TestActors::userIdentity(2), $runtime, 500, CarbonImmutable::now());
 
-        $status = AgentRuntime::query()->withWatchers()->findOrFail($runtime->id)->status(CarbonImmutable::now());
+        $read = AgentRuntime::query()->withWatchers()->with('session')->findOrFail($runtime->id);
+        $status = $read->status(CarbonImmutable::now());
         $this->assertSame([2, DriverType::Terminal], [$status->watchers, $status->driverType]);
 
         $first->close(CarbonImmutable::now());
-        $this->assertSame(1, AgentRuntime::query()->findOrFail($runtime->id)->status(CarbonImmutable::now())->watchers);
+        $reread = AgentRuntime::query()->with('session')->findOrFail($runtime->id);
+        $this->assertSame(1, $reread->status(CarbonImmutable::now())->watchers);
     }
 
     private function open(AgentRuntime $runtime, int $intervalMs = 500): OpenTerminalView

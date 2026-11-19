@@ -35,6 +35,7 @@ trait OpensTerminalRuntimes
         );
         $intent = new RuntimeIntent($hostId, base_path(), 'claude', '1.0.0', 'default', $driver, null, null, null);
         [$runtime] = $this->app->make(AgentRuntimes::class)->open($launched->session, $intent, 'launch-token');
+        $runtime->load('session');
 
         return $runtime;
     }
