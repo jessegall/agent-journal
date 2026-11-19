@@ -287,3 +287,27 @@ func TestAnUnreadableScreenSendsTheMarkerUntilAGoodFeed(t *testing.T) {
 		t.Fatalf("frame after a good feed %+v", frame)
 	}
 }
+
+func TestARefusedResizeSendsTheMarkerUntilAGoodResize(t *testing.T) {
+	watcher, journal, readers := newWatcher(t, time.Hour)
+	reader := readers.run(t, "runtime-1", "hello")
+
+	watcher.Set(watch("runtime-1"))
+	waitUntil(t, "a first frame", func() bool { return len(journal.frames("runtime-1")) == 1 })
+	if err := reader.Resize(screen.DefaultLimits.MaxColumns+1, 3); err == nil {
+		t.Fatal("a resize over the limit was taken")
+	}
+	reader.Feed([]byte(" more"))
+	waitUntil(t, "the unreadable marker", func() bool { return len(journal.frames("runtime-1")) == 2 })
+	if frame := journal.frames("runtime-1")[1]; !frame.Unreadable {
+		t.Fatalf("after a refused resize and a good feed %+v", frame)
+	}
+
+	if err := reader.Resize(30, 4); err != nil {
+		t.Fatal(err)
+	}
+	waitUntil(t, "a readable frame", func() bool { return len(journal.frames("runtime-1")) == 3 })
+	if frame := journal.frames("runtime-1")[2]; frame.Unreadable || frame.Columns != 30 {
+		t.Fatalf("frame after a good resize %+v", frame)
+	}
+}
