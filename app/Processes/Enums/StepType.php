@@ -31,7 +31,11 @@ enum StepType: string
      */
     public static function isControl(NodeType $type): bool
     {
-        return in_array($type, [NodeType::Sequence, NodeType::AndList, NodeType::OrList, NodeType::Pipeline, NodeType::Background, NodeType::Negation, NodeType::Group, NodeType::Subshell], true);
+        return in_array(
+            $type,
+            [NodeType::Sequence, NodeType::AndList, NodeType::OrList, NodeType::Pipeline, NodeType::Background, NodeType::Negation, NodeType::Group, NodeType::Subshell],
+            true,
+        );
     }
 
     /**
@@ -57,6 +61,10 @@ enum StepType: string
      */
     public function hasSeparateChildContexts(): bool
     {
-        return in_array($this, [self::Pipeline, self::Background, self::Subshell, self::Substitution, self::Shell], true);
+        return in_array(
+            $this,
+            [self::Pipeline, self::Background, self::Subshell, self::Substitution, self::Shell],
+            true,
+        );
     }
 }

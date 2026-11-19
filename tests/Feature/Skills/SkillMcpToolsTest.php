@@ -34,7 +34,19 @@ final class SkillMcpToolsTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
-    private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks'];
+    private const array TABLES = [
+        'skill_publications',
+        'skill_generations',
+        'skill_requests',
+        'skill_revisions',
+        'skills',
+        'number_groups',
+        'command_receipts',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+    ];
 
     private TestLaunch $caller;
 
@@ -48,28 +60,49 @@ final class SkillMcpToolsTest extends TestCase
 
     public function test_an_agent_lists_and_shows_skills_as_the_reader_does(): void
     {
-        $listed = $this->callMcpTool($this->caller, 'skills_list')->assertJsonPath('result.isError', false)->json('result.structuredContent.skills');
-        $shown = $this->callMcpTool($this->caller, 'skills_show', ['key' => 'journal-skills'])->assertJsonPath('result.isError', false)->json('result.structuredContent');
+        $listed = $this->callMcpTool(
+            $this->caller,
+            'skills_list',
+        )->assertJsonPath('result.isError', false)->json('result.structuredContent.skills');
+        $shown = $this->callMcpTool(
+            $this->caller,
+            'skills_show',
+            ['key' => 'journal-skills'],
+        )->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
         $this->assertContains('journal-skills', array_column($listed, 'key'));
-        $this->assertSame($this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'))->rendered->markdown, $shown['markdown']);
+        $this->assertSame(
+            $this->app->make(SkillResolver::class)->find(SkillKey::from('journal-skills'))->rendered->markdown,
+            $shown['markdown'],
+        );
     }
 
     public function test_an_agent_edit_is_refused_as_the_bus_refuses_an_agent_and_changes_nothing(): void
     {
         $this->actAs(TestActors::user(7));
-        $created = $this->app->make(CommandBus::class)->run(new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')));
+        $created = $this->app->make(CommandBus::class)->run(
+            new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')),
+        );
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->caller->agent->id), TestLaunchAuthority::forAgent($this->caller->agent->id));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($this->caller->agent->id),
+            TestLaunchAuthority::forAgent($this->caller->agent->id),
+        );
 
         try {
-            $this->app->make(CommandBus::class)->run(new ReviseSkill($created->skillId, 1, 'revise-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Other.')], '')));
+            $this->app->make(CommandBus::class)->run(
+                new ReviseSkill($created->skillId, 1, 'revise-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Other.')], '')),
+            );
             $this->fail('The bus let an agent revise a skill.');
         } catch (ActorNotAllowed $refusal) {
             $busMessage = $refusal->getMessage();
         }
 
-        $refused = $this->callMcpTool($this->caller, 'skills_edit', ['skill' => 'user-review-notes', 'expected_revision' => 1, 'body' => 'Other.'])
+        $refused = $this->callMcpTool(
+            $this->caller,
+            'skills_edit',
+            ['skill' => 'user-review-notes', 'expected_revision' => 1, 'body' => 'Other.'],
+        )
             ->assertJsonPath('result.isError', true)
             ->json('result.structuredContent');
 

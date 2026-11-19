@@ -50,7 +50,10 @@ final class StoredSkillModelsTest extends TestCase
         $this->assertSame([1, 2], [$first->revision, $second->revision]);
         $this->assertSame($second->id, $skill->current_revision_id);
         $this->assertSame('First.', SkillRevision::numbered($skill, 1)->sections[0]->content);
-        $this->assertSame(Conditions::dispatchesWork()->toArray(), SkillRevision::currentOf($skill)->conditionThrough($this->app->make(ConditionTree::class))->toArray());
+        $this->assertSame(
+            Conditions::dispatchesWork()->toArray(),
+            SkillRevision::currentOf($skill)->conditionThrough($this->app->make(ConditionTree::class))->toArray(),
+        );
 
         $restored = $skill->restoreFrom($first, Conditions::everyone(), $this->author());
         $this->assertSame(3, $restored->revision);
@@ -82,7 +85,10 @@ final class StoredSkillModelsTest extends TestCase
         Skill::start(SkillKey::from('user-here'), $this->author(), 'main');
         Skill::start(SkillKey::from('user-elsewhere'), $this->author(), 'other');
 
-        $this->assertSame(['user-everywhere', 'user-here'], array_map(fn (Skill $skill) => $skill->key, Skill::activeIn('main', 10)));
+        $this->assertSame(
+            ['user-everywhere', 'user-here'],
+            array_map(fn (Skill $skill) => $skill->key, Skill::activeIn('main', 10)),
+        );
         $this->assertCount(3, Skill::allForMaintenance(10));
     }
 
@@ -93,6 +99,11 @@ final class StoredSkillModelsTest extends TestCase
 
     private function draft(string $text): SkillDraft
     {
-        return new SkillDraft('Review notes', 'Read before reviewing.', [new SectionDraft('notes', 'Notes', $text)], '{"type":"everyone","version":1}');
+        return new SkillDraft(
+            'Review notes',
+            'Read before reviewing.',
+            [new SectionDraft('notes', 'Notes', $text)],
+            '{"type":"everyone","version":1}',
+        );
     }
 }

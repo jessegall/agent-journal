@@ -70,7 +70,10 @@ final class SessionContextTest extends TestCase
 
         $this->assertStringContainsString("Rule {$this->rule->id}: No phase waits on the user.", $context);
         $this->assertStringNotContainsString('Memory: Use plain words.', $context);
-        $this->assertStringContainsString('1 more reminders did not fit this context; read your memories with journal memory list.', $context);
+        $this->assertStringContainsString(
+            '1 more reminders did not fit this context; read your memories with journal memory list.',
+            $context,
+        );
         $this->assertSame(1, Memory::query()->count());
     }
 
@@ -80,10 +83,23 @@ final class SessionContextTest extends TestCase
     private function start(string $callId, SessionStartSource $source): string
     {
         $this->callAs($callId, hash('sha256', $callId));
-        $start = new SessionStarted(TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)), new SessionStartDetails("native-{$callId}", $source));
-        $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);
+        $start = new SessionStarted(
+            TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)),
+            new SessionStartDetails("native-{$callId}", $source),
+        );
+        $capabilities = new ProgramCapabilities(
+            'Test program',
+            'session starts',
+            ['onSessionStart'],
+            RewriteSupport::WithoutApproval,
+        );
 
-        $reply = $this->machine()->answer($start, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));
+        $reply = $this->machine()->answer(
+            $start,
+            $capabilities,
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
+        );
 
         return $reply->stdout;
     }

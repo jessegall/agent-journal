@@ -228,7 +228,10 @@ final class RuleProposalCommandsTest extends TestCase
     private function runAs(string $agentId, object $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestLaunchAuthority::forAgent($agentId),
+        );
 
         return $this->app->make(CommandBus::class)->run($command);
     }

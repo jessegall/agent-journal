@@ -46,13 +46,27 @@ final class SharingPages implements ProvidesPages
                     ActionRoute::post('shares/{share}/retry', RetryShareController::class, 'retry-share'),
                     ActionRoute::delete('shares/{share}', RevokeShareController::class, 'revoke-share'),
                 ),
-            Page::make('gateways', 'Share gateways', Icon::Docs, GatewaySettingsResolver::class, 'GatewaySettingsWindow.vue')
+            Page::make(
+                'gateways',
+                'Share gateways',
+                Icon::Docs,
+                GatewaySettingsResolver::class,
+                'GatewaySettingsWindow.vue',
+            )
                 ->at('gateways')
                 ->visibleWhen(SharingOwnerCheck::class)
                 ->actions(
                     ActionRoute::post('gateways', ConfigureShareGatewayController::class, 'configure-share-gateway'),
-                    ActionRoute::post('gateways/{configuration}/default', MakeShareGatewayDefaultController::class, 'make-share-gateway-default'),
-                    ActionRoute::delete('gateways/{configuration}', DisableShareGatewayController::class, 'disable-share-gateway'),
+                    ActionRoute::post(
+                        'gateways/{configuration}/default',
+                        MakeShareGatewayDefaultController::class,
+                        'make-share-gateway-default',
+                    ),
+                    ActionRoute::delete(
+                        'gateways/{configuration}',
+                        DisableShareGatewayController::class,
+                        'disable-share-gateway',
+                    ),
                 ),
             Page::make('share-preview', 'Share', Icon::Docs, SharePreviewResolver::class, 'SharePreview.vue')
                 ->at('{reference}')
@@ -60,8 +74,16 @@ final class SharingPages implements ProvidesPages
                 ->actions(
                     ActionRoute::post('{reference}/previews', SharePreviewController::class, 'save-share-preview'),
                     ActionRoute::post('{reference}/shares', CreateShareController::class, 'create-share'),
-                    ActionRoute::post('shares/{share}/approval', ApproveShareRequestController::class, 'approve-share-request'),
-                    ActionRoute::post('shares/{share}/scope', RefreshShareScopeController::class, 'refresh-share-scope'),
+                    ActionRoute::post(
+                        'shares/{share}/approval',
+                        ApproveShareRequestController::class,
+                        'approve-share-request',
+                    ),
+                    ActionRoute::post(
+                        'shares/{share}/scope',
+                        RefreshShareScopeController::class,
+                        'refresh-share-scope',
+                    ),
                 ),
         ];
     }

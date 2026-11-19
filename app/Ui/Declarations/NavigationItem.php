@@ -83,7 +83,14 @@ final class NavigationItem
             throw InvalidNavigationDeclaration::nothingToOpen($key);
         }
 
-        return new self($key, $label, $icon, null, position: $position, group: $group)->withChildren($children, $childrenResolver);
+        return new self(
+            $key,
+            $label,
+            $icon,
+            null,
+            position: $position,
+            group: $group,
+        )->withChildren($children, $childrenResolver);
     }
 
     /**

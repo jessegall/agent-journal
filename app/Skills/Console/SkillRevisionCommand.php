@@ -25,13 +25,19 @@ final class SkillRevisionCommand extends Command
     {
         return $this->printRefusals(function () use ($console) {
             $console->actAsOwner();
-            $revision = SkillRevision::numbered($console->stored((string) $this->argument('number')), (int) $this->argument('revision'));
+            $revision = SkillRevision::numbered(
+                $console->stored((string) $this->argument('number')),
+                (int) $this->argument('revision'),
+            );
 
             return [
                 "Revision {$revision->revision}: {$revision->name}",
                 "Description: {$revision->description}",
                 'Condition: '.json_encode($revision->condition, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
-                ...array_map(fn (SkillSection $section) => "## {$section->heading}\n\n{$section->storedText()}", $revision->sections),
+                ...array_map(
+                    fn (SkillSection $section) => "## {$section->heading}\n\n{$section->storedText()}",
+                    $revision->sections,
+                ),
             ];
         });
     }

@@ -28,14 +28,19 @@ trait SharesPublishedRecords
      */
     public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard
     {
-        return $this->publishedCards([$selection->root], $budget)[0] ?? throw RecordUnavailable::forActor($selection->root);
+        return $this->publishedCards(
+            [$selection->root],
+            $budget,
+        )[0] ?? throw RecordUnavailable::forActor($selection->root);
     }
 
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
     {
         $cards = $this->publishedCards($read->targets, $budget);
         $eligible = array_map(fn (ShareRecordCard $card) => $card->record, $cards);
-        $ineligible = array_values(array_filter($read->targets, fn (RecordIdentity $target) => ! $this->isAmong($target, $eligible)));
+        $ineligible = array_values(
+            array_filter($read->targets, fn (RecordIdentity $target) => ! $this->isAmong($target, $eligible)),
+        );
 
         return new ShareRecords($cards, $ineligible, null);
     }
@@ -57,7 +62,13 @@ trait SharesPublishedRecords
 
         foreach ($page->comments as $comment) {
             $budget->chargeMetadata(strlen($comment->excerpt));
-            $cards[] = new ShareRecordCard($comment->comment, "Comment of {$comment->writtenAt}", '1', $comment->excerpt, self::quoteIn($body, $comment->quote));
+            $cards[] = new ShareRecordCard(
+                $comment->comment,
+                "Comment of {$comment->writtenAt}",
+                '1',
+                $comment->excerpt,
+                self::quoteIn($body, $comment->quote),
+            );
         }
 
         return new ShareRecords($cards, [], $page->next);
@@ -71,7 +82,9 @@ trait SharesPublishedRecords
      */
     private function publishedCards(array $records, ShareBudget $budget): array
     {
-        $ids = array_values(array_map(fn (RecordIdentity $record) => $record->id, array_filter($records, fn (RecordIdentity $record) => $record->type === $this->linkType())));
+        $ids = array_values(
+            array_map(fn (RecordIdentity $record) => $record->id, array_filter($records, fn (RecordIdentity $record) => $record->type === $this->linkType())),
+        );
         $cards = $ids === [] ? [] : $this->cardsOf($ids);
 
         foreach ($cards as $card) {

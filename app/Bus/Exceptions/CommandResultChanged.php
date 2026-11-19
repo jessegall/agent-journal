@@ -10,6 +10,8 @@ final class CommandResultChanged extends RuntimeException
 {
     public static function by(string $middleware): self
     {
-        return new self("The middleware {$middleware} changed the command's result; a middleware may look at a result, not change it.");
+        return new self(
+            "The middleware {$middleware} changed the command's result; a middleware may look at a result, not change it.",
+        );
     }
 }

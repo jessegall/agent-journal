@@ -13,8 +13,12 @@ use Illuminate\Routing\Redirector;
 
 final readonly class PostCommentController
 {
-    public function __invoke(PostCommentRequest $request, CommandBus $commands, RecordResolver $records, Redirector $redirect): JsonResponse|RedirectResponse
-    {
+    public function __invoke(
+        PostCommentRequest $request,
+        CommandBus $commands,
+        RecordResolver $records,
+        Redirector $redirect,
+    ): JsonResponse|RedirectResponse {
         $commentId = $commands->run($request->command($records));
 
         if (! $request->expectsJson()) {

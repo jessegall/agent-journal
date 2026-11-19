@@ -38,7 +38,10 @@ final readonly class SessionRecords implements SessionResolver
      */
     public function active(): array
     {
-        return array_values($this->visibleSessions()->with(['agent', 'currentConversation'])->withCount('visits')->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+        return array_values($this->visibleSessions()->with(['agent', 'currentConversation'])->withCount('visits')->whereIn(
+            'status',
+            array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()),
+        )
             ->orderBy('id')->readLimit(self::CHOICES_SHOWN)->get()
             ->map(fn (AgentSession $session) => self::optionOf($session))
             ->all());
@@ -46,7 +49,9 @@ final readonly class SessionRecords implements SessionResolver
 
     public function requireActive(string $sessionId): StackTarget
     {
-        $session = $this->visibleSessions()->with(['agent', 'currentConversation'])->withCount('visits')->find($sessionId);
+        $session = $this->visibleSessions()->with(
+            ['agent', 'currentConversation'],
+        )->withCount('visits')->find($sessionId);
 
         if ($session === null || ! $session->isActive()) {
             throw StackTargetRefused::forTarget("session {$sessionId}");
@@ -65,7 +70,9 @@ final readonly class SessionRecords implements SessionResolver
     {
         $session = AgentSession::query()->whereKey($sessionId)->where('agent_id', $agentId)->lockForUpdate()->first();
 
-        return $session !== null && $session->canReceiveMessages() ? $session : throw StackTargetRefused::forTarget("session {$sessionId}");
+        return $session !== null && $session->canReceiveMessages() ? $session : throw StackTargetRefused::forTarget(
+            "session {$sessionId}",
+        );
     }
 
     /**

@@ -71,8 +71,11 @@ final class SpawnedProcess
      *
      * @param  callable(OutputStream, string): void  $onOutput
      */
-    public function drain(callable $onOutput, float $drainSeconds = self::DRAIN_SECONDS, StopSignal $stop = new NoStop()): bool
-    {
+    public function drain(
+        callable $onOutput,
+        float $drainSeconds = self::DRAIN_SECONDS,
+        StopSignal $stop = new NoStop(),
+    ): bool {
         $deadline = null;
         $streams = array_filter([1 => $this->pipes[1] ?? null, 2 => $this->pipes[2] ?? null], is_resource(...));
         foreach ($streams as $stream) {

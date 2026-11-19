@@ -27,7 +27,12 @@ final class ModelTables
                     continue;
                 }
 
-                $uses[] = new TableUse($path, (int) $reflection->getStartLine(), new $name()->getTable(), TableType::ModelTable);
+                $uses[] = new TableUse(
+                    $path,
+                    (int) $reflection->getStartLine(),
+                    new $name()->getTable(),
+                    TableType::ModelTable,
+                );
             }
         }
 

@@ -22,7 +22,15 @@ final class ModelConventions
     /**
      * Calls that open a model to mass assignment in vendor code the name scan never reads.
      */
-    private const array OPENING_CALLS = ['unguard', 'unguarded', 'mergefillable', 'fillable', 'guard', 'forcefill', 'forcecreate'];
+    private const array OPENING_CALLS = [
+        'unguard',
+        'unguarded',
+        'mergefillable',
+        'fillable',
+        'guard',
+        'forcefill',
+        'forcecreate',
+    ];
 
     /**
      * @param  list<string>  $files
@@ -52,7 +60,14 @@ final class ModelConventions
         foreach (ScanCache::findingsByFile(new CallScan(), $files) as $path => $calls) {
             foreach ($calls as $call) {
                 if (in_array(strtolower($call['method']), self::OPENING_CALLS, true)) {
-                    $violations[] = new Violation($path, $call['line'], $call['method'].'()', 'none', 'none', ViolationType::OpeningModelCall);
+                    $violations[] = new Violation(
+                        $path,
+                        $call['line'],
+                        $call['method'].'()',
+                        'none',
+                        'none',
+                        ViolationType::OpeningModelCall,
+                    );
                 }
             }
         }
@@ -79,7 +94,14 @@ final class ModelConventions
                 }
 
                 if (! in_array(Linkable::class, $traits, true)) {
-                    $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::ModelNotLinkable);
+                    $violations[] = new Violation(
+                        $path,
+                        $line,
+                        $class,
+                        'none',
+                        'none',
+                        ViolationType::ModelNotLinkable,
+                    );
                 }
             }
         }
@@ -100,7 +122,14 @@ final class ModelConventions
         foreach (self::modelsIn($files) as $path => $models) {
             foreach ($models as $line => $class) {
                 if (! is_subclass_of($class, ReadableModel::class) || ! in_array(BoundedReads::class, class_uses_recursive($class), true)) {
-                    $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::ModelReadsUnbounded);
+                    $violations[] = new Violation(
+                        $path,
+                        $line,
+                        $class,
+                        'none',
+                        'none',
+                        ViolationType::ModelReadsUnbounded,
+                    );
                 }
             }
         }

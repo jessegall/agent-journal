@@ -78,7 +78,9 @@ final readonly class RuleDeclarations
     {
         $validator = $this->validators->make($file, $this->rules());
         if ($validator->fails()) {
-            throw DeclarationInvalid::fields($this->fieldErrors(array_map(array_values(...), $validator->errors()->messages())));
+            throw DeclarationInvalid::fields(
+                $this->fieldErrors(array_map(array_values(...), $validator->errors()->messages())),
+            );
         }
         $declared = array_values(array_map($this->declared(...), $validator->validated()['declarations']));
         $this->checkPurposes($declared);

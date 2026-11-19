@@ -54,18 +54,54 @@ final class SettingCommandsTest extends TestCase
     {
         $reviews = $this->reviews;
 
-        $this->assertEquals(new SetStringSetting(new SettingReference('Reviews', 'title'), 'Weekly', 3), $this->commands->string($reviews->title, 'Weekly', 3));
-        $this->assertEquals(new SetBooleanSetting(new SettingReference('Reviews', 'notify_owner'), false, 3), $this->commands->boolean($reviews->notifyOwner, false, 3));
-        $this->assertEquals(new SetIntegerSetting(new SettingReference('Reviews', 'retry_limit'), 4, 0), $this->commands->integer($reviews->retryLimit, 4, 0));
-        $this->assertEquals(new SetDecimalSetting(new SettingReference('Reviews', 'weight'), Decimal::parse('0.75'), 1), $this->commands->decimal($reviews->weight, Decimal::parse('0.75'), 1));
-        $this->assertEquals(new SetStringChoice(new SettingReference('Reviews', 'summary_style'), 'long', 1), $this->commands->stringChoice($reviews->summaryStyle, 'long', 1));
-        $this->assertEquals(new SetIntegerChoice(new SettingReference('Reviews', 'priority'), 1, 1), $this->commands->integerChoice($reviews->priority, 1, 1));
-        $this->assertEquals(new SetStringChoice(new SettingReference('Reviews', 'review_mode'), ReviewMode::Quick->value, 2), $this->commands->enumString($reviews->reviewMode, ReviewMode::Quick, 2));
-        $this->assertEquals(new SetIntegerChoice(new SettingReference('Reviews', 'review_level'), 2, 2), $this->commands->enumInteger($reviews->reviewLevel, ReviewLevel::SecondPass, 2));
-        $this->assertEquals(new ResetSetting(new SettingReference('Reviews', 'retry_limit'), 5), $this->commands->reset($reviews->retryLimit, 5));
-        $this->assertEquals(new EnableSettingGroup(new GroupReference('Reviews', 'review'), 5), $this->commands->enable($reviews->review, 5));
-        $this->assertEquals(new DisableSettingGroup(new GroupReference('Reviews', 'review'), 5), $this->commands->disable($reviews->review, 5));
-        $this->assertEquals(new ResetSettingGroup(new GroupReference('Reviews', 'review'), 5), $this->commands->resetGroup($reviews->review, 5));
+        $this->assertEquals(
+            new SetStringSetting(new SettingReference('Reviews', 'title'), 'Weekly', 3),
+            $this->commands->string($reviews->title, 'Weekly', 3),
+        );
+        $this->assertEquals(
+            new SetBooleanSetting(new SettingReference('Reviews', 'notify_owner'), false, 3),
+            $this->commands->boolean($reviews->notifyOwner, false, 3),
+        );
+        $this->assertEquals(
+            new SetIntegerSetting(new SettingReference('Reviews', 'retry_limit'), 4, 0),
+            $this->commands->integer($reviews->retryLimit, 4, 0),
+        );
+        $this->assertEquals(
+            new SetDecimalSetting(new SettingReference('Reviews', 'weight'), Decimal::parse('0.75'), 1),
+            $this->commands->decimal($reviews->weight, Decimal::parse('0.75'), 1),
+        );
+        $this->assertEquals(
+            new SetStringChoice(new SettingReference('Reviews', 'summary_style'), 'long', 1),
+            $this->commands->stringChoice($reviews->summaryStyle, 'long', 1),
+        );
+        $this->assertEquals(
+            new SetIntegerChoice(new SettingReference('Reviews', 'priority'), 1, 1),
+            $this->commands->integerChoice($reviews->priority, 1, 1),
+        );
+        $this->assertEquals(
+            new SetStringChoice(new SettingReference('Reviews', 'review_mode'), ReviewMode::Quick->value, 2),
+            $this->commands->enumString($reviews->reviewMode, ReviewMode::Quick, 2),
+        );
+        $this->assertEquals(
+            new SetIntegerChoice(new SettingReference('Reviews', 'review_level'), 2, 2),
+            $this->commands->enumInteger($reviews->reviewLevel, ReviewLevel::SecondPass, 2),
+        );
+        $this->assertEquals(
+            new ResetSetting(new SettingReference('Reviews', 'retry_limit'), 5),
+            $this->commands->reset($reviews->retryLimit, 5),
+        );
+        $this->assertEquals(
+            new EnableSettingGroup(new GroupReference('Reviews', 'review'), 5),
+            $this->commands->enable($reviews->review, 5),
+        );
+        $this->assertEquals(
+            new DisableSettingGroup(new GroupReference('Reviews', 'review'), 5),
+            $this->commands->disable($reviews->review, 5),
+        );
+        $this->assertEquals(
+            new ResetSettingGroup(new GroupReference('Reviews', 'review'), 5),
+            $this->commands->resetGroup($reviews->review, 5),
+        );
     }
 
     public function test_a_case_of_another_enum_is_refused_before_a_command_exists(): void

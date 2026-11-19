@@ -35,8 +35,11 @@ final class DomainSkillsTest extends TestCase
     }
 
     #[DataProvider('domainSkills')]
-    public function test_each_domain_owns_its_skill_and_show_prints_it(string $key, string $owner, string $heading): void
-    {
+    public function test_each_domain_owns_its_skill_and_show_prints_it(
+        string $key,
+        string $owner,
+        string $heading,
+    ): void {
         Artisan::call('skill:list', ['--json' => true]);
         $owners = array_column(json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR), 'owner', 'key');
 
@@ -45,7 +48,10 @@ final class DomainSkillsTest extends TestCase
         Artisan::call('skill:show', ['key' => $key]);
         $shown = Artisan::output();
 
-        $this->assertSame($this->app->make(SkillResolver::class)->find(SkillKey::from($key))->rendered->markdown, $shown);
+        $this->assertSame(
+            $this->app->make(SkillResolver::class)->find(SkillKey::from($key))->rendered->markdown,
+            $shown,
+        );
         $this->assertStringContainsString("\n## Purpose\n\n", $shown);
         $this->assertStringContainsString("\n{$heading}\n\n", $shown);
     }

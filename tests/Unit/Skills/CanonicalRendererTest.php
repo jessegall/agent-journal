@@ -59,9 +59,15 @@ final class CanonicalRendererTest extends TestCase
 
         try {
             $before = $this->renderer()->render(new GuideSkill(), $this->owner($root))->digest;
-            File::put($root.'/resources/skills/guide.md', str_replace('Run it again.', 'Run it once more.', File::get($root.'/resources/skills/guide.md')));
+            File::put(
+                $root.'/resources/skills/guide.md',
+                str_replace('Run it again.', 'Run it once more.', File::get($root.'/resources/skills/guide.md')),
+            );
             $after = $this->renderer()->render(new GuideSkill(), $this->owner($root))->digest;
-            File::put($root.'/resources/skills/guide.md', str_replace('Stop.', 'Stop now.', File::get($root.'/resources/skills/guide.md')));
+            File::put(
+                $root.'/resources/skills/guide.md',
+                str_replace('Stop.', 'Stop now.', File::get($root.'/resources/skills/guide.md')),
+            );
             $unrelated = $this->renderer()->render(new GuideSkill(), $this->owner($root))->digest;
         } finally {
             File::deleteDirectory($root);
@@ -76,7 +82,10 @@ final class CanonicalRendererTest extends TestCase
         $this->expectException(SkillSourceInvalid::class);
         $this->expectExceptionMessage('guide.md > Guide > Failure > Again');
 
-        $this->renderer()->render(new GuideSkill('guide.md', ['Guide', 'Failure', 'Again']), $this->owner(base_path('tests/Fixtures/Skills/Guide')));
+        $this->renderer()->render(
+            new GuideSkill('guide.md', ['Guide', 'Failure', 'Again']),
+            $this->owner(base_path('tests/Fixtures/Skills/Guide')),
+        );
     }
 
     /**
@@ -94,7 +103,10 @@ final class CanonicalRendererTest extends TestCase
     {
         $this->expectException(SkillSourceInvalid::class);
 
-        $this->renderer()->render(new GuideSkill($file, ['Guide']), $this->owner(base_path('tests/Fixtures/Skills/Guide')));
+        $this->renderer()->render(
+            new GuideSkill($file, ['Guide']),
+            $this->owner(base_path('tests/Fixtures/Skills/Guide')),
+        );
     }
 
     public function test_a_symlink_leaving_the_folder_is_refused(): void
@@ -117,7 +129,10 @@ final class CanonicalRendererTest extends TestCase
     {
         $root = sys_get_temp_dir().'/skills-'.bin2hex(random_bytes(6));
         File::makeDirectory($root.'/resources/skills', recursive: true);
-        File::put($root.'/resources/skills/guide.md', "# Guide\n\n## Failure\n\n### Retry\n\nOne.\n\n### Retry\n\nTwo.\n");
+        File::put(
+            $root.'/resources/skills/guide.md',
+            "# Guide\n\n## Failure\n\n### Retry\n\nOne.\n\n### Retry\n\nTwo.\n",
+        );
 
         try {
             $this->expectException(SkillSourceInvalid::class);
@@ -133,7 +148,10 @@ final class CanonicalRendererTest extends TestCase
     {
         $this->expectException(SkillDeclarationInvalid::class);
 
-        $this->renderer()->render(new GuideSkill(description: ''), $this->owner(base_path('tests/Fixtures/Skills/Guide')));
+        $this->renderer()->render(
+            new GuideSkill(description: ''),
+            $this->owner(base_path('tests/Fixtures/Skills/Guide')),
+        );
     }
 
     private function renderer(): CanonicalRenderer

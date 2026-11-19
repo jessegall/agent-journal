@@ -18,6 +18,8 @@ final class ShareRelationInvalid extends LogicException
 
     public static function unknownCapability(string $alias, string $relation, string $capability): self
     {
-        return new self("The share relation {$relation} of {$alias} needs {$capability}, which no registered record advertises.");
+        return new self(
+            "The share relation {$relation} of {$alias} needs {$capability}, which no registered record advertises.",
+        );
     }
 }

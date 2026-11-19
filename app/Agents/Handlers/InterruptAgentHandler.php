@@ -18,7 +18,12 @@ final readonly class InterruptAgentHandler implements CommandHandler
 
     public function handle(InterruptAgent $command): DriverReceipt
     {
-        $request = $this->requests->append($command->target(), DriverOperation::Interrupt, $command->idempotencyKey, DriverRequestPayload::nothing());
+        $request = $this->requests->append(
+            $command->target(),
+            DriverOperation::Interrupt,
+            $command->idempotencyKey,
+            DriverRequestPayload::nothing(),
+        );
         $this->requests->holdRuntime($command->target(), HoldReason::Interrupted);
 
         return $request->receipt();

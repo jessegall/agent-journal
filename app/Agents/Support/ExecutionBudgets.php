@@ -38,8 +38,16 @@ final readonly class ExecutionBudgets
     /**
      * @throws ExecutionBudgetInvalid
      */
-    public static function make(int $cpuCores, int $memoryBytes, int $memorySwapBytes, int $processes, int $openFiles, int $tmpBytes, int $workspaceBytes, int $wallSeconds): self
-    {
+    public static function make(
+        int $cpuCores,
+        int $memoryBytes,
+        int $memorySwapBytes,
+        int $processes,
+        int $openFiles,
+        int $tmpBytes,
+        int $workspaceBytes,
+        int $wallSeconds,
+    ): self {
         foreach (compact('cpuCores', 'memoryBytes', 'processes', 'openFiles', 'tmpBytes', 'workspaceBytes', 'wallSeconds') as $name => $value) {
             if ($value < 1) {
                 throw ExecutionBudgetInvalid::notPositive($name, $value);
@@ -56,7 +64,16 @@ final readonly class ExecutionBudgets
             }
         }
 
-        return new self($cpuCores, $memoryBytes, $memorySwapBytes, $processes, $openFiles, $tmpBytes, $workspaceBytes, $wallSeconds);
+        return new self(
+            $cpuCores,
+            $memoryBytes,
+            $memorySwapBytes,
+            $processes,
+            $openFiles,
+            $tmpBytes,
+            $workspaceBytes,
+            $wallSeconds,
+        );
     }
 
     /**

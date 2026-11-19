@@ -31,7 +31,9 @@ final class ContinuationInvalid extends RuntimeException implements CodedRefusal
 
     public static function otherRead(string $tool, string $selector): self
     {
-        return new self("The continuation was not issued for {$tool} of {$selector}; send it to the read that returned it.");
+        return new self(
+            "The continuation was not issued for {$tool} of {$selector}; send it to the read that returned it.",
+        );
     }
 
     public static function withFilters(string $filter): self

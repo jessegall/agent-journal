@@ -25,7 +25,9 @@ final class ShareBudgetTest extends TestCase
     {
         $meter = $this->app->make(ScopedReadMeter::class);
         $budget = MeteredShareBudget::forRead($meter);
-        $runQueries = fn (int $count) => $meter->withinSchedule('one query per budgeted call', function () use ($budget, $count): void {
+        $runQueries = fn (
+            int $count,
+        ) => $meter->withinSchedule('one query per budgeted call', function () use ($budget, $count): void {
             for ($query = 1; $query <= $count; $query++) {
                 $budget->run(fn () => DB::select('select 1'));
             }

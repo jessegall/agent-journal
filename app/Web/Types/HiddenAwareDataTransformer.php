@@ -22,8 +22,15 @@ final class HiddenAwareDataTransformer extends DataClassTransformer
         return parent::shouldTransform($phpClassNode) && $phpClassNode->getAttributes(TypeScript::class) !== [];
     }
 
-    protected function isPropertyHidden(PhpPropertyNode $phpPropertyNode, PhpClassNode $phpClassNode, TypeScriptProperty $property): bool
-    {
-        return parent::isPropertyHidden($phpPropertyNode, $phpClassNode, $property) || $phpPropertyNode->getAttributes(DataHidden::class) !== [];
+    protected function isPropertyHidden(
+        PhpPropertyNode $phpPropertyNode,
+        PhpClassNode $phpClassNode,
+        TypeScriptProperty $property,
+    ): bool {
+        return parent::isPropertyHidden(
+            $phpPropertyNode,
+            $phpClassNode,
+            $property,
+        ) || $phpPropertyNode->getAttributes(DataHidden::class) !== [];
     }
 }

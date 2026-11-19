@@ -31,8 +31,12 @@ final class TokenCursor
      */
     public function __construct(array $tokens, private readonly int $offset)
     {
-        $this->tokens = array_values(array_filter($tokens, fn (Token $token) => $token->type !== TokenType::HereDocumentBody));
-        $this->hereDocumentBodies = array_values(array_filter($tokens, fn (Token $token) => $token->type === TokenType::HereDocumentBody));
+        $this->tokens = array_values(
+            array_filter($tokens, fn (Token $token) => $token->type !== TokenType::HereDocumentBody),
+        );
+        $this->hereDocumentBodies = array_values(
+            array_filter($tokens, fn (Token $token) => $token->type === TokenType::HereDocumentBody),
+        );
     }
 
     public function atEnd(): bool

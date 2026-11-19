@@ -37,7 +37,10 @@ final class SkillSectionsTest extends TestCase
         try {
             $resolved = SkillSections::fromFile('guide.md')->resolve(new MarkdownParts(), $owner, 'Guide');
             $this->assertEquals(new MarkdownParts()->sectionsOf('guide.md', $owner, 'Guide'), $resolved);
-            $this->assertSame(['purpose', 'retrying'], array_map(fn (SkillSection $section) => $section->key, $resolved));
+            $this->assertSame(
+                ['purpose', 'retrying'],
+                array_map(fn (SkillSection $section) => $section->key, $resolved),
+            );
 
             $this->expectException(SkillSourceInvalid::class);
             SkillSections::fromFile('guide.md')->resolve(new MarkdownParts(), $owner, 'Other');

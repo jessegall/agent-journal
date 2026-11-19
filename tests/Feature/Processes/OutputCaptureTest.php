@@ -44,10 +44,17 @@ final class OutputCaptureTest extends TestCase
     {
         $part = $this->part();
         $recorder = $this->app->make(SpoolRecorder::class);
-        $process = SpawnedProcess::start(['head', '-c', '52428800', '/dev/zero'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], sys_get_temp_dir(), ['PATH' => (string) getenv('PATH')]);
+        $process = SpawnedProcess::start(
+            ['head', '-c', '52428800', '/dev/zero'],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            sys_get_temp_dir(),
+            ['PATH' => (string) getenv('PATH')],
+        );
         $this->assertInstanceOf(SpawnedProcess::class, $process);
 
-        $process->drain(fn (OutputStream $stream, string $bytes) => $recorder->append(new CapturedChunk($part, $stream, $bytes, CarbonImmutable::now())));
+        $process->drain(
+            fn (OutputStream $stream, string $bytes) => $recorder->append(new CapturedChunk($part, $stream, $bytes, CarbonImmutable::now())),
+        );
         $recorder->finish($part, $process->wait());
 
         $this->assertSame(52_428_800, $part->refresh()->stream_offsets['stdout']);
@@ -59,7 +66,9 @@ final class OutputCaptureTest extends TestCase
         $part = $this->part();
         $bytes = "\x00\xffprogress 10%\rprogress 20%\r\n";
 
-        $this->app->make(SpoolRecorder::class)->append(new CapturedChunk($part, OutputStream::Stdout, $bytes, CarbonImmutable::now()));
+        $this->app->make(SpoolRecorder::class)->append(
+            new CapturedChunk($part, OutputStream::Stdout, $bytes, CarbonImmutable::now()),
+        );
 
         $chunk = OutputChunk::query()->where('part_run_id', $part->id)->firstOrFail();
         $this->assertSame($bytes, Storage::disk(SpoolRecorder::DISK)->get($chunk->storage_path));
@@ -72,7 +81,9 @@ final class OutputCaptureTest extends TestCase
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, 'first ', CarbonImmutable::now()));
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, 'second', CarbonImmutable::now()));
 
-        Storage::disk(SpoolRecorder::DISK)->delete(OutputChunk::query()->where('part_run_id', $part->id)->where('offset', 0)->firstOrFail()->storage_path);
+        Storage::disk(SpoolRecorder::DISK)->delete(
+            OutputChunk::query()->where('part_run_id', $part->id)->where('offset', 0)->firstOrFail()->storage_path,
+        );
 
         $this->assertSame(CaptureState::Incomplete, $this->app->make(ManifestCheck::class)->stateOf($part->refresh()));
     }
@@ -80,7 +91,12 @@ final class OutputCaptureTest extends TestCase
     #[TimeLimit(5, 'It waits out a short drain deadline while a background child holds the pipe.')]
     public function test_a_background_child_holding_stdout_past_the_deadline_leaves_the_drain_unfinished(): void
     {
-        $process = SpawnedProcess::start(['sh', '-c', 'sleep 3 & echo started'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], sys_get_temp_dir(), ['PATH' => (string) getenv('PATH')]);
+        $process = SpawnedProcess::start(
+            ['sh', '-c', 'sleep 3 & echo started'],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            sys_get_temp_dir(),
+            ['PATH' => (string) getenv('PATH')],
+        );
         $this->assertInstanceOf(SpawnedProcess::class, $process);
 
         $drained = $process->drain(fn () => null, 0.5);
@@ -97,7 +113,9 @@ final class OutputCaptureTest extends TestCase
 
         $this->expectException(OutputStorageFailed::class);
 
-        $this->app->make(SpoolRecorder::class)->append(new CapturedChunk($part, OutputStream::Stdout, 'bytes', CarbonImmutable::now()));
+        $this->app->make(SpoolRecorder::class)->append(
+            new CapturedChunk($part, OutputStream::Stdout, 'bytes', CarbonImmutable::now()),
+        );
     }
 
     public function test_the_output_disk_is_private_and_never_served(): void

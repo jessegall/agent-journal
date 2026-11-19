@@ -36,7 +36,10 @@ final class ActorContextTest extends TestCase
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
         $this->actAs(TestActors::user(7));
-        $this->assertSame([ActorType::User, TestIds::of(7)], [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id]);
+        $this->assertSame(
+            [ActorType::User, TestIds::of(7)],
+            [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id],
+        );
 
         $this->app->forgetScopedInstances();
 
@@ -49,7 +52,10 @@ final class ActorContextTest extends TestCase
         $actors = $this->app->make(CurrentActor::class);
         $this->assertFalse($actors->hasActor());
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(3)),
+            TestLaunchAuthority::forAgent(TestIds::of(3)),
+        );
         $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actors->actor()->type, $actors->actor()->id]);
 
         $this->app->make(CurrentActorSetter::class)->clear();
@@ -70,7 +76,9 @@ final class ActorContextTest extends TestCase
 
     public function test_the_context_of_a_signed_agent_call_is_that_agent_as_actor(): void
     {
-        $actor = ActorContext::of(new AgentContext(TestIds::of(3), TestIds::of(30), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
+        $actor = ActorContext::of(
+            new AgentContext(TestIds::of(3), TestIds::of(30), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+        );
 
         $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actor->type, $actor->id]);
     }

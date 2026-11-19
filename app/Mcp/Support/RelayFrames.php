@@ -68,7 +68,11 @@ final class RelayFrames
                     return $frame;
                 }
 
-                $this->refuse($frame, RefusalCode::DeadlineExpired, 'The call waited past its deadline and was not sent; send it again.');
+                $this->refuse(
+                    $frame,
+                    RefusalCode::DeadlineExpired,
+                    'The call waited past its deadline and was not sent; send it again.',
+                );
             }
 
             if ($this->ended) {
@@ -109,10 +113,27 @@ final class RelayFrames
         }
 
         match (true) {
-            $reply->status === 401 => $this->refuse($frame, RefusalCode::Unauthenticated, 'The journal did not accept this launch credential.'),
-            $reply->status === 429 => $this->refuse($frame, RefusalCode::Busy, 'Too many calls; send it again after the wait.', ['retry_after_seconds' => is_array($body) ? ($body['retry_after_seconds'] ?? null) : null]),
-            $reply->status === 413, $reply->status === 400 => $this->refuse($frame, RefusalCode::InvalidInput, 'The journal refused the message as too large or malformed.'),
-            default => $this->refuse($frame, RefusalCode::Unavailable, 'The journal could not answer; send it again shortly.'),
+            $reply->status === 401 => $this->refuse(
+                $frame,
+                RefusalCode::Unauthenticated,
+                'The journal did not accept this launch credential.',
+            ),
+            $reply->status === 429 => $this->refuse(
+                $frame,
+                RefusalCode::Busy,
+                'Too many calls; send it again after the wait.',
+                ['retry_after_seconds' => is_array($body) ? ($body['retry_after_seconds'] ?? null) : null],
+            ),
+            $reply->status === 413, $reply->status === 400 => $this->refuse(
+                $frame,
+                RefusalCode::InvalidInput,
+                'The journal refused the message as too large or malformed.',
+            ),
+            default => $this->refuse(
+                $frame,
+                RefusalCode::Unavailable,
+                'The journal could not answer; send it again shortly.',
+            ),
         };
     }
 
@@ -176,13 +197,23 @@ final class RelayFrames
         }
 
         if (strlen($line) > LimitMcpMessage::MAX_BYTES) {
-            $this->writeError(self::idIn($line), self::INVALID_REQUEST, RefusalCode::InvalidInput, 'The message is larger than '.LimitMcpMessage::MAX_BYTES.' bytes and was not sent.');
+            $this->writeError(
+                self::idIn($line),
+                self::INVALID_REQUEST,
+                RefusalCode::InvalidInput,
+                'The message is larger than '.LimitMcpMessage::MAX_BYTES.' bytes and was not sent.',
+            );
 
             return;
         }
 
         if (! mb_check_encoding($line, 'UTF-8')) {
-            $this->writeError(null, self::PARSE_ERROR, RefusalCode::InvalidInput, 'The message is not UTF-8 and was not sent.');
+            $this->writeError(
+                null,
+                self::PARSE_ERROR,
+                RefusalCode::InvalidInput,
+                'The message is not UTF-8 and was not sent.',
+            );
 
             return;
         }
@@ -190,13 +221,23 @@ final class RelayFrames
         $message = json_decode($line, true, LimitMcpMessage::MAX_DEPTH);
 
         if (json_last_error() === JSON_ERROR_DEPTH) {
-            $this->writeError(self::idIn($line), self::INVALID_REQUEST, RefusalCode::InvalidInput, 'The message is nested deeper than '.LimitMcpMessage::MAX_DEPTH.' levels and was not sent.');
+            $this->writeError(
+                self::idIn($line),
+                self::INVALID_REQUEST,
+                RefusalCode::InvalidInput,
+                'The message is nested deeper than '.LimitMcpMessage::MAX_DEPTH.' levels and was not sent.',
+            );
 
             return;
         }
 
         if (! is_array($message) || array_is_list($message)) {
-            $this->writeError(null, self::PARSE_ERROR, RefusalCode::InvalidInput, 'The message is not one JSON-RPC object and was not sent.');
+            $this->writeError(
+                null,
+                self::PARSE_ERROR,
+                RefusalCode::InvalidInput,
+                'The message is not one JSON-RPC object and was not sent.',
+            );
 
             return;
         }
@@ -209,13 +250,19 @@ final class RelayFrames
         $cancelledId = $frame->cancelledId();
 
         if ($cancelledId !== null) {
-            $this->queue = array_values(array_filter($this->queue, fn (Frame $queued): bool => $queued->id() !== $cancelledId));
+            $this->queue = array_values(
+                array_filter($this->queue, fn (Frame $queued): bool => $queued->id() !== $cancelledId),
+            );
 
             return;
         }
 
         if (count($this->queue) >= self::MOST_QUEUED) {
-            $this->refuse($frame, RefusalCode::Busy, 'The relay already holds '.self::MOST_QUEUED.' waiting calls; send it again when one is answered.');
+            $this->refuse(
+                $frame,
+                RefusalCode::Busy,
+                'The relay already holds '.self::MOST_QUEUED.' waiting calls; send it again when one is answered.',
+            );
 
             return;
         }
@@ -238,12 +285,21 @@ final class RelayFrames
     /**
      * @param  array<string, mixed>  $data
      */
-    private function writeError(int|string|null $id, int $jsonRpcCode, RefusalCode $code, string $message, array $data = []): void
-    {
+    private function writeError(
+        int|string|null $id,
+        int $jsonRpcCode,
+        RefusalCode $code,
+        string $message,
+        array $data = [],
+    ): void {
         $this->write(json_encode([
             'jsonrpc' => '2.0',
             'id' => $id,
-            'error' => ['code' => $jsonRpcCode, 'message' => $message, 'data' => ['code' => $code->value, 'retryable' => $code->isRetryable(), ...array_filter($data, fn (mixed $value): bool => $value !== null)]],
+            'error' => [
+                'code' => $jsonRpcCode,
+                'message' => $message,
+                'data' => ['code' => $code->value, 'retryable' => $code->isRetryable(), ...array_filter($data, fn (mixed $value): bool => $value !== null)],
+            ],
         ], self::JSON_FLAGS));
     }
 

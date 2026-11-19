@@ -27,6 +27,9 @@ final class CurrentUserResolverTest extends TestCase
         $user = User::factory()->create(['name' => 'Owner']);
         $this->actingAs($user);
 
-        $this->assertEquals(new CurrentUser($user->id, 'Owner'), $this->app->make(CurrentUserResolver::class)->currentUser()->get());
+        $this->assertEquals(
+            new CurrentUser($user->id, 'Owner'),
+            $this->app->make(CurrentUserResolver::class)->currentUser()->get(),
+        );
     }
 }

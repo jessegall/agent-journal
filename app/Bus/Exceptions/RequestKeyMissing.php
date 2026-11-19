@@ -25,7 +25,9 @@ final class RequestKeyMissing extends InvalidArgumentException implements CodedR
     {
         $name = class_basename($command);
 
-        return new self("{$name} runs only under a request key: send a new UUID or ULID as the Idempotency-Key header, or as request_key.");
+        return new self(
+            "{$name} runs only under a request key: send a new UUID or ULID as the Idempotency-Key header, or as request_key.",
+        );
     }
 
     public function refusalCode(): RefusalCode

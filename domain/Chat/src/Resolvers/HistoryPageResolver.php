@@ -25,7 +25,9 @@ final readonly class HistoryPageResolver implements PageResolver
     public function read(): HistoryPageData
     {
         if ($this->request->chosenInbox()->isEmpty()) {
-            return HistoryPageData::from(['inboxId' => Optional::create(), 'isInspection' => false, 'page' => Optional::create()]);
+            return HistoryPageData::from(
+                ['inboxId' => Optional::create(), 'isInspection' => false, 'page' => Optional::create()],
+            );
         }
 
         $inboxId = $this->request->chosenInbox()->get();

@@ -76,7 +76,10 @@ final class OwnerReceiptTest extends CommandBusTestCase
 
     public function test_a_command_that_requires_a_key_is_refused_without_one(): void
     {
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new KeepNote('keyless')), RequestKeyMissing::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new KeepNote('keyless')),
+            RequestKeyMissing::class,
+        );
         $this->assertSame(0, $this->rowCount());
         $this->assertSame(0, CommandReceipt::query()->count());
     }

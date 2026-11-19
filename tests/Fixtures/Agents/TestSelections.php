@@ -53,6 +53,12 @@ final class TestSelections
      */
     public static function onHost(): ExecutionPolicy
     {
-        return ExecutionPolicy::make(ExecutionModeType::ProtectedHost, null, '/workspaces/test', ExecutionBudgets::defaults(), []);
+        return ExecutionPolicy::make(
+ExecutionModeType::ProtectedHost,
+ null,
+ '/workspaces/test',
+ ExecutionBudgets::defaults(),
+ [],
+);
     }
 }

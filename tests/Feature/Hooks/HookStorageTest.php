@@ -61,7 +61,10 @@ final class HookStorageTest extends TestCase
         $stored = AgentStackRow::query()->forTarget(TestActors::stack(7, 9))->sole();
 
         $this->assertEquals($frames, $stored->frames);
-        $this->assertSame([TestIds::of(7), TestIds::of(9), 1], [$stored->agent_id, $stored->session_id, $stored->version]);
+        $this->assertSame(
+            [TestIds::of(7), TestIds::of(9), 1],
+            [$stored->agent_id, $stored->session_id, $stored->version],
+        );
         $this->assertSame(StackStatus::Active, $stored->status);
     }
 
@@ -163,14 +166,29 @@ final class HookStorageTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(7), TestIds::of(9), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(TestIds::of(7), TestIds::of(9), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+        );
     }
 
     private function frames(): FrameRecords
     {
         return new FrameRecords([
-            new FrameRecord('frame-1', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now()),
-            new FrameRecord('frame-2', new StateReference('tasks.working', new SubjectReference('42', 3)), false, 1, CarbonImmutable::now()),
+            new FrameRecord(
+                'frame-1',
+                new StateReference('hooks.ready', NoSubject::None),
+                true,
+                1,
+                CarbonImmutable::now(),
+            ),
+            new FrameRecord(
+                'frame-2',
+                new StateReference('tasks.working', new SubjectReference('42', 3)),
+                false,
+                1,
+                CarbonImmutable::now(),
+            ),
         ]);
     }
 

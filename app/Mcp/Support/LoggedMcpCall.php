@@ -47,7 +47,12 @@ final readonly class LoggedMcpCall implements McpCall
      */
     public function answerResource(string $uri, Closure $content): Response
     {
-        return $this->answer('resource', $uri, $content, fn (Refusal $refusal): Response => $refusal->resourceResponse());
+        return $this->answer(
+            'resource',
+            $uri,
+            $content,
+            fn (Refusal $refusal): Response => $refusal->resourceResponse(),
+        );
     }
 
     /**

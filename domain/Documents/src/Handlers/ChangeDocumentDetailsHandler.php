@@ -16,6 +16,9 @@ final readonly class ChangeDocumentDetailsHandler implements CommandHandler
 
     public function handle(ChangeDocumentDetails $command): DraftReference
     {
-        return $this->drafts->saveEdit($command->draft, fn (DraftText $text) => $text->withDetails($command->title, $command->abstract));
+        return $this->drafts->saveEdit(
+            $command->draft,
+            fn (DraftText $text) => $text->withDetails($command->title, $command->abstract),
+        );
     }
 }

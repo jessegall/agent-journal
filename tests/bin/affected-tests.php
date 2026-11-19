@@ -49,7 +49,10 @@ if ($files === []) {
         exec('git -C '.escapeshellarg($root).' '.$command.' 2>/dev/null', $lines, $status);
 
         if ($status !== 0) {
-            fwrite(STDERR, "git is not available here: name the changed files, for example composer test:affected -- \$(git diff --name-only HEAD).\n");
+            fwrite(
+                STDERR,
+                "git is not available here: name the changed files, for example composer test:affected -- \$(git diff --name-only HEAD).\n",
+            );
             exit(2);
         }
 
@@ -71,14 +74,22 @@ if ($files === []) {
 $folders = new AffectedTests($app->make(DomainRegistry::class), $root)->for($files);
 
 $configuration = configurationFor($root, $folders);
-$listed = explode("\n", run(['php', 'artisan', 'test', '--list-tests', "--configuration={$configuration}"], $environment, $root, true));
+$listed = explode(
+    "\n",
+    run(['php', 'artisan', 'test', '--list-tests', "--configuration={$configuration}"], $environment, $root, true),
+);
 $count = count(array_filter($listed, fn (string $line) => str_starts_with($line, ' - ')));
 
 fwrite(STDOUT, $folders === AffectedTests::EVERYTHING
     ? "Running {$count} tests: a change outside every domain, so every test runs.\n"
     : "Running {$count} tests of: ".implode(', ', $folders)."\n");
 
-$exitCode = (int) run(['php', 'artisan', 'test', '--parallel', '--recreate-databases', "--configuration={$configuration}"], $environment, $root, false);
+$exitCode = (int) run(
+    ['php', 'artisan', 'test', '--parallel', '--recreate-databases', "--configuration={$configuration}"],
+    $environment,
+    $root,
+    false,
+);
 @unlink($configuration);
 exit($exitCode);
 
@@ -116,11 +127,22 @@ function configurationFor(string $root, array $folders): string
     $configuration = (string) file_get_contents("{$root}/phpunit.xml");
 
     if ($folders !== AffectedTests::EVERYTHING) {
-        $directories = implode('', array_map(fn (string $folder) => "            <directory>{$root}/{$folder}</directory>\n", $folders));
-        $configuration = (string) preg_replace('#<testsuites>.*</testsuites>#s', "<testsuites>\n        <testsuite name=\"Affected\">\n{$directories}        </testsuite>\n    </testsuites>", $configuration);
+        $directories = implode(
+            '',
+            array_map(fn (string $folder) => "            <directory>{$root}/{$folder}</directory>\n", $folders),
+        );
+        $configuration = (string) preg_replace(
+            '#<testsuites>.*</testsuites>#s',
+            "<testsuites>\n        <testsuite name=\"Affected\">\n{$directories}        </testsuite>\n    </testsuites>",
+            $configuration,
+        );
     }
 
-    $configuration = str_replace(['"vendor/', '"tests/bootstrap.php"', '<directory>app</directory>', '<directory>domain</directory>', '<directory>tests/'], ["\"{$root}/vendor/", "\"{$root}/tests/bootstrap.php\"", "<directory>{$root}/app</directory>", "<directory>{$root}/domain</directory>", "<directory>{$root}/tests/"], $configuration);
+    $configuration = str_replace(
+        ['"vendor/', '"tests/bootstrap.php"', '<directory>app</directory>', '<directory>domain</directory>', '<directory>tests/'],
+        ["\"{$root}/vendor/", "\"{$root}/tests/bootstrap.php\"", "<directory>{$root}/app</directory>", "<directory>{$root}/domain</directory>", "<directory>{$root}/tests/"],
+        $configuration,
+    );
     $configuration = str_replace('<directory>domain/', "<directory>{$root}/domain/", $configuration);
     $path = tempnam(sys_get_temp_dir(), 'affected-phpunit-').'.xml';
     file_put_contents($path, $configuration);

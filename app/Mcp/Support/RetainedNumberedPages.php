@@ -42,14 +42,22 @@ final readonly class RetainedNumberedPages implements NumberedPages
             $filters = $filtersOf($arguments);
             $page = $read($filters);
 
-            return $this->fit(new Continuation($tool, self::SELECTOR, $filters, 0), $page, RetainedEntries::wholePage($page->cards));
+            return $this->fit(
+                new Continuation($tool, self::SELECTOR, $filters, 0),
+                $page,
+                RetainedEntries::wholePage($page->cards),
+            );
         }
 
         $continuation = $this->continuations->open($cursor, $tool, self::SELECTOR);
         $retainedPageId = $continuation->retainedPageId ?? throw ContinuationInvalid::unreadable();
         $page = $read($continuation->filters);
 
-        return $this->fit($continuation, $page, $this->retained->resolve($retainedPageId, $continuation->offset, fn (array $references): array => $page->cards));
+        return $this->fit(
+            $continuation,
+            $page,
+            $this->retained->resolve($retainedPageId, $continuation->offset, fn (array $references): array => $page->cards),
+        );
     }
 
     /**
@@ -68,18 +76,29 @@ final readonly class RetainedNumberedPages implements NumberedPages
         }
 
         $nextActions = match (true) {
-            $count < count($cards) => [$this->rest($continuation, $page, $entries->offsets[array_keys($cards)[$count]])],
-            $page->hasNextPage() => [new NextAction($continuation->tool, [...$continuation->filters, 'page' => $page->page + 1])],
+            $count < count($cards) => [
+                $this->rest($continuation, $page, $entries->offsets[array_keys($cards)[$count]]),
+            ],
+            $page->hasNextPage() => [
+                new NextAction($continuation->tool, [...$continuation->filters, 'page' => $page->page + 1]),
+            ],
             default => [],
         };
 
-        return ToolResult::ok($this->payload($page, array_slice($cards, 0, $count), $entries->unavailableCount), $nextActions);
+        return ToolResult::ok(
+            $this->payload($page, array_slice($cards, 0, $count), $entries->unavailableCount),
+            $nextActions,
+        );
     }
 
     private function rest(Continuation $continuation, ListedPage $page, int $offset): NextAction
     {
-        $retainedPageId = $continuation->retainedPageId ?? $this->retained->keep(array_map(strval(...), array_keys($page->cards)));
-        $cursor = $this->continuations->issue(new Continuation($continuation->tool, self::SELECTOR, $continuation->filters, $offset, retainedPageId: $retainedPageId));
+        $retainedPageId = $continuation->retainedPageId ?? $this->retained->keep(
+            array_map(strval(...), array_keys($page->cards)),
+        );
+        $cursor = $this->continuations->issue(
+            new Continuation($continuation->tool, self::SELECTOR, $continuation->filters, $offset, retainedPageId: $retainedPageId),
+        );
 
         return new NextAction($continuation->tool, ['continuation' => $cursor]);
     }

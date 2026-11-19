@@ -34,7 +34,20 @@ final class PlanSharingTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'phase_tasks', 'phases', 'plans', 'tasks', 'number_groups'];
+    private const array TABLES = [
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'phase_tasks',
+        'phases',
+        'plans',
+        'tasks',
+        'number_groups',
+    ];
 
     public function test_a_plan_previews_as_a_summary_root_with_its_linked_document_as_a_candidate(): void
     {
@@ -46,10 +59,16 @@ final class PlanSharingTest extends TestCase
         $plan->linkTo($document);
 
         $candidates = $this->app->make(ShareScope::class)->discover($plan->shareIdentity(), $this->budget());
-        $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::LINK_TYPE)->content(new ShareContentRead($plan->shareIdentity()), $this->budget());
+        $content = $this->app->make(ShareRecordRegistry::class)->provider(Plan::LINK_TYPE)->content(
+            new ShareContentRead($plan->shareIdentity()),
+            $this->budget(),
+        );
 
         $this->assertSame('Version 6', $candidates->root->title);
-        $this->assertSame([$document->id], array_map(fn (ShareLinkedCandidate $candidate) => $candidate->card->record->id, $candidates->linked));
+        $this->assertSame(
+            [$document->id],
+            array_map(fn (ShareLinkedCandidate $candidate) => $candidate->card->record->id, $candidates->linked),
+        );
         $this->assertSame('Design', $candidates->linked[0]->card->title);
         $this->assertStringContainsString('Version 6', $content->body);
         $this->assertStringNotContainsString('Secret phase', $content->body);

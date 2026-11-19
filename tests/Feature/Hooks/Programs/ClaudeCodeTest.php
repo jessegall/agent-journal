@@ -44,7 +44,10 @@ final class ClaudeCodeTest extends TestCase
         $call = $this->adapter()->callFor($payload, $this->hook());
 
         if ($expected === 'untouched') {
-            $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $call->replyWith(fn () => $this->fail('A read went to the journal.'))->stdout);
+            $this->assertSame(
+                '{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}',
+                $call->replyWith(fn () => $this->fail('A read went to the journal.'))->stdout,
+            );
 
             return;
         }
@@ -75,7 +78,9 @@ final class ClaudeCodeTest extends TestCase
 
     public function test_a_start_after_compaction_is_the_compaction_under_the_callback_id(): void
     {
-        $input = $this->inputOf($this->adapter()->callFor($this->payload('session resume after compaction'), $this->hook()));
+        $input = $this->inputOf(
+            $this->adapter()->callFor($this->payload('session resume after compaction'), $this->hook()),
+        );
 
         $this->assertInstanceOf(ContextCompacted::class, $input);
         $this->assertSame('call-1', $input->compactionId());
@@ -92,40 +97,67 @@ final class ClaudeCodeTest extends TestCase
     {
         $reply = json_decode($this->render('shell command', Decision::deny('Save it first.'))->stdout, true);
 
-        $this->assertSame(['hookEventName' => 'PreToolUse', 'permissionDecision' => 'deny', 'permissionDecisionReason' => 'Save it first.'], $reply['hookSpecificOutput']);
+        $this->assertSame(
+            ['hookEventName' => 'PreToolUse', 'permissionDecision' => 'deny', 'permissionDecisionReason' => 'Save it first.'],
+            $reply['hookSpecificOutput'],
+        );
     }
 
     public function test_a_rewrite_keeps_every_other_argument_and_grants_nothing(): void
     {
         $reply = json_decode($this->render('shell command', Decision::rewrite('journal run tests'))->stdout, true);
 
-        $this->assertSame(['command' => 'journal run tests', 'description' => 'Run echo hello'], $reply['hookSpecificOutput']['updatedInput']);
+        $this->assertSame(
+            ['command' => 'journal run tests', 'description' => 'Run echo hello'],
+            $reply['hookSpecificOutput']['updatedInput'],
+        );
         $this->assertArrayNotHasKey('permissionDecision', $reply['hookSpecificOutput']);
     }
 
     public function test_a_denied_prompt_is_blocked_with_its_reason(): void
     {
-        $this->assertSame('{"decision":"block","reason":"Answer message 95 first."}', $this->render('prompt', Decision::deny('Answer message 95 first.'))->stdout);
+        $this->assertSame(
+            '{"decision":"block","reason":"Answer message 95 first."}',
+            $this->render('prompt', Decision::deny('Answer message 95 first.'))->stdout,
+        );
     }
 
     public function test_context_reaches_the_agent_on_a_session_start_and_nothing_extra_on_an_end(): void
     {
-        $start = json_decode($this->render('session start', Decision::allow(), ['Message 95 waits for your answer.'])->stdout, true);
+        $start = json_decode(
+            $this->render('session start', Decision::allow(), ['Message 95 waits for your answer.'])->stdout,
+            true,
+        );
 
-        $this->assertSame(['hookEventName' => 'SessionStart', 'additionalContext' => 'Message 95 waits for your answer.'], $start['hookSpecificOutput']);
+        $this->assertSame(
+            ['hookEventName' => 'SessionStart', 'additionalContext' => 'Message 95 waits for your answer.'],
+            $start['hookSpecificOutput'],
+        );
         $this->assertSame('{}', $this->render('session end', Decision::allow())->stdout);
     }
 
     public function test_a_held_stop_blocks_and_an_allowed_stop_is_empty(): void
     {
-        $this->assertSame('{"decision":"block","reason":"Task 42 still needs work."}', $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout);
+        $this->assertSame(
+            '{"decision":"block","reason":"Task 42 still needs work."}',
+            $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout,
+        );
         $this->assertSame('{}', $this->render('stop', Decision::allow())->stdout);
     }
 
     public function test_every_core_input_is_mapped_except_the_ones_the_record_lists(): void
     {
         $unmapped = array_values(array_filter(
-            ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onCompaction', 'onToolFinished', 'onSessionEnd'],
+            [
+                'onSessionStart',
+                'onPrompt',
+                'onShellCommand',
+                'onFileEdit',
+                'onStop',
+                'onCompaction',
+                'onToolFinished',
+                'onSessionEnd',
+            ],
             fn (string $method) => ! $this->adapter()->capabilities()->supports($method),
         ));
 

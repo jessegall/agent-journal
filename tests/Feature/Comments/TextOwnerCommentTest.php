@@ -63,10 +63,18 @@ final class TextOwnerCommentTest extends TestCase
         $page = $this->target(NotePage::written("# Plan\nFirst line.\nSecond line.\n"));
 
         $this->assertSame(['1', 4], [$this->text()->version($page)->id, $this->text()->version($page)->lineCount]);
-        $this->assertSame(['Plan'], array_map(fn ($section) => $section->heading, $this->text()->sections($page, '1', 0, PageSize::from(null))->items));
-        $this->assertStringContainsString('Second line.', $this->text()->read($page, '1', new TextSelection(firstLine: 1))->text);
+        $this->assertSame(
+            ['Plan'],
+            array_map(fn ($section) => $section->heading, $this->text()->sections($page, '1', 0, PageSize::from(null))->items),
+        );
+        $this->assertStringContainsString(
+            'Second line.',
+            $this->text()->read($page, '1', new TextSelection(firstLine: 1))->text,
+        );
 
-        $this->bus()->run(new PostTextComment($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()));
+        $this->bus()->run(
+            new PostTextComment($page, 'Which lines?', TextRange::lines('1', 2, 3), (string) Str::uuid()),
+        );
         $this->bus()->run(new PostComment($page, 'About the page.', (string) Str::uuid()));
         $items = $this->app->make(CommentResolver::class)->list($page, new Page())->items;
 

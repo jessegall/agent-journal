@@ -20,7 +20,9 @@ final class CommandRuleDiscoveryTest extends TestCase
     public function test_a_test_module_declares_its_own_program_and_it_waits_for_review(): void
     {
         $held = CommandRuleRegistry::from(DomainEntry::fromClass(NotesDomain::class)->commandRules())->awaitingReview();
-        $notes = array_values(array_filter($held, fn (CommandRule $rule): bool => $rule->id === 'notes.notes-cli.list'));
+        $notes = array_values(
+            array_filter($held, fn (CommandRule $rule): bool => $rule->id === 'notes.notes-cli.list'),
+        );
 
         $this->assertCount(1, $notes);
         $this->assertSame(ScopeType::Module, $notes[0]->scope->type);

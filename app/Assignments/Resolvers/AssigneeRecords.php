@@ -33,7 +33,10 @@ final readonly class AssigneeRecords implements AssigneeResolver
         $names = [];
 
         foreach (array_unique(array_map(fn (AssigneeIdentity $actor) => $actor->type, $actors), SORT_REGULAR) as $type) {
-            array_push($names, ...$this->providers->assigneeProvider($type)->names(array_values(array_filter($actors, fn (AssigneeIdentity $actor) => $actor->type === $type))));
+            array_push(
+                $names,
+                ...$this->providers->assigneeProvider($type)->names(array_values(array_filter($actors, fn (AssigneeIdentity $actor) => $actor->type === $type))),
+            );
         }
 
         return $names;
@@ -54,7 +57,9 @@ final readonly class AssigneeRecords implements AssigneeResolver
 
     public function holdersOf(AssignmentSet $assignments): AssignmentHolders
     {
-        $names = $this->names(array_map(fn (Assignment $assignment) => $assignment->holder(), $assignments->assignments));
+        $names = $this->names(
+            array_map(fn (Assignment $assignment) => $assignment->holder(), $assignments->assignments),
+        );
         $holders = [];
 
         foreach ($assignments->assignments as $assignment) {

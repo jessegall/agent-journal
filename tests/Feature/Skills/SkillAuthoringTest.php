@@ -52,13 +52,19 @@ final class SkillAuthoringTest extends TestCase
 
     public function test_an_unknown_key_is_not_found(): void
     {
-        $this->artisan('skill:show', ['key' => 'journal-nothing'])->expectsOutputToContain('There is no skill journal-nothing.')->assertFailed();
+        $this->artisan(
+            'skill:show',
+            ['key' => 'journal-nothing'],
+        )->expectsOutputToContain('There is no skill journal-nothing.')->assertFailed();
     }
 
     public function test_a_catalogue_that_cannot_be_built_prints_its_reason(): void
     {
         $root = base_path('tests/Fixtures/Skills/Guide');
-        $this->useOwners(new SkillOwner('Guide', $root, [GuideSkill::class], true), new SkillOwner('Copy', $root, [RenamedGuideSkill::class], true));
+        $this->useOwners(
+            new SkillOwner('Guide', $root, [GuideSkill::class], true),
+            new SkillOwner('Copy', $root, [RenamedGuideSkill::class], true),
+        );
 
         $this->artisan('skill:list')->expectsOutputToContain('Guide and Copy both declare the skill key journal-guide')->assertFailed();
     }
@@ -70,7 +76,9 @@ final class SkillAuthoringTest extends TestCase
     {
         $domainClasses = DomainRegistry::installedClasses(base_path());
 
-        return DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner());
+        return DomainRegistry::from(
+            [...$domainClasses, CardsDomain::class, NotesDomain::class],
+        )->skillDeclarations(CoreSkills::owner());
     }
 
     private function useOwners(SkillOwner ...$owners): void

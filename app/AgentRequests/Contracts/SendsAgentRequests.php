@@ -22,7 +22,13 @@ interface SendsAgentRequests
     /**
      * The same call under an id and issue time its caller keeps, so a retry reaches the journal as the same call.
      */
-    public function prepareWithId(AgentClientSettings $settings, string $path, string $body, string $callId, int $issuedAt): PreparedAgentCall;
+    public function prepareWithId(
+        AgentClientSettings $settings,
+        string $path,
+        string $body,
+        string $callId,
+        int $issuedAt,
+    ): PreparedAgentCall;
 
     /**
      * Sends the prepared call with extra unsigned headers before the deadline, and returns the answer whatever its

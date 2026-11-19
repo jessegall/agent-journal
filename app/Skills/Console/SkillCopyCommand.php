@@ -30,7 +30,9 @@ final class SkillCopyCommand extends Command
         return $this->printRefusals(function () use ($console, $commands, $requestId) {
             $console->actAsOwner();
 
-            return $console->savedLines($commands->run(new CopySkill((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId)));
+            return $console->savedLines(
+                $commands->run(new CopySkill((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId)),
+            );
         });
     }
 }

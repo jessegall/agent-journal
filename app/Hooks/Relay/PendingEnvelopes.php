@@ -35,7 +35,9 @@ final readonly class PendingEnvelopes
     {
         $paths = $this->files->glob($this->folder.'/*.json');
 
-        return array_values(array_map(fn (string $path) => CallbackEnvelope::fromJson($this->files->get($path)), $paths));
+        return array_values(
+            array_map(fn (string $path) => CallbackEnvelope::fromJson($this->files->get($path)), $paths),
+        );
     }
 
     private function pathOf(string $envelopeId): string

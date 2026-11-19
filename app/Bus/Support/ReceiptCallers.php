@@ -36,7 +36,10 @@ final readonly class ReceiptCallers
     {
         $sessions = $this->workStacks->sessionsToAdmit();
 
-        return $sessions === [] ? ReceiptCaller::withoutSession($actor) : ReceiptCaller::inSession($actor, $sessions[0]);
+        return $sessions === [] ? ReceiptCaller::withoutSession($actor) : ReceiptCaller::inSession(
+            $actor,
+            $sessions[0],
+        );
     }
 
     /**

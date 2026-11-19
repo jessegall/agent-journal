@@ -100,7 +100,10 @@ final class HookRetentionTest extends TestCase
         $this->recordCall(1, 'call-7');
         $this->moveDays(8);
         $this->app->make(PruneHookHistory::class)->prune();
-        $this->app->instance(AgentContext::class, new AgentContext(self::target(1)->agentId, self::target(1)->sessionId, new SignedCall('call-7', $issuedAt, str_repeat('a', 64)), null));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(self::target(1)->agentId, self::target(1)->sessionId, new SignedCall('call-7', $issuedAt, str_repeat('a', 64)), null),
+        );
 
         $this->expectException(HookIdentityExpired::class);
 
@@ -148,7 +151,11 @@ final class HookRetentionTest extends TestCase
     private function stack(int $agent): AgentStackRow
     {
         $row = new AgentStackRow();
-        $row->startFor(self::target($agent), new FrameRecords([new FrameRecord('ready', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now())]), new TickingTypes([]));
+        $row->startFor(
+            self::target($agent),
+            new FrameRecords([new FrameRecord('ready', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now())]),
+            new TickingTypes([]),
+        );
 
         return $row;
     }
@@ -157,7 +164,11 @@ final class HookRetentionTest extends TestCase
     {
         $target = self::target($agent);
         $call = new HookCall();
-        $call->recordFor(new HookIdentity($target->agentId, $target->sessionId, $hookId, str_repeat('a', 64)), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        $call->recordFor(
+            new HookIdentity($target->agentId, $target->sessionId, $hookId, str_repeat('a', 64)),
+            RecordedAnswer::of(AnswerType::Allow, '{}'),
+            RecordedSteps::of([]),
+        );
 
         return $call;
     }

@@ -20,7 +20,11 @@ final readonly class CapabilitiesResolver
 
     private const string PROTOCOL_HEADER = 'MCP-Protocol-Version';
 
-    public function __construct(private McpCatalogue $catalogue, private Repository $config, private Request $request) {}
+    public function __construct(
+        private McpCatalogue $catalogue,
+        private Repository $config,
+        private Request $request,
+    ) {}
 
     public function read(): ToolResult
     {

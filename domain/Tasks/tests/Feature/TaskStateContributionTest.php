@@ -126,7 +126,10 @@ final class TaskStateContributionTest extends TestCase
         $neverStarted = Task::factory()->create(['title' => 'Someday']);
         $this->app->make(CommandBus::class)->run(new StartTask($started->id));
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id, 0, 'Done.')), ActorNotAllowed::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id, 0, 'Done.')),
+            ActorNotAllowed::class,
+        );
 
         $this->assertSame(["tasks.working {$started->id} 1"], $this->taskFrames());
     }
@@ -136,7 +139,10 @@ final class TaskStateContributionTest extends TestCase
      */
     private function taskFrames(): array
     {
-        $frames = array_filter(AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(), fn (FrameRecord $frame) => ! $frame->isBottom);
+        $frames = array_filter(
+            AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(),
+            fn (FrameRecord $frame) => ! $frame->isBottom,
+        );
 
         return array_values(array_map(function (FrameRecord $frame): string {
             $subject = $frame->reference->subject;

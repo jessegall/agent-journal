@@ -28,6 +28,11 @@ final class RefreshShareScopeRequest extends FormRequest
 
     public function command(): RefreshShareScope
     {
-        return new RefreshShareScope($this->shareId(), $this->previewId(), $this->previewChecksum(), $this->requestKey());
+        return new RefreshShareScope(
+            $this->shareId(),
+            $this->previewId(),
+            $this->previewChecksum(),
+            $this->requestKey(),
+        );
     }
 }

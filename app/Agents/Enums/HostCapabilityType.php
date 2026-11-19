@@ -27,8 +27,9 @@ enum HostCapabilityType: string
     /**
      * The refusal of a launch that needs this capability where the evidence does not prove it.
      */
-    public function refusalFor(HostCapability $capability): AccountContainerUnsupported|ContainerUnavailable|HostCapabilityUnsupported
-    {
+    public function refusalFor(
+        HostCapability $capability,
+    ): AccountContainerUnsupported|ContainerUnavailable|HostCapabilityUnsupported {
         return match ($this) {
             self::AccountTransport => AccountContainerUnsupported::for($capability),
             self::ContainerRuntime => ContainerUnavailable::because($capability->reason),

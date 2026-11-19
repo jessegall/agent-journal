@@ -11,6 +11,8 @@ final class CapabilityWithoutTrait extends DomainDeclarationError
 {
     public static function for(string $domain, string $capability, string $trait): self
     {
-        return new self("{$domain} implements {$capability} but does not use {$trait}, so its boot would register nothing; use the trait.");
+        return new self(
+            "{$domain} implements {$capability} but does not use {$trait}, so its boot would register nothing; use the trait.",
+        );
     }
 }

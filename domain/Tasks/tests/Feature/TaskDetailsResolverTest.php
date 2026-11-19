@@ -48,7 +48,24 @@ final class TaskDetailsResolverTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['users', 'tasks', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links', 'assignments', 'command_receipts', 'task_runs', 'claim_authorizations', 'inboxes', 'desks', 'desk_seats', 'desk_preferences'];
+    private const array TABLES = [
+        'users',
+        'tasks',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+        'assignments',
+        'command_receipts',
+        'task_runs',
+        'claim_authorizations',
+        'inboxes',
+        'desks',
+        'desk_seats',
+        'desk_preferences',
+    ];
 
     private User $owner;
 
@@ -66,7 +83,10 @@ final class TaskDetailsResolverTest extends TestCase
         $runner = $this->launch('Runner');
         $task = Task::factory()->create(['title' => 'Split work', 'brief' => 'Held by one, run by another.']);
         $this->asUser();
-        $this->app->make(AssignmentWriterInTransaction::class)->assign($task->assignmentIdentity(), $desk->assigneeIdentity());
+        $this->app->make(AssignmentWriterInTransaction::class)->assign(
+            $task->assignmentIdentity(),
+            $desk->assigneeIdentity(),
+        );
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->seat(
             $desk->id,
             new ActorIdentity(ActorType::Agent, $runner->agent_id),
@@ -78,7 +98,10 @@ final class TaskDetailsResolverTest extends TestCase
         $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Context);
 
         $this->assertSame($desk->id, $details->holder->get()->holder()->id);
-        $this->assertSame([$runner->agent_id, 'Runner', 1, TaskWorkState::Active], [$details->execution?->actorId, $details->execution?->actorLabel, $details->execution?->runNumber, $details->execution?->workState]);
+        $this->assertSame(
+            [$runner->agent_id, 'Runner', 1, TaskWorkState::Active],
+            [$details->execution?->actorId, $details->execution?->actorLabel, $details->execution?->runNumber, $details->execution?->workState],
+        );
         $this->assertSame('Held by one, run by another.', $details->brief);
         $this->assertNull($this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Summary)->brief);
     }
@@ -90,7 +113,9 @@ final class TaskDetailsResolverTest extends TestCase
         $this->actAs($runner);
 
         foreach (range(1, 20) as $number) {
-            $this->app->make(CommandBus::class)->run(new StartTask(Task::factory()->create(['title' => "Task {$number}"])->id));
+            $this->app->make(CommandBus::class)->run(
+                new StartTask(Task::factory()->create(['title' => "Task {$number}"])->id),
+            );
         }
 
         $this->asUser();
@@ -110,26 +135,42 @@ final class TaskDetailsResolverTest extends TestCase
     {
         $this->asUser();
 
-        $this->assertThrows(fn () => $this->app->make(TaskDetailsResolver::class)->details(TestIds::of(999999), TaskView::Summary), TaskMissing::class);
+        $this->assertThrows(
+            fn () => $this->app->make(TaskDetailsResolver::class)->details(TestIds::of(999999), TaskView::Summary),
+            TaskMissing::class,
+        );
     }
 
     private function launch(string $name): AgentSession
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(
+            Agent::named($name, 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
     }
 
     private function actAs(AgentSession $session): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), TestLaunchAuthority::forAgent($session->agent_id));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext($session->agent_id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($session->agent_id),
+            TestLaunchAuthority::forAgent($session->agent_id),
+        );
     }
 
     private function asUser(): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
     }
 }

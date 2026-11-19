@@ -44,7 +44,13 @@ final readonly class RegisteredSection
             key: $key,
             host: $host,
             slot: $slot,
-            resolver: ResolverDefinition::of($owner, $key, $section->resolver, SectionResolver::class, $section->dataClass),
+            resolver: ResolverDefinition::of(
+                $owner,
+                $key,
+                $section->resolver,
+                SectionResolver::class,
+                $section->dataClass,
+            ),
             componentFile: $owner->componentFile($key, $section->component),
             propName: 'section_'.str_replace(['.', '-'], '_', "{$section->slot}.{$key}"),
         );

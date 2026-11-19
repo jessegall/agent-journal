@@ -55,7 +55,10 @@ final class DomainListenerGateTest extends TestCase
         $discovered = $provider->discoverEvents();
         $gated = $provider->getEvents();
 
-        $this->assertSame(array_map('count', $discovered), array_map('count', array_intersect_key($gated, $discovered)));
+        $this->assertSame(
+            array_map('count', $discovered),
+            array_map('count', array_intersect_key($gated, $discovered)),
+        );
 
         $owners = [];
         $coreListeners = [];

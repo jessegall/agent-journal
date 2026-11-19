@@ -46,20 +46,37 @@ final class UiDeclarationsTest extends TestCase
 {
     public function test_installed_domains_contribute_qualified_pages_sections_actions_and_navigation(): void
     {
-        $declarations = DomainRegistry::from([LibraryDomain::class, DeskDomain::class, BooksDomain::class])->uiDeclarations();
+        $declarations = DomainRegistry::from(
+            [LibraryDomain::class, DeskDomain::class, BooksDomain::class],
+        )->uiDeclarations();
 
         [$books, $book] = $declarations->pages();
-        $this->assertSame(['library.books', 'library', 'window_library_books'], [$books->key, $books->uri, $books->propName]);
-        $this->assertSame(['library.book', 'library/{book}', ['book']], [$book->key, $book->uri, $book->path->parameters]);
-        $this->assertSame([BooksResolver::class, RecentNotesData::class, BooksRequest::class], [$books->resolver->resolver, $books->resolver->dataClass, $books->resolver->request]);
+        $this->assertSame(
+            ['library.books', 'library', 'window_library_books'],
+            [$books->key, $books->uri, $books->propName],
+        );
+        $this->assertSame(
+            ['library.book', 'library/{book}', ['book']],
+            [$book->key, $book->uri, $book->path->parameters],
+        );
+        $this->assertSame(
+            [BooksResolver::class, RecentNotesData::class, BooksRequest::class],
+            [$books->resolver->resolver, $books->resolver->dataClass, $books->resolver->request],
+        );
         $this->assertStringEndsWith('Library/Resources/js/Book/Reader.vue', $book->componentFile);
 
         [$notes, $draft] = $declarations->sections();
-        $this->assertSame(['desk.notes', 'library.book', 'section_library_book_inspector_desk_notes'], [$notes->key, $notes->host->key, $notes->propName]);
+        $this->assertSame(
+            ['desk.notes', 'library.book', 'section_library_book_inspector_desk_notes'],
+            [$notes->key, $notes->host->key, $notes->propName],
+        );
         $this->assertSame('library.books', $draft->host->key);
 
         [$add] = $declarations->actions();
-        $this->assertSame(['library.add', 'library/books', 'library.books'], [$add->routeName, $add->uri, $add->guard->key]);
+        $this->assertSame(
+            ['library.add', 'library/books', 'library.books'],
+            [$add->routeName, $add->uri, $add->guard->key],
+        );
 
         [$root] = $declarations->navigation();
         $this->assertSame(['library.books', 'library.first-book', 'library.shelves'], $root->keys());
@@ -71,7 +88,10 @@ final class UiDeclarationsTest extends TestCase
     {
         $declarations = DomainRegistry::from([BooksDomain::class])->uiDeclarations();
 
-        $this->assertSame([[], [], [], []], [$declarations->pages(), $declarations->sections(), $declarations->actions(), $declarations->navigation()]);
+        $this->assertSame(
+            [[], [], [], []],
+            [$declarations->pages(), $declarations->sections(), $declarations->actions(), $declarations->navigation()],
+        );
     }
 
     public function test_dynamic_children_are_checked_like_declared_ones(): void
@@ -124,9 +144,13 @@ final class UiDeclarationsTest extends TestCase
 
     public function test_a_component_outside_its_domain_is_refused(): void
     {
-        $this->expectExceptionObject(UiComponentMissing::outsideOwner('library.books', '../../Desk/Resources/js/Notes.vue'));
+        $this->expectExceptionObject(
+            UiComponentMissing::outsideOwner('library.books', '../../Desk/Resources/js/Notes.vue'),
+        );
 
-        $this->check(pages: [Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../Desk/Resources/js/Notes.vue')]);
+        $this->check(
+            pages: [Page::make('books', 'Books', Icon::Docs, BooksResolver::class, '../../Desk/Resources/js/Notes.vue')],
+        );
     }
 
     public function test_a_missing_component_is_refused(): void
@@ -145,14 +169,18 @@ final class UiDeclarationsTest extends TestCase
 
     public function test_a_visibility_check_that_is_no_check_is_refused(): void
     {
-        $this->expectExceptionObject(UiResolverInvalid::notA('library.books', BookCount::class, VisibilityCheck::class));
+        $this->expectExceptionObject(
+            UiResolverInvalid::notA('library.books', BookCount::class, VisibilityCheck::class),
+        );
 
         $this->check(pages: [$this->page('books')->visibleWhen(BookCount::class)]);
     }
 
     public function test_navigation_route_values_must_fill_the_page_path_exactly(): void
     {
-        $this->expectExceptionObject(InvalidNavigationDeclaration::routeValuesMismatch('library.first', 'library.book', '{book}'));
+        $this->expectExceptionObject(
+            InvalidNavigationDeclaration::routeValuesMismatch('library.first', 'library.book', '{book}'),
+        );
 
         $this->check(
             pages: [$this->page('book')->at('{book}')],
@@ -164,7 +192,9 @@ final class UiDeclarationsTest extends TestCase
     {
         $this->expectExceptionObject(UiSlotMissing::for('library.notes', 'library.nowhere'));
 
-        $this->check(sections: [Section::make('notes', 'Notes', 'library.nowhere', SlotContextType::Nothing, NotesResolver::class, 'Books.vue')]);
+        $this->check(
+            sections: [Section::make('notes', 'Notes', 'library.nowhere', SlotContextType::Nothing, NotesResolver::class, 'Books.vue')],
+        );
     }
 
     public function test_a_section_taking_other_than_its_slot_is_refused(): void
@@ -173,7 +203,14 @@ final class UiDeclarationsTest extends TestCase
 
         $library = DomainEntry::fromClass(LibraryDomain::class)->ui();
         $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
-            Section::make('notes', 'Notes', 'library.aside', SlotContextType::Record, NotesResolver::class, 'Notes.vue'),
+            Section::make(
+                'notes',
+                'Notes',
+                'library.aside',
+                SlotContextType::Record,
+                NotesResolver::class,
+                'Notes.vue',
+            ),
         ]);
 
         UiDeclarations::check([$library, $desk]);
@@ -201,6 +238,8 @@ final class UiDeclarationsTest extends TestCase
      */
     private function check(array $pages = [], array $navigation = [], array $sections = []): UiDeclarations
     {
-        return UiDeclarations::check([DomainEntry::fromClass(LibraryDomain::class)->declaring($pages, $navigation, $sections)]);
+        return UiDeclarations::check(
+            [DomainEntry::fromClass(LibraryDomain::class)->declaring($pages, $navigation, $sections)],
+        );
     }
 }

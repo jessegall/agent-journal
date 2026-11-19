@@ -48,7 +48,10 @@ final class AssignableRecordsTest extends TestCase
         $resolved = $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable($task->assignmentIdentity());
 
         $this->assertTrue($resolved->assignmentIdentity()->isSameAs(new RecordIdentity('tasks.task', $task->id)));
-        $this->assertThrows(fn () => $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable(TestActors::record('tasks.task', 999999)), RecordUnavailable::class);
+        $this->assertThrows(
+            fn () => $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable(TestActors::record('tasks.task', 999999)),
+            RecordUnavailable::class,
+        );
     }
 
     public function test_visible_records_keep_the_input_order_and_leave_out_missing_ones(): void
@@ -77,7 +80,10 @@ final class AssignableRecordsTest extends TestCase
         $overTasks = $this->registry->recordProvider(Task::LINK_TYPE)->finishedRecords([$open, $finished, $cancelled]);
         $overPlans = $this->registry->recordProvider(Plan::LINK_TYPE)->finishedRecords([$plan]);
 
-        $this->assertSame([$finished->id, $cancelled->id], array_map(fn (RecordIdentity $record) => $record->id, $overTasks));
+        $this->assertSame(
+            [$finished->id, $cancelled->id],
+            array_map(fn (RecordIdentity $record) => $record->id, $overTasks),
+        );
         $this->assertSame([], $overPlans);
     }
 
@@ -115,6 +121,8 @@ final class AssignableRecordsTest extends TestCase
 
         $this->expectException(ActorContextMissing::class);
 
-        $this->app->make(AssignmentRegistry::class)->recordProvider(Task::LINK_TYPE)->visibleRecords([TestActors::record('tasks.task', 1)]);
+        $this->app->make(AssignmentRegistry::class)->recordProvider(Task::LINK_TYPE)->visibleRecords(
+            [TestActors::record('tasks.task', 1)],
+        );
     }
 }

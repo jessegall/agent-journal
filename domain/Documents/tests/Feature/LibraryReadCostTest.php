@@ -32,22 +32,36 @@ final class LibraryReadCostTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
         $bus = $this->app->make(CommandBus::class);
 
         foreach (range(1, 12) as $number) {
             $phrase = $number % 3 === 0 ? 'The retention window is thirty days.' : 'Nothing to find here.';
-            $bus->run(new CreateDocument("Design {$number}", "What design {$number} says", "# Design {$number}\n\n{$phrase}\n"));
+            $bus->run(
+                new CreateDocument("Design {$number}", "What design {$number} says", "# Design {$number}\n\n{$phrase}\n"),
+            );
         }
 
         foreach (range(1, 4) as $number) {
-            $bus->run(new CreateReport("Check {$number}", "What check {$number} found", "# Check {$number}\n\nThe retention window held.\n"));
+            $bus->run(
+                new CreateReport("Check {$number}", "What check {$number} found", "# Check {$number}\n\nThe retention window held.\n"),
+            );
         }
     }
 
@@ -59,9 +73,15 @@ final class LibraryReadCostTest extends TestCase
         foreach ([
             'document list' => fn (int $size) => $documents->list(new DocumentFilters(perPage: $size)),
             'report list' => fn (int $size) => $reports->list(new DocumentFilters(perPage: $size)),
-            'document search' => fn (int $size) => $documents->list(new DocumentFilters(query: 'retention window', perPage: $size)),
+            'document search' => fn (int $size) => $documents->list(
+                new DocumentFilters(query: 'retention window', perPage: $size),
+            ),
         ] as $read => $page) {
-            $this->assertSame(count($this->queriesOf(fn () => $page(2))), count($this->queriesOf(fn () => $page(10))), "The {$read} runs more queries for a larger page.");
+            $this->assertSame(
+                count($this->queriesOf(fn () => $page(2))),
+                count($this->queriesOf(fn () => $page(10))),
+                "The {$read} runs more queries for a larger page.",
+            );
         }
     }
 
@@ -73,8 +93,15 @@ final class LibraryReadCostTest extends TestCase
         $this->assertNotEmpty($queries);
 
         foreach ($queries as $query) {
-            $this->assertTrue(self::isBounded($query), 'A list query reads more than a page and one row: '.$query['query']);
-            $this->assertDoesNotMatchRegularExpression('/^select \* from "document_revisions"/', $query['query'], 'A list query reads every revision column, bodies included: '.$query['query']);
+            $this->assertTrue(
+                self::isBounded($query),
+                'A list query reads more than a page and one row: '.$query['query'],
+            );
+            $this->assertDoesNotMatchRegularExpression(
+                '/^select \* from "document_revisions"/',
+                $query['query'],
+                'A list query reads every revision column, bodies included: '.$query['query'],
+            );
         }
     }
 
@@ -85,11 +112,18 @@ final class LibraryReadCostTest extends TestCase
         $plan = DB::transaction(function () use ($match): string {
             DB::statement('SET LOCAL enable_seqscan = off');
 
-            return (string) DB::selectOne('EXPLAIN (FORMAT JSON) '.$match->toSql(), $match->getBindings())->{'QUERY PLAN'};
+            return (string) DB::selectOne(
+                'EXPLAIN (FORMAT JSON) '.$match->toSql(),
+                $match->getBindings(),
+            )->{'QUERY PLAN'};
         });
 
         foreach (['title', 'abstract', 'body'] as $column) {
-            $this->assertStringContainsString("\"Index Name\": \"document_revisions_{$column}_search\"", $plan, "The {$column} match is not served by its trigram index.");
+            $this->assertStringContainsString(
+                "\"Index Name\": \"document_revisions_{$column}_search\"",
+                $plan,
+                "The {$column} match is not served by its trigram index.",
+            );
         }
 
         $this->assertStringNotContainsString('"Node Type": "Seq Scan"', $plan, 'The text match scans every revision.');
@@ -122,6 +156,8 @@ final class LibraryReadCostTest extends TestCase
         $read();
         DB::disableQueryLog();
 
-        return array_values(array_map(fn (array $query) => ['query' => (string) $query['query'], 'bindings' => (array) $query['bindings']], DB::getQueryLog()));
+        return array_values(
+            array_map(fn (array $query) => ['query' => (string) $query['query'], 'bindings' => (array) $query['bindings']], DB::getQueryLog()),
+        );
     }
 }

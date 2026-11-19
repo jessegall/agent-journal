@@ -61,7 +61,9 @@ final readonly class AssignmentRecords implements AssignmentResolver
 
         $rows = AssignmentRecord::query()->where(function (Builder $query) use ($visibleIdsByType): void {
             foreach ($visibleIdsByType as $type => $ids) {
-                $query->orWhere(fn (Builder $ofType) => $ofType->where('record_type', $type)->whereIn('record_id', $ids));
+                $query->orWhere(
+                    fn (Builder $ofType) => $ofType->where('record_type', $type)->whereIn('record_id', $ids),
+                );
             }
         })->readLimit(array_sum(array_map(count(...), $visibleIdsByType)))->orderBy('id')->get();
 
@@ -90,7 +92,10 @@ final readonly class AssignmentRecords implements AssignmentResolver
                 return new RecordIds($ids, null);
             }
 
-            $visible = array_map(fn (RecordIdentity $record) => $record->id, $this->visibleAmong($type, array_values(array_map(fn (string $id) => new RecordIdentity($type, $id), $candidates))));
+            $visible = array_map(
+                fn (RecordIdentity $record) => $record->id,
+                $this->visibleAmong($type, array_values(array_map(fn (string $id) => new RecordIdentity($type, $id), $candidates))),
+            );
 
             foreach ($candidates as $candidate) {
                 $examinedUpTo = $candidate;
@@ -155,11 +160,16 @@ final readonly class AssignmentRecords implements AssignmentResolver
         try {
             $answered = $this->providers->recordProvider($type)->visibleRecords($records);
         } catch (AssignmentTypeUnavailable $unavailable) {
-            $this->log->warning('Assignments were read for a record type no installed domain provides.', ['type' => $type]);
+            $this->log->warning(
+                'Assignments were read for a record type no installed domain provides.',
+                ['type' => $type],
+            );
 
             throw $unavailable;
         }
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => array_any($answered, fn (RecordIdentity $visible) => $visible->isSameAs($record))));
+        return array_values(
+            array_filter($records, fn (RecordIdentity $record) => array_any($answered, fn (RecordIdentity $visible) => $visible->isSameAs($record))),
+        );
     }
 }

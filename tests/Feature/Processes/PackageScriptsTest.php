@@ -27,7 +27,10 @@ final class PackageScriptsTest extends TestCase
     {
         $classification = $this->classify('composer lint', base_path());
 
-        $this->assertSame([CommandClass::Read, CommandClass::Edit, CommandClass::Verification], $classification->requiredClasses()->classes);
+        $this->assertSame(
+            [CommandClass::Read, CommandClass::Edit, CommandClass::Verification],
+            $classification->requiredClasses()->classes,
+        );
         $this->assertSame(CommandType::Verification, $classification->parts[0]->purpose);
     }
 
@@ -39,7 +42,10 @@ final class PackageScriptsTest extends TestCase
         $this->assertTrue($classification->requiredClasses()->contains(CommandClass::Verification));
         $this->assertTrue($classification->requiredClasses()->contains(CommandClass::Delete));
         $this->assertCount(3, $classification->parts[0]->contracts);
-        $this->assertStringContainsString('script:composer.json#test:inside@', $classification->facts()[0]->origin->reference());
+        $this->assertStringContainsString(
+            'script:composer.json#test:inside@',
+            $classification->facts()[0]->origin->reference(),
+        );
     }
 
     public function test_a_script_named_check_that_deletes_is_a_delete_and_no_check(): void
@@ -54,8 +60,16 @@ final class PackageScriptsTest extends TestCase
 
     public function test_a_changed_body_gives_a_new_digest(): void
     {
-        $before = $this->app->make(PackageScripts::class)->bodyOf('npm', 'check', $this->project(['check' => 'vp check']))[0]->binding->digest;
-        $after = $this->app->make(PackageScripts::class)->bodyOf('npm', 'check', $this->project(['check' => 'vp check --fix']))[0]->binding->digest;
+        $before = $this->app->make(PackageScripts::class)->bodyOf(
+            'npm',
+            'check',
+            $this->project(['check' => 'vp check']),
+        )[0]->binding->digest;
+        $after = $this->app->make(PackageScripts::class)->bodyOf(
+            'npm',
+            'check',
+            $this->project(['check' => 'vp check --fix']),
+        )[0]->binding->digest;
 
         $this->assertNotSame($before, $after);
     }
@@ -76,6 +90,9 @@ final class PackageScriptsTest extends TestCase
     {
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
 
-        return $this->app->make(CommandClassifier::class)->classify($tree, new ExecutionContext(ShellDialect::Bash, $root, $root));
+        return $this->app->make(CommandClassifier::class)->classify(
+            $tree,
+            new ExecutionContext(ShellDialect::Bash, $root, $root),
+        );
     }
 }

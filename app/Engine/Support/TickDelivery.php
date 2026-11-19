@@ -60,7 +60,9 @@ final readonly class TickDelivery
 
         $passNow = $this->serverClock->now();
         $passNowReading = $this->clock->nanoseconds();
-        $checkpoints = EngineFrameTime::settledAtFor(array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates));
+        $checkpoints = EngineFrameTime::settledAtFor(
+            array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates),
+        );
         $settled = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', function () use ($batch, $passStartNanoseconds, $passNow, $passNowReading, $checkpoints): array {
             $anyTicked = false;
             $settled = [];
@@ -112,16 +114,25 @@ final readonly class TickDelivery
             foreach ($commands->all() as $command) {
                 $locks = WorkLockSet::for($candidate->occurrence, $command);
                 $run = fn (): mixed => $this->commands->run($command);
-                $this->origins->runWith($locks, fn (): mixed => $this->entrance->through(CommandEntry::Application, $run));
+                $this->origins->runWith(
+                    $locks,
+                    fn (): mixed => $this->entrance->through(CommandEntry::Application, $run),
+                );
             }
 
             return true;
         } catch (WorkOccurrenceStale $stale) {
-            $this->log->info('Engine tick of finished work dropped', ['frame' => $candidate->frameId, 'reason' => $stale->getMessage()]);
+            $this->log->info(
+                'Engine tick of finished work dropped',
+                ['frame' => $candidate->frameId, 'reason' => $stale->getMessage()],
+            );
 
             return true;
         } catch (Throwable $failure) {
-            $this->log->error('Engine tick failed', ['frame' => $candidate->frameId, 'state' => $candidate->state::class, 'exception' => $failure]);
+            $this->log->error(
+                'Engine tick failed',
+                ['frame' => $candidate->frameId, 'state' => $candidate->state::class, 'exception' => $failure],
+            );
 
             return false;
         } finally {
@@ -135,8 +146,12 @@ final readonly class TickDelivery
      *
      * @param  array<string, CarbonImmutable>  $checkpoints
      */
-    private function deltaFor(TickCandidate $candidate, int $start, CarbonImmutable $now, array $checkpoints): ElapsedTime
-    {
+    private function deltaFor(
+        TickCandidate $candidate,
+        int $start,
+        CarbonImmutable $now,
+        array $checkpoints,
+    ): ElapsedTime {
         if ($this->baselines->has($candidate->frameId)) {
             return ElapsedTime::between($this->baselines->of($candidate->frameId), $start);
         }
@@ -168,7 +183,12 @@ final readonly class TickDelivery
 
         try {
             $this->commands->run(new SettleFrameTimes(array_map(
-                fn (array $frame) => FrameSettlement::at($frame[0]->target, $frame[0]->stackId, $frame[0]->frameId, $frame[1]),
+                fn (array $frame) => FrameSettlement::at(
+                    $frame[0]->target,
+                    $frame[0]->stackId,
+                    $frame[0]->frameId,
+                    $frame[1],
+                ),
                 $settled,
             )));
         } catch (Throwable $failure) {

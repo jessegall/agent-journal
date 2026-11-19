@@ -121,7 +121,11 @@ final class AutoAssignmentAccessTest extends TestCase
      */
     private function launched(Agent $agent): Agent
     {
-        $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
+        $this->app->make(LaunchSessions::class)->launch(
+            $agent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
 
         return $agent;
     }

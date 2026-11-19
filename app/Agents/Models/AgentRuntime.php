@@ -185,8 +185,12 @@ final class AgentRuntime extends Model implements ReadableModel
     /**
      * Records what the host saw, unless the report comes from an older process generation than the one recorded.
      */
-    public function recordObservation(RuntimeActivity $activity, HoldReason $hold, int $processGeneration, CarbonImmutable $at): bool
-    {
+    public function recordObservation(
+        RuntimeActivity $activity,
+        HoldReason $hold,
+        int $processGeneration,
+        CarbonImmutable $at,
+    ): bool {
         if ($processGeneration < $this->process_generation) {
             return false;
         }
@@ -225,7 +229,10 @@ final class AgentRuntime extends Model implements ReadableModel
      */
     public function status(CarbonImmutable $now): RuntimeStatus
     {
-        $settingsAge = $this->settings_observed_at === null ? null : (int) $this->settings_observed_at->diffInSeconds($now, true);
+        $settingsAge = $this->settings_observed_at === null ? null : (int) $this->settings_observed_at->diffInSeconds(
+            $now,
+            true,
+        );
 
         return RuntimeStatus::from([
             'runtimeId' => $this->id,
@@ -234,7 +241,12 @@ final class AgentRuntime extends Model implements ReadableModel
             'activity' => $this->activity,
             'hold' => $this->hold_reason,
             'model' => self::setting($this->requested_model, $this->staged_model, $this->observed_model, $settingsAge),
-            'effort' => self::setting($this->requested_effort, $this->staged_effort, $this->observed_effort, $settingsAge),
+            'effort' => self::setting(
+                $this->requested_effort,
+                $this->staged_effort,
+                $this->observed_effort,
+                $settingsAge,
+            ),
             'observationAgeSeconds' => $this->observationAge($now),
             'isStale' => $this->isStale($now),
             'processGeneration' => $this->process_generation,

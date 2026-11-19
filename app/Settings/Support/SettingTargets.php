@@ -67,6 +67,9 @@ final readonly class SettingTargets
         $this->gate->require();
         $group = $this->registry->groupAt($reference->owner, $reference->key);
 
-        return $group instanceof ToggleGroup ? $group : throw SettingValueInvalid::notToggleGroup($reference->owner, $reference->key);
+        return $group instanceof ToggleGroup ? $group : throw SettingValueInvalid::notToggleGroup(
+            $reference->owner,
+            $reference->key,
+        );
     }
 }

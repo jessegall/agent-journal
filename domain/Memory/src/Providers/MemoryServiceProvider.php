@@ -28,7 +28,9 @@ final class MemoryServiceProvider extends ServiceProvider
     public function boot(LinkTypeRegistry $links): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands([MemorySaveCommand::class, MemoryEditCommand::class, MemoryRemoveCommand::class, MemoryListCommand::class]);
+        $this->commands(
+            [MemorySaveCommand::class, MemoryEditCommand::class, MemoryRemoveCommand::class, MemoryListCommand::class],
+        );
         $links->register([
             'memory.memory' => Memory::class,
         ]);

@@ -38,7 +38,12 @@ final class NameScan
 
         foreach (new NodeFinder()->findInstanceOf($file->statements, Stmt\Use_::class) as $import) {
             foreach ($import->uses as $item) {
-                $uses[] = new NameUse($file->path, $item->getStartLine(), $item->name->toString(), NameType::forImportType($import->type));
+                $uses[] = new NameUse(
+                    $file->path,
+                    $item->getStartLine(),
+                    $item->name->toString(),
+                    NameType::forImportType($import->type),
+                );
             }
         }
 
@@ -57,7 +62,12 @@ final class NameScan
                 $type = $item->type === Stmt\Use_::TYPE_UNKNOWN ? $group->type : $item->type;
                 $name = Name::concat($group->prefix, $item->name);
 
-                $uses[] = new NameUse($file->path, $item->getStartLine(), $name->toString(), NameType::forImportType($type));
+                $uses[] = new NameUse(
+                    $file->path,
+                    $item->getStartLine(),
+                    $name->toString(),
+                    NameType::forImportType($type),
+                );
             }
         }
 

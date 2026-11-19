@@ -64,8 +64,11 @@ final readonly class CommandGrammar
     /**
      * @param  list<string>  $seen
      */
-    private function problemWithType(ReflectionType|null $type, ReflectionProperty|null $property, array $seen): string|null
-    {
+    private function problemWithType(
+        ReflectionType|null $type,
+        ReflectionProperty|null $property,
+        array $seen,
+    ): string|null {
         if (! $type instanceof ReflectionNamedType) {
             return 'has no single declared type';
         }
@@ -107,10 +110,16 @@ final readonly class CommandGrammar
         $class = $this->classNamed($item, $property);
 
         if (enum_exists($class)) {
-            return is_subclass_of($class, BackedEnum::class) ? null : "is a list of the enum {$class}, which has no values";
+            return is_subclass_of(
+                $class,
+                BackedEnum::class,
+            ) ? null : "is a list of the enum {$class}, which has no values";
         }
 
-        $problem = class_exists($class) ? $this->problemWithValue($class, $seen) : "is typed {$class}, which is no class, enum or allowed type";
+        $problem = class_exists($class) ? $this->problemWithValue(
+            $class,
+            $seen,
+        ) : "is typed {$class}, which is no class, enum or allowed type";
 
         return $problem === null ? null : "is a list whose item {$problem}";
     }
@@ -137,7 +146,12 @@ final readonly class CommandGrammar
      */
     private static function importsOf(string $file): array
     {
-        preg_match_all('/^use\s+([A-Za-z0-9_\\\\]+)(?:\s+as\s+([A-Za-z0-9_]+))?;/m', (string) file_get_contents($file), $imports, PREG_SET_ORDER);
+        preg_match_all(
+            '/^use\s+([A-Za-z0-9_\\\\]+)(?:\s+as\s+([A-Za-z0-9_]+))?;/m',
+            (string) file_get_contents($file),
+            $imports,
+            PREG_SET_ORDER,
+        );
         $byName = [];
 
         foreach ($imports as $import) {

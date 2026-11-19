@@ -48,7 +48,10 @@ final readonly class AuthenticateAgent
         try {
             $admitted = $this->contexts->admit($request);
         } catch (CredentialRejected|CallSignatureInvalid) {
-            return new JsonResponse(['code' => 'unauthenticated', 'message' => self::UNAUTHENTICATED], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(
+                ['code' => 'unauthenticated', 'message' => self::UNAUTHENTICATED],
+                Response::HTTP_UNAUTHORIZED,
+            );
         } catch (CallProtocolUnsupported $unsupported) {
             return new JsonResponse(['message' => $unsupported->getMessage()], Response::HTTP_UPGRADE_REQUIRED);
         }

@@ -20,7 +20,9 @@ final class TaskRunTaken extends RuntimeException implements CodedRefusal, Comma
 
     public static function forTask(int $taskNumber): self
     {
-        return new self("Task {$taskNumber} is being worked on by another session; it cannot be started until that run ends.");
+        return new self(
+            "Task {$taskNumber} is being worked on by another session; it cannot be started until that run ends.",
+        );
     }
 
     public function refusalCode(): RefusalCode

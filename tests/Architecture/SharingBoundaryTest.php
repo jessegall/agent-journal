@@ -54,13 +54,47 @@ final class SharingBoundaryTest extends TestCase
     /**
      * The commands an owner or agent calls; every other sharing command is the System's own.
      */
-    private const array ENTRY_COMMANDS = [SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class];
+    private const array ENTRY_COMMANDS = [
+        SaveSharePreview::class,
+        CreateShare::class,
+        RequestShare::class,
+        ApproveShareRequest::class,
+        RevokeShare::class,
+        RefreshShareScope::class,
+        RetryShare::class,
+        ConfigureShareGateway::class,
+        DisableShareGateway::class,
+    ];
 
-    private const array SYSTEM_COMMANDS = [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class];
+    private const array SYSTEM_COMMANDS = [
+        ReadShare::class,
+        ExpireShares::class,
+        ClaimGatewayOperation::class,
+        RecordGatewayOutcome::class,
+        RecordGatewayHealth::class,
+        ReopenSharedGateways::class,
+        PruneShareAudit::class,
+    ];
 
-    private const array SEAMS = [Shareable::class, ShareRecordProvider::class, ShareGateway::class, ProvidesShareRecords::class, ProvidesShareGateways::class, SharePolicy::class];
+    private const array SEAMS = [
+        Shareable::class,
+        ShareRecordProvider::class,
+        ShareGateway::class,
+        ProvidesShareRecords::class,
+        ProvidesShareGateways::class,
+        SharePolicy::class,
+    ];
 
-    private const array EVENTS = [ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class];
+    private const array EVENTS = [
+        ShareRequested::class,
+        ShareCreated::class,
+        ShareActivated::class,
+        ShareFailed::class,
+        ShareScopeChanged::class,
+        ShareRevoked::class,
+        ShareExpired::class,
+        ShareGatewayChanged::class,
+    ];
 
     public function test_no_core_sharing_file_names_a_domain_namespace(): void
     {
@@ -78,7 +112,9 @@ final class SharingBoundaryTest extends TestCase
     public function test_every_sharing_command_is_registered_through_the_bus_and_none_is_queued(): void
     {
         $registry = $this->app->make(CommandRegistry::class);
-        $sharing = array_values(array_filter(CoreCommands::commands(), fn (string $command) => str_starts_with($command, 'App\\Sharing\\Commands\\')));
+        $sharing = array_values(
+            array_filter(CoreCommands::commands(), fn (string $command) => str_starts_with($command, 'App\\Sharing\\Commands\\')),
+        );
 
         $this->assertEqualsCanonicalizing([...self::ENTRY_COMMANDS, ...self::SYSTEM_COMMANDS], $sharing);
 
@@ -104,7 +140,13 @@ final class SharingBoundaryTest extends TestCase
             $this->assertTrue($exports->hasCommand($command), "{$command} is not exported as a command.");
         }
 
-        $private = [...self::SYSTEM_COMMANDS, ReadPermit::class, ...$this->classesIn('Models'), ...$this->classesIn('Handlers'), ...$this->classesIn('Actions')];
+        $private = [
+            ...self::SYSTEM_COMMANDS,
+            ReadPermit::class,
+            ...$this->classesIn('Models'),
+            ...$this->classesIn('Handlers'),
+            ...$this->classesIn('Actions'),
+        ];
 
         foreach ($private as $class) {
             $this->assertFalse($exports->has($class), "{$class} is exported.");
@@ -117,7 +159,13 @@ final class SharingBoundaryTest extends TestCase
     private function sharingFiles(): array
     {
         $files = [];
-        $roots = [app_path('Sharing'), app_path('Http/Controllers/Sharing'), app_path('Http/Requests/Sharing'), app_path('Http/Data/Sharing'), app_path('Http/Middleware/Sharing')];
+        $roots = [
+            app_path('Sharing'),
+            app_path('Http/Controllers/Sharing'),
+            app_path('Http/Requests/Sharing'),
+            app_path('Http/Data/Sharing'),
+            app_path('Http/Middleware/Sharing'),
+        ];
 
         foreach (array_filter($roots, is_dir(...)) as $root) {
             foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root)) as $file) {
@@ -135,6 +183,9 @@ final class SharingBoundaryTest extends TestCase
      */
     private function classesIn(string $folder): array
     {
-        return array_map(fn (string $file) => 'App\\Sharing\\'.$folder.'\\'.basename($file, '.php'), glob(app_path("Sharing/{$folder}/*.php")) ?: []);
+        return array_map(
+            fn (string $file) => 'App\\Sharing\\'.$folder.'\\'.basename($file, '.php'),
+            glob(app_path("Sharing/{$folder}/*.php")) ?: [],
+        );
     }
 }

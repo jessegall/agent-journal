@@ -50,7 +50,9 @@ final class OperationFactsTest extends TestCase
     public function test_a_dynamic_bash_c_eval_and_command_substitution_are_unknown(): void
     {
         foreach (['bash -c "$SCRIPT"', 'eval "$LINE"', 'echo $(whoami)'] as $line) {
-            $unknown = array_values(array_filter($this->operations($line), fn (Operation $operation): bool => $operation->name === ShellOperations::UNKNOWN));
+            $unknown = array_values(
+                array_filter($this->operations($line), fn (Operation $operation): bool => $operation->name === ShellOperations::UNKNOWN),
+            );
 
             $this->assertNotSame([], $unknown, "{$line} was placed.");
             $this->assertSame([], $unknown[0]->accessTypes);
@@ -77,7 +79,10 @@ final class OperationFactsTest extends TestCase
     private function operations(string $line): array
     {
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
-        $classification = $this->app->make(CommandClassifier::class)->classify($tree, new ExecutionContext(ShellDialect::Bash, base_path(), base_path()));
+        $classification = $this->app->make(CommandClassifier::class)->classify(
+            $tree,
+            new ExecutionContext(ShellDialect::Bash, base_path(), base_path()),
+        );
 
         return $this->app->make(ShellOperations::class)->of($classification);
     }

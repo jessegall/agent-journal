@@ -20,7 +20,9 @@ final class PlanRevisionChanged extends RuntimeException implements CodedRefusal
 
     public static function for(int $number, int $expected, int $current): self
     {
-        return new self("Plan {$number} is at revision {$current}, not {$expected}; read it again with plans_read and change that revision.");
+        return new self(
+            "Plan {$number} is at revision {$current}, not {$expected}; read it again with plans_read and change that revision.",
+        );
     }
 
     public function refusalCode(): RefusalCode

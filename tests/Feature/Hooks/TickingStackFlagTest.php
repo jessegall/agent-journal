@@ -53,10 +53,19 @@ final class TickingStackFlagTest extends TestCase
         parent::setUp();
 
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register('test.ticking', new TickingLoader(fn (StateReference $reference): AgentState => new TickingState(
-                $reference->subject instanceof SubjectReference && in_array($reference->subject->id, $this->finished, true),
+            $event->registry->register('test.ticking', new TickingLoader(fn (
+                StateReference $reference,
+            ): AgentState => new TickingState(
+                $reference->subject instanceof SubjectReference && in_array(
+                    $reference->subject->id,
+                    $this->finished,
+                    true,
+                ),
             )));
-            $event->registry->register('test.plain', new ClosureStateLoader(fn (): AgentState => new TickingState(false)));
+            $event->registry->register(
+                'test.plain',
+                new ClosureStateLoader(fn (): AgentState => new TickingState(false)),
+            );
         });
     }
 
@@ -72,7 +81,10 @@ final class TickingStackFlagTest extends TestCase
         $this->assertTrue($this->stackOf($launched)->has_ticking_frames);
 
         $this->finished = ['T'];
-        $this->asEngineFor($this->targetOf($launched), fn () => $this->app->make(EngineStack::class)->popExposed($this->targetOf($launched)));
+        $this->asEngineFor(
+            $this->targetOf($launched),
+            fn () => $this->app->make(EngineStack::class)->popExposed($this->targetOf($launched)),
+        );
         $this->assertFalse($this->stackOf($launched)->has_ticking_frames);
     }
 
@@ -89,17 +101,27 @@ final class TickingStackFlagTest extends TestCase
         $ended->session->endAt(CarbonImmutable::now());
         $this->stackOf($closed)->closeAt(CarbonImmutable::now());
 
-        $this->assertSame([$ticking->session->id], AgentStackRow::query()->tickingOpen()->readLimit(10)->pluck('session_id')->all());
+        $this->assertSame(
+            [$ticking->session->id],
+            AgentStackRow::query()->tickingOpen()->readLimit(10)->pluck('session_id')->all(),
+        );
     }
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(
+            Agent::named('Test agent', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
     }
 
     private function push(LaunchedAgent $launched, string $typeKey, string $subject): void
     {
-        $this->as($launched, fn () => $this->app->make(AgentStacks::class)->push($this->targetOf($launched), new StateReference($typeKey, new SubjectReference($subject, 1))));
+        $this->as(
+            $launched,
+            fn () => $this->app->make(AgentStacks::class)->push($this->targetOf($launched), new StateReference($typeKey, new SubjectReference($subject, 1))),
+        );
     }
 
     /**
@@ -108,8 +130,14 @@ final class TickingStackFlagTest extends TestCase
     private function as(LaunchedAgent $launched, Closure $work): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), TestLaunchAuthority::forAgent($launched->session->agent_id));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext($launched->session->agent_id, $launched->session->id, new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($launched->session->agent_id),
+            TestLaunchAuthority::forAgent($launched->session->agent_id),
+        );
         $this->app->make(StackTransaction::class)->run($work);
     }
 

@@ -31,7 +31,10 @@ final readonly class VisibleTasks implements TaskResolver
     {
         $this->actors->actor();
         $wanted = array_values(array_unique($taskIds));
-        $found = array_map(strval(...), Task::query()->whereKey($wanted)->readLimit(count($wanted))->pluck('id')->all());
+        $found = array_map(
+            strval(...),
+            Task::query()->whereKey($wanted)->readLimit(count($wanted))->pluck('id')->all(),
+        );
         $missing = array_values(array_diff($wanted, $found));
 
         if ($missing !== []) {

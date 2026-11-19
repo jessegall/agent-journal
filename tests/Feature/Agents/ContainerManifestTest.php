@@ -48,12 +48,22 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_writer_launch_compiles_a_manifest_with_exactly_the_listed_controls(): void
     {
-        $manifest = ContainerManifest::compile($this->prepared(), ProfileBase::writingHelper()->defaultAccess(), $this->policy(), 'journal-launch-1');
+        $manifest = ContainerManifest::compile(
+            $this->prepared(),
+            ProfileBase::writingHelper()->defaultAccess(),
+            $this->policy(),
+            'journal-launch-1',
+        );
 
-        $this->assertSame([self::IMAGE, '10001:10001', '/workspace', true, [], true, 'verified-default', false, [], 'journal-launch-1'], [$manifest->image, $manifest->user, $manifest->workdir, $manifest->readOnlyRoot, $manifest->capabilities, $manifest->noNewPrivileges, $manifest->seccomp, $manifest->privileged, $manifest->publishedPorts, $manifest->network]);
+        $this->assertSame(
+            [self::IMAGE, '10001:10001', '/workspace', true, [], true, 'verified-default', false, [], 'journal-launch-1'],
+            [$manifest->image, $manifest->user, $manifest->workdir, $manifest->readOnlyRoot, $manifest->capabilities, $manifest->noNewPrivileges, $manifest->seccomp, $manifest->privileged, $manifest->publishedPorts, $manifest->network],
+        );
         $this->assertEquals([new ManifestMount('/workspaces/helper-7', '/workspace', true)], $manifest->mounts);
         $this->assertSame(2, $manifest->budgets->cpuCores);
-        $this->assertFalse(ContainerManifest::compile($this->prepared(), ProfileBase::readOnlyHelper()->defaultAccess(), $this->policy(), 'journal-launch-1')->mounts[0]->writable);
+        $this->assertFalse(
+            ContainerManifest::compile($this->prepared(), ProfileBase::readOnlyHelper()->defaultAccess(), $this->policy(), 'journal-launch-1')->mounts[0]->writable,
+        );
     }
 
     public function test_the_mount_follows_the_access_declaration_not_the_type(): void
@@ -70,12 +80,24 @@ final class ContainerManifestTest extends TestCase
     {
         $workspace = [new ManifestMount('/workspaces/helper-7', '/workspace', true)];
 
-        $this->assertRefused(fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'net', [new ManifestMount('/workspaces/helper-7/..', '/workspace', true)], [], ExecutionBudgets::defaults()));
-        $this->assertRefused(fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'net', [new ManifestMount('/Users/me/.claude', '/workspace', true)], [], ExecutionBudgets::defaults()));
-        $this->assertRefused(fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'net', [...$workspace, new ManifestMount('/var/run/docker.sock', '/var/run/docker.sock', true)], [], ExecutionBudgets::defaults()));
-        $this->assertRefused(fn () => ContainerManifest::make('registry.example/journal-helper:latest', '10001:10001', true, [], false, 'net', $workspace, [], ExecutionBudgets::defaults()));
-        $this->assertRefused(fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], true, 'net', $workspace, [], ExecutionBudgets::defaults()));
-        $this->assertRefused(fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'host', $workspace, [], ExecutionBudgets::defaults()));
+        $this->assertRefused(
+            fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'net', [new ManifestMount('/workspaces/helper-7/..', '/workspace', true)], [], ExecutionBudgets::defaults()),
+        );
+        $this->assertRefused(
+            fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'net', [new ManifestMount('/Users/me/.claude', '/workspace', true)], [], ExecutionBudgets::defaults()),
+        );
+        $this->assertRefused(
+            fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'net', [...$workspace, new ManifestMount('/var/run/docker.sock', '/var/run/docker.sock', true)], [], ExecutionBudgets::defaults()),
+        );
+        $this->assertRefused(
+            fn () => ContainerManifest::make('registry.example/journal-helper:latest', '10001:10001', true, [], false, 'net', $workspace, [], ExecutionBudgets::defaults()),
+        );
+        $this->assertRefused(
+            fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], true, 'net', $workspace, [], ExecutionBudgets::defaults()),
+        );
+        $this->assertRefused(
+            fn () => ContainerManifest::make(self::IMAGE, '10001:10001', true, [], false, 'host', $workspace, [], ExecutionBudgets::defaults()),
+        );
     }
 
     public function test_a_host_without_a_proven_container_runtime_refuses_before_reserving(): void
@@ -94,7 +116,12 @@ final class ContainerManifestTest extends TestCase
         {
             public function capability(HostCapabilityQuery $query): HostCapability
             {
-                return new HostCapability($query, CapabilityStatusType::Supported, 'docs/x.md', 'Proven for this test.');
+                return new HostCapability(
+                    $query,
+                    CapabilityStatusType::Supported,
+                    'docs/x.md',
+                    'Proven for this test.',
+                );
             }
         });
         $this->app->instance(HelperImages::class, new class implements HelperImages
@@ -119,12 +146,25 @@ final class ContainerManifestTest extends TestCase
 
     private function prepared(): PreparedLaunch
     {
-        return new PreparedLaunch('launch-1', TestSelections::of(), ExecutionModeType::RequiredContainer, 'policy-1', '/workspaces/helper-7', 'account-1');
+        return new PreparedLaunch(
+            'launch-1',
+            TestSelections::of(),
+            ExecutionModeType::RequiredContainer,
+            'policy-1',
+            '/workspaces/helper-7',
+            'account-1',
+        );
     }
 
     private function policy(): ExecutionPolicy
     {
-        return ExecutionPolicy::make(ExecutionModeType::RequiredContainer, self::IMAGE, 'helper-7', ExecutionBudgets::defaults(), []);
+        return ExecutionPolicy::make(
+            ExecutionModeType::RequiredContainer,
+            self::IMAGE,
+            'helper-7',
+            ExecutionBudgets::defaults(),
+            [],
+        );
     }
 
     private function signIn(): void
@@ -138,7 +178,17 @@ final class ContainerManifestTest extends TestCase
     {
         $agent = Agent::named('Builder', 'writing-helper');
 
-        return new LaunchRequest(TestSelections::requestId(), $agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, 'helpers.job 1', null, ConversationModeType::New, null, LaunchPolicy::withoutProfile($this->policy()));
+        return new LaunchRequest(
+            TestSelections::requestId(),
+            $agent->id,
+            TestSelections::of(),
+            LaunchOriginType::OwnerRequest,
+            'helpers.job 1',
+            null,
+            ConversationModeType::New,
+            null,
+            LaunchPolicy::withoutProfile($this->policy()),
+        );
     }
 
     private function launch(LaunchRequest $request): mixed

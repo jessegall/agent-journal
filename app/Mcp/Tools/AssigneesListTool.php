@@ -28,12 +28,17 @@ final class AssigneesListTool extends JournalReadTool
 {
     private const int DEFAULT_LIMIT = 20;
 
-    public function __construct(private readonly AssigneeResolver $assignees, private readonly Continuations $continuations) {}
+    public function __construct(
+        private readonly AssigneeResolver $assignees,
+        private readonly Continuations $continuations,
+    ) {}
 
     public function schema(JsonSchema $schema): array
     {
         return [
-            'type' => $schema->string()->enum(array_map(fn (ActorType $type): string => $type->value, ActorType::requestTypes()))->required(),
+            'type' => $schema->string()->enum(
+                array_map(fn (ActorType $type): string => $type->value, ActorType::requestTypes()),
+            )->required(),
             'after_id' => $schema->string()->max(26),
             'limit' => $schema->integer()->min(1)->max(Page::LARGEST_LIMIT),
             'continuation' => $schema->string(),
@@ -50,7 +55,9 @@ final class AssigneesListTool extends JournalReadTool
         $list = $this->assignees->eligible($type->value, new Page($filters['after_id'], $filters['limit']));
         $nextActions = $list->nextAfterId === null ? [] : [new NextAction($this->name(), [
             'type' => $type->value,
-            'continuation' => $this->continuations->issue(new Continuation($this->name(), $type->value, ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']], 0)),
+            'continuation' => $this->continuations->issue(
+                new Continuation($this->name(), $type->value, ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']], 0),
+            ),
         ])];
 
         return ToolResult::ok([

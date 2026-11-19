@@ -77,7 +77,9 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function currentOf(Share $share): array
     {
-        return array_values(self::query()->ofScope($share)->stillApproved()->orderBy('id')->readAll('a share scope holds at most the preview limit of members')->get()->all());
+        return array_values(
+            self::query()->ofScope($share)->stillApproved()->orderBy('id')->readAll('a share scope holds at most the preview limit of members')->get()->all(),
+        );
     }
 
     /**
@@ -106,7 +108,9 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function approvedLinkIdsOf(Share $share): array
     {
-        return array_values(array_map(strval(...), self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all()));
+        return array_values(
+            array_map(strval(...), self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all()),
+        );
     }
 
     /**
@@ -114,10 +118,14 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function isApprovedInLiveShare(RecordIdentity $record): bool
     {
-        $members = self::query()->targeting($record)->stillApproved()->readLimit(Share::MOST_LIVE)->get(['share_id', 'scope_version']);
+        $members = self::query()->targeting($record)->stillApproved()->readLimit(Share::MOST_LIVE)->get(
+            ['share_id', 'scope_version'],
+        );
         $scopeOfShare = Share::liveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
 
-        return $members->contains(fn (self $member) => ($scopeOfShare[$member->share_id] ?? null) === $member->scope_version);
+        return $members->contains(
+            fn (self $member) => ($scopeOfShare[$member->share_id] ?? null) === $member->scope_version,
+        );
     }
 
     /**

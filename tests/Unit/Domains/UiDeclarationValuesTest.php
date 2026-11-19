@@ -53,8 +53,14 @@ final class UiDeclarationValuesTest extends TestCase
         $this->assertSame(20, $page->homePosition);
         $this->assertSame([400, 500], [$page->floatSize->width, $page->floatSize->height]);
         $this->assertSame(['wide', 'sort'], array_map(fn ($option) => $option->key(), $page->options));
-        $this->assertSame([SlotContextType::Record, 'plan'], [$page->slots[0]->takes, $page->slots[0]->recordParameter]);
-        $this->assertSame([ActionMethod::Post, 'start', 'start'], [$page->actions[0]->method, $page->actions[0]->path, $page->actions[0]->name]);
+        $this->assertSame(
+            [SlotContextType::Record, 'plan'],
+            [$page->slots[0]->takes, $page->slots[0]->recordParameter],
+        );
+        $this->assertSame(
+            [ActionMethod::Post, 'start', 'start'],
+            [$page->actions[0]->method, $page->actions[0]->path, $page->actions[0]->name],
+        );
     }
 
     public function test_a_page_starts_at_its_own_key_off_home_and_a_change_leaves_the_original_untouched(): void
@@ -139,7 +145,14 @@ final class UiDeclarationValuesTest extends TestCase
 
     public function test_a_section_names_its_slot_by_full_key_and_records_its_reader_data_class(): void
     {
-        $section = Section::make('on-plan', 'Notes', 'plans.inspector', SlotContextType::Record, RecentNotesResolver::class, 'OnPlan.vue')->at(5);
+        $section = Section::make(
+            'on-plan',
+            'Notes',
+            'plans.inspector',
+            SlotContextType::Record,
+            RecentNotesResolver::class,
+            'OnPlan.vue',
+        )->at(5);
 
         $this->assertSame(RecentNotesData::class, $section->dataClass);
         $this->assertSame(5, $section->position);
@@ -150,14 +163,27 @@ final class UiDeclarationValuesTest extends TestCase
     {
         $this->expectExceptionObject(InvalidSectionDeclaration::slotNotFullKey('on-plan', 'inspector'));
 
-        Section::make('on-plan', 'Notes', 'inspector', SlotContextType::Record, RecentNotesResolver::class, 'OnPlan.vue');
+        Section::make(
+            'on-plan',
+            'Notes',
+            'inspector',
+            SlotContextType::Record,
+            RecentNotesResolver::class,
+            'OnPlan.vue',
+        );
     }
 
     public function test_a_slot_context_carries_a_decimal_id_only_for_a_session_or_record(): void
     {
         $this->assertNull(SlotContext::nothing()->id);
-        $this->assertSame([SlotContextType::Session, TestIds::of(12)], [SlotContext::session(TestIds::of(12))->type, SlotContext::session(TestIds::of(12))->id]);
-        $this->assertSame([SlotContextType::Record, TestIds::of(7)], [SlotContext::record(TestIds::of(7))->type, SlotContext::record(TestIds::of(7))->id]);
+        $this->assertSame(
+            [SlotContextType::Session, TestIds::of(12)],
+            [SlotContext::session(TestIds::of(12))->type, SlotContext::session(TestIds::of(12))->id],
+        );
+        $this->assertSame(
+            [SlotContextType::Record, TestIds::of(7)],
+            [SlotContext::record(TestIds::of(7))->type, SlotContext::record(TestIds::of(7))->id],
+        );
     }
 
     public function test_an_icon_the_host_does_not_draw_is_refused(): void

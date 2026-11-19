@@ -51,8 +51,11 @@ final readonly class CommentRecords implements CommentResolver
         ]);
     }
 
-    public function location(RecordIdentity $target, string $commentId, TextSelection $selection = new TextSelection()): RecordCommentLocation|TextCommentLocation
-    {
+    public function location(
+        RecordIdentity $target,
+        string $commentId,
+        TextSelection $selection = new TextSelection(),
+    ): RecordCommentLocation|TextCommentLocation {
         $record = $this->commentable($target);
         $comment = self::commentsOf($record)->whereKey($commentId)->first() ?? throw CommentUnavailable::for($commentId);
         $subject = $comment->subject();
@@ -62,8 +65,13 @@ final readonly class CommentRecords implements CommentResolver
             return $selection->isOutlineOnly() ? new RecordCommentLocation($card) : throw CommentUnavailable::selectionOnWholeRecord($commentId);
         }
 
-        $text = $record instanceof TextContent ? $record->textVersion($subject->versionId) : throw TargetHasNoText::for($target->type);
-        $chosen = $selection->isOutlineOnly() ? new TextSelection(firstLine: $subject->firstLine, lastLine: $subject->lastLine) : $selection;
+        $text = $record instanceof TextContent ? $record->textVersion(
+            $subject->versionId,
+        ) : throw TargetHasNoText::for($target->type);
+        $chosen = $selection->isOutlineOnly() ? new TextSelection(
+            firstLine: $subject->firstLine,
+            lastLine: $subject->lastLine,
+        ) : $selection;
 
         return new TextCommentLocation($card, $subject, MarkdownText::body($text->text)->part($chosen));
     }

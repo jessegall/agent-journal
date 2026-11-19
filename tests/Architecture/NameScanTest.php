@@ -55,8 +55,12 @@ final class NameScanTest extends TestCase
     }
 
     #[DataProvider('nameUses')]
-    public function test_it_finds_each_form_of_name_use(string $fixture, string $chatName, NameType $type, int $line): void
-    {
+    public function test_it_finds_each_form_of_name_use(
+        string $fixture,
+        string $chatName,
+        NameType $type,
+        int $line,
+    ): void {
         $file = ParsedFile::fromPath(dirname(__DIR__)."/Fixtures/Names/Plans/{$fixture}.php");
 
         $this->assertContainsEquals(

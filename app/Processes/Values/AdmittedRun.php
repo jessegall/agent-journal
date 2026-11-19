@@ -37,9 +37,33 @@ final readonly class AdmittedRun
      *
      * @param  list<string>  $bindings
      */
-    public static function admitted(string $admissionId, ExecutionPlan $plan, string $sourceDigest, string $contextDigest, string $registryRevision, string $policyRevision, array $bindings, ActorIdentity $actor, string $eventKey, string $source, string $workingFolder): self
-    {
-        return new self($admissionId, RunMode::Normal, $plan, $sourceDigest, $contextDigest, $registryRevision, $policyRevision, $bindings, $actor, $eventKey, $source, $workingFolder);
+    public static function admitted(
+        string $admissionId,
+        ExecutionPlan $plan,
+        string $sourceDigest,
+        string $contextDigest,
+        string $registryRevision,
+        string $policyRevision,
+        array $bindings,
+        ActorIdentity $actor,
+        string $eventKey,
+        string $source,
+        string $workingFolder,
+    ): self {
+        return new self(
+            $admissionId,
+            RunMode::Normal,
+            $plan,
+            $sourceDigest,
+            $contextDigest,
+            $registryRevision,
+            $policyRevision,
+            $bindings,
+            $actor,
+            $eventKey,
+            $source,
+            $workingFolder,
+        );
     }
 
     /**
@@ -47,8 +71,32 @@ final readonly class AdmittedRun
      *
      * @param  list<string>  $bindings
      */
-    public static function forEvidence(string $admissionId, ExecutionPlan $plan, string $sourceDigest, string $contextDigest, string $registryRevision, string $policyRevision, array $bindings, ActorIdentity $actor, string $eventKey, string $source, string $workingFolder): self
-    {
-        return new self($admissionId, RunMode::Evidence, $plan, $sourceDigest, $contextDigest, $registryRevision, $policyRevision, $bindings, $actor, $eventKey, $source, $workingFolder);
+    public static function forEvidence(
+        string $admissionId,
+        ExecutionPlan $plan,
+        string $sourceDigest,
+        string $contextDigest,
+        string $registryRevision,
+        string $policyRevision,
+        array $bindings,
+        ActorIdentity $actor,
+        string $eventKey,
+        string $source,
+        string $workingFolder,
+    ): self {
+        return new self(
+            $admissionId,
+            RunMode::Evidence,
+            $plan,
+            $sourceDigest,
+            $contextDigest,
+            $registryRevision,
+            $policyRevision,
+            $bindings,
+            $actor,
+            $eventKey,
+            $source,
+            $workingFolder,
+        );
     }
 }

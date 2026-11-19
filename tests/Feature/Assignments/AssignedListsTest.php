@@ -73,8 +73,12 @@ final class AssignedListsTest extends TestCase
         $writer->assign($othersTask->assignmentIdentity(), AssigneeIdentity::of($this->other));
 
         $list = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
-        $finishedOnly = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters(states: [TaskState::Finished]));
-        $searched = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters(search: 'READER', page: new NumberedPage(1, 1)));
+        $finishedOnly = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(
+            new TaskFilters(states: [TaskState::Finished]),
+        );
+        $searched = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(
+            new TaskFilters(search: 'READER', page: new NumberedPage(1, 1)),
+        );
 
         $this->assertSame([$held->id, $finished->id], array_map(fn ($card) => $card->id, $list->cards));
         $this->assertSame(2, $list->total);
@@ -111,13 +115,18 @@ final class AssignedListsTest extends TestCase
     public function test_rows_and_total_come_from_one_snapshot(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign(Task::factory()->create(['title' => 'First'])->assignmentIdentity(), AssigneeIdentity::of($this->main));
+        $writer->assign(
+            Task::factory()->create(['title' => 'First'])->assignmentIdentity(),
+            AssigneeIdentity::of($this->main),
+        );
         $late = Task::factory()->create(['title' => 'Assigned meanwhile']);
         $other = $this->otherConnection();
 
         [$before, $after] = $this->app->make(AssignmentTransaction::class)->run(function () use ($other, $late): array {
             $before = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
-            $other->table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
+            $other->table('assignments')->insert(
+                ['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()],
+            );
 
             return [$before, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())];
         });
@@ -138,7 +147,10 @@ final class AssignedListsTest extends TestCase
     private function otherConnection(): Connection
     {
         $config = $this->app->make('config');
-        $config->set('database.connections.lists_other', $config->get('database.connections.'.$config->get('database.default')));
+        $config->set(
+            'database.connections.lists_other',
+            $config->get('database.connections.'.$config->get('database.default')),
+        );
 
         return DB::connection('lists_other');
     }

@@ -36,7 +36,9 @@ final readonly class ChallengeProbe
         $challenge = $this->challenges->issue();
 
         try {
-            $response = $this->http->timeout(self::SECONDS)->withoutRedirecting()->get(rtrim($endpoint->publicOrigin, '/')."/_probe/{$challenge}");
+            $response = $this->http->timeout(self::SECONDS)->withoutRedirecting()->get(
+                rtrim($endpoint->publicOrigin, '/')."/_probe/{$challenge}",
+            );
         } catch (ConnectionException) {
             return new GatewayHealth(['The public origin did not answer the probe in time.']);
         }
@@ -45,6 +47,8 @@ final readonly class ChallengeProbe
             return new GatewayHealth(['The public origin redirected the probe.']);
         }
 
-        return $response->ok() && substr($response->body(), 0, 64) === $challenge ? GatewayHealth::healthy() : new GatewayHealth(['The public origin did not answer the probe with its challenge.']);
+        return $response->ok() && substr($response->body(), 0, 64) === $challenge ? GatewayHealth::healthy() : new GatewayHealth(
+            ['The public origin did not answer the probe with its challenge.'],
+        );
     }
 }

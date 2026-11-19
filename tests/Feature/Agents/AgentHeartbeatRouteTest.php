@@ -43,7 +43,10 @@ final class AgentHeartbeatRouteTest extends TestCase
         Route::post(self::PING, fn () => new Response(status: Response::HTTP_NO_CONTENT))->middleware('journal.agent');
         $this->launch = TestLaunch::start();
         DB::listen(function (QueryExecuted $query): void {
-            $this->beatWrites += str_starts_with($query->sql, 'update "agent_sessions" set "last_heartbeat_at"') ? 1 : 0;
+            $this->beatWrites += str_starts_with(
+                $query->sql,
+                'update "agent_sessions" set "last_heartbeat_at"',
+            ) ? 1 : 0;
         });
     }
 
@@ -84,7 +87,11 @@ final class AgentHeartbeatRouteTest extends TestCase
     {
         new LaunchCredentials()->revoke($this->launch->session);
 
-        $this->signed($this->launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized();
+        $this->signed(
+            $this->launch,
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertUnauthorized();
 
         $this->assertNull($this->storedSession()->last_heartbeat_at);
     }
@@ -93,14 +100,23 @@ final class AgentHeartbeatRouteTest extends TestCase
     {
         $this->launch->session->endAt(CarbonImmutable::now());
 
-        $this->signed($this->launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized();
+        $this->signed(
+            $this->launch,
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertUnauthorized();
 
         $this->assertNull($this->storedSession()->last_heartbeat_at);
     }
 
     public function test_a_bad_signature_gets_401_and_no_beat(): void
     {
-        $this->call('POST', '/agent/heartbeat', server: $this->launch->serverHeaders('{}', signingToken: 'not-the-token', target: '/agent/heartbeat'), content: '{}')
+        $this->call(
+            'POST',
+            '/agent/heartbeat',
+            server: $this->launch->serverHeaders('{}', signingToken: 'not-the-token', target: '/agent/heartbeat'),
+            content: '{}',
+        )
             ->assertUnauthorized();
 
         $this->assertNull($this->storedSession()->last_heartbeat_at);

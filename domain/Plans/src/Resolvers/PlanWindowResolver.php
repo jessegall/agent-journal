@@ -25,7 +25,9 @@ final readonly class PlanWindowResolver implements PageResolver
 
     public function read(): PlanReaderData
     {
-        $resolver = PlanReaderData::ofSelection($this->records->list(new PlanFilters(selectedPlanId: $this->request->planId()))->selection);
+        $resolver = PlanReaderData::ofSelection(
+            $this->records->list(new PlanFilters(selectedPlanId: $this->request->planId()))->selection,
+        );
 
         return $resolver instanceof Optional ? throw new NotFoundHttpException() : $resolver;
     }

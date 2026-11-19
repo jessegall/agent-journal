@@ -72,7 +72,14 @@ final readonly class PublicContracts
      */
     private static function listsOf(Exports $exports): array
     {
-        return ['events' => $exports->events, 'contracts' => $exports->contracts, 'values' => $exports->values, 'commands' => $exports->commands, 'exceptions' => $exports->exceptions, 'support' => $exports->support];
+        return [
+            'events' => $exports->events,
+            'contracts' => $exports->contracts,
+            'values' => $exports->values,
+            'commands' => $exports->commands,
+            'exceptions' => $exports->exceptions,
+            'support' => $exports->support,
+        ];
     }
 
     /**
@@ -81,7 +88,9 @@ final readonly class PublicContracts
     private function violationsOf(string $export, PublicOwner $owner, string $list): array
     {
         if (! self::exists($export)) {
-            return [new Violation('', 0, $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "a name that does not exist, under {$list}")];
+            return [
+                new Violation('', 0, $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "a name that does not exist, under {$list}"),
+            ];
         }
 
         $class = new ReflectionClass($export);
@@ -89,7 +98,9 @@ final readonly class PublicContracts
         $category = self::disallowedCategoryOf($class, $owner);
 
         if ($category !== null) {
-            return [new Violation($file, (int) $class->getStartLine(), $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "{$category}, under {$list}")];
+            return [
+                new Violation($file, (int) $class->getStartLine(), $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "{$category}, under {$list}"),
+            ];
         }
 
         $violations = [];
@@ -98,7 +109,15 @@ final readonly class PublicContracts
             $leakOwner = $this->privateOwnerOf($path->name, $owner, $export);
 
             if ($leakOwner !== null && ! self::isAllowedRelationResult($export, $path->member, $path->name)) {
-                $violations[] = new Violation($path->file, $path->line, $path->name, $owner->name, $leakOwner, ViolationType::PrivateTypeInSignature, $path->member);
+                $violations[] = new Violation(
+                    $path->file,
+                    $path->line,
+                    $path->name,
+                    $owner->name,
+                    $leakOwner,
+                    ViolationType::PrivateTypeInSignature,
+                    $path->member,
+                );
             }
         }
 
@@ -118,7 +137,10 @@ final readonly class PublicContracts
         }
 
         if ($class->isSubclassOf(Throwable::class)) {
-            return str_ends_with($class->getNamespaceName(), '\\Exceptions') ? null : 'an exception outside its owner\'s Exceptions folder';
+            return str_ends_with(
+                $class->getNamespaceName(),
+                '\\Exceptions',
+            ) ? null : 'an exception outside its owner\'s Exceptions folder';
         }
 
         if ($class->isSubclassOf(Model::class)) {
@@ -147,9 +169,15 @@ final readonly class PublicContracts
             return false;
         }
 
-        $ownProperties = array_filter($class->getProperties(), fn ($property) => $property->getDeclaringClass()->getName() === $class->getName());
+        $ownProperties = array_filter(
+            $class->getProperties(),
+            fn ($property) => $property->getDeclaringClass()->getName() === $class->getName(),
+        );
 
-        return array_all($ownProperties, fn ($property) => $property->isPublic() && ($property->isReadOnly() || $property->isVirtual()));
+        return array_all(
+            $ownProperties,
+            fn ($property) => $property->isPublic() && ($property->isReadOnly() || $property->isVirtual()),
+        );
     }
 
     /**
@@ -194,7 +222,10 @@ final readonly class PublicContracts
     private static function publicNamesIn(string $path, string $shortName): array
     {
         $file = ParsedFile::fromPath($path);
-        $type = new NodeFinder()->findFirst($file->statements, fn (Node $node) => $node instanceof ClassLike && $node->name?->toString() === $shortName);
+        $type = new NodeFinder()->findFirst(
+            $file->statements,
+            fn (Node $node) => $node instanceof ClassLike && $node->name?->toString() === $shortName,
+        );
 
         if (! $type instanceof ClassLike) {
             return [];
@@ -204,7 +235,10 @@ final readonly class PublicContracts
         $paths = self::docblockNames($docblockUses, $type, $path, $shortName);
 
         foreach ($type->stmts as $member) {
-            array_push($paths, ...self::memberNames($member, $docblockUses, $path, $shortName, $type instanceof Node\Stmt\Interface_));
+            array_push(
+                $paths,
+                ...self::memberNames($member, $docblockUses, $path, $shortName, $type instanceof Node\Stmt\Interface_),
+            );
         }
 
         return $paths;
@@ -214,20 +248,37 @@ final readonly class PublicContracts
      * @param  list<NameUse>  $docblockUses
      * @return list<PublicTypePath>
      */
-    private static function memberNames(Node $member, array $docblockUses, string $path, string $shortName, bool $isInterface): array
-    {
+    private static function memberNames(
+        Node $member,
+        array $docblockUses,
+        string $path,
+        string $shortName,
+        bool $isInterface,
+    ): array {
         if ($member instanceof ClassMethod && ($member->isPublic() || $isInterface)) {
             $memberPath = "{$shortName}::{$member->name}()";
             $types = [$member->returnType, ...array_map(fn (Param $param) => $param->type, $member->params)];
-            $promoted = $member->name->toString() === '__construct' ? self::promotedNames($member, $docblockUses, $path, $shortName) : [];
+            $promoted = $member->name->toString() === '__construct' ? self::promotedNames(
+                $member,
+                $docblockUses,
+                $path,
+                $shortName,
+            ) : [];
 
-            return [...self::typeNames($types, $path, $memberPath), ...self::docblockNames($docblockUses, $member, $path, $memberPath), ...$promoted];
+            return [
+                ...self::typeNames($types, $path, $memberPath),
+                ...self::docblockNames($docblockUses, $member, $path, $memberPath),
+                ...$promoted,
+            ];
         }
 
         if ($member instanceof Property && $member->isPublic()) {
             $memberPath = $shortName.'::$'.$member->props[0]->name;
 
-            return [...self::typeNames([$member->type], $path, $memberPath), ...self::docblockNames($docblockUses, $member, $path, $memberPath)];
+            return [
+                ...self::typeNames([$member->type], $path, $memberPath),
+                ...self::docblockNames($docblockUses, $member, $path, $memberPath),
+            ];
         }
 
         return [];
@@ -239,8 +290,12 @@ final readonly class PublicContracts
      * @param  list<NameUse>  $docblockUses
      * @return list<PublicTypePath>
      */
-    private static function promotedNames(ClassMethod $constructor, array $docblockUses, string $path, string $shortName): array
-    {
+    private static function promotedNames(
+        ClassMethod $constructor,
+        array $docblockUses,
+        string $path,
+        string $shortName,
+    ): array {
         $paths = [];
 
         foreach ($constructor->params as $param) {
@@ -248,7 +303,10 @@ final readonly class PublicContracts
                 continue;
             }
 
-            array_push($paths, ...self::docblockNames($docblockUses, $param, $path, $shortName.'::$'.$param->var->name));
+            array_push(
+                $paths,
+                ...self::docblockNames($docblockUses, $param, $path, $shortName.'::$'.$param->var->name),
+            );
         }
 
         return $paths;
@@ -282,9 +340,14 @@ final readonly class PublicContracts
             return [];
         }
 
-        $inDoc = array_filter($docblockUses, fn (NameUse $use) => $use->line >= $doc->getStartLine() && $use->line <= $doc->getEndLine());
+        $inDoc = array_filter(
+            $docblockUses,
+            fn (NameUse $use) => $use->line >= $doc->getStartLine() && $use->line <= $doc->getEndLine(),
+        );
 
-        return array_values(array_map(fn (NameUse $use) => new PublicTypePath($path, $use->line, $use->name, $memberPath), $inDoc));
+        return array_values(
+            array_map(fn (NameUse $use) => new PublicTypePath($path, $use->line, $use->name, $memberPath), $inDoc),
+        );
     }
 
     /**
@@ -304,7 +367,10 @@ final readonly class PublicContracts
             return null;
         }
 
-        return array_find($this->owners, fn (PublicOwner $candidate) => $candidate->ownsName($name))->name ?? 'no owner';
+        return array_find(
+            $this->owners,
+            fn (PublicOwner $candidate) => $candidate->ownsName($name),
+        )->name ?? 'no owner';
     }
 
     /**

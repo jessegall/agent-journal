@@ -45,6 +45,11 @@ final readonly class RegisteredCondition implements SkillCondition
 
     public function toArray(): array
     {
-        return ['type' => Named::TYPE, 'version' => $this->version, 'key' => $this->key, 'parameters' => $this->wireParameters];
+        return [
+            'type' => Named::TYPE,
+            'version' => $this->version,
+            'key' => $this->key,
+            'parameters' => $this->wireParameters,
+        ];
     }
 }

@@ -97,7 +97,10 @@ final readonly class ListenerPolicy
                 }
 
                 $file = (string) new ReflectionClass($class)->getFileName();
-                $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsListenerFile($file));
+                $domain = array_find(
+                    $this->registry->all(),
+                    fn (DomainEntry $entry) => $entry->holdsListenerFile($file),
+                );
                 $available = $domain === null ? $listener : new AvailableListener($domain->name, $listener);
                 $gated[$event][] = is_subclass_of($event, LogsListenerFailures::class)
                     ? new FailureLoggingListener($event, $available)
@@ -165,7 +168,10 @@ final readonly class ListenerPolicy
     {
         $file = (string) new ReflectionClass($class)->getFileName();
         $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsListenerFile($file));
-        $isCoreListener = array_any($this->coreListenerFolders, fn (string $folder) => str_starts_with($file, $folder.DIRECTORY_SEPARATOR));
+        $isCoreListener = array_any(
+            $this->coreListenerFolders,
+            fn (string $folder) => str_starts_with($file, $folder.DIRECTORY_SEPARATOR),
+        );
 
         if ($domain === null && ! $isCoreListener) {
             throw InvalidListener::unknownOwner($listener, $event);
@@ -195,7 +201,10 @@ final readonly class ListenerPolicy
         $type = ($method->getParameters()[0] ?? null)?->getType();
         $arms = $type instanceof ReflectionUnionType ? $type->getTypes() : [$type];
 
-        return array_any($arms, fn (mixed $arm) => $arm instanceof ReflectionNamedType && is_a($event, $arm->getName(), true));
+        return array_any(
+            $arms,
+            fn (mixed $arm) => $arm instanceof ReflectionNamedType && is_a($event, $arm->getName(), true),
+        );
     }
 
     /**
@@ -203,6 +212,9 @@ final readonly class ListenerPolicy
      */
     private function exportedEvents(): array
     {
-        return [...$this->coreExports->events, ...array_merge([], ...array_map(fn (DomainEntry $entry) => $entry->exports->events, $this->registry->all()))];
+        return [
+            ...$this->coreExports->events,
+            ...array_merge([], ...array_map(fn (DomainEntry $entry) => $entry->exports->events, $this->registry->all())),
+        ];
     }
 }

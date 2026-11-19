@@ -50,7 +50,22 @@ final class ReadShareTest extends TestCase
     use CommitsHookRows;
     use RunsTrustedCommands;
 
-    private const array TABLES = ['share_audits', 'share_members', 'shares', 'share_gateway_configurations', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'phases', 'plans', 'number_groups'];
+    private const array TABLES = [
+        'share_audits',
+        'share_members',
+        'shares',
+        'share_gateway_configurations',
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'phases',
+        'plans',
+        'number_groups',
+    ];
 
     private Document $document;
 
@@ -69,7 +84,9 @@ final class ReadShareTest extends TestCase
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->plan->linkTo($this->document);
-        $this->configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
+        $this->configuration = ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
+        );
     }
 
     public function test_an_active_share_reads_its_record_and_audits_the_read(): void
@@ -79,7 +96,10 @@ final class ReadShareTest extends TestCase
         $page = $this->read($token);
 
         $this->assertTrue($page->allowed);
-        $this->assertSame(['Design', '1', "# Goal\nShip it.\n"], [$page->title, $page->publicationVersion, $page->body]);
+        $this->assertSame(
+            ['Design', '1', "# Goal\nShip it.\n"],
+            [$page->title, $page->publicationVersion, $page->body],
+        );
         $this->assertSame([ShareAuditType::ReadAllowed], $this->auditTypes());
     }
 
@@ -113,7 +133,11 @@ final class ReadShareTest extends TestCase
 
         $this->assertFalse($this->read($token, $step)->allowed);
 
-        ShareMember::approve($share, $this->plan->shareIdentity(), new ShareSelectedTarget($this->document->shareIdentity(), $linkId, '1'));
+        ShareMember::approve(
+            $share,
+            $this->plan->shareIdentity(),
+            new ShareSelectedTarget($this->document->shareIdentity(), $linkId, '1'),
+        );
         $root = $this->read($token);
         $linked = $this->read($token, $step);
 
@@ -155,8 +179,15 @@ final class ReadShareTest extends TestCase
         $share = Share::query()->sole();
 
         foreach ([$this->document, $sibling] as $document) {
-            $linkId = (string) DB::table('links')->where('target_id', $document->id)->orWhere('source_id', $document->id)->value('id');
-            ShareMember::approve($share, $this->plan->shareIdentity(), new ShareSelectedTarget($document->shareIdentity(), $linkId, '1'));
+            $linkId = (string) DB::table('links')->where(
+                'target_id',
+                $document->id,
+            )->orWhere('source_id', $document->id)->value('id');
+            ShareMember::approve(
+                $share,
+                $this->plan->shareIdentity(),
+                new ShareSelectedTarget($document->shareIdentity(), $linkId, '1'),
+            );
         }
 
         $this->assertTrue($this->read($token, "records/documents.document/{$this->document->id}")->allowed);
@@ -184,7 +215,9 @@ final class ReadShareTest extends TestCase
 
             $this->assertThrows(fn () => $this->read($token), StackLockTimedOut::class);
 
-            $revoker->table('shares')->where('id', $shareId)->update(['state' => ShareState::Revoked->value, 'token_ciphertext' => null, 'terminal_at' => CarbonImmutable::now()]);
+            $revoker->table('shares')->where('id', $shareId)->update(
+                ['state' => ShareState::Revoked->value, 'token_ciphertext' => null, 'terminal_at' => CarbonImmutable::now()],
+            );
             $revoker->commit();
         } finally {
             if ($revoker->transactionLevel() > 0) {
@@ -223,7 +256,9 @@ final class ReadShareTest extends TestCase
      */
     private function auditTypes(): array
     {
-        return array_values(ShareAudit::query()->orderBy('created_at')->orderBy('id')->get()->map(fn (ShareAudit $audit) => $audit->type)->all());
+        return array_values(
+            ShareAudit::query()->orderBy('created_at')->orderBy('id')->get()->map(fn (ShareAudit $audit) => $audit->type)->all(),
+        );
     }
 
     private function insertComments(int $count): void
@@ -232,7 +267,17 @@ final class ReadShareTest extends TestCase
         $rows = [];
 
         for ($position = 0; $position < $count; $position++) {
-            $rows[] = ['id' => strtolower((string) Str::ulid()), 'target_type' => Document::LINK_TYPE, 'target_id' => $this->document->id, 'author_type' => 'user', 'author_id' => TestIds::of(9), 'body' => "Comment {$position}", 'submission_key' => "key-{$position}", 'submission_hash' => str_repeat('a', 64), 'created_at' => $now->addSeconds($position)];
+            $rows[] = [
+                'id' => strtolower((string) Str::ulid()),
+                'target_type' => Document::LINK_TYPE,
+                'target_id' => $this->document->id,
+                'author_type' => 'user',
+                'author_id' => TestIds::of(9),
+                'body' => "Comment {$position}",
+                'submission_key' => "key-{$position}",
+                'submission_hash' => str_repeat('a', 64),
+                'created_at' => $now->addSeconds($position),
+            ];
         }
 
         DB::table('comments')->insert($rows);

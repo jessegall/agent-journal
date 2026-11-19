@@ -13,6 +13,8 @@ final class StackChangedInLifecycle extends LogicException
 {
     public static function for(string $target): self
     {
-        return new self("A lifecycle method tried to change the stack of {$target} while it ran: lifecycle methods set up and clean up, they never push or remove frames.");
+        return new self(
+            "A lifecycle method tried to change the stack of {$target} while it ran: lifecycle methods set up and clean up, they never push or remove frames.",
+        );
     }
 }

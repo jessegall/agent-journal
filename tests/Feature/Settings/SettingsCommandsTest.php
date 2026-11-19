@@ -88,8 +88,16 @@ final class SettingsCommandsTest extends TestCase
 
     public function test_the_owner_changes_a_setting_once_and_the_same_command_again_changes_nothing(): void
     {
-        $this->assertChange(SettingsOutcome::Changed, 1, $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0)));
-        $this->assertChange(SettingsOutcome::Unchanged, 1, $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 1)));
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            1,
+            $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0)),
+        );
+        $this->assertChange(
+            SettingsOutcome::Unchanged,
+            1,
+            $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 1)),
+        );
         $this->assertSame(4, $this->reviewGroup()->integer($this->reviews->retryLimit));
     }
 
@@ -117,7 +125,10 @@ final class SettingsCommandsTest extends TestCase
             ['Reviews', SettingTarget::Group, 'review', 4],
             ['Reviews', SettingTarget::Group, 'review', 5],
         ], $announced);
-        $this->assertSame(['owner', 'target', 'key', 'revision'], array_keys(get_object_vars(new SettingsChanged('Reviews', SettingTarget::Setting, 'retry_limit', 1))));
+        $this->assertSame(
+            ['owner', 'target', 'key', 'revision'],
+            array_keys(get_object_vars(new SettingsChanged('Reviews', SettingTarget::Setting, 'retry_limit', 1))),
+        );
     }
 
     public function test_a_change_rolled_back_with_its_transaction_announces_nothing(): void
@@ -142,7 +153,11 @@ final class SettingsCommandsTest extends TestCase
 
     public function test_a_value_equal_to_the_default_is_stored_as_an_override(): void
     {
-        $this->assertChange(SettingsOutcome::Changed, 1, $this->runCommand($this->commands->integer($this->reviews->retryLimit, 3, 0)));
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            1,
+            $this->runCommand($this->commands->integer($this->reviews->retryLimit, 3, 0)),
+        );
         $this->assertTrue($this->storedDocument()->setting('retry_limit')->isDefined());
     }
 
@@ -173,7 +188,11 @@ final class SettingsCommandsTest extends TestCase
 
     public function test_a_setting_of_a_switched_off_group_cannot_change_and_nothing_changes(): void
     {
-        $this->assertChange(SettingsOutcome::Changed, 1, $this->runCommand($this->commands->disable($this->reviews->review, 0)));
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            1,
+            $this->runCommand($this->commands->disable($this->reviews->review, 0)),
+        );
 
         $this->assertRefused(SettingDisabled::class, $this->commands->integer($this->reviews->retryLimit, 4, 1));
         $this->assertRefused(SettingDisabled::class, $this->commands->reset($this->reviews->retryLimit, 1));
@@ -185,24 +204,39 @@ final class SettingsCommandsTest extends TestCase
         $command = new SetIntegerSetting(new SettingReference('Reviews', 'retry_limit'), 4, 0);
 
         $agent = TestIds::of(3);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent), TestLaunchAuthority::granting(ProfileBase::mainAgent(), []));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agent),
+            TestLaunchAuthority::granting(ProfileBase::mainAgent(), []),
+        );
         $this->assertRefused(ActorNotAllowed::class, $command);
 
         $this->actAs(TestActors::user(8));
         $this->assertRefused(SettingsAccessDenied::class, $command);
 
         $this->actAs(ActorContext::forUser($this->ownerId));
-        $this->assertRefused(SettingUnavailable::class, new SetIntegerSetting(new SettingReference('Reviews', 'not_declared'), 4, 0));
-        $this->assertRefused(SettingUnavailable::class, new SetIntegerSetting(new SettingReference('Forged', 'retry_limit'), 4, 0));
+        $this->assertRefused(
+            SettingUnavailable::class,
+            new SetIntegerSetting(new SettingReference('Reviews', 'not_declared'), 4, 0),
+        );
+        $this->assertRefused(
+            SettingUnavailable::class,
+            new SetIntegerSetting(new SettingReference('Forged', 'retry_limit'), 4, 0),
+        );
 
         $this->assertSame(0, SettingsRecord::query()->count());
     }
 
     public function test_a_command_of_the_wrong_type_or_a_value_past_a_bound_is_refused(): void
     {
-        $this->assertRefused(SettingValueInvalid::class, new SetIntegerSetting(new SettingReference('Reviews', 'title'), 4, 0));
+        $this->assertRefused(
+            SettingValueInvalid::class,
+            new SetIntegerSetting(new SettingReference('Reviews', 'title'), 4, 0),
+        );
         $this->assertRefused(SettingValueInvalid::class, $this->commands->integer($this->reviews->retryLimit, 11, 0));
-        $this->assertRefused(SettingValueInvalid::class, new EnableSettingGroup(new GroupReference('Reviews', 'general'), 0));
+        $this->assertRefused(
+            SettingValueInvalid::class,
+            new EnableSettingGroup(new GroupReference('Reviews', 'general'), 0),
+        );
 
         $this->assertSame(0, SettingsRecord::query()->count());
     }
@@ -216,14 +250,25 @@ final class SettingsCommandsTest extends TestCase
             ->withSetting(new EncodedSetting('retired_key', EncodedValue::of(true))));
         $before = $this->storedText();
 
-        $this->assertChange(SettingsOutcome::Changed, 2, $this->runCommand($this->commands->reset($this->reviews->retryLimit, 1)));
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            2,
+            $this->runCommand($this->commands->reset($this->reviews->retryLimit, 1)),
+        );
 
-        $this->assertSame(str_replace('{"key":"retry_limit","value":"not a number"},', '', $before), $this->storedText());
+        $this->assertSame(
+            str_replace('{"key":"retry_limit","value":"not a number"},', '', $before),
+            $this->storedText(),
+        );
     }
 
     public function test_resetting_a_setting_without_an_override_changes_nothing(): void
     {
-        $this->assertChange(SettingsOutcome::Unchanged, 0, $this->runCommand($this->commands->reset($this->reviews->title, 0)));
+        $this->assertChange(
+            SettingsOutcome::Unchanged,
+            0,
+            $this->runCommand($this->commands->reset($this->reviews->title, 0)),
+        );
     }
 
     public function test_switching_a_group_off_and_on_keeps_every_saved_setting(): void
@@ -231,9 +276,21 @@ final class SettingsCommandsTest extends TestCase
         $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0));
         $this->runCommand($this->commands->stringChoice($this->reviews->summaryStyle, 'long', 1));
 
-        $this->assertChange(SettingsOutcome::Changed, 3, $this->runCommand($this->commands->disable($this->reviews->review, 2)));
-        $this->assertChange(SettingsOutcome::Unchanged, 3, $this->runCommand($this->commands->disable($this->reviews->review, 3)));
-        $this->assertChange(SettingsOutcome::Changed, 4, $this->runCommand($this->commands->enable($this->reviews->review, 3)));
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            3,
+            $this->runCommand($this->commands->disable($this->reviews->review, 2)),
+        );
+        $this->assertChange(
+            SettingsOutcome::Unchanged,
+            3,
+            $this->runCommand($this->commands->disable($this->reviews->review, 3)),
+        );
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            4,
+            $this->runCommand($this->commands->enable($this->reviews->review, 3)),
+        );
 
         $review = $this->reviewGroup();
         $this->assertSame(4, $review->integer($this->reviews->retryLimit));
@@ -247,8 +304,16 @@ final class SettingsCommandsTest extends TestCase
             ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of(6))));
 
         $this->assertRefused(SettingStorageInvalid::class, $this->commands->integer($this->reviews->retryLimit, 4, 1));
-        $this->assertChange(SettingsOutcome::Changed, 2, $this->runCommand($this->commands->resetGroup($this->reviews->review, 1)));
-        $this->assertChange(SettingsOutcome::Unchanged, 2, $this->runCommand($this->commands->resetGroup($this->reviews->review, 2)));
+        $this->assertChange(
+            SettingsOutcome::Changed,
+            2,
+            $this->runCommand($this->commands->resetGroup($this->reviews->review, 1)),
+        );
+        $this->assertChange(
+            SettingsOutcome::Unchanged,
+            2,
+            $this->runCommand($this->commands->resetGroup($this->reviews->review, 2)),
+        );
 
         $this->assertSame(6, $this->reviewGroup()->integer($this->reviews->retryLimit));
     }

@@ -35,7 +35,9 @@ final readonly class ClaimGatewayOperationHandler implements CommandHandler
             return null;
         }
 
-        $configuration = ShareGatewayConfiguration::lockById(ShareGatewayOperation::of($operationId)->share_gateway_configuration_id);
+        $configuration = ShareGatewayConfiguration::lockById(
+            ShareGatewayOperation::of($operationId)->share_gateway_configuration_id,
+        );
         $running = ShareGatewayEndpoint::lockRunningOf($configuration, $command->runId);
         $operation = ShareGatewayOperation::lockById($operationId);
 
@@ -55,6 +57,9 @@ final readonly class ClaimGatewayOperationHandler implements CommandHandler
             $endpoint->moveTo(GatewayEndpointState::Closing);
         }
 
-        return new ClaimedGatewayOperation($operation->type, $operation->claimFor($command->runId, $endpoint, $configuration->toConfiguration()));
+        return new ClaimedGatewayOperation(
+            $operation->type,
+            $operation->claimFor($command->runId, $endpoint, $configuration->toConfiguration()),
+        );
     }
 }

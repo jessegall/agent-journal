@@ -30,7 +30,9 @@ final readonly class ReportShareProvider implements ShareRecordProvider
 
     public function mayDisclose(RecordIdentity $record): bool
     {
-        return $record->type === Report::LINK_TYPE && Report::query()->sharedPublished()->whereKey($record->id)->exists();
+        return $record->type === Report::LINK_TYPE && Report::query()->sharedPublished()->whereKey(
+            $record->id,
+        )->exists();
     }
 
     /**
@@ -39,7 +41,9 @@ final readonly class ReportShareProvider implements ShareRecordProvider
      */
     public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
     {
-        $report = Report::query()->sharedPublished()->whereKey($read->record->id)->first(self::CARD_COLUMNS) ?? throw RecordUnavailable::forActor($read->record);
+        $report = Report::query()->sharedPublished()->whereKey($read->record->id)->first(
+            self::CARD_COLUMNS,
+        ) ?? throw RecordUnavailable::forActor($read->record);
         $bytes = Report::bodyBytesOf($report->id);
 
         if ($bytes > MarkdownText::BODY_BYTES) {
@@ -58,7 +62,9 @@ final readonly class ReportShareProvider implements ShareRecordProvider
 
     private function cardsOf(array $ids): array
     {
-        return array_values(Report::query()->sharedPublished()->whereKey($ids)->readLimit(count($ids))->get(self::CARD_COLUMNS)
+        return array_values(Report::query()->sharedPublished()->whereKey($ids)->readLimit(count($ids))->get(
+            self::CARD_COLUMNS,
+        )
             ->map(fn (Report $report) => $report->shareCard())->all());
     }
 }

@@ -19,7 +19,18 @@ if (! file_exists('/.dockerenv') && $script === 'test:affected-inside') {
     $command = ['composer', 'run-script', $script, '--', ...$arguments];
 }
 if (! file_exists('/.dockerenv')) {
-    $command = ['docker', 'compose', '-p', 'agent-journal-6', 'exec', '-T', '-w', $containerFolder, 'queue', ...$command];
+    $command = [
+        'docker',
+        'compose',
+        '-p',
+        'agent-journal-6',
+        'exec',
+        '-T',
+        '-w',
+        $containerFolder,
+        'queue',
+        ...$command,
+    ];
 }
 
 $process = proc_open($command, [STDIN, STDOUT, STDERR], $pipes, $checkout);

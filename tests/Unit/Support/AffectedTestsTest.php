@@ -15,22 +15,34 @@ final class AffectedTestsTest extends TestCase
 {
     public function test_a_private_change_inside_one_domain_runs_only_that_domain(): void
     {
-        $this->assertSame(['tests/Architecture', 'domain/Tasks/tests'], $this->affectedBy('domain/Tasks/src/Support/TaskTitles.php'));
+        $this->assertSame(
+            ['tests/Architecture', 'domain/Tasks/tests'],
+            $this->affectedBy('domain/Tasks/src/Support/TaskTitles.php'),
+        );
     }
 
     public function test_a_change_to_an_export_also_runs_every_domain_that_requires_it(): void
     {
-        $this->assertSame(['tests/Architecture', 'domain/Plans/tests', 'domain/Tasks/tests'], $this->affectedBy('domain/Tasks/src/Contracts/TaskResolver.php'));
+        $this->assertSame(
+            ['tests/Architecture', 'domain/Plans/tests', 'domain/Tasks/tests'],
+            $this->affectedBy('domain/Tasks/src/Contracts/TaskResolver.php'),
+        );
     }
 
     public function test_a_change_to_a_domains_own_tests_runs_only_those(): void
     {
-        $this->assertSame(['tests/Architecture', 'domain/Rules/tests'], $this->affectedBy('domain/Rules/tests/Feature/ReviewRuleTest.php'));
+        $this->assertSame(
+            ['tests/Architecture', 'domain/Rules/tests'],
+            $this->affectedBy('domain/Rules/tests/Feature/ReviewRuleTest.php'),
+        );
     }
 
     public function test_a_change_outside_every_domain_runs_everything(): void
     {
-        $this->assertSame(AffectedTests::EVERYTHING, $this->affectedBy('domain/Rules/src/Handlers/ApproveRuleHandler.php', 'app/Bus/Support/CommandRegistry.php'));
+        $this->assertSame(
+            AffectedTests::EVERYTHING,
+            $this->affectedBy('domain/Rules/src/Handlers/ApproveRuleHandler.php', 'app/Bus/Support/CommandRegistry.php'),
+        );
     }
 
     /**

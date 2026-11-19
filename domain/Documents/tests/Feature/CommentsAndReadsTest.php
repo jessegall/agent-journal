@@ -53,14 +53,28 @@ final class CommentsAndReadsTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['comments', 'agents', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'comments',
+        'agents',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip the editor.\n\n## Risks\nNone.\n"));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
+        $this->bus()->run(
+            new CreateDocument('Design', 'What we build', "# Goal\nShip the editor.\n\n## Risks\nNone.\n"),
+        );
     }
 
     public function test_a_user_comments_on_the_whole_document_and_on_an_exact_quote_without_changing_it(): void
@@ -79,18 +93,29 @@ final class CommentsAndReadsTest extends TestCase
 
     public function test_section_and_line_comments_reopen_on_their_original_revision_after_a_newer_one(): void
     {
-        $this->bus()->run(new CreateDocument('Sections', 'Three parts', "# One\nFirst.\n\n# Two\nSecond.\n\n# Three\nThird part.\nStill third.\n"));
-        $section = $this->bus()->run(new PostTextComment($this->documentNumbered(2), 'About the third part.', TextRange::section('1', 3), (string) Str::uuid()));
-        $lines = $this->bus()->run(new PostTextComment($this->documentNumbered(2), 'About these lines.', TextRange::lines('1', 2, 5), (string) Str::uuid()));
+        $this->bus()->run(
+            new CreateDocument('Sections', 'Three parts', "# One\nFirst.\n\n# Two\nSecond.\n\n# Three\nThird part.\nStill third.\n"),
+        );
+        $section = $this->bus()->run(
+            new PostTextComment($this->documentNumbered(2), 'About the third part.', TextRange::section('1', 3), (string) Str::uuid()),
+        );
+        $lines = $this->bus()->run(
+            new PostTextComment($this->documentNumbered(2), 'About these lines.', TextRange::lines('1', 2, 5), (string) Str::uuid()),
+        );
         $draft = $this->bus()->run(new OpenDocument(2));
-        $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Third part.', 'A rewritten third part.'));
+        $draft = $this->bus()->run(
+            new ReplaceDocumentText($this->target($draft), 'Third part.', 'A rewritten third part.'),
+        );
         $this->bus()->run(new CloseDocument($this->target($draft)));
 
         $sectionPlace = $this->comments()->location($this->documentNumbered(2), $section);
         $linesPlace = $this->comments()->location($this->documentNumbered(2), $lines);
 
         $this->assertInstanceOf(TextCommentLocation::class, $sectionPlace);
-        $this->assertSame(['1', 3, 7, 10], [$sectionPlace->anchor->versionId, $sectionPlace->anchor->sectionNumber, $sectionPlace->part->firstLine, $sectionPlace->part->lastLine]);
+        $this->assertSame(
+            ['1', 3, 7, 10],
+            [$sectionPlace->anchor->versionId, $sectionPlace->anchor->sectionNumber, $sectionPlace->part->firstLine, $sectionPlace->part->lastLine],
+        );
         $this->assertStringContainsString('Third part.', $sectionPlace->part->text);
         $this->assertInstanceOf(TextCommentLocation::class, $linesPlace);
         $this->assertSame([2, 5], [$linesPlace->part->firstLine, $linesPlace->part->lastLine]);
@@ -114,7 +139,10 @@ final class CommentsAndReadsTest extends TestCase
 
         $this->comment('From an agent.', WholeRecord::Record);
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
         $comment = $this->comments()->list($this->document(), new Page())->items[0]->comment;
         $this->assertSame([ActorType::Agent, $agent->id], [$comment->authorType, $comment->authorId]);
     }
@@ -123,7 +151,10 @@ final class CommentsAndReadsTest extends TestCase
     {
         $this->comment('<script>alert(1)</script>', WholeRecord::Record);
 
-        $this->assertStringNotContainsString('<script>', $this->comments()->list($this->document(), new Page())->items[0]->comment->bodyHtml);
+        $this->assertStringNotContainsString(
+            '<script>',
+            $this->comments()->list($this->document(), new Page())->items[0]->comment->bodyHtml,
+        );
     }
 
     public function test_a_read_without_flags_gives_the_outline_and_a_long_section_is_cut_with_its_continuation(): void
@@ -177,7 +208,10 @@ final class CommentsAndReadsTest extends TestCase
         $second = $this->documents()->list(new DocumentFilters(perPage: 2, after: (string) $first->next));
         $third = $this->documents()->list(new DocumentFilters(perPage: 2, after: (string) $second->next));
 
-        $this->assertSame(['5', '4', '3', '2', '1'], array_map(fn ($row) => $row->number, [...$first->rows, ...$second->rows, ...$third->rows]));
+        $this->assertSame(
+            ['5', '4', '3', '2', '1'],
+            array_map(fn ($row) => $row->number, [...$first->rows, ...$second->rows, ...$third->rows]),
+        );
     }
 
     private function target(DraftReference $draft): DraftTarget
@@ -202,7 +236,9 @@ final class CommentsAndReadsTest extends TestCase
 
     private function comment(string $body, WholeRecord|TextRange $subject): void
     {
-        $this->bus()->run($subject instanceof TextRange ? new PostTextComment($this->document(), $body, $subject, (string) Str::uuid()) : new PostComment($this->document(), $body, (string) Str::uuid()));
+        $this->bus()->run(
+            $subject instanceof TextRange ? new PostTextComment($this->document(), $body, $subject, (string) Str::uuid()) : new PostComment($this->document(), $body, (string) Str::uuid()),
+        );
     }
 
     private function document(): RecordIdentity

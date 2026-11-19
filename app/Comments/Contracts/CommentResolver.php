@@ -21,5 +21,9 @@ interface CommentResolver
 {
     public function list(RecordIdentity $target, Page $page): CommentList;
 
-    public function location(RecordIdentity $target, string $commentId, TextSelection $selection = new TextSelection()): RecordCommentLocation|TextCommentLocation;
+    public function location(
+        RecordIdentity $target,
+        string $commentId,
+        TextSelection $selection = new TextSelection(),
+    ): RecordCommentLocation|TextCommentLocation;
 }

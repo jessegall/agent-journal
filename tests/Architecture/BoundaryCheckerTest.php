@@ -58,17 +58,30 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_the_shared_place_may_use_no_domain(): void
     {
-        $use = new NameUse(dirname(__DIR__, 2).'/app/Domains/DomainRegistry.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
+        $use = new NameUse(
+            dirname(__DIR__, 2).'/app/Domains/DomainRegistry.php',
+            3,
+            'Tests\Fixtures\Boundary\Chat\Message',
+            NameType::Type,
+        );
 
         $violations = $this->checker()->violations([$use]);
 
         $this->assertCount(1, $violations);
-        $this->assertSame('uses Tests\Fixtures\Boundary\Chat\Message, but the core or the domain foundation does not require Chat', $violations[0]->reason());
+        $this->assertSame(
+            'uses Tests\Fixtures\Boundary\Chat\Message, but the core or the domain foundation does not require Chat',
+            $violations[0]->reason(),
+        );
     }
 
     public function test_the_core_may_use_no_domain(): void
     {
-        $use = new NameUse(dirname(__DIR__, 2).'/app/Hooks/AgentStacks.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
+        $use = new NameUse(
+            dirname(__DIR__, 2).'/app/Hooks/AgentStacks.php',
+            3,
+            'Tests\Fixtures\Boundary\Chat\Message',
+            NameType::Type,
+        );
 
         $this->assertCount(1, $this->checker()->violations([$use]));
     }
@@ -76,8 +89,18 @@ final class BoundaryCheckerTest extends TestCase
     public function test_a_domain_uses_the_core_and_its_events_without_declaring_it(): void
     {
         $uses = [
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Actors\Contracts\Actor', NameType::Type),
-            new NameUse($this->fixtureFolder().'/Plans/Listeners/HearsStateTypes.php', 4, 'App\Hooks\Events\StateTypesRequested', NameType::Type),
+            new NameUse(
+                $this->fixtureFolder().'/Plans/UsesAllowed.php',
+                3,
+                'App\Actors\Contracts\Actor',
+                NameType::Type,
+            ),
+            new NameUse(
+                $this->fixtureFolder().'/Plans/Listeners/HearsStateTypes.php',
+                4,
+                'App\Hooks\Events\StateTypesRequested',
+                NameType::Type,
+            ),
         ];
 
         $this->assertSame([], $this->checker()->violations($uses));
@@ -85,28 +108,52 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_a_domain_names_a_core_event_only_in_a_listener(): void
     {
-        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Hooks\Events\StateTypesRequested', NameType::Type);
+        $use = new NameUse(
+            $this->fixtureFolder().'/Plans/UsesAllowed.php',
+            4,
+            'App\Hooks\Events\StateTypesRequested',
+            NameType::Type,
+        );
 
-        $this->assertSame([ViolationType::EventOutsideListener], array_map(fn (Violation $violation) => $violation->type, $this->checker()->violations([$use])));
+        $this->assertSame(
+            [ViolationType::EventOutsideListener],
+            array_map(fn (Violation $violation) => $violation->type, $this->checker()->violations([$use])),
+        );
     }
 
     public function test_a_private_type_of_a_required_domain_is_refused(): void
     {
-        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'Tests\Fixtures\Boundary\Tasks\TaskRecords', NameType::Type);
+        $use = new NameUse(
+            $this->fixtureFolder().'/Plans/UsesAllowed.php',
+            3,
+            'Tests\Fixtures\Boundary\Tasks\TaskRecords',
+            NameType::Type,
+        );
 
         $this->assertSame(
             ["3 uses Tests\Fixtures\Boundary\Tasks\TaskRecords, which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or use what Tasks exports"],
-            array_map(fn ($violation) => "{$violation->line} {$violation->reason()}", $this->checker()->violations([$use])),
+            array_map(
+                fn ($violation) => "{$violation->line} {$violation->reason()}",
+                $this->checker()->violations([$use]),
+            ),
         );
     }
 
     public function test_a_core_type_off_the_core_list_is_refused_to_a_domain(): void
     {
-        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Hooks\Actions\AgentStacks', NameType::Type);
+        $use = new NameUse(
+            $this->fixtureFolder().'/Plans/UsesAllowed.php',
+            3,
+            'App\Hooks\Actions\AgentStacks',
+            NameType::Type,
+        );
 
         $violations = $this->checker()->violations([$use]);
 
-        $this->assertSame([ViolationType::PrivateCoreType], array_map(fn ($violation) => $violation->type, $violations));
+        $this->assertSame(
+            [ViolationType::PrivateCoreType],
+            array_map(fn ($violation) => $violation->type, $violations),
+        );
     }
 
     public function test_a_composition_file_names_only_what_it_composes(): void
@@ -120,14 +167,20 @@ final class BoundaryCheckerTest extends TestCase
 
         $this->assertSame(
             [[5, ViolationType::CompositionMisuse, 'Chat'], [6, ViolationType::CompositionMisuse, 'Core']],
-            array_map(fn ($violation) => [$violation->line, $violation->type, $violation->owner], $this->checker()->compositionViolations($uses, $base)),
+            array_map(
+                fn ($violation) => [$violation->line, $violation->type, $violation->owner],
+                $this->checker()->compositionViolations($uses, $base),
+            ),
         );
     }
 
     public function test_the_report_names_each_file_and_line_and_ends_with_the_question(): void
     {
         $file = $this->fixtureFolder().'/Plans/UsesForbidden.php';
-        $report = BoundaryReport::of($this->checker()->violations(DomainFiles::usesIn([$file], $this->roots())), dirname($this->fixtureFolder(), 3));
+        $report = BoundaryReport::of(
+            $this->checker()->violations(DomainFiles::usesIn([$file], $this->roots())),
+            dirname($this->fixtureFolder(), 3),
+        );
 
         $this->assertStringStartsWith('Domain boundary violations (7):', $report);
         $this->assertStringContainsString(

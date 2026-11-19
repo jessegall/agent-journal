@@ -57,7 +57,10 @@ final class TreeClassifierTest extends TestCase
 
     public function test_a_chain_and_a_substitution_need_every_childs_classes(): void
     {
-        $this->assertSame([CommandClass::Read, CommandClass::Delete], $this->classify('cat a && rm a')->requiredClasses()->classes);
+        $this->assertSame(
+            [CommandClass::Read, CommandClass::Delete],
+            $this->classify('cat a && rm a')->requiredClasses()->classes,
+        );
 
         $substituted = $this->classify('echo "$(rm a)"');
         $this->assertTrue($substituted->requiredClasses()->contains(CommandClass::Delete));
@@ -89,17 +92,31 @@ final class TreeClassifierTest extends TestCase
         $this->assertTrue($this->classify('LANG=C cat a')->isKnown());
         $this->assertSame(UnresolvedType::InterpretedSource, $this->firstUnresolved("sh <<'TEXT'\nrm a\nTEXT")->type);
         $this->assertSame(UnresolvedType::UnsupportedSyntax, $this->firstUnresolved('cat "open')->type);
-        $this->assertSame(UnresolvedType::UnsupportedSyntax, $this->firstUnresolved('for f in a; do rm $f; done')->type);
+        $this->assertSame(
+            UnresolvedType::UnsupportedSyntax,
+            $this->firstUnresolved('for f in a; do rm $f; done')->type,
+        );
         $this->assertSame(UnresolvedType::DynamicWord, $this->firstUnresolved('cat a > $OUT')->type);
-        $this->assertTrue($this->classify('cat a > /dev/tcp/example.com/80')->requiredClasses()->contains(CommandClass::Network));
+        $this->assertTrue(
+            $this->classify('cat a > /dev/tcp/example.com/80')->requiredClasses()->contains(CommandClass::Network),
+        );
     }
 
     public function test_wrappers_expose_their_child_and_keep_their_own_classes(): void
     {
         $this->assertSame([CommandClass::Read], $this->classify('env -- cat a')->requiredClasses()->classes);
-        $this->assertSame([CommandClass::Read, CommandClass::PrivilegeChange], $this->classify('sudo cat a')->requiredClasses()->classes);
-        $this->assertSame([CommandClass::Read, CommandClass::ProcessControl], $this->classify('timeout 10 cat a')->requiredClasses()->classes);
-        $this->assertSame([CommandClass::Read, CommandClass::Delete], $this->classify('find . -exec rm -- {} +')->requiredClasses()->classes);
+        $this->assertSame(
+            [CommandClass::Read, CommandClass::PrivilegeChange],
+            $this->classify('sudo cat a')->requiredClasses()->classes,
+        );
+        $this->assertSame(
+            [CommandClass::Read, CommandClass::ProcessControl],
+            $this->classify('timeout 10 cat a')->requiredClasses()->classes,
+        );
+        $this->assertSame(
+            [CommandClass::Read, CommandClass::Delete],
+            $this->classify('find . -exec rm -- {} +')->requiredClasses()->classes,
+        );
         $this->assertSame([CommandClass::Delete], $this->classify('xargs -0 rm --')->requiredClasses()->classes);
         $this->assertSame(UnresolvedType::UnknownWrapperOption, $this->firstUnresolved('env --frobnicate cat a')->type);
         $this->assertSame(UnresolvedType::UnresolvedExecutable, $this->firstUnresolved('env PATH=/tmp cat a')->type);
@@ -130,11 +147,38 @@ final class TreeClassifierTest extends TestCase
         $parser = $container->make(TreeParser::class);
         $tree = $parser->parse($line, ShellDialect::Bash);
         $rules = CommandRuleRegistry::from([
-            CommandRule::forProgram('core.cat', new ProgramSpellings('cat'), [], ArgumentGrammar::operands(OperandType::Path)->repeating(), CommandClassSet::of(CommandClass::Read)),
-            CommandRule::forProgram('core.rm', new ProgramSpellings('rm'), [], ArgumentGrammar::operands(OperandType::Path)->repeating()->endingOptionsAtDoubleDash(), CommandClassSet::of(CommandClass::Delete)),
-            CommandRule::forProgram('core.echo', new ProgramSpellings('echo'), [], ArgumentGrammar::operands(OperandType::Text)->repeating(), CommandClassSet::empty()),
+            CommandRule::forProgram(
+                'core.cat',
+                new ProgramSpellings('cat'),
+                [],
+                ArgumentGrammar::operands(OperandType::Path)->repeating(),
+                CommandClassSet::of(CommandClass::Read),
+            ),
+            CommandRule::forProgram(
+                'core.rm',
+                new ProgramSpellings('rm'),
+                [],
+                ArgumentGrammar::operands(OperandType::Path)->repeating()->endingOptionsAtDoubleDash(),
+                CommandClassSet::of(CommandClass::Delete),
+            ),
+            CommandRule::forProgram(
+                'core.echo',
+                new ProgramSpellings('echo'),
+                [],
+                ArgumentGrammar::operands(OperandType::Text)->repeating(),
+                CommandClassSet::empty(),
+            ),
         ]);
 
-        return new TreeClassifier($rules, new ProgramNames(), new RedirectFacts(), new WrapperRules(), $parser, new ProgramClassifiers(), new PackageScripts(), new NoAliases())->classify($tree, new ExecutionContext(ShellDialect::Bash, '/work', '/work'));
+        return new TreeClassifier(
+            $rules,
+            new ProgramNames(),
+            new RedirectFacts(),
+            new WrapperRules(),
+            $parser,
+            new ProgramClassifiers(),
+            new PackageScripts(),
+            new NoAliases(),
+        )->classify($tree, new ExecutionContext(ShellDialect::Bash, '/work', '/work'));
     }
 }

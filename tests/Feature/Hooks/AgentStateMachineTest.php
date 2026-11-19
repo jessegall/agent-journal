@@ -37,13 +37,21 @@ final class AgentStateMachineTest extends TestCase
     {
         $this->pushState($this->task(42));
 
-        $reply = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
+        $reply = $this->machine()->answer(
+            $this->stop(),
+            $this->capabilities(),
+            new OperationDeadline(3000),
+            $this->stopReply(),
+        );
 
         $recorded = HookCall::query()->sole();
         $this->assertSame('block', json_decode($reply->stdout, true)['decision']);
         $this->assertSame($reply->stdout, $recorded->answer->stdout);
         $this->assertSame(AnswerType::Deny, $recorded->answer->type);
-        $this->assertSame(['test.tasks deny'], array_map(fn (WalkStep $step) => "{$step->stateType} {$step->answer->value}", $recorded->steps->steps));
+        $this->assertSame(
+            ['test.tasks deny'],
+            array_map(fn (WalkStep $step) => "{$step->stateType} {$step->answer->value}", $recorded->steps->steps),
+        );
         $this->assertSame(3, AgentStackRow::query()->sole()->version);
     }
 
@@ -52,18 +60,31 @@ final class AgentStateMachineTest extends TestCase
         $this->pushState($this->task(42));
         $this->tasks->tasks[42] = TaskWorkState::Finished;
 
-        $reply = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
+        $reply = $this->machine()->answer(
+            $this->stop(),
+            $this->capabilities(),
+            new OperationDeadline(3000),
+            $this->stopReply(),
+        );
 
         $this->assertSame('{}', $reply->stdout);
         $this->assertSame(['hooks.ready', 'test.tasks'], $this->storedTypeKeys());
     }
 
-    #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]
+    #[TimeLimit(
+        seconds: 5,
+        reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.',
+    )]
     public function test_a_supported_rewrite_keeps_the_child_it_pushed(): void
     {
         $this->pushState(new StateReference('test.rewriting', NoSubject::None));
 
-        $reply = $this->machine()->answer($this->shell('composer test'), $this->capabilities(), new OperationDeadline(3000), $this->shellReply(RewriteSupport::WithoutApproval));
+        $reply = $this->machine()->answer(
+            $this->shell('composer test'),
+            $this->capabilities(),
+            new OperationDeadline(3000),
+            $this->shellReply(RewriteSupport::WithoutApproval),
+        );
 
         $command = json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command'];
         $this->assertStringStartsWith('journal process run --admission ', $command);
@@ -71,12 +92,20 @@ final class AgentStateMachineTest extends TestCase
         $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
     }
 
-    #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]
+    #[TimeLimit(
+        seconds: 5,
+        reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.',
+    )]
     public function test_a_rewrite_the_program_cannot_take_is_refused_and_its_child_is_dropped(): void
     {
         $this->pushState(new StateReference('test.rewriting', NoSubject::None));
 
-        $reply = $this->machine()->answer($this->shell('composer test'), $this->capabilities(RewriteSupport::NeedsApproval), new OperationDeadline(3000), $this->shellReply(RewriteSupport::NeedsApproval));
+        $reply = $this->machine()->answer(
+            $this->shell('composer test'),
+            $this->capabilities(RewriteSupport::NeedsApproval),
+            new OperationDeadline(3000),
+            $this->shellReply(RewriteSupport::NeedsApproval),
+        );
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
         $this->assertSame(['hooks.ready', 'test.rewriting'], $this->storedTypeKeys());
@@ -86,11 +115,21 @@ final class AgentStateMachineTest extends TestCase
     public function test_a_retry_after_a_lost_response_gets_the_same_bytes_without_changing_the_stack(): void
     {
         $this->pushState($this->task(42));
-        $first = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
+        $first = $this->machine()->answer(
+            $this->stop(),
+            $this->capabilities(),
+            new OperationDeadline(3000),
+            $this->stopReply(),
+        );
         $versionAfterFirst = AgentStackRow::query()->sole()->version;
         $this->tasks->tasks[42] = TaskWorkState::Finished;
 
-        $retry = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn () => throw TestFailure::renderedOnReplay());
+        $retry = $this->machine()->answer(
+            $this->stop(),
+            $this->capabilities(),
+            new OperationDeadline(3000),
+            fn () => throw TestFailure::renderedOnReplay(),
+        );
 
         $this->assertEquals($first, $retry);
         $this->assertSame(1, HookCall::query()->count());
@@ -113,7 +152,12 @@ final class AgentStateMachineTest extends TestCase
         $this->tasks->tasks[42] = TaskWorkState::Finished;
 
         try {
-            $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn () => throw TestFailure::adapterFailed());
+            $this->machine()->answer(
+                $this->stop(),
+                $this->capabilities(),
+                new OperationDeadline(3000),
+                fn () => throw TestFailure::adapterFailed(),
+            );
             $this->fail('The adapter failure was swallowed.');
         } catch (TestFailure) {
             $this->assertSame(0, HookCall::query()->count());
@@ -123,10 +167,18 @@ final class AgentStateMachineTest extends TestCase
 
     public function test_a_hook_the_program_does_not_map_is_refused_before_any_write(): void
     {
-        $compaction = new ContextCompacted(TestActors::hookIdentity(1, 10, 'call-1', self::inputDigest()), new CompactionDetails('compaction-1'));
+        $compaction = new ContextCompacted(
+            TestActors::hookIdentity(1, 10, 'call-1', self::inputDigest()),
+            new CompactionDetails('compaction-1'),
+        );
 
         try {
-            $this->machine()->answer($compaction, $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
+            $this->machine()->answer(
+                $compaction,
+                $this->capabilities(),
+                new OperationDeadline(3000),
+                $this->stopReply(),
+            );
             $this->fail('An unmapped hook was answered.');
         } catch (UnsupportedHook) {
             $this->assertSame(0, HookCall::query()->count());
@@ -153,6 +205,10 @@ final class AgentStateMachineTest extends TestCase
      */
     private function shellReply(RewriteSupport $rewrites): Closure
     {
-        return fn (HookAnswer $answer) => ProgramReplies::shell($answer, new ProgramToolInput(['command' => 'composer test', 'description' => 'Run the tests']), $rewrites);
+        return fn (HookAnswer $answer) => ProgramReplies::shell(
+            $answer,
+            new ProgramToolInput(['command' => 'composer test', 'description' => 'Run the tests']),
+            $rewrites,
+        );
     }
 }

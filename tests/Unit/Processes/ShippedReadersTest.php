@@ -54,7 +54,10 @@ final class ShippedReadersTest extends TestCase
 
         $this->assertSame([], array_map(fn ($problem) => $problem->explanation, $assessment->problems));
         $this->assertSame($sample->proves, $outcome->value);
-        $this->assertTrue($outcome->acceptsClaim($assessment->claimed), "{$name} claims {$assessment->claimed->value}.");
+        $this->assertTrue(
+            $outcome->acceptsClaim($assessment->claimed),
+            "{$name} claims {$assessment->claimed->value}.",
+        );
     }
 
     public function test_a_reader_is_bound_to_the_version_it_was_proven_on(): void

@@ -81,13 +81,23 @@ final class ShareScopeTest extends TestCase
         $root = $this->root(1);
         $this->linkTargets($root, 1_001, 1_000);
 
-        $this->assertThrows(fn () => $this->scope()->discover($root, $this->budget()), ShareScopeTooLarge::class, 'Share a record with fewer links');
+        $this->assertThrows(
+            fn () => $this->scope()->discover($root, $this->budget()),
+            ShareScopeTooLarge::class,
+            'Share a record with fewer links',
+        );
     }
 
     public function test_an_unregistered_or_hidden_root_fails_closed(): void
     {
-        $this->assertThrows(fn () => $this->scope()->discover(TestActors::record('binders.unknown', 1), $this->budget()), UnknownShareRecordType::class);
-        $this->assertThrows(fn () => $this->scope()->discover(new RecordIdentity('binders.binder', BinderShareProvider::HIDDEN_ROOT_ID), $this->budget()), RecordUnavailable::class);
+        $this->assertThrows(
+            fn () => $this->scope()->discover(TestActors::record('binders.unknown', 1), $this->budget()),
+            UnknownShareRecordType::class,
+        );
+        $this->assertThrows(
+            fn () => $this->scope()->discover(new RecordIdentity('binders.binder', BinderShareProvider::HIDDEN_ROOT_ID), $this->budget()),
+            RecordUnavailable::class,
+        );
     }
 
     private function scope(): ShareScope
@@ -115,8 +125,19 @@ final class ShareScopeTest extends TestCase
 
         for ($number = 0; $number < $count; $number++) {
             $target = [self::TARGET_TYPES[$number % 3], TestIds::of($firstNumber + $number)];
-            [$source, $other] = $number % 2 === 0 ? [[$root->type, $root->id], $target] : [$target, [$root->type, $root->id]];
-            $rows[] = ['id' => strtolower((string) str()->ulid()), 'source_type' => $source[0], 'source_id' => $source[1], 'target_type' => $other[0], 'target_id' => $other[1], 'created_at' => $now, 'updated_at' => $now];
+            [$source, $other] = $number % 2 === 0 ? [
+                [$root->type, $root->id],
+                $target,
+            ] : [$target, [$root->type, $root->id]];
+            $rows[] = [
+                'id' => strtolower((string) str()->ulid()),
+                'source_type' => $source[0],
+                'source_id' => $source[1],
+                'target_type' => $other[0],
+                'target_id' => $other[1],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
         }
 
         Link::query()->insert($rows);

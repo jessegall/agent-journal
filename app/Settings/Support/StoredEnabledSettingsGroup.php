@@ -30,8 +30,11 @@ final readonly class StoredEnabledSettingsGroup implements EnabledSettingsGroup
 
     public int $revision;
 
-    public function __construct(private ToggleGroup $group, private StoredSettings $stored, private SettingRegistry $registry)
-    {
+    public function __construct(
+        private ToggleGroup $group,
+        private StoredSettings $stored,
+        private SettingRegistry $registry,
+    ) {
         $this->owner = $stored->owner;
         $this->key = $group->key;
         $this->revision = $stored->revision;

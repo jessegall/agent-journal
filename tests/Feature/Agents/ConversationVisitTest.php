@@ -82,7 +82,10 @@ final class ConversationVisitTest extends TestCase
         $this->app->make(LaunchSessions::class)->end($first);
         $second = $this->launch('helpers.job 2');
 
-        $this->assertThrows(fn () => $visits->entered($second->id, 'native-a', 'call-2', CarbonImmutable::now()), ConversationIncompatible::class);
+        $this->assertThrows(
+            fn () => $visits->entered($second->id, 'native-a', 'call-2', CarbonImmutable::now()),
+            ConversationIncompatible::class,
+        );
 
         $this->assertSame(0, ConversationVisit::query()->where('session_id', $second->id)->count());
         $this->assertNull($second->fresh()?->current_conversation_id);
@@ -91,18 +94,45 @@ final class ConversationVisitTest extends TestCase
     public function test_the_reader_gives_an_agents_conversations_with_their_last_model(): void
     {
         $session = $this->launch('helpers.job 1');
-        $this->app->make(RecordConversationVisit::class)->entered($session->id, 'native-a', 'call-1', CarbonImmutable::now());
+        $this->app->make(RecordConversationVisit::class)->entered(
+            $session->id,
+            'native-a',
+            'call-1',
+            CarbonImmutable::now(),
+        );
 
-        $conversations = $this->app->make(ProgramConversationResolver::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 1');
+        $conversations = $this->app->make(ProgramConversationResolver::class)->conversations(
+            $this->agent->id,
+            HookProgram::ClaudeCode,
+            'helpers.job 1',
+        );
 
-        $this->assertSame([['native-a', TestSelections::MODEL]], array_map(fn ($conversation) => [$conversation->nativeId, $conversation->lastModel], $conversations));
-        $this->assertSame([], $this->app->make(ProgramConversationResolver::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 2'));
+        $this->assertSame(
+            [['native-a', TestSelections::MODEL]],
+            array_map(fn ($conversation) => [$conversation->nativeId, $conversation->lastModel], $conversations),
+        );
+        $this->assertSame(
+            [],
+            $this->app->make(ProgramConversationResolver::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 2'),
+        );
     }
 
     private function launch(string $context): AgentSession
     {
-        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, $context, $context, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
+        $request = new LaunchRequest(
+            TestSelections::requestId(),
+            $this->agent->id,
+            TestSelections::of(),
+            LaunchOriginType::OwnerRequest,
+            $context,
+            $context,
+            ConversationModeType::New,
+            null,
+            LaunchPolicy::withoutProfile(TestSelections::onHost()),
+        );
 
-        return AgentSession::query()->findOrFail($this->app->make(CommandBus::class)->run(new LaunchAgent($request))->sessionId);
+        return AgentSession::query()->findOrFail(
+            $this->app->make(CommandBus::class)->run(new LaunchAgent($request))->sessionId,
+        );
     }
 }

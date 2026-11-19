@@ -31,7 +31,11 @@ final readonly class ActiveActorsResolver implements ActiveActors
             return $this->inOneSnapshot(function (): ActiveActorsSnapshot {
                 $observedAt = $this->clock->now();
 
-                return new ActiveActorsSnapshot($observedAt, $this->count(ActorType::Agent, $observedAt), $this->count(ActorType::User, $observedAt));
+                return new ActiveActorsSnapshot(
+                    $observedAt,
+                    $this->count(ActorType::Agent, $observedAt),
+                    $this->count(ActorType::User, $observedAt),
+                );
             });
         } catch (Throwable $cause) {
             throw ActiveActorsUnavailable::because($cause);

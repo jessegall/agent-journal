@@ -59,7 +59,9 @@ final class EnginePassTest extends TestCase
 
     public function test_the_engine_acts_only_inside_its_pass(): void
     {
-        $inside = $this->app->make(EnginePass::class)->run(fn () => $this->app->make(CurrentActor::class)->actor()->type);
+        $inside = $this->app->make(EnginePass::class)->run(
+            fn () => $this->app->make(CurrentActor::class)->actor()->type,
+        );
 
         $this->assertSame(ActorType::Engine, $inside);
         $this->assertFalse($this->app->make(CurrentActor::class)->hasActor());

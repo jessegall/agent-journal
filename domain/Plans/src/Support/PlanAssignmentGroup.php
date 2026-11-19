@@ -34,7 +34,10 @@ final readonly class PlanAssignmentGroup
     private function forPlan(RecordIdentity $root): AssignmentGroup
     {
         $plan = Plan::lockStructure($root->id);
-        $phases = Phase::query()->where('plan_id', $plan->id)->readAll('every phase of the plan is assigned')->orderBy('number')->get();
+        $phases = Phase::query()->where(
+            'plan_id',
+            $plan->id,
+        )->readAll('every phase of the plan is assigned')->orderBy('number')->get();
 
         return new AssignmentGroup($root, [
             ...array_values($phases->map(fn (Phase $phase) => $phase->assignmentIdentity())->all()),
@@ -56,6 +59,9 @@ final readonly class PlanAssignmentGroup
      */
     private function taskIdsOf(Collection $phases): array
     {
-        return array_map(strval(...), array_values(PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->readAll('every task of the plan is assigned')->orderBy('phase_id')->orderBy('position')->pluck('task_id')->all()));
+        return array_map(
+            strval(...),
+            array_values(PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->readAll('every task of the plan is assigned')->orderBy('phase_id')->orderBy('position')->pluck('task_id')->all()),
+        );
     }
 }

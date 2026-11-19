@@ -22,7 +22,10 @@ final class ProfileListCommand extends Command
     {
         $profiles = Profile::listed(self::ROWS);
 
-        $this->table(['Key', 'Label', 'State'], array_map(fn (Profile $profile) => [$profile->key, $profile->label, $profile->isRetired() ? 'retired' : 'current'], $profiles));
+        $this->table(
+            ['Key', 'Label', 'State'],
+            array_map(fn (Profile $profile) => [$profile->key, $profile->label, $profile->isRetired() ? 'retired' : 'current'], $profiles),
+        );
 
         return self::SUCCESS;
     }

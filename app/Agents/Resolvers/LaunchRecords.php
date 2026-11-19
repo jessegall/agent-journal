@@ -28,7 +28,9 @@ final readonly class LaunchRecords implements LaunchRecordResolver
     {
         $this->actors->actor();
 
-        return array_values(LaunchRecord::query()->forOwnerReference($ownerReference)->orderByDesc('id')->readLimit(self::MOST_PER_OWNER)->get()
+        return array_values(LaunchRecord::query()->forOwnerReference($ownerReference)->orderByDesc('id')->readLimit(
+            self::MOST_PER_OWNER,
+        )->get()
             ->map(fn (LaunchRecord $record) => self::detailsOf($record))
             ->all());
     }

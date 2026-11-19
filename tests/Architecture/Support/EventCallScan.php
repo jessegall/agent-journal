@@ -42,7 +42,12 @@ final readonly class EventCallScan implements FileScan
 
     private const array HELPERS = ['event', 'broadcast'];
 
-    private const array RECEIVER_METHODS = ['listen' => false, 'subscribe' => false, 'dispatch' => true, 'until' => true];
+    private const array RECEIVER_METHODS = [
+        'listen' => false,
+        'subscribe' => false,
+        'dispatch' => true,
+        'until' => true,
+    ];
 
     /**
      * @return list<EventCall>
@@ -66,7 +71,13 @@ final readonly class EventCallScan implements FileScan
             }
 
             $method = $call->name->toString();
-            $calls[] = self::eventCall($file, $call, "Event::{$method}()", self::FACADE_METHODS[$method], takesOnlyEvents: true);
+            $calls[] = self::eventCall(
+                $file,
+                $call,
+                "Event::{$method}()",
+                self::FACADE_METHODS[$method],
+                takesOnlyEvents: true,
+            );
         }
 
         foreach ($finder->findInstanceOf($file->statements, Expr\MethodCall::class) as $call) {
@@ -75,7 +86,13 @@ final readonly class EventCallScan implements FileScan
             }
 
             $method = $call->name->toString();
-            $calls[] = self::eventCall($file, $call, "->{$method}()", self::RECEIVER_METHODS[$method], takesOnlyEvents: $method === 'listen');
+            $calls[] = self::eventCall(
+                $file,
+                $call,
+                "->{$method}()",
+                self::RECEIVER_METHODS[$method],
+                takesOnlyEvents: $method === 'listen',
+            );
         }
 
         return [...$calls, ...self::declaredRegistrations($file)];
@@ -96,7 +113,15 @@ final readonly class EventCallScan implements FileScan
             $type = ($method->params[0] ?? null)?->type;
 
             if ($method->name->toLowerString() === 'subscribe' && $type instanceof Name && str_ends_with($type->toString(), 'Dispatcher')) {
-                $registrations[] = new EventCall($file->path, $method->getStartLine(), 'subscribe(Dispatcher)', false, false, EventArgument::Other, 'an event subscriber');
+                $registrations[] = new EventCall(
+                    $file->path,
+                    $method->getStartLine(),
+                    'subscribe(Dispatcher)',
+                    false,
+                    false,
+                    EventArgument::Other,
+                    'an event subscriber',
+                );
             }
         }
 
@@ -105,7 +130,15 @@ final readonly class EventCallScan implements FileScan
             $default = $property->props[0]->default;
 
             if (in_array($name, ['listen', 'subscribe'], true) && $default instanceof Expr\Array_ && $default->items !== []) {
-                $registrations[] = new EventCall($file->path, $property->getStartLine(), "\${$name}", false, false, EventArgument::Other, "a {$name} property");
+                $registrations[] = new EventCall(
+                    $file->path,
+                    $property->getStartLine(),
+                    "\${$name}",
+                    false,
+                    false,
+                    EventArgument::Other,
+                    "a {$name} property",
+                );
             }
         }
 
@@ -120,8 +153,13 @@ final readonly class EventCallScan implements FileScan
             && isset(self::FACADE_METHODS[$call->name->toString()]);
     }
 
-    private static function eventCall(ParsedFile $file, Expr\CallLike $call, string $label, bool $raises, bool $takesOnlyEvents): EventCall
-    {
+    private static function eventCall(
+        ParsedFile $file,
+        Expr\CallLike $call,
+        string $label,
+        bool $raises,
+        bool $takesOnlyEvents,
+    ): EventCall {
         $first = $call->getArgs()[0] ?? null;
         $event = $first instanceof Arg ? $first->value : null;
 

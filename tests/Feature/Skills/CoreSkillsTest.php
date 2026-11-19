@@ -23,7 +23,10 @@ final class CoreSkillsTest extends TestCase
         $listed = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
         $core = array_values(array_filter($listed, fn (array $skill) => $skill['owner'] === 'Core'));
 
-        $this->assertSame(['journal', 'journal-profiles', 'journal-skills', 'journal-shell'], array_column($core, 'key'));
+        $this->assertSame(
+            ['journal', 'journal-profiles', 'journal-skills', 'journal-shell'],
+            array_column($core, 'key'),
+        );
         $this->assertSame(['shipped', 'shipped', 'shipped', 'shipped'], array_column($core, 'source'));
     }
 
@@ -37,8 +40,14 @@ final class CoreSkillsTest extends TestCase
             ['Purpose', 'Running commands', 'Tests and checks', 'Reading output', 'Understanding a command line'],
             $headings[1],
         );
-        $this->assertStringContainsString("## Purpose\n\nCommands run through the journal, which keeps their output.\n", $rendered);
-        $this->assertStringContainsString("## Tests and checks\n\nA test, check or build runs only when its rule has an approved, proven reader.", $rendered);
+        $this->assertStringContainsString(
+            "## Purpose\n\nCommands run through the journal, which keeps their output.\n",
+            $rendered,
+        );
+        $this->assertStringContainsString(
+            "## Tests and checks\n\nA test, check or build runs only when its rule has an approved, proven reader.",
+            $rendered,
+        );
     }
 
     public function test_show_prints_the_rendered_journal_skills_text(): void

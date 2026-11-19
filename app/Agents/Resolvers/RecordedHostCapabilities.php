@@ -37,7 +37,12 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
             }
         }
 
-        return new HostCapability($query, CapabilityStatusType::Unverified, self::UNRECORDED_EVIDENCE, 'No evidence is recorded for this combination.');
+        return new HostCapability(
+            $query,
+            CapabilityStatusType::Unverified,
+            self::UNRECORDED_EVIDENCE,
+            'No evidence is recorded for this combination.',
+        );
     }
 
     /**

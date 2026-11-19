@@ -46,7 +46,13 @@ final class ProcessPages implements ProvidesPages
 
     private function listPage(): Page
     {
-        return Page::make('command-requests', 'Command review', Icon::Rules, RequestListResolver::class, self::LIST_VIEW)
+        return Page::make(
+            'command-requests',
+            'Command review',
+            Icon::Rules,
+            RequestListResolver::class,
+            self::LIST_VIEW,
+        )
             ->at('')
             ->actions(ActionRoute::post('bundles/approval', ApproveBundlePageController::class, 'approve-rule-bundle'));
     }

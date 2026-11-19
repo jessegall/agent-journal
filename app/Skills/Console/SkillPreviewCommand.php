@@ -40,7 +40,11 @@ final class SkillPreviewCommand extends Command
             $skill = $resolver->find(SkillKey::from((string) $this->argument('key')));
 
             if ($this->option('agent') !== null) {
-                $answer = $preview->forAgent($skill, $resolver->all(), Agent::query()->whereKey((string) $this->option('agent'))->firstOrFail());
+                $answer = $preview->forAgent(
+                    $skill,
+                    $resolver->all(),
+                    Agent::query()->whereKey((string) $this->option('agent'))->firstOrFail(),
+                );
 
                 return $this->printAnswer($answer);
             }

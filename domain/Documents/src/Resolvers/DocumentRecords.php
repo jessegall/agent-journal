@@ -48,7 +48,9 @@ final readonly class DocumentRecords implements DocumentResolver
         $page = $documents->take($size);
 
         return DocumentList::from([
-            'rows' => array_values($page->map(fn (Document $document) => $filters->searches() ? $document->hit($filters->query, $document->foundRevision($searched)) : $document->card())->all()),
+            'rows' => array_values(
+                $page->map(fn (Document $document) => $filters->searches() ? $document->hit($filters->query, $document->foundRevision($searched)) : $document->card())->all(),
+            ),
             'page' => $filters->page,
             'hasNextPage' => $documents->count() > $size,
             'next' => $documents->count() > $size ? $page->last()?->id : null,
@@ -59,20 +61,30 @@ final readonly class DocumentRecords implements DocumentResolver
     {
         $document = self::published($documentNumber);
 
-        return array_values($document->revisions()->whereNotNull('closed_at')->orderBy('number')->forPage($page, 50)->get()
+        return array_values($document->revisions()->whereNotNull('closed_at')->orderBy('number')->forPage(
+            $page,
+            50,
+        )->get()
             ->map(fn (DocumentRevision $revision) => $revision->card())->all());
     }
 
     public function revision(int $documentNumber, int $revisionNumber): RevisionView
     {
         $document = self::published($documentNumber);
-        $revision = $document->revisions()->whereNotNull('closed_at')->where('number', $revisionNumber)->first() ?? throw DocumentMissing::numbered($documentNumber);
+        $revision = $document->revisions()->whereNotNull('closed_at')->where(
+            'number',
+            $revisionNumber,
+        )->first() ?? throw DocumentMissing::numbered($documentNumber);
 
         return $revision->view($document);
     }
 
-    public function read(int $number, TextSelection $selection, int|null $revision = null, int|null $expectedRevision = null): RecordText
-    {
+    public function read(
+        int $number,
+        TextSelection $selection,
+        int|null $revision = null,
+        int|null $expectedRevision = null,
+    ): RecordText {
         $document = self::published($number);
         $current = $document->currentRevisionOrFail()->number;
 
@@ -80,7 +92,10 @@ final readonly class DocumentRecords implements DocumentResolver
             throw StaleRead::revision($expectedRevision, $current);
         }
 
-        $read = $document->revisions()->whereNotNull('closed_at')->where('number', $revision ?? $current)->first() ?? throw DocumentMissing::numbered($number);
+        $read = $document->revisions()->whereNotNull('closed_at')->where(
+            'number',
+            $revision ?? $current,
+        )->first() ?? throw DocumentMissing::numbered($number);
 
         return RecordReading::read("doc {$number}", $read, $selection);
     }

@@ -88,7 +88,10 @@ final class RegisteredModuleTest extends TestCase
             '5 uses App\Hooks\Actions\AgentStacks, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists',
             '6 uses table module_notes of Notes; only Notes reads, joins, keys or changes its tables, so use what Notes exports',
             '7 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports',
-        ], array_map(fn (Violation $violation) => "{$violation->line} {$violation->reason()}", [...$names, ...$tables]));
+        ], array_map(
+            fn (Violation $violation) => "{$violation->line} {$violation->reason()}",
+            [...$names, ...$tables],
+        ));
     }
 
     private function registry(): DomainRegistry
@@ -120,6 +123,9 @@ final class RegisteredModuleTest extends TestCase
      */
     private function publicOwners(): array
     {
-        return [PublicOwner::core(CoreApi::exports()), ...array_map(PublicOwner::fromDomain(...), $this->registry()->all())];
+        return [
+            PublicOwner::core(CoreApi::exports()),
+            ...array_map(PublicOwner::fromDomain(...), $this->registry()->all()),
+        ];
     }
 }

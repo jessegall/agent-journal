@@ -36,8 +36,16 @@ final class ReadPermitsTest extends TestCase
         parent::setUp();
 
         $this->token = ShareToken::generate();
-        $configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
-        $this->share = Share::grant(TestActors::record('documents.document', 1), TestIds::of(9), $configuration, $this->token, CarbonImmutable::now()->subMinute());
+        $configuration = ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
+        );
+        $this->share = Share::grant(
+            TestActors::record('documents.document', 1),
+            TestIds::of(9),
+            $configuration,
+            $this->token,
+            CarbonImmutable::now()->subMinute(),
+        );
     }
 
     public function test_a_valid_token_yields_a_permit_taken_once_even_for_an_expired_share(): void

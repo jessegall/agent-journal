@@ -108,7 +108,14 @@ final readonly class TableChecker
                 $first = $this->creations[$creation->table];
 
                 if ($first->file !== $creation->file) {
-                    $violations[] = new Violation($creation->file, $creation->line, $creation->table, $entry->name, $first->file, ViolationType::TableCreatedTwice);
+                    $violations[] = new Violation(
+                        $creation->file,
+                        $creation->line,
+                        $creation->table,
+                        $entry->name,
+                        $first->file,
+                        ViolationType::TableCreatedTwice,
+                    );
                 }
             }
         }
@@ -121,7 +128,10 @@ final readonly class TableChecker
      */
     private function migrationNamesTwice(): array
     {
-        $folders = [$this->rootMigrationFolder, ...array_merge(...array_map(fn (TableOwner $entry) => $entry->migrationFolders, $this->entries))];
+        $folders = [
+            $this->rootMigrationFolder,
+            ...array_merge(...array_map(fn (TableOwner $entry) => $entry->migrationFolders, $this->entries)),
+        ];
         $seen = [];
         $violations = [];
 
@@ -129,7 +139,14 @@ final readonly class TableChecker
             $name = basename($file);
 
             if (isset($seen[$name])) {
-                $violations[] = new Violation($file, 1, $name, $this->ownerNameOf($file), $seen[$name], ViolationType::MigrationNameTwice);
+                $violations[] = new Violation(
+                    $file,
+                    1,
+                    $name,
+                    $this->ownerNameOf($file),
+                    $seen[$name],
+                    ViolationType::MigrationNameTwice,
+                );
 
                 continue;
             }
@@ -151,7 +168,14 @@ final readonly class TableChecker
             $owner = $this->owners[$use->table] ?? null;
 
             if ($owner !== null && $use->type === TableType::Change) {
-                $violations[] = new Violation($use->file, $use->line, $use->table, self::ROOT_MIGRATIONS, $owner->name, ViolationType::RootMigrationChangesDomainTable);
+                $violations[] = new Violation(
+                    $use->file,
+                    $use->line,
+                    $use->table,
+                    self::ROOT_MIGRATIONS,
+                    $owner->name,
+                    ViolationType::RootMigrationChangesDomainTable,
+                );
             }
         }
 
@@ -183,6 +207,9 @@ final readonly class TableChecker
 
     private function ownerNameOf(string $path): string
     {
-        return array_find($this->entries, fn (TableOwner $entry) => $entry->holdsFile($path))->name ?? self::ROOT_MIGRATIONS;
+        return array_find(
+            $this->entries,
+            fn (TableOwner $entry) => $entry->holdsFile($path),
+        )->name ?? self::ROOT_MIGRATIONS;
     }
 }

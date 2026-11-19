@@ -62,9 +62,15 @@ final class AgentStacksTest extends TestCase
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));
 
         $this->target = TestActors::stack(1, 10);
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+        );
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
-        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks));
+        Event::listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks),
+        );
     }
 
     protected function tearDown(): void
@@ -139,7 +145,10 @@ final class AgentStacksTest extends TestCase
             $this->stacks()->push($this->target, $this->task(42));
         });
 
-        $this->assertSame(['hooks.ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(
+            ['hooks.ready', 'test.tasks'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
+        );
         $this->assertSame(['task 42 started'], DB::table('domain_writes')->pluck('name')->all());
     }
 
@@ -167,22 +176,38 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(43)));
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
-        $this->assertSame([null, '42', '43'], array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null, $this->storedFrames()));
+        $this->assertSame(
+            [null, '42', '43'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null, $this->storedFrames()),
+        );
     }
 
     public function test_a_switched_off_conditional_state_is_declined_and_a_switched_on_one_is_pushed(): void
     {
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
-            $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false)));
+            $event->registry->register(
+                'test.switched_off',
+                new ClosureStateLoader(fn () => new SwitchableState(false)),
+            );
             $event->registry->register('test.switched_on', new ClosureStateLoader(fn () => new SwitchableState(true)));
         });
         $this->createStack();
 
-        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None)));
-        $this->assertSame(['hooks.ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->transaction()->run(
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None)),
+        );
+        $this->assertSame(
+            ['hooks.ready'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
+        );
 
-        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None)));
-        $this->assertSame(['hooks.ready', 'test.switched_on'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->transaction()->run(
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None)),
+        );
+        $this->assertSame(
+            ['hooks.ready', 'test.switched_on'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
+        );
     }
 
     public function test_a_push_saves_the_stack_without_a_frame_switched_off_since_it_was_stored(): void
@@ -194,12 +219,17 @@ final class AgentStacksTest extends TestCase
             }));
         });
         $this->createStack();
-        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switchable', NoSubject::None)));
+        $this->transaction()->run(
+            fn () => $this->stacks()->push($this->target, new StateReference('test.switchable', NoSubject::None)),
+        );
 
         $enabled = false;
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
-        $this->assertSame(['hooks.ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(
+            ['hooks.ready', 'test.tasks'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
+        );
     }
 
     public function test_a_push_of_a_switched_off_domains_state_is_declined_without_reading_its_subject(): void
@@ -209,9 +239,14 @@ final class AgentStacksTest extends TestCase
         $core->revise($core->document->withToggle(new EncodedToggle('domain_plans', EncodedValue::of(false))));
         $this->createStack();
 
-        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('plans.working', new SubjectReference(TestIds::of(999), 1))));
+        $this->transaction()->run(
+            fn () => $this->stacks()->push($this->target, new StateReference('plans.working', new SubjectReference(TestIds::of(999), 1))),
+        );
 
-        $this->assertSame(['hooks.ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(
+            ['hooks.ready'],
+            array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()),
+        );
     }
 
     public function test_a_push_onto_another_agents_stack_is_refused(): void
@@ -342,14 +377,19 @@ final class AgentStacksTest extends TestCase
     private function otherConnection(): Connection
     {
         $config = $this->app->make('config');
-        $config->set('database.connections.hooks_other', $config->get('database.connections.'.$config->get('database.default')));
+        $config->set(
+            'database.connections.hooks_other',
+            $config->get('database.connections.'.$config->get('database.default')),
+        );
 
         return DB::connection('hooks_other');
     }
 
     private function insertStackThrough(Connection $connection, string $frameId, string $typeKey): void
     {
-        $frames = new FrameRecords([new FrameRecord($frameId, new StateReference($typeKey, NoSubject::None), true, 1, CarbonImmutable::now())]);
+        $frames = new FrameRecords(
+            [new FrameRecord($frameId, new StateReference($typeKey, NoSubject::None), true, 1, CarbonImmutable::now())],
+        );
 
         $connection->table('agent_stacks')->insert([
             'id' => strtolower((string) Str::ulid()),

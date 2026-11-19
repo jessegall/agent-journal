@@ -25,7 +25,9 @@ final class ShareReadRefused extends RuntimeException implements CodedRefusal, C
 
     public static function tooDeep(int $most): self
     {
-        return new self("A share can be followed at most {$most} steps from the shared record; start again from the shared link.");
+        return new self(
+            "A share can be followed at most {$most} steps from the shared record; start again from the shared link.",
+        );
     }
 
     public static function circular(): self

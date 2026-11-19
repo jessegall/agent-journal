@@ -88,7 +88,10 @@ final readonly class TableScan implements FileScan
         }
 
         if ($facade === self::SCHEMA && $method === 'rename') {
-            return [...self::tableArgument($file, $call, 0, TableType::Change), ...self::tableArgument($file, $call, 1, TableType::Create)];
+            return [
+                ...self::tableArgument($file, $call, 0, TableType::Change),
+                ...self::tableArgument($file, $call, 1, TableType::Create),
+            ];
         }
 
         if ($facade === self::SCHEMA && isset(self::SCHEMA_TYPES[$method])) {
@@ -113,7 +116,12 @@ final readonly class TableScan implements FileScan
             in_array($method, self::QUERY_TABLE_METHODS, true) => self::queryTable($file, $call),
             $method === 'setTable' => self::tableArgument($file, $call, 0, TableType::ModelTable),
             $method === 'constrained' => self::constrainedTable($file, $call),
-            $method === 'on' && self::followsReferences($call) => self::tableArgument($file, $call, 0, TableType::ForeignKey),
+            $method === 'on' && self::followsReferences($call) => self::tableArgument(
+                $file,
+                $call,
+                0,
+                TableType::ForeignKey,
+            ),
             isset(self::PIVOT_ARGUMENTS[$method]) => self::pivotTable($file, $call, self::PIVOT_ARGUMENTS[$method]),
             default => [],
         };
@@ -176,8 +184,12 @@ final readonly class TableScan implements FileScan
     /**
      * @return list<TableUse>
      */
-    private static function tableArgument(ParsedFile $file, MethodCall|StaticCall $call, int $position, TableType $type): array
-    {
+    private static function tableArgument(
+        ParsedFile $file,
+        MethodCall|StaticCall $call,
+        int $position,
+        TableType $type,
+    ): array {
         $table = self::argument($call, $position);
 
         if ($table === null) {

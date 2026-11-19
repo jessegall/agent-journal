@@ -57,7 +57,10 @@ final readonly class ProfilePermissionReader implements CommandPermissionResolve
             ?? throw ActorNotAllowed::withoutStoredAuthority('actor without a live session');
 
         try {
-            $profile = $this->profiles->admittedPin(ProfileKey::from($session->profile_key), $session->profile_revision);
+            $profile = $this->profiles->admittedPin(
+                ProfileKey::from($session->profile_key),
+                $session->profile_revision,
+            );
         } catch (ProfileRetired|ProfileMissing) {
             throw ActorNotAllowed::withoutStoredAuthority('agent whose profile is no longer admitted');
         }

@@ -31,7 +31,10 @@ final class SkillListCommand extends Command
             return self::FAILURE;
         }
 
-        $rows = array_map(fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'revision' => $skill->revision, 'digest' => $skill->rendered->digest], $skills);
+        $rows = array_map(
+            fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'revision' => $skill->revision, 'digest' => $skill->rendered->digest],
+            $skills,
+        );
 
         if ($this->option('json')) {
             $this->line(json_encode($rows, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));

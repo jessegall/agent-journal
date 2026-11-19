@@ -35,6 +35,8 @@ final class OctaneCommandBusTest extends CommandBusTestCase
         $second->run(new WriteNote('second request'));
 
         $this->assertNotSame($first, $second);
-        $log->shouldHaveReceived('info')->withArgs(fn (string $line, array $context) => $context['actor'] === 'agent:'.TestIds::of(9));
+        $log->shouldHaveReceived('info')->withArgs(
+            fn (string $line, array $context) => $context['actor'] === 'agent:'.TestIds::of(9),
+        );
     }
 }

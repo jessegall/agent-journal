@@ -31,7 +31,12 @@ final class StringScan
                 continue;
             }
 
-            $uses[] = new NameUse($file->path, $string->getStartLine(), ProjectRoots::withoutLeadingBackslash($string->value), NameType::String);
+            $uses[] = new NameUse(
+                $file->path,
+                $string->getStartLine(),
+                ProjectRoots::withoutLeadingBackslash($string->value),
+                NameType::String,
+            );
         }
 
         return $uses;

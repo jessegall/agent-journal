@@ -29,12 +29,25 @@ final readonly class ContainerManifest
     /**
      * The tmpfs folders a helper writes to, with their size in bytes.
      */
-    public const array TMPFS = ['/tmp' => 256 * 1024 * 1024, '/run/journal' => 16 * 1024 * 1024, '/home/journal' => 64 * 1024 * 1024];
+    public const array TMPFS = [
+        '/tmp' => 256 * 1024 * 1024,
+        '/run/journal' => 16 * 1024 * 1024,
+        '/home/journal' => 64 * 1024 * 1024,
+    ];
 
     /**
      * Host folders that hold accounts, credentials or host control; no mount may name them.
      */
-    private const array PROTECTED_SOURCES = ['/var/run/docker.sock', '/run/docker.sock', '/.ssh', '/.claude', '/.codex', '/.config', '/Library/Keychains', '/etc'];
+    private const array PROTECTED_SOURCES = [
+        '/var/run/docker.sock',
+        '/run/docker.sock',
+        '/.ssh',
+        '/.claude',
+        '/.codex',
+        '/.config',
+        '/Library/Keychains',
+        '/etc',
+    ];
 
     /**
      * @param  list<string>  $capabilities
@@ -71,7 +84,17 @@ final readonly class ContainerManifest
         $writable = $access->grants(AccessType::Edit, ResourceAreaType::Workspace);
         $mount = new ManifestMount($launch->workspace, self::WORKDIR, $writable);
 
-        return self::make((string) $policy->imageReference, self::USER, true, [], false, $network, [$mount], [], $policy->budgets);
+        return self::make(
+            (string) $policy->imageReference,
+            self::USER,
+            true,
+            [],
+            false,
+            $network,
+            [$mount],
+            [],
+            $policy->budgets,
+        );
     }
 
     /**
@@ -81,8 +104,17 @@ final readonly class ContainerManifest
      *
      * @throws ManifestRefused
      */
-    public static function make(string $image, string $user, bool $readOnlyRoot, array $capabilities, bool $privileged, string $network, array $mounts, array $publishedPorts, ExecutionBudgets $budgets): self
-    {
+    public static function make(
+        string $image,
+        string $user,
+        bool $readOnlyRoot,
+        array $capabilities,
+        bool $privileged,
+        string $network,
+        array $mounts,
+        array $publishedPorts,
+        ExecutionBudgets $budgets,
+    ): self {
         if (preg_match('/@sha256:[0-9a-f]{64}$/', $image) !== 1) {
             throw ManifestRefused::because("the image {$image} is not named by its digest");
         }
@@ -105,7 +137,20 @@ final readonly class ContainerManifest
 
         self::checkSource($mounts[0]->source);
 
-        return new self($image, $user, self::WORKDIR, true, [], true, self::SECCOMP, false, $network, $mounts, [], $budgets);
+        return new self(
+            $image,
+            $user,
+            self::WORKDIR,
+            true,
+            [],
+            true,
+            self::SECCOMP,
+            false,
+            $network,
+            $mounts,
+            [],
+            $budgets,
+        );
     }
 
     /**

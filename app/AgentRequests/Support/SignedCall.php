@@ -42,9 +42,22 @@ final readonly class SignedCall
      *
      * @throws CallFieldInvalid
      */
-    public static function signatureFor(string $token, string $method, string $url, string $callId, int $issuedAt, string $body): string
-    {
-        $fields = [self::PROTOCOL, strtoupper($method), self::targetOf($url), $callId, (string) $issuedAt, self::digestOf($body)];
+    public static function signatureFor(
+        string $token,
+        string $method,
+        string $url,
+        string $callId,
+        int $issuedAt,
+        string $body,
+    ): string {
+        $fields = [
+            self::PROTOCOL,
+            strtoupper($method),
+            self::targetOf($url),
+            $callId,
+            (string) $issuedAt,
+            self::digestOf($body),
+        ];
 
         return self::sign($token, $fields);
     }
@@ -64,7 +77,14 @@ final readonly class SignedCall
         string $body,
         LaunchProfilePin $profile,
     ): string {
-        $fields = [self::PROTOCOL, strtoupper($method), self::targetOf($url), $callId, (string) $issuedAt, self::digestOf($body)];
+        $fields = [
+            self::PROTOCOL,
+            strtoupper($method),
+            self::targetOf($url),
+            $callId,
+            (string) $issuedAt,
+            self::digestOf($body),
+        ];
 
         return self::sign($token, [...$fields, $profile->key, (string) $profile->revision]);
     }

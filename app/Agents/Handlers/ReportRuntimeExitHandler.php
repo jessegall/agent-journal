@@ -20,6 +20,9 @@ final readonly class ReportRuntimeExitHandler implements CommandHandler
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
         $session = AgentSession::query()->with(['credential', 'agent'])->findOrFail($runtime->agent_session_id);
 
-        $this->heartbeats->recordExit($session, new RuntimeExit($command->hostId, $command->processGeneration, $command->evidence));
+        $this->heartbeats->recordExit(
+            $session,
+            new RuntimeExit($command->hostId, $command->processGeneration, $command->evidence),
+        );
     }
 }

@@ -65,7 +65,9 @@ final class SettingsStoriesTest extends TestCase
     {
         parent::setUp();
 
-        $registry = DomainRegistry::from([ReviewsDomain::class, BooksDomain::class])->settingDeclarations(new CoreSettings());
+        $registry = DomainRegistry::from(
+            [ReviewsDomain::class, BooksDomain::class],
+        )->settingDeclarations(new CoreSettings());
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
         $this->commands = new RegisteredSettingCommands($registry);
@@ -119,8 +121,14 @@ final class SettingsStoriesTest extends TestCase
 
         $registry = SettingRegistry::from(['Core' => new CoreSettings(), 'First' => $first, 'Second' => $second]);
 
-        $this->assertSame(['First', 'retry_limit'], [$registry->ownerOf($first->retryLimit)->owner, $registry->ownerOf($first->retryLimit)->key]);
-        $this->assertSame(['Second', 'retry_limit'], [$registry->ownerOf($second->retryLimit)->owner, $registry->ownerOf($second->retryLimit)->key]);
+        $this->assertSame(
+            ['First', 'retry_limit'],
+            [$registry->ownerOf($first->retryLimit)->owner, $registry->ownerOf($first->retryLimit)->key],
+        );
+        $this->assertSame(
+            ['Second', 'retry_limit'],
+            [$registry->ownerOf($second->retryLimit)->owner, $registry->ownerOf($second->retryLimit)->key],
+        );
     }
 
     /**
@@ -162,7 +170,9 @@ final class SettingsStoriesTest extends TestCase
      */
     public function test_a_runtime_read_of_an_invalid_value_fails(): void
     {
-        $this->storeDirectly(fn (SettingsDocument $document) => $document->withSetting(new EncodedSetting('title', EncodedValue::of(42))));
+        $this->storeDirectly(
+            fn (SettingsDocument $document) => $document->withSetting(new EncodedSetting('title', EncodedValue::of(42))),
+        );
 
         $this->expectException(SettingStorageInvalid::class);
 
@@ -234,10 +244,14 @@ final class SettingsStoriesTest extends TestCase
      */
     public function test_an_unknown_stored_key_is_not_shown(): void
     {
-        $this->storeDirectly(fn (SettingsDocument $document) => $document->withSetting(new EncodedSetting('retired_key', EncodedValue::of('old'))));
+        $this->storeDirectly(
+            fn (SettingsDocument $document) => $document->withSetting(new EncodedSetting('retired_key', EncodedValue::of('old'))),
+        );
 
         $catalogue = $this->app->make(SettingsCatalogue::class)->owner('Reviews')->toArray();
-        $keys = array_merge(...array_map(fn (array $group) => array_column(array_column($group['settings'], 'identity'), 'key'), $catalogue['groups']));
+        $keys = array_merge(
+            ...array_map(fn (array $group) => array_column(array_column($group['settings'], 'identity'), 'key'), $catalogue['groups']),
+        );
 
         $this->assertNotContains('retired_key', $keys);
     }
@@ -247,7 +261,10 @@ final class SettingsStoriesTest extends TestCase
      */
     public function test_groups_past_the_limit_are_refused(): void
     {
-        $groups = array_map(fn (int $number) => SettingGroup::make("group_{$number}", "Group {$number}", [StringSetting::make("setting_{$number}", "Setting {$number}", 'x')]), range(1, SettingRegistry::GROUPS_PER_OWNER + 1));
+        $groups = array_map(
+            fn (int $number) => SettingGroup::make("group_{$number}", "Group {$number}", [StringSetting::make("setting_{$number}", "Setting {$number}", 'x')]),
+            range(1, SettingRegistry::GROUPS_PER_OWNER + 1),
+        );
 
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('more than '.SettingRegistry::GROUPS_PER_OWNER.' settings groups');
@@ -337,7 +354,10 @@ final class SettingsStoriesTest extends TestCase
     private function otherConnection(): Connection
     {
         $config = $this->app->make('config');
-        $config->set('database.connections.settings_other', $config->get('database.connections.'.$config->get('database.default')));
+        $config->set(
+            'database.connections.settings_other',
+            $config->get('database.connections.'.$config->get('database.default')),
+        );
 
         return DB::connection('settings_other');
     }

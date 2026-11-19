@@ -41,7 +41,12 @@ final class OutputChunk extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['stream' => OutputStream::class, 'offset' => 'integer', 'length' => 'integer', 'captured_at' => 'immutable_datetime'];
+        return [
+            'stream' => OutputStream::class,
+            'offset' => 'integer',
+            'length' => 'integer',
+            'captured_at' => 'immutable_datetime',
+        ];
     }
 
     /**

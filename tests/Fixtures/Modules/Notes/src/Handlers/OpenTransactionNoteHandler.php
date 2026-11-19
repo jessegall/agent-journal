@@ -15,6 +15,8 @@ final class OpenTransactionNoteHandler implements CommandHandler
     public function handle(OpenTransactionNote $command): int
     {
         // Opens its own transaction, which the bus refuses: the sample of story 75.
-        return (int) $this->database->transaction(fn () => $this->database->table('module_command_rows')->insertGetId(['text' => $command->text]));
+        return (int) $this->database->transaction(
+fn () => $this->database->table('module_command_rows')->insertGetId(['text' => $command->text]),
+);
     }
 }

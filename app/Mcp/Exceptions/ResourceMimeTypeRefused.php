@@ -13,6 +13,8 @@ final class ResourceMimeTypeRefused extends LogicException
 {
     public static function for(string $resource, string $mimeType): self
     {
-        return new self("The resource {$resource} declares {$mimeType}; a journal resource is application/json or text/markdown.");
+        return new self(
+            "The resource {$resource} declares {$mimeType}; a journal resource is application/json or text/markdown.",
+        );
     }
 }

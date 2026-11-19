@@ -22,13 +22,21 @@ final class ShellLexer
         if (AnalysisLimit::SourceBytes->isPassedBy(strlen($source))) {
             $tooLong = ShellLineUnreadable::pastLimit(AnalysisLimit::SourceBytes, AnalysisLimit::SourceBytes->value);
 
-            return new LexedLine(ParseOutcome::LimitExceeded, [], new TreeDiagnostic($tooLong->position, $tooLong->getMessage()));
+            return new LexedLine(
+                ParseOutcome::LimitExceeded,
+                [],
+                new TreeDiagnostic($tooLong->position, $tooLong->getMessage()),
+            );
         }
 
         try {
             return new LexedLine(ParseOutcome::Complete, new LexerScan($source, $dialect, new TimeBudget())->tokens());
         } catch (ShellLineUnreadable $unreadable) {
-            return new LexedLine($unreadable->isLimit ? ParseOutcome::LimitExceeded : ParseOutcome::Invalid, [], new TreeDiagnostic($unreadable->position, $unreadable->getMessage()));
+            return new LexedLine(
+                $unreadable->isLimit ? ParseOutcome::LimitExceeded : ParseOutcome::Invalid,
+                [],
+                new TreeDiagnostic($unreadable->position, $unreadable->getMessage()),
+            );
         }
     }
 }

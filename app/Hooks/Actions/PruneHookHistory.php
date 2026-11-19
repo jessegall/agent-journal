@@ -31,8 +31,12 @@ final readonly class PruneHookHistory
         $now = CarbonImmutable::now();
 
         return new PrunedHistory(
-            $this->deleteInBatches(fn () => HookCall::query()->prunableBefore($now->subDays($this->periods->hookCallDays))),
-            $this->deleteInBatches(fn () => AgentStackRow::query()->prunableBefore($now->subDays($this->periods->closedStackDays))),
+            $this->deleteInBatches(
+                fn () => HookCall::query()->prunableBefore($now->subDays($this->periods->hookCallDays)),
+            ),
+            $this->deleteInBatches(
+                fn () => AgentStackRow::query()->prunableBefore($now->subDays($this->periods->closedStackDays)),
+            ),
         );
     }
 

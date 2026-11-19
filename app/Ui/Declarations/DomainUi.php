@@ -54,8 +54,14 @@ final readonly class DomainUi
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
      */
-    public static function declaring(string $name, string $namespace, string $scriptFolder, array $pages = [], array $navigation = [], array $sections = []): self
-    {
+    public static function declaring(
+        string $name,
+        string $namespace,
+        string $scriptFolder,
+        array $pages = [],
+        array $navigation = [],
+        array $sections = [],
+    ): self {
         return new self(
             name: $name,
             key: Str::kebab($name),

@@ -38,6 +38,10 @@ final class ShellGrammarStopped extends RuntimeException
 
     public static function pastLimit(AnalysisLimit $limit, int $position): self
     {
-        return new self("The line is past the analysis limit of {$limit->label()}.", $position, ParseOutcome::LimitExceeded);
+        return new self(
+            "The line is past the analysis limit of {$limit->label()}.",
+            $position,
+            ParseOutcome::LimitExceeded,
+        );
     }
 }

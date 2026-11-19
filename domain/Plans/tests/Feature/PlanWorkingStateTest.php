@@ -43,19 +43,28 @@ final class PlanWorkingStateTest extends TestCase
     public function test_an_agent_starting_a_plan_gets_its_working_frame_once(): void
     {
         $plan = $this->plan();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), TestLaunchAuthority::forAgent(TestIds::of(1)));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(1)),
+            TestLaunchAuthority::forAgent(TestIds::of(1)),
+        );
 
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
 
         $this->assertSame([WorkingOnPlanStateReference::TYPE_KEY], $this->frameTypes());
-        $this->assertSame($plan->id, $this->app->make(CurrentState::class)->of($this->target, WorkingOnPlanStateReference::TYPE_KEY)->get()->subject->id);
+        $this->assertSame(
+            $plan->id,
+            $this->app->make(CurrentState::class)->of($this->target, WorkingOnPlanStateReference::TYPE_KEY)->get()->subject->id,
+        );
     }
 
     public function test_a_user_starting_a_plan_changes_no_stack(): void
     {
         $plan = $this->plan();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
 
         $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
 
@@ -97,7 +106,10 @@ final class PlanWorkingStateTest extends TestCase
      */
     private function frameTypes(): array
     {
-        $frames = array_filter(AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(), fn (FrameRecord $frame) => ! $frame->isBottom);
+        $frames = array_filter(
+            AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(),
+            fn (FrameRecord $frame) => ! $frame->isBottom,
+        );
 
         return array_values(array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $frames));
     }

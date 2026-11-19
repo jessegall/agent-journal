@@ -11,5 +11,10 @@ use App\Processes\Values\ExecutionContext;
  */
 final readonly class BuiltinResult
 {
-    public function __construct(public int $status, public ExecutionContext $context, public string $stdout = '', public string $stderr = '') {}
+    public function __construct(
+        public int $status,
+        public ExecutionContext $context,
+        public string $stdout = '',
+        public string $stderr = '',
+    ) {}
 }

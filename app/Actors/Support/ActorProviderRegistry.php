@@ -138,7 +138,9 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
     public function readAcrossOwners(Builder $query, string $ownerScope): void
     {
         $type = $this->container->make(CurrentActor::class)->actor()->actorType();
-        $providerClass = $this->visibilityProviders[$type->value] ?? throw CrossOwnerReadRefused::forActor($type->value);
+        $providerClass = $this->visibilityProviders[$type->value] ?? throw CrossOwnerReadRefused::forActor(
+            $type->value,
+        );
 
         $this->container->make($providerClass)->readAcrossOwners($query, $ownerScope);
     }

@@ -13,5 +13,10 @@ use Carbon\CarbonImmutable;
  */
 final readonly class CapturedChunk
 {
-    public function __construct(public PartRun $part, public OutputStream $stream, public string $bytes, public CarbonImmutable $capturedAt) {}
+    public function __construct(
+        public PartRun $part,
+        public OutputStream $stream,
+        public string $bytes,
+        public CarbonImmutable $capturedAt,
+    ) {}
 }

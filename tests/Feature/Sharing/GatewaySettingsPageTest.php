@@ -28,12 +28,26 @@ use Tests\TestCase;
  * fields that are never shown again, makes a ready gateway the default, and disables one after seeing the shares it
  * revokes. Anyone else sees none of it.
  */
-#[TimeLimit(seconds: 10, reason: 'It renders pages and commits gateway revisions, and empties eight tables around each test.')]
+#[TimeLimit(
+    seconds: 10,
+    reason: 'It renders pages and commits gateway revisions, and empties eight tables around each test.',
+)]
 final class GatewaySettingsPageTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations', 'users', 'number_groups'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_gateway_endpoints',
+        'share_gateway_configurations',
+        'share_installations',
+        'users',
+        'number_groups',
+    ];
 
     private const string SECRET = 'tunler-login-secret-bytes';
 
@@ -48,7 +62,9 @@ final class GatewaySettingsPageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->secretsFolder = sys_get_temp_dir().'/sharing-secrets-'.Str::lower((string) Str::ulid());
-        config(['sharing.secrets_dir' => $this->secretsFolder, 'sharing.tunler.binary' => '/nonexistent/tunler', 'sharing.ngrok.binary' => '/nonexistent/ngrok']);
+        config(
+            ['sharing.secrets_dir' => $this->secretsFolder, 'sharing.tunler.binary' => '/nonexistent/tunler', 'sharing.ngrok.binary' => '/nonexistent/ngrok'],
+        );
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
     }
 
@@ -65,10 +81,16 @@ final class GatewaySettingsPageTest extends TestCase
 
     public function test_the_owner_configures_tunler_and_ngrok_and_sees_why_each_is_not_ready(): void
     {
-        $this->configure('tunler', 'https://journal.tunler.test', [['name' => 'tunler-login', 'value' => self::SECRET]])->assertStatus(303);
+        $this->configure(
+            'tunler',
+            'https://journal.tunler.test',
+            [['name' => 'tunler-login', 'value' => self::SECRET]],
+        )->assertStatus(303);
         $this->configure('ngrok', 'https://journal.ngrok.test', [])->assertStatus(303);
 
-        $page = $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $page = $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page
             ->component('sharing/GatewaySettingsWindow')
             ->where('page.data.isOffline', true)
             ->has('page.data.revisions', 2)
@@ -79,7 +101,10 @@ final class GatewaySettingsPageTest extends TestCase
 
         $this->assertContains('tunler', $page->viewData('page')['props']['page']['data']['gatewayKeys']);
         $this->assertStringNotContainsString(self::SECRET, (string) $page->getContent());
-        $this->assertStringNotContainsString(self::SECRET, (string) json_encode(ShareGatewayConfiguration::query()->readAll('two revisions')->get()->map->getAttributes()->all()));
+        $this->assertStringNotContainsString(
+            self::SECRET,
+            (string) json_encode(ShareGatewayConfiguration::query()->readAll('two revisions')->get()->map->getAttributes()->all()),
+        );
         $this->assertSame(self::SECRET, file_get_contents("{$this->secretsFolder}/tunler-login"));
     }
 
@@ -90,16 +115,27 @@ final class GatewaySettingsPageTest extends TestCase
 
         $this->write('post', "/sharing/gateways/{$first->id}/default")->assertStatus(303);
 
-        $this->assertSame([2], ShareGatewayConfiguration::query()->where('is_default', true)->pluck('configuration_version')->all());
+        $this->assertSame(
+            [2],
+            ShareGatewayConfiguration::query()->where('is_default', true)->pluck('configuration_version')->all(),
+        );
     }
 
     public function test_the_owner_sees_the_shares_a_disable_revokes_and_then_disables(): void
     {
         $this->configure(FakeShareGateway::KEY, FakeShareGateway::PUBLIC_ORIGIN, [])->assertStatus(303);
         $configuration = ShareGatewayConfiguration::query()->sole();
-        $share = Share::grant(TestActors::record('binders.binder', 1), $this->owner->id, $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $share = Share::grant(
+            TestActors::record('binders.binder', 1),
+            $this->owner->id,
+            $configuration,
+            ShareToken::generate(),
+            CarbonImmutable::now()->addDay(),
+        );
 
-        $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (
+            AssertableInertia $page,
+        ) => $page
             ->where('page.data.revisions.0.dependentShares.0.id', $share->id));
         $this->write('delete', "/sharing/gateways/{$configuration->id}")->assertStatus(303);
 
@@ -109,11 +145,16 @@ final class GatewaySettingsPageTest extends TestCase
 
     public function test_a_write_without_an_idempotency_key_and_another_user_are_refused(): void
     {
-        $this->actingAs($this->owner)->postJson('/sharing/gateways', $this->settings('ngrok', 'https://journal.ngrok.test', []))->assertUnprocessable();
+        $this->actingAs($this->owner)->postJson(
+            '/sharing/gateways',
+            $this->settings('ngrok', 'https://journal.ngrok.test', []),
+        )->assertUnprocessable();
         $other = User::factory()->create();
 
         $this->assertFalse($this->actingAs($other)->get('/sharing/gateways')->isOk());
-        $this->assertFalse($this->actingAs($other)->post('/sharing/gateways', $this->settings('ngrok', 'https://journal.ngrok.test', []), ['Idempotency-Key' => (string) Str::ulid()])->isSuccessful());
+        $this->assertFalse(
+            $this->actingAs($other)->post('/sharing/gateways', $this->settings('ngrok', 'https://journal.ngrok.test', []), ['Idempotency-Key' => (string) Str::ulid()])->isSuccessful(),
+        );
         $this->assertSame(0, ShareGatewayConfiguration::query()->count());
     }
 
@@ -123,7 +164,11 @@ final class GatewaySettingsPageTest extends TestCase
      */
     private function configure(string $gatewayKey, string $origin, array $secrets): TestResponse
     {
-        return $this->actingAs($this->owner)->post('/sharing/gateways', $this->settings($gatewayKey, $origin, $secrets), ['Idempotency-Key' => (string) Str::ulid()]);
+        return $this->actingAs($this->owner)->post(
+            '/sharing/gateways',
+            $this->settings($gatewayKey, $origin, $secrets),
+            ['Idempotency-Key' => (string) Str::ulid()],
+        );
     }
 
     /**
@@ -132,7 +177,15 @@ final class GatewaySettingsPageTest extends TestCase
      */
     private function settings(string $gatewayKey, string $origin, array $secrets): array
     {
-        return ['gatewayKey' => $gatewayKey, 'executableVersion' => '1.0.0', 'providerHost' => 'provider.test', 'publicOrigin' => $origin, 'listenerPort' => 8100, 'secrets' => $secrets, 'makeDefault' => false];
+        return [
+            'gatewayKey' => $gatewayKey,
+            'executableVersion' => '1.0.0',
+            'providerHost' => 'provider.test',
+            'publicOrigin' => $origin,
+            'listenerPort' => 8100,
+            'secrets' => $secrets,
+            'makeDefault' => false,
+        ];
     }
 
     /**

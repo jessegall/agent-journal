@@ -38,7 +38,9 @@ final readonly class SharePreviewResolver implements PageResolver
     {
         $root = $this->request->shareRoot($this->records);
         $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
-        $approved = Share::liveFor($root)->map(fn (Share $share) => ShareMember::approvedLinkIdsOf($share))->getOrElse([]);
+        $approved = Share::liveFor($root)->map(
+            fn (Share $share) => ShareMember::approvedLinkIdsOf($share),
+        )->getOrElse([]);
         $saved = SharePreview::openFor($this->actors->actor()->actorId(), $root);
 
         return SharePreviewData::from([

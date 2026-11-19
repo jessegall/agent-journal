@@ -88,7 +88,9 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public function makeDefault(): void
     {
-        self::query()->markedDefault()->whereKeyNot($this->id)->lockForUpdate()->readAll('at most one configuration is the default')->get();
+        self::query()->markedDefault()->whereKeyNot(
+            $this->id,
+        )->lockForUpdate()->readAll('at most one configuration is the default')->get();
         self::query()->markedDefault()->whereKeyNot($this->id)->update(['is_default' => false]);
         $this->is_default = true;
         $this->save();
@@ -129,7 +131,9 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function allRevisions(): array
     {
-        return array_values(self::query()->orderByDesc('id')->readAll('an installation keeps a handful of gateway revisions')->get()->all());
+        return array_values(
+            self::query()->orderByDesc('id')->readAll('an installation keeps a handful of gateway revisions')->get()->all(),
+        );
     }
 
     public function isDisabled(): bool
@@ -165,7 +169,10 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function gatewayKeysOf(array $ids): array
     {
-        return array_map(strval(...), self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->pluck('gateway_key', 'id')->all());
+        return array_map(
+            strval(...),
+            self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->pluck('gateway_key', 'id')->all(),
+        );
     }
 
     /**
@@ -200,7 +207,12 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public function changedEvent(): ShareGatewayChanged
     {
-        return new ShareGatewayChanged($this->id, $this->configuration_version, $this->isDisabled(), CarbonImmutable::now());
+        return new ShareGatewayChanged(
+            $this->id,
+            $this->configuration_version,
+            $this->isDisabled(),
+            CarbonImmutable::now(),
+        );
     }
 
     public function toConfiguration(): GatewayConfiguration

@@ -51,7 +51,11 @@ final class WordBuilder
     private function endLiteral(int $position): void
     {
         if ($this->literal !== null) {
-            $this->segments[] = new WordSegment(WordSegmentType::Literal, $this->literal, new SourceRange($this->literalStart, $position));
+            $this->segments[] = new WordSegment(
+                WordSegmentType::Literal,
+                $this->literal,
+                new SourceRange($this->literalStart, $position),
+            );
         }
         $this->literal = null;
     }

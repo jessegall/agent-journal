@@ -38,7 +38,10 @@ final class TestLaunchAuthority
 
     public static function of(ProfileBase|null $base = null): LaunchProfileAuthority
     {
-        return self::granting($base ?? ProfileBase::mainAgent(), Container::getInstance()->make(PolicyCatalogue::class)->grantable());
+        return self::granting(
+            $base ?? ProfileBase::mainAgent(),
+            Container::getInstance()->make(PolicyCatalogue::class)->grantable(),
+        );
     }
 
     /**

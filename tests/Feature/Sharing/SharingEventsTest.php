@@ -45,7 +45,17 @@ final class SharingEventsTest extends TestCase
     use CommitsHookRows;
     use RunsTrustedCommands;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations', 'number_groups'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_gateway_endpoints',
+        'share_gateway_configurations',
+        'share_installations',
+        'number_groups',
+    ];
 
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -90,15 +100,27 @@ final class SharingEventsTest extends TestCase
     {
         $claim = $this->asSystem(new ClaimGatewayOperation(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
-        $outcome = new RecordGatewayOutcome(self::RUN, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, GatewayOutcome::Succeeded);
+        $outcome = new RecordGatewayOutcome(
+            self::RUN,
+            $claim->operation->operationId,
+            $claim->operation->endpointVersion,
+            $claim->operation->leaseToken,
+            GatewayOutcome::Succeeded,
+        );
 
         $this->asSystem($outcome);
         $this->asSystem($outcome);
 
         $this->assertCount(1, $this->heard);
         $this->assertInstanceOf(ShareActivated::class, $this->heard[0]);
-        $this->assertSame([$this->share->id, $this->configuration->id, ShareState::Active, Share::FIRST_SCOPE_VERSION], [$this->heard[0]->share->shareId, $this->heard[0]->share->configurationId, $this->heard[0]->share->state, $this->heard[0]->share->scopeVersion]);
-        $this->assertStringNotContainsString((string) $this->share->fresh()?->token_ciphertext, serialize($this->heard[0]));
+        $this->assertSame(
+            [$this->share->id, $this->configuration->id, ShareState::Active, Share::FIRST_SCOPE_VERSION],
+            [$this->heard[0]->share->shareId, $this->heard[0]->share->configurationId, $this->heard[0]->share->state, $this->heard[0]->share->scopeVersion],
+        );
+        $this->assertStringNotContainsString(
+            (string) $this->share->fresh()?->token_ciphertext,
+            serialize($this->heard[0]),
+        );
     }
 
     public function test_a_rolled_back_revoke_raises_nothing_and_a_second_revoke_raises_nothing(): void
@@ -107,7 +129,11 @@ final class SharingEventsTest extends TestCase
         $database->unprepared(self::REFUSE_DISABLED_AUDIT);
 
         try {
-            $this->assertThrows(fn () => $this->asOwner(new DisableShareGateway($this->configuration->id, (string) Str::ulid())), QueryException::class, 'refused for the test');
+            $this->assertThrows(
+                fn () => $this->asOwner(new DisableShareGateway($this->configuration->id, (string) Str::ulid())),
+                QueryException::class,
+                'refused for the test',
+            );
         } finally {
             $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION refuse_disabled_audit();');
         }

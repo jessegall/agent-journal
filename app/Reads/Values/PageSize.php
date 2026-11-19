@@ -24,7 +24,9 @@ final readonly class PageSize
         $maximum = (int) $config->get('reads.page_max', 100);
 
         if ($requested < 1 || $requested > $maximum) {
-            throw ValidationException::withMessages(['per_page' => "A page shows 1 to {$maximum} rows, not {$requested}."]);
+            throw ValidationException::withMessages(
+                ['per_page' => "A page shows 1 to {$maximum} rows, not {$requested}."],
+            );
         }
 
         return new self($requested);

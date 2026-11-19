@@ -150,7 +150,10 @@ final class ReaderProposalTest extends TestCase
 
     private function sampleRun(): ProcessRun
     {
-        $run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), TestRunAdmissions::of(admissionId: 'sample', mode: RunMode::Evidence, projectKey: $this->request->project_key));
+        $run = ProcessRun::admit(
+            new ActorIdentity(ActorType::Agent, $this->launch->agent->id),
+            TestRunAdmissions::of(admissionId: 'sample', mode: RunMode::Evidence, projectKey: $this->request->project_key),
+        );
         $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
         $part->start(1, 'host');
         $recorder = $this->app->make(SpoolRecorder::class);

@@ -23,7 +23,12 @@ final readonly class PlanProgress
 
     public function plus(self $other): self
     {
-        return new self($this->done + $other->done, $this->started + $other->started, $this->blocked + $other->blocked, $this->total + $other->total);
+        return new self(
+            $this->done + $other->done,
+            $this->started + $other->started,
+            $this->blocked + $other->blocked,
+            $this->total + $other->total,
+        );
     }
 
     public function isComplete(): bool

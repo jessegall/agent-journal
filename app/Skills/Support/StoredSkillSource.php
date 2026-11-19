@@ -26,7 +26,11 @@ final readonly class StoredSkillSource implements SkillSource
         $revisions = SkillRevision::currentOfEach($skills);
 
         return array_values(array_map(
-            fn (Skill $skill) => new StoredSkill($skill->key, $revisions[$skill->id], $revisions[$skill->id]->conditionThrough($this->conditions)),
+            fn (Skill $skill) => new StoredSkill(
+                $skill->key,
+                $revisions[$skill->id],
+                $revisions[$skill->id]->conditionThrough($this->conditions),
+            ),
             array_filter($skills, fn (Skill $skill) => array_key_exists($skill->id, $revisions)),
         ));
     }

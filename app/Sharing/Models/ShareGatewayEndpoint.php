@@ -88,7 +88,9 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     public static function lockRunningOf(ShareGatewayConfiguration $configuration, string $runId): Option
     {
-        return Option::fromValue(self::query()->ofConfiguration($configuration->id)->ofRun($runId)->stillRunning()->orderByDesc('endpoint_version')->lockForUpdate()->first());
+        return Option::fromValue(
+            self::query()->ofConfiguration($configuration->id)->ofRun($runId)->stillRunning()->orderByDesc('endpoint_version')->lockForUpdate()->first(),
+        );
     }
 
     /**
@@ -98,7 +100,9 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     public static function newestRunningOf(ShareGatewayConfiguration $configuration): Option
     {
-        return Option::fromValue(self::query()->ofConfiguration($configuration->id)->stillRunning()->orderByDesc('endpoint_version')->first());
+        return Option::fromValue(
+            self::query()->ofConfiguration($configuration->id)->stillRunning()->orderByDesc('endpoint_version')->first(),
+        );
     }
 
     /**
@@ -108,7 +112,9 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     public static function openOfRun(string $runId): array
     {
-        return array_values(self::query()->ofRun($runId)->where('state', GatewayEndpointState::Open->value)->orderBy('id')->readLimit(Share::MOST_LIVE)->get()->all());
+        return array_values(
+            self::query()->ofRun($runId)->where('state', GatewayEndpointState::Open->value)->orderBy('id')->readLimit(Share::MOST_LIVE)->get()->all(),
+        );
     }
 
     /**
@@ -124,7 +130,12 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     public function toGatewayEndpoint(): GatewayEndpoint
     {
-        return new GatewayEndpoint($this->run_id, $this->endpoint_version, $this->public_origin, GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version));
+        return new GatewayEndpoint(
+            $this->run_id,
+            $this->endpoint_version,
+            $this->public_origin,
+            GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version),
+        );
     }
 
     /**
@@ -132,7 +143,9 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     public function isHealthy(): bool
     {
-        return $this->last_health_at !== null && $this->last_health_at->isAfter(CarbonImmutable::now()->subSeconds(self::HEALTHY_SECONDS));
+        return $this->last_health_at !== null && $this->last_health_at->isAfter(
+            CarbonImmutable::now()->subSeconds(self::HEALTHY_SECONDS),
+        );
     }
 
     /**
@@ -169,7 +182,10 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     public static function lockHeldBy(string $configurationId, int $endpointVersion, string $runId): self
     {
-        return self::query()->ofConfiguration($configurationId)->where('endpoint_version', $endpointVersion)->ofRun($runId)->lockForUpdate()->first()
+        return self::query()->ofConfiguration($configurationId)->where(
+            'endpoint_version',
+            $endpointVersion,
+        )->ofRun($runId)->lockForUpdate()->first()
             ?? throw GatewayLeaseRefused::forEndpoint($configurationId, $endpointVersion);
     }
 

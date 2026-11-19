@@ -25,8 +25,16 @@ trait AssertsReadBudget
         $budget = $attributes[0]->newInstance();
         $counts = $this->readCounts($call);
 
-        $this->assertLessThanOrEqual($budget->queries, $counts->queriesRun, "{$method[0]}::{$method[1]} ran more queries than its budget.");
-        $this->assertLessThanOrEqual($budget->models, $counts->modelsLoaded, "{$method[0]}::{$method[1]} loaded more models than its budget.");
+        $this->assertLessThanOrEqual(
+            $budget->queries,
+            $counts->queriesRun,
+            "{$method[0]}::{$method[1]} ran more queries than its budget.",
+        );
+        $this->assertLessThanOrEqual(
+            $budget->models,
+            $counts->modelsLoaded,
+            "{$method[0]}::{$method[1]} loaded more models than its budget.",
+        );
     }
 
     /**

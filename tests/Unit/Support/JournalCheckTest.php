@@ -44,13 +44,19 @@ final class JournalCheckTest extends TestCase
      */
     public static function dirtyTrees(): iterable
     {
-        yield 'an edited tracked file' => [fn (self $test) => $test->write('notes.md', 'changed'), 'Changed and not committed: notes.md'];
+        yield 'an edited tracked file' => [
+            fn (self $test) => $test->write('notes.md', 'changed'),
+            'Changed and not committed: notes.md',
+        ];
         yield 'an untracked file' => [fn (self $test) => $test->write('new.md', 'new'), 'Untracked: new.md'];
         yield 'a staged change' => [function (self $test): void {
             $test->write('notes.md', 'staged');
             $test->git('add', 'notes.md');
         }, 'Staged but not committed: notes.md'];
-        yield 'a skip-worktree file' => [fn (self $test) => $test->git('update-index', '--skip-worktree', 'notes.md'), 'Marked skip-worktree or assume-unchanged: notes.md'];
+        yield 'a skip-worktree file' => [
+            fn (self $test) => $test->git('update-index', '--skip-worktree', 'notes.md'),
+            'Marked skip-worktree or assume-unchanged: notes.md',
+        ];
         yield 'a detached head' => [fn (self $test) => $test->git('checkout', '--detach'), 'HEAD is detached'];
         yield 'a dirty submodule' => [function (self $test): void {
             $inner = $test->newRepository();
@@ -76,7 +82,11 @@ final class JournalCheckTest extends TestCase
 
     public function test_an_argument_is_refused_so_the_workspace_never_comes_from_the_caller(): void
     {
-        $process = new Process([PHP_BINARY, $this->executable(), 'worktree-clean', '/somewhere/else'], null, ['JOURNAL_CHECK_WORKSPACE' => $this->repository]);
+        $process = new Process(
+            [PHP_BINARY, $this->executable(), 'worktree-clean', '/somewhere/else'],
+            null,
+            ['JOURNAL_CHECK_WORKSPACE' => $this->repository],
+        );
         $process->run();
 
         $this->assertSame(2, $process->getExitCode());
@@ -106,7 +116,9 @@ final class JournalCheckTest extends TestCase
 
     private function gitIn(string $repository, string ...$arguments): void
     {
-        $process = new Process(['git', '-C', $repository, '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', ...$arguments]);
+        $process = new Process(
+            ['git', '-C', $repository, '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', ...$arguments],
+        );
         $process->mustRun();
     }
 
@@ -115,7 +127,11 @@ final class JournalCheckTest extends TestCase
      */
     private function check(): array
     {
-        $process = new Process([PHP_BINARY, $this->executable(), 'worktree-clean'], null, ['JOURNAL_CHECK_WORKSPACE' => $this->repository]);
+        $process = new Process(
+            [PHP_BINARY, $this->executable(), 'worktree-clean'],
+            null,
+            ['JOURNAL_CHECK_WORKSPACE' => $this->repository],
+        );
         $process->run();
 
         return [$process->getExitCode(), $process->getOutput()];

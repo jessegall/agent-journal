@@ -20,7 +20,9 @@ final readonly class SaveDraftPageController
     public function __invoke(DraftPageRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
         $saved = $commands->run(new ChangeDocumentDetails($request->target(), $request->title(), $request->abstract()));
-        $commands->run(new ReplaceDocumentBody(new DraftTarget($saved->documentNumber, $saved->token, $saved->version), $request->body()));
+        $commands->run(
+            new ReplaceDocumentBody(new DraftTarget($saved->documentNumber, $saved->token, $saved->version), $request->body()),
+        );
 
         return $redirect->back(303);
     }

@@ -58,26 +58,42 @@ final class DomainSwitchesTest extends TestCase
         $this->assertContains('domain_tasks', $keys);
         $this->assertContains('domain_plans', $keys);
         $this->assertNotContains('domain_access', $keys);
-        $this->assertSame([true], array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->defaultEnabled, $switches))));
-        $this->assertSame([[]], array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->settings, $switches), SORT_REGULAR)));
-        $this->assertSame($this->app->make(DomainSwitches::class)->of('Plans')->get(), $switches[array_search('domain_plans', $keys, true)]);
+        $this->assertSame(
+            [true],
+            array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->defaultEnabled, $switches))),
+        );
+        $this->assertSame(
+            [[]],
+            array_values(array_unique(array_map(fn (ToggleGroup $group) => $group->settings, $switches), SORT_REGULAR)),
+        );
+        $this->assertSame(
+            $this->app->make(DomainSwitches::class)->of('Plans')->get(),
+            $switches[array_search('domain_plans', $keys, true)],
+        );
         $this->assertTrue($this->app->make(DomainSwitches::class)->of('Access')->isEmpty());
     }
 
     public function test_the_owner_switches_a_domain_off_with_the_ordinary_group_command(): void
     {
-        $change = $this->app->make(CommandBus::class)->run(new DisableSettingGroup(new GroupReference('Core', 'domain_plans'), 0));
+        $change = $this->app->make(CommandBus::class)->run(
+            new DisableSettingGroup(new GroupReference('Core', 'domain_plans'), 0),
+        );
 
         $this->assertSame([1, SettingsOutcome::Changed], [$change->revision, $change->outcome]);
         $this->app->forgetScopedInstances();
-        $this->assertInstanceOf(DisabledSettingsGroup::class, $this->app->make(SettingsResolver::class)->group($this->app->make(DomainSwitches::class)->of('Plans')->get()));
+        $this->assertInstanceOf(
+            DisabledSettingsGroup::class,
+            $this->app->make(SettingsResolver::class)->group($this->app->make(DomainSwitches::class)->of('Plans')->get()),
+        );
     }
 
     public function test_access_has_no_switch(): void
     {
         $this->expectException(SettingUnavailable::class);
 
-        $this->app->make(CommandBus::class)->run(new DisableSettingGroup(new GroupReference('Core', 'domain_access'), 0));
+        $this->app->make(CommandBus::class)->run(
+            new DisableSettingGroup(new GroupReference('Core', 'domain_access'), 0),
+        );
     }
 
     public function test_core_settings_still_read_and_change_while_a_domain_is_off(): void

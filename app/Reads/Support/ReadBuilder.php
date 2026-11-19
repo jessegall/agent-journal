@@ -243,7 +243,10 @@ class ReadBuilder extends Builder
         $pageMax = (int) Container::getInstance()->make('config')->get('reads.page_max', 100);
 
         $query->limit = match ($this->mode) {
-            ReadMode::Limited => $query->limit === null ? $this->namedLimit : min((int) $query->limit, (int) $this->namedLimit),
+            ReadMode::Limited => $query->limit === null ? $this->namedLimit : min(
+                (int) $query->limit,
+                (int) $this->namedLimit,
+            ),
             ReadMode::Unbounded, ReadMode::Chunked => $query->limit,
             ReadMode::Default => $query->limit ?? $this->defaultLimit(),
         };
@@ -285,7 +288,11 @@ class ReadBuilder extends Builder
         }
 
         $orderedColumns = array_column($orders, 'column');
-        $ordersByKey = in_array($key, $orderedColumns, true) || in_array($this->model->getKeyName(), $orderedColumns, true);
+        $ordersByKey = in_array($key, $orderedColumns, true) || in_array(
+            $this->model->getKeyName(),
+            $orderedColumns,
+            true,
+        );
 
         if ($orders !== [] && ! $ordersByKey) {
             $query->orderBy($key);
@@ -302,6 +309,9 @@ class ReadBuilder extends Builder
 
     private function defaultLimit(): int
     {
-        return $this->model instanceof ReadableModel ? $this->model->defaultReadLimit() : (int) Container::getInstance()->make('config')->get('reads.default_limit', 50);
+        return $this->model instanceof ReadableModel ? $this->model->defaultReadLimit() : (int) Container::getInstance()->make('config')->get(
+            'reads.default_limit',
+            50,
+        );
     }
 }

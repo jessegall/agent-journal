@@ -71,14 +71,20 @@ final class SessionSkillsTest extends TestCase
         $session = $this->launchedMainAgent();
         $this->assertNotContains('user-probe', $this->latestKeys($session));
 
-        $this->artisan('skill:make', ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n", '--ability' => [AssignmentPolicy::class.':dispatch']])
+        $this->artisan(
+            'skill:make',
+            ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n", '--ability' => [AssignmentPolicy::class.':dispatch']],
+        )
             ->assertSuccessful();
         $reminders = $this->boundary($session);
 
         $this->assertContains('user-probe', $this->latestKeys($session));
         $this->assertStringContainsString('start a new session', implode("\n", $reminders->all()));
 
-        $this->artisan('skill:edit', ['number' => 'user-probe', '--expected-revision' => 1, '--base' => ['read-only-helper']])
+        $this->artisan(
+            'skill:edit',
+            ['number' => 'user-probe', '--expected-revision' => 1, '--base' => ['read-only-helper']],
+        )
             ->assertSuccessful();
         $this->boundary($session);
 
@@ -91,7 +97,10 @@ final class SessionSkillsTest extends TestCase
         $this->boundary($session);
         $this->assertSame([], $this->stack->pushed);
 
-        $this->artisan('skill:make', ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n"])->assertSuccessful();
+        $this->artisan(
+            'skill:make',
+            ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n"],
+        )->assertSuccessful();
         $this->boundary($session);
 
         $this->assertCount(1, $this->stack->pushed);

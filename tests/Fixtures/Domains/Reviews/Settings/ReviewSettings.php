@@ -65,8 +65,18 @@ final class ReviewSettings implements SettingsDefinition
             Choice::make('long', 'Long'),
         ]);
         $this->reviewMode = EnumSetting::make('review_mode', 'Review mode', ReviewMode::class, ReviewMode::Quick);
-        $this->reviewLevel = EnumSetting::make('review_level', 'Review level', ReviewLevel::class, ReviewLevel::FirstPass);
-        $this->review = ToggleGroup::make('review', 'Review', true, [$this->retryLimit, $this->notifyOwner, $this->weight, $this->summaryStyle, $this->reviewMode, $this->reviewLevel]);
+        $this->reviewLevel = EnumSetting::make(
+'review_level',
+ 'Review level',
+ ReviewLevel::class,
+ ReviewLevel::FirstPass,
+);
+        $this->review = ToggleGroup::make(
+'review',
+ 'Review',
+ true,
+ [$this->retryLimit, $this->notifyOwner, $this->weight, $this->summaryStyle, $this->reviewMode, $this->reviewLevel],
+);
         $this->title = StringSetting::make('title', 'Title', 'Reviews', minimumLength: 1);
         $this->priority = ChoiceSetting::make('priority', 'Priority', 0, [
             Choice::make(0, 'Normal'),

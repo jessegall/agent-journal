@@ -95,7 +95,11 @@ final class ShareInstallation extends Model implements ReadableModel
      */
     public static function hasLiveRun(): bool
     {
-        return self::query()->named(self::NAME)->whereNotNull('run_id')->where('run_lease_ends_at', '>', CarbonImmutable::now())->exists();
+        return self::query()->named(self::NAME)->whereNotNull('run_id')->where(
+            'run_lease_ends_at',
+            '>',
+            CarbonImmutable::now(),
+        )->exists();
     }
 
     /**

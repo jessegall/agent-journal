@@ -23,7 +23,12 @@ final class PressGateway implements ShareGateway
 
     public function open(GatewayOperation $operation): GatewayEndpoint
     {
-        return new GatewayEndpoint($operation->runId, $operation->endpointVersion, $operation->settings()->publicOrigin, 'press');
+        return new GatewayEndpoint(
+$operation->runId,
+ $operation->endpointVersion,
+ $operation->settings()->publicOrigin,
+ 'press',
+);
     }
 
     public function health(GatewayEndpoint $endpoint): GatewayHealth

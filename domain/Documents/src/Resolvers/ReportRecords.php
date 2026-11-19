@@ -39,7 +39,9 @@ final readonly class ReportRecords implements ReportResolver
         $page = $reports->take($size);
 
         return ReportList::from([
-            'rows' => array_values($page->map(fn (Report $report) => $filters->searches() ? $report->hit($filters->query) : $report->card())->all()),
+            'rows' => array_values(
+                $page->map(fn (Report $report) => $filters->searches() ? $report->hit($filters->query) : $report->card())->all(),
+            ),
             'page' => $filters->page,
             'hasNextPage' => $reports->count() > $size,
             'next' => $reports->count() > $size ? $page->last()?->id : null,

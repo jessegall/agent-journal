@@ -11,12 +11,16 @@ final class InvalidPageDeclaration extends UiDeclarationError
 {
     public static function resolverReturnsNoData(string $page, string $resolver): self
     {
-        return new self("Page {$page} names the resolver {$resolver}, whose read method does not declare a concrete Data class as its return type.");
+        return new self(
+            "Page {$page} names the resolver {$resolver}, whose read method does not declare a concrete Data class as its return type.",
+        );
     }
 
     public static function recordSlotWithoutParameter(string $slot): self
     {
-        return new self("Slot {$slot} takes a record, so it must name the route parameter of its page that holds the record; declare it with Slot::record.");
+        return new self(
+            "Slot {$slot} takes a record, so it must name the route parameter of its page that holds the record; declare it with Slot::record.",
+        );
     }
 
     public static function floatSizeNotPositive(int $width, int $height): self

@@ -34,13 +34,24 @@ final class TextResolverTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
     }
 
     public function test_the_current_version_names_its_id_label_and_line_count(): void
@@ -57,19 +68,33 @@ final class TextResolverTest extends TestCase
         $this->createDocument("# Notes\nOne.\n# Notes\nTwo.\n# End\nThree.\n");
 
         $first = $this->resolver()->sections($this->record('doc', 1), '1', 0, PageSize::from(2));
-        $rest = $this->resolver()->sections($this->record('doc', 1), '1', (int) $first->nextAfterSection, PageSize::from(2));
+        $rest = $this->resolver()->sections(
+            $this->record('doc', 1),
+            '1',
+            (int) $first->nextAfterSection,
+            PageSize::from(2),
+        );
 
-        $this->assertSame([['Notes', 1], ['Notes', 3]], array_map(fn ($section) => [$section->heading, $section->firstLine], $first->items));
+        $this->assertSame(
+            [['Notes', 1], ['Notes', 3]],
+            array_map(fn ($section) => [$section->heading, $section->firstLine], $first->items),
+        );
         $this->assertSame(['End'], array_map(fn ($section) => $section->heading, $rest->items));
         $this->assertNull($rest->nextAfterSection);
     }
 
     public function test_a_long_read_is_cut_and_reads_on_from_its_next_line_at_the_same_version(): void
     {
-        $this->createDocument("# Long\n".implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)))."\n");
+        $this->createDocument(
+            "# Long\n".implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)))."\n",
+        );
 
         $first = $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(firstLine: 1));
-        $next = $this->resolver()->read($this->record('doc', 1), '1', new TextSelection(firstLine: (int) $first->nextLine));
+        $next = $this->resolver()->read(
+            $this->record('doc', 1),
+            '1',
+            new TextSelection(firstLine: (int) $first->nextLine),
+        );
 
         $this->assertSame([1, 200, 201], [$first->firstLine, $first->lastLine, $first->nextLine]);
         $this->assertSame(201, $next->firstLine);

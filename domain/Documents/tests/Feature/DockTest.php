@@ -36,7 +36,21 @@ final class DockTest extends TestCase
     /**
      * The bus and the launches commit for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['record_settlements', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups', 'links', 'hook_calls', 'agent_stacks', 'launch_credentials', 'agent_sessions', 'agents'];
+    private const array TABLES = [
+        'record_settlements',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+        'links',
+        'hook_calls',
+        'agent_stacks',
+        'launch_credentials',
+        'agent_sessions',
+        'agents',
+    ];
 
     private AgentSession $builderSession;
 
@@ -47,8 +61,16 @@ final class DockTest extends TestCase
         parent::setUp();
 
         $launch = $this->app->make(LaunchSessions::class);
-        $this->builderSession = $launch->launch(Agent::named('Builder', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
-        $this->reviewerSession = $launch->launch(Agent::named('Reviewer', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->builderSession = $launch->launch(
+            Agent::named('Builder', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
+        $this->reviewerSession = $launch->launch(
+            Agent::named('Reviewer', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
     }
 
     public function test_creating_a_document_or_report_docks_nothing_and_the_section_only_suggests_them(): void
@@ -75,13 +97,22 @@ final class DockTest extends TestCase
 
     private function actAsUser(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(1)),
+            new OwnerAuthority('test'),
+        );
     }
 
     private function actAsAgent(AgentSession $session): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), TestLaunchAuthority::forAgent($session->agent_id));
-        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)), null));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($session->agent_id),
+            TestLaunchAuthority::forAgent($session->agent_id),
+        );
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext($session->agent_id, $session->id, new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)), null),
+        );
     }
 
     private function bus(): CommandBus

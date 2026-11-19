@@ -77,13 +77,21 @@ final class ResumeTaskRunTest extends TestCase
         AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat($desk->id, ActorIdentity::of($leaving->agent()->firstOrFail())),
+            fn () => $this->app->make(SeatingWriter::class)->seat(
+                $desk->id,
+                ActorIdentity::of($leaving->agent()->firstOrFail()),
+            ),
         );
         $this->runAs($leaving, new StartTask($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
         $this->startUserRequestAs($this->owner->id);
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->replace(
-            new SeatChange($desk->id, $seat->seatId, $seat->reference, ActorIdentity::of($arriving->agent()->firstOrFail())),
+            new SeatChange(
+                $desk->id,
+                $seat->seatId,
+                $seat->reference,
+                ActorIdentity::of($arriving->agent()->firstOrFail()),
+            ),
         ));
 
         $this->assertSame(1, $this->runAs($arriving, new ResumeTaskRun($run->id)));
@@ -96,7 +104,10 @@ final class ResumeTaskRunTest extends TestCase
     {
         $worker = $this->launched('Third');
         $task = Task::factory()->create();
-        $holding = AssignmentRecord::holding($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
+        $holding = AssignmentRecord::holding(
+            $task->assignmentIdentity(),
+            AssigneeIdentity::of($worker->agent()->firstOrFail()),
+        );
         $this->runAs($worker, new StartTask($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 

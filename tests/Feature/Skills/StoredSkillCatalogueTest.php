@@ -33,7 +33,11 @@ final class StoredSkillCatalogueTest extends TestCase
 
         $author = TestActors::userIdentity(7);
         $skill = Skill::start(SkillKey::from('user-review-notes'), $author, null);
-        $skill->appendRevision(new SkillDraft('Review notes', 'Read before reviewing.', [new SectionDraft('notes', 'Notes', self::MARKDOWN)], '{"type":"everyone","version":1}'), Conditions::everyone(), $author);
+        $skill->appendRevision(
+            new SkillDraft('Review notes', 'Read before reviewing.', [new SectionDraft('notes', 'Notes', self::MARKDOWN)], '{"type":"everyone","version":1}'),
+            Conditions::everyone(),
+            $author,
+        );
     }
 
     public function test_a_stored_skill_is_listed_as_stored_with_its_revision_beside_shipped_skills(): void
@@ -59,6 +63,9 @@ final class StoredSkillCatalogueTest extends TestCase
     {
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
 
-        $this->artisan('skill:preview', ['key' => 'user-review-notes'])->expectsOutputToContain('everyone in the authorized installation scope')->assertSuccessful();
+        $this->artisan(
+            'skill:preview',
+            ['key' => 'user-review-notes'],
+        )->expectsOutputToContain('everyone in the authorized installation scope')->assertSuccessful();
     }
 }

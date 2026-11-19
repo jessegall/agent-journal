@@ -19,7 +19,9 @@ final class CommandBusDocumentationTest extends TestCase
 
         $missing = array_values(array_unique(array_filter(
             $names[0],
-            fn (string $name) => ! class_exists($name) && ! interface_exists($name) && ! enum_exists($name) && ! trait_exists($name) && ! self::isNamespace($name),
+            fn (
+                string $name,
+            ) => ! class_exists($name) && ! interface_exists($name) && ! enum_exists($name) && ! trait_exists($name) && ! self::isNamespace($name),
         )));
 
         $this->assertSame([], $missing);

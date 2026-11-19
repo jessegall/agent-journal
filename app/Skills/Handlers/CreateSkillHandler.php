@@ -25,7 +25,10 @@ final readonly class CreateSkillHandler implements CommandHandler
     {
         $key = SkillKey::from($command->key);
 
-        return $this->writes->once($command->requestId, hash('sha256', $key->key.'|'.$command->draft->digest()), function () use ($key, $command) {
+        return $this->writes->once($command->requestId, hash(
+            'sha256',
+            $key->key.'|'.$command->draft->digest(),
+        ), function () use ($key, $command) {
             if (! $key->isUserAuthored()) {
                 throw SkillDeclarationInvalid::reservedKey(SkillOwner::STORED, $key->key);
             }
@@ -37,7 +40,11 @@ final readonly class CreateSkillHandler implements CommandHandler
             $condition = $this->writes->checkedCondition($key->key, $command->draft);
             $author = $this->writes->author();
 
-            return Skill::start($key, $author, SkillContextResolver::ENVIRONMENT)->appendRevision($command->draft, $condition, $author);
+            return Skill::start(
+                $key,
+                $author,
+                SkillContextResolver::ENVIRONMENT,
+            )->appendRevision($command->draft, $condition, $author);
         });
     }
 }

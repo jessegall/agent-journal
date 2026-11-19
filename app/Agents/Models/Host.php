@@ -69,7 +69,10 @@ final class Host extends Model implements ReadableModel
      */
     public static function forSecret(string $secret): self
     {
-        $host = self::query()->where('credential_hash', self::hashOf($secret))->first() ?? throw HostCredentialRejected::unknown();
+        $host = self::query()->where(
+            'credential_hash',
+            self::hashOf($secret),
+        )->first() ?? throw HostCredentialRejected::unknown();
 
         return $host->isRevoked() ? throw HostCredentialRejected::revoked() : $host;
     }

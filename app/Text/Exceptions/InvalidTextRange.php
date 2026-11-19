@@ -14,7 +14,9 @@ final class InvalidTextRange extends RuntimeException implements CommandRefusal
 {
     public static function otherVersion(string $asked, string $read): self
     {
-        return new self("The place names version {$asked}, but version {$read} was read; select the text again on the version you are reading.");
+        return new self(
+            "The place names version {$asked}, but version {$read} was read; select the text again on the version you are reading.",
+        );
     }
 
     public static function noSection(int $number): self
@@ -24,7 +26,9 @@ final class InvalidTextRange extends RuntimeException implements CommandRefusal
 
     public static function badLines(int $first, int $last, int $lineCount): self
     {
-        return new self("Lines {$first} to {$last} are not lines of this text, which has {$lineCount}; give the first line first, both from 1.");
+        return new self(
+            "Lines {$first} to {$last} are not lines of this text, which has {$lineCount}; give the first line first, both from 1.",
+        );
     }
 
     public static function badQuoteLength(int $most): self

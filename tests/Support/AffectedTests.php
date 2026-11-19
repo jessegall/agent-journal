@@ -66,7 +66,10 @@ final readonly class AffectedTests
      */
     private function ownerOf(string $file): DomainEntry|null
     {
-        return array_find($this->registry->all(), fn (DomainEntry $entry) => str_starts_with("{$this->root}/{$file}", $this->packageOf($entry).'/'));
+        return array_find(
+            $this->registry->all(),
+            fn (DomainEntry $entry) => str_starts_with("{$this->root}/{$file}", $this->packageOf($entry).'/'),
+        );
     }
 
     private function isExport(DomainEntry $owner, string $file): bool

@@ -24,7 +24,10 @@ final readonly class OwnMemories implements MemoryResolver
         $owner = ActorIdentity::of($this->actors->actor());
         $query = Memory::query()->ownedBy($owner);
         $total = $query->clone()->count();
-        $cards = $query->orderByDesc('weight')->orderBy('id')->forPage($page, self::PER_PAGE)->readLimit(self::PER_PAGE)->get()
+        $cards = $query->orderByDesc('weight')->orderBy('id')->forPage(
+            $page,
+            self::PER_PAGE,
+        )->readLimit(self::PER_PAGE)->get()
             ->map(fn (Memory $memory) => self::cardOf($memory))
             ->all();
 

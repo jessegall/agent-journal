@@ -38,6 +38,8 @@ final class BrokenGuideSkill implements Skill
 
     public function sections(): SkillSections
     {
-        return SkillSections::listed(SkillSection::markdown('missing', 'Missing', MarkdownPart::heading('guide.md', ['Guide', 'Nowhere'])));
+        return SkillSections::listed(
+SkillSection::markdown('missing', 'Missing', MarkdownPart::heading('guide.md', ['Guide', 'Nowhere'])),
+);
     }
 }

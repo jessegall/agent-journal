@@ -40,11 +40,15 @@ abstract class CommandBusTestCase extends TestCase
 
     protected function rowText(int $id): string
     {
-        return (string) $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('id', $id)->value('text');
+        return (string) $this->app->make(
+            ConnectionInterface::class,
+        )->table('module_command_rows')->where('id', $id)->value('text');
     }
 
     protected function rowCount(): int
     {
-        return $this->app->make(ConnectionInterface::class)->table('module_command_rows')->whereNot('text', 'like', 'audit %')->count();
+        return $this->app->make(
+            ConnectionInterface::class,
+        )->table('module_command_rows')->whereNot('text', 'like', 'audit %')->count();
     }
 }

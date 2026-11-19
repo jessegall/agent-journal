@@ -43,6 +43,8 @@ final readonly class DraftSkill implements Skill
 
     public function sections(): SkillSections
     {
-        return SkillSections::listed(...array_map(fn (SectionDraft $section) => $section->toSection(), $this->draft->sections));
+        return SkillSections::listed(
+            ...array_map(fn (SectionDraft $section) => $section->toSection(), $this->draft->sections),
+        );
     }
 }

@@ -65,14 +65,21 @@ final class Skill extends Model implements Numbered, ReadableModel
      */
     public static function start(SkillKey $key, ActorIdentity $owner, string|null $environment): self
     {
-        return self::query()->create(['key' => $key->key, 'owner_type' => $owner->type, 'owner_id' => $owner->id, 'environment' => $environment]);
+        return self::query()->create(
+            ['key' => $key->key, 'owner_type' => $owner->type, 'owner_id' => $owner->id, 'environment' => $environment],
+        );
     }
 
     /**
      * Appends the draft as the skill's next revision, with its checked condition, and makes it current.
      */
-    public function appendRevision(SkillDraft $draft, SkillCondition $condition, ActorIdentity $author, string|null $sourceKey = null, string|null $sourceDigest = null): SkillRevision
-    {
+    public function appendRevision(
+        SkillDraft $draft,
+        SkillCondition $condition,
+        ActorIdentity $author,
+        string|null $sourceKey = null,
+        string|null $sourceDigest = null,
+    ): SkillRevision {
         $revision = SkillRevision::appendTo($this, $draft, $condition, $author, $sourceKey, $sourceDigest);
         $this->current_revision_id = $revision->id;
         $this->save();
@@ -85,7 +92,13 @@ final class Skill extends Model implements Numbered, ReadableModel
      */
     public function restoreFrom(SkillRevision $earlier, SkillCondition $condition, ActorIdentity $author): SkillRevision
     {
-        return $this->appendRevision($earlier->draft(), $condition, $author, $earlier->source_key, $earlier->source_digest);
+        return $this->appendRevision(
+            $earlier->draft(),
+            $condition,
+            $author,
+            $earlier->source_key,
+            $earlier->source_digest,
+        );
     }
 
     /**
@@ -155,7 +168,9 @@ final class Skill extends Model implements Numbered, ReadableModel
      */
     public static function activeIn(string $environment, int $limit): array
     {
-        return array_values(self::query()->visibleIn($environment)->whereNull('retired_at')->orderBy('key')->readLimit($limit)->get()->all());
+        return array_values(
+            self::query()->visibleIn($environment)->whereNull('retired_at')->orderBy('key')->readLimit($limit)->get()->all(),
+        );
     }
 
     /**
@@ -177,6 +192,8 @@ final class Skill extends Model implements Numbered, ReadableModel
     #[Scope]
     protected function visibleIn(Builder $query, string $environment): void
     {
-        $query->where(fn (Builder $visible) => $visible->whereNull('environment')->orWhere('environment', $environment));
+        $query->where(
+            fn (Builder $visible) => $visible->whereNull('environment')->orWhere('environment', $environment),
+        );
     }
 }

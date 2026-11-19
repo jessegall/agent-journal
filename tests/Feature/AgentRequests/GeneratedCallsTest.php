@@ -22,11 +22,18 @@ final class GeneratedCallsTest extends TestCase
 
     public function test_a_group_has_one_method_per_call_with_the_key_last(): void
     {
-        $source = (string) CallGroups::group(base_path('tests/Fixtures/AgentRequests'), 'Tests\\Fixtures\\AgentRequests', 'Notes');
+        $source = (string) CallGroups::group(
+            base_path('tests/Fixtures/AgentRequests'),
+            'Tests\\Fixtures\\AgentRequests',
+            'Notes',
+        );
 
         $this->assertStringContainsString('final readonly class NoteCalls', $source);
         $this->assertStringContainsString('public function writeNote(', $source);
-        $this->assertStringContainsString('\\App\\AgentRequests\\Support\\CallKey $requestKey = new CallKey()', $source);
+        $this->assertStringContainsString(
+            '\\App\\AgentRequests\\Support\\CallKey $requestKey = new CallKey()',
+            $source,
+        );
         $this->assertStringContainsString('\\Tests\\Fixtures\\AgentRequests\\WriteNoteCall::from([', $source);
     }
 

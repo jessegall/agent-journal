@@ -42,7 +42,12 @@ final class DocblockScan extends NodeVisitorAbstract
         $config = new ParserConfig(['lines' => true]);
         $constants = new ConstExprParser($config);
         $resolver = new NameResolver(null, ['replaceNodes' => false]);
-        $scan = new self($file, $resolver, new Lexer($config), new PhpDocParser($config, new TypeParser($config, $constants), $constants));
+        $scan = new self(
+            $file,
+            $resolver,
+            new Lexer($config),
+            new PhpDocParser($config, new TypeParser($config, $constants), $constants),
+        );
 
         new NodeTraverser($resolver, $scan)->traverse($file->statements);
 
@@ -68,7 +73,11 @@ final class DocblockScan extends NodeVisitorAbstract
     private function typesIn(Doc $doc): array
     {
         $docblock = $this->parser->parse(new TokenIterator($this->lexer->tokenize($doc->getText())));
-        $collector = new DocblockTypeCollector($this->file->path, $doc->getStartLine(), $this->resolver->getNameContext());
+        $collector = new DocblockTypeCollector(
+            $this->file->path,
+            $doc->getStartLine(),
+            $this->resolver->getNameContext(),
+        );
 
         new DocblockTraverser([$collector])->traverse([$docblock]);
 

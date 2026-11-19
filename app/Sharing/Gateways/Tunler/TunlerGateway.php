@@ -96,7 +96,12 @@ final readonly class TunlerGateway implements ShareGateway
         $child = $this->processes->newPendingProcess()->env($this->environment())->timeout(0)
             ->start([$this->binary, (string) $settings->listenerPort, "--domain={$this->subdomain}", '--inspect=0']);
 
-        return $this->launches->open(self::KEY, $operation, $child, fn (InvokedProcess $started) => $this->lookAt($started->latestOutput(), $settings->publicOrigin, $settings->providerHost));
+        return $this->launches->open(
+            self::KEY,
+            $operation,
+            $child,
+            fn (InvokedProcess $started) => $this->lookAt($started->latestOutput(), $settings->publicOrigin, $settings->providerHost),
+        );
     }
 
     public function health(GatewayEndpoint $endpoint): GatewayHealth
@@ -120,7 +125,11 @@ final readonly class TunlerGateway implements ShareGateway
             return GatewayAddressCheck::Waiting;
         }
 
-        return $this->isExpectedOrigin($address, $publicOrigin, $providerHost) ? GatewayAddressCheck::Confirmed : GatewayAddressCheck::Unexpected;
+        return $this->isExpectedOrigin(
+            $address,
+            $publicOrigin,
+            $providerHost,
+        ) ? GatewayAddressCheck::Confirmed : GatewayAddressCheck::Unexpected;
     }
 
     /**
@@ -146,7 +155,10 @@ final readonly class TunlerGateway implements ShareGateway
      */
     private function isExpectedOrigin(string $address, string $publicOrigin, string $providerHost): bool
     {
-        return $this->origins->accepts($address, $publicOrigin) && parse_url($address, PHP_URL_HOST) === "{$this->subdomain}.{$providerHost}";
+        return $this->origins->accepts(
+            $address,
+            $publicOrigin,
+        ) && parse_url($address, PHP_URL_HOST) === "{$this->subdomain}.{$providerHost}";
     }
 
     /**
@@ -154,7 +166,9 @@ final readonly class TunlerGateway implements ShareGateway
      */
     private function run(array $arguments): string
     {
-        return $this->processes->newPendingProcess()->env($this->environment())->timeout(self::STATUS_SECONDS)->run([$this->binary, ...$arguments])->output();
+        return $this->processes->newPendingProcess()->env($this->environment())->timeout(self::STATUS_SECONDS)->run(
+            [$this->binary, ...$arguments],
+        )->output();
     }
 
     /**

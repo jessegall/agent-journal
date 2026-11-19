@@ -75,6 +75,9 @@ final class WorkingOnTaskTest extends TestCase
 
     private function stop(): StopRequested
     {
-        return new StopRequested(new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'), new StopDetails('turn-1', false));
+        return new StopRequested(
+            new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
+            new StopDetails('turn-1', false),
+        );
     }
 }

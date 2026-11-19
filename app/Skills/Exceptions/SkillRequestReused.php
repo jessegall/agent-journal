@@ -13,7 +13,9 @@ final class SkillRequestReused extends RuntimeException implements CodedRefusal,
 {
     public static function for(string $requestId): self
     {
-        return new self("The request id {$requestId} was already used for other content; send new content under a new request id.");
+        return new self(
+            "The request id {$requestId} was already used for other content; send new content under a new request id.",
+        );
     }
 
     public function refusalCode(): RefusalCode

@@ -50,7 +50,10 @@ final class AssignmentResolversTest extends TestCase
 
     public function test_twenty_records_of_one_type_cost_one_visibility_query_and_one_assignment_query(): void
     {
-        $tasks = array_map(fn (int $number) => Task::factory()->create(['title' => "Task {$number}"])->assignmentIdentity(), range(1, 20));
+        $tasks = array_map(
+            fn (int $number) => Task::factory()->create(['title' => "Task {$number}"])->assignmentIdentity(),
+            range(1, 20),
+        );
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($tasks[0], $this->helper);
         $writer->assign($tasks[5], $this->helper);
@@ -93,8 +96,14 @@ final class AssignmentResolversTest extends TestCase
     {
         $resolver = $this->app->make(AssignmentResolver::class);
 
-        $this->assertThrows(fn () => $resolver->assignmentsFor(array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 101))), InvalidAssignmentPage::class);
-        $this->assertThrows(fn () => $resolver->assignmentsFor([TestActors::record('notes.note', 1)]), AssignmentTypeUnavailable::class);
+        $this->assertThrows(
+            fn () => $resolver->assignmentsFor(array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 101))),
+            InvalidAssignmentPage::class,
+        );
+        $this->assertThrows(
+            fn () => $resolver->assignmentsFor([TestActors::record('notes.note', 1)]),
+            AssignmentTypeUnavailable::class,
+        );
     }
 
     public function test_names_come_from_each_actor_types_owner(): void

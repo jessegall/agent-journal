@@ -17,7 +17,9 @@ final readonly class TurnReportController
 {
     public function __invoke(DriverTurnReportData $report, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportDriverTurn($host->hostId, $report->runtimeId, $report->processGeneration, $report->nativePromptId, $report->finished, $report->model, $report->effort, $report->outcome));
+        $commands->run(
+            new ReportDriverTurn($host->hostId, $report->runtimeId, $report->processGeneration, $report->nativePromptId, $report->finished, $report->model, $report->effort, $report->outcome),
+        );
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

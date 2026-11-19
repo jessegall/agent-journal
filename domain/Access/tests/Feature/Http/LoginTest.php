@@ -72,7 +72,10 @@ final class LoginTest extends TestCase
 
     public function test_registration_and_the_other_account_screens_are_off(): void
     {
-        $this->post('/register', ['name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'secret-password'])->assertNotFound();
+        $this->post(
+            '/register',
+            ['name' => 'Someone', 'email' => 'someone@example.com', 'password' => 'secret-password'],
+        )->assertNotFound();
         $this->get('/user/two-factor-qr-code')->assertNotFound();
     }
 }

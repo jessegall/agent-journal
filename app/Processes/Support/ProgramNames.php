@@ -24,7 +24,11 @@ final readonly class ProgramNames
     {
         $original = $word->literal();
         if ($original === null || $original === '') {
-            return new UnresolvedFact(UnresolvedType::UnresolvedExecutable, $node, 'The program name is only known when the command runs.');
+            return new UnresolvedFact(
+                UnresolvedType::UnresolvedExecutable,
+                $node,
+                'The program name is only known when the command runs.',
+            );
         }
         $name = basename($original);
         foreach ($spellings as $family) {
@@ -44,7 +48,10 @@ final readonly class ProgramNames
      */
     public function proposalHints(ProgramIdentity $program, array $spellings): array
     {
-        $resembled = array_filter($spellings, fn (ProgramSpellings $family): bool => $family->resembles($program->family));
+        $resembled = array_filter(
+            $spellings,
+            fn (ProgramSpellings $family): bool => $family->resembles($program->family),
+        );
 
         return array_values(array_map(fn (ProgramSpellings $family): string => $family->family, $resembled));
     }

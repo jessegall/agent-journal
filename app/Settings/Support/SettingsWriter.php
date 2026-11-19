@@ -57,7 +57,12 @@ final readonly class SettingsWriter
             return $this->unchanged($record);
         }
 
-        return $this->revise($record, $record->document->withSetting(new EncodedSetting($setting->key(), $value)), SettingTarget::Setting, $setting->key());
+        return $this->revise(
+            $record,
+            $record->document->withSetting(new EncodedSetting($setting->key(), $value)),
+            SettingTarget::Setting,
+            $setting->key(),
+        );
     }
 
     /**
@@ -78,7 +83,12 @@ final readonly class SettingsWriter
             return $this->unchanged($record);
         }
 
-        return $this->revise($record, $record->document->withoutSetting($setting->key()), SettingTarget::Setting, $setting->key());
+        return $this->revise(
+            $record,
+            $record->document->withoutSetting($setting->key()),
+            SettingTarget::Setting,
+            $setting->key(),
+        );
     }
 
     /**
@@ -98,7 +108,12 @@ final readonly class SettingsWriter
             return $this->unchanged($record);
         }
 
-        return $this->revise($record, $record->document->withToggle(new EncodedToggle($group->key, $value)), SettingTarget::Group, $group->key);
+        return $this->revise(
+            $record,
+            $record->document->withToggle(new EncodedToggle($group->key, $value)),
+            SettingTarget::Group,
+            $group->key,
+        );
     }
 
     /**
@@ -153,7 +168,13 @@ final readonly class SettingsWriter
             return;
         }
 
-        $stored = new StoredSettings($record->owner, $record->revision, $record->document, $this->codec, $this->registry);
+        $stored = new StoredSettings(
+            $record->owner,
+            $record->revision,
+            $record->document,
+            $this->codec,
+            $this->registry,
+        );
 
         if ($stored->group($group) instanceof DisabledSettingsGroup) {
             throw SettingDisabled::for($record->owner, $setting->key(), $group->key);
@@ -168,8 +189,12 @@ final readonly class SettingsWriter
     /**
      * Stores the document as the next revision and announces it once the command's transaction commits.
      */
-    private function revise(SettingsRecord $record, SettingsDocument $document, SettingTarget $target, string $key): SettingsChange
-    {
+    private function revise(
+        SettingsRecord $record,
+        SettingsDocument $document,
+        SettingTarget $target,
+        string $key,
+    ): SettingsChange {
         $record->revise($document);
         $this->resolver->forget($record->owner);
         $this->events->dispatch(new SettingsChanged($record->owner, $target, $key, $record->revision));
