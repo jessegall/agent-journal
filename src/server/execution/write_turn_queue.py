@@ -12,6 +12,8 @@ from server.execution.waiting_ask import WaitingAsk
 
 SLOW_TURN_SECONDS = 1.0
 HOLDER_CHECK_SECONDS = 1.0
+# a hold this long has its holder's stack logged once, so each slow hold names the code that made it
+SLOW_HOLD_SECONDS = 3.0
 
 
 class WriteTurnQueue(WriteTurns):
@@ -53,13 +55,18 @@ class WriteTurnQueue(WriteTurns):
                 waiting.raise_priority(current_time)
             if self.holder is None and new_question is min(self.waiting, key=lambda waiting: waiting.place):
                 return
+            held = current_time - self.turn_started_at if self.holder is not None else 0.0
+            if held >= SLOW_HOLD_SECONDS:
+                self.show_stuck_holder(current_time)
             waited = current_time - new_question.requested_at
             if waited >= self.wait_limit_seconds and not new_question.priority.is_unlimited:
                 self.show_stuck_holder(current_time)
                 raise WriteTurnBusyError.waited(waited, [self.holder_text()])
             # an unlimited ask looks again each second for a holder whose thread died, never a negative time that spins
             limit_delay = HOLDER_CHECK_SECONDS if new_question.priority.is_unlimited else self.wait_limit_seconds - waited
-            self.changed.wait(min(limit_delay, min(waiting.raise_delay(current_time) for waiting in self.waiting)))
+            # a waiter wakes when the hold turns slow, so a slow holder's stack is logged while it still holds
+            slow_delay = SLOW_HOLD_SECONDS - held if self.holder is not None and held < SLOW_HOLD_SECONDS else limit_delay
+            self.changed.wait(min(limit_delay, slow_delay, min(waiting.raise_delay(current_time) for waiting in self.waiting)))
 
     def show_stuck_holder(self, current_time: float) -> None:
         holder = self.holder

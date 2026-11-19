@@ -4,10 +4,7 @@ from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.process_executor import ProcessExecutor
 from dataclasses import asdict
 
-from engine.event.created import Created
-from engine.event.updated import Updated
 from engine.command.context import Context
-from engine.guard.guard import Guard
 from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from core.modules.aliases.models.alias import Alias
@@ -19,19 +16,20 @@ CONFLICT_LIMIT_SECONDS = 10
 SAVED_COMMANDS_REASON = "the conflict check compares a saved command with every saved command of its category"
 
 
-class SavedCommandGuard(Guard[Created[Alias] | Updated[Alias]]):
-    """A test or build program has one saved command per working folder."""
+SKIP_NAME = "aliases.saved-command-program"
 
-    name = "aliases.saved-command-program"
+
+class SavedCommandConflicts:
+    """A test or build program has one saved command per working folder. The check runs a program, so the alias
+    commands ask it before their save, never inside a write; --skip-guard aliases.saved-command-program passes it."""
 
     def __init__(self, aliases: AliasQuery, home: JournalHome, executor: ProcessExecutor) -> None:
         self.aliases, self.home, self.executor = aliases, home, executor
 
-    def check(self, event: Created[Alias] | Updated[Alias], context: Context) -> None:
-        alias = event.row
-        if alias.category is None or not alias.category.is_long_running:
+    def refuse(self, alias: Alias, old: Alias | None, context: Context) -> None:
+        if SKIP_NAME in context.skipped_guards or alias.category is None or not alias.category.is_long_running:
             return
-        if event.old_row is not None and alias.line == event.old_row.line and alias.category is event.old_row.category:
+        if old is not None and alias.line == old.line and alias.category is old.category:
             return
         saved = {row.name: row.line for row in self.aliases.where(category=alias.category).every_row(SAVED_COMMANDS_REASON) if row.id != alias.id}
         if not saved:

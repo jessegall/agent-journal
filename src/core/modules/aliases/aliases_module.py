@@ -8,7 +8,6 @@ from core.modules.aliases.policies.unknown_command_policy import UnknownCommandP
 from core.modules.aliases.models.declarations.alias_model_declaration import AliasModelDeclaration
 from engine.cli.shell_aliases import ShellAliases
 from core.modules.aliases.guards.reader_alias_guard import ReaderAliasGuard
-from core.modules.aliases.guards.saved_command_guard import SavedCommandGuard
 from engine.module.model_declaration import ModelDeclaration
 from engine.module.module import Module
 from core.modules.aliases.commands.add_alias.add_alias_handler import AddAliasHandler
@@ -43,5 +42,5 @@ class AliasesModule(Module):
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener, EndedRunSilenceListener]
     tick_handlers = [SilentAliasMarkingTickHandler]
-    guards = [ReaderAliasGuard, SavedCommandGuard]
+    guards = [ReaderAliasGuard]
     agent_messages = ALIASES_AGENT_MESSAGES
