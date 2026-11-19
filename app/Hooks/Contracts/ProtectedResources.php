@@ -21,5 +21,8 @@ interface ProtectedResources
      */
     public function refusesChange(string $path): bool;
 
-    public function refusesCommand(string $command): bool;
+    /**
+     * Whether a shell command reads a sign-in another way or names a protected path the session holds no grant for.
+     */
+    public function refusesCommand(string $sessionId, string $command, string $workFolder): bool;
 }

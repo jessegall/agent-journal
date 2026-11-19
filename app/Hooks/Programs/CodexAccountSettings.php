@@ -8,7 +8,9 @@ use App\Agents\Support\AccountLaunchSettings;
 
 /**
  * Codex on a saved account: the account folder as CODEX_HOME with its sign-in kept in its own file, no other
- * credential, and the shared app-server arrangement whose working root is an empty trusted folder.
+ * credential, the shared app-server arrangement whose working root is an empty trusted folder, and each thread's
+ * private protection settings; the accounts folder is named to the hook relay so it refuses it while the journal is
+ * away.
  */
 final readonly class CodexAccountSettings
 {
@@ -21,10 +23,13 @@ final readonly class CodexAccountSettings
     public static function fill(
         AccountLaunchSettings $settings,
         string $directory,
+        string $accountsRoot,
         array $launchFlags,
         array $accountSettings,
     ): void {
         $settings->setVariable('CODEX_HOME', $directory);
+        $settings->setVariable('JOURNAL_ACCOUNTS_ROOT', $accountsRoot);
+        $settings->protectWith(CodexAccountProtection::settingsFor());
 
         foreach (self::OTHER_CREDENTIALS as $variable) {
             $settings->removeVariable($variable);

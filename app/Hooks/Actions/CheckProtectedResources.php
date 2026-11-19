@@ -37,8 +37,14 @@ final readonly class CheckProtectedResources implements ProtectedResources
         return $this->accounts->covers($path);
     }
 
-    public function refusesCommand(string $command): bool
+    public function refusesCommand(string $sessionId, string $command, string $workFolder): bool
     {
-        return $this->accounts->isTouchedBy($command);
+        if ($this->accounts->readsSignInIn($command)) {
+            return true;
+        }
+
+        $named = ProtectedFileRead::inFolder($workFolder, $this->accounts->pathsNamedIn($command));
+
+        return $this->refusesRead($sessionId, $named);
     }
 }

@@ -6,9 +6,12 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Support\SessionOutputPaths;
+use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Programs\ClaudeAccountProtection;
 use App\Hooks\Programs\ClaudeCodeAdapter;
+use App\Hooks\Programs\CodexAccountProtection;
+use App\Hooks\Programs\CodexAdapter;
 use App\Hooks\Programs\HookPayload;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -89,6 +92,49 @@ final class AccountProtectionTest extends TestCase
         $this->assertNotContains('Read(//journal/accounts/a/**)', $settings['permissions']['deny']);
         $this->assertTrue($settings['sandbox']['enabled']);
         $this->assertFalse($settings['sandbox']['allowUnsandboxedCommands']);
+    }
+
+    public function test_codex_commands_and_patches_reach_only_the_sessions_own_outputs(): void
+    {
+        $protection = $this->app->make(ProtectedResources::class);
+        $patch = "*** Begin Patch\n*** Update File: /journal/accounts/a/config.toml\n*** End Patch";
+
+        $this->assertSame('deny', $this->codexDecision('apply_patch', ['command' => $patch]));
+        $this->assertSame('deny', $this->codexDecision('Bash', ['command' => 'cat /journal/accounts/a/auth.json']));
+        $this->assertSame('deny', $this->codexDecision('Bash', ['command' => 'codex login status']));
+        $this->assertFalse($protection->refusesCommand('session-1', 'tail "'.self::OWN_OUTPUTS.'.jsonl"', '/work'));
+        $this->assertTrue($protection->refusesCommand('session-1', 'tail ../journal/accounts/a/x.jsonl', '/work'));
+        $this->assertTrue($protection->refusesCommand('session-2', 'tail '.self::OWN_OUTPUTS.'.jsonl', '/work'));
+    }
+
+    public function test_each_codex_thread_gets_one_sandbox_and_no_account_folder_in_its_shell(): void
+    {
+        $settings = json_decode(CodexAccountProtection::settingsFor(), true);
+
+        $this->assertSame('workspace-write', $settings['sandbox']);
+        $this->assertArrayNotHasKey('sandbox_mode', $settings['config']);
+        $this->assertContains('CODEX_HOME', $settings['config']['shell_environment_policy']['exclude']);
+    }
+
+    /**
+     * @param  array<string, string>  $toolInput
+     */
+    private function codexDecision(string $tool, array $toolInput): string
+    {
+        $payload = HookPayload::from([
+            'hook_event_name' => 'PreToolUse',
+            'session_id' => 'native-1',
+            'cwd' => '/work',
+            'tool_name' => $tool,
+            'tool_input' => $toolInput,
+        ]);
+        $call = $this->app->make(CodexAdapter::class)->callFor(
+            $payload,
+            new HookIdentity('agent-1', 'session-1', 'call-1', 'digest'),
+        );
+        $reply = json_decode($call->replyWith(fn () => null)->stdout, true);
+
+        return $reply['hookSpecificOutput']['permissionDecision'] ?? 'allow';
     }
 
     /**

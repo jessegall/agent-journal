@@ -6,6 +6,7 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Enums\CodexTool;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\RewriteSupport;
@@ -17,6 +18,7 @@ use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
+use App\Hooks\Inputs\ProtectedFileRead;
 use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
 use App\Hooks\Inputs\SessionStarted;
@@ -43,6 +45,7 @@ final readonly class CodexAdapter implements ProgramAdapter
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
+        private ProtectedResources $protection,
     ) {}
 
     public function capabilities(): ProgramCapabilities
@@ -138,6 +141,14 @@ final readonly class CodexAdapter implements ProgramAdapter
         }
 
         $original = new ProgramToolInput($payload->toolArguments());
+        $folder = $payload->workFolder();
+
+        $isRefusedCommand = $tool->isShell()
+            && $this->protection->refusesCommand($hook->sessionId, $payload->argument('command'), $folder);
+
+        if ($isRefusedCommand) {
+            return new UnjudgedCall(ProgramReplies::denyProtected());
+        }
 
         if ($tool->isShell()) {
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
@@ -148,7 +159,15 @@ final readonly class CodexAdapter implements ProgramAdapter
             );
         }
 
-        $edit = new FileEditRequested($hook, $this->patchChanges($payload->argument('command')));
+        $changes = $this->patchChanges($payload->argument('command'));
+
+        foreach ($changes->paths() as $path) {
+            if ($this->protection->refusesChange(ProtectedFileRead::resolve($folder, $path))) {
+                return new UnjudgedCall(ProgramReplies::denyProtected());
+            }
+        }
+
+        $edit = new FileEditRequested($hook, $changes);
 
         return new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
     }

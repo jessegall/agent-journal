@@ -18,6 +18,9 @@ use App\Hooks\Stack\HookAnswer;
  */
 final class ProgramReplies
 {
+    public const string PROTECTED_REASON = 'Saved program accounts, their sign-ins and other sessions\' history '
+        .'are private: only this session\'s own saved outputs can be read.';
+
     public const string REWRITE_REFUSAL = 'This program cannot take a rewritten command without a native approval. '
         .'Run the command through its alias with journal run instead.';
 
@@ -29,6 +32,14 @@ final class ProgramReplies
         return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => [
             'additionalContext' => PreToolOutput::contextText($context),
         ]]));
+    }
+
+    /**
+     * The refusal of a tool call that reaches a saved account's sign-in, settings or another session's history.
+     */
+    public static function denyProtected(): ProgramReply
+    {
+        return self::denyTool(self::PROTECTED_REASON, []);
     }
 
     /**

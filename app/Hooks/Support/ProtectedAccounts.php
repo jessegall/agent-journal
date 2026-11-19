@@ -13,9 +13,9 @@ use App\Hooks\Inputs\ProtectedFileRead;
  */
 final readonly class ProtectedAccounts
 {
-    private const string SIGN_IN_COMMAND = '/(^|[\s;&|(`])(security|secret-tool)(\s|$)'
-        .'|\b(claude|codex)\s+(auth|login|logout|setup-token)\b|\bapp-server\b'
-        .'|CLAUDE_CONFIG_DIR|CODEX_HOME|ANTHROPIC_CONFIG_DIR/';
+    private const string SIGN_IN_COMMAND = '/(^|[;&|(`])\s*(security|secret-tool)(\s|$)'
+        .'|\b(claude|codex)\s+(auth|login|logout|setup-token|app-server)\b'
+        .'|\$\{?(CLAUDE_CONFIG_DIR|CODEX_HOME|ANTHROPIC_CONFIG_DIR|JOURNAL_ACCOUNTS_ROOT)\b/';
 
     /**
      * @param  list<string>  $folders
@@ -46,7 +46,28 @@ final readonly class ProtectedAccounts
             }
         }
 
+        return $this->readsSignInIn($command);
+    }
+
+    /**
+     * Whether a shell command reads a sign-in through the Keychain, a program's own sign-in commands or the variables
+     * that name an account folder; no grant ever allows these.
+     */
+    public function readsSignInIn(string $command): bool
+    {
         return preg_match(self::SIGN_IN_COMMAND, $command) === 1;
+    }
+
+    /**
+     * The words of a shell command that name a path, without the quotes around them, relative ones included.
+     *
+     * @return list<string>
+     */
+    public function pathsNamedIn(string $command): array
+    {
+        preg_match_all('#[^\s\'"`;&|<>()=]*/[^\s\'"`;&|<>()]*#', $command, $matches);
+
+        return array_values(array_filter($matches[0], fn (string $word) => $word !== ''));
     }
 
     /**

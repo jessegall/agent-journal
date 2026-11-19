@@ -42,9 +42,6 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
 {
     private const string PROGRAM = 'Claude Code';
 
-    private const string PROTECTED_REFUSAL = 'Saved program accounts, their sign-ins and other sessions\' history '
-        .'are private: only this session\'s own saved outputs can be read.';
-
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
@@ -171,11 +168,11 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         if ($tool->readsFiles()) {
             $isRefused = $this->protection->refusesRead($hook->sessionId, $payload->fileRead());
 
-            return new UnjudgedCall($isRefused ? self::protectedRefusal() : ProgramReplies::allowTool([]));
+            return new UnjudgedCall($isRefused ? ProgramReplies::denyProtected() : ProgramReplies::allowTool([]));
         }
 
-        if ($tool === ClaudeCodeTool::Bash && $this->protection->refusesCommand($payload->argument('command'))) {
-            return new UnjudgedCall(self::protectedRefusal());
+        if ($tool === ClaudeCodeTool::Bash && $this->refusesCommand($payload, $hook)) {
+            return new UnjudgedCall(ProgramReplies::denyProtected());
         }
 
         if ($tool === ClaudeCodeTool::Bash) {
@@ -193,7 +190,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             $path = $payload->argument('file_path', 'notebook_path');
 
             if ($this->protection->refusesChange(ProtectedFileRead::resolve($payload->workFolder(), $path))) {
-                return new UnjudgedCall(self::protectedRefusal());
+                return new UnjudgedCall(ProgramReplies::denyProtected());
             }
 
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
@@ -204,8 +201,10 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return new UnjudgedCall(ProgramReplies::allowTool([]));
     }
 
-    private static function protectedRefusal(): ProgramReply
+    private function refusesCommand(HookPayload $payload, HookIdentity $hook): bool
     {
-        return ProgramReplies::denyTool(self::PROTECTED_REFUSAL, []);
+        $command = $payload->argument('command');
+
+        return $this->protection->refusesCommand($hook->sessionId, $command, $payload->workFolder());
     }
 }

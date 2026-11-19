@@ -49,6 +49,7 @@ final class SupplyAccountSettings implements Listener
             HookProgram::Codex => CodexAccountSettings::fill(
                 $event->settings,
                 $event->directory,
+                $this->config->string('accounts.root'),
                 $compatibility->launchFlags,
                 $compatibility->settings,
             ),
