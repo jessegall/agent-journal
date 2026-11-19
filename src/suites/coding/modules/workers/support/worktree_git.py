@@ -556,9 +556,15 @@ class WorktreeGit:
         return tuple(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines())
 
     # the copy is stored before the original entry is dropped, so a stop or a git time limit between the two leaves the
-    # worker's work in the stack twice, never not at all; the copy lands on top, so only older entries are dropped
+    # worker's work in the stack twice, never not at all; the copy lands on top, so only older entries are dropped.
+    # git stores nothing for the commit already on top of the stack, so that entry is dropped first and stored again
     def keep_clashed_stash(self, worktree: Worktree, stash: str) -> None:
         with self.stash_stack_lock(worktree):
+            top = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--max-count=1", "--format=%H").stdout.strip()
+            if top == stash:
+                self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", "stash@{0}")
+                self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "store", "--message", f"{CLASHED_STASH_MESSAGE}{worktree.branch}", stash)
+                return
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "stash", "store", "--message", f"{CLASHED_STASH_MESSAGE}{worktree.branch}", stash)
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in reversed([line.split() for line in entries[1:]]):

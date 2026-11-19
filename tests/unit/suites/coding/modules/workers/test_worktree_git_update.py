@@ -149,4 +149,4 @@ def test_a_kept_clashed_stash_is_in_the_stack_once_with_its_name(tmp_path):
     git().keep_clashed_stash(worktree, stash)
     entries = own(worktree).git("stash", "list", "--format=%H %gs").stdout.splitlines()
     assert [entry.split()[0] for entry in entries] == [stash]
-    assert worktree.branch in entries[0]
+    assert f"clashed when put back on {worktree.branch}" in entries[0]

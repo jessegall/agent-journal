@@ -17,6 +17,8 @@ from engine.performance.timing import Timing
 from engine.command.errors.missing_handler_error import MissingHandlerError
 from engine.command.errors.transaction_error import TransactionError
 from engine.command.errors.explanation_rollback_error import ExplanationRollbackError
+from engine.database.errors.wait_during_write_turn_error import WaitDuringWriteTurnError
+from engine.errors.refusal import Refusal
 
 
 R = TypeVar("R")
@@ -74,6 +76,8 @@ class Bus:
                 raise ExplanationRollbackError()
         except ExplanationRollbackError:
             return explanation
+        except WaitDuringWriteTurnError as error:
+            raise Refusal(f"{command.label()} runs a program, which a dry run cannot do inside the write it rolls back ({error}): run it without --explain") from error
 
     @staticmethod
     def explained(handler: Handler[Command[object], object], command: Command[object], context: Context) -> None:
