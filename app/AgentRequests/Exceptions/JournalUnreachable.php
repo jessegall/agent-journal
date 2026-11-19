@@ -6,13 +6,12 @@ namespace App\AgentRequests\Exceptions;
 
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
-use RuntimeException;
 use Throwable;
 
 /**
  * A prepared call the journal did not answer. The message names the address, never the launch token or the body.
  */
-final class JournalUnreachable extends RuntimeException implements CodedRefusal
+final class JournalUnreachable extends CallFailed implements CodedRefusal
 {
     public static function at(string $journalUrl, Throwable $previous): self
     {

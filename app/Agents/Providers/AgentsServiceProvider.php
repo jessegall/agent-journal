@@ -12,10 +12,13 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Values\PolicyRegistration;
 use App\AgentRequests\Actions\SendAgentRequests;
+use App\AgentRequests\Console\GenerateCallsCommand;
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\LaunchCredentialSource;
 use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
+use App\AgentRequests\Support\SendSignedCalls;
 use App\Agents\Console\EnrollHostCommand;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Console\RunKeyScriptCommand;
@@ -69,6 +72,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
+        $this->app->bind(CallSender::class, SendSignedCalls::class);
         $this->app->bind(LaunchRecordResolver::class, LaunchRecords::class);
         $this->app->bind(ProgramConversationResolver::class, ProgramConversationRecords::class);
         $this->app->bind(HelperImages::class, fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')));
@@ -107,7 +111,12 @@ final class AgentsServiceProvider extends ServiceProvider
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
-        $this->commands([RetireAgentCommand::class, EnrollHostCommand::class, RunKeyScriptCommand::class]);
+        $this->commands([
+            RetireAgentCommand::class,
+            EnrollHostCommand::class,
+            RunKeyScriptCommand::class,
+            GenerateCallsCommand::class,
+        ]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent->value, AgentAssignees::class));
         $assignments->registerActivity(new ActivityRegistration(ActorType::Agent, AgentActivity::class));
         $presentActors->register(AgentSessionCounter::class);

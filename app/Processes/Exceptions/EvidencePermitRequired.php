@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
-use RuntimeException;
+use App\AgentRequests\Exceptions\CommandStopped;
 
 /**
  * process:run was asked to start no admission: a run starts only from an admission or an evidence permit.
  */
-final class EvidencePermitRequired extends RuntimeException
+final class EvidencePermitRequired extends CommandStopped
 {
     public static function forRun(): self
     {

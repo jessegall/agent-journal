@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Values\Run;
+namespace App\AgentRequests\Values;
 
-use App\Processes\Enums\ReportLineType;
+use App\AgentRequests\Enums\ReportLineType;
+use Illuminate\Console\Command;
 
 /**
- * What the run command prints and the exit status it ends with.
+ * What a console command prints and the exit status it ends with.
  */
-final readonly class RunReport
+final readonly class CommandReport
 {
     /**
      * @param  list<ReportLine>  $lines
@@ -34,6 +35,20 @@ final readonly class RunReport
     public function output(string $text): self
     {
         return $this->with(ReportLineType::Output, $text);
+    }
+
+    /**
+     * Prints every line to the command, each as its type says.
+     */
+    public function printTo(Command $command): void
+    {
+        foreach ($this->lines as $line) {
+            match ($line->type) {
+                ReportLineType::Line => $command->line($line->text),
+                ReportLineType::Error => $command->error($line->text),
+                ReportLineType::Output => $command->getOutput()->write($line->text),
+            };
+        }
     }
 
     private function with(ReportLineType $type, string $text): self

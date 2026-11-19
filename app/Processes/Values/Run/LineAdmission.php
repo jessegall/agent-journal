@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Values\Run;
 
+use App\AgentRequests\Values\CommandReport;
+
 /**
  * The journal's answer to a line to admit: the run it admitted, or why it refused and what to do instead.
  */
@@ -53,9 +55,9 @@ final readonly class LineAdmission
         return new AdmissionToRun($this->runId, $this->environment);
     }
 
-    public function refusalReport(): RunReport
+    public function refusalReport(): CommandReport
     {
-        $report = RunReport::ending(1)->error($this->refusal)->line("Correction: {$this->correction}");
+        $report = CommandReport::ending(1)->error($this->refusal)->line("Correction: {$this->correction}");
 
         return $this->requestId === '' ? $report : $report->line("Request {$this->requestId}. Next: {$this->next}");
     }

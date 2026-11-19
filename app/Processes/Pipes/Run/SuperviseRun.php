@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Processes\Pipes\Run;
 
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Values\CommandReport;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Execution\ChannelRunEvents;
 use App\Processes\Execution\Supervisor;
 use App\Processes\Values\Run\FetchedAdmission;
-use App\Processes\Values\Run\RunReport;
 use App\Processes\Values\Run\SupervisedRun;
 
 /**
@@ -37,6 +37,6 @@ final readonly class SuperviseRun implements Pipe
         $events->flush();
         $preview = mb_substr($outcome->output, -self::PREVIEW_CHARACTERS);
 
-        return new SupervisedRun($admission->runId, RunReport::ending($outcome->status)->output($preview));
+        return new SupervisedRun($admission->runId, CommandReport::ending($outcome->status)->output($preview));
     }
 }

@@ -4,14 +4,10 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\Pipelines\Support\Pipelines;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
-use App\Processes\Enums\ReportLineType;
-use App\Processes\Exceptions\AdmittedPlanChanged;
-use App\Processes\Exceptions\EvidencePermitRequired;
 use App\Processes\Pipelines\RunProcessPipeline;
-use App\Processes\Values\Run\RunReport;
 use App\Processes\Values\Run\RunStart;
 use Illuminate\Console\Command;
 
@@ -23,6 +19,8 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class RunProcessCommand extends Command
 {
+    use RunsCallPipelines;
+
     /**
      * Variables a child never inherits: the journal's launch token and the run's event key.
      */
@@ -35,25 +33,9 @@ final class RunProcessCommand extends Command
 
     protected $description = 'Run an admitted command line under the supervisor and print the start of its output';
 
-    public function handle(Pipelines $pipelines): int
+    public function handle(): int
     {
-        try {
-            $report = $pipelines->run(RunProcessPipeline::class, $this->start(), RunReport::class);
-        } catch (EvidencePermitRequired|AdmittedPlanChanged $refusal) {
-            $this->error($refusal->getMessage());
-
-            return self::FAILURE;
-        }
-
-        foreach ($report->lines as $line) {
-            match ($line->type) {
-                ReportLineType::Line => $this->line($line->text),
-                ReportLineType::Error => $this->error($line->text),
-                ReportLineType::Output => $this->output->write($line->text),
-            };
-        }
-
-        return $report->status;
+        return $this->runCalls(RunProcessPipeline::class, $this->start());
     }
 
     private function start(): RunStart

@@ -23,6 +23,8 @@ final class RequestKey
 
     private int $depth = 0;
 
+    private bool $receiptTaken = false;
+
     /**
      * @throws RequestKeyInvalid
      */
@@ -41,6 +43,20 @@ final class RequestKey
     public function forget(): void
     {
         $this->key = null;
+        $this->receiptTaken = false;
+    }
+
+    /**
+     * Notes that the outermost command took its receipt under the request's key.
+     */
+    public function markReceiptTaken(): void
+    {
+        $this->receiptTaken = true;
+    }
+
+    public function wasReceiptTaken(): bool
+    {
+        return $this->receiptTaken;
     }
 
     /**

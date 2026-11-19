@@ -60,11 +60,46 @@ use App\Actors\Values\AbilityRequirement;
 use App\Actors\Values\OwnerAuthority;
 use App\Actors\Values\PolicyRegistration;
 use App\Actors\Values\TrustedEntryAuthority;
+use App\AgentRequests\Attributes\Endpoint;
+use App\AgentRequests\Attributes\InPath;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Contracts\CallRefusal;
+use App\AgentRequests\Contracts\CallSender;
+use App\AgentRequests\Contracts\JournalCall;
+use App\AgentRequests\Enums\CallEffect;
+use App\AgentRequests\Enums\ReceiptOwner;
+use App\AgentRequests\Enums\ReportLineType;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\AgentRequests\Exceptions\AnswerUnreadable;
+use App\AgentRequests\Exceptions\CallCancelled;
+use App\AgentRequests\Exceptions\CallConflict;
+use App\AgentRequests\Exceptions\CallFailed;
+use App\AgentRequests\Exceptions\CallKeyConflict;
+use App\AgentRequests\Exceptions\CallKeyExpired;
+use App\AgentRequests\Exceptions\CallKeyInvalid;
+use App\AgentRequests\Exceptions\CallRefused;
+use App\AgentRequests\Exceptions\CallTooLarge;
+use App\AgentRequests\Exceptions\ClientOutOfDate;
+use App\AgentRequests\Exceptions\CommandStopped;
+use App\AgentRequests\Exceptions\DeadlineExpired;
+use App\AgentRequests\Exceptions\InputRefused;
+use App\AgentRequests\Exceptions\JournalBusy;
+use App\AgentRequests\Exceptions\JournalUnavailable;
+use App\AgentRequests\Exceptions\NotAllowed;
+use App\AgentRequests\Exceptions\NotAuthenticated;
+use App\AgentRequests\Exceptions\OutcomeUnknown;
+use App\AgentRequests\Exceptions\ProfilesUnavailable;
+use App\AgentRequests\Exceptions\RecordNotFound;
+use App\AgentRequests\Exceptions\StaleContinuation;
+use App\AgentRequests\Exceptions\StateBlocked;
 use App\AgentRequests\Support\AgentReply;
+use App\AgentRequests\Support\CallKey;
+use App\AgentRequests\Values\CallAnswer;
+use App\AgentRequests\Values\CallToSend;
+use App\AgentRequests\Values\CommandReport;
+use App\AgentRequests\Values\ReportLine;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
@@ -940,6 +975,9 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                JournalCall::class,
+                CallSender::class,
+                CallRefusal::class,
                 RecordProvider::class,
                 RecordResolver::class,
                 RecordLinker::class,
@@ -1113,6 +1151,16 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                Endpoint::class,
+                InPath::class,
+                CallEffect::class,
+                ReceiptOwner::class,
+                CallKey::class,
+                CommandReport::class,
+                ReportLine::class,
+                ReportLineType::class,
+                CallToSend::class,
+                CallAnswer::class,
                 RefusalCode::class,
                 ReceiptState::class,
                 Operation::class,
@@ -1610,6 +1658,28 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                CommandStopped::class,
+                CallFailed::class,
+                CallRefused::class,
+                AnswerUnreadable::class,
+                InputRefused::class,
+                NotAuthenticated::class,
+                NotAllowed::class,
+                RecordNotFound::class,
+                StateBlocked::class,
+                CallConflict::class,
+                CallKeyConflict::class,
+                CallKeyExpired::class,
+                StaleContinuation::class,
+                JournalBusy::class,
+                JournalUnavailable::class,
+                CallCancelled::class,
+                ClientOutOfDate::class,
+                ProfilesUnavailable::class,
+                CallTooLarge::class,
+                DeadlineExpired::class,
+                OutcomeUnknown::class,
+                CallKeyInvalid::class,
                 BuiltInProfileMissing::class,
                 AutoAssignmentSizeInvalid::class,
                 OfflineReplyModeInvalid::class,

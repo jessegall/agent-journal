@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Values\Run;
+namespace App\AgentRequests\Values;
 
-use App\Processes\Enums\ReportLineType;
+use App\AgentRequests\Enums\ReportLineType;
 
 /**
- * One line the run command prints.
+ * One line a console command prints.
  */
 final readonly class ReportLine
 {

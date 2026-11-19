@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Processes\Pipes\Run;
 
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Values\CommandReport;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Values\Run\PartResult;
-use App\Processes\Values\Run\RunReport;
 use App\Processes\Values\Run\SupervisedRun;
 
 /**
@@ -17,7 +17,7 @@ final readonly class ReportPartResults implements Pipe
 {
     public function __construct(private AgentRequestSender $journal) {}
 
-    public function handle(SupervisedRun $run): RunReport
+    public function handle(SupervisedRun $run): CommandReport
     {
         $summary = $this->journal->send("/agent/processes/runs/{$run->runId}/output", ['mode' => 'summary'])->body;
         $report = $run->report->line('')->line("Output {$run->runId}: read it with journal output read {$run->runId}");

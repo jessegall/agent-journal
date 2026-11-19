@@ -6,12 +6,11 @@ namespace App\AgentRequests\Exceptions;
 
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
-use RuntimeException;
 
 /**
  * A prepared call whose deadline passed before it could be sent; it never reached the journal.
  */
-final class CallDeadlinePassed extends RuntimeException implements CodedRefusal
+final class CallDeadlinePassed extends CallFailed implements CodedRefusal
 {
     public static function for(string $callId): self
     {

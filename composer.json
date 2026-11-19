@@ -112,6 +112,8 @@
             "npm run types:check",
             "@test"
         ],
+        "calls:generate": "@php artisan journal:calls",
+        "calls:check": "@php artisan journal:calls --check",
         "types:generate": [
             "@php artisan typescript:transform"
         ],

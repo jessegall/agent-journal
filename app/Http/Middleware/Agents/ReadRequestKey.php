@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Agents;
 
+use App\AgentRequests\Enums\ReceiptOwner;
+use App\AgentRequests\Exceptions\KeyedWriteWithoutReceipt;
+use App\AgentRequests\Support\CallDeclaration;
+use App\AgentRequests\Support\CallRoutes;
 use App\Bus\Support\RequestKey;
 use Closure;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -17,21 +24,82 @@ final readonly class ReadRequestKey
 {
     private const string FIELD = 'request_key';
 
-    public function __construct(private RequestKey $key) {}
+    public function __construct(
+        private RequestKey $key,
+        private ExceptionHandler $failures,
+        private Application $app,
+    ) {}
 
     /**
+     * Reads the call's declaration on a route registered from one: undeclared body fields are refused, a keyed write
+     * needs its key, and only a write the bus keeps the receipt of hands the key to the bus. Older routes hand any
+     * key they carry.
+     *
      * @param  Closure(Request): Response  $next
+     *
+     * @throws ValidationException
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->filled(self::FIELD)) {
+        $call = $request->route()?->defaults[CallRoutes::CALL_DEFAULT] ?? null;
+        $declaration = is_string($call) && class_exists($call) ? CallDeclaration::of($call) : null;
+
+        if ($declaration !== null) {
+            self::requireDeclaredFields($request, $declaration);
+        }
+
+        $handsKey = $declaration === null || $declaration->endpoint->receipt === ReceiptOwner::CommandBus;
+
+        if ($handsKey && $request->filled(self::FIELD)) {
             $this->key->set($request->string(self::FIELD)->value());
         }
 
         try {
-            return $next($request);
+            $response = $next($request);
+            $this->guardReceipt($declaration);
+
+            return $response;
         } finally {
             $this->key->forget();
         }
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private static function requireDeclaredFields(Request $request, CallDeclaration $declaration): void
+    {
+        $undeclared = $declaration->undeclared(array_values(array_map(strval(...), $request->keys())));
+
+        if ($undeclared !== []) {
+            throw ValidationException::withMessages(array_fill_keys($undeclared, 'is not a field of this call'));
+        }
+
+        if ($declaration->needsReceipt() && ! $request->filled(self::FIELD)) {
+            throw ValidationException::withMessages([self::FIELD => 'is required for a keyed write']);
+        }
+    }
+
+    /**
+     * A write the bus keeps the receipt of that took none could apply twice on a retry: tests fail on it, production
+     * reports it.
+     */
+    private function guardReceipt(CallDeclaration|null $declaration): void
+    {
+        if ($declaration === null || $declaration->endpoint->receipt !== ReceiptOwner::CommandBus) {
+            return;
+        }
+
+        if ($this->key->wasReceiptTaken()) {
+            return;
+        }
+
+        $failure = KeyedWriteWithoutReceipt::for($declaration->call);
+
+        if ($this->app->runningUnitTests()) {
+            throw $failure;
+        }
+
+        $this->failures->report($failure);
     }
 }
