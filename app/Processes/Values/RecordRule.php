@@ -14,7 +14,11 @@ use App\Processes\Exceptions\ReaderDefinitionInvalid;
  */
 final readonly class RecordRule
 {
-    private const array PLACEHOLDERS = ['int' => '\d++', 'word' => '[^\s\'"]++', 'rest' => '.*+'];
+    /**
+     * What each placeholder matches: digits, a word with no space or quote, the rest of the line, or the shortest text
+     * that lets the literal after it match.
+     */
+    private const array PLACEHOLDERS = ['int' => '\d++', 'word' => '[^\s\'"]++', 'rest' => '.*+', 'text' => '.+?'];
 
     private function __construct(
         public RecordRole $role,
@@ -68,7 +72,7 @@ final readonly class RecordRule
      */
     private static function placeholder(string $placeholder): string
     {
-        if (preg_match('/^\{([a-z_]{1,32}):(int|word|rest)\}$/', $placeholder, $match) !== 1) {
+        if (preg_match('/^\{([a-z_]{1,32}):(int|word|rest|text)\}$/', $placeholder, $match) !== 1) {
             throw ReaderDefinitionInvalid::placeholder($placeholder);
         }
 

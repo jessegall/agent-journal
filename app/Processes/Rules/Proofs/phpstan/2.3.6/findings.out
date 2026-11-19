@@ -1,0 +1,1 @@
+{"totals":{"errors":0,"file_errors":1},"files":{"/tmp/proof/findings.php":{"errors":1,"messages":[{"message":"Function missing_function not found.","line":5,"ignorable":true,"tip":"Learn more at https://phpstan.org/user-guide/discovering-symbols","identifier":"function.notFound"}]}},"errors":[]}

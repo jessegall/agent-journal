@@ -1,0 +1,18 @@
+note: You are running `vp build` as a Vite+ built-in command. If you meant to run the build npm script, use `vpr build` instead.
+transforming...
+✓ 1 modules transformed.
+✗ Build failed in 8ms
+error during build:
+Build failed with 1 error:
+
+[31m[UNRESOLVED_ENTRY] [0mCannot resolve entry module ../tmp/proof/vite-missing/index.html.
+
+    at aggregateBindingErrorsIntoJsError (file:///app/node_modules/vite/dist/rolldown/shared/error-D0SD8_tL.mjs:49:18)
+    at unwrapBindingResult (file:///app/node_modules/vite/dist/rolldown/shared/error-D0SD8_tL.mjs:19:128)
+    at #build (file:///app/node_modules/vite/dist/rolldown/shared/rolldown-C6XsX6Be.mjs:145:34)
+    at async buildEnvironment (file:///app/node_modules/vite/dist/vite/node/chunks/node.js:39967:66)
+    at async Object.build (file:///app/node_modules/vite/dist/vite/node/chunks/node.js:40388:19)
+    at async Object.buildApp (file:///app/node_modules/vite/dist/vite/node/chunks/node.js:40385:153)
+    at async CAC.<anonymous> (file:///app/node_modules/vite/dist/vite/node/cli.js:789:3) {
+  errors: [Getter/Setter]
+}

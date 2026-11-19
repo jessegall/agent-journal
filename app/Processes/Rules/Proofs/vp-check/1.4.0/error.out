@@ -1,0 +1,13 @@
+error: Formatting could not start
+Checking formatting...
+
+package.json (0ms)
+
+  x Unexpected token
+   ,-[index.ts:1:14]
+ 1 | export const = ;
+   :              ^
+   `----
+Error occurred when checking code style in the above files.
+
+Formatting failed before analysis started

@@ -15,7 +15,7 @@ Question 10 had approved edges from the domains to Hooks, Agents and Links. With
 | Web | Rules | the rules page reads rules and approves or denies proposed ones | approved (question 13) |
 | Helpers | none | it reads profiles through Core's `App\Profiles` contracts (plan 18) and a subject's visibility through Core's `RecordVisibility` | approved (plan 10, decision P1) |
 
-The core's own needs from a domain go through contracts the core owns: Processes fills the core's `ShellCommandParser` with its shell parser.
+The core's own needs from a domain go through contracts the core owns: Processes fills the core's `ShellCommandParser` with its shell parser, which reads a line into a syntax tree and classifies each part by the active command rules (`docs/processes/classification.md`).
 
 ## Owner stores the plan had to create
 
@@ -26,7 +26,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 | Tasks | `tasks`, `Task`: title, state, run number, the agent and session working on it | task 62 |
 | Chat | `messages`, `Message`: body, state, the agent and session that owe an answer | task 63 |
 | Sequences | `sequence_runs`, `SequenceRun`: steps, current step, state, the agent and session | task 64 |
-| Processes | `ShellParser`: the shell parser and the command catalog; `command_aliases`, `CommandAlias` | tasks 65, 91, 175 |
+| Processes | `ShellCommandParser` over the shell syntax tree and the reviewed command rules (see `docs/processes`); `command_aliases`, `CommandAlias` | tasks 65, 91, 175, plan 14 |
 | Core (Agents) | `agents`, `agent_sessions`, `launch_credentials` and the launch, loss and child operations | tasks 57, 70, 72 |
 | Memory | `memories`: weighed by the agent and given at every context start, never faded (plan 10 task 290) | task 71 |
 | Rules | `rules`, `Rule`: text and state | task 71 |

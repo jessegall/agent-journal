@@ -29,6 +29,7 @@ final readonly class BuildRules
 
         return [
             $this->build('core.vite.build', new ProgramSpellings('vite'), ['build'], ArgumentGrammar::none()->withOptions(OptionGrammar::valued(OperandType::Name, '--mode'), OptionGrammar::flag('--watch')), $build),
+            $this->build('core.vp.build', new ProgramSpellings('vp'), ['build'], ArgumentGrammar::none()->withOptions(OptionGrammar::valued(OperandType::Name, '--mode'), OptionGrammar::flag('--watch')), $build),
             $this->build('core.pnpm.build', new ProgramSpellings('pnpm'), ['build'], ArgumentGrammar::none(), $build),
             $this->build('core.yarn.build', new ProgramSpellings('yarn'), ['build'], ArgumentGrammar::none(), $build),
             $this->build('core.php.artisan-typescript-transform', new ProgramSpellings('php', ['php8.1', 'php8.2', 'php8.3', 'php8.4', 'php8.5']), ['artisan', 'typescript:transform'], ArgumentGrammar::none(), $build),
@@ -44,6 +45,6 @@ final readonly class BuildRules
      */
     private function build(string $id, ProgramSpellings $program, array $subcommands, ArgumentGrammar $arguments, CommandClassSet $classes): CommandRule
     {
-        return CommandRule::forCheck($id, $program, $subcommands, $arguments, $classes, CommandType::Build, $id === 'core.vite.build' ? ToolType::ViteBuild : ToolType::Other);
+        return CommandRule::forCheck($id, $program, $subcommands, $arguments, $classes, CommandType::Build, in_array($id, ['core.vite.build', 'core.vp.build'], true) ? ToolType::ViteBuild : ToolType::Other);
     }
 }

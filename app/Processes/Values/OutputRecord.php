@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Enums\ClaimedOutcome;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RecordRole;
 
@@ -54,6 +55,32 @@ final readonly class OutputRecord
     {
         $stream = OutputStream::from($fields['stream']);
 
-        return new self($stream, $fields['start'], $fields['end'], RecordRole::from($fields['role']), $fields['captures']);
+        return new self(
+            $stream,
+            $fields['start'],
+            $fields['end'],
+            RecordRole::from($fields['role']),
+            $fields['captures'],
+        );
+    }
+
+    /**
+     * The outcome an outcome line claims by the group it fills: passed, failed, or neither.
+     */
+    public function claimedOutcome(): ClaimedOutcome
+    {
+        return match (true) {
+            $this->hasFilled('passed') => ClaimedOutcome::Passed,
+            $this->hasFilled('failed') => ClaimedOutcome::Failed,
+            default => ClaimedOutcome::Unknown,
+        };
+    }
+
+    /**
+     * Whether the record captured some text in the field.
+     */
+    private function hasFilled(string $field): bool
+    {
+        return array_key_exists($field, $this->captures) && $this->captures[$field] !== '';
     }
 }

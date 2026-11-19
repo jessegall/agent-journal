@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="PHP CS Fixer" tests="1" assertions="1" failures="0" errors="0">
+    <properties>
+      <property name="about" value="PHP CS Fixer 3.95.30 Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors."/>
+    </properties>
+    <testcase name="All OK" assertions="1"/>
+  </testsuite>
+</testsuites>

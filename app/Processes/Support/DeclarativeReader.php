@@ -72,7 +72,9 @@ final readonly class DeclarativeReader implements OutputReader
         $progress = $this->progressOf($builder, $checkpoint, $summary);
         $final = $builder->build();
 
-        return new ReaderAssessment($final->records, $final->problems, $counts, $progress, $this->claimOf($summary));
+        $claimed = $this->claimOf($summary, $this->recordsOf($final, RecordRole::Outcome), $final->records === []);
+
+        return new ReaderAssessment($final->records, $final->problems, $counts, $progress, $claimed);
     }
 
     private function readFrame(CheckpointBuilder $builder, OutputFrame $frame): void
@@ -241,15 +243,28 @@ final readonly class DeclarativeReader implements OutputReader
         return $progress;
     }
 
-    private function claimOf(OutputRecord|null $summary): ClaimedOutcome
+    /**
+     * What the output claims: the summary's failure count where the reader names one, else the last outcome line by
+     * the passed or failed group it fills, else success for an empty output the contract allows as one.
+     *
+     * @param  list<OutputRecord>  $outcomes
+     */
+    private function claimOf(OutputRecord|null $summary, array $outcomes, bool $empty): ClaimedOutcome
     {
         $field = $this->definition->failureField;
         $failures = $field === null ? null : $summary?->count($field);
-        if ($failures === null) {
-            return ClaimedOutcome::Unknown;
+
+        if ($failures !== null) {
+            return $failures === 0 ? ClaimedOutcome::Passed : ClaimedOutcome::Failed;
         }
 
-        return $failures === 0 ? ClaimedOutcome::Passed : ClaimedOutcome::Failed;
+        $last = $outcomes === [] ? null : $outcomes[array_key_last($outcomes)];
+
+        return match (true) {
+            $last !== null => $last->claimedOutcome(),
+            $empty && $this->contract->allowsEmptySuccess() => ClaimedOutcome::Passed,
+            default => ClaimedOutcome::Unknown,
+        };
     }
 
     /**

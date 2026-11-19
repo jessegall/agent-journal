@@ -1,0 +1,19 @@
+{
+    "samples": [
+        {
+            "file": "clean.out",
+            "exit": 0,
+            "proves": "passed"
+        },
+        {
+            "file": "findings.out",
+            "exit": 1,
+            "proves": "findings"
+        },
+        {
+            "file": "error.out",
+            "exit": 1,
+            "proves": "refused"
+        }
+    ]
+}

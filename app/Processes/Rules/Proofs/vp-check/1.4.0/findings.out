@@ -1,0 +1,5 @@
+error: Formatting issues found
+index.ts (0ms)
+package.json (0ms)
+
+Found formatting issues in 2 files (8ms, 6 threads). Run `vp check --fix` to fix them.

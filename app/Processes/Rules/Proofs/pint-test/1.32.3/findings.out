@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="PHP CS Fixer" tests="1" assertions="6" failures="6" errors="0">
+    <properties>
+      <property name="about" value="PHP CS Fixer 3.95.30 Adalbertus by Fabien Potencier, Dariusz Ruminski and contributors."/>
+    </properties>
+    <testcase name="/tmp/proof/style" file="/tmp/proof/style.php" assertions="6">
+      <failure type="code_style"><![CDATA[Wrong code style]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

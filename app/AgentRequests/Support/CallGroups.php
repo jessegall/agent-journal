@@ -131,7 +131,7 @@ final class CallGroups
             $parameters,
         ));
         $answer = '\\'.$endpoint->answer;
-        $docblock = self::docblock(new ReflectionClass($call)->getConstructor()?->getDocComment());
+        $docblock = self::docblock(new ReflectionClass($call));
 
         return <<<PHP
 
@@ -183,10 +183,15 @@ final class CallGroups
     }
 
     /**
-     * The array shapes the call's constructor documents, so the group method types its arrays as the call does.
+     * The array shapes the call's constructor documents, so the group method types its arrays as the call does; a
+     * class named in a shape is written in full, since the group file does not share the call's imports.
+     *
+     * @param  ReflectionClass<object>  $call
      */
-    private static function docblock(string|false|null $constructorDoc): string
+    private static function docblock(ReflectionClass $call): string
     {
+        $constructorDoc = $call->getConstructor()?->getDocComment();
+
         if (! is_string($constructorDoc)) {
             return '';
         }
@@ -197,8 +202,51 @@ final class CallGroups
             return '';
         }
 
-        $lines = array_map(fn (array $param) => "     * @param  {$param[1]}  {$param[2]}\n", $params);
+        $imports = self::importsOf($call);
+        $lines = array_map(
+            fn (array $param) => '     * @param  '.self::fullyNamed($param[1], $imports, $call)."  {$param[2]}\n",
+            $params,
+        );
 
         return "/**\n".implode('', $lines)."     */\n";
+    }
+
+    /**
+     * The classes the call's file imports, by the short name it uses for each.
+     *
+     * @param  ReflectionClass<object>  $call
+     * @return array<string, string>
+     */
+    private static function importsOf(ReflectionClass $call): array
+    {
+        preg_match_all(
+            '/^use\s+([\w\\\\]+)(?:\s+as\s+(\w+))?;/m',
+            (string) file_get_contents((string) $call->getFileName()),
+            $uses,
+            PREG_SET_ORDER,
+        );
+        $imports = [];
+
+        foreach ($uses as $use) {
+            $imports[$use[2] ?? class_basename($use[1])] = $use[1];
+        }
+
+        return $imports;
+    }
+
+    /**
+     * The type with every class name in it written in full: an imported name by its import, any other by the
+     * call's own namespace.
+     *
+     * @param  array<string, string>  $imports
+     * @param  ReflectionClass<object>  $call
+     */
+    private static function fullyNamed(string $type, array $imports, ReflectionClass $call): string
+    {
+        return (string) preg_replace_callback(
+            '/(?<![\w\\\\])[A-Z]\w*/',
+            fn (array $name) => '\\'.($imports[$name[0]] ?? $call->getNamespaceName().'\\'.$name[0]),
+            $type,
+        );
     }
 }

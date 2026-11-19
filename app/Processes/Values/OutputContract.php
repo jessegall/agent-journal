@@ -92,6 +92,11 @@ final readonly class OutputContract
     /**
      * Whether a run that read no record breaks the contract.
      */
+    public function allowsEmptySuccess(): bool
+    {
+        return $this->empty->policy === EmptyPolicy::AllowedSuccess;
+    }
+
     public function isEmptyRefused(): bool
     {
         return $this->empty->policy === EmptyPolicy::Invalid;

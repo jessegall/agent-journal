@@ -1,0 +1,9 @@
+note: You are running `vp build` as a Vite+ built-in command. If you meant to run the build npm script, use `vpr build` instead.
+transforming...
+✓ 4 modules transformed.
+rendering chunks...
+computing gzip size...
+../tmp/proof/vite-clean/dist/index.html                0.09 kB │ gzip: 0.10 kB
+../tmp/proof/vite-clean/dist/assets/index-CAUvuim5.js  0.68 kB │ gzip: 0.40 kB
+
+✓ built in 34ms
