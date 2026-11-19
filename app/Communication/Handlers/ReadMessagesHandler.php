@@ -20,7 +20,7 @@ final readonly class ReadMessagesHandler implements CommandHandler
      */
     public function handle(ReadMessages $command): MessageReadBatch
     {
-        [$inbox, $membership] = $this->reading->admit($command->inboxId);
+        [$inbox, $membership] = $this->reading->admit($command->inboxId, $command->dispatchedBy());
         $messages = Message::query()
             ->whereKey($command->messageIds)
             ->where('destination_inbox_id', $inbox->inboxId())

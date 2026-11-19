@@ -6,8 +6,8 @@ namespace App\Settings\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Settings\Enums\SettingAbility;
 use App\Settings\Handlers\ResetSettingHandler;
 use App\Settings\Models\SettingsRecord;
@@ -18,11 +18,11 @@ use App\Settings\Values\SettingsChange;
 /**
  * Removes a setting's override so it follows its declared default again.
  *
- * @implements Command<SettingsChange>
+ * @extends Command<SettingsChange>
  */
 #[HandledBy(ResetSettingHandler::class)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
-final readonly class ResetSetting implements Command, HasAuthorizationSubject
+final readonly class ResetSetting extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public SettingReference $setting,

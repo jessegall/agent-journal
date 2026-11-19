@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Actors\Support\ActorContext;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Contracts\AgentHeartbeatSource;
@@ -15,17 +16,18 @@ use App\Agents\Models\AgentSession;
 
 /**
  * The driver side of the heartbeat: evidence from the host that runs the session's current process refreshes its
- * presence by RecordHeartbeat's own rule, inside the host's command, and a verified exit ends it through the launch lifecycle. Silence ends nothing.
+ * presence by RecordHeartbeat's own rule, inside the host's command and for its actor, and a verified exit ends it
+ * through the launch lifecycle. Silence ends nothing.
  */
 final readonly class DriverHeartbeatSource implements AgentHeartbeatSource
 {
     public function __construct(private RecordHeartbeatHandler $beats, private LaunchHeartbeats $heartbeats) {}
 
-    public function record(AgentSession $session, RuntimeEvidence $evidence): void
+    public function record(AgentSession $session, RuntimeEvidence $evidence, ActorContext $actor): void
     {
         $this->requireCurrent($session, $evidence->hostId, $evidence->processGeneration);
 
-        $this->beats->handle(new RecordHeartbeat($session->id));
+        $this->beats->handle(new RecordHeartbeat($session->id)->withDispatcher($actor));
     }
 
     public function recordExit(AgentSession $session, RuntimeExit $exit): void

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Exceptions\MessageMissing;
 use App\Contracts\CommandHandler;
@@ -15,7 +14,6 @@ use Domain\Chat\Support\PinnableMessages;
 final readonly class PinMessageHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private PinnableMessages $pinnable,
     ) {}
 
@@ -26,7 +24,7 @@ final readonly class PinMessageHandler implements CommandHandler
     {
         $this->pinnable->requireIn($command->conversation(), $command->messageId);
         MessagePin::pinFor(
-            ActorIdentity::of($this->actors->actor()),
+            ActorIdentity::of($command->dispatchedBy()),
             $command->conversation(),
             $command->messageId,
         );

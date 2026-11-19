@@ -6,8 +6,8 @@ namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Handlers\RevokeProfilesHandler;
 use App\Profiles\Models\Profile;
@@ -18,11 +18,11 @@ use App\Profiles\Values\ProfileKey;
  * The owner retires profiles: new launches can no longer choose them, while their keys and revisions stay readable.
  * The result is how many profiles were retired.
  *
- * @implements Command<int>
+ * @extends Command<int>
  */
 #[HandledBy(RevokeProfilesHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::Administer)]
-final readonly class RevokeProfiles implements Command, HasAuthorizationSubject
+final readonly class RevokeProfiles extends Command implements HasAuthorizationSubject
 {
     /**
      * @param  list<ProfileKey>  $keys

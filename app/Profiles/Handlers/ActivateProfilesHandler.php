@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\AbilityNotRegistered;
+use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
@@ -28,7 +28,6 @@ use App\Profiles\Values\ProfileDefinition;
 final readonly class ActivateProfilesHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private PolicyResolver $resolver,
         private ProfileResolver $profiles,
         private PolicyCatalogue $catalogue,
@@ -40,17 +39,17 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      */
     public function handle(ActivateProfiles $command): ProfileActivation
     {
-
-        return $this->activate($command->proposal);
+        return $this->activate($command->proposal, $command->dispatchedBy());
     }
 
     /**
-     * Activates the proposal's profiles; the journal's own install of its built-in profiles comes here directly.
+     * Activates the proposal's profiles with the actor as their author; the journal's own install of its built-in
+     * profiles comes here directly.
      *
      * @throws ProfilePolicyRefused
      * @throws AbilityNotRegistered
      */
-    public function activate(ProfileProposal $proposal): ProfileActivation
+    public function activate(ProfileProposal $proposal, ActorContext $actor): ProfileActivation
     {
         $hash = hash('sha256', json_encode($proposal, JSON_THROW_ON_ERROR));
         $keys = array_map(fn (ProposedProfile $profile) => $profile->key->key, $proposal->profiles);
@@ -68,7 +67,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         }
 
         $changes = array_map($this->changeOf(...), $definitions);
-        $author = ActorIdentity::of($this->actors->actor());
+        $author = ActorIdentity::of($actor);
 
         return new ProfileActivation(array_map(
             fn (ProfileDefinition $definition, ProfileChangeType $change) => new ActivatedProfile(

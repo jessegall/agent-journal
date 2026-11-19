@@ -6,8 +6,8 @@ namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Handlers\EditPlanHandler;
@@ -18,11 +18,11 @@ use Domain\Plans\Policies\PlanPolicy;
  * Gives a plan a new title, brief or type, refused when the plan moved past the revision the caller read; answers
  * the new revision. What is left out stays as it is.
  *
- * @implements Command<int>
+ * @extends Command<int>
  */
 #[HandledBy(EditPlanHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
-final readonly class EditPlan implements Command, HasAuthorizationSubject
+final readonly class EditPlan extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $planId,

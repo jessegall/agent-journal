@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sharing\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Contracts\CommandHandler;
 use App\Sharing\Actions\ShareGrants;
 use App\Sharing\Commands\ApproveShareRequest;
@@ -14,7 +13,6 @@ use App\Sharing\Support\ShareSummary;
 final readonly class ApproveShareRequestHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private ShareGrants $grants,
     ) {}
 
@@ -22,6 +20,12 @@ final readonly class ApproveShareRequestHandler implements CommandHandler
     {
         $duration = ShareDuration::of($command->minutesUntilExpiry);
 
-        return $this->grants->approve($this->actors->actor(), $command->shareId, $command->previewId, $command->previewChecksum, $duration)->summary();
+        return $this->grants->approve(
+            $command->dispatchedBy(),
+            $command->shareId,
+            $command->previewId,
+            $command->previewChecksum,
+            $duration,
+        )->summary();
     }
 }

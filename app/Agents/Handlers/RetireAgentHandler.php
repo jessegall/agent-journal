@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
@@ -28,14 +27,13 @@ use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
 
 /**
- * Retires an agent for good: it ends its sessions and releases its assignments, under the agent's exclusive lifecycle lock,
- * inside the command's transaction.
+ * Retires an agent for good: it ends its sessions and releases its assignments, under the agent's exclusive
+ * lifecycle lock, inside the command's transaction.
  */
 final readonly class RetireAgentHandler implements CommandHandler
 {
     public function __construct(
         private CurrentAuthorizer $authorizer,
-        private CurrentActor $actors,
         private AgentLifecycle $lifecycle,
         private AgentSessions $sessions,
         private LaunchCredentials $credentials,
@@ -48,7 +46,7 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         // The exclusive lifecycle lock comes first, so a launch of the same agent waits or is retried as a whole.
         $target = $this->lifecycle->lockExclusive($command->agentId);
-        $caller = ActorIdentity::of($this->actors->actor());
+        $caller = ActorIdentity::of($command->dispatchedBy());
         $this->requireAuthority($caller, $target);
 
         if ($target->isRetired()) {
@@ -77,7 +75,11 @@ final readonly class RetireAgentHandler implements CommandHandler
 
     private function endSessionsOf(Agent $target): void
     {
-        $sessions = AgentSession::query()->where('agent_id', $target->id)->with('credential')->readAll('every session of the retiring agent ends')->get();
+        $sessions = AgentSession::query()
+            ->where('agent_id', $target->id)
+            ->with('credential')
+            ->readAll('every session of the retiring agent ends')
+            ->get();
 
         // The session row before its credential, the order every other ending and a heartbeat take. A session with a
         // runtime is stopped through its host, which reports the exit that ends it.

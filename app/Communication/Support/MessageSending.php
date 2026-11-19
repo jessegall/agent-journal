@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
-use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Bus\Support\AcceptedReceipt;
@@ -27,7 +27,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class MessageSending
 {
     public function __construct(
-        private CurrentActor $actors,
         private InboxResolver $inboxes,
         private AcceptedReceipt $accepted,
         private InboxAttention $attention,
@@ -39,6 +38,7 @@ final readonly class MessageSending
         return $this->deliver(
             $command->sourceInboxId,
             $command->destinationInboxId,
+            $command->dispatchedBy(),
             fn (Inbox $source, Inbox $destination, ActorIdentity $author) => MessageEnvelope::send(
                 $source,
                 $destination,
@@ -53,6 +53,7 @@ final readonly class MessageSending
         return $this->deliver(
             $command->sourceInboxId,
             $command->destinationInboxId,
+            $command->dispatchedBy(),
             function (Inbox $source, Inbox $destination, ActorIdentity $author) use ($command): MessageEnvelope {
                 if ($this->inboxes->membersOf($destination) === []) {
                     throw AnswerImpossible::forInbox($destination->inboxId());
@@ -64,13 +65,14 @@ final readonly class MessageSending
     }
 
     /**
-     * Answers a message from its destination inbox back to its source inbox.
+     * Answers a message from its destination inbox back to its source inbox, written by the given author.
      */
-    public function reply(Message $original, string $body): Message
+    public function reply(Message $original, string $body, ActorContext $author): Message
     {
         return $this->deliver(
             $original->destination_inbox_id,
             $original->source_inbox_id,
+            $author,
             fn (Inbox $source, Inbox $destination, ActorIdentity $author) => MessageEnvelope::reply(
                 $source,
                 $destination,
@@ -86,9 +88,12 @@ final readonly class MessageSending
      *
      * @throws InboxUnavailable
      */
-    private function deliver(string $sourceInboxId, string $destinationInboxId, Closure $envelope): Message
-    {
-        $author = $this->actors->actor();
+    private function deliver(
+        string $sourceInboxId,
+        string $destinationInboxId,
+        ActorContext $author,
+        Closure $envelope,
+    ): Message {
         $source = $this->inboxes->resolve($sourceInboxId);
         $destination = $this->inboxes->resolve($destinationInboxId);
         $this->lockShared([$source, $destination]);

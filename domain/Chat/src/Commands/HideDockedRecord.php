@@ -7,8 +7,8 @@ namespace Domain\Chat\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Records\Support\RecordIdentity;
 use Domain\Chat\Enums\DockedRecordAbility;
 use Domain\Chat\Handlers\HideDockedRecordHandler;
@@ -19,12 +19,12 @@ use Domain\Chat\Support\ConversationPair;
 /**
  * Hides the asker's docked record in a conversation, keeping its placement.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(HideDockedRecordHandler::class)]
 #[Authorize(DockedRecordPolicy::class, DockedRecordAbility::Work)]
 #[RetainedActorRequestKey]
-final readonly class HideDockedRecord implements Command, HasAuthorizationSubject
+final readonly class HideDockedRecord extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $sourceInboxId,

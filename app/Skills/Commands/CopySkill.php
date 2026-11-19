@@ -6,8 +6,8 @@ namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Skills\Enums\SkillAbility;
 use App\Skills\Handlers\CopySkillHandler;
 use App\Skills\Models\Skill;
@@ -18,11 +18,11 @@ use App\Skills\Values\SkillRevisionResult;
  * A user copies a skill they may read, shipped or stored, into a new stored skill under a user- key: the copied text
  * is a snapshot with its source key and digest, never a live include.
  *
- * @implements Command<SkillRevisionResult>
+ * @extends Command<SkillRevisionResult>
  */
 #[HandledBy(CopySkillHandler::class)]
 #[Authorize(SkillAuthoringPolicy::class, SkillAbility::Administer)]
-final readonly class CopySkill implements Command, HasAuthorizationSubject
+final readonly class CopySkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $sourceKey,

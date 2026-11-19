@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Desks\Contracts\ReplyInboxes;
@@ -25,7 +24,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class StartTaskHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private Dispatcher $events,
         private RunClaims $claims,
         private ReplyInboxes $replyInboxes,
@@ -40,7 +38,7 @@ final readonly class StartTaskHandler implements CommandHandler
      */
     public function handle(StartTask $command, Task $task): int
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $this->requireRunNotTaken($task, $actor);
         $task->startRun();
         $run = TaskRun::currentFor($task, $actor, $this->replyInboxes->replyInboxIdFor($actor));

@@ -10,8 +10,8 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\UnassignPlanWorkHandler;
@@ -21,13 +21,13 @@ use Domain\Plans\Policies\PlanPolicy;
 /**
  * Releases a plan or phase and its unfinished work from the holder the caller saw, in one repeatable-read transaction.
  *
- * @implements Command<AssignmentResult>
+ * @extends Command<AssignmentResult>
  */
 #[HandledBy(UnassignPlanWorkHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-final readonly class UnassignPlanWork implements Command, HasAuthorizationSubject
+final readonly class UnassignPlanWork extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public RecordIdentity $root,

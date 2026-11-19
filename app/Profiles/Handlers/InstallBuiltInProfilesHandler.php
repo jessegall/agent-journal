@@ -26,6 +26,6 @@ final readonly class InstallBuiltInProfilesHandler implements CommandHandler
     {
         $proposal = ProfileProposal::fromConfiguration((array) $this->config->get('profiles', []))->withBuiltIns();
 
-        return $this->activation->activate($proposal);
+        return $this->activation->activate($proposal, $command->dispatchedBy());
     }
 }

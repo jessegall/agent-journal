@@ -6,8 +6,8 @@ namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Enums\DocumentAbility;
@@ -21,11 +21,11 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * A user closes an abandoned draft at the version they were shown, with a reason; a changed text becomes the next
  * revision under the draft's author.
  *
- * @implements Command<CloseResult>
+ * @extends Command<CloseResult>
  */
 #[HandledBy(RecoverDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Administer)]
-final readonly class RecoverDocument implements Command, HasAuthorizationSubject
+final readonly class RecoverDocument extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public DraftTarget $draft,

@@ -13,18 +13,18 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * The owner asks the host to start, or stop, a redacted recording of an agent's runtime, written in the host's
  * private state folder.
  *
- * @implements Command<DriverReceipt>
+ * @extends Command<DriverReceipt>
  */
 #[HandledBy(RecordRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-final readonly class RecordRuntime implements Command, HasAuthorizationSubject
+final readonly class RecordRuntime extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $agentId,

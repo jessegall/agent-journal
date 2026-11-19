@@ -10,18 +10,18 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * A person says, from evidence, whether an uncertain delivery arrived; one that did not may then be
  * retried. The request's new row version is the answer.
  *
- * @implements Command<int>
+ * @extends Command<int>
  */
 #[HandledBy(ResolveDriverDeliveryHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-final readonly class ResolveDriverDelivery implements Command, HasAuthorizationSubject
+final readonly class ResolveDriverDelivery extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $requestId,

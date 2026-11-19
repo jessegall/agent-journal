@@ -10,18 +10,18 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * A person gives a failed setting change a new value in its own place in the queue; the request's new row
  * version is the answer.
  *
- * @implements Command<int>
+ * @extends Command<int>
  */
 #[HandledBy(RepairDriverSettingsHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-final readonly class RepairDriverSettings implements Command, HasAuthorizationSubject
+final readonly class RepairDriverSettings extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $requestId,

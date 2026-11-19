@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Contracts\CommandHandler;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Commands\SettleReport;
@@ -15,11 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class SettleReportHandler implements CommandHandler
 {
-    public function __construct(
-        private RecordChanges $changes,
-        private CurrentActor $actors,
-        private Dispatcher $events,
-    ) {}
+    public function __construct(private RecordChanges $changes, private Dispatcher $events) {}
 
     public function handle(SettleReport $command): void
     {
@@ -28,7 +23,7 @@ final readonly class SettleReportHandler implements CommandHandler
 
         $this->changes->requireChangeOf($report);
 
-        if ($report->settle($this->actors->actor(), $command->reason, null)) {
+        if ($report->settle($command->dispatchedBy(), $command->reason, null)) {
             $this->events->dispatch(new RecordSettled(Report::LINK_TYPE, $report->id));
         }
     }

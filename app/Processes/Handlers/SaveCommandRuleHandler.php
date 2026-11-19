@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\SaveCommandRule;
@@ -21,7 +20,6 @@ use App\Processes\Values\OwnerApproval;
 final readonly class SaveCommandRuleHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private ProposalChecks $checks,
         private RuleApprovals $approvals,
         private ProjectKey $projects,
@@ -32,7 +30,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
      */
     public function handle(SaveCommandRule $command): ApprovalReceipt
     {
-        $owner = ActorIdentity::of($this->actors->actor());
+        $owner = ActorIdentity::of($command->dispatchedBy());
         $rule = $command->proposed->rule;
         if ($rule->hasContract()) {
             throw ApprovalRefused::checkWithoutRequest($rule->id);

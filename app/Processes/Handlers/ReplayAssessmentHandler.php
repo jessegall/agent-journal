@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ReplayAssessment;
@@ -25,7 +24,7 @@ use App\Processes\Values\ApprovedPair;
  */
 final readonly class ReplayAssessmentHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ProcessAdministration $administration, private PartAssessments $assessments) {}
+    public function __construct(private ProcessAdministration $administration, private PartAssessments $assessments) {}
 
     /**
      * @throws ReplayRefused
@@ -34,7 +33,7 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
     {
         $part = PartRun::query()->whereKey($command->partRunId)->lockForUpdate()->sole();
         $run = ProcessRun::ofAnyActor($part->process_run_id);
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         if (! $this->administration->isGrantedToCaller() && ! $run->isByActor($actor)) {
             throw ReplayRefused::notYours($part->id);
         }

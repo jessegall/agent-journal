@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Comments\Support;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStacks;
+use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Enums\WholeRecord;
@@ -22,20 +22,24 @@ use App\Text\Values\TextRange;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Writes a comment for the acting actor: the record is authorized first, a retry under the same submission key returns
- * the first comment, and listeners hear of it once it commits.
+ * Writes a comment for the author it is given: the record is authorized first, a retry under the same submission key
+ * returns the first comment, and listeners hear of it once it commits.
  */
 final readonly class CommentWriter
 {
     public function __construct(
         private RecordResolver $records,
-        private CurrentActor $actors,
         private WorkStacks $workStacks,
         private CommentEvents $events,
     ) {}
 
-    public function post(RecordIdentity $targetIdentity, string $text, WholeRecord|TextRange $subject, string $submissionKey): string
-    {
+    public function post(
+        RecordIdentity $targetIdentity,
+        string $text,
+        WholeRecord|TextRange $subject,
+        string $submissionKey,
+        ActorContext $actor,
+    ): string {
         $target = $this->records->requireReadable($targetIdentity);
 
         if (! $target instanceof Commentable) {
@@ -43,18 +47,27 @@ final readonly class CommentWriter
         }
 
         $body = MarkdownText::comment($text);
-        $actor = $this->actors->actor();
         $author = ActorIdentity::of($actor);
         $sessionId = $this->workStacks->sessionsToAdmit()[0] ?? null;
         $hash = self::hashOf($targetIdentity, $subject, $body);
         $earlier = Comment::query()->submittedAs($author, $sessionId, $submissionKey)->first();
 
         if ($earlier !== null) {
-            return $earlier->submission_hash === $hash ? $earlier->id : throw SubmissionKeyConflict::for($submissionKey);
+            return $earlier->submission_hash === $hash
+                ? $earlier->id
+                : throw SubmissionKeyConflict::for($submissionKey);
         }
 
         $comment = $subject instanceof TextRange
-            ? Comment::postOnText($target, $author, $sessionId, $body, $subject->anchorIn(self::textOf($target, $targetIdentity)->textVersion($subject->version)), $submissionKey, $hash)
+            ? Comment::postOnText(
+                $target,
+                $author,
+                $sessionId,
+                $body,
+                $subject->anchorIn(self::textOf($target, $targetIdentity)->textVersion($subject->version)),
+                $submissionKey,
+                $hash,
+            )
             : Comment::postOnRecord($target, $author, $sessionId, $body, $submissionKey, $hash);
         $this->events->posted(new CommentPosted($comment->id, $targetIdentity));
 
@@ -74,8 +87,20 @@ final readonly class CommentWriter
     {
         $subjectFields = $subject instanceof WholeRecord
             ? ['record']
-            : ['text', $subject->version, $subject->type->value, $subject->sectionNumber, $subject->firstLine, $subject->lastLine, $subject->quote, $subject->startOffset, $subject->endOffset];
+            : [
+                'text',
+                $subject->version,
+                $subject->type->value,
+                $subject->sectionNumber,
+                $subject->firstLine,
+                $subject->lastLine,
+                $subject->quote,
+                $subject->startOffset,
+                $subject->endOffset,
+            ];
 
-        return hash('sha256', (string) json_encode(['comment', $subjectFields, $targetIdentity->type, $targetIdentity->id, $body]));
+        $fields = ['comment', $subjectFields, $targetIdentity->type, $targetIdentity->id, $body];
+
+        return hash('sha256', (string) json_encode($fields));
     }
 }

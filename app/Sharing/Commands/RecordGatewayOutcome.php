@@ -6,8 +6,8 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Handlers\RecordGatewayOutcomeHandler;
 use App\Sharing\Support\GatewayOperation;
@@ -16,11 +16,11 @@ use App\Sharing\Support\GatewayOperation;
  * The sharing supervisor's run reports what became of an operation it claimed, under the same endpoint version and
  * lease token; a stale run, another version or an expired lease is refused.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(RecordGatewayOutcomeHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
-final readonly class RecordGatewayOutcome implements Command
+final readonly class RecordGatewayOutcome extends Command
 {
     public function __construct(
         public string $runId,

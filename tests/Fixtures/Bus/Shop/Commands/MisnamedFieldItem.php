@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Bus\Shop\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Models\FixtureWork;
@@ -17,11 +17,11 @@ use Tests\Fixtures\Bus\Shop\Handlers\MisnamedFieldItemHandler;
 /**
  * A command with a rule naming a field it does not have.
  *
- * @implements Command<mixed>
+ * @extends Command<mixed>
  */
 #[HandledBy(MisnamedFieldItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
-final readonly class MisnamedFieldItem implements Command, HasAuthorizationSubject
+final readonly class MisnamedFieldItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         #[RequiredWithout('breif')] public string|null $title = null,

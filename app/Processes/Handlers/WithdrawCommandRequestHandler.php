@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\WithdrawCommandRequest;
@@ -14,14 +13,14 @@ use App\Processes\Support\ProcessAdministration;
 
 final readonly class WithdrawCommandRequestHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ProcessAdministration $administration) {}
+    public function __construct(private ProcessAdministration $administration) {}
 
     /**
      * @throws RequestTransitionRefused
      */
     public function handle(WithdrawCommandRequest $command): string
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $request = CommandRequest::lockedForChange($command->requestId);
         if (! $this->administration->isGrantedToCaller() && ! $request->isByActor($actor)) {
             throw RequestTransitionRefused::notTheRequester();

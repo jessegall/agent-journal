@@ -6,46 +6,82 @@ everything a module developer needs for that.
 
 ## A command and its handler
 
-A command is a final readonly value in the owner's `Commands` folder. It names its handler with `#[HandledBy]`, and its
-docblock says what it answers. A handler sits in `Handlers`, has one public `handle` method that takes the command, and
-holds no transaction code: the bus opens the transaction.
+A command is a final readonly value in the owner's `Commands` folder that extends `App\Bus\Support\Command` and
+declares only its business fields in its constructor. It names its handler with `#[HandledBy]`, and its docblock says
+what it answers. A handler sits in `Handlers`, has one public `handle` method that takes the command, and holds no
+transaction code: the bus opens the transaction.
+
+The handler reads who dispatched the command with `$command->dispatchedBy()`: an `App\Actors\Support\ActorContext`,
+the actor's type and id and nothing more, no authority. The bus binds it on every call. A command the caller has just
+built is unbound, and reading `dispatchedBy()` on it raises `App\Bus\Exceptions\CommandDispatcherMissing`.
 
 ```php
-namespace Domain\Tasks\Commands;
+namespace Domain\Rules\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
-use Domain\Tasks\Handlers\FinishTaskHandler;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
+use Domain\Rules\Enums\RuleAbility;
+use Domain\Rules\Handlers\ProposeRuleHandler;
+use Domain\Rules\Models\Rule;
+use Domain\Rules\Policies\RulePolicy;
 
 /**
- * @implements Command<null>
+ * Proposes a rule with its text; it holds only once the user approves it.
+ *
+ * @extends Command<string>
  */
-#[HandledBy(FinishTaskHandler::class)]
-final readonly class FinishTask implements Command
+#[HandledBy(ProposeRuleHandler::class)]
+#[Authorize(RulePolicy::class, RuleAbility::Propose)]
+final readonly class ProposeRule extends Command implements HasAuthorizationSubject
 {
-    public function __construct(public int $taskId) {}
-}
-```
+    public function __construct(
+        public string $text,
+        public string $reason,
+        public string|null $replacesRuleId = null,
+    ) {}
 
-```php
-namespace Domain\Tasks\Handlers;
-
-use Domain\Tasks\Api\Events\TaskFinished;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Models\Task;
-use Illuminate\Contracts\Events\Dispatcher;
-
-final readonly class FinishTaskHandler
-{
-    public function __construct(private Dispatcher $events) {}
-
-    public function handle(FinishTask $command): void
+    /**
+     * @return class-string
+     */
+    public function subject(): string
     {
-        Task::lockedById($command->taskId)->finish();
-        $this->events->dispatch(new TaskFinished($command->taskId));
+        return Rule::class;
     }
 }
 ```
+
+```php
+namespace Domain\Rules\Handlers;
+
+use App\Contracts\CommandHandler;
+use Domain\Rules\Commands\ProposeRule;
+use Domain\Rules\Exceptions\RuleMissing;
+use Domain\Rules\Models\Rule;
+
+final readonly class ProposeRuleHandler implements CommandHandler
+{
+    /**
+     * @throws RuleMissing when the rule it would replace does not exist
+     */
+    public function handle(ProposeRule $command): string
+    {
+        if ($command->replacesRuleId !== null) {
+            Rule::query()->find($command->replacesRuleId) ?? throw RuleMissing::withId($command->replacesRuleId);
+        }
+
+        $author = $command->dispatchedBy();
+
+        return Rule::proposed($command->text, $command->reason, $command->replacesRuleId, $author)->id;
+    }
+}
+```
+
+A handler that runs another handler directly, without the bus, binds that command to its own dispatcher with
+`withDispatcher($command->dispatchedBy())`, as `App\Agents\Handlers\OpenHostMainRuntimeHandler`,
+`App\Agents\Support\DriverHeartbeatSource` and `App\Profiles\Handlers\InstallBuiltInProfilesHandler` do. Every other
+command goes through the bus.
 
 A command carries whole numbers, text, yes or no, decimals, backed enums, their nullable forms, final readonly values the
 owner may name, and lists of those, never a model, a service or a stack target (a session is an int id the handler
@@ -102,9 +138,9 @@ public function __construct(
 - `App\Bus\CommandMiddleware\ValidateCommand` checks each call: it gives the validator only the ruled properties and
   leaves out a property whose value is null, as a field that was not sent; `RequiredWithout` sees it as missing. A
   command that declares no limit passes without a validator.
-- It runs after the actor check and before stack admission: a caller of the wrong actor type is refused for that first,
-  and bad input takes no stack turn, opens no transaction and leaves no refusal receipt, so the same request key can be
-  sent again with the input corrected. It runs before the check that the command's domain is switched on, so bad input
+- It runs after the actor check and the binding of the dispatcher, and before stack admission: a caller of the
+  wrong actor type is refused for that first, and bad input takes no stack turn, opens no transaction and leaves no
+  refusal receipt, so the same request key can be sent again with the input corrected. It runs before the check that the command's domain is switched on, so bad input
   to a disabled domain is refused for its input.
 - A command a module middleware replaces with a changed copy through `replacedBy` is trusted and not checked again.
 - An enum or a value class checks itself: its cases or its factory are the limit, never an attribute on the property.
@@ -155,10 +191,16 @@ public function commandMiddleware(): array
   when that owner exports it and the module requires it; every module may name Core's exported commands.
 - Stages: `around` runs before the transaction opens, and its writes are not rolled back; `inside` runs inside the
   command's transaction, so a refusal rolls its writes back with the handler's.
-- Order: Core's frame first (logging, the actor check, the input check, stack admission), then the before-transaction
-  stage, the
-  transaction, the inside stage and the handler. Within a stage, owners run in the order of `bootstrap/domains.php`, and
-  each owner's middleware in its declaration order.
+- Order: Core's frame first (logging, the entry check, binding the dispatcher, the input check, stack admission), then
+  the before-transaction stage, the transaction, the inside stage and the handler. Within a stage, owners run in the
+  order of `bootstrap/domains.php`, and each owner's middleware in its declaration order.
+
+`App\Bus\CommandMiddleware\BindDispatcher` runs right after `App\Bus\CommandMiddleware\CheckEntry`, before
+`App\Bus\CommandMiddleware\ValidateCommand`. It reads the request's actor from `App\Actors\Contracts\CurrentActor`
+and passes on `$call->withDispatcher($actor)`, a call whose command is a copy bound to that actor; the caller's own
+object stays unbound. A call without an actor is refused there with `App\Actors\Exceptions\ActorContextMissing`, before
+the input check and stack admission. `replacedBy($command)` keeps its one argument and binds the replacement to the
+call's actor, so module middleware never binds a command itself.
 
 A middleware implements `App\Bus\Contracts\CommandMiddleware` and gets an `App\Bus\Support\CommandCall`. The contract,
 each break of it refused by name:
@@ -190,7 +232,7 @@ The registry checks every declaration when the application starts:
 
 | Error | Fix |
 |---|---|
-| `App\Bus\Exceptions\CommandDeclarationInvalid` | Make the command final readonly in `Commands`, with fields and a result the grammar above allows. |
+| `App\Bus\Exceptions\CommandDeclarationInvalid` | Make the command final readonly in `Commands`, extending `App\Bus\Support\Command`, with fields and a result the grammar above allows. |
 | `App\Bus\Exceptions\CommandHandlerMissing` | Add `#[HandledBy]` naming a handler in the owner's `Handlers` folder. |
 | `App\Bus\Exceptions\CommandHandlerTwice` | Name one handler. |
 | `App\Bus\Exceptions\HandlerServesTwoCommands` | Give each command its own handler. |
@@ -221,5 +263,8 @@ records a refusal receipt in a new short transaction after the rollback, and nes
 own.
 
 These guarantees hold for code the suite's architecture tests scan (no dispatch around the bus, no explicit transaction
-in a handler), not for hostile PHP. Queued commands are refused for now. Doc 10's earlier "no command bus" decision is
+in a handler), not for hostile PHP. Commands run synchronously: a command that implements `ShouldQueue` is refused. The
+dispatcher is kept in a private field of the base, so it is never part of a command's fingerprint, its receipt or its
+public fields. A `CommandCall` built by hand is trusted code: its known gaps, such as a middleware passing on the same
+command early or `authorizedOn` on a hand-built call, stay as they are. Doc 10's earlier "no command bus" decision is
 replaced by this design.

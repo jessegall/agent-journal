@@ -8,17 +8,17 @@ use App\Agents\Handlers\ClaimDriverRequestsHandler;
 use App\Agents\Support\ClaimedRequests;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 
 /**
  * Hands a host the next accepted requests of its runtimes, at most a batch, taking turns between runtimes. Run for an authenticated host by the journal itself (internal, not exported).
  *
- * @implements Command<ClaimedRequests>
+ * @extends Command<ClaimedRequests>
  */
 #[HandledBy(ClaimDriverRequestsHandler::class)]
 #[Entry(CommandEntry::HostControl)]
-final readonly class ClaimDriverRequests implements Command
+final readonly class ClaimDriverRequests extends Command
 {
     public function __construct(
         public string $hostId,

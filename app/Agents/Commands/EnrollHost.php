@@ -8,17 +8,17 @@ use App\Agents\Handlers\EnrollHostHandler;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 
 /**
  * Enrolls a machine that may run agent programs, with the folders it may launch in; its secret is given once.
  *
- * @implements Command<EnrolledHost>
+ * @extends Command<EnrolledHost>
  */
 #[HandledBy(EnrollHostHandler::class)]
 #[Entry(CommandEntry::HostControl)]
-final readonly class EnrollHost implements Command
+final readonly class EnrollHost extends Command
 {
     /**
      * @param  list<string>  $launchRoots

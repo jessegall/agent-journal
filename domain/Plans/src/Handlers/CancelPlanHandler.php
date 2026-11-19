@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Contracts\CommandHandler;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Commands\CancelPlan;
@@ -14,7 +13,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class CancelPlanHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private Dispatcher $events) {}
+    public function __construct(private Dispatcher $events) {}
 
     /**
      * @throws PlanRevisionChanged
@@ -28,6 +27,6 @@ final readonly class CancelPlanHandler implements CommandHandler
         }
 
         $plan->cancel($command->reason);
-        $this->events->dispatch(new PlanCancelled($plan->id, $this->actors->actor()));
+        $this->events->dispatch(new PlanCancelled($plan->id, $command->dispatchedBy()));
     }
 }

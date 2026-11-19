@@ -6,8 +6,8 @@ namespace App\Settings\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Settings\Enums\SettingAbility;
 use App\Settings\Handlers\SetDecimalSettingHandler;
 use App\Settings\Models\SettingsRecord;
@@ -19,11 +19,11 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores an exact decimal setting's value as the owner's next revision.
  *
- * @implements Command<SettingsChange>
+ * @extends Command<SettingsChange>
  */
 #[HandledBy(SetDecimalSettingHandler::class)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
-final readonly class SetDecimalSetting implements Command, HasAuthorizationSubject
+final readonly class SetDecimalSetting extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public SettingReference $setting,

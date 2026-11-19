@@ -6,8 +6,8 @@ namespace Domain\Memory\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Handlers\EditMemoryHandler;
 use Domain\Memory\Models\Memory;
@@ -20,11 +20,11 @@ use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
  * Rewrites the text, the weight or both of one of the calling actor's memories at the revision the caller read, and
  * answers its id.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(EditMemoryHandler::class)]
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
-final readonly class EditMemory implements Command, HasAuthorizationSubject
+final readonly class EditMemory extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $memoryId,

@@ -13,18 +13,18 @@ use App\Agents\Support\StackTarget;
 use App\Agents\Values\ScriptParameter;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * An operator's request to run one registered maintenance key script, such as LoginMcp, on an agent's terminal. The
  * script is named by the operator's command, never read from a message body.
  *
- * @implements Command<DriverReceipt>
+ * @extends Command<DriverReceipt>
  */
 #[HandledBy(RunKeyScriptHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::RunKeyScript)]
-final readonly class RunKeyScript implements Command, HasAuthorizationSubject
+final readonly class RunKeyScript extends Command implements HasAuthorizationSubject
 {
     /**
      * @param  list<ScriptParameter>  $parameters

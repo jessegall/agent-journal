@@ -6,8 +6,8 @@ namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\SettleDocumentHandler;
 use Domain\Documents\Models\Document;
@@ -18,11 +18,11 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 /**
  * Settles a document at the revision the settler read, with the reason it needs no more attention.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(SettleDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-final readonly class SettleDocument implements Command, HasAuthorizationSubject
+final readonly class SettleDocument extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public int $documentNumber,

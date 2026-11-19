@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Contracts;
 
+use App\Actors\Support\ActorContext;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\DriverHeartbeatSource;
@@ -19,9 +20,11 @@ use Illuminate\Container\Attributes\Bind;
 interface AgentHeartbeatSource
 {
     /**
+     * Refreshes the session's presence on behalf of the actor whose command reported the evidence.
+     *
      * @throws HostReportRefused
      */
-    public function record(AgentSession $session, RuntimeEvidence $evidence): void;
+    public function record(AgentSession $session, RuntimeEvidence $evidence, ActorContext $actor): void;
 
     /**
      * @throws HostReportRefused

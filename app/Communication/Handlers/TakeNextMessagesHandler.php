@@ -16,7 +16,7 @@ final readonly class TakeNextMessagesHandler implements CommandHandler
 
     public function handle(TakeNextMessages $command): MessageReadBatch
     {
-        [$inbox, $membership] = $this->reading->admit($command->inboxId);
+        [$inbox, $membership] = $this->reading->admit($command->inboxId, $command->dispatchedBy());
         $limit = max(1, min($command->limit, TakeNextMessages::LARGEST_LIMIT));
         $candidates = Message::query()
             ->waitingForTakeUp($inbox->inboxId(), TakeNextMessages::LARGEST_LIMIT)

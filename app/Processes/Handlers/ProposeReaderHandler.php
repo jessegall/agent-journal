@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ProposeReader;
@@ -22,7 +21,7 @@ use App\Processes\Support\ProcessAdministration;
  */
 final readonly class ProposeReaderHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ProcessAdministration $administration) {}
+    public function __construct(private ProcessAdministration $administration) {}
 
     /**
      * @throws ReaderProposalRefused
@@ -30,7 +29,7 @@ final readonly class ProposeReaderHandler implements CommandHandler
      */
     public function handle(ProposeReader $command): string
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $request = CommandRequest::lockedForChange($command->commandRequestId);
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw ReaderProposalRefused::notTheRequester($request->id);

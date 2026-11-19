@@ -361,6 +361,7 @@ use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
 use App\Bus\Exceptions\OperationUnavailable;
 use App\Bus\Exceptions\StackLockTimedOut;
+use App\Bus\Support\Command as BaseCommand;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
@@ -1932,6 +1933,7 @@ final class CoreApi
                 RunsCallPipelines::class,
                 NamesRecipient::class,
                 NamesExpectedAssignment::class,
+                BaseCommand::class,
             )
             ->build();
     }

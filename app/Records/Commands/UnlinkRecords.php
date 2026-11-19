@@ -6,8 +6,8 @@ namespace App\Records\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Links\Models\Link;
 use App\Records\Enums\RecordLinkAbility;
 use App\Records\Handlers\UnlinkRecordsHandler;
@@ -17,11 +17,11 @@ use App\Records\Support\RecordIdentity;
 /**
  * Removes the link between two records in both directions and keeps both records; unlinking again changes nothing.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(UnlinkRecordsHandler::class)]
 #[Authorize(RecordLinkPolicy::class, RecordLinkAbility::Work)]
-final readonly class UnlinkRecords implements Command, HasAuthorizationSubject
+final readonly class UnlinkRecords extends Command implements HasAuthorizationSubject
 {
     public function __construct(public RecordIdentity $source, public RecordIdentity $target) {}
 

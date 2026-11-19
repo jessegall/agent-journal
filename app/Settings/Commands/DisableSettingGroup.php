@@ -6,8 +6,8 @@ namespace App\Settings\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Settings\Enums\SettingAbility;
 use App\Settings\Handlers\DisableSettingGroupHandler;
 use App\Settings\Models\SettingsRecord;
@@ -18,11 +18,11 @@ use App\Settings\Values\SettingsChange;
 /**
  * Switches off a group that can be switched off, keeping its settings' values.
  *
- * @implements Command<SettingsChange>
+ * @extends Command<SettingsChange>
  */
 #[HandledBy(DisableSettingGroupHandler::class)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
-final readonly class DisableSettingGroup implements Command, HasAuthorizationSubject
+final readonly class DisableSettingGroup extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public GroupReference $group,

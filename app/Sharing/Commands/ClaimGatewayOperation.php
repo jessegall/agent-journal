@@ -6,8 +6,8 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 use App\Sharing\Handlers\ClaimGatewayOperationHandler;
 use App\Sharing\Support\ClaimedGatewayOperation;
 
@@ -15,11 +15,11 @@ use App\Sharing\Support\ClaimedGatewayOperation;
  * The sharing supervisor's run claims a gateway operation, the one named or the oldest waiting, under a 90-second
  * lease; a run newer than the holder takes the gateways over first. Null when nothing waits.
  *
- * @implements Command<ClaimedGatewayOperation|null>
+ * @extends Command<ClaimedGatewayOperation|null>
  */
 #[HandledBy(ClaimGatewayOperationHandler::class)]
 #[Entry(CommandEntry::ShareGateway)]
-final readonly class ClaimGatewayOperation implements Command
+final readonly class ClaimGatewayOperation extends Command
 {
     public function __construct(
         public string $runId,

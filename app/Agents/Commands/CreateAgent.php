@@ -10,19 +10,19 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Creates an agent with a name and the profile it launches with, and answers its id; its owner, such as Helpers,
  * decides who it serves.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(CreateAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class CreateAgent implements Command, HasAuthorizationSubject
+final readonly class CreateAgent extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         #[Required] public string $name,

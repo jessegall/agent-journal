@@ -7,8 +7,8 @@ namespace App\Sharing\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Handlers\RetryShareHandler;
 use App\Sharing\Models\Share;
@@ -18,12 +18,12 @@ use App\Sharing\Support\ShareSummary;
 /**
  * The owner asks the gateway to open a pending or failed share again, before its deadline, which stays the same.
  *
- * @implements Command<ShareSummary>
+ * @extends Command<ShareSummary>
  */
 #[HandledBy(RetryShareHandler::class)]
 #[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-final readonly class RetryShare implements Command, HasAuthorizationSubject
+final readonly class RetryShare extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $shareId,

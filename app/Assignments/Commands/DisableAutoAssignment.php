@@ -13,18 +13,18 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Turns an actor's auto-assignment of one type off against the revision the caller read, keeping its pool and size.
  *
- * @implements Command<AutoAssignmentChange>
+ * @extends Command<AutoAssignmentChange>
  */
 #[HandledBy(DisableAutoAssignmentHandler::class)]
 #[Authorize(AssignmentPolicy::class, AssignmentAbility::Work)]
 #[RepeatableRead]
-final readonly class DisableAutoAssignment implements Command, HasAuthorizationSubject
+final readonly class DisableAutoAssignment extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public AutoAssignmentKey $key,

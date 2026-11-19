@@ -7,8 +7,8 @@ namespace App\Sharing\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Handlers\CreateShareHandler;
 use App\Sharing\Models\Share;
@@ -20,12 +20,12 @@ use App\Sharing\Support\ShareSummary;
  * in seven days when the owner names none. It runs once per request key, and answers with the share's id, number and
  * state, never its token.
  *
- * @implements Command<ShareSummary>
+ * @extends Command<ShareSummary>
  */
 #[HandledBy(CreateShareHandler::class)]
 #[Authorize(SharingPolicy::class, SharingAbility::Administer)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-final readonly class CreateShare implements Command, HasAuthorizationSubject
+final readonly class CreateShare extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $previewId,

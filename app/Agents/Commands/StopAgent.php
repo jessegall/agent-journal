@@ -12,17 +12,17 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Stops an agent's runtime: it takes no more requests from now on.
  *
- * @implements Command<DriverReceipt>
+ * @extends Command<DriverReceipt>
  */
 #[HandledBy(StopAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class StopAgent implements Command, HasAuthorizationSubject
+final readonly class StopAgent extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $agentId,

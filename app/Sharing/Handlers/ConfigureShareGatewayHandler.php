@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sharing\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Sharing\Commands\ConfigureShareGateway;
@@ -30,7 +29,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class ConfigureShareGatewayHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private SharePolicy $policy,
         private ShareGatewayRegistry $gateways,
         private GatewaySecrets $secrets,
@@ -39,7 +37,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
 
     public function handle(ConfigureShareGateway $command): GatewayConfiguration
     {
-        $owner = $this->actors->actor();
+        $owner = $command->dispatchedBy();
         $this->policy->requireManager($owner);
 
         if (! $this->gateways->has($command->gatewayKey)) {
@@ -52,7 +50,14 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
             }
         }
 
-        $settings = new GatewaySettings($command->gatewayKey, $command->executableVersion, $command->providerHost, $command->publicOrigin, $command->listenerPort, $command->secretReferences);
+        $settings = new GatewaySettings(
+            $command->gatewayKey,
+            $command->executableVersion,
+            $command->providerHost,
+            $command->publicOrigin,
+            $command->listenerPort,
+            $command->secretReferences,
+        );
         ShareInstallation::lockForAdmission();
         $configuration = ShareGatewayConfiguration::configure($settings);
 

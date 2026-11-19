@@ -6,8 +6,8 @@ namespace App\Settings\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Settings\Enums\SettingAbility;
 use App\Settings\Handlers\SetStringChoiceHandler;
 use App\Settings\Models\SettingsRecord;
@@ -18,11 +18,11 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores the chosen text option of a choice or string-backed enum setting as the owner's next revision.
  *
- * @implements Command<SettingsChange>
+ * @extends Command<SettingsChange>
  */
 #[HandledBy(SetStringChoiceHandler::class)]
 #[Authorize(SettingPolicy::class, SettingAbility::Administer)]
-final readonly class SetStringChoice implements Command, HasAuthorizationSubject
+final readonly class SetStringChoice extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public SettingReference $setting,

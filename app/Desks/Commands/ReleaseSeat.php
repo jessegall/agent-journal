@@ -9,8 +9,8 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Desks\Enums\DeskAbility;
 use App\Desks\Handlers\ReleaseSeatHandler;
 use App\Desks\Models\DeskRecord;
@@ -19,13 +19,13 @@ use App\Desks\Policies\DeskPolicy;
 /**
  * Empties a desk's seat, naming the seat's assignment as it was read.
  *
- * @implements Command<null>
+ * @extends Command<null>
  */
 #[HandledBy(ReleaseSeatHandler::class)]
 #[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]
-final readonly class ReleaseSeat implements Command, HasAuthorizationSubject
+final readonly class ReleaseSeat extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $deskId,

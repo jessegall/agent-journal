@@ -6,8 +6,8 @@ namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Handlers\CreatePlanHandler;
@@ -17,11 +17,11 @@ use Domain\Plans\Policies\PlanPolicy;
 /**
  * Creates a planned plan with its title, brief and type and answers its id; it records who created it.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(CreatePlanHandler::class)]
 #[Authorize(PlanPolicy::class, PlanAbility::Work)]
-final readonly class CreatePlan implements Command, HasAuthorizationSubject
+final readonly class CreatePlan extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $title,

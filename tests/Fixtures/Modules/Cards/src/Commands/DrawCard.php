@@ -6,19 +6,19 @@ namespace Tests\Fixtures\Modules\Cards\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Tests\Fixtures\Modules\Cards\Enums\DeckAbility;
 use Tests\Fixtures\Modules\Cards\Handlers\DrawCardHandler;
 use Tests\Fixtures\Modules\Cards\Models\Deck;
 use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 
 /**
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(DrawCardHandler::class)]
 #[Authorize(DeckPolicy::class, DeckAbility::Work)]
-final readonly class DrawCard implements Command, HasAuthorizationSubject
+final readonly class DrawCard extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $deck) {}
 

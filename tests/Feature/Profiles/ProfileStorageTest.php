@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
+use App\Actors\Enums\ActorType;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
@@ -20,6 +21,7 @@ use App\Profiles\Values\ProfileKey;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -51,6 +53,14 @@ final class ProfileStorageTest extends TestCase
         $profile = Profile::byKey(ProfileKey::from('journal-reviewer'));
         $this->assertSame('Review the change.', ProfileRevision::numbered($profile, 1)->instructions);
         $this->assertNull(ProfileRevision::numbered($profile, 1)->skill_allowlist);
+    }
+
+    public function test_an_activation_records_the_dispatching_actor_as_author(): void
+    {
+        $this->activate($this->reviewer('Review the change.', null));
+
+        $revision = ProfileRevision::numbered(Profile::byKey(ProfileKey::from('journal-reviewer')), 1);
+        $this->assertSame([ActorType::User, TestIds::of(7)], [$revision->author_type, $revision->author_id]);
     }
 
     public function test_a_revision_refuses_to_change(): void

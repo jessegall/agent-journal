@@ -15,6 +15,12 @@ final readonly class PostCommentHandler implements CommandHandler
 
     public function handle(PostComment $command): string
     {
-        return $this->comments->post($command->target, $command->body, WholeRecord::Record, $command->submissionKey);
+        return $this->comments->post(
+            $command->target,
+            $command->body,
+            WholeRecord::Record,
+            $command->submissionKey,
+            $command->dispatchedBy(),
+        );
     }
 }

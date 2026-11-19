@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Communication\Handlers;
 
 use App\Actors\Contracts\Actor;
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Commands\DismissMessage;
@@ -26,7 +25,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class DismissMessageHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private CurrentAuthorizer $authorizer,
         private InboxResolver $inboxes,
         private MessageClaims $claims,
@@ -39,7 +37,7 @@ final readonly class DismissMessageHandler implements CommandHandler
      */
     public function handle(DismissMessage $command): void
     {
-        $actor = $this->actors->actor();
+        $actor = $command->dispatchedBy();
         $message = Message::query()->acrossInboxes()->whereKey($command->messageId)->lockForUpdate()->first()
             ?? throw MessageMissing::forId($command->messageId);
         $type = $this->dismissalBy($message, $actor);

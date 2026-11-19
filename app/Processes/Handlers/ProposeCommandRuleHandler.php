@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ProposeCommandRule;
@@ -23,7 +22,7 @@ use App\Processes\Values\ProposalReceipt;
  */
 final readonly class ProposeCommandRuleHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ProcessAdministration $administration, private ProposalChecks $checks) {}
+    public function __construct(private ProcessAdministration $administration, private ProposalChecks $checks) {}
 
     /**
      * @throws RuleProposalRefused
@@ -31,7 +30,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
      */
     public function handle(ProposeCommandRule $command): ProposalReceipt
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $request = CommandRequest::lockedForChange($command->commandRequestId);
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw RuleProposalRefused::notTheRequester($request->id);

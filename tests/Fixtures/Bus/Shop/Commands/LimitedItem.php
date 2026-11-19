@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Bus\Shop\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Between;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
@@ -18,11 +18,11 @@ use Tests\Fixtures\Bus\Shop\Handlers\LimitedItemHandler;
 /**
  * A command whose text, number and list each carry a limit.
  *
- * @implements Command<mixed>
+ * @extends Command<mixed>
  */
 #[HandledBy(LimitedItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
-final readonly class LimitedItem implements Command, HasAuthorizationSubject
+final readonly class LimitedItem extends Command implements HasAuthorizationSubject
 {
     /**
      * @param  list<string>  $tags

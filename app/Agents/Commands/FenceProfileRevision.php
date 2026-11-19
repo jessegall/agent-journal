@@ -10,18 +10,18 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Retains the intent to fence every session launched from a revoked configuration revision, named by an opaque
  * reference, in the transaction that revokes it, so a lost event cannot lose the revocation.
  *
- * @implements Command<string>
+ * @extends Command<string>
  */
 #[HandledBy(FenceProfileRevisionHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class FenceProfileRevision implements Command, HasAuthorizationSubject
+final readonly class FenceProfileRevision extends Command implements HasAuthorizationSubject
 {
     public function __construct(public string $revisionReference) {}
 

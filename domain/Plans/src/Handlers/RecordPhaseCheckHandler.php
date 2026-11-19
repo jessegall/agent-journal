@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Contracts\ResultReceipts;
@@ -23,7 +22,6 @@ use Domain\Tasks\Contracts\TaskResolver;
 final readonly class RecordPhaseCheckHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private ResultReceipts $receipts,
         private TaskResolver $tasks,
     ) {}
@@ -44,6 +42,6 @@ final readonly class RecordPhaseCheckHandler implements CommandHandler
             throw PhaseCheckRefused::stale($receipt->receiptId, $receipt->runId);
         }
 
-        return PhaseCheck::record($phase, $receipt, ActorIdentity::of($this->actors->actor()))->id;
+        return PhaseCheck::record($phase, $receipt, ActorIdentity::of($command->dispatchedBy()))->id;
     }
 }

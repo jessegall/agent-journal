@@ -9,18 +9,18 @@ use App\Agents\Handlers\OpenHostMainRuntimeHandler;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 
 /**
  * Opens an agent's main runtime as a terminal on the host the person attached from, for journal-agent attach. Run for
  * an authenticated host by the journal itself (internal, not exported).
  *
- * @implements Command<OpenedRuntime>
+ * @extends Command<OpenedRuntime>
  */
 #[HandledBy(OpenHostMainRuntimeHandler::class)]
 #[Entry(CommandEntry::HostControl)]
-final readonly class OpenHostMainRuntime implements Command
+final readonly class OpenHostMainRuntime extends Command
 {
     public function __construct(
         public string $agentId,

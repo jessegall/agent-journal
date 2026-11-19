@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Events\MessageAnswered;
@@ -22,7 +21,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class ReplyToMessageHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private MessageReading $reading,
         private MessageSending $sending,
         private MessageClaims $claims,
@@ -41,16 +39,16 @@ final readonly class ReplyToMessageHandler implements CommandHandler
     {
         $destinationId = Message::query()->whereKey($command->messageId)->value('destination_inbox_id')
             ?? throw MessageMissing::forId($command->messageId);
-        [, $membership] = $this->reading->admit((string) $destinationId);
+        [, $membership] = $this->reading->admit((string) $destinationId, $command->dispatchedBy());
         $original = Message::lockedById($command->messageId);
         $original->requireStateVersion($command->expectedStateVersion);
         $original->requireOpenForReplies();
         $now = CarbonImmutable::now();
         $original->acknowledge($membership, $now);
-        $reply = $this->sending->reply($original, $command->body);
+        $reply = $this->sending->reply($original, $command->body, $command->dispatchedBy());
 
         if ($original->needsReply()) {
-            $answeredBy = ActorIdentity::of($this->actors->actor());
+            $answeredBy = ActorIdentity::of($command->dispatchedBy());
             $original->answerWith($reply, $answeredBy, $now);
             $this->claims->releaseAny($original);
             $this->events->dispatch(new MessageAnswered($original->id, $reply->id, $answeredBy));

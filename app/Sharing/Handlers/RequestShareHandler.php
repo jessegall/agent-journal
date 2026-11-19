@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sharing\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordResolver;
@@ -28,7 +27,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class RequestShareHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private RecordResolver $records,
         private ShareRecordRegistry $shareable,
         private Dispatcher $events,
@@ -36,7 +34,7 @@ final readonly class RequestShareHandler implements CommandHandler
 
     public function handle(RequestShare $command): ShareProposalStatus
     {
-        $agent = $this->actors->actor();
+        $agent = $command->dispatchedBy();
         $root = new RecordIdentity($command->rootType, $command->rootId);
         $this->shareable->requireShareable($root->type);
         $this->records->requireReadable($root);
@@ -47,7 +45,8 @@ final readonly class RequestShareHandler implements CommandHandler
             throw ShareQuotaReached::forProposals(Share::MOST_PROPOSED);
         }
 
-        $proposal = Share::propose($root, ActorIdentity::of($agent), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $expiry = CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS);
+        $proposal = Share::propose($root, ActorIdentity::of($agent), $expiry);
         ShareAudit::recordFor($proposal, ShareAuditType::Created, ActorIdentity::of($agent), null);
         $this->events->dispatch(new ShareRequested($proposal->fact()));
 

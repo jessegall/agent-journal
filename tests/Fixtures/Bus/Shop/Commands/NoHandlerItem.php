@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands;
 
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 
 /**
- * @implements Command<mixed>
+ * @extends Command<mixed>
  */
-final readonly class NoHandlerItem implements Command {}
+final readonly class NoHandlerItem extends Command {}

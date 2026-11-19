@@ -6,19 +6,19 @@ namespace Tests\Fixtures\Bus\Shop\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Bus\Shop\Handlers\RemoveItemHandler;
 
 /**
- * @implements Command<mixed>
+ * @extends Command<mixed>
  */
 #[HandledBy(RemoveItemHandler::class)]
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
-final readonly class RemoveItem implements Command, HasAuthorizationSubject
+final readonly class RemoveItem extends Command implements HasAuthorizationSubject
 {
     public function __construct() {}
 
