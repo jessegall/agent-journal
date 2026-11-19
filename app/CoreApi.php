@@ -902,6 +902,7 @@ use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;
 use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1586,6 +1587,7 @@ final class CoreApi
                 Not::class,
                 ProviderKey::class,
                 SkillSection::class,
+                SkillSections::class,
                 MarkdownPart::class,
                 SkillContext::class,
                 LaunchProfile::class,
