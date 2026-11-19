@@ -36,8 +36,7 @@ final readonly class IsolatedSettingsFile implements JsonSerializable
     }
 
     /**
-     * @return array{hooks: array<string, list<array{hooks: list<array{type: string, command: string}>}>>, permissions:
-     *   array{deny: list<string>}}
+     * @return array{hooks: array<string, list<array{hooks: list<array{type: string, command: string}>}>>, permissions: array{deny: list<string>}}
      */
     public function jsonSerialize(): array
     {
