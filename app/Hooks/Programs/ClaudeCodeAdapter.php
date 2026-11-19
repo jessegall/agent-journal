@@ -162,10 +162,10 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             $original = $payload->toolArguments();
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
-            return new JudgedCall(
+            return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),
                 fn (HookAnswer $answer) => $this->renderShell($answer, $original),
-            );
+            ));
         }
 
         if ($tool->changesFiles()) {

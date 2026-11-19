@@ -143,10 +143,10 @@ final readonly class CodexAdapter implements ProgramAdapter
         if ($tool->isShell()) {
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
-            return new JudgedCall(
+            return $this->files->guardShell($hook, $command, fn () => new JudgedCall(
                 new ShellCommandRequested($hook, $command),
                 fn (HookAnswer $answer) => $this->renderShell($answer, $original),
-            );
+            ));
         }
 
         $changes = $this->patchChanges($payload->argument('command'));

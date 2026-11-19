@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Agents\Models\AgentRuntime;
+use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Inputs\FileEditRequested;
+use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Programs\ClaudeCodeAdapter;
 use App\Hooks\Programs\CodexAdapter;
 use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\JudgedCall;
 use App\Hooks\Programs\ProgramReply;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Support\ShellParser;
 use App\Skills\Support\DeliveredSkillsAccess;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
@@ -84,6 +88,62 @@ final class DeliveredSkillsGuardTest extends TestCase
         $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $read->stdout);
         $this->assertInstanceOf(JudgedCall::class, $edit);
         $this->assertInstanceOf(FileEditRequested::class, $edit->input);
+    }
+
+    public function test_a_codex_shell_read_of_another_runtimes_skills_is_refused_without_naming_its_path(): void
+    {
+        $this->useTheRealShellParser();
+
+        $reply = $this->codexShell('cat '.$this->otherRuntimeFolder().'/skills/journal/SKILL.md')
+            ->replyWith(fn () => $this->fail('A refused shell read went to the journal.'));
+
+        $this->assertRefusedWith(DeliveredSkillsAccess::OTHER_RUNTIME, $reply);
+        $this->assertStringNotContainsString(self::OTHER_RUNTIME, $reply->stdout);
+    }
+
+    public function test_a_codex_shell_read_of_its_own_skills_goes_on_to_the_journal(): void
+    {
+        $this->useTheRealShellParser();
+
+        $call = $this->codexShell('cat '.$this->ownRuntimeFolder().'/skills/journal/SKILL.md');
+
+        $this->assertInstanceOf(JudgedCall::class, $call);
+        $this->assertInstanceOf(ShellCommandRequested::class, $call->input);
+    }
+
+    public function test_a_shell_line_the_parser_cannot_read_is_judged_word_by_word(): void
+    {
+        $call = $this->codexShell('cat "$(echo '.$this->otherRuntimeFolder().'/skills/journal/SKILL.md)"');
+
+        $this->assertRefusedWith(
+            DeliveredSkillsAccess::OTHER_RUNTIME,
+            $call->replyWith(fn () => $this->fail('A refused shell read went to the journal.')),
+        );
+    }
+
+    public function test_a_claude_code_shell_read_of_another_runtimes_folder_is_refused(): void
+    {
+        $this->useTheRealShellParser();
+
+        $reply = $this->claudeCode('Bash', ['command' => 'ls '.$this->otherRuntimeFolder()]);
+
+        $this->assertRefusedWith(DeliveredSkillsAccess::OTHER_RUNTIME, $reply);
+    }
+
+    private function codexShell(string $line): ProgramCall
+    {
+        return $this->app->make(CodexAdapter::class)->callFor(
+            $this->payload('Bash', ['command' => $line]),
+            $this->hookIdentity(),
+        );
+    }
+
+    /**
+     * The Processes parser instead of the listed test parser, so a plain line parses into its parts.
+     */
+    private function useTheRealShellParser(): void
+    {
+        $this->app->scoped(ShellCommandParser::class, ShellParser::class);
     }
 
     /**
