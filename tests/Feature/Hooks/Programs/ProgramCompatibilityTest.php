@@ -7,7 +7,6 @@ namespace Tests\Feature\Hooks\Programs;
 use App\Hooks\Enums\AuthenticationArrangement;
 use App\Hooks\Enums\ProgramEvidence;
 use App\Hooks\Exceptions\ProgramArrangementUnproven;
-use App\Hooks\Programs\ProgramAdapters;
 use App\Hooks\Support\ProgramCompatibility;
 use App\Programs\Enums\HookProgram;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -101,7 +100,7 @@ final class ProgramCompatibilityTest extends TestCase
 
     private function compatibilityOf(HookProgram $program): ProgramCompatibility
     {
-        return $this->app->make(ProgramAdapters::class)->for($program)->compatibility();
+        return ProgramCompatibility::pinned($program);
     }
 
     /**
