@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Contracts\LaunchesAgent;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\LaunchAgentHandler;
 use App\Agents\Models\Agent;
@@ -23,7 +24,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(LaunchAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class LaunchAgent extends Command implements HasAuthorizationSubject
+final readonly class LaunchAgent extends Command implements HasAuthorizationSubject, LaunchesAgent
 {
     public function __construct(public LaunchRequest $request) {}
 
@@ -33,5 +34,10 @@ final readonly class LaunchAgent extends Command implements HasAuthorizationSubj
     public function subject(): string
     {
         return Agent::class;
+    }
+
+    public function launchedAgentId(): string
+    {
+        return $this->request->agentId;
     }
 }

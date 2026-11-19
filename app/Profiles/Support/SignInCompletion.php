@@ -8,6 +8,7 @@ use App\Profiles\Enums\SignInState;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Models\Account;
+use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Values\AccountLabel;
@@ -43,6 +44,7 @@ final readonly class SignInCompletion
         $account->signedInAgain($attempt, $identity, $now);
         $attempt->end(SignInState::Complete);
         $selection->chooseFirst($account);
+        AccountNotice::resolveFor($program->value, $now);
         $this->events->dispatch(new AccountsChanged($attempt->program, $account->id));
     }
 }

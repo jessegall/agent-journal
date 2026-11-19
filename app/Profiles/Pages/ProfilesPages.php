@@ -6,25 +6,30 @@ namespace App\Profiles\Pages;
 
 use App\Profiles\Http\Controllers\ActivateAccountController;
 use App\Profiles\Http\Controllers\CancelSignInController;
+use App\Profiles\Http\Controllers\DismissAccountNoticeController;
 use App\Profiles\Http\Controllers\RenameAccountController;
 use App\Profiles\Http\Controllers\SignInChallengeController;
 use App\Profiles\Http\Controllers\StartSignInController;
 use App\Profiles\Http\Controllers\SubmitSignInCodeController;
+use App\Profiles\Resolvers\AccountNoticesSection;
 use App\Profiles\Resolvers\AccountsWindowResolver;
 use App\Profiles\Support\AccountOwnerCheck;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
+use App\Ui\Contracts\ProvidesSections;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
+use App\Ui\Declarations\Section;
 use App\Ui\Enums\Icon;
+use App\Ui\Enums\SlotContextType;
 
 /**
  * The pages Core's Profiles declares, for the owner alone, under /accounts: the saved Claude Code and Codex accounts,
  * with choosing the one each program launches with and renaming one.
  */
-final class ProfilesPages implements ProvidesNavigation, ProvidesPages
+final class ProfilesPages implements ProvidesNavigation, ProvidesPages, ProvidesSections
 {
     public function pages(): array
     {
@@ -36,10 +41,25 @@ final class ProfilesPages implements ProvidesNavigation, ProvidesPages
                     ActionRoute::post('{account}/activate', ActivateAccountController::class, 'activate'),
                     ActionRoute::patch('{account}', RenameAccountController::class, 'rename'),
                     ActionRoute::post('sign-ins', StartSignInController::class, 'start-sign-in'),
+                    ActionRoute::post('notices/{notice}/dismiss', DismissAccountNoticeController::class, 'dismiss'),
                     ActionRoute::post('sign-ins/{attempt}/challenge', SignInChallengeController::class, 'challenge'),
                     ActionRoute::post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code'),
                     ActionRoute::post('sign-ins/{attempt}/cancel', CancelSignInController::class, 'cancel-sign-in'),
                 ),
+        ];
+    }
+
+    public function sections(): array
+    {
+        return [
+            Section::make(
+                'notices',
+                'Account notices',
+                'web.bar',
+                SlotContextType::Session,
+                AccountNoticesSection::class,
+                'AccountNotices.vue',
+            ),
         ];
     }
 

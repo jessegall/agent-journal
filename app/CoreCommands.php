@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Agents\CommandMiddleware\AnnounceUnavailableLaunch;
 use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
@@ -109,6 +110,7 @@ use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\ClaimSignIn;
 use App\Profiles\Commands\CompleteSignIn;
+use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
@@ -269,6 +271,7 @@ final class CoreCommands
             SwitchAccount::class,
             RenameAccount::class,
             MaintainAccount::class,
+            DismissAccountNotice::class,
             BeginSignIn::class,
             CancelSignIn::class,
             SubmitSignInCode::class,
@@ -392,6 +395,8 @@ final class CoreCommands
     {
         return [
             MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all()),
+            MiddlewareDeclaration::around(AnnounceUnavailableLaunch::class, CommandScope::command(LaunchAgent::class)),
+            MiddlewareDeclaration::around(AnnounceUnavailableLaunch::class, CommandScope::command(OpenAgentRuntime::class)),
             MiddlewareDeclaration::inside(GuardTickOrigin::class, CommandScope::all()),
         ];
     }

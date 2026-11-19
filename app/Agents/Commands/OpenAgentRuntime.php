@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Contracts\LaunchesAgent;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\DriverType;
 use App\Agents\Handlers\OpenAgentRuntimeHandler;
@@ -24,7 +25,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(OpenAgentRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class OpenAgentRuntime extends Command implements HasAuthorizationSubject
+final readonly class OpenAgentRuntime extends Command implements HasAuthorizationSubject, LaunchesAgent
 {
     public function __construct(
         public string $agentId,
@@ -45,5 +46,10 @@ final readonly class OpenAgentRuntime extends Command implements HasAuthorizatio
     public function subject(): string
     {
         return Agent::class;
+    }
+
+    public function launchedAgentId(): string
+    {
+        return $this->agentId;
     }
 }

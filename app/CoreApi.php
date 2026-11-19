@@ -141,6 +141,7 @@ use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\LaunchesAgent;
 use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
 use App\Agents\Contracts\LaunchRecordResolver;
@@ -667,6 +668,7 @@ use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\CancelSignIn;
+use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\RenameAccount;
@@ -1039,6 +1041,7 @@ final class CoreApi
             ->contracts(
                 SessionPolicyReader::class,
                 ActiveAccountReader::class,
+                LaunchesAgent::class,
                 AccountUses::class,
                 IdentityLinks::class,
                 JournalCall::class,
@@ -1663,6 +1666,7 @@ final class CoreApi
                 SwitchAccount::class,
                 RenameAccount::class,
                 MaintainAccount::class,
+                DismissAccountNotice::class,
                 BeginSignIn::class,
                 CancelSignIn::class,
                 SubmitSignInCode::class,

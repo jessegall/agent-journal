@@ -108,6 +108,7 @@ use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\ClaimSignIn;
 use App\Profiles\Commands\CompleteSignIn;
+use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
@@ -282,6 +283,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             SwitchAccount::class,
             RenameAccount::class,
             MaintainAccount::class,
+            DismissAccountNotice::class,
             BeginSignIn::class,
             CancelSignIn::class,
             SubmitSignInCode::class,
