@@ -135,3 +135,17 @@ func TestADriverLineIsRefusedOnAComposerThatChangedSinceItWasRead(t *testing.T) 
 		t.Fatalf("a line was typed on a composer that changed since it was read: %v", err)
 	}
 }
+
+func TestEveryInputOfThePersonIsCountedAlsoTheEnterThatGivesTheComposerBack(t *testing.T) {
+	gate, _, _ := newGate(t)
+
+	for _, keys := range []string{"h", "i", "\r"} {
+		if err := gate.Human([]byte(keys)); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if gate.HumanInputs() != 3 || gate.Owner() != NobodyOwns {
+		t.Fatalf("%d inputs counted, the composer is %v's", gate.HumanInputs(), gate.Owner())
+	}
+}

@@ -151,3 +151,42 @@ func TestAKeyScriptToAProcessRuntimeNeedsATerminal(t *testing.T) {
 		t.Fatalf("a key script to a process runtime ended %+v, %v", result, err)
 	}
 }
+
+func TestATerminalTurnEndsWhenItsComposerIsEmptyAndStillAgain(t *testing.T) {
+	driver, clock, _ := recordedTurn(t, 11*time.Second)
+	if driver.Finished() != nil {
+		t.Fatal("a driver that submitted nothing has a turn to end")
+	}
+
+	delivery := contracts.Delivery{Request: request("one"), Message: firstPrompt}
+	if _, err := driver.Deliver(context.Background(), delivery); err != nil {
+		t.Fatal(err)
+	}
+	submitted := clock.Now()
+
+	select {
+	case err := <-driver.Finished():
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(10 * time.Second):
+		t.Fatal("the recorded turn never ended")
+	}
+	if ended := clock.Now().Sub(time.Unix(0, 0)); !clock.Now().After(submitted) || ended > 27*time.Second {
+		t.Fatalf("the turn submitted at %s ended at %s", submitted.Sub(time.Unix(0, 0)), ended)
+	}
+}
+
+func TestAKeyScriptStepGoesToTheReceiverTheLoopSet(t *testing.T) {
+	relay := &ProgressRelay{}
+	relay.Report(keyscripts.Progress{Step: 0, Name: "before anyone listens"})
+	var received []string
+	driver := NewTerminalDriver(TerminalRuntime{Progress: relay, ProcessGeneration: 2})
+
+	driver.ReportProgressTo(func(progress keyscripts.Progress) { received = append(received, progress.Name) })
+	relay.Report(keyscripts.Progress{Step: 1, Name: "type /model"})
+
+	if len(received) != 1 || received[0] != "type /model" || driver.Generation() != 2 {
+		t.Fatalf("the receiver got %q in generation %d", received, driver.Generation())
+	}
+}

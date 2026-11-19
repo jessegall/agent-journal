@@ -30,17 +30,24 @@ const echoDeadline = 5 * time.Second
 // pollInterval is how often the driver reads the screen again while it waits.
 const pollInterval = 50 * time.Millisecond
 
+// turnStartDeadline is how long a submitted prompt waits for its turn to take the composer away; a turn that ends
+// sooner than the screen is read is over already.
+const turnStartDeadline = 10 * time.Second
+
 // TerminalRuntime is what the terminal driver drives: the screen read from the program, the gate every key passes,
-// the program build's registered key scripts and the clock its waits run on.
+// the program build's registered key scripts, the clock its waits run on, the process generation its reports carry
+// and the relay its key scripts report their steps through.
 type TerminalRuntime struct {
-	Profile    string
-	Classifier *screen.Classifier
-	Gate       *terminal.InputGate
-	Composer   string
-	Generation func(region string) uint64
-	Scripts    *keyscripts.Registry
-	Runner     *keyscripts.Runner
-	Clock      keyscripts.Clock
+	Profile           string
+	Classifier        *screen.Classifier
+	Gate              *terminal.InputGate
+	Composer          string
+	Generation        func(region string) uint64
+	Scripts           *keyscripts.Registry
+	Runner            *keyscripts.Runner
+	Clock             keyscripts.Clock
+	ProcessGeneration int
+	Progress          *ProgressRelay
 }
 
 // TerminalDriver carries out the six operations on one persistent program in one process generation: every delivered
@@ -50,6 +57,13 @@ type TerminalDriver struct {
 	mutex       sync.Mutex
 	turns       int
 	interrupted bool
+	turnEnd     *turnEnd
+}
+
+// turnEnd is the end of one submitted prompt's turn, watched from the first time someone waits for it.
+type turnEnd struct {
+	ended chan error
+	watch sync.Once
 }
 
 var _ contracts.AgentDriver = (*TerminalDriver)(nil)
@@ -58,6 +72,31 @@ var _ contracts.KeyScriptRunner = (*TerminalDriver)(nil)
 
 func NewTerminalDriver(runtime TerminalRuntime) *TerminalDriver {
 	return &TerminalDriver{runtime: runtime}
+}
+
+// Generation is the process generation of the one program the driver types into.
+func (driver *TerminalDriver) Generation() int {
+	return driver.runtime.ProcessGeneration
+}
+
+// Finished delivers the end of the last submitted prompt's turn: once the turn has taken the composer away, the
+// composer is empty and still again. The program keeps running between turns. With no prompt submitted yet there is
+// no turn to end, and the channel never delivers.
+func (driver *TerminalDriver) Finished() <-chan error {
+	driver.mutex.Lock()
+	current := driver.turnEnd
+	driver.mutex.Unlock()
+	if current == nil {
+		return nil
+	}
+	current.watch.Do(func() { go driver.awaitTurnEnd(current.ended) })
+
+	return current.ended
+}
+
+// ReportProgressTo sends every step a key script confirms to the receiver.
+func (driver *TerminalDriver) ReportProgressTo(receiver func(keyscripts.Progress)) {
+	driver.runtime.Progress.SendTo(receiver)
 }
 
 // Turns is how many prompts the driver submitted in this generation.
@@ -188,9 +227,19 @@ func (driver *TerminalDriver) prompt(
 
 	driver.mutex.Lock()
 	driver.turns++
+	driver.turnEnd = &turnEnd{ended: make(chan error, 1)}
 	driver.mutex.Unlock()
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying}, nil
+}
+
+// awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again.
+func (driver *TerminalDriver) awaitTurnEnd(ended chan<- error) {
+	driver.waitUntil(turnStartDeadline, func() bool { return !driver.promptReady() })
+	for !driver.promptReady() {
+		driver.runtime.Clock.Sleep(pollInterval)
+	}
+	ended <- nil
 }
 
 func (driver *TerminalDriver) promptReady() bool {

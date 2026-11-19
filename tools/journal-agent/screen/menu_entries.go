@@ -97,9 +97,14 @@ func (view View) Rows() []string {
 	return view.reader.Snapshot().Rows
 }
 
-// MenuEntries is the entries of the menu on screen; no entries while no readable menu is drawn.
+// MenuEntries is the entries of the menu on screen: a known family's own, such as a slider's, or else the shared
+// option region's, so a menu no family knows is read too; no entries while no readable menu is drawn.
 func (view View) MenuEntries() MenuEntries {
-	entries, _ := view.layout.MenuEntries(view.reader.Snapshot())
+	snapshot := view.reader.Snapshot()
+	if entries, found := view.layout.MenuEntries(snapshot); found {
+		return entries
+	}
+	region, _ := view.layout.OptionRegion(snapshot)
 
-	return entries
+	return region.Entries
 }

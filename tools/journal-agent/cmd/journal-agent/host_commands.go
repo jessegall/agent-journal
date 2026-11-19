@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -24,6 +25,8 @@ import (
 	"journal-agent/drivers"
 	drivercontracts "journal-agent/drivers/contracts"
 	"journal-agent/host"
+	"journal-agent/keyscripts"
+	"journal-agent/keyscripts/scripts"
 	"journal-agent/profiles/contracts"
 	"journal-agent/screen"
 	"journal-agent/serving"
@@ -85,7 +88,9 @@ func serve(arguments []string) error {
 	}
 	defer listener.Close()
 	journal := client.New(enrollment)
-	loop := serving.NewLoop(journal, processRuntimes(*stateFolder, journal.JournalURL(), *hookCommand))
+	opener := runtimeOpener{stateFolder: *stateFolder, journalURL: journal.JournalURL(), hookCommand: *hookCommand,
+		socket: socket}
+	loop := serving.NewLoop(journal, opener.open)
 	journal.Poll(ctx, func(claimed []client.ClaimedRequest) {
 		for _, request := range claimed {
 			log.Printf("claimed %s request %s (sequence %d, attempt %d) of runtime %s", request.Operation, request.RequestID, request.Sequence, request.Attempt, request.RuntimeID)
@@ -95,43 +100,116 @@ func serve(arguments []string) error {
 	return nil
 }
 
-// processRuntimes opens a runtime run one child per turn from its launch grant, with a conversation of its own, the
-// pinned profile of its program and the model the journal asked for.
-func processRuntimes(stateFolder, journalURL, hookCommand string) serving.Opener {
-	return func(runtimeID string, grant client.Grant) (serving.Runtime, error) {
-		if grant.Runtime.DriverType != drivers.ProcessDriverType {
-			return nil, fmt.Errorf("runtime %s runs under the %s driver, which serve opens only through attach", runtimeID, grant.Runtime.DriverType)
-		}
-		profile, known := profileFor[grant.Runtime.Program]
-		if !known {
-			return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Program)
-		}
-		if err := pinnedBuild(profile, grant.Runtime.ProgramBuild); err != nil {
-			return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
-		}
-		conversationID, err := newConversationID()
-		if err != nil {
-			return nil, err
-		}
-		driver := drivers.NewProcessDriver(drivers.ProcessRuntime{
-			JournalURL:     journalURL,
-			Credential:     grant.Token,
-			ProfilePin:     grant.ProfileEnvironment(),
-			ConversationID: conversationID,
-			SettingsFolder: filepath.Join(stateFolder, "runtimes", runtimeID),
-			WorkingFolder:  grant.Runtime.Folder,
-			HookCommand:    hookCommand,
-			Profile:        profile,
-		}, grant.Runtime.ProcessGeneration)
-		identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
-		if grant.Runtime.Model != nil {
-			_, _ = driver.ChangeModel(context.Background(), drivercontracts.ModelChange{Request: identity, Model: *grant.Runtime.Model})
-		}
-		if grant.Runtime.Effort != nil {
-			_, _ = driver.ChangeEffort(context.Background(), drivercontracts.EffortChange{Request: identity, Effort: *grant.Runtime.Effort})
-		}
-		return driver, nil
+// runtimeOpener opens the driver of a runtime the journal hands this host, by the driver type its launch grant names:
+// a process runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
+// owns.
+type runtimeOpener struct {
+	stateFolder string
+	journalURL  string
+	hookCommand string
+	socket      *host.AttachSocket
+}
+
+// defaultRows and defaultColumns size a terminal the host opens before any person attaches to it.
+const (
+	defaultRows    uint16 = 40
+	defaultColumns uint16 = 120
+)
+
+func (opener runtimeOpener) open(runtimeID string, grant client.Grant) (serving.Runtime, error) {
+	profile, known := profileFor[grant.Runtime.Program]
+	if !known {
+		return nil, fmt.Errorf("runtime %s runs %q, which has no pinned profile", runtimeID, grant.Runtime.Program)
 	}
+	if err := pinnedBuild(profile, grant.Runtime.ProgramBuild); err != nil {
+		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
+	}
+	switch grant.Runtime.DriverType {
+	case drivers.ProcessDriverType:
+		return opener.processRuntime(runtimeID, grant, profile)
+	case drivers.TerminalDriverType:
+		return opener.terminalRuntime(runtimeID, grant, profile)
+	}
+
+	return nil, fmt.Errorf("runtime %s runs under the %s driver, which this host has no driver for", runtimeID,
+		grant.Runtime.DriverType)
+}
+
+// processRuntime opens a runtime run one child per turn from its launch grant, with a conversation of its own, the
+// pinned profile of its program and the model the journal asked for.
+func (opener runtimeOpener) processRuntime(
+	runtimeID string,
+	grant client.Grant,
+	profile contracts.ProgramProfile,
+) (serving.Runtime, error) {
+	conversationID, err := newConversationID()
+	if err != nil {
+		return nil, err
+	}
+	driver := drivers.NewProcessDriver(drivers.ProcessRuntime{
+		JournalURL:     opener.journalURL,
+		Credential:     grant.Token,
+		ProfilePin:     grant.ProfileEnvironment(),
+		ConversationID: conversationID,
+		SettingsFolder: filepath.Join(opener.stateFolder, "runtimes", runtimeID),
+		WorkingFolder:  grant.Runtime.Folder,
+		HookCommand:    opener.hookCommand,
+		Profile:        profile,
+	}, grant.Runtime.ProcessGeneration)
+	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
+	if grant.Runtime.Model != nil {
+		change := drivercontracts.ModelChange{Request: identity, Model: *grant.Runtime.Model}
+		_, _ = driver.ChangeModel(context.Background(), change)
+	}
+	if grant.Runtime.Effort != nil {
+		change := drivercontracts.EffortChange{Request: identity, Effort: *grant.Runtime.Effort}
+		_, _ = driver.ChangeEffort(context.Background(), change)
+	}
+	return driver, nil
+}
+
+// terminalRuntime starts the runtime's program on a PTY the attach socket owns, or takes the one a person attached
+// first, and drives it through that terminal's screen and gate: the classifier and the key script runner read the
+// same screen the person sees, and every key, the person's too, passes the one gate.
+func (opener runtimeOpener) terminalRuntime(
+	runtimeID string,
+	grant client.Grant,
+	profile contracts.ProgramProfile,
+) (serving.Runtime, error) {
+	request, err := launchOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant)
+	if err != nil {
+		return nil, err
+	}
+	request.Rows, request.Columns = defaultRows, defaultColumns
+	opened, err := opener.socket.Open(request)
+	if err != nil {
+		return nil, err
+	}
+
+	return terminalDriverOf(profile, opened, grant.Runtime.ProcessGeneration), nil
+}
+
+// terminalDriverOf builds the terminal driver of a program the host runs, with its key script runner reading the
+// menus through the profile's layout and reporting each step through the driver's progress relay.
+func terminalDriverOf(profile contracts.ProgramProfile, opened host.Terminal, generation int) *drivers.TerminalDriver {
+	layout := profile.Screens()
+	classifier := screen.NewClassifier(layout, opened.Reader)
+	relay := &drivers.ProgressRelay{}
+	clock := keyscripts.WallClock{}
+	view := screen.NewView(layout, opened.Reader)
+
+	return drivers.NewTerminalDriver(drivers.TerminalRuntime{
+		Profile:           profile.Program() + "@" + profile.Build(),
+		Classifier:        classifier,
+		Gate:              opened.Gate,
+		Composer:          layout.Composer.Name(),
+		Generation:        opened.Reader.Generation,
+		Scripts:           scripts.Registered(),
+		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, relay.Report),
+		Clock:             clock,
+		ProcessGeneration: generation,
+		Progress:          relay,
+	})
 }
 
 // startTerminal starts a runtime's program on a PTY the host owns, for the attach socket.
@@ -246,16 +324,28 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
+	return launchOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, grant)
+}
+
+// launchOf builds the program's terminal launch for a runtime from its pinned profile and its launch grant: the
+// settings files and launch folders written, the arguments, and the environment with the credential, the process
+// generation and the bypass log for the hook relay. Attaching a person and serving a terminal runtime both start
+// the program through it.
+func launchOf(
+	profile contracts.ProgramProfile,
+	stateFolder, journalURL, hookCommand, runtimeID string,
+	grant client.Grant,
+) (host.AttachRequest, error) {
 	conversationID, err := newConversationID()
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
 	launch := contracts.Launch{
 		Mode:           contracts.TerminalMode,
-		SettingsFolder: filepath.Join(stateFolder, "runtimes", opened.RuntimeID),
+		SettingsFolder: filepath.Join(stateFolder, "runtimes", runtimeID),
 		SessionID:      conversationID,
 		HookCommand:    hookCommand,
-		WorkFolder:     absolute,
+		WorkFolder:     grant.Runtime.Folder,
 	}
 	if err := writeSettings(profile, launch); err != nil {
 		return host.AttachRequest{}, err
@@ -270,10 +360,16 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	}
 	launchArguments = append(launchArguments, folderArguments...)
 	environment := append(profile.Environment(drivers.WithoutJournalVariables(os.Environ()), launch),
-		"JOURNAL_URL="+journal.JournalURL(), "JOURNAL_LAUNCH_TOKEN="+grant.Token, "JOURNAL_PROCESS_GENERATION=1",
+		"JOURNAL_URL="+journalURL, "JOURNAL_LAUNCH_TOKEN="+grant.Token,
+		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(grant.Runtime.ProcessGeneration),
 		"JOURNAL_BYPASS_LOG="+filepath.Join(launch.SettingsFolder, drivers.BypassLogName))
 	environment = append(environment, grant.ProfileEnvironment()...)
-	return host.AttachRequest{RuntimeID: opened.RuntimeID, Command: append([]string{profile.Program()}, launchArguments...), Folder: absolute, Env: environment}, nil
+	return host.AttachRequest{
+		RuntimeID: runtimeID,
+		Command:   append([]string{profile.Program()}, launchArguments...),
+		Folder:    grant.Runtime.Folder,
+		Env:       environment,
+	}, nil
 }
 
 func writeSettings(profile contracts.ProgramProfile, launch contracts.Launch) error {
