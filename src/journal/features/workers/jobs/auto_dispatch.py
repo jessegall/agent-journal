@@ -38,10 +38,10 @@ class AutoDispatch(Job):
             with self.scope.environment(environment.row_id):
                 orchestrator = next((agent for agent in self.agents.unended_scoped(environment.row_id) if agent.is_main()), None)
                 if orchestrator is not None and self.settings.option(WorkersOptions.AUTO_DISPATCH) and self.work_mode.delegates_work():
-                    self.filled(orchestrator)
+                    self.filled(orchestrator, time)
 
-    def filled(self, orchestrator: Agent) -> None:
-        offers = self.dispatchable()
+    def filled(self, orchestrator: Agent, time: float) -> None:
+        offers = self.dispatchable(time)
         limit = self.settings.integer(WorkersOptions.AUTO_DISPATCH_LIMIT) or self.settings.integer(WorkersOptions.WORKER_LIMIT)
         places = limit - self.workers.dispatched_count() if limit else len(offers)
         for task in offers[:max(places, 0)]:
@@ -49,10 +49,16 @@ class AutoDispatch(Job):
             if current.is_assignable():
                 self.sent(current, orchestrator)
 
-    def dispatchable(self) -> list[Task]:
+    def dispatchable(self, time: float) -> list[Task]:
         offers = self.assigner.offers()
         later = self.plans.later_phase_task_ids()
-        return [task for task in offers if task.is_assignable() and not task.manual and task.row_id not in later]
+        return [task for task in offers if task.is_assignable() and not task.manual and task.row_id not in later and self.settled(task, time)]
+
+    def settled(self, task: Task, time: float) -> bool:
+        """Whether the orchestrator had its grace to finish setting the task up: a task it just made or changed is left alone."""
+        grace = self.settings.integer(WorkersOptions.AUTO_DISPATCH_GRACE)
+        touched = max((moment.timestamp() for moment in (task.created_at, task.updated_at) if moment), default=0.0)
+        return grace <= 0 or time - touched >= grace
 
     def sent(self, task: Task, orchestrator: Agent) -> None:
         try:

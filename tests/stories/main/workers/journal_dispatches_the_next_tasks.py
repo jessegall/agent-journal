@@ -99,3 +99,17 @@ def test_the_journal_starts_the_approved_plan_and_dispatches_its_first_phase_and
     story.expect_task(story.tasks.second_phase, delegated=False)
     story.expect_worker(story.newest("workers"), state=WorkerState.DISPATCHED, worktree=True)
     story.expect_stack(story.agents.subject, Orchestrating, OrchestratingPlan)
+
+
+@story(OrchestratorWorker, mode=ORCHESTRATOR_MODE, subject=AgentRole.MAIN)
+@setting(WorkersOptions.AUTO_DISPATCH, True)
+@setting(WorkersOptions.AUTO_DISPATCH_LIMIT, TWO_PLACES)
+@setting(WorkersOptions.AUTO_DISPATCH_GRACE, 120)
+def test_a_task_the_orchestrator_just_made_is_left_for_its_grace_and_dispatched_after_it(story):
+    printer = story.agent_creates_briefed_task(story.agents.subject, "the printer", "- prints each rule")
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task(printer, delegated=False)
+    story.time_travel(seconds=121)
+    story.journal_dispatches_the_next_tasks()
+    story.expect_task(printer, delegated=True)
+    story.expect_stack(story.agents.subject, Orchestrating)
