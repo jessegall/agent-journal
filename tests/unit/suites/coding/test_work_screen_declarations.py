@@ -16,7 +16,7 @@ WORK = {
 }
 TESTS = {
     "Test commands": ["affected-tests-command", "project-test-command"],
-    "A worker's own runs": ["worker-run-most-tests", "worker-phase-test-runs", "worker-run-wait-seconds"],
+    "A worker's own runs": ["worker-run-most-tests", "worker-phase-test-runs", "worker-run-wait-seconds", "workers-run-any-command"],
     "Telling the main agent": ["own-test-failures-to-flag", "hand-in-failures-to-flag", "most-phase-test-deferrals"],
 }
 
