@@ -18,6 +18,11 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
         return new self("Agent {$target->agentId} has no runtime in session {$target->sessionId}.");
     }
 
+    public static function sessionEnded(StackTarget $target): self
+    {
+        return new self("Session {$target->sessionId} has ended; a new launch starts a new session.");
+    }
+
     public static function stopping(StackTarget $target): self
     {
         return new self("The runtime of session {$target->sessionId} is stopping and takes no more requests.");

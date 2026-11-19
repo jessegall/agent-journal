@@ -23,6 +23,16 @@ enum RequestProgress: string
     case DeliveryUncertain = 'delivery_uncertain';
 
     /**
+     * The progress values of a request that has not finished.
+     *
+     * @return list<self>
+     */
+    public static function open(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $progress) => ! $progress->isFinal()));
+    }
+
+    /**
      * Whether nothing more happens to a request in this progress.
      */
     public function isFinal(): bool

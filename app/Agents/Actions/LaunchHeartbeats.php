@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Actions;
 
+use App\Agents\Models\AgentRuntime;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\PresenceWindow;
 use App\Agents\Events\LaunchEnded;
@@ -44,6 +45,12 @@ final readonly class LaunchHeartbeats
         $this->transaction->runForSession($session->id, function () use ($session, $evidence): void {
             $session->endWithEvidenceAt(CarbonImmutable::now(), "host reported exit: {$evidence}");
             $this->credentials->revoke($session);
+            AgentRuntime::query()
+                ->where('agent_session_id', $session->id)
+                ->lockForUpdate()
+                ->readLimit(1)
+                ->get()
+                ->each(fn (AgentRuntime $runtime) => $runtime->closeAfterExit());
 
             $this->events->dispatch(new LaunchEnded($session->agent_id, $session->id));
         });

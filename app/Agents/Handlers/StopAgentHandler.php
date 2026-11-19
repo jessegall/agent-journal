@@ -17,9 +17,6 @@ final readonly class StopAgentHandler implements CommandHandler
 
     public function handle(StopAgent $command): DriverReceipt
     {
-        $request = $this->requests->append($command->target(), DriverOperation::Stop, $command->idempotencyKey, DriverRequestPayload::nothing());
-        $this->requests->markStopping($command->target());
-
-        return $request->receipt();
+        return $this->requests->stop($command->target(), $command->idempotencyKey)->receipt();
     }
 }

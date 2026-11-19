@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Agents\Support\StackTarget;
+use App\Agents\Support\DriverRequests;
+use App\Agents\Models\AgentRuntime;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
@@ -38,6 +41,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private LaunchCredentials $credentials,
         private AssignmentStore $store,
         private AssignmentFacts $facts,
+        private DriverRequests $requests,
     ) {}
 
     public function handle(RetireAgent $command): AssignmentResult
@@ -75,8 +79,17 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         $sessions = AgentSession::query()->where('agent_id', $target->id)->with('credential')->readAll('every session of the retiring agent ends')->get();
 
-        // The session row before its credential, the order every other ending and a heartbeat take.
+        // The session row before its credential, the order every other ending and a heartbeat take. A session with a
+        // runtime is stopped through its host, which reports the exit that ends it.
         foreach ($sessions->filter(fn (AgentSession $session) => $session->isActive()) as $session) {
+            if (AgentRuntime::isRunningForSession($session->id)) {
+                $this->requests->stop(new StackTarget($target->id, $session->id), "retire-{$session->id}");
+            }
+
+            if (AgentRuntime::existsForSession($session->id)) {
+                continue;
+            }
+
             $this->sessions->end($session);
 
             if ($session->credential !== null) {

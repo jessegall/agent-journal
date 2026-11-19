@@ -76,22 +76,31 @@ final readonly class DriverRequests
 
     public function holdRuntime(StackTarget $target, HoldReason $reason): void
     {
-        $runtime = $this->lockedRuntime($target);
-        $runtime->hold_reason = $reason;
-        $runtime->save();
+        $this->lockedRuntime($target)->holdFor($reason);
     }
 
-    public function markStopping(StackTarget $target): void
+    /**
+     * Asks the runtime to stop: a stop request, after which it takes no more requests.
+     */
+    public function stop(StackTarget $target, string $idempotencyKey): DriverRequest
     {
-        $runtime = $this->lockedRuntime($target);
-        $runtime->activity = RuntimeActivity::Stopping;
-        $runtime->save();
+        $request = $this->append($target, DriverOperation::Stop, $idempotencyKey, DriverRequestPayload::nothing());
+        $this->lockedRuntime($target)->markStopping();
+
+        return $request;
     }
 
     private function lockedRuntime(StackTarget $target): AgentRuntime
     {
-        AgentSession::query()->whereKey($target->sessionId)->where('agent_id', $target->agentId)->lockForUpdate()->first()
-            ?? throw DriverRequestRefused::noRuntime($target);
+        $session = AgentSession::query()
+            ->whereKey($target->sessionId)
+            ->where('agent_id', $target->agentId)
+            ->lockForUpdate()
+            ->first() ?? throw DriverRequestRefused::noRuntime($target);
+
+        if (! $session->isActive()) {
+            throw DriverRequestRefused::sessionEnded($target);
+        }
 
         return AgentRuntime::query()->where('agent_session_id', $target->sessionId)->lockForUpdate()->first()
             ?? throw DriverRequestRefused::noRuntime($target);

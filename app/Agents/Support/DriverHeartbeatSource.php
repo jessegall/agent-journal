@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Contracts\AgentHeartbeatSource;
@@ -30,7 +31,10 @@ final readonly class DriverHeartbeatSource implements AgentHeartbeatSource
     public function recordExit(AgentSession $session, RuntimeExit $exit): void
     {
         $this->requireCurrent($session, $exit->hostId, $exit->processGeneration);
-        $session->requireUsable();
+
+        if (! $session->isActive()) {
+            throw CredentialRejected::sessionEnded();
+        }
 
         $this->heartbeats->markExited($session, $exit->evidence);
     }

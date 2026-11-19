@@ -151,6 +151,20 @@ final class DriverRequest extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Its runtime's process ended for good: a stop has been done, anything else can no longer be.
+     */
+    public function settleAfterExit(): void
+    {
+        if ($this->operation === DriverOperation::Stop) {
+            $this->markApplied('process_exited');
+
+            return;
+        }
+
+        $this->finish(RequestProgress::Unavailable, null);
+    }
+
     public function supersede(): void
     {
         $this->finish(RequestProgress::Superseded, null);

@@ -22,6 +22,7 @@ use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
 use App\Agents\Commands\RunKeyScript;
+use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\RuntimeResolver;
@@ -337,6 +338,53 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(SessionStatus::Ended, AgentSession::query()->findOrFail($opened->sessionId)->status);
     }
 
+    public function test_a_confirmed_stop_ends_the_session_revokes_it_and_leaves_no_request_open(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->deliver($opened, 'before-stop', 'Never delivered');
+        $this->asOwner(new StopAgent($this->agentIdOf($opened), $opened->sessionId, 'stop-1'));
+
+        $this->reportExit($host, $opened);
+
+        $session = AgentSession::query()->with('credential')->findOrFail($opened->sessionId);
+        $requests = DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)->get();
+        $this->assertSame(SessionStatus::Ended, $session->status);
+        $this->assertTrue($session->credential?->isRevoked());
+        $this->assertSame(RuntimeActivity::Stopped, AgentRuntime::query()->findOrFail($opened->runtimeId)->activity);
+        $this->assertTrue($requests->every(fn (DriverRequest $request) => $request->progress->isFinal()));
+        $progress = $requests->mapWithKeys(fn (DriverRequest $request) => [$request->operation->value => $request->progress]);
+        $this->assertSame(RequestProgress::Applied, $progress[DriverOperation::Stop->value]);
+        $this->assertSame(RequestProgress::Unavailable, $progress[DriverOperation::Deliver->value]);
+    }
+
+    public function test_a_wake_after_the_session_ended_is_refused(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->reportExit($host, $opened);
+
+        $this->expectException(DriverRequestRefused::class);
+
+        $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-after-exit'));
+    }
+
+    public function test_retiring_an_agent_with_a_running_runtime_stops_it_through_its_host(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+
+        $this->asOwner(new RetireAgent($this->agentIdOf($opened)));
+
+        $stop = DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)
+            ->where('operation', DriverOperation::Stop)->sole();
+        $this->assertSame(RuntimeActivity::Stopping, AgentRuntime::query()->findOrFail($opened->runtimeId)->activity);
+        $this->assertSame(SessionStatus::Active, AgentSession::query()->findOrFail($opened->sessionId)->status);
+        $this->assertFalse($stop->progress->isFinal());
+
+        $this->reportExit($host, $opened);
+
+        $this->assertSame(SessionStatus::Ended, AgentSession::query()->findOrFail($opened->sessionId)->status);
+        $this->assertSame(RequestProgress::Applied, $stop->fresh()?->progress);
+    }
+
     public function test_a_hook_call_of_an_older_generation_is_refused(): void
     {
         [$host, $opened] = $this->openRuntime();
@@ -441,6 +489,13 @@ final class AgentDriverLedgerTest extends TestCase
         $opened = $this->asOwner(new OpenAgentRuntime($this->agent()->id, $host->hostId, self::FOLDER, 'claude-code', '2.1.323', 'claude', DriverType::Process, 'claude-opus-5-5', firstMessage: $firstMessage));
 
         return [$host, $opened];
+    }
+
+    private function reportExit(EnrolledHost $host, OpenedRuntime $opened): void
+    {
+        $generation = AgentRuntime::query()->findOrFail($opened->runtimeId)->process_generation;
+
+        $this->asSystem(new ReportRuntimeExit($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
     }
 
     private function enrollHost(): EnrolledHost

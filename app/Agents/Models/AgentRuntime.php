@@ -8,6 +8,7 @@ use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Support\RuntimeIntent;
 use App\Links\Support\Linkable;
@@ -81,6 +82,17 @@ final class AgentRuntime extends Model implements ReadableModel
         return self::query()->where('agent_session_id', $sessionId)->exists();
     }
 
+    /**
+     * Whether the session's runtime is there and not already stopping or stopped.
+     */
+    public static function isRunningForSession(string $sessionId): bool
+    {
+        return self::query()
+            ->where('agent_session_id', $sessionId)
+            ->whereNotIn('activity', [RuntimeActivity::Stopping, RuntimeActivity::Stopped])
+            ->exists();
+    }
+
     public static function forIntent(AgentSession $session, RuntimeIntent $intent): self
     {
         $runtime = new self();
@@ -119,6 +131,43 @@ final class AgentRuntime extends Model implements ReadableModel
     public function requests(): HasMany
     {
         return $this->hasMany(DriverRequest::class);
+    }
+
+    /**
+     * A stop was asked for: the runtime takes no more requests while it stops.
+     */
+    public function markStopping(): void
+    {
+        $this->activity = RuntimeActivity::Stopping;
+        $this->save();
+    }
+
+    /**
+     * Holds the runtime's normal work for the reason given.
+     */
+    public function holdFor(HoldReason $reason): void
+    {
+        $this->hold_reason = $reason;
+        $this->save();
+    }
+
+    /**
+     * The process ended for good: the runtime is stopped and every request still open gets its final outcome, a
+     * stop as applied and anything else as unavailable.
+     */
+    public function closeAfterExit(): void
+    {
+        $this->activity = RuntimeActivity::Stopped;
+        $this->save();
+
+        $open = $this->requests()
+            ->whereIn('progress', RequestProgress::open())
+            ->readAll('every open request of a runtime that exited gets its final outcome')
+            ->get();
+
+        foreach ($open as $request) {
+            $request->settleAfterExit();
+        }
     }
 
     /**
