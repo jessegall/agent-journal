@@ -21,9 +21,11 @@ if TYPE_CHECKING:
 
 # the file settings take the write lock to change, so each is set only when the file holds another value
 FILE_PRAGMAS = {"auto_vacuum": ("INCREMENTAL", "2"), "journal_mode": ("WAL", "wal")}
+# the size the write-ahead log file is cut back to when it starts over, so one busy spell does not keep it large
+LOG_SIZE_LIMIT_BYTES = 32 * 1024 * 1024
 # no commit copies the write-ahead log into the file: that copy writes megabytes while the commit holds the write turn;
 # the server copies it on a timer outside the turn (copy_log), and the last connection to close copies the rest
-CONNECTION_PRAGMAS = ("foreign_keys = ON", "synchronous = NORMAL", "wal_autocheckpoint = 0")
+CONNECTION_PRAGMAS = ("foreign_keys = ON", "synchronous = NORMAL", "wal_autocheckpoint = 0", f"journal_size_limit = {LOG_SIZE_LIMIT_BYTES}")
 BUSY_TIMEOUT_SECONDS = 5.0
 READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
@@ -247,9 +249,16 @@ class Database:
         return row is not None and bool(row[0])
 
     # copies what the write-ahead log holds into the file as far as no reader still needs it, next to writers and never
-    # inside the write turn, so a commit never waits on it
+    # inside the write turn, so a commit never waits on it; it runs on a connection of its own, in no read, since a read
+    # still open on the asking connection would keep the log from being copied whole and from starting over
     def copy_log(self) -> None:
-        self.connection.execute("PRAGMA wal_checkpoint(PASSIVE)").fetchone()
+        copier = sqlite3.connect(self.file())
+        try:
+            copier.execute(f"PRAGMA busy_timeout = {int(BUSY_TIMEOUT_SECONDS * 1000)}")
+            copier.execute(f"PRAGMA journal_size_limit = {LOG_SIZE_LIMIT_BYTES}")
+            copier.execute("PRAGMA wal_checkpoint(PASSIVE)").fetchone()
+        finally:
+            copier.close()
 
     # Keeps the writes of this connection in its write-ahead log, also when it closes, so the file stays as it was until
     # the log is taken in or thrown away.
