@@ -10,7 +10,6 @@ use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Exceptions\TaskRunFinished;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
-use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -23,7 +22,6 @@ final readonly class FinishTaskHandler implements CommandHandler
 
     /**
      * @throws TaskRunNotYours
-     * @throws TaskTextTooLong
      * @throws TaskRunFinished
      */
     public function handle(FinishTask $command, Task $task): void

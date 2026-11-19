@@ -14,9 +14,7 @@ use Domain\Tasks\Commands\CreateTask;
 use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Exceptions\TaskRevisionChanged;
-use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\Models\Task;
-use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestLaunch;
@@ -134,16 +132,6 @@ final class TaskAuthoringTest extends TestCase
             'title: The title field is required when brief is not present.',
         );
         $this->assertSame(1, $task->fresh()?->revision);
-    }
-
-    public function test_a_note_over_its_limit_is_refused(): void
-    {
-        $task = Task::factory()->create();
-
-        $this->assertThrows(
-            fn () => $task->finishRun(str_repeat('a', TaskLimits::NOTE_CHARACTERS + 1)),
-            TaskTextTooLong::class,
-        );
     }
 
     public function test_an_agent_creates_one_open_task_as_itself_and_its_session(): void

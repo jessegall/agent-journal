@@ -12,6 +12,7 @@ use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\CancelTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
 
 /**
  * Cancels a task with a reason: the user or a main agent any task, another agent only its own run.
@@ -24,7 +25,7 @@ final readonly class CancelTask implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $taskId,
-        public string $reason,
+        #[Max(Task::NOTE_CHARACTERS)] public string $reason,
     ) {}
 
     public function subject(): Task

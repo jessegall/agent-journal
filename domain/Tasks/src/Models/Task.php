@@ -35,8 +35,6 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
-use Domain\Tasks\Exceptions\TaskTextTooLong;
-use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -271,34 +269,22 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         $this->save();
     }
 
-    /**
-     * @throws TaskTextTooLong
-     */
     public function finishRun(string $note): void
     {
-        TaskLimits::checkNote($note);
         $this->state = TaskState::Finished;
         $this->result_note = $note;
         $this->save();
     }
 
-    /**
-     * @throws TaskTextTooLong
-     */
     public function blockRun(string $reason): void
     {
-        TaskLimits::checkNote($reason);
         $this->state = TaskState::Blocked;
         $this->block_reason = $reason;
         $this->save();
     }
 
-    /**
-     * @throws TaskTextTooLong
-     */
     public function cancelWith(string $reason): void
     {
-        TaskLimits::checkNote($reason);
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;
         $this->save();
