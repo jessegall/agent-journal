@@ -56,7 +56,7 @@ final class MemoryCommandsTest extends TestCase
 
     public function test_an_agent_saves_a_memory_and_reads_it_back(): void
     {
-        $this->runCommandsAs($this->owner->token);
+        $this->runCommandsAs($this->owner);
 
         $this->artisan('memory:save', [
             'text' => 'Run migrate:fresh after a create-migration edit.',
@@ -73,7 +73,7 @@ final class MemoryCommandsTest extends TestCase
 
     public function test_the_same_request_key_keeps_one_memory(): void
     {
-        $this->runCommandsAs($this->owner->token);
+        $this->runCommandsAs($this->owner);
 
         $once = ['text' => 'Once.', '--request-key' => '01JD8X0G9M3QZ6V4K2MEMORY01'];
         $this->artisan('memory:save', $once)->assertExitCode(0);
@@ -84,7 +84,7 @@ final class MemoryCommandsTest extends TestCase
 
     public function test_an_agent_edits_and_removes_its_own_memory(): void
     {
-        $this->runCommandsAs($this->owner->token);
+        $this->runCommandsAs($this->owner);
         $this->artisan('memory:save', ['text' => 'First words.'])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
 
@@ -92,7 +92,7 @@ final class MemoryCommandsTest extends TestCase
             'memory' => $memory->id,
             '--revision' => 1,
             '--text' => 'Better words.',
-            '--weight' => 9,
+            '--weight' => '9',
         ])->assertExitCode(0);
         $this->assertSame(['Better words.', 9, 2], [$memory->refresh()->text, $memory->weight, $memory->revision]);
 
@@ -102,26 +102,26 @@ final class MemoryCommandsTest extends TestCase
 
     public function test_another_agent_cannot_edit_remove_or_list_the_memory(): void
     {
-        $this->runCommandsAs($this->owner->token);
+        $this->runCommandsAs($this->owner);
         $this->artisan('memory:save', ['text' => 'Mine alone.'])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
 
-        $this->runCommandsAs($this->other->token);
-
         $notYours = "Memory {$memory->id} is not one of yours.";
-        $this->artisan('memory:edit', ['memory' => $memory->id, '--revision' => 1, '--text' => 'Taken.'])
-            ->expectsOutputToContain($notYours)
-            ->assertExitCode(1);
-        $this->artisan('memory:remove', ['memory' => $memory->id])
-            ->expectsOutputToContain($notYours)
-            ->assertExitCode(1);
-        $this->artisan('memory:list', ['--json' => true])->expectsOutputToContain('"memories":[]')->assertExitCode(0);
+        $edit = ['memory_id' => $memory->id, 'revision' => 1, 'text' => 'Taken.', 'weight' => null];
+
+        $this->signed($this->other, '/agent/memory/edit', [...$edit, 'request_key' => bin2hex(random_bytes(8))])
+            ->assertJsonPath('message', $notYours);
+        $this->signed($this->other, '/agent/memory/remove', [
+            'memory_id' => $memory->id,
+            'request_key' => bin2hex(random_bytes(8)),
+        ])->assertJsonPath('message', $notYours);
+        $this->signed($this->other, '/agent/memory/list', [])->assertJsonPath('memories', []);
         $this->assertSame('Mine alone.', $memory->refresh()->text);
     }
 
     public function test_a_blank_text_and_a_weight_above_ten_are_refused(): void
     {
-        $this->runCommandsAs($this->owner->token);
+        $this->runCommandsAs($this->owner);
 
         $this->artisan('memory:save', ['text' => ' '])->assertExitCode(1);
         $this->artisan('memory:save', ['text' => 'Heavy.', '--weight' => 11])->assertExitCode(1);
@@ -161,7 +161,7 @@ final class MemoryCommandsTest extends TestCase
 
     public function test_a_stale_edit_is_a_conflict_and_keeps_the_newer_text(): void
     {
-        $this->runCommandsAs($this->owner->token);
+        $this->runCommandsAs($this->owner);
         $this->artisan('memory:save', ['text' => 'Old words.'])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
         $this->artisan('memory:edit', ['memory' => $memory->id, '--revision' => 1, '--text' => 'Newer words.'])
