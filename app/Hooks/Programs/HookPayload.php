@@ -9,6 +9,7 @@ use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Exceptions\UnreadablePayload;
+use PhpOption\Option;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -68,24 +69,24 @@ final class HookPayload extends Data
      */
     public function callsAnyOf(array $toolNames): bool
     {
-        return $this->event()?->isToolCall() === true && is_string($this->toolName) && in_array(
-            $this->toolName,
-            $toolNames,
-            true,
-        );
+        $isToolCall = $this->event()->map(fn (HookEvent $event) => $event->isToolCall())->getOrElse(false);
+
+        return $isToolCall && is_string($this->toolName) && in_array($this->toolName, $toolNames, true);
     }
 
     public function isSessionStart(): bool
     {
-        return $this->event()?->startsSession() === true;
+        return $this->event()->map(fn (HookEvent $event) => $event->startsSession())->getOrElse(false);
     }
 
     /**
-     * The native event the call was sent for, or null for an event the journal maps for no program.
+     * The native event the call was sent for; none for an event the journal maps for no program.
+     *
+     * @return Option<HookEvent>
      */
-    public function event(): HookEvent|null
+    public function event(): Option
     {
-        return HookEvent::tryFrom($this->hookEventName);
+        return Option::fromValue(HookEvent::tryFrom($this->hookEventName));
     }
 
     public function promptText(): string
