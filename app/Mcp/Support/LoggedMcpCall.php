@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Agents\Support\AgentContext;
+use App\Bus\Support\RefusalMapper;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use Closure;
@@ -64,7 +65,7 @@ final readonly class LoggedMcpCall implements McpCall
             $response = $answer();
             $outcome = self::OUTCOME_OK;
         } catch (Throwable $failure) {
-            $refusal = $this->refusals->refusal($failure, $subject, $this->agent->call->callId);
+            $refusal = Refusal::of($this->refusals->refusal($failure, $subject, $this->agent->call->callId));
             $response = $refused($refusal);
             $outcome = $refusal->code->value;
         }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * Finding what a share of this root could include would pass the preview's budget.
  */
-final class ShareScopeTooLarge extends RuntimeException implements CommandRefusal
+final class ShareScopeTooLarge extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -23,5 +25,10 @@ final class ShareScopeTooLarge extends RuntimeException implements CommandRefusa
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

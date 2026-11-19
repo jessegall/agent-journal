@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use App\Processes\Enums\ClassificationState;
@@ -13,7 +15,7 @@ use RuntimeException;
  * A change to the active classification rule was refused: the caller expected another active revision, named a
  * revision of another rule, or retired a rule that is not active.
  */
-final class ClassificationRuleRefused extends RuntimeException implements CommandRefusal
+final class ClassificationRuleRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -40,5 +42,10 @@ final class ClassificationRuleRefused extends RuntimeException implements Comman
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

@@ -69,7 +69,7 @@ final class PlanAuthoringTest extends TestCase
         $phase = Plan::factory()->create()->addPhase('Build');
         $tasks = [Task::factory()->create()->id, TestIds::of(999999), Task::factory()->create()->id];
 
-        $this->signed($this->launch, '/agent/plans/phases/add-tasks', ['phaseId' => $phase->id, 'expectedRevision' => 1, 'taskIds' => $tasks])->assertStatus(403);
+        $this->signed($this->launch, '/agent/plans/phases/add-tasks', ['phaseId' => $phase->id, 'expectedRevision' => 1, 'taskIds' => $tasks])->assertStatus(404)->assertJsonPath('code', 'record_unavailable');
 
         $this->assertSame([], $phase->taskIds());
         $this->assertSame(1, $phase->fresh()?->revision);

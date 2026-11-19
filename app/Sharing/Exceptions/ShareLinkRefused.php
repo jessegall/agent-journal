@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
  * A public share link that leads nowhere: malformed or unknown, told apart only in the code, never in the words, and
  * never with the link itself.
  */
-final class ShareLinkRefused extends RuntimeException implements CommandRefusal
+final class ShareLinkRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -31,5 +33,10 @@ final class ShareLinkRefused extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 404;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::RecordUnavailable;
     }
 }

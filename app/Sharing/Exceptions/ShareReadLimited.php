@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * Too many public reads in a minute: of one share, or of links that lead nowhere.
  */
-final class ShareReadLimited extends RuntimeException implements CommandRefusal
+final class ShareReadLimited extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -28,5 +30,10 @@ final class ShareReadLimited extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 429;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::Busy;
     }
 }

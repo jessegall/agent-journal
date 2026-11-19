@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * A run may be stopped only by a user or the actor who runs it, and only while it has not ended.
  */
-final class StopRefused extends RuntimeException implements CommandRefusal
+final class StopRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -28,5 +30,10 @@ final class StopRefused extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

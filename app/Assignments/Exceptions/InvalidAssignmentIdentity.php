@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Assignments\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
-final class InvalidAssignmentIdentity extends InvalidArgumentException implements CommandRefusal
+final class InvalidAssignmentIdentity extends InvalidArgumentException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -20,5 +22,10 @@ final class InvalidAssignmentIdentity extends InvalidArgumentException implement
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

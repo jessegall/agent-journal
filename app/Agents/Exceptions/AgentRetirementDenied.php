@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Agents\Exceptions;
 
 use App\Actors\Support\ActorIdentity;
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
-final class AgentRetirementDenied extends RuntimeException implements CommandRefusal
+final class AgentRetirementDenied extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -21,5 +23,10 @@ final class AgentRetirementDenied extends RuntimeException implements CommandRef
     protected function status(): int
     {
         return 403;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::Forbidden;
     }
 }

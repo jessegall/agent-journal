@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * An auto-assignment change made against a revision that is no longer the current one.
  */
-final class AutoAssignmentRevisionChanged extends RuntimeException implements CommandRefusal
+final class AutoAssignmentRevisionChanged extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -25,5 +27,10 @@ final class AutoAssignmentRevisionChanged extends RuntimeException implements Co
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

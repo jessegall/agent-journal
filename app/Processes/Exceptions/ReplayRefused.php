@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * A part's retained output cannot be replayed into a new assessment: nothing was run again.
  */
-final class ReplayRefused extends RuntimeException implements CommandRefusal
+final class ReplayRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -43,5 +45,10 @@ final class ReplayRefused extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

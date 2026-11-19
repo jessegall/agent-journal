@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * An evidence sample for a request cannot be approved, started or settled now; the message names the next step.
  */
-final class SampleRefused extends RuntimeException implements CommandRefusal
+final class SampleRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -48,5 +50,10 @@ final class SampleRefused extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
  * An owner's approval was refused: the declaration conflicts with an active rule, or the reader and proof it names do
  * not prove this exact declaration revision.
  */
-final class ApprovalRefused extends RuntimeException implements CommandRefusal
+final class ApprovalRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -54,5 +56,10 @@ final class ApprovalRefused extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

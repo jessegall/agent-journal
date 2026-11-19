@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
@@ -11,7 +13,7 @@ use InvalidArgumentException;
 /**
  * A reader definition breaks its own grammar or limits; it is refused before it reads any output.
  */
-final class ReaderDefinitionInvalid extends InvalidArgumentException implements CommandRefusal
+final class ReaderDefinitionInvalid extends InvalidArgumentException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -38,5 +40,10 @@ final class ReaderDefinitionInvalid extends InvalidArgumentException implements 
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

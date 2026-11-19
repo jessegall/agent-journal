@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
  * A reader cannot be proposed for this request: another actor asked, the request is closed, or the named declaration
  * revision does not exist or carries no contract to read under.
  */
-final class ReaderProposalRefused extends RuntimeException implements CommandRefusal
+final class ReaderProposalRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -41,5 +43,10 @@ final class ReaderProposalRefused extends RuntimeException implements CommandRef
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

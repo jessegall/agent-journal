@@ -27,6 +27,24 @@ enum RefusalCode: string
     case ProfilesUnavailable = 'profiles_unavailable';
 
     /**
+     * The HTTP status a signed route answers the refusal with.
+     */
+    public function status(): int
+    {
+        return match ($this) {
+            self::InvalidInput => 422,
+            self::Unauthenticated => 401,
+            self::Forbidden => 403,
+            self::RecordUnavailable => 404,
+            self::StateBlocked, self::Conflict, self::RequestKeyConflict, self::RequestKeyExpired,
+            self::StaleContinuation, self::Cancelled, self::OutcomeUnknown => 409,
+            self::Busy => 429,
+            self::Unavailable, self::DeadlineExpired, self::ProfilesUnavailable => 503,
+            self::UnsupportedVersion => 426,
+        };
+    }
+
+    /**
      * Whether the same call may succeed when it is sent again unchanged a little later.
      */
     public function isRetryable(): bool

@@ -6,7 +6,7 @@ namespace Tests\Feature\Mcp;
 
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
-use App\Mcp\Exceptions\McpCallFailed;
+use App\Bus\Exceptions\CallFailedUnexpectedly;
 use App\Mcp\Exceptions\ResultTooLarge;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Exceptions;
@@ -81,7 +81,7 @@ final class JournalToolTest extends TestCase
             ->assertDontSee('secret detail')
             ->assertStructuredContentPath('code', 'unavailable');
 
-        Exceptions::assertReported(fn (McpCallFailed $failure): bool => str_contains($failure->getMessage(), self::CALL_ID));
+        Exceptions::assertReported(fn (CallFailedUnexpectedly $failure): bool => str_contains($failure->getMessage(), self::CALL_ID));
     }
 
     public function test_a_20_kib_result_is_refused_by_the_budget_with_a_safe_error(): void
@@ -93,6 +93,6 @@ final class JournalToolTest extends TestCase
             ->assertDontSee('aaaa')
             ->assertStructuredContentPath('code', 'unavailable');
 
-        Exceptions::assertReported(fn (McpCallFailed $failure): bool => $failure->getPrevious() instanceof ResultTooLarge);
+        Exceptions::assertReported(fn (CallFailedUnexpectedly $failure): bool => $failure->getPrevious() instanceof ResultTooLarge);
     }
 }

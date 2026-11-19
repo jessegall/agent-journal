@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * A declaration file was refused before anything was stored; the message names each field that is wrong.
  */
-final class DeclarationInvalid extends RuntimeException implements CommandRefusal
+final class DeclarationInvalid extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -39,5 +41,10 @@ final class DeclarationInvalid extends RuntimeException implements CommandRefusa
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

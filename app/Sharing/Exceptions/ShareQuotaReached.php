@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * The installation already holds as many live, unexpired shares, or as many unexpired proposals, as it may.
  */
-final class ShareQuotaReached extends RuntimeException implements CommandRefusal
+final class ShareQuotaReached extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -28,5 +30,10 @@ final class ShareQuotaReached extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

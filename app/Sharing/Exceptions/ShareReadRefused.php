@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
  * A public read named a path or a page position the share does not allow: too deep, circular, not made of declared
  * relations, or a page position from another share, record or scope. A visitor starts again from the shared link.
  */
-final class ShareReadRefused extends RuntimeException implements CommandRefusal
+final class ShareReadRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -39,5 +41,10 @@ final class ShareReadRefused extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 404;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::RecordUnavailable;
     }
 }

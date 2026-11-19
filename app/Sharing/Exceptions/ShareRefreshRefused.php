@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use App\Sharing\Enums\ShareState;
@@ -12,7 +14,7 @@ use RuntimeException;
 /**
  * A share whose members may not be replaced: it is not live, or the preview shows another record than its root.
  */
-final class ShareRefreshRefused extends RuntimeException implements CommandRefusal
+final class ShareRefreshRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -29,5 +31,10 @@ final class ShareRefreshRefused extends RuntimeException implements CommandRefus
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

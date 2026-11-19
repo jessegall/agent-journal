@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Assignments\Exceptions;
 
 use App\Assignments\Support\AssigneeIdentity;
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 use Throwable;
 
-final class AssigneeUnavailable extends RuntimeException implements CommandRefusal
+final class AssigneeUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -22,5 +24,10 @@ final class AssigneeUnavailable extends RuntimeException implements CommandRefus
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

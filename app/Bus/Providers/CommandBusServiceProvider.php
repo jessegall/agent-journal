@@ -13,13 +13,18 @@ use App\Bus\Support\ConsoleOwner;
 use App\Bus\Support\LaravelCommandBus;
 use App\Bus\Support\RunningCommand;
 use App\Bus\Support\RunningCommandTransaction;
+use App\Bus\Support\SignedCallRefusal;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Events\ConnectionEstablished;
+use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Throwable;
 
 /**
  * Binds the command bus for each request, and refuses any transaction a handler or middleware opens itself while a
@@ -41,6 +46,7 @@ final class CommandBusServiceProvider extends ServiceProvider
     public function boot(DatabaseManager $databases, Dispatcher $events): void
     {
         $this->commands([PruneReceiptsCommand::class]);
+        $this->callAfterResolving(ExceptionHandler::class, self::renderSignedCallRefusals(...));
         self::refuseExplicitTransactionsOn($databases->connection());
         $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::refuseExplicitTransactionsOn($event->connection));
         $events->listen(CommandFinished::class, static fn () => self::finishConsoleOwner());
@@ -58,5 +64,15 @@ final class CommandBusServiceProvider extends ServiceProvider
     private static function finishConsoleOwner(): void
     {
         Container::getInstance()->make(ConsoleOwner::class)->finish();
+    }
+
+    /**
+     * A failure on a signed agent route renders as a coded refusal, the way MCP shows it.
+     */
+    private static function renderSignedCallRefusals(ExceptionHandler $handler): void
+    {
+        if ($handler instanceof Handler) {
+            $handler->renderable(fn (Throwable $failure, Request $request) => SignedCallRefusal::render($failure, $request));
+        }
     }
 }

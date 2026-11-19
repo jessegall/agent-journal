@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
  * A saved preview can no longer stand behind a share: it expired, belongs to someone else, was used already, or what
  * it showed has changed since. The owner saves a new preview.
  */
-final class SharePreviewRefused extends RuntimeException implements CommandRefusal
+final class SharePreviewRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -49,5 +51,10 @@ final class SharePreviewRefused extends RuntimeException implements CommandRefus
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

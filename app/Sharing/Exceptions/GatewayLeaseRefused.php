@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
  * An outcome or a health report that does not match what the run holds: another endpoint version, another or an
  * expired lease, or an operation it never claimed.
  */
-final class GatewayLeaseRefused extends RuntimeException implements CommandRefusal
+final class GatewayLeaseRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -29,5 +31,10 @@ final class GatewayLeaseRefused extends RuntimeException implements CommandRefus
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

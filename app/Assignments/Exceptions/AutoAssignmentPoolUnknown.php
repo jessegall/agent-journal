@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * An auto-assignment that names a pool no domain offers for its record type; the name is never looked up as a class.
  */
-final class AutoAssignmentPoolUnknown extends RuntimeException implements CommandRefusal
+final class AutoAssignmentPoolUnknown extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -23,5 +25,10 @@ final class AutoAssignmentPoolUnknown extends RuntimeException implements Comman
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

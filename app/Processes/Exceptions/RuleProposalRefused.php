@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use App\Processes\Enums\ProposalState;
@@ -13,7 +15,7 @@ use RuntimeException;
  * A rule proposal cannot take this change: its request id is bound to another payload, it is ended, another actor
  * asked, the expected revision is stale, or the declaration would escape the rules a known check must follow.
  */
-final class RuleProposalRefused extends RuntimeException implements CommandRefusal
+final class RuleProposalRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -64,5 +66,10 @@ final class RuleProposalRefused extends RuntimeException implements CommandRefus
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

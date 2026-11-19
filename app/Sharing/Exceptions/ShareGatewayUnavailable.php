@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * No usable gateway configuration stands behind a share: the one named is missing or disabled, or no default is set.
  */
-final class ShareGatewayUnavailable extends RuntimeException implements CommandRefusal
+final class ShareGatewayUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -33,5 +35,10 @@ final class ShareGatewayUnavailable extends RuntimeException implements CommandR
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::Unavailable;
     }
 }

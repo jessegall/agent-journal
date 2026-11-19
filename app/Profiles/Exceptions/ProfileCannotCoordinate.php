@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use App\Profiles\Values\ProfileKey;
@@ -12,7 +14,7 @@ use RuntimeException;
 /**
  * A main launch names a profile whose base does not coordinate the journal's work.
  */
-final class ProfileCannotCoordinate extends RuntimeException implements CommandRefusal
+final class ProfileCannotCoordinate extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -24,5 +26,10 @@ final class ProfileCannotCoordinate extends RuntimeException implements CommandR
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

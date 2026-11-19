@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Sharing\Exceptions;
 
 use App\Actors\Contracts\Actor;
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
 /**
  * An actor other than the current configured owner tried to manage shares.
  */
-final class SharingNotAllowed extends RuntimeException implements CommandRefusal
+final class SharingNotAllowed extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -24,5 +26,10 @@ final class SharingNotAllowed extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 403;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::Forbidden;
     }
 }

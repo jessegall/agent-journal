@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
@@ -11,7 +13,7 @@ use InvalidArgumentException;
 /**
  * A secret reference that is no plain name, or one the credential store does not hold.
  */
-final class GatewaySecretRefused extends InvalidArgumentException implements CommandRefusal
+final class GatewaySecretRefused extends InvalidArgumentException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -30,5 +32,10 @@ final class GatewaySecretRefused extends InvalidArgumentException implements Com
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

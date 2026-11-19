@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -13,7 +15,7 @@ use Throwable;
  * The project's rules could not be read, so no command can be classified: explain and admission refuse with
  * classification-unavailable, and nothing falls back to rules cached for another project.
  */
-final class ClassificationUnavailable extends RuntimeException implements CommandRefusal
+final class ClassificationUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -32,5 +34,10 @@ final class ClassificationUnavailable extends RuntimeException implements Comman
     protected function status(): int
     {
         return 503;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::Unavailable;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Bus\Enums\RefusalCode;
+use App\Bus\Values\MappedRefusal;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 
@@ -20,6 +21,11 @@ final readonly class Refusal
     public function __construct(public RefusalCode $code, string $message)
     {
         $this->message = mb_strcut($message, 0, self::MESSAGE_BYTES);
+    }
+
+    public static function of(MappedRefusal $refusal): self
+    {
+        return new self($refusal->code, $refusal->message);
     }
 
     /**

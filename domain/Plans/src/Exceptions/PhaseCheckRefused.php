@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -11,7 +13,7 @@ use RuntimeException;
 /**
  * A phase was offered a check result it cannot rely on; the message links the run and the recovery.
  */
-final class PhaseCheckRefused extends RuntimeException implements CommandRefusal
+final class PhaseCheckRefused extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -30,5 +32,10 @@ final class PhaseCheckRefused extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 409;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::StateBlocked;
     }
 }

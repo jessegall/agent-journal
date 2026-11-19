@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
@@ -12,7 +14,7 @@ use RuntimeException;
  * A reader could not be proven: the message names every failing check, with byte offsets where the output showed it,
  * and the exit statuses still lacking a real sample. The request stays awaiting proof.
  */
-final class ReaderProofFailed extends RuntimeException implements CommandRefusal
+final class ReaderProofFailed extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -50,5 +52,10 @@ final class ReaderProofFailed extends RuntimeException implements CommandRefusal
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

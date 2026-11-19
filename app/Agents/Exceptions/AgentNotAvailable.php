@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use RuntimeException;
 
-final class AgentNotAvailable extends RuntimeException
+final class AgentNotAvailable extends RuntimeException implements CodedRefusal
 {
     use RendersRefusal;
 
@@ -19,5 +21,10 @@ final class AgentNotAvailable extends RuntimeException
     protected function status(): int
     {
         return 422;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }
