@@ -14,8 +14,8 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Records\Support\RecordIdentity;
 
 /**

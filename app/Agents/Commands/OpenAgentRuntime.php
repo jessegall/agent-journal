@@ -12,8 +12,8 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Opens a runtime for an agent on an enrolled host: a user may pick any host and permitted folder, an agent only

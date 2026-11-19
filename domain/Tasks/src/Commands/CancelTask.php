@@ -6,8 +6,8 @@ namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\CancelTaskHandler;
 use Domain\Tasks\Models\Task;

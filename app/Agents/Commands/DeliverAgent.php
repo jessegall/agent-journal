@@ -12,8 +12,8 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Delivers content to an agent's runtime, in order behind its earlier requests.

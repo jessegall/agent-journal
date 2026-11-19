@@ -6,8 +6,8 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 use App\Sharing\Handlers\ExpireSharesHandler;
 use App\Sharing\Support\ShareExpiry;
 

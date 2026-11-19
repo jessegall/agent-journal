@@ -6,8 +6,8 @@ namespace App\Skills\Commands;
 
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 use App\Skills\Handlers\RetrySkillPublicationHandler;
 
 /**

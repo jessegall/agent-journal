@@ -10,8 +10,8 @@ use App\Agents\Handlers\ReportRequestProgressHandler;
 use App\Agents\Values\ScriptProgress;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 
 /**
  * Records how a host carried out a request in one attempt: its progress, actual binding and outcome. Run for an authenticated host by the journal itself (internal, not exported).

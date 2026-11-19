@@ -6,8 +6,8 @@ namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Handlers\ActivateProfilesHandler;
 use App\Profiles\Models\Profile;

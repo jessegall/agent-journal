@@ -6,8 +6,8 @@ namespace Domain\Sequences\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Sequences\Enums\SequenceAbility;
 use Domain\Sequences\Handlers\StartSequenceHandler;
 use Domain\Sequences\Models\SequenceRun;

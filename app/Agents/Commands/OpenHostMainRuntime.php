@@ -9,8 +9,8 @@ use App\Agents\Handlers\OpenHostMainRuntimeHandler;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 
 /**
  * Opens an agent's main runtime as a terminal on the host the person attached from, for journal-agent attach. Run for

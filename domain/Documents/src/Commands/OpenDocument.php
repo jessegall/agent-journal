@@ -6,8 +6,8 @@ namespace Domain\Documents\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\OpenDocumentHandler;

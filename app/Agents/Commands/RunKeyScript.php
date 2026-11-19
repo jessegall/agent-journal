@@ -13,8 +13,8 @@ use App\Agents\Support\StackTarget;
 use App\Agents\Values\ScriptParameter;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * An operator's request to run one registered maintenance key script, such as LoginMcp, on an agent's terminal. The

@@ -9,8 +9,8 @@ use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Handlers\ReportRuntimeActivityHandler;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 
 /**
  * Records what a host saw a runtime do: its activity and hold in a process generation. Run for an authenticated host by the journal itself (internal, not exported).

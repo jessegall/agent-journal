@@ -13,8 +13,8 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Turns an actor's auto-assignment of one type off against the revision the caller read, keeping its pool and size.

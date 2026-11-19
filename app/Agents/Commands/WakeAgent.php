@@ -12,8 +12,8 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Wakes an agent's runtime for waiting work; a wake already open is raised instead of adding another.

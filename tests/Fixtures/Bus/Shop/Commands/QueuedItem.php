@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Bus\Shop\Commands;
 
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\Command;
+use App\Bus\Support\Command;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Tests\Fixtures\Bus\Shop\Handlers\RemoveItemHandler;
 
 /**
- * @implements Command<mixed>
+ * @extends Command<mixed>
  */
 #[HandledBy(RemoveItemHandler::class)]
-final readonly class QueuedItem implements Command, ShouldQueue
+final readonly class QueuedItem extends Command implements ShouldQueue
 {
     public function __construct() {}
 }

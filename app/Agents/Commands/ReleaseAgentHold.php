@@ -12,8 +12,8 @@ use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * A person releases the hold they read on an agent's runtime: an interrupt or a call for attention, never a hold the

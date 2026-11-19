@@ -6,8 +6,8 @@ namespace App\Records\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 use App\Links\Models\Link;
 use App\Records\Enums\RecordLinkAbility;
 use App\Records\Handlers\UnlinkRecordsHandler;

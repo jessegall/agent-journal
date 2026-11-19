@@ -7,8 +7,8 @@ namespace App\Agents\Commands;
 use App\Agents\Handlers\ReportRuntimeHeartbeatHandler;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\Command;
 
 /**
  * Records a host's liveness evidence for a runtime as its session's heartbeat. Run for an authenticated host by the journal itself (internal, not exported).

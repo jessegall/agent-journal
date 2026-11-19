@@ -10,8 +10,8 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Support\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
 
 /**
  * Retains the intent to fence every session launched from a revoked configuration revision, named by an opaque
