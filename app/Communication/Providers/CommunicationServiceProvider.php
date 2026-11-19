@@ -6,10 +6,13 @@ namespace App\Communication\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Communication\Contracts\InboxRegistration;
+use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\MessageAbility;
 use App\Communication\Links\MessageLinkRecords;
 use App\Communication\Models\Message;
 use App\Communication\Policies\MessagePolicy;
+use App\Communication\Support\RegisteredInboxes;
 use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
@@ -21,6 +24,13 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CommunicationServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->singleton(RegisteredInboxes::class);
+        $this->app->singleton(InboxRegistration::class, RegisteredInboxes::class);
+        $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
+    }
+
     public function boot(
         LinkTypeRegistry $links,
         RecordProviderRegistration $records,

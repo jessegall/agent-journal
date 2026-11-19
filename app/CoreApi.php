@@ -326,6 +326,11 @@ use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Contracts\ConversationResolver;
+use App\Communication\Contracts\Inbox;
+use App\Communication\Contracts\InboxAccess;
+use App\Communication\Contracts\InboxProvider;
+use App\Communication\Contracts\InboxRegistration;
+use App\Communication\Contracts\InboxResolver;
 use App\Communication\Contracts\MessageAddressResolver;
 use App\Communication\Data\Conversation;
 use App\Communication\Data\MessageView;
@@ -334,8 +339,12 @@ use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageDismissed;
 use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\ActorCannotSend;
+use App\Communication\Exceptions\InboxProviderInvalid;
+use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Exceptions\MessageMissing;
+use App\Communication\Support\InboxMembers;
+use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageAddress;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
@@ -913,6 +922,11 @@ final class CoreApi
                 Policy::class,
                 PolicyCatalogue::class,
                 ActorWorkStacks::class,
+                Inbox::class,
+                InboxResolver::class,
+                InboxRegistration::class,
+                InboxProvider::class,
+                InboxAccess::class,
                 WorkStacks::class,
                 ProvidesPolicies::class,
                 WorkStackProvider::class,
@@ -1215,6 +1229,8 @@ final class CoreApi
                 ToolOutcome::class,
                 ActorIdentity::class,
                 PolicyRegistration::class,
+                InboxMembership::class,
+                InboxMembers::class,
                 ActorLabelSet::class,
                 AllowsEverything::class,
                 LaunchProfileAuthority::class,
@@ -1556,6 +1572,8 @@ final class CoreApi
                 ActorNotAllowed::class,
                 AbilityNotRegistered::class,
                 ConsoleOwnerMissing::class,
+                InboxUnavailable::class,
+                InboxProviderInvalid::class,
                 PolicyRegistrationConflict::class,
                 AuthorizerProviderRepeated::class,
                 StateTypeRepeated::class,
