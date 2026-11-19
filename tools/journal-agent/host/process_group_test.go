@@ -63,3 +63,22 @@ func TestAReusedProcessIDWithAnotherStartIsNeverSignalled(t *testing.T) {
 		t.Fatal("the real child was signalled")
 	}
 }
+
+func TestAToolChildThatOutlivesItsLeaderKeepsTheStopUnproven(t *testing.T) {
+	group := startGroup(t, `(trap "" TERM; while true; do sleep 1; done) & exit 0`)
+	if group.Members() != MembersRemain {
+		t.Fatal("the tool child is not in the group")
+	}
+
+	outcome := group.Stop(StopStages{Grace: 100 * time.Millisecond, Force: 2 * time.Second, Poll: 20 * time.Millisecond})
+
+	if outcome != StopProven || group.Members() != NoMembers {
+		t.Fatalf("the stop ended %v with members %v", outcome, group.Members())
+	}
+}
+
+func TestAGroupThatCannotBeObservedIsNeverEmpty(t *testing.T) {
+	if (OwnedGroup{Pid: -1}).Members() == NoMembers {
+		t.Fatal("an unobservable group was taken for an empty one")
+	}
+}

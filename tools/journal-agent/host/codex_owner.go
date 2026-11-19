@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
 // ErrNotChatgptAccount refuses an owner whose account is not signed in with a ChatGPT subscription: no API key or
@@ -221,6 +223,27 @@ func (owners *CodexOwners) Of(ctx context.Context, account string, generation in
 	}
 	owners.owners[key] = owner
 	return owner, nil
+}
+
+// Drain stops every owner of the account, each generation, and answers true once each is proven ended within the
+// bound; an owner still running keeps the account from being changed.
+func (owners *CodexOwners) Drain(account string, bound time.Duration) bool {
+	owners.mutex.Lock()
+	defer owners.mutex.Unlock()
+	drained := true
+	for key, owner := range owners.owners {
+		if !strings.HasPrefix(key, account+"@") {
+			continue
+		}
+		owner.Stop()
+		select {
+		case <-owner.ended:
+			delete(owners.owners, key)
+		case <-time.After(bound):
+			drained = false
+		}
+	}
+	return drained
 }
 
 func hasEnded(owner *CodexOwner) bool {

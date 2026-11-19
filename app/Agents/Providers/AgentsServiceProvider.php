@@ -39,6 +39,7 @@ use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionResolver;
+use App\Agents\Contracts\StartExecutor;
 use App\Agents\Contracts\StartReadiness;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Contracts\TerminalViewCloser;
@@ -73,6 +74,7 @@ use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\HostStartExecutor;
 use App\Agents\Support\NavigationExpiry;
 use App\Agents\Support\NavigationRecords;
 use App\Agents\Support\NavigationRequestProvider;
@@ -91,6 +93,7 @@ use App\Contracts\StartTransaction;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 
@@ -111,6 +114,9 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(StartReadiness::class, SessionReadiness::class);
         $this->app->bind(NavigationReader::class, NavigationRecords::class);
         $this->app->bind(TerminalViewCloser::class, TerminalViews::class);
+        $this->app->bind(StartExecutor::class, fn () => new HostStartExecutor(
+            $this->app->make(Repository::class)->string('agents.host_start_socket'),
+        ));
         $this->app->bind(RuntimeResolver::class, RuntimeRecords::class);
         $this->app->bind(SessionResolver::class, SessionRecords::class);
         $this->app->bind(SendsAgentRequests::class, AgentRequestClient::class);

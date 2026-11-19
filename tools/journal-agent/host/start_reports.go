@@ -1,0 +1,107 @@
+package host
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"os"
+	"path/filepath"
+	"sync"
+
+	"journal-agent/client"
+)
+
+// StartReport is one lifecycle report the journal must hear about an account start: running with its execution,
+// stopped once its whole group is gone, or failed with a named failure.
+type StartReport struct {
+	StartKey  string `json:"start_key"`
+	Kind      string `json:"kind"`
+	Execution string `json:"execution,omitempty"`
+	Failure   string `json:"failure,omitempty"`
+}
+
+const (
+	ReportRunning = "running"
+	ReportStopped = "stopped"
+	ReportFailed  = "failed"
+)
+
+// StartReporter sends start reports to the journal.
+type StartReporter interface {
+	ReportRunning(ctx context.Context, startKey, executionID string) error
+	ReportStopped(ctx context.Context, startKey string) error
+	ReportFailure(ctx context.Context, startKey, failure string) error
+}
+
+// StartReports keeps the start reports not yet acknowledged in one owner-only file, so an outage or a restart never
+// loses the journal's account-use obligations; a report leaves the file only once the journal acknowledged it.
+type StartReports struct {
+	Folder string
+	mutex  sync.Mutex
+}
+
+const pendingReportsName = "pending-start-reports.json"
+
+// Queue saves the report before anything tries to send it.
+func (reports *StartReports) Queue(report StartReport) error {
+	reports.mutex.Lock()
+	defer reports.mutex.Unlock()
+	pending, err := reports.pending()
+	if err != nil {
+		return err
+	}
+	return reports.save(append(pending, report))
+}
+
+// Send sends every queued report in order and keeps those the journal did not acknowledge; a report the journal
+// refused outright is dropped, since sending it again would be refused again.
+func (reports *StartReports) Send(ctx context.Context, reporter StartReporter) error {
+	reports.mutex.Lock()
+	defer reports.mutex.Unlock()
+	pending, err := reports.pending()
+	if err != nil {
+		return err
+	}
+	var kept []StartReport
+	var failures []error
+	for index, report := range pending {
+		err := send(ctx, reporter, report)
+		if err != nil && !errors.Is(err, client.ErrRefused) && !errors.Is(err, client.ErrAlreadyGranted) {
+			kept = append(kept, pending[index:]...)
+			failures = append(failures, err)
+			break
+		}
+	}
+	return errors.Join(append(failures, reports.save(kept))...)
+}
+
+func send(ctx context.Context, reporter StartReporter, report StartReport) error {
+	switch report.Kind {
+	case ReportRunning:
+		return reporter.ReportRunning(ctx, report.StartKey, report.Execution)
+	case ReportStopped:
+		return reporter.ReportStopped(ctx, report.StartKey)
+	default:
+		return reporter.ReportFailure(ctx, report.StartKey, report.Failure)
+	}
+}
+
+func (reports *StartReports) pending() ([]StartReport, error) {
+	content, err := os.ReadFile(filepath.Join(reports.Folder, pendingReportsName))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var pending []StartReport
+	return pending, json.Unmarshal(content, &pending)
+}
+
+func (reports *StartReports) save(pending []StartReport) error {
+	content, err := json.Marshal(pending)
+	if err != nil {
+		return err
+	}
+	return writePrivateFile(filepath.Join(reports.Folder, pendingReportsName), content)
+}

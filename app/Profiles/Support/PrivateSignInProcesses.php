@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
+use App\Profiles\Contracts\AccountOwnerDrain;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Enums\AccountCheckResult;
@@ -30,6 +31,7 @@ final readonly class PrivateSignInProcesses
         private SignInHost $host,
         private SignInProtocols $protocols,
         private Closure $pause,
+        private AccountOwnerDrain $owners = new HostAccountDrain(''),
     ) {}
 
     /**
@@ -46,6 +48,12 @@ final readonly class PrivateSignInProcesses
         try {
             $protocol = $this->protocols->for($claimed->program);
         } catch (SignInProtocolMissing) {
+            $this->host->report($claimed, SignInOutcome::Failed, null);
+
+            return true;
+        }
+
+        if (! $this->owners->drain($claimed->directory)) {
             $this->host->report($claimed, SignInOutcome::Failed, null);
 
             return true;
@@ -125,6 +133,10 @@ final readonly class PrivateSignInProcesses
         try {
             $protocol = $this->protocols->for($claimed->program);
         } catch (SignInProtocolMissing) {
+            return false;
+        }
+
+        if (! $this->owners->drain($claimed->directory)) {
             return false;
         }
 

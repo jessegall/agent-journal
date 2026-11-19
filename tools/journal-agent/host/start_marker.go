@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 // StartMarker is written before the host starts a program, so a restarted host knows what it may already be running.
@@ -19,7 +20,8 @@ type StartMarker struct {
 	StartIdentity     string   `json:"start_identity"`
 }
 
-// Reconciliation is what a restarted host concluded about one marker.
+// Reconciliation is what a restarted host concluded about one marker: a process counts as exited only when its whole
+// group is gone, never because a question about it failed.
 type Reconciliation string
 
 const (
@@ -104,14 +106,19 @@ func reconcile(marker StartMarker) Reconciliation {
 	if marker.ProcessID == 0 || marker.StartIdentity == "" {
 		return NeedsAttention
 	}
-	identity, err := startIdentityOf(marker.ProcessID)
-	if errors.Is(err, errNoStartIdentity) {
+	if processGone(marker.ProcessID) {
 		return Exited
 	}
+	identity, err := startIdentityOf(marker.ProcessID)
 	if err != nil || identity != marker.StartIdentity {
 		return NeedsAttention
 	}
 	return Adopted
+}
+
+// processGone answers whether the system has no process of that id; a failed question is not an answer.
+func processGone(processID int) bool {
+	return errors.Is(syscall.Kill(processID, 0), syscall.ESRCH)
 }
 
 func (markers Markers) pathOf(runtimeID string) string {

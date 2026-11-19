@@ -49,16 +49,30 @@ type StopReply struct {
 	Refusal   string    `json:"refusal,omitempty"`
 }
 
-// HostRequest is one line the host-local adapter sends: a start or a stop, never both.
+// DrainRequest asks the host to end, with proof, the shared owner and every execution of one saved account before
+// its sign-in is replaced or removed.
+type DrainRequest struct {
+	Account string `json:"account"`
+}
+
+// DrainReply answers whether nothing of the account runs any more.
+type DrainReply struct {
+	Drained bool   `json:"drained"`
+	Reason  string `json:"reason,omitempty"`
+}
+
+// HostRequest is one line the host-local adapters send: one start, stop or drain.
 type HostRequest struct {
 	Start *StartRequest `json:"start,omitempty"`
 	Stop  *StopRequest  `json:"stop,omitempty"`
+	Drain *DrainRequest `json:"drain,omitempty"`
 }
 
 // Executor starts and stops prepared starts; the protected start service implements it.
 type Executor interface {
 	Start(ctx context.Context, request StartRequest) (StartReply, error)
 	Stop(ctx context.Context, request StopRequest) (StopReply, error)
+	Drain(ctx context.Context, request DrainRequest) (DrainReply, error)
 }
 
 var (
@@ -111,12 +125,14 @@ func AnswerHostRequest(ctx context.Context, connection io.ReadWriter, executor E
 
 func carryOut(ctx context.Context, request HostRequest, executor Executor) (any, error) {
 	switch {
-	case request.Start != nil && request.Stop == nil:
+	case request.Drain != nil && request.Start == nil && request.Stop == nil && request.Drain.Account != "":
+		return executor.Drain(ctx, *request.Drain)
+	case request.Start != nil && request.Stop == nil && request.Drain == nil:
 		if err := request.Start.Check(); err != nil {
 			return StartReply{StartID: request.Start.StartID, Refusal: err.Error()}, nil
 		}
 		return executor.Start(ctx, *request.Start)
-	case request.Stop != nil && request.Start == nil && request.Stop.Execution != "":
+	case request.Stop != nil && request.Start == nil && request.Drain == nil && request.Stop.Execution != "":
 		return executor.Stop(ctx, *request.Stop)
 	default:
 		return nil, ErrMalformedRequest

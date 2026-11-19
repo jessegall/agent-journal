@@ -95,7 +95,26 @@ func serve(arguments []string) error {
 	journal := client.New(enrollment)
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket}
-	loop := serving.NewLoop(journal, startPreparation(journal, *stateFolder, *installationFolder), opener.open)
+	preparation := startPreparation(journal, *stateFolder, *installationFolder)
+	reports := &host.StartReports{Folder: *stateFolder}
+	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports)
+	if err != nil {
+		return err
+	}
+	for _, outcome := range outcomes {
+		log.Printf("after the restart, start %s is %s", outcome.StartKey, outcome.Outcome)
+	}
+	startSocket := host.StartSocket{Folder: *stateFolder, Executor: &protectedExecutor{
+		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
+		codexOwners: opener.codexOwners,
+	}}
+	startListener, err := startSocket.Listen()
+	if err != nil {
+		return err
+	}
+	defer startListener.Close()
+	go startSocket.Serve(ctx, startListener)
+	loop := serving.NewLoop(journal, preparation, opener.open)
 	watcher, err := host.NewScreenWatcher(ctx, journal, socket)
 	if err != nil {
 		return err

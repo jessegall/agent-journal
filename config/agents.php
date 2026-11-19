@@ -5,6 +5,12 @@ declare(strict_types=1);
 return [
 
     /*
+    | The protected host's local start socket on this machine (journal-agent's state folder, start.sock): the one
+    | way PHP on the host starts or stops a prepared start (doc 57, steps 04 and 24).
+    */
+    'host_start_socket' => (string) env('AGENTS_HOST_START_SOCKET', ''),
+
+    /*
     | The maintenance key scripts an operator may run on an agent's terminal, by name, each with its version, its
     | parameters and their rules. The host registers exactly these names and versions
     | (tools/journal-agent/keyscripts/scripts, recorded()); nothing else runs (doc 40, section 26).

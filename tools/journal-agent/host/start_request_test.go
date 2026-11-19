@@ -29,6 +29,10 @@ func (executor *recordingExecutor) Stop(_ context.Context, request StopRequest) 
 	return StopReply{Execution: request.Execution, ExitCode: &code, EndedAt: time.Now()}, nil
 }
 
+func (executor *recordingExecutor) Drain(_ context.Context, request DrainRequest) (DrainReply, error) {
+	return DrainReply{Drained: request.Account == "/accounts/a"}, nil
+}
+
 type connection struct {
 	*strings.Reader
 	written bytes.Buffer
@@ -107,5 +111,18 @@ func TestAStopReplyCarriesTheExitCode(t *testing.T) {
 	}
 	if reply.ExitCode == nil || *reply.ExitCode != 0 || len(executor.stopped) != 1 {
 		t.Fatalf("reply %+v", reply)
+	}
+}
+
+func TestADrainAnswersWhetherNothingOfTheAccountRuns(t *testing.T) {
+	pipe := &connection{Reader: strings.NewReader(`{"drain":{"account":"/accounts/a"}}` + "\n")}
+
+	if err := AnswerHostRequest(context.Background(), pipe, &recordingExecutor{}); err != nil {
+		t.Fatal(err)
+	}
+
+	var reply DrainReply
+	if err := json.Unmarshal(pipe.written.Bytes(), &reply); err != nil || !reply.Drained {
+		t.Fatalf("reply %+v %v", reply, err)
 	}
 }

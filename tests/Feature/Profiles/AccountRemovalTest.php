@@ -23,6 +23,7 @@ use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\RemoveAccount;
 use App\Profiles\Commands\RetryAccountCleanup;
 use App\Profiles\Commands\RetryAttemptCleanup;
+use App\Profiles\Contracts\AccountOwnerDrain;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\CleanupTarget;
@@ -147,6 +148,29 @@ final class AccountRemovalTest extends TestCase
         $this->assertDirectoryDoesNotExist($directory);
         $this->assertDirectoryExists($directory.'-x');
         rmdir($directory.'-x');
+    }
+
+    public function test_an_account_the_host_cannot_drain_keeps_its_sign_in_and_folder(): void
+    {
+        $directory = sys_get_temp_dir().'/account-cleanup-'.bin2hex(random_bytes(4));
+        mkdir($directory);
+        $host = new RecordingSignInHost(null);
+        $protocols = new SignInProtocols($this->app);
+        $protocols->register('codex', FinishingProtocol::class);
+        $host->nextCleanup = new ClaimedCleanup(CleanupTarget::Account, 'account', 'codex', $directory, 1, false);
+        $stillRunning = new class implements AccountOwnerDrain
+        {
+            public function drain(string $directory): bool
+            {
+                return false;
+            }
+        };
+
+        new PrivateSignInProcesses($host, $protocols, static fn () => null, $stillRunning)->cleanNext();
+
+        $this->assertEquals([new CleanupProgress(false, false)], $host->cleanups);
+        $this->assertDirectoryExists($directory);
+        rmdir($directory);
     }
 
     public function test_an_unfinished_new_accounts_sign_in_is_cleaned_with_both_proofs(): void
