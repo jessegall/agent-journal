@@ -7,8 +7,10 @@ namespace App\Assignments\Calls;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Lists the pools an auto-assignment of one kind of record can take from.
@@ -16,6 +18,7 @@ use Spatie\LaravelData\Data;
  * @implements JournalCall<PoolList>
  */
 #[Endpoint('assignments/auto/pools', 'POST', PoolList::class, CallEffect::Read)]
+#[MapName(SnakeCaseMapper::class)]
 final class ListAssignmentPoolsCall extends Data implements JournalCall
 {
     public function __construct(

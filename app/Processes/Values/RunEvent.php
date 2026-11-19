@@ -4,67 +4,58 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Calls\RunPart;
 use App\Processes\Contracts\RunEvents;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Enums\RunEventType;
+use Spatie\LaravelData\Data;
 
 /**
- * One numbered event as it travels from the host's supervisor to the server: its sequence, type, part and details.
- * The server applies it to the run's records; a repeat under the same number changes nothing.
+ * One event of a run in the order the host saw it, with the facts its type carries; it is spooled as a line and sent
+ * as part of a batch.
  */
-final readonly class RunEvent
+final class RunEvent extends Data
 {
-    /**
-     * @param  array<string, string|int>  $details
-     */
-    public function __construct(public int $sequence, public RunEventType $type, public PartKey|null $part, public array $details = []) {}
-
-    /**
-     * @return array{sequence: int, type: string, part: array{node: int, attempt: int, operation: string}|null, details: array<string, string|int>}
-     */
-    public function toArray(): array
-    {
-        $part = $this->part === null ? null : ['node' => $this->part->node, 'attempt' => $this->part->attempt, 'operation' => $this->part->operation];
-
-        return ['sequence' => $this->sequence, 'type' => $this->type->value, 'part' => $part, 'details' => $this->details];
-    }
-
-    /**
-     * @param  array{sequence: int, type: string, part: array{node: int, attempt: int, operation: string}|null, details: array<string, string|int>}  $event
-     */
-    public static function fromArray(array $event): self
-    {
-        $part = $event['part'] === null ? null : new PartKey($event['part']['node'], $event['part']['attempt'], $event['part']['operation']);
-
-        return new self($event['sequence'], RunEventType::from($event['type']), $part, $event['details']);
-    }
+    public function __construct(
+        public readonly int $sequence,
+        public readonly RunEventType $type,
+        public readonly RunPart|null $part = null,
+        public readonly int|null $pid = null,
+        public readonly string|null $host = null,
+        public readonly PartEndType|null $end = null,
+        public readonly int|null $code = null,
+        public readonly string|null $reason = null,
+        public readonly bool|null $drained = null,
+        public readonly string|null $because = null,
+    ) {}
 
     /**
      * Applies the event to where the run's events go; a heartbeat carries no part change.
      */
     public function applyTo(RunEvents $events): void
     {
-        $part = $this->part ?? new PartKey(0, 0, '');
+        $part = $this->part?->key() ?? new PartKey(0, 0, '');
+
         match ($this->type) {
             RunEventType::PartQueued => $events->queued($part),
-            RunEventType::PartStarted => $events->started($part, (int) $this->details['pid'], (string) $this->details['host']),
-            RunEventType::PartStartedInside => $events->startedInside($part, (string) $this->details['host']),
-            RunEventType::PartEnded => $events->ended($part, $this->end(), (bool) $this->details['drained']),
-            RunEventType::PartSkipped => $events->skipped($part, (string) $this->details['because']),
-            RunEventType::PartStartFailed => $events->spawnFailed($part, (string) $this->details['reason']),
-            RunEventType::PartStopped => $events->stopped($part, (string) $this->details['reason']),
+            RunEventType::PartStarted => $events->started($part, (int) $this->pid, (string) $this->host),
+            RunEventType::PartStartedInside => $events->startedInside($part, (string) $this->host),
+            RunEventType::PartEnded => $events->ended($part, $this->partEnd(), $this->drained === true),
+            RunEventType::PartSkipped => $events->skipped($part, (string) $this->because),
+            RunEventType::PartStartFailed => $events->spawnFailed($part, (string) $this->reason),
+            RunEventType::PartStopped => $events->stopped($part, (string) $this->reason),
             RunEventType::PartLost => $events->lost($part),
-            RunEventType::RunStopped => $events->runStopped((string) $this->details['reason']),
+            RunEventType::RunStopped => $events->runStopped((string) $this->reason),
             RunEventType::Heartbeat => null,
         };
     }
 
-    private function end(): PartEnd
+    private function partEnd(): PartEnd
     {
-        return match (PartEndType::from((string) $this->details['end'])) {
-            PartEndType::Exited => PartEnd::exited((int) $this->details['code']),
-            PartEndType::Signalled => PartEnd::signalled((int) $this->details['code']),
-            PartEndType::Unavailable => PartEnd::unavailable((string) $this->details['reason']),
+        return match ($this->end ?? PartEndType::NotYet) {
+            PartEndType::Exited => PartEnd::exited((int) $this->code),
+            PartEndType::Signalled => PartEnd::signalled((int) $this->code),
+            PartEndType::Unavailable => PartEnd::unavailable((string) $this->reason),
             PartEndType::NotYet => PartEnd::notYet(),
         };
     }

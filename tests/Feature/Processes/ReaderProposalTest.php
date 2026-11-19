@@ -94,11 +94,11 @@ final class ReaderProposalTest extends TestCase
         $run = $this->sampleRun();
         $this->assertFalse($this->request->hasReadEvidence($run));
 
-        $this->readOutput($run, ['mode' => 'summary']);
-        $this->readOutput($run, ['mode' => 'tail', 'part' => 1, 'stream' => 'stdout', 'tail' => 5]);
+        $this->readOutput($run, 'summary', []);
+        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stdout', 'lines' => 5]);
         $this->assertFalse($this->request->hasReadEvidence($run));
 
-        $this->readOutput($run, ['mode' => 'tail', 'part' => 1, 'stream' => 'stderr', 'tail' => 5]);
+        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stderr', 'lines' => 5]);
         $this->assertTrue($this->request->hasReadEvidence($run));
     }
 
@@ -106,8 +106,8 @@ final class ReaderProposalTest extends TestCase
     {
         $run = $this->sampleRun();
 
-        $this->readOutput($run, ['mode' => 'tail', 'part' => 1, 'stream' => 'stdout', 'tail' => 5]);
-        $this->readOutput($run, ['mode' => 'tail', 'part' => 1, 'stream' => 'stderr', 'tail' => 5]);
+        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stdout', 'lines' => 5]);
+        $this->readOutput($run, 'tail', ['part' => 1, 'stream' => 'stderr', 'lines' => 5]);
 
         $this->assertFalse($this->request->hasReadEvidence($run));
     }
@@ -126,9 +126,9 @@ final class ReaderProposalTest extends TestCase
     /**
      * @param  array<string, mixed>  $body
      */
-    private function readOutput(ProcessRun $run, array $body): void
+    private function readOutput(ProcessRun $run, string $read, array $body): void
     {
-        $this->signed($this->launch, "/agent/processes/runs/{$run->id}/output", $body)->assertOk();
+        $this->signed($this->launch, "/agent/processes/runs/{$run->id}/output/{$read}", $body)->assertOk();
     }
 
     /**

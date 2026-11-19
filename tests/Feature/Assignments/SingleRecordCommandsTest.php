@@ -51,21 +51,21 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_a_main_agent_reads_the_reference_and_deliberately_changes_the_work(): void
     {
-        $record = ['recordType' => 'tasks.task', 'recordId' => $this->task->id];
+        $record = ['record_type' => 'tasks.task', 'record_id' => $this->task->id];
 
-        $this->callAs($this->main, 'assign', [...$record, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])
+        $this->callAs($this->main, 'assign', [...$record, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id])
             ->assertOk()->assertJson(['changed' => 1, 'outcomes' => [['type' => 'changed', 'record' => ['holder' => ['type' => 'agent', 'id' => (string) $this->helper->agent->id]]]]]);
         $shown = $this->callAs($this->main, 'show', $record)->assertOk();
         $first = (string) $shown->json('holder.reference');
 
-        $this->callAs($this->main, 'reassign', [...$record, 'assignmentId' => $first, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id])
+        $this->callAs($this->main, 'reassign', [...$record, 'assignment_id' => $first, 'holder_type' => 'agent', 'holder_id' => $this->helper->agent->id, 'recipient_type' => 'agent', 'recipient_id' => $this->main->agent->id])
             ->assertOk()->assertJson(['changed' => 1]);
         $second = (string) $this->callAs($this->main, 'show', $record)->json('holder.reference');
-        $this->callAs($this->main, 'reassign', [...$record, 'assignmentId' => $second, 'holderType' => 'agent', 'holderId' => $this->main->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])->assertOk();
+        $this->callAs($this->main, 'reassign', [...$record, 'assignment_id' => $second, 'holder_type' => 'agent', 'holder_id' => $this->main->agent->id, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id])->assertOk();
 
-        $this->callAs($this->main, 'unassign', [...$record, 'assignmentId' => $first, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id])->assertConflict();
-        $this->callAs($this->helper, 'unassign', [...$record, 'assignmentId' => $first, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id])->assertForbidden();
-        $this->callAs($this->main, 'assign', [...$record, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id, 'agent' => $this->helper->agent->id])->assertUnprocessable();
+        $this->callAs($this->main, 'unassign', [...$record, 'assignment_id' => $first, 'holder_type' => 'agent', 'holder_id' => $this->helper->agent->id])->assertConflict();
+        $this->callAs($this->helper, 'unassign', [...$record, 'assignment_id' => $first, 'holder_type' => 'agent', 'holder_id' => $this->helper->agent->id])->assertForbidden();
+        $this->callAs($this->main, 'assign', [...$record, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id, 'agent' => $this->helper->agent->id])->assertUnprocessable();
 
         $this->assertSame(1, AssignmentRecord::query()->withoutGlobalScopes()->count());
     }

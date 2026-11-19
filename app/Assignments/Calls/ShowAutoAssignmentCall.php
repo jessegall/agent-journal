@@ -10,9 +10,11 @@ use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
 use App\Assignments\Calls\Concerns\NamesAutoAssignment;
 use App\Http\Data\Assignments\AutoAssignmentStatusData;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Reads an actor's auto-assignment of one kind of record.
@@ -20,6 +22,7 @@ use Spatie\LaravelData\Data;
  * @implements JournalCall<AutoAssignmentStatusData>
  */
 #[Endpoint('assignments/auto/show', 'POST', AutoAssignmentStatusData::class, CallEffect::Read)]
+#[MapName(SnakeCaseMapper::class)]
 final class ShowAutoAssignmentCall extends Data implements JournalCall
 {
     use NamesAutoAssignment;

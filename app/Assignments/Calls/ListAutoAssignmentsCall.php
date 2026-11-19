@@ -9,8 +9,10 @@ use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
 use App\Http\Data\Assignments\AutoAssignmentPageData;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Lists an actor's auto-assignments, one page after the id named.
@@ -18,6 +20,7 @@ use Spatie\LaravelData\Data;
  * @implements JournalCall<AutoAssignmentPageData>
  */
 #[Endpoint('assignments/auto/list', 'POST', AutoAssignmentPageData::class, CallEffect::Read)]
+#[MapName(SnakeCaseMapper::class)]
 final class ListAutoAssignmentsCall extends Data implements JournalCall
 {
     public function __construct(

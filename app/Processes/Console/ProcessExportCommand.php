@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\ProcessCalls;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\JournalRouteType;
+use App\Processes\Enums\OutputStream;
 use Illuminate\Console\Command;
 
 /**
@@ -16,18 +19,27 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write, [CommandClass::Write])]
 final class ProcessExportCommand extends Command
 {
-    protected $signature = 'process:export {run : The run id} {--part=0 : The syntax node of the part} {--stream=stdout} {--to= : The file to write}';
+    use RunsCallPipelines;
+
+    protected $signature = 'process:export {run : The run id} {--part=0 : The syntax node of the part}'
+        .' {--stream=stdout} {--to= : The file to write}';
 
     protected $description = 'Write a part\'s stored output to a file';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(ProcessCalls $processes): int
     {
-        $reply = $journal->send("/agent/processes/runs/{$this->argument('run')}/output", ['mode' => 'raw', 'part' => (int) $this->option('part'), 'stream' => (string) $this->option('stream')]);
+        $run = (string) $this->argument('run');
         $file = (string) $this->option('to');
-        file_put_contents($file, (string) base64_decode((string) $reply->body['bytes'], true));
-        file_put_contents($file.'.label', "Diagnostic output of run {$this->argument('run')}, part {$this->option('part')}, {$this->option('stream')}; never a result.\n");
-        $this->line("Wrote {$file}.");
 
-        return self::SUCCESS;
+        return $this->runReport(function () use ($processes, $run, $file): CommandReport {
+            $stream = OutputStream::from((string) $this->option('stream'));
+            $output = $processes->readOutputBytes($run, (int) $this->option('part'), $stream);
+            file_put_contents($file, $output->decoded());
+            $part = (int) $this->option('part');
+            $label = "Diagnostic output of run {$run}, part {$part}, {$stream->value}; never a result.\n";
+            file_put_contents($file.'.label', $label);
+
+            return CommandReport::ending(self::SUCCESS)->line("Wrote {$file}.");
+        });
     }
 }

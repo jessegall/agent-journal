@@ -44,7 +44,6 @@ final class Exports
         'App\Mcp\Tools\JournalReadTool',
         'App\Mcp\Resources\JournalResource',
         'App\Bus\Exceptions\Concerns\RendersRefusal',
-        'App\AgentRequests\Console\Concerns\SendsSignedCalls',
         'App\AgentRequests\Console\Concerns\RunsCallPipelines',
         'App\Assignments\Calls\Concerns\NamesRecipient',
         'App\Assignments\Calls\Concerns\NamesExpectedAssignment',

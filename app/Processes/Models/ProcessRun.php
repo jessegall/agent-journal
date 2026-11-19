@@ -11,6 +11,7 @@ use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\RunAdmission;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -47,7 +49,7 @@ use Illuminate\Support\Carbon;
  * @property string $event_key_hash
  * @property string $consuming_key_hash
  * @property string $working_folder
- * @property array{root: array<string, mixed>, tree_digest: string} $plan
+ * @property ExecutionPlan $plan
  * @property CarbonImmutable|null $consumed_at
  * @property CarbonImmutable|null $heartbeat_at
  * @property CarbonImmutable|null $started_at
@@ -91,7 +93,7 @@ final class ProcessRun extends Model implements ReadableModel
             'capture_state' => CaptureState::class,
             'started_at' => 'immutable_datetime',
             'ended_at' => 'immutable_datetime',
-            'plan' => 'array',
+            'plan' => ExecutionPlan::class,
             'consumed_at' => 'immutable_datetime',
             'heartbeat_at' => 'immutable_datetime',
         ];
@@ -112,7 +114,7 @@ final class ProcessRun extends Model implements ReadableModel
         $run->registry_revision = $admission->registryRevision;
         $run->policy_revision = $admission->policyRevision;
         $run->working_folder = $admission->workingFolder;
-        $run->plan = $admission->plan->toArray();
+        $run->plan = $admission->plan;
         $run->belongTo($actor);
         $run->save();
 
@@ -257,6 +259,16 @@ final class ProcessRun extends Model implements ReadableModel
     public function parts(): HasMany
     {
         return $this->hasMany(PartRun::class);
+    }
+
+    /**
+     * The latest attempt of the part at a syntax node of the run.
+     *
+     * @throws ModelNotFoundException
+     */
+    public function latestAttemptAt(int $node): PartRun
+    {
+        return $this->parts()->where('syntax_node', $node)->orderByDesc('attempt')->firstOrFail();
     }
 
     /**

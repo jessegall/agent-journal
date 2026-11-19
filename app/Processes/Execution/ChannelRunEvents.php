@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Processes\Execution;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
-use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Exceptions\CallFailed;
 use App\Processes\Calls\ProcessCalls;
+use App\Processes\Calls\RunChunk;
+use App\Processes\Calls\RunPart;
 use App\Processes\Contracts\RunEvents;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RunEventType;
@@ -38,7 +38,6 @@ final class ChannelRunEvents implements RunEvents
     private array $offsets = [];
 
     public function __construct(
-        private readonly AgentRequestSender $journal,
         private readonly ProcessCalls $processes,
         private readonly string $runId,
         private readonly string $eventKey,
@@ -56,12 +55,12 @@ final class ChannelRunEvents implements RunEvents
 
     public function started(PartKey $part, int $pid, string $host): void
     {
-        $this->emit(RunEventType::PartStarted, $part, ['pid' => $pid, 'host' => $host]);
+        $this->emit(RunEventType::PartStarted, $part, pid: $pid, host: $host);
     }
 
     public function startedInside(PartKey $part, string $host): void
     {
-        $this->emit(RunEventType::PartStartedInside, $part, ['host' => $host]);
+        $this->emit(RunEventType::PartStartedInside, $part, host: $host);
     }
 
     public function output(PartKey $part, OutputStream $stream, string $bytes): void
@@ -69,37 +68,27 @@ final class ChannelRunEvents implements RunEvents
         $key = "{$part->name()}:{$stream->value}";
         $offset = $this->offsets[$key] ?? 0;
         $this->offsets[$key] = $offset + strlen($bytes);
-        $this->append('chunks.jsonl', [
-            'part' => ['node' => $part->node, 'attempt' => $part->attempt, 'operation' => $part->operation],
-            'stream' => $stream->value,
-            'offset' => $offset,
-            'bytes' => base64_encode($bytes),
-        ]);
+        $this->append('chunks.jsonl', new RunChunk(RunPart::of($part), $stream, $offset, base64_encode($bytes)));
     }
 
     public function ended(PartKey $part, PartEnd $end, bool $drained): void
     {
-        $this->emit(RunEventType::PartEnded, $part, [
-            'end' => $end->type->value,
-            'code' => $end->code,
-            'reason' => $end->reason,
-            'drained' => (int) $drained,
-        ]);
+        $this->emit(RunEventType::PartEnded, $part, end: $end, drained: $drained);
     }
 
     public function skipped(PartKey $part, string $controllingResult): void
     {
-        $this->emit(RunEventType::PartSkipped, $part, ['because' => $controllingResult]);
+        $this->emit(RunEventType::PartSkipped, $part, because: $controllingResult);
     }
 
     public function spawnFailed(PartKey $part, string $reason): void
     {
-        $this->emit(RunEventType::PartStartFailed, $part, ['reason' => $reason]);
+        $this->emit(RunEventType::PartStartFailed, $part, reason: $reason);
     }
 
     public function stopped(PartKey $part, string $reason): void
     {
-        $this->emit(RunEventType::PartStopped, $part, ['reason' => $reason]);
+        $this->emit(RunEventType::PartStopped, $part, reason: $reason);
     }
 
     public function lost(PartKey $part): void
@@ -118,7 +107,7 @@ final class ChannelRunEvents implements RunEvents
 
     public function runStopped(string $reason): void
     {
-        $this->emit(RunEventType::RunStopped, null, ['reason' => $reason]);
+        $this->emit(RunEventType::RunStopped, null, reason: $reason);
     }
 
     /**
@@ -141,7 +130,7 @@ final class ChannelRunEvents implements RunEvents
         try {
             $this->sendSpooled();
             $this->waitingToSend = false;
-        } catch (AgentRequestFailed) {
+        } catch (CallFailed) {
             $this->waitingToSend = true;
         }
     }
@@ -155,22 +144,38 @@ final class ChannelRunEvents implements RunEvents
     }
 
     /**
-     * @param  array<string, string|int>  $details
+     * Spools one event with the facts its type carries.
      */
-    private function emit(RunEventType $type, PartKey|null $part, array $details = []): void
-    {
-        $this->append('events.jsonl', new RunEvent(++$this->sequence, $type, $part, $details)->toArray());
+    private function emit(
+        RunEventType $type,
+        PartKey|null $part,
+        int|null $pid = null,
+        string|null $host = null,
+        PartEnd|null $end = null,
+        bool|null $drained = null,
+        string|null $because = null,
+        string|null $reason = null,
+    ): void {
+        $this->append('events.jsonl', RunEvent::from([
+            'sequence' => ++$this->sequence,
+            'type' => $type,
+            'part' => $part === null ? null : RunPart::of($part),
+            'pid' => $pid,
+            'host' => $host,
+            'end' => $end?->type,
+            'code' => $end?->code,
+            'reason' => $end === null ? $reason : $end->reason,
+            'drained' => $drained,
+            'because' => $because,
+        ]));
     }
 
     /**
      * Appends one JSON line to a spool file and sends what waits.
-     *
-     * @param  array<string, mixed>  $record
      */
-    private function append(string $file, array $record): void
+    private function append(string $file, RunEvent|RunChunk $record): void
     {
-        $line = json_encode($record, JSON_THROW_ON_ERROR)."\n";
-        file_put_contents("{$this->spoolFolder}/{$file}", $line, FILE_APPEND | LOCK_EX);
+        file_put_contents("{$this->spoolFolder}/{$file}", $record->toJson()."\n", FILE_APPEND | LOCK_EX);
         $this->flush();
     }
 
@@ -185,24 +190,36 @@ final class ChannelRunEvents implements RunEvents
     }
 
     /**
-     * @throws AgentRequestFailed
+     * @throws CallFailed
      */
     private function sendSpooled(): void
     {
-        $lines = $this->spooledLines('events.jsonl');
-        $decoded = array_map(fn (string $line) => json_decode($line, true, 512, JSON_THROW_ON_ERROR), $lines);
-        $events = array_slice($decoded, $this->sent);
+        $events = array_values(array_slice(RunEvent::collect($this->spooledRecords('events.jsonl')), $this->sent));
+
         if ($events !== []) {
-            $path = "/agent/processes/runs/{$this->runId}/events";
-            $this->journal->send($path, ['key' => $this->eventKey, 'events' => $events]);
+            $this->processes->recordRunEvents($this->runId, $this->eventKey, $events);
             $this->sent += count($events);
         }
+
         $chunks = $this->spooledLines('chunks.jsonl');
-        foreach ($chunks as $index => $line) {
-            $chunk = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
-            $this->journal->send("/agent/processes/runs/{$this->runId}/chunks", ['key' => $this->eventKey, ...$chunk]);
+
+        foreach (RunChunk::collect($this->spooledRecords('chunks.jsonl')) as $index => $chunk) {
+            $this->processes->recordRunChunk($this->runId, $this->eventKey, $chunk);
             $rest = implode('', array_map(fn (string $left) => $left."\n", array_slice($chunks, $index + 1)));
             file_put_contents($this->spoolFolder.'/chunks.jsonl', $rest, LOCK_EX);
         }
+    }
+
+    /**
+     * The records of a spool file, one for each line.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function spooledRecords(string $name): array
+    {
+        return array_map(
+            fn (string $line): array => (array) json_decode($line, true, 512, JSON_THROW_ON_ERROR),
+            $this->spooledLines($name),
+        );
     }
 }

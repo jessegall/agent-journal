@@ -6,9 +6,6 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\AgentRequests\Contracts\AgentRequestSender;
-use App\AgentRequests\Exceptions\AgentRequestFailed;
-use App\AgentRequests\Support\AgentReply;
 use App\Processes\Calls\ProcessCalls;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
@@ -24,6 +21,7 @@ use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PartKey;
 use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Support\RecordedCalls;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestRunAdmissions;
@@ -71,24 +69,13 @@ final class ProcessChannelTest extends TestCase
     {
         $run = $this->admit('echo hi');
         $eventKey = (string) $this->signed($this->launch, "/agent/processes/admissions/{$run->id}", ['request_key' => 'channel-1'])->json('event_key');
-        $sender = new class($this->app->make(AgentRequestSender::class)) implements AgentRequestSender
-        {
-            public bool $connected = false;
-
-            public function __construct(private readonly AgentRequestSender $journal) {}
-
-            public function send(string $path, array $body): AgentReply
-            {
-                return $this->connected ? $this->journal->send($path, $body) : throw new AgentRequestFailed('The connection was cut.');
-            }
-        };
-        $processes = $this->app->make(ProcessCalls::class);
-        $events = new ChannelRunEvents($sender, $processes, $run->id, $eventKey, $this->folder.'/spool');
+        $calls = new RecordedCalls();
+        $events = new ChannelRunEvents(new ProcessCalls($calls), $run->id, $eventKey, $this->folder.'/spool');
         $part = new PartKey(1, 1, 'echo');
 
         $events->queued($part);
         $events->startedInside($part, 'host');
-        $sender->connected = true;
+        $calls->passThrough();
         $events->flush();
         $events->flush();
 

@@ -98,9 +98,9 @@ trait RunsAcmeRequests
         $part->finishDraining();
         $recorder->finish($part, PartEnd::exited($status));
         if ($read) {
-            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output", ['mode' => 'summary'])->assertOk();
-            $tail = ['mode' => 'tail', 'part' => 1, 'stream' => 'stdout', 'tail' => 50];
-            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output", $tail)->assertOk();
+            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output/summary", [])->assertOk();
+            $tail = ['part' => 1, 'stream' => 'stdout', 'lines' => 50];
+            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();
         }
         $this->asAgent(new SettleSample($this->requestId));
 

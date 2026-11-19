@@ -267,7 +267,7 @@ final readonly class LineAdmission implements ShellAdmission
             return $this->refused(RefusalCode::RuleRevisionChanged, $tree, $earlier->stale_reason, 'Use a new key.');
         }
 
-        $run = $this->runOf($earlier, ExecutionPlan::fromArray($earlier->plan), $tree, $actor, []);
+        $run = $this->runOf($earlier, $earlier->plan, $tree, $actor, []);
 
         return Admission::allowed($run, $earlier->id);
     }

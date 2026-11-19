@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Processes\Http\Controllers\Calls;
 
+use App\Processes\Calls\AdmissionAlreadyStarted;
 use App\Processes\Calls\AdmissionFetched;
+use App\Processes\Calls\AdmissionToStart;
 use App\Processes\Calls\FetchAdmissionCall;
-use App\Processes\Enums\AdmissionState;
 use App\Processes\Exceptions\RunAdmissionStale;
 use App\Processes\Exceptions\RunnerUnavailable;
 use App\Processes\Models\ProcessRun;
@@ -41,11 +42,10 @@ final readonly class FetchAdmissionController
         $eventKey = $processRun->consumeFor($call->requestKey->value, $this->appKey);
 
         if ($eventKey === null) {
-            return AdmissionFetched::from(['state' => AdmissionState::AlreadyStarted, 'runId' => $processRun->id]);
+            return AdmissionAlreadyStarted::from(['runId' => $processRun->id]);
         }
 
-        return AdmissionFetched::from([
-            'state' => AdmissionState::ToRun,
+        return AdmissionToStart::from([
             'runId' => $processRun->id,
             'eventKey' => $eventKey,
             'dialect' => $processRun->dialect,

@@ -17,6 +17,7 @@ use Spatie\LaravelData\Attributes\Validation\Size;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
@@ -31,6 +32,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
     CallEffect::KeyedWrite,
     ReceiptOwner::CommandBus,
 )]
+#[MapName(SnakeCaseMapper::class)]
 final class ReleaseMessageClaimCall extends Data implements JournalCall
 {
     public function __construct(

@@ -7,8 +7,10 @@ namespace App\Communication\Calls;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Size;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Reads, for the message's author, whether each notified member's runtime accepted the wake.
@@ -16,6 +18,7 @@ use Spatie\LaravelData\Data;
  * @implements JournalCall<WakeStatuses>
  */
 #[Endpoint('communication/wake-status', 'POST', WakeStatuses::class, CallEffect::Read)]
+#[MapName(SnakeCaseMapper::class)]
 final class ReadWakeStatusCall extends Data implements JournalCall
 {
     public function __construct(

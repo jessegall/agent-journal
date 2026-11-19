@@ -65,8 +65,6 @@ use App\AgentRequests\Attributes\InPath;
 use App\AgentRequests\Attributes\PresentList;
 use App\AgentRequests\Casts\CallKeyCast;
 use App\AgentRequests\Console\Concerns\RunsCallPipelines;
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Contracts\CallRefusal;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
@@ -74,7 +72,6 @@ use App\AgentRequests\Contracts\RegistersCalls;
 use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Enums\ReportLineType;
-use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Exceptions\AnswerUnreadable;
 use App\AgentRequests\Exceptions\CallCancelled;
 use App\AgentRequests\Exceptions\CallConflict;
@@ -98,7 +95,6 @@ use App\AgentRequests\Exceptions\ProfilesUnavailable;
 use App\AgentRequests\Exceptions\RecordNotFound;
 use App\AgentRequests\Exceptions\StaleContinuation;
 use App\AgentRequests\Exceptions\StateBlocked;
-use App\AgentRequests\Support\AgentReply;
 use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Transformers\CallKeyTransformer;
 use App\AgentRequests\Values\CallAccepted;
@@ -1088,7 +1084,6 @@ final class CoreApi
                 AssigneeProvider::class,
                 AssignmentResolver::class,
                 AssignmentRegistration::class,
-                AgentRequestSender::class,
                 Numbered::class,
                 ProvidesNumberedModels::class,
                 AssigneeResolver::class,
@@ -1411,7 +1406,6 @@ final class CoreApi
                 AssignmentOutcomeType::class,
                 AssignmentData::class,
                 RecordHolderData::class,
-                AgentReply::class,
                 NumberedModel::class,
                 RecordReference::class,
                 Exports::class,
@@ -1794,7 +1788,6 @@ final class CoreApi
                 RecordUnavailable::class,
                 AssignmentRootFinished::class,
                 InvalidActorText::class,
-                AgentRequestFailed::class,
                 AgentNotAvailable::class,
                 AgentRetirementDenied::class,
                 InvalidRecordReference::class,
@@ -1904,7 +1897,6 @@ final class CoreApi
                 JournalReadTool::class,
                 JournalResource::class,
                 RendersRefusal::class,
-                SendsSignedCalls::class,
                 RunsCallPipelines::class,
                 NamesRecipient::class,
                 NamesExpectedAssignment::class,

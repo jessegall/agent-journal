@@ -8,8 +8,10 @@ use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
 use App\Communication\Data\MessagePage;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Size;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Reads an inbox's whole history, incoming and outgoing, older than the cursor.
@@ -17,6 +19,7 @@ use Spatie\LaravelData\Data;
  * @implements JournalCall<MessagePage>
  */
 #[Endpoint('communication/history', 'POST', MessagePage::class, CallEffect::Read)]
+#[MapName(SnakeCaseMapper::class)]
 final class ReadInboxHistoryCall extends Data implements JournalCall
 {
     public function __construct(

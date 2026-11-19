@@ -9,9 +9,11 @@ use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
 use App\Assignments\Calls\Concerns\NamesAssignedRecord;
 use App\Http\Data\Assignments\RecordHolderData;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
  * Reads who holds one record.
@@ -19,6 +21,7 @@ use Spatie\LaravelData\Data;
  * @implements JournalCall<RecordHolderData>
  */
 #[Endpoint('assignments/show', 'POST', RecordHolderData::class, CallEffect::Read)]
+#[MapName(SnakeCaseMapper::class)]
 final class ShowAssignmentCall extends Data implements JournalCall
 {
     use NamesAssignedRecord;

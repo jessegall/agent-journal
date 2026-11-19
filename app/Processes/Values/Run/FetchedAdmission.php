@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Processes\Values\Run;
 
+use App\Processes\Calls\AdmissionAlreadyStarted;
 use App\Processes\Calls\AdmissionFetched;
-use App\Processes\Enums\AdmissionState;
+use App\Processes\Calls\AdmissionToStart;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Exceptions\AdmissionAnswerUnknown;
 use App\Processes\Exceptions\AdmittedPlanChanged;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ExecutionPlan;
@@ -36,22 +38,25 @@ final readonly class FetchedAdmission
      */
     public static function fromAnswer(AdmissionFetched $answer, array $environment): self
     {
-        if ($answer->state === AdmissionState::AlreadyStarted) {
-            return new self($answer->runId, true, null, '', '', null, '', $environment);
+        if (! $answer instanceof AdmissionToStart) {
+            return new self(self::runOf($answer), true, null, '', '', null, '', $environment);
         }
-
-        $plan = $answer->plan ?? throw AdmittedPlanChanged::forRun($answer->runId);
 
         return new self(
             $answer->runId,
             false,
-            ExecutionPlan::fromArray($plan),
-            (string) $answer->treeDigest,
-            (string) $answer->workingFolder,
+            $answer->plan,
+            $answer->treeDigest,
+            $answer->workingFolder,
             $answer->dialect,
-            (string) $answer->eventKey,
+            $answer->eventKey,
             $environment,
         );
+    }
+
+    private static function runOf(AdmissionFetched $answer): string
+    {
+        return $answer instanceof AdmissionAlreadyStarted ? $answer->runId : throw AdmissionAnswerUnknown::for($answer::class);
     }
 
     public function alreadyStarted(): bool

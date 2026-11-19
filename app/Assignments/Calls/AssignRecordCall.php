@@ -21,6 +21,7 @@ use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
@@ -29,6 +30,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  * @implements JournalCall<AssignmentResultData>
  */
 #[Endpoint('assignments/assign', 'POST', AssignmentResultData::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
+#[MapName(SnakeCaseMapper::class)]
 final class AssignRecordCall extends Data implements JournalCall
 {
     use NamesAssignedRecord;

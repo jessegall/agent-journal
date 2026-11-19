@@ -7,9 +7,11 @@ namespace Tests\Support;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Exceptions\CallRefused;
+use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\SendSignedCalls;
 use Illuminate\Container\Container;
 use PHPUnit\Framework\Assert;
+use RuntimeException;
 use Spatie\LaravelData\Data;
 
 /**
@@ -92,7 +94,9 @@ final class RecordedCalls implements CallSender
             return Container::getInstance()->make(SendSignedCalls::class)->send($call);
         }
 
-        return $this->answers[$call::class] ?? Assert::fail('No answer was recorded for '.$call::class.'.');
+        $cut = new RuntimeException('The connection was cut.');
+
+        return $this->answers[$call::class] ?? throw JournalUnreachable::at('http://journal.test', $cut);
     }
 
     /**

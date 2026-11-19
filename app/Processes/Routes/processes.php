@@ -4,21 +4,9 @@ declare(strict_types=1);
 
 use App\AgentRequests\Support\CallRoutes;
 use App\Processes\Http\Controllers\Calls;
-use App\Processes\Http\Controllers\ReadOutputController;
-use App\Processes\Http\Controllers\RecordRunChunkController;
-use App\Processes\Http\Controllers\RecordRunEventsController;
 use Illuminate\Container\Container;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
-
-Route::middleware(['journal.agent', SubstituteBindings::class])
-    ->prefix('agent/processes')
-    ->name('processes.agent.')
-    ->group(function (): void {
-        Route::post('runs/{processRun}/events', RecordRunEventsController::class)->name('events');
-        Route::post('runs/{processRun}/chunks', RecordRunChunkController::class)->name('chunks');
-        Route::post('runs/{processRun}/output', ReadOutputController::class)->name('output');
-    });
 
 Route::middleware(['journal.agent', SubstituteBindings::class])
     ->prefix('agent')
@@ -30,6 +18,11 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         $calls->register(Calls\StartEvidenceRunController::class)->name('evidence');
         $calls->register(Calls\CheckRunCurrencyController::class)->name('currency');
         $calls->register(Calls\ReadOutputSummaryController::class)->name('output.summary');
+        $calls->register(Calls\ReadOutputTailController::class)->name('output.tail');
+        $calls->register(Calls\SearchOutputController::class)->name('output.search');
+        $calls->register(Calls\ReadOutputBytesController::class)->name('output.bytes');
+        $calls->register(Calls\RecordRunEventsController::class)->name('events');
+        $calls->register(Calls\RecordRunChunkController::class)->name('chunks');
         $calls->register(Calls\CheckRestoredOutputController::class)->name('restore-check');
         $calls->register(Calls\CleanOutputController::class)->name('clean');
         $calls->register(Calls\ProposeReaderController::class)->name('readers');

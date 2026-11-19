@@ -51,7 +51,7 @@ final class StoredOutputReadTest extends TestCase
 
     public function test_the_tail_shows_the_last_lines_escaped_and_the_bytes_before_them(): void
     {
-        $reply = $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output", ['mode' => 'tail', 'part' => 1, 'tail' => 2])->assertOk();
+        $reply = $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output/tail", ['part' => 1, 'lines' => 2])->assertOk();
 
         $this->assertSame("line 100\n\\x00\\xFF end", $reply->json('text'));
         $this->assertGreaterThan(0, $reply->json('before'));
@@ -60,13 +60,13 @@ final class StoredOutputReadTest extends TestCase
 
     public function test_a_search_lists_offsets_and_the_summary_keeps_the_own_exit(): void
     {
-        $this->assertCount(1, $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output", ['mode' => 'search', 'part' => 1, 'search' => 'error'])->json('offsets'));
-        $summary = $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output", ['mode' => 'summary']);
+        $this->assertCount(1, $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output/search", ['part' => 1, 'text' => 'error'])->json('offsets'));
+        $summary = $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output/summary", []);
         $this->assertSame(1, $summary->json('parts.0.code'), (string) $summary->getContent());
     }
 
     public function test_another_agent_finds_no_run(): void
     {
-        $this->signed(TestLaunch::start(), "/agent/processes/runs/{$this->run->id}/output", ['mode' => 'summary'])->assertNotFound();
+        $this->signed(TestLaunch::start(), "/agent/processes/runs/{$this->run->id}/output/summary", [])->assertNotFound();
     }
 }

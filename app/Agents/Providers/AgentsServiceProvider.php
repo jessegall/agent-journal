@@ -11,9 +11,7 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Values\PolicyRegistration;
-use App\AgentRequests\Actions\SendAgentRequests;
 use App\AgentRequests\Console\GenerateCallsCommand;
-use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\LaunchCredentialSource;
 use App\AgentRequests\Contracts\RegistersCalls;
@@ -104,7 +102,6 @@ final class AgentsServiceProvider extends ServiceProvider
             AgentClientSettings::class,
             fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch(),
         );
-        $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
         $this->app->bind(CallerSession::class, RequestSession::class);
         $this->app->singleton(PendingWorkSources::class);
     }

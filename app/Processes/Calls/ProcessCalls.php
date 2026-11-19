@@ -7,6 +7,7 @@ namespace App\Processes\Calls;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Support\CallKey;
 use App\Processes\Data\ExplanationData;
+use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\ShellDialect;
 
 /**
@@ -187,11 +188,64 @@ final readonly class ProcessCalls
         ]));
     }
 
+    public function readOutputBytes(
+        string $processRun,
+        int $part = 0,
+        OutputStream $stream = OutputStream::Stdout,
+    ): OutputBytes {
+        return $this->sender->send(ReadOutputBytesCall::from([
+            'processRun' => $processRun,
+            'part' => $part,
+            'stream' => $stream,
+        ]));
+    }
+
     public function readOutputSummary(
         string $processRun,
     ): OutputSummary {
         return $this->sender->send(ReadOutputSummaryCall::from([
             'processRun' => $processRun,
+        ]));
+    }
+
+    public function readOutputTail(
+        string $processRun,
+        int $part = 0,
+        OutputStream $stream = OutputStream::Stdout,
+        int $lines = 20,
+    ): OutputTail {
+        return $this->sender->send(ReadOutputTailCall::from([
+            'processRun' => $processRun,
+            'part' => $part,
+            'stream' => $stream,
+            'lines' => $lines,
+        ]));
+    }
+
+    public function recordRunChunk(
+        string $processRun,
+        string $eventKey,
+        RunChunk $chunk,
+    ): ChunkStored {
+        return $this->sender->send(RecordRunChunkCall::from([
+            'processRun' => $processRun,
+            'eventKey' => $eventKey,
+            'chunk' => $chunk,
+        ]));
+    }
+
+    /**
+     * @param  list<RunEvent>  $events
+     */
+    public function recordRunEvents(
+        string $processRun,
+        string $eventKey,
+        array $events,
+    ): RunEventsAccepted {
+        return $this->sender->send(RecordRunEventsCall::from([
+            'processRun' => $processRun,
+            'eventKey' => $eventKey,
+            'events' => $events,
         ]));
     }
 
@@ -249,6 +303,20 @@ final readonly class ProcessCalls
             'declaration' => $declaration,
             'expectedRevision' => $expectedRevision,
             'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function searchOutput(
+        string $text,
+        string $processRun,
+        int $part = 0,
+        OutputStream $stream = OutputStream::Stdout,
+    ): OutputMatches {
+        return $this->sender->send(SearchOutputCall::from([
+            'text' => $text,
+            'processRun' => $processRun,
+            'part' => $part,
+            'stream' => $stream,
         ]));
     }
 
