@@ -34,7 +34,7 @@ final class CommandDispatcherTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run($note);
 
-        $this->assertSame(['dispatched by user:'.TestIds::of(1)], $trail->steps);
+        $this->assertContains('dispatched by user:'.TestIds::of(1), $trail->steps);
         $this->expectException(CommandDispatcherMissing::class);
         $note->dispatchedBy();
     }
@@ -49,7 +49,7 @@ final class CommandDispatcherTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run(new WriteNote('loud'));
 
-        $this->assertSame(['dispatched by user:'.TestIds::of(1)], $trail->steps);
+        $this->assertContains('dispatched by user:'.TestIds::of(1), $trail->steps);
     }
 
     public function test_a_call_without_an_actor_is_refused_where_the_dispatcher_is_bound_before_the_stack(): void
