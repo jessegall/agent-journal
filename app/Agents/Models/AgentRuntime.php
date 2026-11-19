@@ -135,6 +135,14 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
+     * @return HasMany<TerminalView, $this>
+     */
+    public function terminalViews(): HasMany
+    {
+        return $this->hasMany(TerminalView::class);
+    }
+
+    /**
      * A stop was asked for: the runtime takes no more requests while it stops.
      */
     public function markStopping(): void
