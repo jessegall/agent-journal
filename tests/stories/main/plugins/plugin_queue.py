@@ -1,3 +1,4 @@
+from journal.features.tasks.states.ready import Ready
 from journal.features.workers.workers_options import BUILDER_MODE
 from journal.support.agent_role import AgentRole
 from tests.stories.builder.story_marks import story
@@ -12,9 +13,11 @@ def test_a_queued_run_streams_its_output_and_passes_on_its_exit_code(story):
     result.expect_command_text("echo")
     result.expect_command_refused()
     assert result.command.code == 3
+    story.expect_stack(story.agents.subject, Ready)
 
 
 @story(InstalledPlugin, mode=BUILDER_MODE, subject=AgentRole.MAIN)
 def test_a_queued_run_of_a_plugin_that_is_not_installed_is_refused(story):
     result = story.agent_runs(story.agents.subject, f"plugin queue nothing --kind judge --checkout {story.project_root()} -- true")
     result.expect_command_refused()
+    story.expect_stack(story.agents.subject, Ready)

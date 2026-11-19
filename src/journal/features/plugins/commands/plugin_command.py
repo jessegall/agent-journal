@@ -1,4 +1,4 @@
-from argparse import REMAINDER, Namespace
+from argparse import Namespace
 
 from journal.features.plugins.support.plugin_health import PluginHealth
 from journal.support.rejection import Rejection
@@ -48,7 +48,7 @@ class PluginCommand(Command):
         queue.add_argument("name")
         queue.add_argument("--kind", required=True, help="what the run is, so runs of one kind wait for each other")
         queue.add_argument("--checkout", required=True, help="the folder it runs in")
-        queue.add_argument("command", nargs=REMAINDER, help="after --: the command and its arguments")
+        queue.add_argument("command", nargs="+", help="after --: the command and its arguments")
         removal = self.verb(verbs, "remove", "take a plugin out; its data folder stays unless --purge")
         removal.add_argument("name")
         removal.add_argument("--purge", action="store_true", help="delete its data folder too")
