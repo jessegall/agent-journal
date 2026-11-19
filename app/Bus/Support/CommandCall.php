@@ -96,7 +96,23 @@ final readonly class CommandCall
     }
 
     /**
-     * The same call carrying a changed copy of the command; the original stays as the caller passed it.
+     * The same call bound to the given dispatcher, its command a copy carrying it; the original stays unbound.
+     */
+    public function withDispatcher(ActorContext $dispatcher): self
+    {
+        return new self(
+            $this->command->withDispatcher($dispatcher),
+            $this->original,
+            $this->owner,
+            $this->exported,
+            $this->repeatableRead,
+            $dispatcher,
+        );
+    }
+
+    /**
+     * The same call carrying a changed copy of the command, bound to the call's actor; the original stays as the
+     * caller passed it.
      */
     public function replacedBy(object $command): self
     {
@@ -104,7 +120,14 @@ final readonly class CommandCall
             throw CommandReplacedWithOtherClass::for($this->name(), $command::class);
         }
 
-        return new self($command, $this->original, $this->owner, $this->exported, $this->repeatableRead, $this->actor);
+        return new self(
+            $command->withDispatcher($this->actor()),
+            $this->original,
+            $this->owner,
+            $this->exported,
+            $this->repeatableRead,
+            $this->actor,
+        );
     }
 
     /**

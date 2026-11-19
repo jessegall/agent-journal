@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ImportRuleProposals;
@@ -25,7 +24,6 @@ use App\Processes\Values\ProposalReceipt;
 final readonly class ImportRuleProposalsHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private RuleDeclarations $declarations,
         private ProposalChecks $checks,
         private ProjectKey $projects,
@@ -37,7 +35,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
      */
     public function handle(ImportRuleProposals $command): ImportedProposals
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $projectKey = $this->projects->current();
         $declared = $this->declarations->read($command->declarations);
         foreach ($declared as $declaration) {

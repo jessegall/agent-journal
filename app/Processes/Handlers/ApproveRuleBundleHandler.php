@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ApproveRuleBundle;
@@ -23,7 +22,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class ApproveRuleBundleHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private CommandRuleRegistry $rules,
         private ProjectKey $projects,
         private Dispatcher $events,
@@ -44,7 +42,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
             throw ApprovalRefused::bundleChanged($command->module);
         }
 
-        $owner = ActorIdentity::of($this->actors->actor());
+        $owner = ActorIdentity::of($command->dispatchedBy());
         $approval = ModuleRuleBundle::approve($this->projects->current(), $installed[0], $owner);
         $this->events->dispatch(BundleActivated::forApproval($approval));
 

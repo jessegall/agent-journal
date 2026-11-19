@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\RestoreCommandRule;
@@ -25,7 +24,6 @@ use App\Processes\Values\ProposedRule;
 final readonly class RestoreCommandRuleHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private ProjectKey $projects,
     ) {}
 
@@ -51,7 +49,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
         $declaration = RuleProposalRevision::query()->whereKey($earlier->rule_proposal_revision_id)->sole();
         $evidence = "Restore of approved revision {$earlier->revision}: {$declaration->evidence}";
         $proposed = new ProposedRule($declaration->payload, $evidence, $declaration->examples);
-        $owner = ActorIdentity::of($this->actors->actor());
+        $owner = ActorIdentity::of($command->dispatchedBy());
 
         return ProposalReceipt::of(
             RuleProposal::open($rule->project_key, $owner, $command->requestId, $proposed, null),

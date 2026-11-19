@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\StartSample;
@@ -22,7 +21,7 @@ use App\Processes\Support\EvidenceRuns;
  */
 final readonly class StartSampleHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private EvidenceRuns $evidence) {}
+    public function __construct(private EvidenceRuns $evidence) {}
 
     /**
      * @throws SampleRefused
@@ -44,7 +43,7 @@ final readonly class StartSampleHandler implements CommandHandler
             throw SampleRefused::notReady($request->nextStep()->command);
         }
 
-        $run = $this->evidence->start($permit, ActorIdentity::of($this->actors->actor()), $command->requestKey);
+        $run = $this->evidence->start($permit, ActorIdentity::of($command->dispatchedBy()), $command->requestKey);
         $request->startSample();
 
         return $run->id;

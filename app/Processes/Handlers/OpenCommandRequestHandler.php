@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\OpenCommandRequest;
@@ -13,11 +12,11 @@ use App\Processes\Support\ProjectKey;
 
 final readonly class OpenCommandRequestHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ProjectKey $projects) {}
+    public function __construct(private ProjectKey $projects) {}
 
     public function handle(OpenCommandRequest $command): string
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $projectKey = $this->projects->current();
         $open = CommandRequest::query()
             ->ofProject($projectKey)

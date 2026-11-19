@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ReviseRuleProposal;
@@ -19,7 +18,7 @@ use App\Processes\Values\ProposalReceipt;
  */
 final readonly class ReviseRuleProposalHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ProposalChecks $checks) {}
+    public function __construct(private ProposalChecks $checks) {}
 
     /**
      * @throws RuleProposalRefused
@@ -27,7 +26,7 @@ final readonly class ReviseRuleProposalHandler implements CommandHandler
      */
     public function handle(ReviseRuleProposal $command): ProposalReceipt
     {
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $proposal = RuleProposal::query()->whereKey($command->proposalId)->lockForUpdate()->sole();
         $request = $proposal->commandRequest()->lockForUpdate()->first();
         $this->checks->check($command->proposed->rule, $request !== null && $request->hold_reason->needsReader());

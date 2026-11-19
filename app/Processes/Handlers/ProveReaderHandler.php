@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ProveReader;
@@ -24,7 +23,7 @@ use App\Processes\Support\ReaderProofCheck;
  */
 final readonly class ProveReaderHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ReaderProofCheck $check) {}
+    public function __construct(private ReaderProofCheck $check) {}
 
     /**
      * @throws ReaderProofFailed
@@ -47,7 +46,7 @@ final readonly class ProveReaderHandler implements CommandHandler
         }
 
         $branches = $this->check->prove($request, $reader, $declaration->payload->contracts[0], $command->runIds);
-        $proof = ReaderProof::record($reader, $declaration, $branches, ActorIdentity::of($this->actors->actor()));
+        $proof = ReaderProof::record($reader, $declaration, $branches, ActorIdentity::of($command->dispatchedBy()));
         $request->prove();
 
         return $proof->id;
