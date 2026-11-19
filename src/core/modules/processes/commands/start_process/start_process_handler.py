@@ -39,6 +39,12 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         self.visibility = visibility
         self.rows = rows
 
+    # the reader catalogue is read whole once after a reader changes or the server starts: done before the hook's write
+    def read_ahead(self, command: StartProcess) -> None:
+        if command.category.has_reader:
+            self.readers.all()
+        self.readers.layers()
+
     def handle(self, command: StartProcess, context: Context) -> Process:
         timeouts = tuple(Duration.parse(value).seconds for value in command.timeout_durations)
         agent = self.rows.required(Agent, command.agent_id)

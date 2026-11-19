@@ -100,6 +100,9 @@ class Bus:
         with self.database.savepoint(command.label()), self.scopes.command_scope(handler.disabled_scopes, context.actor, context.environment_id):
             return self.result(handler.handle(command, context.nested(command)), command)
 
+    def read_ahead(self, command: Command[object]) -> None:
+        self.handler(command).read_ahead(command)
+
     def handler(self, command: Command[object]) -> Handler[Command[object], object]:
         command_class = next((command_type for command_type in type(command).__mro__ if self.registry.has_handler(command_type)), None)
         if command_class is None:

@@ -24,6 +24,11 @@ class Handler(SingleInstance, Generic[C, R]):
     def prepare(self, command: C, actor: Actor) -> None:
         return None
 
+    # reads that warm what handle reads, done by a caller that dispatches the command inside a write it opens later,
+    # so the write does not wait on them; it changes nothing
+    def read_ahead(self, command: C) -> None:
+        return None
+
     @property
     def has_prepare_step(self) -> bool:
         return type(self).prepare is not Handler[Command[object], object].prepare

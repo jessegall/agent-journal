@@ -38,9 +38,11 @@ class DecisionAssembler:
             question = Question.posed(event)
             view = self.assembly.with_states(self.reader.read(agent.id, question), question)
             step = self.assembly.machine(agent.role).step(view, question)
-            # the commands of the step's effects are worked out here, before the hook's write, which reads them back
+            # the commands of the step's effects are worked out here, before the hook's write, which reads them back,
+            # and what their handlers read is warmed, so the write does not wait on it
             for effect in step.record.effects():
-                self.effect_commands.commands(effect, view, step.record)
+                for command in self.effect_commands.commands(effect, view, step.record):
+                    self.bus.read_ahead(command)
         answers = self.answers(step.record)
         answers = replace(answers, skipped_lines=self.agent_messages.skipped_lines(agent.id, answers, self.clock.timestamp()))
         return AssembledAnswer(answers, AssembledStep(view, step))
