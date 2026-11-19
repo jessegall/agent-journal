@@ -21,7 +21,7 @@ final readonly class JournalRoutes
 
     /**
      * @param  array<string, \Symfony\Component\Console\Command\Command>  $commands  the registered console commands by
-     *   name
+     *                                                                               name
      */
     public static function fromCommands(array $commands): self
     {

@@ -21,7 +21,7 @@ final class Section
      * @param  class-string<Data>  $dataClass  the Data class the resolver's read method declares
      * @param  list<ActionRoute>  $actions
      * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone who sees the host page sees the
-     *   section
+     *                                                          section
      */
     private function __construct(
         public readonly string $key,

@@ -75,6 +75,21 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     public const string LINK_TYPE = 'plans.plan';
 
     /**
+     * The most characters a plan's title or a phase's title holds.
+     */
+    public const int TITLE_CHARACTERS = 240;
+
+    /**
+     * The most characters a plan's brief holds.
+     */
+    public const int BRIEF_CHARACTERS = 20000;
+
+    /**
+     * The most characters a plan's finish note or cancel reason holds.
+     */
+    public const int NOTE_CHARACTERS = 8000;
+
+    /**
      * @var array<string, mixed>
      */
     protected $attributes = ['state' => 'planned', 'revision' => 1];

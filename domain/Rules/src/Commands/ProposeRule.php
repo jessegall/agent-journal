@@ -12,6 +12,8 @@ use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Handlers\ProposeRuleHandler;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Proposes a rule with its text; it holds only once the user approves it.
@@ -23,8 +25,8 @@ use Domain\Rules\Policies\RulePolicy;
 final readonly class ProposeRule extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        public string $text,
-        public string $reason,
+        #[Required, Max(Rule::TEXT_CHARACTERS)] public string $text,
+        #[Required, Max(Rule::REASON_CHARACTERS)] public string $reason,
         public string|null $replacesRuleId = null,
     ) {}
 
