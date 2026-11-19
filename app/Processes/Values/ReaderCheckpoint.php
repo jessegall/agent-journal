@@ -10,6 +10,7 @@ use App\Processes\Enums\RecordRole;
 /**
  * Where a reader stands in a part's output: per stream the next offset it expects and the unfinished line it holds,
  * and the provisional records and problems so far. A reader resumes from it after every committed chunk.
+ *
  * @phpstan-type CheckpointFields array{
  *   offsets: array<string, int>,
  *   pending: array<string, string>,

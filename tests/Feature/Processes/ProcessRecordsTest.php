@@ -25,8 +25,8 @@ use Tests\TestCase;
  */
 final class ProcessRecordsTest extends TestCase
 {
-    use RefreshHookDatabase;
     use ChecksSchemaTables;
+    use RefreshHookDatabase;
 
     protected static function storedTables(): array
     {

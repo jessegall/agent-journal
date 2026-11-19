@@ -35,8 +35,8 @@ use Tests\TestCase;
 final class DeskProvisioningTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsOwnerRequest;
     use RunsDeskInstall;
+    use StartsOwnerRequest;
 
     private const array TABLES = [
         'users',
