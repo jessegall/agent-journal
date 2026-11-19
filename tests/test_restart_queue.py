@@ -6,14 +6,21 @@ from types import SimpleNamespace
 
 from journal.console.commands.setup_command import RESTART_FAILED, SetupCommand
 from journal.engine.lifecycle import Lifecycle
+from journal.features.shell.jobs.restart_wait import RestartWait
 from journal.features.shell.support.restart_queue import RestartQueue
 from journal.features.shell.support.unsupervised_journal import UnsupervisedJournal
 from journal.support.supervisor_reply import SupervisorReply
 
 
 class Outputs:
+    def __init__(self, running: tuple[int, ...] = ()) -> None:
+        self.running = running
+
     def active_outputs(self, environment_id: int, asking_folder: str) -> list:
         return []
+
+    def running_among(self, ids: list[int]) -> list[int]:
+        return [number for number in ids if number in self.running]
 
 
 class Supervisor:
@@ -25,9 +32,9 @@ class Supervisor:
         return self.reply
 
 
-def queue(home: Path, reply: SupervisorReply) -> RestartQueue:
+def queue(home: Path, reply: SupervisorReply, running: tuple[int, ...] = ()) -> RestartQueue:
     config = SimpleNamespace(home=home)
-    return RestartQueue(Outputs(), Supervisor(reply), config, Lifecycle(config))
+    return RestartQueue(Outputs(running), Supervisor(reply), config, Lifecycle(config))
 
 
 class RestartQueueTest(unittest.TestCase):
@@ -67,3 +74,34 @@ class RestartQueueTest(unittest.TestCase):
         command.queue = queue(self.home, SupervisorReply(True))
 
         self.assertIn("runs the new code", command.restarting(SimpleNamespace(name="main", row_id=1), ""))
+
+
+class RestartWaitTest(unittest.TestCase):
+    """A hosted serve names no environment in JOURNAL_ENV, so the restart it waits on is released for every environment, not only one it hosts."""
+
+    def setUp(self) -> None:
+        self.home = Path(tempfile.mkdtemp())
+        self.hosted = os.environ.pop("JOURNAL_ENV", None)
+
+    def tearDown(self) -> None:
+        if self.hosted is not None:
+            os.environ["JOURNAL_ENV"] = self.hosted
+
+    def test_a_restart_whose_held_outputs_all_ended_goes_through_with_no_hosting_environment(self) -> None:
+        restarts = queue(self.home, SupervisorReply(True))
+        restarts.record_wait(2, ["62756", "62761", "62762", "62767", "62768", "62773"])
+
+        RestartWait(restarts).tick(0.0)
+
+        self.assertEqual([2], restarts.supervisor.asked)
+        self.assertFalse(restarts.is_waiting(2))
+        self.assertEqual(f"restart {os.getpid()}", restarts.lifecycle.marker().read_text())
+
+    def test_a_restart_keeps_waiting_while_one_held_output_still_runs(self) -> None:
+        restarts = queue(self.home, SupervisorReply(True), running=(62773,))
+        restarts.record_wait(2, ["62756", "62773"])
+
+        RestartWait(restarts).tick(0.0)
+
+        self.assertEqual([], restarts.supervisor.asked)
+        self.assertTrue(restarts.is_waiting(2))
