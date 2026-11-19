@@ -148,7 +148,11 @@ final class ScopedReadMeter implements ReadMeter
      */
     private function refuseRepeatedRead(string $connection, bool $writes, string $query): void
     {
-        if ($writes || $query === '' || $this->open === [] || $this->schedules !== [] || preg_match('/\\bfor\\s+(update|share|no key update|key share)\\b/i', $query) === 1) {
+        if ($writes
+            || $query === ''
+            || $this->open === []
+            || $this->schedules !== []
+            || preg_match('/\\bfor\\s+(update|share|no key update|key share)\\b/i', $query) === 1) {
             return;
         }
 

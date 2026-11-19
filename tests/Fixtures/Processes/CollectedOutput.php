@@ -22,7 +22,8 @@ final class CollectedOutput implements OutputRecorder
 
     public function append(CapturedChunk $chunk): OutputPosition
     {
-        $this->bytes[$chunk->part->id][$chunk->stream->value] = ($this->bytes[$chunk->part->id][$chunk->stream->value] ?? '').$chunk->bytes;
+        $this->bytes[$chunk->part->id][$chunk->stream->value] = ($this->bytes[$chunk->part->id][$chunk->stream->value]
+            ?? '').$chunk->bytes;
 
         return new OutputPosition($chunk->stream, strlen($this->bytes[$chunk->part->id][$chunk->stream->value]));
     }

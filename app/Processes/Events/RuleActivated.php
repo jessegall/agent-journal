@@ -34,6 +34,7 @@ final readonly class RuleActivated implements ChangesActiveRules, Event, ShouldD
 
     public function staleReason(): string
     {
-        return "rule-revision-changed: {$this->ruleId} is at revision {$this->revision}; explain the line again for a fresh admission.";
+        return "rule-revision-changed: {$this->ruleId} is at revision {$this->revision}; explain the line again for "
+            .'a fresh admission.';
     }
 }

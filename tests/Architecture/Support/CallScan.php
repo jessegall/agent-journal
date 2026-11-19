@@ -39,7 +39,9 @@ final readonly class CallScan implements FileScan
             $file->statements,
             fn (
                 Node $node,
-            ) => $node instanceof Expr\MethodCall || $node instanceof Expr\StaticCall || $node instanceof Expr\NullsafeMethodCall,
+            ) => $node instanceof Expr\MethodCall
+                || $node instanceof Expr\StaticCall
+                || $node instanceof Expr\NullsafeMethodCall,
         );
 
         foreach ($found as $call) {
@@ -47,7 +49,10 @@ final readonly class CallScan implements FileScan
                 continue;
             }
 
-            $class = $call instanceof Expr\StaticCall && $call->class instanceof Node\Name ? $call->class->toString() : null;
+            $class = $call instanceof Expr\StaticCall
+                && $call->class instanceof Node\Name
+                ? $call->class->toString()
+                : null;
             $calls[] = ['line' => $call->getStartLine(), 'method' => $call->name->toString(), 'class' => $class];
         }
 

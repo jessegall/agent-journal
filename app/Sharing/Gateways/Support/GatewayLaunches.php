@@ -51,10 +51,12 @@ final readonly class GatewayLaunches
         if ($seen !== GatewayAddressCheck::Confirmed) {
             $this->children->end($child);
 
-            throw $seen === GatewayAddressCheck::Unexpected ? GatewayOpenFailed::unexpectedAddress($gatewayKey) : GatewayOpenFailed::noAddressInTime(
-                $gatewayKey,
-                self::CONNECT_SECONDS,
-            );
+            throw $seen === GatewayAddressCheck::Unexpected
+                ? GatewayOpenFailed::unexpectedAddress($gatewayKey)
+                : GatewayOpenFailed::noAddressInTime(
+                    $gatewayKey,
+                    self::CONNECT_SECONDS,
+                );
         }
 
         $endpoint = GatewayEndpoint::forOperation($operation);

@@ -16,7 +16,9 @@ use App\Assignments\Policies\AssignmentPolicy;
  */
 final readonly class McpInstructions
 {
-    private const string TOOLS = 'Use the journal MCP tools for journal work: call overview_read first and follow its next_action; send each write with a request_key and keep it; when a write\'s outcome is unknown, call operations_read with that key before trying again.';
+    private const string TOOLS = 'Use the journal MCP tools for journal work: call overview_read first and follow its '
+        .'next_action; send each write with a request_key and keep it; when a write\'s outcome is unknown, call '
+        .'operations_read with that key before trying again.';
 
     private const string USER_ONLY = 'Every decision only the user makes stays theirs: ask with journal question ask.';
 

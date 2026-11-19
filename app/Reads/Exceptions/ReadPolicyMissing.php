@@ -14,7 +14,8 @@ final class ReadPolicyMissing extends RuntimeException
     public static function for(string $model, string $linkType): self
     {
         return new self(
-            "{$model} (link type {$linkType}) does not bound its reads; implement App\\Reads\\Contracts\\ReadableModel and use App\\Reads\\Support\\BoundedReads.",
+            "{$model} (link type {$linkType}) does not bound its reads; implement "
+                .'App\\Reads\\Contracts\\ReadableModel and use App\\Reads\\Support\\BoundedReads.',
         );
     }
 }

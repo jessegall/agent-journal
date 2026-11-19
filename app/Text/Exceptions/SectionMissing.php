@@ -38,7 +38,8 @@ final class SectionMissing extends InvalidArgumentException implements CommandRe
     public static function levelChanged(int $number): self
     {
         return new self(
-            "The new text of section {$number} starts with a heading of another level; keep its level or edit the outline.",
+            "The new text of section {$number} starts with a heading of another level; keep its level or edit the "
+                .'outline.',
         );
     }
 }

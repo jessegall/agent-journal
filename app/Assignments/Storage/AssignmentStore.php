@@ -95,7 +95,8 @@ final readonly class AssignmentStore implements AssignmentStorage
     public function releaseAll(AssigneeIdentity $holder): AssignmentResult
     {
         $this->requireTransaction();
-        $rows = AssignmentRecord::query()->heldForRetirement($holder)->readAll('every assignment the retiring holder holds is released')->orderBy('id')->lockForUpdate()->get();
+        $rows = AssignmentRecord::query()->heldForRetirement($holder)->readAll('every assignment the retiring holder '
+            .'holds is released')->orderBy('id')->lockForUpdate()->get();
         AssignmentRecord::query()->heldForRetirement($holder)->whereKey($rows->modelKeys())->delete();
         $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all());
 

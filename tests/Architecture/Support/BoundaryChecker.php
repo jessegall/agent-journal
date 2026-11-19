@@ -69,7 +69,9 @@ final readonly class BoundaryChecker
                 ];
             }
 
-            if ($user !== null && $this->isCoreEvent($use->name) && ! ($user->holdsListenerFile($use->file) && $use->type->canNameAnEventToHearIt())) {
+            if ($user !== null
+                && $this->isCoreEvent($use->name)
+                && ! ($user->holdsListenerFile($use->file) && $use->type->canNameAnEventToHearIt())) {
                 return [
                     new Violation(
                         $use->file,

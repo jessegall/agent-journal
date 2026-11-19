@@ -13,6 +13,7 @@ final class ConsoleOwnerMissing extends RuntimeException
 {
     public static function forConsole(): self
     {
-        return new self('No owner is configured for this journal; set the owner before running owner commands from the command line.');
+        return new self('No owner is configured for this journal; set the owner before running owner commands from '
+            .'the command line.');
     }
 }

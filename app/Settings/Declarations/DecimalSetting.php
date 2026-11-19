@@ -55,7 +55,11 @@ final readonly class DecimalSetting implements Setting
     ): self {
         SettingKey::require($key, $label);
 
-        if ($precision < 1 || $precision > self::MOST_DIGITS || $scale < 0 || $scale > self::MOST_FRACTIONAL_DIGITS || $scale > $precision) {
+        if ($precision < 1
+            || $precision > self::MOST_DIGITS
+            || $scale < 0
+            || $scale > self::MOST_FRACTIONAL_DIGITS
+            || $scale > $precision) {
             throw SettingDeclarationInvalid::badDigits($key, self::MOST_DIGITS, self::MOST_FRACTIONAL_DIGITS);
         }
 
@@ -103,7 +107,10 @@ final readonly class DecimalSetting implements Setting
             throw DecimalInvalid::tooManyDigits($this->precision);
         }
 
-        if ($this->minimum !== null && $scaled->isLessThan($this->minimum) || $this->maximum !== null && $scaled->isGreaterThan($this->maximum)) {
+        if ($this->minimum !== null
+            && $scaled->isLessThan($this->minimum)
+            || $this->maximum !== null
+            && $scaled->isGreaterThan($this->maximum)) {
             throw DecimalInvalid::outOfBounds();
         }
 

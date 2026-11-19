@@ -281,7 +281,8 @@ final class AgentRetirementTest extends TestCase
             // Inside a transaction Postgres keeps one activity snapshot; clear it so each check sees the other session.
             DB::select('SELECT pg_stat_clear_snapshot()');
 
-            if ((int) DB::scalar("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND datname = current_database() AND pid <> pg_backend_pid()") > 0) {
+            if ((int) DB::scalar("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND datname = "
+                .'current_database() AND pid <> pg_backend_pid()') > 0) {
                 return;
             }
         }

@@ -42,7 +42,10 @@ final readonly class PublicComments implements PublicCommentResolver
                     ),
                 )->all(),
             ),
-            $rows->count() > $size && $last !== null ? $last->created_at?->format('Y-m-d\\TH:i:s.uP').'|'.$last->id : null,
+            $rows->count() > $size
+                && $last !== null
+                ? $last->created_at?->format('Y-m-d\\TH:i:s.uP').'|'.$last->id
+                : null,
         );
     }
 }

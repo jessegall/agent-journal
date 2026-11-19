@@ -34,7 +34,8 @@ final class LaunchSelectionTest extends TestCase
             } catch (ModelRequired $refusal) {
                 $this->assertSame(LaunchRefusalType::ModelRequired, $refusal->reason());
                 $this->assertSame(
-                    'Name a model: use --model <model> or --model default with a configured profile default. Nothing was launched.',
+                    'Name a model: use --model <model> or --model default with a configured profile default. Nothing '
+                        .'was launched.',
                     $refusal->getMessage(),
                 );
             }

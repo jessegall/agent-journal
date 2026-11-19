@@ -14,17 +14,20 @@ use Illuminate\Console\Command;
  */
 final class ProfileShowCommand extends Command
 {
-    protected $signature = 'profile:show {key : The stable key of the profile} {--revision= : An earlier revision number}';
+    protected $signature = 'profile:show {key : The stable key of the profile} {--revision= : An earlier revision '
+        .'number}';
 
     protected $description = 'Show a profile revision';
 
     public function handle(): int
     {
         $profile = Profile::byKey(ProfileKey::from((string) $this->argument('key')));
-        $revision = $this->option('revision') === null ? ProfileRevision::currentOf($profile) : ProfileRevision::numbered(
-            $profile,
-            (int) $this->option('revision'),
-        );
+        $revision = $this->option('revision') === null
+            ? ProfileRevision::currentOf($profile)
+            : ProfileRevision::numbered(
+                $profile,
+                (int) $this->option('revision'),
+            );
 
         $this->line("Profile {$profile->key}: {$profile->label}".($profile->isRetired() ? ' (retired)' : ''));
         $this->line("Revision: {$revision->revision}");

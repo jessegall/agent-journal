@@ -119,7 +119,9 @@ final readonly class ShareScope
             [$type, $id] = $link->otherSideFromKey($source->type, $source->id);
             $target = new RecordIdentity($type, $id);
 
-            if (! in_array($this->key($target), $seen, true) && $this->records->has($type) && $this->records->get($type)->advertisesAnyOf($capabilities)) {
+            if (! in_array($this->key($target), $seen, true)
+                && $this->records->has($type)
+                && $this->records->get($type)->advertisesAnyOf($capabilities)) {
                 $linkOfTarget[$type][$id] = $link->id;
             }
         }

@@ -34,7 +34,10 @@ enum CommandType: string
      */
     public function outputRequirement(): OutputRequirement
     {
-        return $this === self::Verification || $this === self::Build ? OutputRequirement::Full : OutputRequirement::Ordinary;
+        return $this === self::Verification
+            || $this === self::Build
+            ? OutputRequirement::Full
+            : OutputRequirement::Ordinary;
     }
 
     public function needsAlias(): bool

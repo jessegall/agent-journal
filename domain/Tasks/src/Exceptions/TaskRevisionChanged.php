@@ -21,7 +21,8 @@ final class TaskRevisionChanged extends RuntimeException implements CodedRefusal
     public static function for(int $taskNumber, int $expected, int $current): self
     {
         return new self(
-            "Task {$taskNumber} is at revision {$current}, not {$expected}; read it again with tasks_read and edit that revision.",
+            "Task {$taskNumber} is at revision {$current}, not {$expected}; read it again with tasks_read and edit "
+                .'that revision.',
         );
     }
 

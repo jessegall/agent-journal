@@ -17,7 +17,8 @@ final class UiResolverInvalid extends UiDeclarationError
     public static function manyRequests(string $declaration, string $resolver): self
     {
         return new self(
-            "{$declaration} names the resolver {$resolver}, whose constructor takes more than one form request; a resolver reads one request.",
+            "{$declaration} names the resolver {$resolver}, whose constructor takes more than one form request; a "
+                .'resolver reads one request.',
         );
     }
 

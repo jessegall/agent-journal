@@ -62,7 +62,9 @@ final readonly class EnumSetting implements OptionSetting
             throw SettingDeclarationInvalid::defaultNotAnOption($key);
         }
 
-        $backing = (string) new ReflectionEnum($enum)->getBackingType() === 'int' ? SettingType::Integer : SettingType::String;
+        $backing = (string) new ReflectionEnum($enum)->getBackingType() === 'int'
+            ? SettingType::Integer
+            : SettingType::String;
         $options = array_map(fn (BackedEnum $case) => self::choiceOf($case), $enum::cases());
 
         return new self($key, $label, $enum, $default, $backing, ChoiceOptions::check($key, $options, $default->value));

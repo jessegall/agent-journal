@@ -15,7 +15,8 @@ final class PublicMarkdownTest extends TestCase
 {
     public function test_public_html_keeps_only_outgoing_links_and_fetches_nothing(): void
     {
-        $html = MarkdownText::publicHtmlOf("<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) [doc](/s/token/records) ![logo](https://example.com/logo.png)\n");
+        $html = MarkdownText::publicHtmlOf("<script>alert(1)</script>\n\n[run](javascript:alert(1)) "
+            ."[site](https://example.com) [doc](/s/token/records) ![logo](https://example.com/logo.png)\n");
 
         $this->assertStringNotContainsString('<script', $html);
         $this->assertStringNotContainsString('javascript:', $html);

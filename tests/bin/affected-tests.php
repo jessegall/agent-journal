@@ -51,7 +51,8 @@ if ($files === []) {
         if ($status !== 0) {
             fwrite(
                 STDERR,
-                "git is not available here: name the changed files, for example composer test:affected -- \$(git diff --name-only HEAD).\n",
+                'git is not available here: name the changed files, for example composer test:affected -- $(git diff '
+                    ."--name-only HEAD).\n",
             );
             exit(2);
         }

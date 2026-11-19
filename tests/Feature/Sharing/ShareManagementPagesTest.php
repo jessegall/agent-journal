@@ -39,7 +39,8 @@ use Tests\TestCase;
  */
 #[TimeLimit(
     seconds: 10,
-    reason: 'It commits a document and a plan through the bus, renders pages and empties nineteen tables around each test.',
+    reason: 'It commits a document and a plan through the bus, renders pages and empties nineteen tables around each '
+        .'test.',
 )]
 final class ShareManagementPagesTest extends TestCase
 {

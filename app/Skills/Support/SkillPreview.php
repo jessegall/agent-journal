@@ -39,7 +39,9 @@ final readonly class SkillPreview
 
         return [
             'key' => $skill->key->key,
-            'audience' => $skill->condition instanceof Everyone ? 'everyone in the authorized installation scope' : 'agents whose condition matches',
+            'audience' => $skill->condition instanceof Everyone
+                ? 'everyone in the authorized installation scope'
+                : 'agents whose condition matches',
             'condition' => $skill->condition->toArray(),
             'agents' => $rows,
         ];

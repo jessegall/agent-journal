@@ -56,6 +56,7 @@ final readonly class NoteLinkRecords implements RecordProvider
 
     protected function mayChange(Model $record): bool
     {
-        return $record->actor_type === $this->actors->actor()->actorType()->value && $record->actor_id === $this->actors->actor()->actorId();
+        return $record->actor_type === $this->actors->actor()->actorType()->value
+            && $record->actor_id === $this->actors->actor()->actorId();
     }
 }

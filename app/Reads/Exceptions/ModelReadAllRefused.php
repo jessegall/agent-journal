@@ -14,7 +14,8 @@ final class ModelReadAllRefused extends RuntimeException
     public static function for(string $model): self
     {
         return new self(
-            "{$model}::all() reads every row; use query()->get() for the newest rows, readAll('<reason>') or readInChunks.",
+            "{$model}::all() reads every row; use query()->get() for the newest rows, readAll('<reason>') or "
+                .'readInChunks.',
         );
     }
 }

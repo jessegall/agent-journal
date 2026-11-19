@@ -68,7 +68,9 @@ final readonly class SkillAuthoring
 
         return $this->container->make(
             SkillResolver::class,
-        )->find($key)->origin === SkillOrigin::Shipped ? throw ShippedSkillReadOnly::for($key->key) : throw SkillMissing::for($key);
+        )->find($key)->origin === SkillOrigin::Shipped
+            ? throw ShippedSkillReadOnly::for($key->key)
+            : throw SkillMissing::for($key);
     }
 
     /**

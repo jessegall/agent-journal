@@ -66,7 +66,9 @@ final readonly class ReadShareHandler implements CommandHandler
         $share = Share::lockForRead($permit->shareId);
         $root = $share->root();
 
-        if (! $share->isReadableNow() || ! $this->policy->grantHolds($share) || ! $this->records->provider($root->type)->mayDisclose($root)) {
+        if (! $share->isReadableNow()
+            || ! $this->policy->grantHolds($share)
+            || ! $this->records->provider($root->type)->mayDisclose($root)) {
             return $this->deny($share, 'share');
         }
 
@@ -97,7 +99,8 @@ final readonly class ReadShareHandler implements CommandHandler
         foreach ($path->hops as $hop) {
             $relation = $this->records->relation($from->type, $hop->relation);
 
-            if ($relation->type !== ShareRelationType::Linked || ! ShareMember::approvesOverLiveLink($share, $from, $hop->target)) {
+            if ($relation->type !== ShareRelationType::Linked
+                || ! ShareMember::approvesOverLiveLink($share, $from, $hop->target)) {
                 return false;
             }
 

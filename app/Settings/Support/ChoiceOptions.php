@@ -56,7 +56,8 @@ final readonly class ChoiceOptions
                 throw SettingDeclarationInvalid::mixedOptionTypes($key);
             }
 
-            if (is_int($option->value) && ($option->value < IntegerSetting::SMALLEST || $option->value > IntegerSetting::LARGEST)) {
+            if (is_int($option->value)
+                && ($option->value < IntegerSetting::SMALLEST || $option->value > IntegerSetting::LARGEST)) {
                 throw SettingDeclarationInvalid::badBounds($key);
             }
 
