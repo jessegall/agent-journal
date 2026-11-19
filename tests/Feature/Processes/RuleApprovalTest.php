@@ -80,7 +80,7 @@ final class RuleApprovalTest extends TestCase
 
         $approve = new ApproveRuleProposal($this->proposalId(), $this->approval($reader, $proof, 0));
 
-        $this->assertThrows(fn () => $this->asAgent($approve), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $this->runAsAgent($approve), ActorNotAllowed::class);
         $this->assertSame(0, ClassificationRule::query()->count());
     }
 
@@ -152,7 +152,7 @@ final class RuleApprovalTest extends TestCase
             ModelNotFoundException::class,
         );
         $this->assertThrows(
-            fn () => $this->asAgent(new RejectRuleProposal($this->proposalId(), 'agents cannot')),
+            fn () => $this->runAsAgent(new RejectRuleProposal($this->proposalId(), 'agents cannot')),
             ActorNotAllowed::class,
         );
         $this->assertSame(ProposalState::Pending, RuleProposal::query()->sole()->state);
@@ -167,7 +167,7 @@ final class RuleApprovalTest extends TestCase
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
         $reader = $this->reader();
 
-        return [$reader, $this->asAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]))];
+        return [$reader, $this->runAsAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]))];
     }
 
     private function approval(string $reader, string $proof, int $expectedActive): OwnerApproval

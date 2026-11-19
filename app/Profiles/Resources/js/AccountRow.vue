@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { AccountRowData } from '@generated/types/accounts';
-import { remove, rename } from '@generated/routes/accounts';
+import { remove, rename, retryCleanup } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import ConfirmAction from '@kit/ConfirmAction';
 import StateBadge from '@kit/StateBadge';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import ActivateAccount from './ActivateAccount.vue';
-import { accountStateLook } from './accountLooks';
+import { accountStateLook, cleanupProblemText } from './accountLooks';
 
 /**
  * One saved account: its name, state and identity, whether new launches use it and how many run on it, with choosing
@@ -19,7 +19,14 @@ const props = defineProps<{ account: AccountRowData; isChosen: boolean }>();
 
 const naming = useForm({ label: props.account.label });
 const isRenaming = ref(false);
+const isLeaving = computed(() => props.account.state === 'removing' || props.account.state === 'removed');
 const removing = useForm({});
+
+const retrying = useForm({});
+
+function retryAccountCleanup(): void {
+    retrying.submit(retryCleanup({ account: props.account.id }), { preserveScroll: true, ...formSendingHooks() });
+}
 
 function removeAccount(): void {
     removing.submit(remove({ account: props.account.id }), { preserveScroll: true, ...formSendingHooks() });
@@ -50,7 +57,7 @@ function saveName(): void {
                     >{{ account.runningCount }} running</span
                 >
                 <ActivateAccount
-                    v-if="!isChosen"
+                    v-if="!isChosen && !isLeaving"
                     :account-id="account.id"
                     :is-signed-in="account.state === 'signed_in'"
                 />
@@ -61,6 +68,7 @@ function saveName(): void {
                     >Rename</Button
                 >
                 <ConfirmAction
+                    v-if="!isLeaving"
                     label="Remove"
                     question="Remove this account? It signs out and its folder is deleted once its work has ended."
                     confirm-label="Remove"
@@ -72,6 +80,16 @@ function saveName(): void {
         <p v-if="account.identity" class="text-small text-text-3">
             {{ account.identity }}
         </p>
+        <div v-if="account.cleanupProblem !== null" class="flex items-center gap-2">
+            <span class="text-small text-text-2">{{ cleanupProblemText[account.cleanupProblem] }}</span>
+            <Button
+                v-if="account.awaitsCleanupRetry"
+                size="small"
+                :pending="retrying.processing"
+                @click="retryAccountCleanup"
+                >Retry cleanup</Button
+            >
+        </div>
         <form
             v-if="isRenaming"
             class="flex items-end gap-2"
@@ -93,6 +111,6 @@ function saveName(): void {
             >
             <Button size="small" @click="isRenaming = false">Cancel</Button>
         </form>
-        <slot />
+        <slot v-if="!isLeaving" />
     </li>
 </template>

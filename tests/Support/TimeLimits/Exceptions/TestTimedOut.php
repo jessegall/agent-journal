@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Support\TimeLimits;
+namespace Tests\Support\TimeLimits\Exceptions;
 
 use RuntimeException;
 

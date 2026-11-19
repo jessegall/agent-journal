@@ -25,7 +25,7 @@ use ReflectionProperty;
 use RuntimeException;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Hooks\Lifecycle;
 
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 
 /**
  * A fixture state that writes each lifecycle call it gets to a shared log.

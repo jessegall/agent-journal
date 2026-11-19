@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Engine;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
 use App\Engine\Support\EngineAccess;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 
 /**
  * An engine listener that records which scopes it was granted, then fails.

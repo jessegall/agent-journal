@@ -17,10 +17,9 @@ use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
-use Illuminate\Database\Connection;
-use Illuminate\Support\Facades\DB;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\UsesSecondConnection;
 
 /**
  * Sends to one desk share its guard with each other but wait for a seating change, which holds it alone; a send that
@@ -29,6 +28,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 5, reason: 'One case waits for a database lock held on a second connection to time out.')]
 final class MessageConcurrencyTest extends MessagingTestCase
 {
+    use UsesSecondConnection;
+
     private DeskRecord $desk;
 
     protected function setUp(): void
@@ -107,14 +108,5 @@ final class MessageConcurrencyTest extends MessagingTestCase
                 ->get()
                 ->reference,
         );
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $default = $config->get('database.connections.'.$config->get('database.default'));
-        $config->set('database.connections.messages_other', $default);
-
-        return DB::connection('messages_other');
     }
 }

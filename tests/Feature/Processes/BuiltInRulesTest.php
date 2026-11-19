@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Data\ExplainedNodeData;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
@@ -12,10 +11,8 @@ use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Support\Explanations;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\Classification;
-use App\Processes\Values\ExecutionContext;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Processes\ClassifiesLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -24,6 +21,7 @@ use Tests\TestCase;
  */
 final class BuiltInRulesTest extends TestCase
 {
+    use ClassifiesLines;
     use RefreshHookDatabase;
 
     /**
@@ -172,15 +170,5 @@ final class BuiltInRulesTest extends TestCase
         foreach (['php script.php', 'python run.py', 'node index.js', 'less file.txt', 'vim file.txt'] as $line) {
             $this->assertFalse($this->classify($line)->isKnown(), $line);
         }
-    }
-
-    private function classify(string $line): Classification
-    {
-        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
-
-        return $this->app->make(CommandClassifier::class)->classify(
-            $tree,
-            new ExecutionContext(ShellDialect::Bash, base_path(), base_path()),
-        );
     }
 }

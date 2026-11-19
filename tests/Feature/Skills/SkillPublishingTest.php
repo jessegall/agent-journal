@@ -13,14 +13,13 @@ use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillPublishing;
-use App\Skills\Support\SkillTargets;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\TestIds;
-use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -30,18 +29,10 @@ use Tests\TestCase;
 final class SkillPublishingTest extends TestCase
 {
     use CommitsHookRows;
+    use HasSkillTargets;
     use RunsTrustedCommands;
-    use UsesTemporaryFolder;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->makeTemporaryFolder('journal-skills');
-        $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-    }
 
     public function test_a_pending_publication_ends_delivered_with_skill_files_and_a_manifest_at_the_target(): void
     {

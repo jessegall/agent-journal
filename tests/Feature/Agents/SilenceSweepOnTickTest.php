@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Support\DatabaseClock;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
@@ -16,16 +15,16 @@ use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Events\EngineTicked;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Support\EngineListenerSet;
-use App\Engine\Support\EnginePass;
 use App\Engine\Support\EngineTickedDelivery;
 use App\Engine\Support\MarkSilentSessionsOnTick;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Agents\BackdatesSessions;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Engine\RunsEnginePasses;
 use Tests\TestCase;
 
 /**
@@ -34,7 +33,9 @@ use Tests\TestCase;
  */
 final class SilenceSweepOnTickTest extends TestCase
 {
+    use BackdatesSessions;
     use CommitsHookRows;
+    use RunsEnginePasses;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
 
@@ -80,24 +81,12 @@ final class SilenceSweepOnTickTest extends TestCase
         $this->assertSame(SessionStatus::Active, $stale->session->refresh()->status);
     }
 
-    private function pass(callable $work): void
-    {
-        $this->app->make(EnginePass::class)->run($work);
-    }
-
     private function launch(): LaunchedAgent
     {
         return $this->app->make(LaunchSessions::class)->launch(
             Agent::named('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
-        );
-    }
-
-    private function startedSecondsAgo(LaunchedAgent $launched, int $seconds): void
-    {
-        DB::table('agent_sessions')->where('id', $launched->session->id)->update(
-            ['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)],
         );
     }
 }

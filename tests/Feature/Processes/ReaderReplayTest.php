@@ -17,7 +17,7 @@ use App\Processes\Models\ReaderPosition;
 use App\Processes\Models\ResultReceipt;
 use App\Processes\Resolvers\Support\ActivityProjection;
 use App\Processes\Values\PartKey;
-use Tests\Support\Processes\RunsAcmeRequests;
+use Tests\Support\Processes\StartsWithApprovedAcmePair;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -30,16 +30,8 @@ use Tests\TestCase;
 final class ReaderReplayTest extends TestCase
 {
     use RefreshHookDatabase;
-    use RunsAcmeRequests;
     use SendsSignedCalls;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->openAcmeRequest();
-        $this->approvePair();
-    }
+    use StartsWithApprovedAcmePair;
 
     public function test_a_part_is_read_live_into_a_provisional_position(): void
     {
@@ -62,7 +54,7 @@ final class ReaderReplayTest extends TestCase
     public function test_a_replay_appends_a_linked_assessment_and_runs_nothing_again(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
-        $first = $this->asAgent(new AssessPartOutput($part->id));
+        $first = $this->runAsAgent(new AssessPartOutput($part->id));
         $runs = ProcessRun::query()->withoutGlobalScopes()->count();
 
         $second = $this->asUser(new ReplayAssessment($part->id));

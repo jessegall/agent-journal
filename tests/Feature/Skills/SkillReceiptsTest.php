@@ -21,12 +21,10 @@ use App\Skills\Listeners\AdvanceSkillContext;
 use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillReceipt;
-use App\Skills\Support\SkillPublishing;
-use App\Skills\Support\SkillTargets;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\UsesTemporaryFolder;
+use Tests\Support\Skills\PublishesSkills;
 use Tests\TestCase;
 
 /**
@@ -37,7 +35,7 @@ final class SkillReceiptsTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
-    use UsesTemporaryFolder;
+    use PublishesSkills;
 
     private const array TABLES = [
         'skill_receipts',
@@ -48,15 +46,6 @@ final class SkillReceiptsTest extends TestCase
         'agents',
         'agent_sessions',
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->makeTemporaryFolder('journal-skills');
-        $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-        $this->app->make(SkillPublishing::class)->refresh();
-    }
 
     public function test_a_skill_tool_read_records_one_receipt_with_the_delivered_digest(): void
     {

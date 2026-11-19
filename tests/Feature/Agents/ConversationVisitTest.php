@@ -19,11 +19,9 @@ use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsOwnerRequest;
 use Tests\Support\WithActiveAccount;
 use Tests\TestCase;
 
@@ -34,8 +32,8 @@ use Tests\TestCase;
 final class ConversationVisitTest extends TestCase
 {
     use RefreshHookDatabase;
+    use StartsOwnerRequest;
     use WithActiveAccount;
-    use StartsAgentRequests;
 
     private Agent $agent;
 
@@ -44,10 +42,7 @@ final class ConversationVisitTest extends TestCase
         parent::setUp();
 
         $this->chooseActiveAccounts();
-
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->startUserRequestAs($this->owner->id);
         $this->agent = Agent::named('Researcher', 'read-only-helper');
     }
 

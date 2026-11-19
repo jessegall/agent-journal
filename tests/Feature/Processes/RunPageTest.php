@@ -6,11 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Models\ProcessRun;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
-use Tests\Support\Processes\RunsAcmeRequests;
+use Tests\Support\Processes\OpensAcmeRequestAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -22,21 +20,9 @@ use Tests\TestCase;
  */
 final class RunPageTest extends TestCase
 {
+    use OpensAcmeRequestAsOwner;
     use RefreshHookDatabase;
-    use RunsAcmeRequests;
     use SendsSignedCalls;
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->withoutVite();
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->openAcmeRequest();
-    }
 
     public function test_the_run_page_shows_each_part_with_its_output_and_no_result_without_a_receipt(): void
     {

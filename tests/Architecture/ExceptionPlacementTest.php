@@ -23,8 +23,11 @@ final class ExceptionPlacementTest extends TestCase
         );
     }
 
-    public function test_every_exception_of_the_domains_and_the_core_lies_in_an_exceptions_folder(): void
+    public function test_every_exception_of_the_domains_the_core_and_test_support_lies_in_an_exceptions_folder(): void
     {
-        $this->assertSame([], ExceptionPlacement::misplacedIn([app_path(), ...DomainFiles::domainCode()]));
+        $this->assertSame(
+            [],
+            ExceptionPlacement::misplacedIn([app_path(), ...DomainFiles::domainCode(), base_path('tests/Support')]),
+        );
     }
 }

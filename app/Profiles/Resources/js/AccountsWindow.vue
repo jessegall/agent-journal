@@ -3,6 +3,7 @@ import type { AccountListData, AccountRowData } from '@generated/types/accounts'
 import EmptyState from '@kit/EmptyState';
 import PageHeader from '@kit/PageHeader';
 import { computed, ref, watch } from 'vue';
+import AccountRecovery from './AccountRecovery.vue';
 import AccountRow from './AccountRow.vue';
 import SignInForm from './SignInForm.vue';
 import { attemptToRejoin } from './signIn';
@@ -72,5 +73,6 @@ const programs = computed(() => {
                 </ul>
             </section>
         </template>
+        <AccountRecovery :cleanups="data.pendingCleanups" />
     </div>
 </template>
