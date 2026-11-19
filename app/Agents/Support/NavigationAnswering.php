@@ -38,14 +38,24 @@ final readonly class NavigationAnswering
             ->lockForUpdate()
             ->first()
             ?? throw NavigationRaiseRefused::unknownRequest($navigationId);
+        $this->checkAnswerer($navigation);
+
+        return $navigation;
+    }
+
+    /**
+     * Refuses a caller who neither sits at the main desk nor owns the journal.
+     *
+     * @throws NavigationAnswerRefused
+     */
+    public function checkAnswerer(NavigationRequest $navigation): void
+    {
         $actor = ActorIdentity::of($this->actors->actor());
         $owner = ActorIdentity::of($this->admission->owner());
         $seated = $this->mainDesk->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
         if (! $actor->isSameAs($owner) && ! $seated->getOrElse(false)) {
             throw NavigationAnswerRefused::notYours($navigation->id);
         }
-
-        return $navigation;
     }
 
     /**

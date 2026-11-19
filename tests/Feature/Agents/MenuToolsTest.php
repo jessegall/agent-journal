@@ -12,7 +12,7 @@ use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Models\MenuEntry;
 use App\Agents\Values\MenuStep;
 use Domain\Access\Support\AccessSettings;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
@@ -44,13 +44,13 @@ final class MenuToolsTest extends TestCase
         'command_receipts',
     ];
 
-    private TestLaunch $caller;
+    private TestStart $caller;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->app->instance(AccessSettings::class, new AccessSettings('owner'));
-        $this->caller = TestLaunch::start();
+        $this->caller = TestStart::start();
     }
 
     public function test_the_list_and_show_give_the_owners_entries_and_why_one_went_stale(): void

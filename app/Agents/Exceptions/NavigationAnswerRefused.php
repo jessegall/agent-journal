@@ -30,6 +30,11 @@ final class NavigationAnswerRefused extends RuntimeException implements CommandR
             .'a digit, y or n.');
     }
 
+    public static function oneAnswer(): self
+    {
+        return new self('A round is exactly one of keys, choose, confirm or type_parameter.');
+    }
+
     public static function noKeys(): self
     {
         return new self('A round of keys names at least one key.');
