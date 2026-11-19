@@ -165,21 +165,27 @@ func (region OptionList) Rows(snapshot contracts.Snapshot) (contracts.RowRange, 
 	return contracts.RowRange{}, false
 }
 
-// Highlighted is the text of the highlighted option, after its marker and with no-break spaces made plain; found is
-// false while no option list is drawn.
-func (region OptionList) Highlighted(snapshot contracts.Snapshot) (string, bool) {
+// Entries is every option of the list on screen, top to bottom, and which of them is highlighted: each option's
+// text from the column after the highlight marker, with no-break spaces made plain; found is false while no option
+// list is drawn.
+func (region OptionList) Entries(snapshot contracts.Snapshot) (MenuEntries, bool) {
 	rows, found := region.Rows(snapshot)
 	if !found {
-		return "", false
+		return MenuEntries{}, false
 	}
 
+	entries, textColumn := MenuEntries{}, 0
 	for row := rows.First; row < rows.Last; row++ {
 		if column, highlighted := region.highlight(snapshot.Rows[row]); highlighted {
-			return strings.TrimSpace(string([]rune(plainSpaces(snapshot.Rows[row]))[column:])), true
+			entries.Highlighted, textColumn = row-rows.First, column
 		}
 	}
+	for row := rows.First; row < rows.Last; row++ {
+		text := []rune(plainSpaces(snapshot.Rows[row]))
+		entries.Labels = append(entries.Labels, strings.TrimSpace(string(text[min(textColumn, len(text)):])))
+	}
 
-	return "", false
+	return entries, true
 }
 
 // highlight finds a highlight marker after the row's indent and gives the column its option text starts at.
