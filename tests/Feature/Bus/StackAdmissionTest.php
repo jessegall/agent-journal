@@ -45,7 +45,7 @@ final class StackAdmissionTest extends CommandBusTestCase
 
     public function test_a_command_waits_for_its_sessions_stack_and_is_refused_busy_without_spending_retries(): void
     {
-        $this->hold(TestIds::of(2));
+        $this->hold(2);
         $this->startTestAgentRequest(1, 2);
 
         $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new WriteNote('waits')), StackLockTimedOut::class, 'busy with another operation');
@@ -54,7 +54,7 @@ final class StackAdmissionTest extends CommandBusTestCase
 
     public function test_the_next_command_of_the_session_runs_once_the_stack_is_given_back(): void
     {
-        $this->hold(TestIds::of(2));
+        $this->hold(2);
         $this->holder->select('SELECT pg_advisory_unlock(?, hashtext(?))', [AdvisoryStackAdmission::NAMESPACE, TestIds::of(2)]);
         $this->startTestAgentRequest(1, 2);
 
@@ -65,7 +65,7 @@ final class StackAdmissionTest extends CommandBusTestCase
 
     public function test_a_command_of_another_session_is_not_held_up(): void
     {
-        $this->hold(TestIds::of(2));
+        $this->hold(2);
         $this->startTestAgentRequest(1, 3);
 
         $id = $this->app->make(CommandBus::class)->run(new WriteNote('other session'));
@@ -80,7 +80,7 @@ final class StackAdmissionTest extends CommandBusTestCase
         $id = $this->app->make(CommandBus::class)->run(new CopyNote('nested'));
 
         $this->assertSame('nested', $this->rowText($id));
-        $this->assertTrue($this->canTake(TestIds::of(2)));
+        $this->assertTrue($this->canTake(2));
     }
 
     public function test_the_stack_is_given_back_after_a_thrown_handler(): void
@@ -89,12 +89,12 @@ final class StackAdmissionTest extends CommandBusTestCase
 
         $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RefuseNote('refused')), CommandRefused::class);
 
-        $this->assertTrue($this->canTake(TestIds::of(2)));
+        $this->assertTrue($this->canTake(2));
     }
 
     public function test_a_user_command_takes_no_stack_lock(): void
     {
-        $this->hold(TestIds::of(2));
+        $this->hold(2);
         $this->startTestUserRequest(4);
 
         $id = $this->app->make(CommandBus::class)->run(new WriteNote('user'));
@@ -102,13 +102,15 @@ final class StackAdmissionTest extends CommandBusTestCase
         $this->assertSame('user', $this->rowText($id));
     }
 
-    private function hold(string $sessionId): void
+    private function hold(int $sessionIdNumber): void
     {
+        $sessionId = TestIds::of($sessionIdNumber);
         $this->holder->select('SELECT pg_advisory_lock(?, hashtext(?))', [AdvisoryStackAdmission::NAMESPACE, $sessionId]);
     }
 
-    private function canTake(string $sessionId): bool
+    private function canTake(int $sessionIdNumber): bool
     {
+        $sessionId = TestIds::of($sessionIdNumber);
         $taken = $this->holder->selectOne('SELECT pg_try_advisory_lock(?, hashtext(?)) AS taken', [AdvisoryStackAdmission::NAMESPACE, $sessionId])->taken;
         $this->holder->select('SELECT pg_advisory_unlock_all()');
 

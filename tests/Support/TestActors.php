@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\StackTarget;
+use App\Hooks\Inputs\HookIdentity;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Support\AccessSettings;
 
@@ -51,5 +52,13 @@ final class TestActors
     public static function accessSettings(int $number): AccessSettings
     {
         return new AccessSettings(TestIds::of($number));
+    }
+
+    /**
+     * The identity of hook call $hookId from test agent $agent in its test session $session.
+     */
+    public static function hookIdentity(int $agent, int $session, string $hookId, string $inputDigest): HookIdentity
+    {
+        return new HookIdentity(TestIds::of($agent), TestIds::of($session), $hookId, $inputDigest);
     }
 }

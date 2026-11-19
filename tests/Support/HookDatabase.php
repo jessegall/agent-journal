@@ -10,9 +10,10 @@ use Illuminate\Testing\ParallelTesting;
 
 /**
  * Checks that a test runs on a dedicated Postgres test database, or on the worker's own copy of it in a parallel run,
- * never the application database. There are two: journal_hooks_test, which phpunit.xml selects, and
- * journal_hooks_test_checkpoint, which the journal's own runs select with DB_DATABASE so they never recreate the
- * worker databases of a run going on at the same time. scripts/prepare-hook-test-database.sh creates both.
+ * never the application database. journal_hooks_test is the one phpunit.xml selects; journal_hooks_test_checkpoint is
+ * the journal's own checkpoint runs'; and journal_hooks_test_wt_<name> is one worktree's, selected with DB_DATABASE so
+ * runs in different worktrees never touch each other's rows. scripts/prepare-hook-test-database.sh creates the first
+ * two; a worktree's database is created on its first run.
  */
 final class HookDatabase
 {
@@ -25,7 +26,16 @@ final class HookDatabase
      */
     private const array BASE_NAMES = [self::NAME, self::CHECKPOINT_NAME];
 
+    private const string WORKTREE_BASE_PATTERN = '/^journal_hooks_test_wt_[a-z0-9]+$/';
+
     private const string BASE_CHECK_CONNECTION = 'hook_database_base_check';
+
+    /**
+     * The worktree databases this process has already made sure exist.
+     *
+     * @var list<string>
+     */
+    private static array $worktreeBasesSeen = [];
 
     public static function select(Application $app): void
     {
@@ -37,10 +47,12 @@ final class HookDatabase
         $expected = self::expectedName($app);
 
         if ($selected === $expected) {
+            self::createWorktreeBaseOnce($app, $selected);
+
             return;
         }
 
-        if (self::isParallelWorker($app) && in_array($selected, self::BASE_NAMES, true)) {
+        if (self::isParallelWorker($app) && self::isBaseName($selected)) {
             throw HookDatabaseRefused::baseDatabaseInWorker($selected, $expected);
         }
 
@@ -48,8 +60,8 @@ final class HookDatabase
     }
 
     /**
-     * Refuses a parallel run whose base database is not one of the two test databases or does not exist, before Laravel
-     * copies it.
+     * Refuses a run whose base database is not a test database, before Laravel copies it, and creates a worktree's own
+     * test database on its first run; a missing shared one is refused, since its script also prepares it.
      */
     public static function checkBase(Application $app): void
     {
@@ -60,7 +72,7 @@ final class HookDatabase
         $database = $app->make(DatabaseManager::class);
         $selected = $database->connection()->getDatabaseName();
 
-        if (! in_array($selected, self::BASE_NAMES, true)) {
+        if (! self::isBaseName($selected)) {
             throw HookDatabaseRefused::otherDatabase($selected, self::NAME);
         }
 
@@ -69,6 +81,12 @@ final class HookDatabase
             [...$database->connection()->getConfig(), 'database' => 'postgres'],
         );
         $exists = $server->table('pg_database')->where('datname', $selected)->exists();
+
+        if (! $exists && self::isWorktreeBase($selected)) {
+            $server->statement("CREATE DATABASE \"{$selected}\"");
+            $exists = true;
+        }
+
         $database->purge(self::BASE_CHECK_CONNECTION);
 
         if (! $exists) {
@@ -106,6 +124,46 @@ final class HookDatabase
     {
         $base = (string) preg_replace('/_test_[0-9]+$/', '', $selected);
 
-        return in_array($base, self::BASE_NAMES, true) ? $base : self::NAME;
+        return self::isBaseName($base) ? $base : self::NAME;
+    }
+
+    /**
+     * Creates a worktree's own test database the first time this process runs on it; the shared ones and parallel
+     * copies are left to their script and to Laravel.
+     */
+    private static function createWorktreeBaseOnce(Application $app, string $name): void
+    {
+        if (! self::isWorktreeBase($name) || in_array($name, self::$worktreeBasesSeen, true)) {
+            return;
+        }
+
+        $database = $app->make(DatabaseManager::class);
+        $server = $database->connectUsing(
+            self::BASE_CHECK_CONNECTION,
+            [...$database->connection()->getConfig(), 'database' => 'postgres'],
+        );
+
+        if (! $server->table('pg_database')->where('datname', $name)->exists()) {
+            $server->statement("CREATE DATABASE \"{$name}\"");
+        }
+
+        $database->purge(self::BASE_CHECK_CONNECTION);
+        self::$worktreeBasesSeen[] = $name;
+    }
+
+    /**
+     * Whether the name is a test database a run may start from: a shared one, or a worktree's own.
+     */
+    private static function isBaseName(string $name): bool
+    {
+        return in_array($name, self::BASE_NAMES, true) || self::isWorktreeBase($name);
+    }
+
+    /**
+     * Whether the name is one worktree's own test database, journal_hooks_test_wt_ followed by its plain name.
+     */
+    private static function isWorktreeBase(string $name): bool
+    {
+        return preg_match(self::WORKTREE_BASE_PATTERN, $name) === 1;
     }
 }

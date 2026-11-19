@@ -176,7 +176,7 @@ final class HookStorageTest extends TestCase
 
     private function hook(): HookIdentity
     {
-        return new HookIdentity(TestIds::of(7), TestIds::of(9), 'hook-1', str_repeat('a', 64));
+        return TestActors::hookIdentity(7, 9, 'hook-1', str_repeat('a', 64));
     }
 
     private function columnType(string $table, string $column): string
