@@ -14,6 +14,7 @@ use App\Communication\Enums\MessageAbility;
 use App\Communication\Handlers\SendMessageHandler;
 use App\Communication\Models\Message;
 use App\Communication\Policies\MessagePolicy;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Sends a message from one inbox to another; the answer is the new message id.
@@ -29,7 +30,7 @@ final readonly class SendMessage implements Command, HasAuthorizationSubject
     public function __construct(
         public string $sourceInboxId,
         public string $destinationInboxId,
-        public string $body,
+        #[Required] public string $body,
     ) {}
 
     /**

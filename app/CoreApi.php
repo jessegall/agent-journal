@@ -425,7 +425,6 @@ use App\Communication\Exceptions\ActorCannotSend;
 use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
@@ -1762,7 +1761,6 @@ final class CoreApi
                 ActorProviderRepeated::class,
                 SystemActorRequired::class,
                 ActorCannotSend::class,
-                MessageBodyEmpty::class,
                 MessageMissing::class,
                 SettingDeclarationInvalid::class,
                 SettingHandleUnknown::class,

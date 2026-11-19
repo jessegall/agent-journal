@@ -1848,7 +1848,6 @@ class	MessageAnswered
 class	MessageAskTool
 class	MessageAttention
 class	MessageBody
-class	MessageBodyEmpty
 class	MessageBodyTooLong
 class	MessageClaimHolder
 class	MessageClaimProvider
@@ -7998,7 +7997,6 @@ method	MessageAttention::record()
 method	MessageAttention::wakeStatus()
 method	MessageBody::__construct()
 method	MessageBody::from()
-method	MessageBodyEmpty::forSend()
 method	MessageBodyTooLong::forBytes()
 method	MessageBodyTooLong::refusalCode()
 method	MessageBodyTooLong::status()

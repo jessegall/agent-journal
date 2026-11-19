@@ -14,6 +14,7 @@ use App\Communication\Enums\MessageAbility;
 use App\Communication\Handlers\ReplyToMessageHandler;
 use App\Communication\Models\Message;
 use App\Communication\Policies\MessagePolicy;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Answers a message from its destination inbox, naming the state version the replier saw; the answer goes back to
@@ -30,7 +31,7 @@ final readonly class ReplyToMessage implements Command, HasAuthorizationSubject
     public function __construct(
         public string $messageId,
         public int $expectedStateVersion,
-        public string $body,
+        #[Required] public string $body,
     ) {}
 
     /**

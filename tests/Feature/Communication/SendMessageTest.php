@@ -7,12 +7,12 @@ namespace Tests\Feature\Communication;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -103,11 +103,14 @@ final class SendMessageTest extends TestCase
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
-    public function test_a_blank_message_is_refused(): void
+    public function test_a_blank_message_is_refused_naming_its_body_and_nothing_is_sent(): void
     {
-        $this->expectException(MessageBodyEmpty::class);
-
-        $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, "  \n"));
+        $this->assertThrows(
+            fn () => $this->runOnBus(new SendMessage($this->ownInboxId, $this->builderInboxId, "  \n")),
+            CommandInputInvalid::class,
+            'body: The body field is required.',
+        );
+        $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
     }
 
     private function runOnBus(object $command, string|null $key = null): mixed

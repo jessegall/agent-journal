@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
-use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Exceptions\MessageBodyTooLong;
 
 /**
- * The text of a message: not blank, and at most 64 KiB of UTF-8.
+ * The text of a message: at most 64 KiB of UTF-8. The command that carries it refuses a blank one.
  */
 final readonly class MessageBody
 {
@@ -17,15 +16,10 @@ final readonly class MessageBody
     private function __construct(public string $text) {}
 
     /**
-     * @throws MessageBodyEmpty
      * @throws MessageBodyTooLong
      */
     public static function from(string $text): self
     {
-        if (preg_match('/\S/u', $text) !== 1) {
-            throw MessageBodyEmpty::forSend();
-        }
-
         if (strlen($text) > self::MOST_BYTES) {
             throw MessageBodyTooLong::forBytes(strlen($text));
         }
