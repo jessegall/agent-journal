@@ -183,8 +183,7 @@ class TestTurns:
     def recorded(self, turn: TestTurn, summary: TestRunResult) -> None:
         later = self.turns.find(turn.id)
         self.turns.save(later.passed_run() if summary.is_passed() else later.failed_run(summary.failed), Actor.system())
-        worker = self.workers.find(turn.worker)
-        self.workers.save(worker.passed_run() if summary.is_passed() else worker.failed_run(summary.failed, self.time_source.seconds()), Actor.system())
+        self.workers.rewritten(self.workers.find(turn.worker), Actor.system(), lambda current: current.passed_run() if summary.is_passed() else current.failed_run(summary.failed, self.time_source.seconds()))
 
     def run_output(self, turn: TestTurn, started: float):
         return next((row for row in self.outputs.folder_runs(turn.folder) if row.creation_time.timestamp() >= started), None)
