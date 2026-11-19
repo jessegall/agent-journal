@@ -107,6 +107,8 @@ CHECK_PERIOD_SECONDS = 60.0
 CODE_CHECK_SECONDS = 10.0
 # How often the ticker looks for people an upgrade moved, whose kept browser logins must follow them.
 LOGIN_MOVES_SECONDS = 300.0
+# How often the server copies the database's write-ahead log into its file, outside any write.
+LOG_COPY_SECONDS = 5.0
 
 
 def last_port(home: JournalHome) -> int:
@@ -213,6 +215,7 @@ def main(argv: list[str]) -> int:
     if (home.folder / "versions").resolve() not in Path(__file__).resolve().parents:
         ticker.register(TickHandler(TickInterval(seconds=CODE_CHECK_SECONDS), check_code, "code check"))
     ticker.register(TickHandler(TickInterval(seconds=CHECK_PERIOD_SECONDS), lambda container: container.get(PeriodicChecks).run(), "checks"))
+    ticker.register(TickHandler(TickInterval(seconds=LOG_COPY_SECONDS), lambda container: container.get(Database).copy_log(), "write-ahead log copy"))
     if not viewer.closed_doors.closes_service(ClosedService.TUNNEL):
         ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", starts_immediately=True))
     if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SERVICES):

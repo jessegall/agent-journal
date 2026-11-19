@@ -25,6 +25,9 @@ def test_the_pragmas_are_set_as_it_opens(database):
     assert database.rows(Statement("PRAGMA foreign_keys"))[0][0] == 1
     assert database.rows(Statement("PRAGMA journal_mode"))[0][0] == "wal"
     assert database.rows(Statement("PRAGMA busy_timeout"))[0][0] == 5000
+    # no commit copies the write-ahead log into the file; the server does it outside the write turn
+    assert database.rows(Statement("PRAGMA wal_autocheckpoint"))[0][0] == 0
+    database.copy_log()
 
 
 def test_a_transaction_that_ends_well_is_kept(database):

@@ -21,7 +21,9 @@ if TYPE_CHECKING:
 
 # the file settings take the write lock to change, so each is set only when the file holds another value
 FILE_PRAGMAS = {"auto_vacuum": ("INCREMENTAL", "2"), "journal_mode": ("WAL", "wal")}
-CONNECTION_PRAGMAS = ("foreign_keys = ON", "synchronous = NORMAL")
+# no commit copies the write-ahead log into the file: that copy writes megabytes while the commit holds the write turn;
+# the server copies it on a timer outside the turn (copy_log), and the last connection to close copies the rest
+CONNECTION_PRAGMAS = ("foreign_keys = ON", "synchronous = NORMAL", "wal_autocheckpoint = 0")
 BUSY_TIMEOUT_SECONDS = 5.0
 READ_LIMIT_ROWS = 50
 NESTING_LIMIT_LEVELS = 8
@@ -243,6 +245,11 @@ class Database:
     def is_partial_index(self, name: str) -> bool:
         row = self.connection.execute("SELECT partial FROM pragma_index_list((SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = ?)) WHERE name = ?", (name, name)).fetchone()
         return row is not None and bool(row[0])
+
+    # copies what the write-ahead log holds into the file as far as no reader still needs it, next to writers and never
+    # inside the write turn, so a commit never waits on it
+    def copy_log(self) -> None:
+        self.connection.execute("PRAGMA wal_checkpoint(PASSIVE)").fetchone()
 
     # Keeps the writes of this connection in its write-ahead log, also when it closes, so the file stays as it was until
     # the log is taken in or thrown away.
