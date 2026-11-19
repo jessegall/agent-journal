@@ -5,6 +5,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.events.worker_merging import WorkerMerging
+from journal.features.workers.support.carry_branch import CarryBranch
 from journal.features.workers.support.merge_clash import MergeClash
 from journal.features.workers.support.worker_repository import PROJECT_FOLDER, WorkerRepository
 from journal.models.worker import Worker
@@ -31,10 +32,10 @@ REBUILD_SUBJECT = "Build the built files again on the project's branch"
 
 
 class WorkerBranch:
-    """A worker's worktree and the branch it commits on: what it left there when it ended, and its commits taken into the branch the project is on, which on a shared journal is the branch of the worker's environment's own worktree, never the main checkout's. A project that holds repositories of its own inside it, ignored by its own, gives the worker a worktree of each one recorded on its row, inside its worktree and on the worker's branch; its commits are taken in from every repository or from none. A rebase that clashes only in folders the settings name as built from the sources takes the project's side of them and builds them again. Untracked files are those the branch adds that lie untracked in the checkout, which git refuses to overwrite, never a clash a rebase could mend; the worktree is moved up to the branch its work merges into, in each repository, by the same rebase a merge makes: after a merge its own commits are in the branch already and drop out, before a job it carries them over what others merged meanwhile; the uncommitted edits the rebase's autostash set aside are put back over it with conflicts, and once the markers are gone they are plain uncommitted edits again and the autostash is dropped; git drops from its list a worktree whose folder is missing, so while a launch's worktree under .claude/worktrees is briefly away nothing is pruned and a worker's clean-up never loses it; the checkout's skills its worktree lacks, the untracked and ignored ones a launch's worktree links, are linked into it and kept out of git; the summary says what a worker that ended without clocking out left: commits waiting on its branch unchecked, never taken in by its end."""
+    """A worker's worktree and the branch it commits on: what it left there when it ended, and its commits taken into the branch the project is on, or while carry merges are on into that branch's carry ref, which on a shared journal is the branch of the worker's environment's own worktree, never the main checkout's. A project that holds repositories of its own inside it, ignored by its own, gives the worker a worktree of each one recorded on its row, inside its worktree and on the worker's branch; its commits are taken in from every repository or from none. A rebase that clashes only in folders the settings name as built from the sources takes the project's side of them and builds them again. Untracked files are those the branch adds that lie untracked in the checkout, which git refuses to overwrite, never a clash a rebase could mend; the worktree is moved up to the branch its work merges into, in each repository, by the same rebase a merge makes: after a merge its own commits are in the branch already and drop out, before a job it carries them over what others merged meanwhile; the uncommitted edits the rebase's autostash set aside are put back over it with conflicts, and once the markers are gone they are plain uncommitted edits again and the autostash is dropped; git drops from its list a worktree whose folder is missing, so while a launch's worktree under .claude/worktrees is briefly away nothing is pruned and a worker's clean-up never loses it; the checkout's skills its worktree lacks, the untracked and ignored ones a launch's worktree links, are linked into it and kept out of git; the summary says what a worker that ended without clocking out left: commits waiting on its branch unchecked, never taken in by its end."""
 
-    def __init__(self, config: Config, deferred: ListenerQueue, account: TeamAccount, environments: Environments, settings: SettingRows) -> None:
-        self.config, self.deferred, self.account, self.environments, self.settings = config, deferred, account, environments, settings
+    def __init__(self, config: Config, deferred: ListenerQueue, account: TeamAccount, environments: Environments, settings: SettingRows, carry: CarryBranch) -> None:
+        self.config, self.deferred, self.account, self.environments, self.settings, self.carry = config, deferred, account, environments, settings, carry
         self.removed_root = config.home / "removed-worktrees"
 
     def name(self, worker: Worker) -> str:
@@ -96,14 +97,14 @@ class WorkerBranch:
         return tuple(dict.fromkeys(path for repository in commit_repositories for path in self.repository_paths(repository, worker)))
 
     def repository_paths(self, repository: WorkerRepository, worker: Worker) -> list[str]:
-        changed = self.git("diff", "--name-status", "-M", f"HEAD...{self.tip(repository, worker)}", cwd=repository.checkout)
+        changed = self.git("diff", "--name-status", "-M", f"{self.into(repository)}...{self.tip(repository, worker)}", cwd=repository.checkout)
         return [repository.path(path) for line in changed.stdout.splitlines() for path in line.split("\t")[1:]] if changed.returncode == 0 else []
 
     def commits(self, repository: WorkerRepository, worker: Worker) -> list[str]:
         tip = self.tip(repository, worker)
         if not self.is_commit(repository, tip):
             return []
-        finished = self.git("log", "--reverse", "--format=%h %s", f"HEAD..{tip}", cwd=repository.checkout)
+        finished = self.git("log", "--reverse", "--format=%h %s", f"{self.into(repository)}..{tip}", cwd=repository.checkout)
         if finished.returncode != 0:
             raise Rejection(f"git could not list worker {worker.id}'s commits in {repository.label()}: {(finished.stderr.strip().splitlines() or ['no reason'])[-1]}")
         return [line for line in finished.stdout.splitlines() if line.strip()]
@@ -155,7 +156,7 @@ class WorkerBranch:
         return f"its {len(self.commits(repository, worker))} commits" + (f" in {repository.folder}" if repository.is_inner else "")
 
     def listing(self, repository: WorkerRepository, worker: Worker) -> str:
-        changed = self.git("diff", "--name-only", f"HEAD...{self.tip(repository, worker)}", cwd=repository.checkout).stdout.split()
+        changed = self.git("diff", "--name-only", f"{self.into(repository)}...{self.tip(repository, worker)}", cwd=repository.checkout).stdout.split()
         return "; ".join(self.commits(repository, worker)) + f" (files: {', '.join(changed[:20])}{', and more' if len(changed) > 20 else ''})"
 
     def merged_lines(self, worker: Worker) -> int:
@@ -164,7 +165,7 @@ class WorkerBranch:
             tip = self.tip(repository, worker)
             if not self.is_commit(repository, tip):
                 continue
-            counted = self.git("diff", "--numstat", f"HEAD...{tip}", cwd=repository.checkout).stdout.splitlines()
+            counted = self.git("diff", "--numstat", f"{self.into(repository)}...{tip}", cwd=repository.checkout).stdout.splitlines()
             total += sum(int(line.split("\t")[0]) for line in counted if line.split("\t")[0].isdigit())
         return total
 
@@ -173,7 +174,7 @@ class WorkerBranch:
         for repository in self.repositories(worker):
             tip = self.tip(repository, worker)
             if self.is_commit(repository, tip):
-                shas.extend(self.git("rev-list", f"HEAD..{tip}", cwd=repository.checkout).stdout.split())
+                shas.extend(self.git("rev-list", f"{self.into(repository)}..{tip}", cwd=repository.checkout).stdout.split())
         return tuple(shas)
 
     def merge_commit(self, worker: Worker) -> str:
@@ -192,8 +193,11 @@ class WorkerBranch:
     def base(self, worker: Worker) -> str:
         return self.git("rev-parse", "--abbrev-ref", "HEAD", cwd=self.checkout(worker)).stdout.strip()
 
+    def into(self, repository: WorkerRepository) -> str:
+        return self.carry.target(repository.checkout)
+
     def head(self, repository: WorkerRepository) -> str:
-        head = self.git("rev-parse", "HEAD", cwd=repository.checkout).stdout.strip()[:9]
+        head = self.git("rev-parse", self.into(repository), cwd=repository.checkout).stdout.strip()[:9]
         return f"{repository.folder} {head}" if repository.is_inner else head
 
     def refusal(self, pending: list[WorkerRepository], worker: Worker) -> str:
@@ -222,6 +226,10 @@ class WorkerBranch:
             return f"{repository.label()} is on no branch, a detached head"
         if not self.git("config", "user.name", cwd=checkout).stdout.strip() or not self.git("config", "user.email", cwd=checkout).stdout.strip():
             return f"git has no user.name and user.email in {repository.label()}, which a merge needs"
+        return "" if self.carry.is_on() else self.checkout_blocked(repository, worker)
+
+    def checkout_blocked(self, repository: WorkerRepository, worker: Worker) -> str:
+        checkout = repository.checkout
         touched = set(self.git("diff", "--name-only", f"HEAD...{self.tip(repository, worker)}", cwd=checkout).stdout.split())
         overlap = sorted(repository.path(path) for path in touched & set(self.status_files(checkout)))
         if overlap:
@@ -252,7 +260,8 @@ class WorkerBranch:
         autostash_clash = self.autostash_conflicts(repository) if repository.is_present and self.conflicts(repository.worktree) else ""
         if autostash_clash:
             return autostash_clash
-        head = self.git("rev-parse", "HEAD", cwd=repository.checkout).stdout.strip()
+        self.carry.refreshed(repository.checkout)
+        head = self.git("rev-parse", self.into(repository), cwd=repository.checkout).stdout.strip()
         if self.git("merge-base", "--is-ancestor", head, self.tip(repository, worker), cwd=repository.checkout).returncode == 0:
             return ""
         if not repository.is_present:
@@ -357,12 +366,15 @@ class WorkerBranch:
             tip = self.tip(repository, worker)
             if not self.is_commit(repository, tip):
                 continue
-            tree = self.git("merge-tree", "--write-tree", "--name-only", "--no-messages", "HEAD", tip, cwd=repository.checkout)
+            tree = self.git("merge-tree", "--write-tree", "--name-only", "--no-messages", self.into(repository), tip, cwd=repository.checkout)
             if tree.returncode == 1:
                 clashing += [str(repository.path(path)) for path in tree.stdout.split()[1:] if not self.is_built(path)]
         return ", ".join(clashing)
 
     def merged(self, repository: WorkerRepository, worker: Worker) -> str:
+        return self.carry.taken_in(repository.checkout, self.tip(repository, worker)) if self.carry.is_on() else self.checkout_merged(repository, worker)
+
+    def checkout_merged(self, repository: WorkerRepository, worker: Worker) -> str:
         merged = self.git("merge", "--no-edit", self.tip(repository, worker), cwd=repository.checkout)
         if merged.returncode == 0:
             return ""

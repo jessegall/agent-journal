@@ -1325,6 +1325,7 @@ workers.idle_hours = 4
 workers.fitness_warnings = True  (the user sets it)
 workers.merge_window_seconds = 180
 workers.merge_limit = 2
+workers.carry_merges = False
 workers.clashes_named = 3
 workers.orchestrator_writes_plans = True  (the user sets it)
 workers.orchestrator_approves_plans = False  (the user sets it)
