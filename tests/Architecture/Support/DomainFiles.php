@@ -30,16 +30,8 @@ final class DomainFiles
      */
     public static function in(array $folders): array
     {
-        $files = [];
-
-        foreach (array_filter($folders, is_dir(...)) as $folder) {
-            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder)) as $entry) {
-                if ($entry instanceof SplFileInfo && $entry->getExtension() === 'php') {
-                    $files[] = $entry->getPathname();
-                }
-            }
-        }
-
+        $files = array_merge(...array_map(self::allIn(...), array_values(array_filter($folders, is_dir(...)))));
+        $files = array_filter($files, fn (string $file) => pathinfo($file, PATHINFO_EXTENSION) === 'php');
         sort($files);
 
         return $files;

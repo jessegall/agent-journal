@@ -53,7 +53,7 @@ final readonly class ProfileProposal
         try {
             $written = ProfileConfigurationData::from($configuration);
             $profiles = array_map(
-                fn (string $key): ProposedProfile => self::profile($key, $written->profiles[$key]),
+                fn (string $key) => self::profile($key, $written->profiles[$key]),
                 array_map(strval(...), array_keys($written->profiles)),
             );
 

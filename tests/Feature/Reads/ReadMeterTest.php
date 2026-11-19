@@ -8,7 +8,6 @@ use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadMeter;
 use Domain\Access\Models\User;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -41,7 +40,7 @@ final class ReadMeterTest extends TestCase
         try {
             $meter->measure('outer', function () use ($meter, &$counted): void {
                 try {
-                    DB::select('select * from no_such_table');
+                    User::query()->where('no_such_column', 1)->exists();
                 } finally {
                     $counted = $meter->current()->queriesRun;
                 }

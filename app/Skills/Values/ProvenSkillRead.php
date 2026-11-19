@@ -40,7 +40,7 @@ final readonly class ProvenSkillRead
     private static function skillTool(ToolResult $call): self|null
     {
         $prefix = ClaudeCodeSkills::PLUGIN_NAME.':';
-        $skill = $call->toolName === 'Skill' ? $call->textArgument('skill') : null;
+        $skill = $call->toolName === 'Skill' ? $call->arguments->textArgument('skill') : null;
 
         return $skill !== null && str_starts_with($skill, $prefix)
             ? new self(substr($skill, strlen($prefix)), ReadEvidence::ClaudeSkillTool)
@@ -49,15 +49,15 @@ final readonly class ProvenSkillRead
 
     private static function fileRead(ToolResult $call): self|null
     {
-        $partial = $call->hasArgument('offset') || $call->hasArgument('limit');
-        $path = $call->toolName === 'Read' && ! $partial ? $call->textArgument('file_path') : null;
+        $partial = $call->arguments->hasArgument('offset') || $call->arguments->hasArgument('limit');
+        $path = $call->toolName === 'Read' && ! $partial ? $call->arguments->textArgument('file_path') : null;
 
         return $path !== null ? self::fromPath($path, ReadEvidence::FullFileRead) : null;
     }
 
     private static function shellRead(ToolResult $call): self|null
     {
-        $command = trim((string) $call->textArgument('command'));
+        $command = trim((string) $call->arguments->textArgument('command'));
 
         return preg_match(self::SHELL_READ, $command, $match) === 1
             ? self::fromPath($match[2], ReadEvidence::FullFileRead)
@@ -66,7 +66,7 @@ final readonly class ProvenSkillRead
 
     private static function journalShow(ToolResult $call): self|null
     {
-        $key = str_ends_with($call->toolName, 'skills_show') ? $call->textArgument('key') : null;
+        $key = str_ends_with($call->toolName, 'skills_show') ? $call->arguments->textArgument('key') : null;
 
         return $key !== null ? new self($key, ReadEvidence::JournalShow) : null;
     }

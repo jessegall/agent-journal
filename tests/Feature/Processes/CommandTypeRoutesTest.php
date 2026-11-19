@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Processes\Declarations\RuleDeclaration;
 use App\Processes\Enums\RequestState;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandRequest;
@@ -50,7 +51,7 @@ final class CommandTypeRoutesTest extends TestCase
         $requestId = $this->explainAcme();
 
         $reply = $this->signed($this->start, "/agent/processes/requests/{$requestId}/proposals", [
-            'declaration' => $this->declaration(),
+            'declaration' => $this->declaration()->toArray(),
             'request_key' => 'propose-1',
         ])->assertOk();
 
@@ -65,7 +66,7 @@ final class CommandTypeRoutesTest extends TestCase
     public function test_an_invalid_declaration_answers_its_field_errors(): void
     {
         $requestId = $this->explainAcme();
-        $declaration = $this->declaration();
+        $declaration = $this->declaration()->toArray();
         $declaration['rule']['purpose'] = 'harmless';
 
         $reply = $this->signed($this->start, "/agent/processes/requests/{$requestId}/proposals", [
@@ -81,7 +82,7 @@ final class CommandTypeRoutesTest extends TestCase
     {
         $requestId = $this->explainAcme();
         $proposal = $this->signed($this->start, "/agent/processes/requests/{$requestId}/proposals", [
-            'declaration' => $this->declaration(),
+            'declaration' => $this->declaration()->toArray(),
             'request_key' => 'propose-1',
         ])->json('proposal_id');
 
@@ -98,18 +99,15 @@ final class CommandTypeRoutesTest extends TestCase
             ->json('held.0.requestId');
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function declaration(): array
+    private function declaration(): RuleDeclaration
     {
         $proposed = AcmeDeclarations::proposedVerify();
 
-        return [
+        return RuleDeclaration::from([
             'request_id' => 'propose-1',
             'evidence' => $proposed->evidence,
-            'examples' => array_map(fn (RuleExample $example): array => $example->toArray(), $proposed->examples),
+            'examples' => array_map(fn (RuleExample $example) => $example->toArray(), $proposed->examples),
             'rule' => $proposed->rule->toArray(),
-        ];
+        ]);
     }
 }

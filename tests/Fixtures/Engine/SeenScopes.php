@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Engine;
 
-use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Support\EngineAccess;
 
 /**
@@ -18,14 +17,6 @@ final class SeenScopes
      */
     public static function of(EngineAccess $access, array $scopes): array
     {
-        return array_values(array_filter($scopes, function (string $scope) use ($access): bool {
-            try {
-                $access->checkMaintenance($scope);
-
-                return true;
-            } catch (EngineAccessRefused) {
-                return false;
-            }
-        }));
+        return array_values(array_filter($scopes, $access->allowsMaintenance(...)));
     }
 }

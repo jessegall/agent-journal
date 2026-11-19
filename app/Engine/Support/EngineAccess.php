@@ -71,12 +71,17 @@ final class EngineAccess implements EngineTargetAccess
         }
     }
 
+    public function allowsMaintenance(string $capability): bool
+    {
+        return $this->grant->allowsMaintenance($capability);
+    }
+
     /**
      * @throws EngineAccessRefused
      */
     public function checkMaintenance(string $capability): void
     {
-        if (! $this->grant->allowsMaintenance($capability)) {
+        if (! $this->allowsMaintenance($capability)) {
             throw EngineAccessRefused::forMaintenance($capability, $this->grant->description());
         }
     }

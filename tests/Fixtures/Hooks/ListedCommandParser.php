@@ -19,40 +19,36 @@ final class ListedCommandParser implements ShellCommandParser
 {
     public function parse(string $line, ShellDialect $dialect): ShellCommand
     {
-        $known = self::knownParts();
-
-        if (! array_key_exists($line, $known)) {
-            return new ShellCommand($line, $dialect, ParseOutcome::Unparsed, []);
-        }
-
-        return new ShellCommand($line, $dialect, ParseOutcome::Complete, [$known[$line]]);
-    }
-
-    /**
-     * @return array<string, CommandPart>
-     */
-    private static function knownParts(): array
-    {
-        return [
-            'composer test' => new CommandPart(
+        return match ($line) {
+            'composer test' => self::known($line, $dialect, new CommandPart(
                 'composer',
                 ['test'],
                 CommandEffect::ChangesFiles,
                 CommandType::Verification,
-            ),
-            'journal run tests' => new CommandPart(
+            )),
+            'journal run tests' => self::known($line, $dialect, new CommandPart(
                 'journal',
                 ['run', 'tests'],
                 CommandEffect::ReadsOnly,
                 CommandType::Alias,
-            ),
-            'journal run tests --write' => new CommandPart(
+            )),
+            'journal run tests --write' => self::known($line, $dialect, new CommandPart(
                 'journal',
                 ['run', 'tests', '--write'],
                 CommandEffect::ChangesFiles,
                 CommandType::Alias,
+            )),
+            'git status' => self::known(
+                $line,
+                $dialect,
+                new CommandPart('git', ['status'], CommandEffect::ReadsOnly, CommandType::Ordinary),
             ),
-            'git status' => new CommandPart('git', ['status'], CommandEffect::ReadsOnly, CommandType::Ordinary),
-        ];
+            default => new ShellCommand($line, $dialect, ParseOutcome::Unparsed, []),
+        };
+    }
+
+    private static function known(string $line, ShellDialect $dialect, CommandPart $part): ShellCommand
+    {
+        return new ShellCommand($line, $dialect, ParseOutcome::Complete, [$part]);
     }
 }

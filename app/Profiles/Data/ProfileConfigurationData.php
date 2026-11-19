@@ -37,7 +37,7 @@ final class ProfileConfigurationData extends Data
     public function toBaseOverrides(): array
     {
         return array_map(
-            fn (string $base): BaseOverride => new BaseOverride(
+            fn (string $base) => new BaseOverride(
                 ProfileBase::of($base),
                 $this->baseOverrides[$base]->toPolicyOverride(),
             ),

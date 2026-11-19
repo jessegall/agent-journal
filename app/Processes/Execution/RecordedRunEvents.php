@@ -14,7 +14,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
-use App\Processes\Values\ProcessEventPayload;
+use App\Processes\Values\ProcessEventFacts;
 use Carbon\CarbonImmutable;
 
 /**
@@ -34,7 +34,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function queued(PartKey $part): void
     {
-        if (! $this->note('part_queued', new ProcessEventPayload(part: $part->name()))) {
+        if (! $this->note(ProcessEventFacts::partQueued($part))) {
             return;
         }
         $this->parts[$part->name()] = PartRun::queue($this->run, $part);
@@ -42,7 +42,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function started(PartKey $part, int $pid, string $host): void
     {
-        if (! $this->note('part_started', new ProcessEventPayload(part: $part->name(), pid: $pid))) {
+        if (! $this->note(ProcessEventFacts::partStarted($part, $pid))) {
             return;
         }
         $this->part($part)->start($pid, $host);
@@ -50,7 +50,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function startedInside(PartKey $part, string $host): void
     {
-        if (! $this->note('part_started', new ProcessEventPayload(part: $part->name()))) {
+        if (! $this->note(ProcessEventFacts::partStartedInside($part))) {
             return;
         }
         $this->part($part)->startInside($host);
@@ -63,9 +63,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function ended(PartKey $part, PartEnd $end, bool $drained): void
     {
-        $payload = new ProcessEventPayload(part: $part->name(), end: $end->type->value, code: $end->code);
-
-        if (! $this->note('part_ended', $payload)) {
+        if (! $this->note(ProcessEventFacts::partEnded($part, $end))) {
             return;
         }
         $record = $this->part($part);
@@ -79,7 +77,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function skipped(PartKey $part, string $controllingResult): void
     {
-        if (! $this->note('part_skipped', new ProcessEventPayload(part: $part->name(), because: $controllingResult))) {
+        if (! $this->note(ProcessEventFacts::partSkipped($part, $controllingResult))) {
             return;
         }
         $this->part($part)->skip($controllingResult);
@@ -87,7 +85,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function spawnFailed(PartKey $part, string $reason): void
     {
-        if (! $this->note('part_start_failed', new ProcessEventPayload(part: $part->name(), reason: $reason))) {
+        if (! $this->note(ProcessEventFacts::partStartFailed($part, $reason))) {
             return;
         }
         $this->part($part)->failToSpawn($reason);
@@ -95,7 +93,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function stopped(PartKey $part, string $reason): void
     {
-        if (! $this->note('part_stopped', new ProcessEventPayload(part: $part->name(), reason: $reason))) {
+        if (! $this->note(ProcessEventFacts::partStopped($part, $reason))) {
             return;
         }
         $this->part($part)->stop($reason);
@@ -103,7 +101,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function lost(PartKey $part): void
     {
-        if (! $this->note('part_lost', new ProcessEventPayload(part: $part->name()))) {
+        if (! $this->note(ProcessEventFacts::partLost($part))) {
             return;
         }
         $this->part($part)->lose();
@@ -116,7 +114,7 @@ final class RecordedRunEvents implements RunEvents
 
     public function runStopped(string $reason): void
     {
-        if (! $this->note('run_stopped', new ProcessEventPayload(reason: $reason))) {
+        if (! $this->note(ProcessEventFacts::runStopped($reason))) {
             return;
         }
         $this->run->markStopped($reason);
@@ -152,9 +150,9 @@ final class RecordedRunEvents implements RunEvents
     /**
      * Keeps the event under its number and reports whether it is new: a repeat or a conflicting event changes nothing.
      */
-    private function note(string $type, ProcessEventPayload $payload): bool
+    private function note(ProcessEventFacts $facts): bool
     {
-        $event = ProcessEvent::record($this->run, ++$this->sequence, $type, $payload->toArray());
+        $event = ProcessEvent::record($this->run, ++$this->sequence, $facts->type, $facts->facts);
 
         return $event->wasRecentlyCreated && $event->sequence === $this->sequence;
     }

@@ -145,9 +145,6 @@ final class ShellCorpusTest extends TestCase
      */
     private function cases(): array
     {
-        return array_map(
-            fn (string $line) => ShellCorpusCase::from($line),
-            file(self::CORPUS.'/cases.jsonl', FILE_IGNORE_NEW_LINES) ?: [],
-        );
+        return ShellCorpusCase::collect(file(self::CORPUS.'/cases.jsonl', FILE_IGNORE_NEW_LINES) ?: []);
     }
 }

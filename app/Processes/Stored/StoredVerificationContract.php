@@ -40,7 +40,7 @@ final class StoredVerificationContract extends Data
             'tool' => $contract->tool,
             'binding' => StoredExecutableBinding::fromBinding($contract->binding),
             'output' => StoredOutputContract::fromOutputContract($contract->output),
-            'exits' => array_map(StoredExitBranch::fromExitBranch(...), $contract->exits->branches),
+            'exits' => $contract->exits->branches,
             'progress' => StoredProgressPolicy::fromProgressPolicy($contract->progress),
             'reader' => $contract->reader->revision,
         ]);
