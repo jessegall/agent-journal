@@ -52,7 +52,7 @@ final class PhaseTimingTest extends TestCase
         $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->agent));
     }
 
-    public function test_the_plans_domain_fills_the_timing_seam(): void
+    public function test_the_plans_domain_fills_in_the_phase_timing(): void
     {
         $this->assertInstanceOf(PhaseTiming::class, $this->app->make(VerificationTiming::class));
         $this->assertTrue(new OpenTiming()->forCaller()->isAllowed());
