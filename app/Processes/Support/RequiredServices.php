@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\ShellCommandParser;
@@ -22,7 +21,7 @@ final readonly class RequiredServices
         ShellCommandParser::class,
         CommandClassifier::class,
         ShellAdmission::class,
-        ResultPublisher::class,
+        ReceiptPublisher::class,
         ResultReceipts::class,
     ];
 

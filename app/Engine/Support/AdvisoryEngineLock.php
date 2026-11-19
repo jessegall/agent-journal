@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
-use App\Engine\Contracts\EngineLock;
 use App\Engine\Exceptions\EngineConnectionLost;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
@@ -13,7 +12,7 @@ use Illuminate\Database\DatabaseManager;
  * The engine lock as a PostgreSQL session advisory lock on the engine's own connection, which never reconnects. The
  * raw SQL here touches no table: it is lock coordination, the one documented exception to query-builder-only access.
  */
-final class AdvisoryEngineLock implements EngineLock
+final class AdvisoryEngineLock
 {
     private int|null $ownerBackendId = null;
 

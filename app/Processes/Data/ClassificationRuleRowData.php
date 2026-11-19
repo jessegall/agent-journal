@@ -6,11 +6,13 @@ namespace App\Processes\Data;
 
 use App\Processes\Models\ClassificationRule;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One classification rule of the project in the review list, active or retired, at its active revision.
  */
-final class RuleRowData extends Data
+#[TypeScript]
+final class ClassificationRuleRowData extends Data
 {
     public function __construct(
         public readonly string $id,

@@ -16,8 +16,8 @@ use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchRequest;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -70,7 +70,7 @@ final class DispatchReplyInboxTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat(
+            fn () => $this->app->make(DeskSeating::class)->seat(
                 $main->id,
                 ActorIdentity::of($first->agent()->firstOrFail()),
             ),
@@ -82,7 +82,7 @@ final class DispatchReplyInboxTest extends TestCase
         $this->assertSame($main->inbox_id, $run->replyInboxId()->get());
 
         $this->startUserRequestAs($owner->id);
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
             new SeatChange(
                 $main->id,
                 $seat->seatId,

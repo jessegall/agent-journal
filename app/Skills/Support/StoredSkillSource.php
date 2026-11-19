@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Skills\Contracts\SkillSource;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Resolvers\Support\SkillContextResolver;
@@ -12,7 +11,7 @@ use App\Skills\Resolvers\Support\SkillContextResolver;
 /**
  * The current revision of every unretired stored skill visible in this environment, read in two queries.
  */
-final readonly class StoredSkillSource implements SkillSource
+final readonly class StoredSkillSource
 {
     private const int MOST_SKILLS = 1_000;
 
@@ -20,6 +19,9 @@ final readonly class StoredSkillSource implements SkillSource
         private ConditionTree $conditions,
     ) {}
 
+    /**
+     * @return list<StoredSkill>
+     */
     public function skills(): array
     {
         $skills = Skill::activeIn(SkillContextResolver::ENVIRONMENT, self::MOST_SKILLS);

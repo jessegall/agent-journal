@@ -6,10 +6,12 @@ namespace App\Processes\Data;
 
 use App\Processes\Models\CommandRequest;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One command request in the review list: what it holds, why, and where it stands.
  */
+#[TypeScript]
 final class RequestRowData extends Data
 {
     public function __construct(

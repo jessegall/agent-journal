@@ -6,9 +6,9 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Contracts\ActorRuntimeResolver;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
+use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
 use App\Agents\Support\CredentialLookup;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\OpensDriverRuntimes;
@@ -33,7 +33,7 @@ final class ActorRuntimeResolverTest extends TestCase
         $newer = $launches->launch($agent->refresh(), TestSelections::of('claude-code'), TestSelections::requestId());
         $this->openDriverRuntime($newer->session);
 
-        $current = $this->app->make(ActorRuntimeResolver::class)->currentFor(ActorIdentity::of($agent))->get();
+        $current = $this->app->make(CurrentAgentRuntimes::class)->currentFor(ActorIdentity::of($agent))->get();
 
         $this->assertSame([$newer->session->id, 2], [$current->target->sessionId, $current->generation]);
         $this->assertFalse($agent->refresh()->isRetired());

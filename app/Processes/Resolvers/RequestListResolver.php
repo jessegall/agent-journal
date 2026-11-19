@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Processes\Resolvers;
 
-use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Data\BundleRowData;
+use App\Processes\Data\ClassificationRuleRowData;
 use App\Processes\Data\RequestListData;
 use App\Processes\Data\RequestRowData;
-use App\Processes\Data\RuleRowData;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ModuleRuleBundle;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\ProjectKey;
+use App\Processes\Support\ProjectRules;
 use App\Processes\Values\RuleBundle;
 use App\Ui\Contracts\PageResolver;
 
@@ -26,7 +26,7 @@ final readonly class RequestListResolver implements PageResolver
     public function __construct(
         private ProjectKey $projects,
         private CommandRuleRegistry $rules,
-        private CommandRuleResolver $approved,
+        private ProjectRules $approved,
     ) {}
 
     public function read(): RequestListData
@@ -45,7 +45,7 @@ final readonly class RequestListResolver implements PageResolver
 
         return RequestListData::from([
             'requests' => array_values($requests->map(RequestRowData::fromRequest(...))->all()),
-            'rules' => array_values($rules->map(RuleRowData::fromRule(...))->all()),
+            'rules' => array_values($rules->map(ClassificationRuleRowData::fromRule(...))->all()),
             'bundles' => array_values(array_map(BundleRowData::fromBundle(...), $waiting)),
         ]);
     }

@@ -6,7 +6,6 @@ namespace Tests\Feature\Skills;
 
 use App\Domains\Support\DomainRegistry;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Contracts\SkillSource;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Resolvers\SkillCatalogue;
@@ -15,6 +14,7 @@ use App\Skills\Support\ConditionTree;
 use App\Skills\Support\CoreSkills;
 use App\Skills\Support\MarkdownParts;
 use App\Skills\Support\SkillRegistry;
+use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
@@ -115,7 +115,7 @@ final class SkillCatalogueTest extends TestCase
             $this->app,
             new CanonicalRenderer(new MarkdownParts()),
             $this->app->make(ConditionTree::class),
-            $this->app->make(SkillSource::class),
+            $this->app->make(StoredSkillSource::class),
         );
     }
 }

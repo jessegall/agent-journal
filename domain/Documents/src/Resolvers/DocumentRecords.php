@@ -127,9 +127,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function show(int $number): DocumentView
     {
-        $document = self::findPublished($number);
-
-        return $document?->view() ?? throw DocumentMissing::numbered($number);
+        return self::published($number)->view();
     }
 
     /**
@@ -164,15 +162,16 @@ final readonly class DocumentRecords implements DocumentResolver
     }
 
     /**
-     * The published document with that number, with its current revision; none when it is missing or hidden.
+     * The published document with that number, with its current revision; refused when it is missing or hidden.
+     *
+     * @throws DocumentMissing
      */
-    private static function findPublished(int $number): Document|null
-    {
-        return Document::query()->sharedPublished()->with('currentRevision')->where('number', $number)->first();
-    }
-
     private static function published(int $number): Document
     {
-        return self::findPublished($number) ?? throw DocumentMissing::numbered($number);
+        return Document::query()
+            ->sharedPublished()
+            ->with('currentRevision')
+            ->where('number', $number)
+            ->firstOr(fn () => throw DocumentMissing::numbered($number));
     }
 }

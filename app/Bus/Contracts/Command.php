@@ -13,9 +13,13 @@ use App\Actors\Support\ActorContext;
  */
 interface Command
 {
-    /** The actor who dispatched this command, bound by the bus. */
+    /**
+     * The actor who dispatched this command, bound by the bus.
+     */
     public function dispatchedBy(): ActorContext;
 
-    /** A copy of this command bound to the given dispatcher. */
+    /**
+     * A copy of this command bound to the given dispatcher.
+     */
     public function withDispatcher(ActorContext $dispatcher): static;
 }

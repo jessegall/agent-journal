@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Skills\Resolvers;
 
 use App\Skills\Contracts\Skill;
-use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Contracts\SkillSource;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillMissing;
 use App\Skills\Exceptions\SkillSourceInvalid;
+use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\SkillRegistry;
+use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;
@@ -41,9 +41,9 @@ final readonly class SkillCatalogue implements SkillResolver
     public static function build(
         SkillRegistry $registry,
         Container $container,
-        SkillRenderer $renderer,
+        CanonicalRenderer $renderer,
         ConditionTree $conditions,
-        SkillSource $stored,
+        StoredSkillSource $stored,
     ): self {
         $entries = [];
 

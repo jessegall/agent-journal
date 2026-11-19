@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
-use App\Engine\Contracts\EngineLock;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Contracts\Sleeper;
 use App\Engine\Contracts\Watchdog;
@@ -35,7 +34,7 @@ final class EngineLoop
     private bool $stopping = false;
 
     public function __construct(
-        private readonly EngineLock $lock,
+        private readonly AdvisoryEngineLock $lock,
         private readonly MonotonicClock $clock,
         private readonly Sleeper $sleeper,
         private readonly Watchdog $watchdog,

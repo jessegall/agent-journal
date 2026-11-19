@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Skills\Support;
 
 use App\Skills\Contracts\Skill;
-use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Values\RenderedSkill;
 use App\Skills\Values\SkillKey;
@@ -18,7 +17,7 @@ use Symfony\Component\Yaml\Yaml;
  * title, then each section's heading and body in declared order, with LF line ends and one final newline. Every check
  * runs before any text is returned.
  */
-final readonly class CanonicalRenderer implements SkillRenderer
+final readonly class CanonicalRenderer
 {
     private const int MOST_SECTIONS = 64;
 

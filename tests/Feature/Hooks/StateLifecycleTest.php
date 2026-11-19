@@ -12,9 +12,9 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Engine\Support\EngineAccess;
 use App\Hooks\Actions\AgentStacks;
+use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Contracts\CurrentState;
-use App\Hooks\Contracts\EngineStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Events\StateTypesRequested;
@@ -302,7 +302,7 @@ final class StateLifecycleTest extends TestCase
     private function popExposed(StackTarget $target): void
     {
         $this->app->make(EngineAccess::class)->grantFrame($target, 'frame-of-the-tick');
-        $this->transaction()->run(fn () => $this->app->make(EngineStack::class)->popExposed($target));
+        $this->transaction()->run(fn () => $this->app->make(EngineStacks::class)->popExposed($target));
     }
 
     /**

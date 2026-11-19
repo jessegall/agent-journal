@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ShareDetailData, ShareLinkData } from '@generated/types/sharing';
-import { xsrfToken } from '@kit/xsrfToken';
+import { postJson } from '@/composables/jsonRequests';
+import { revealShareLink } from '@/routes/sharing';
 import { router } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';
@@ -30,23 +31,15 @@ const copied = ref(false);
 
 async function reveal(): Promise<void> {
     revealFailed.value = false;
-    const response = await fetch(`/sharing/shares/${props.data.id}/link`, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-            Accept: 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-XSRF-TOKEN': xsrfToken(),
-        },
-    });
+    const reply = await postJson<ShareLinkData>(revealShareLink(props.data.id).url);
 
-    if (!response.ok) {
+    if (!reply.ok) {
         revealFailed.value = true;
 
         return;
     }
 
-    revealed.value = ((await response.json()) as ShareLinkData).url;
+    revealed.value = reply.value.url;
 }
 
 async function copy(): Promise<void> {

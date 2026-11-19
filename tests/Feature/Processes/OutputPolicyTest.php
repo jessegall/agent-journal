@@ -6,8 +6,8 @@ namespace Tests\Feature\Processes;
 
 use App\Processes\Admission\OutputPolicy;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\OutputVerdict;
 use Tests\Support\RefreshHookDatabase;
@@ -58,7 +58,7 @@ final class OutputPolicyTest extends TestCase
 
     private function verdict(string $line): OutputVerdict
     {
-        $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
+        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
         $classification = $this->app->make(CommandClassifier::class)->classify(
             $tree,
             new ExecutionContext(ShellDialect::Bash, base_path(), base_path()),

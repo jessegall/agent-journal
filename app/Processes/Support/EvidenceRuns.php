@@ -8,7 +8,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Processes\Admission\OutputPolicy;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandPermissionResolver;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\RunMode;
@@ -18,6 +17,7 @@ use App\Processes\Exceptions\PhaseTimingRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\Classification;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ExecutionContext;
@@ -35,7 +35,7 @@ use App\Processes\Values\TimingVerdict;
 final readonly class EvidenceRuns
 {
     public function __construct(
-        private ShellSyntax $syntax,
+        private TreeParser $syntax,
         private CommandClassifier $classifier,
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,

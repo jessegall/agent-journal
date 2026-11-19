@@ -20,10 +20,7 @@ use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxRegistration;
 use App\Desks\Console\InstallDesksCommand;
 use App\Desks\Contracts\ActorDesks;
-use App\Desks\Contracts\ForwardingSeatResolver;
 use App\Desks\Contracts\RunClaims;
-use App\Desks\Contracts\SeatAdmission;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Enums\DeskAbility;
 use App\Desks\Models\DeskPreference;
 use App\Desks\Models\DeskRecord;
@@ -60,8 +57,8 @@ final class DesksServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->app->scoped(SeatAdmission::class, DeskSeatAdmission::class);
-        $this->app->scoped(SeatingWriter::class, DeskSeating::class);
+        $this->app->scoped(DeskSeatAdmission::class);
+        $this->app->scoped(DeskSeating::class);
         $this->app->scoped(ActorDesks::class, PersonalDesks::class);
         $this->app->scoped(ActorProvisioning::class, PersonalDeskProvisioning::class);
         $this->app->scoped(RunClaims::class, DeskRunClaims::class);
@@ -71,7 +68,7 @@ final class DesksServiceProvider extends ServiceProvider
         $this->app->singleton(DestinationRegistry::class);
         $this->app->scoped(AssignmentDestinationResolver::class, RegisteredAssignmentDestinations::class);
         $this->app->scoped(InboxDestinationResolver::class, RegisteredInboxDestinations::class);
-        $this->app->scoped(ForwardingSeatResolver::class, OccupiedForwardingSeats::class);
+        $this->app->scoped(OccupiedForwardingSeats::class);
         $this->app->scoped(ActorInboxResolver::class, PreferredDeskInboxes::class);
     }
 

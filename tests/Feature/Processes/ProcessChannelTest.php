@@ -8,7 +8,6 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Processes\Calls\ProcessCalls;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Execution\ChannelRunEvents;
@@ -17,6 +16,7 @@ use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\ExecutionPlanner;
 use App\Processes\Support\SpoolRecorder;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PartKey;
 use Illuminate\Support\Facades\Storage;
@@ -105,7 +105,7 @@ final class ProcessChannelTest extends TestCase
     private function admit(string $line): ProcessRun
     {
         $context = new ExecutionContext(ShellDialect::Bash, $this->folder, $this->folder);
-        $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
+        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
         $plan = $this->app->make(ExecutionPlanner::class)->plan(
             $tree,
             $this->app->make(CommandClassifier::class)->classify($tree, $context),

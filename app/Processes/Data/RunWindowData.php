@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Processes\Data;
 
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One run as its page shows it: the snapshot the live updates keep current, each part's escaped output tails and the
  * problems of its latest assessment.
  */
+#[TypeScript]
 final class RunWindowData extends Data
 {
     /**

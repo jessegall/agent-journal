@@ -7,8 +7,8 @@ namespace Tests\Feature\Processes;
 use App\Processes\Commands\CleanProcessOutput;
 use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Contracts\ShellAdmission;
+use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\CaptureState;
-use App\Processes\Enums\RefusalCode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\CleanRefused;
 use App\Processes\Models\OutputChunk;
@@ -86,7 +86,7 @@ final class OutputCleanupTest extends TestCase
         config(['processes.runner' => true, 'processes.minimum_free_bytes' => PHP_INT_MAX]);
         $full = $this->admitCat('key-1')->decision;
         $this->assertInstanceOf(AdmissionRefusal::class, $full);
-        $this->assertSame(RefusalCode::RunnerUnavailable, $full->code);
+        $this->assertSame(AdmissionRefusalCode::RunnerUnavailable, $full->code);
 
         config(['processes.minimum_free_bytes' => 0]);
         $this->assertTrue($this->admitCat('key-2')->isAllowed());

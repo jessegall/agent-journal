@@ -7,7 +7,7 @@ namespace Tests\Feature\Processes;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Values\OwnerAuthority;
 use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Enums\RefusalCode;
+use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Rules\ShippedReaders;
 use App\Processes\Support\ShippedReaderInstaller;
@@ -47,7 +47,7 @@ final class ShippedReaderInstallTest extends TestCase
 
     public function test_a_matching_installed_version_gets_its_shipped_reader_approved_and_the_check_admitted(): void
     {
-        $this->assertSame(RefusalCode::ReaderRequired, $this->refusalOf(self::PHPSTAN));
+        $this->assertSame(AdmissionRefusalCode::ReaderRequired, $this->refusalOf(self::PHPSTAN));
 
         $installed = $this->install(new ToolVersions(['composer.lock: phpstan/phpstan' => '2.3.6']));
 
@@ -74,7 +74,7 @@ final class ShippedReaderInstallTest extends TestCase
         $installed = $this->install(new ToolVersions(['composer.lock: phpstan/phpstan' => '2.3.7']));
 
         $this->assertSame([], $installed);
-        $this->assertSame(RefusalCode::ReaderRequired, $this->refusalOf(self::PHPSTAN));
+        $this->assertSame(AdmissionRefusalCode::ReaderRequired, $this->refusalOf(self::PHPSTAN));
     }
 
     /**
@@ -89,7 +89,7 @@ final class ShippedReaderInstallTest extends TestCase
         return $this->app->make(ShippedReaderInstaller::class)->install($versions, base_path());
     }
 
-    private function refusalOf(string $line): RefusalCode|null
+    private function refusalOf(string $line): AdmissionRefusalCode|null
     {
         $this->app->forgetScopedInstances();
         $this->launch->startRequest($this->app);

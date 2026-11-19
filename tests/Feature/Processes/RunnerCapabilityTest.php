@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Enums\RefusalCode;
+use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
@@ -51,7 +51,7 @@ final class RunnerCapabilityTest extends TestCase
         $refusal = $this->admit('echo hi')->decision;
 
         $this->assertInstanceOf(AdmissionRefusal::class, $refusal);
-        $this->assertSame(RefusalCode::RunnerUnavailable, $refusal->code);
+        $this->assertSame(AdmissionRefusalCode::RunnerUnavailable, $refusal->code);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
@@ -62,7 +62,7 @@ final class RunnerCapabilityTest extends TestCase
         $refusal = $this->admit('vendor/bin/phpstan analyse | grep error')->decision;
 
         $this->assertInstanceOf(AdmissionRefusal::class, $refusal);
-        $this->assertSame(RefusalCode::OutputHidden, $refusal->code);
+        $this->assertSame(AdmissionRefusalCode::OutputHidden, $refusal->code);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 

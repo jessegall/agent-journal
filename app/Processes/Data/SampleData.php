@@ -6,11 +6,13 @@ namespace App\Processes\Data;
 
 use App\Processes\Models\EvidencePermit;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One owner-approved sample of the request: the exact line and effects approved, its capture limits, and, once run,
  * the run with each part's own end and capture state. Samples are evidence only.
  */
+#[TypeScript]
 final class SampleData extends Data
 {
     /**

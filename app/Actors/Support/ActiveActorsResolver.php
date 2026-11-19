@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actors\Support;
 
-use App\Actors\Contracts\ActiveActors;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActiveActorsUnavailable;
@@ -17,7 +16,7 @@ use Throwable;
  * Reads the database time once and runs every registered counter with it inside one repeatable-read, read-only
  * transaction, so all counts see one snapshot. A type with no counter counts zero; any failure is named, never zero.
  */
-final readonly class ActiveActorsResolver implements ActiveActors
+final readonly class ActiveActorsResolver
 {
     public function __construct(
         private ActiveActorCounterRegistry $counters,

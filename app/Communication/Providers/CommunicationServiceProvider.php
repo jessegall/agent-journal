@@ -12,7 +12,6 @@ use App\Assignments\Enums\AssignmentPurpose;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Contracts\MemberInboxes;
 use App\Communication\Enums\MessageAbility;
 use App\Communication\Links\MessageLinkRecords;
 use App\Communication\Models\Message;
@@ -41,7 +40,7 @@ final class CommunicationServiceProvider extends ServiceProvider
         $this->app->singleton(RegisteredInboxes::class);
         $this->app->singleton(InboxRegistration::class, RegisteredInboxes::class);
         $this->app->singleton(InboxResolver::class, RegisteredInboxes::class);
-        $this->app->singleton(MemberInboxes::class, RegisteredInboxes::class);
+        $this->app->singleton(RegisteredInboxes::class);
         $this->app->scoped(ConversationResolver::class, MessageRecords::class);
     }
 

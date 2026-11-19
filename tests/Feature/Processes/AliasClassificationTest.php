@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Models\CommandAlias;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
 use Illuminate\Support\Facades\Schema;
@@ -97,7 +97,7 @@ final class AliasClassificationTest extends TestCase
     private function classify(string $line): Classification
     {
         return $this->app->make(CommandClassifier::class)->classify(
-            $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash),
+            $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash),
             $this->context(),
         );
     }

@@ -7,16 +7,16 @@ namespace App\Desks\Handlers;
 use App\Contracts\CommandHandler;
 use App\Desks\Commands\RestoreActorDesk;
 use App\Desks\Contracts\ActorDesks;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
+use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChangeResult;
 use App\Desks\Support\SeatLossRepair;
 
 final readonly class RestoreActorDeskHandler implements CommandHandler
 {
     public function __construct(
-        private SeatingWriter $seating,
+        private DeskSeating $seating,
         private ActorDesks $desks,
     ) {}
 

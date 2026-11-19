@@ -13,7 +13,6 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Desks\Contracts\DestinationProvider;
 use App\Desks\Contracts\Destinations;
-use App\Desks\Contracts\ForwardingSeatResolver;
 
 /**
  * An actor's destinations: the desk of its forwarding seat when it forwards and holds one, otherwise the actor itself
@@ -24,7 +23,7 @@ final readonly class ActorDestinationProvider implements DestinationProvider
     public function __construct(
         private AssignmentProviders $providers,
         private ActorResolver $actors,
-        private ForwardingSeatResolver $seats,
+        private OccupiedForwardingSeats $seats,
         private ActorInboxResolver $inboxes,
     ) {}
 

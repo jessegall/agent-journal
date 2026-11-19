@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getJson } from '@/composables/jsonRequests';
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import type { Section, TextSections } from '@/generated/types/core';
@@ -44,9 +45,11 @@ function openSource(): void {
 }
 
 async function loadSections(): Promise<void> {
-    const reply = await fetch(sections.url({ query: { target: props.target, version: props.version ?? '', per_page: 100 } }), { headers: { Accept: 'application/json' } });
+    const reply = await getJson<TextSections>(
+        sections.url({ query: { target: props.target, version: props.version ?? '', per_page: 100 } }),
+    );
 
-    sectionList.value = reply.ok ? ((await reply.json()) as TextSections).items : [];
+    sectionList.value = reply.ok ? reply.value.items : [];
 }
 
 function send(): void {

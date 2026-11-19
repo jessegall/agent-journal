@@ -6,10 +6,12 @@ namespace App\Processes\Data;
 
 use App\Processes\Models\ProcessRun;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One run in the runs list: its operations, whether it is a normal run or evidence only, and its lifecycle.
  */
+#[TypeScript]
 final class RunRowData extends Data
 {
     /**
