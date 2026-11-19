@@ -7,6 +7,8 @@ from engine.database.database import Database
 from engine.database.kept_rows import KeptRows
 from engine.model.tables import Tables
 from engine.query.conditions.among import Among
+from engine.query.conditions.equal import Equal
+from engine.query.conditions.excluding import Excluding
 from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
 from engine.query.query import Query
@@ -106,8 +108,9 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
     def no_open_dependency(self) -> Condition:
         return SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)
 
-    def main_reserved(self, task_ids: Sequence[int]) -> Self:
-        running_main_agents = Select("agents").matching(Among("role", [AgentRole.MAIN])).matching(IsNull("ended_at")).column("id")
+    # the open and blocked tasks of these held by a running main agent other than the one asking, which keeps its own to give
+    def main_reserved(self, task_ids: Sequence[int], asking_agent_id: int) -> Self:
+        running_main_agents = Select("agents").matching(Among("role", [AgentRole.MAIN])).matching(IsNull("ended_at")).matching(Excluding(Equal("id", asking_agent_id))).column("id")
         return self.matching(Among("id", task_ids)).matching(AssigneeMatch(Task, running_main_agents)).matching(IsNull("holder_id")).matching(Among("state", [TaskState.OPEN, TaskState.BLOCKED]))
 
     def takeable(self, agent: Agent) -> Self:

@@ -79,7 +79,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if command.source_worker_id is not None:
             tasks = list(read)
         else:
-            self.reservations.check([command.task_id, *command.delegated_ids])
+            self.reservations.check([command.task_id, *command.delegated_ids], context.actor.id)
             self.assigned_worker_tasks.check(read)
             self.outside_waits.check(read)
             tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))

@@ -51,7 +51,7 @@ class KeptWorkerTasks:
                                         name=f"workers.sent_tasks:{task_ids}")
 
     def check_tasks(self, task_ids: tuple[int, ...], sender_id: int | None = None, worker_id: int | None = None, takes: bool = False) -> list[Task]:
-        self.reservations.check(task_ids)
+        self.reservations.check(task_ids, sender_id if sender_id is not None else 0)
         read = self.read_tasks(task_ids)
         if not takes:
             self.assigned_worker_tasks.check(read, worker_id)
