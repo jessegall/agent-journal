@@ -133,4 +133,12 @@ final class OutputAssessment extends Model implements ReadableModel
             ? InterpretationState::ReaderFailed
             : InterpretationState::Invalid;
     }
+
+    /**
+     * The newest assessment of that part's output; none before its first.
+     */
+    public static function latestOf(PartRun $part): self|null
+    {
+        return self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+    }
 }

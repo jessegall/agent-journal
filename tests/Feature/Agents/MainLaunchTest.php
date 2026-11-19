@@ -6,9 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Str;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -19,17 +18,8 @@ use Tests\TestCase;
  */
 final class MainLaunchTest extends TestCase
 {
+    use ActsAsOwner;
     use RefreshHookDatabase;
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_a_named_program_and_model_launch_the_agent(): void
     {

@@ -22,7 +22,7 @@ final readonly class PendingInboxWork implements PendingWorkSource
     public function pendingCount(ActorIdentity $actor): int
     {
         return Message::query()
-            ->withoutGlobalScopes()
+            ->acrossInboxes()
             ->whereIn('destination_inbox_id', $this->inboxes->inboxIdsOf($actor))
             ->where(fn (Builder $pending) => $pending
                 ->whereNull('read_at')

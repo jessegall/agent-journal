@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Links\Models\Link;
@@ -36,6 +34,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -61,10 +60,10 @@ final class ShareRefreshAndRetryTest extends TestCase
 
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->instance(BinderPublications::class, new BinderPublications());
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->root = new RecordIdentity('binders.binder', TestIds::of(1));
+        $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102] as $number) {
             Link::recorded($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
@@ -91,7 +90,7 @@ final class ShareRefreshAndRetryTest extends TestCase
     public function test_a_refresh_from_a_preview_of_another_root_is_refused(): void
     {
         $share = $this->share([TestIds::of(101)]);
-        $saved = $this->preview(new RecordIdentity('binders.binder', TestIds::of(2)), []);
+        $saved = $this->preview(TestActors::record('binders.binder', 2), []);
 
         $this->assertThrows(fn () => $this->runOwner(fn (string $key) => new RefreshShareScope($share->id, $saved->previewId, $saved->checksum, $key)), ShareRefreshRefused::class, 'another record');
         $this->assertSame(Share::FIRST_SCOPE_VERSION, Share::query()->findOrFail($share->id)->scope_version);
@@ -118,7 +117,7 @@ final class ShareRefreshAndRetryTest extends TestCase
         $revoked = $this->share([]);
         $revoked->state = ShareState::Revoked;
         $revoked->save();
-        $proposal = Share::propose($this->root, new ActorIdentity(ActorType::Agent, TestIds::of(5)), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $proposal = Share::propose($this->root, TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
 
         foreach ([$expired, $revoked, $proposal] as $share) {
             $this->assertThrows(fn () => $this->runOwner(fn (string $key) => new RetryShare($share->id, $key)), ShareRetryRefused::class);
@@ -144,7 +143,7 @@ final class ShareRefreshAndRetryTest extends TestCase
     private function preview(RecordIdentity $root, array $selectedIds): SavedSharePreview
     {
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
 
         return $this->app->make(CommandBus::class)->run(new SaveSharePreview($root->type, $root->id, $selectedIds, $this->configuration->id));
     }
@@ -158,7 +157,7 @@ final class ShareRefreshAndRetryTest extends TestCase
     {
         $key = sprintf('01JD8X0G9M3QZ6V4K2KEY%05d', ++$this->keys);
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run($command($key));

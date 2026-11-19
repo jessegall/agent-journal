@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
@@ -23,6 +21,7 @@ use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillKey;
 use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -120,6 +119,6 @@ final class SkillSelectionTest extends TestCase
             'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
-        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);
+        return new SkillContext(TestActors::agentIdentity(2), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);
     }
 }

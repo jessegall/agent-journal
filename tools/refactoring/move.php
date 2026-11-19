@@ -116,7 +116,9 @@ foreach ($moves as $move) {
     $files = sources();
     $where = declaredIn($old, $files, $namespace);
 
-    $where === null || $was[] = namespaceOf($where).'\\'.shortNameOf($old);
+    if ($where !== null) {
+        $was[] = namespaceOf($where).'\\'.shortNameOf($old);
+    }
 
     $applied = $replacing
         ? replace($old, $new, $files, $dry, $namespace, progress($at++, $total))
@@ -136,9 +138,13 @@ echo sprintf(
     $done,
 );
 
-$missed === [] || printf("Not found: %s\n", implode(', ', $missed));
+if ($missed !== []) {
+    printf("Not found: %s\n", implode(', ', $missed));
+}
 
-$dry || report(dangling($was, sources()));
+if (! $dry) {
+    report(dangling($was, sources()));
+}
 
 /**
  * Where a run has got to, said on the line the move prints anyway. A namespace move is hundreds of
@@ -344,7 +350,9 @@ function rewrite(array $files, string $from, string $onward, string $old, string
             ? qualifying($was, $onward, $new)
             : ['import' => $onward, 'named' => $new];
 
-        $ours && $naming[$file] = $calls;
+        if ($ours) {
+            $naming[$file] = $calls;
+        }
 
         // a name said IN FULL becomes the new full name, whatever this file will call it in its body.
         // Qualifying here would reach inside `use` lines, where a name is absolute and a relative one
@@ -480,7 +488,9 @@ function imports(array $files, string $onward, string $new, array $declaring, bo
             continue;
         }
 
-        $calls['named'] === $new || $taken[] = relative($file).' → '.$calls['named'];
+        if ($calls['named'] !== $new) {
+            $taken[] = relative($file).' → '.$calls['named'];
+        }
 
         $added++;
         $pending[$file] = importing($body, $calls['import']);
@@ -578,8 +588,12 @@ function imported(string $body, string $class): bool
 
     foreach ($tokens as $token) {
         if (! is_array($token)) {
-            $token === '{' && $depth++;
-            $token === '}' && $depth--;
+            if ($token === '{') {
+                $depth++;
+            }
+            if ($token === '}') {
+                $depth--;
+            }
 
             if ($token === ';' && $importing) {
                 $importing = false;
@@ -627,9 +641,15 @@ function names(string $body, string $class): bool
 
     foreach ($tokens as $at => $token) {
         if (! is_array($token)) {
-            $token === '{' && $depth++;
-            $token === '}' && $depth--;
-            $token === ';' && $importing = false;
+            if ($token === '{') {
+                $depth++;
+            }
+            if ($token === '}') {
+                $depth--;
+            }
+            if ($token === ';') {
+                $importing = false;
+            }
 
             continue;
         }
@@ -958,11 +978,15 @@ function namespaced(string $from, string $to): void
         return;
     }
 
-    is_dir(dirname($to)) || mkdir(dirname($to), 0755, true);
+    if (! is_dir(dirname($to))) {
+        mkdir(dirname($to), 0755, true);
+    }
 
     exec(sprintf('git -C %s mv %s %s 2>/dev/null', escapeshellarg(ROOT), escapeshellarg($from), escapeshellarg($to)), $out, $status);
 
-    $status === 0 || rename($from, $to);
+    if ($status !== 0) {
+        rename($from, $to);
+    }
 
     $namespace = namespaceOf($to);
     $body = file_get_contents($to);
@@ -978,7 +1002,9 @@ function deleted(string $file): void
 {
     exec(sprintf('git -C %s rm -q %s 2>/dev/null', escapeshellarg(ROOT), escapeshellarg($file)), $out, $status);
 
-    $status === 0 || unlink($file);
+    if ($status !== 0) {
+        unlink($file);
+    }
 
     @rmdir(dirname($file));
 }
@@ -1350,7 +1376,9 @@ function selfTest(): int
         $got = names("<?php\n".$code, $class);
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         $say($got === $want, $why, $want, $got);
     }
@@ -1359,7 +1387,9 @@ function selfTest(): int
         $got = renamed($body, $old, $new);
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         printf("  %s  %-48s %s\n", $got === $want ? 'ok  ' : 'FAIL', $why, $got === $want ? '' : sprintf('(wanted %s, got %s)', var_export($want, true), var_export($got, true)));
     }
@@ -1368,7 +1398,9 @@ function selfTest(): int
         $got = repointed($body, $from, $onward);
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         printf("  %s  %-48s %s\n", $got === $want ? 'ok  ' : 'FAIL', $why, $got === $want ? '' : sprintf('(wanted %s, got %s)', var_export($want, true), var_export($got, true)));
     }
@@ -1377,7 +1409,9 @@ function selfTest(): int
         $got = destination($from, $qualified);
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         printf("  %s  %-48s %s\n", $got === $want ? 'ok  ' : 'FAIL', $why, $got === $want ? '' : sprintf('(wanted %s, got %s)', relative($want), relative($got)));
     }
@@ -1386,7 +1420,9 @@ function selfTest(): int
         $got = isUnder($namespace, $root);
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         $say($got === $want, $why, $want, $got);
     }
@@ -1395,7 +1431,9 @@ function selfTest(): int
         $got = namesClass($body, $qualified);
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         $say($got === $want, $why, $want, $got);
     }
@@ -1404,7 +1442,9 @@ function selfTest(): int
         $got = deduplicated($body);
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         printf("  %s  %-48s %s\n", $got === $want ? 'ok  ' : 'FAIL', $why, $got === $want ? '' : sprintf('(wanted %s, got %s)', var_export($want, true), var_export($got, true)));
     }
@@ -1413,7 +1453,9 @@ function selfTest(): int
         $got = unparsable(['proving' => $body]) === [];
         $ran++;
 
-        $got === $want || $failed++;
+        if ($got !== $want) {
+            $failed++;
+        }
 
         $say($got === $want, $why, $want, $got);
     }

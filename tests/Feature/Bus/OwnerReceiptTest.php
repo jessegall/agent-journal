@@ -19,7 +19,6 @@ use Illuminate\Http\Response;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
-use Tests\Support\TestIds;
 
 /**
  * A user's keyed write is receipted like an agent's, in the user's own key space: it runs once, a changed payload
@@ -35,7 +34,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         parent::setUp();
 
         $this->installCommandModules();
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
     }
 
     protected function tearDown(): void

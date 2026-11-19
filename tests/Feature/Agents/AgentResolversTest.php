@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\SessionResolver;
@@ -17,7 +16,9 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\SessionOption;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
@@ -27,6 +28,7 @@ use Tests\TestCase;
  */
 final class AgentResolversTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links'];
@@ -56,7 +58,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_the_user_sees_every_running_session_with_its_agent_name(): void
     {
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
 
         $this->assertSame(
             [[$this->running->id, 'Builder'], [$this->reviewing->id, 'Reviewer']],
@@ -73,7 +75,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_a_running_session_gives_its_stack_target(): void
     {
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
 
         $target = $this->sessions()->requireActive($this->running->id);
 
@@ -96,7 +98,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_labels_cover_the_visible_agents_and_leave_out_the_rest(): void
     {
-        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+        $this->actAs(TestActors::user(7));
         $labels = $this->app->make(AgentResolver::class)->labelsFor([$this->builder->id, TestIds::of(999999), $this->reviewer->id]);
         $this->assertSame(['Builder', 'Reviewer'], [$labels[$this->builder->id]->name, $labels[$this->reviewer->id]->name]);
         $this->assertArrayNotHasKey(TestIds::of(999999), $labels);
@@ -110,11 +112,6 @@ final class AgentResolversTest extends TestCase
         $this->expectException(ActorContextMissing::class);
 
         $this->sessions()->active();
-    }
-
-    private function actAs(ActorContext $actor): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
     /**

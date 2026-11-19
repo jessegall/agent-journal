@@ -66,7 +66,7 @@ final readonly class OutputSummaries
         if ($receipt->isDefined()) {
             return PartResult::receipted($receipt->get()->outcome->value, $receipt->get()->receiptId);
         }
-        $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+        $assessment = OutputAssessment::latestOf($part);
         if ($assessment === null) {
             return PartResult::unavailable(['no assessment']);
         }

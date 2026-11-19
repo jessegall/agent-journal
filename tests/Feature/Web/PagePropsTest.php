@@ -45,7 +45,7 @@ final class PagePropsTest extends TestCase
         $this->calls = new ReaderCalls();
         $this->app->instance(ReaderCalls::class, $this->calls);
         $this->app->instance(UiDeclarations::class, $this->declarations());
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
     }
 
     public function test_a_hidden_window_gives_a_denied_result_without_calling_its_reader(): void
@@ -95,7 +95,7 @@ final class PagePropsTest extends TestCase
     {
         $first = $this->homeProp('/', 'window_shelf_shelves');
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(TestIds::of(2));
+        $this->startTestUserRequest(2);
         $second = $this->homeProp('/', 'window_shelf_shelves');
 
         $this->assertInstanceOf(ReadyWindow::class, $first);

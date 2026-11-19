@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -19,9 +16,10 @@ use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -30,6 +28,7 @@ use Tests\TestCase;
  */
 final class SkillPreviewTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
 
@@ -43,8 +42,8 @@ final class SkillPreviewTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
+        $this->actAs(TestActors::user(7));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileBase::readOnlyHelper(), 'Review.'),
         )));

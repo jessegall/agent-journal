@@ -20,6 +20,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -86,7 +87,7 @@ final class LinkRemovalTest extends TestCase
     {
         $share = Share::query()->findOrFail($this->member->share_id);
         $approved = new ShareLinkedCandidate(new ShareRecordCard($this->identityOf($this->target), 'Target', '1'), $this->identityOf($this->source), $this->member->link_id);
-        $other = new ShareLinkedCandidate(new ShareRecordCard(new RecordIdentity('core.agent', TestIds::of(3)), 'Other', '1'), $this->identityOf($this->source), TestIds::of(4));
+        $other = new ShareLinkedCandidate(new ShareRecordCard(TestActors::record('core.agent', 3), 'Other', '1'), $this->identityOf($this->source), TestIds::of(4));
         $candidates = new ShareCandidates(new ShareRecordCard($this->identityOf($this->source), 'Source', '1'), [$approved, $other]);
 
         $this->assertSame([$other], $candidates->notSharedYet(ShareMember::approvedLinkIdsOf($share)));

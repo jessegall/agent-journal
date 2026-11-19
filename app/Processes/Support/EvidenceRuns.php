@@ -81,7 +81,7 @@ final readonly class EvidenceRuns
         $classification = $this->classify($permit->source_line, $permit->working_folder, $permit->candidate_rules);
         $permit->checkUse($runner, $requestId, $this->digestOf($classification));
         if ($permit->wasStartedBy($requestId)) {
-            return ProcessRun::query()->withoutGlobalScopes()->findOrFail($permit->process_run_id);
+            return ProcessRun::ofAnyActor($permit->process_run_id);
         }
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();
         if (! $timing->isAllowed()) {

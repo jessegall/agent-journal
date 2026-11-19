@@ -41,6 +41,7 @@ use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 use Throwable;
@@ -60,7 +61,7 @@ final class AgentStacksTest extends TestCase
         Schema::dropIfExists('domain_writes');
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));
 
-        $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
+        $this->target = TestActors::stack(1, 10);
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks));
@@ -217,7 +218,7 @@ final class AgentStacksTest extends TestCase
     {
         $this->expectException(StackTargetRefused::class);
 
-        $this->transaction()->run(fn () => $this->stacks()->push(new StackTarget(TestIds::of(2), TestIds::of(20)), $this->task(42)));
+        $this->transaction()->run(fn () => $this->stacks()->push(TestActors::stack(2, 20), $this->task(42)));
     }
 
     public function test_a_push_without_a_stack_or_onto_a_closed_stack_is_refused(): void

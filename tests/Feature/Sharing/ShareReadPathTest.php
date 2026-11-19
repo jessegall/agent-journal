@@ -13,6 +13,7 @@ use App\Sharing\Support\ShareReadPath;
 use App\Sharing\Support\ShareRecordRegistry;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\Sharing\RegistersShareDomains;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -35,14 +36,14 @@ final class ShareReadPathTest extends TestCase
         $this->registerShareDomain(PamphletsDomain::class);
         $this->records = $this->app->make(ShareRecordRegistry::class);
         $this->records->checkRelations();
-        $this->root = new RecordIdentity('pamphlets.pamphlet', TestIds::of(1));
+        $this->root = TestActors::record('pamphlets.pamphlet', 1);
     }
 
     public function test_a_declared_step_leads_to_its_record(): void
     {
         $path = ShareReadPath::parse('notes/pamphlets.note/'.TestIds::of(2), $this->root, $this->records);
 
-        $this->assertEquals(new RecordIdentity('pamphlets.note', TestIds::of(2)), $path->target($this->root));
+        $this->assertEquals(TestActors::record('pamphlets.note', 2), $path->target($this->root));
         $this->assertEquals($this->root, ShareReadPath::parse('', $this->root, $this->records)->target($this->root));
     }
 

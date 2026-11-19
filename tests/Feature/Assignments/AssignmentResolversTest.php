@@ -13,7 +13,6 @@ use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Page;
-use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
@@ -21,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -94,8 +93,8 @@ final class AssignmentResolversTest extends TestCase
     {
         $resolver = $this->app->make(AssignmentResolver::class);
 
-        $this->assertThrows(fn () => $resolver->assignmentsFor(array_map(fn (int $number) => new RecordIdentity('tasks.task', TestIds::of($number)), range(1, 101))), InvalidAssignmentPage::class);
-        $this->assertThrows(fn () => $resolver->assignmentsFor([new RecordIdentity('notes.note', TestIds::of(1))]), AssignmentTypeUnavailable::class);
+        $this->assertThrows(fn () => $resolver->assignmentsFor(array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 101))), InvalidAssignmentPage::class);
+        $this->assertThrows(fn () => $resolver->assignmentsFor([TestActors::record('notes.note', 1)]), AssignmentTypeUnavailable::class);
     }
 
     public function test_names_come_from_each_actor_types_owner(): void
@@ -113,6 +112,6 @@ final class AssignmentResolversTest extends TestCase
 
         $this->expectException(ActorContextMissing::class);
 
-        $this->app->make(AssignmentResolver::class)->assignmentsFor([new RecordIdentity('tasks.task', TestIds::of(1))]);
+        $this->app->make(AssignmentResolver::class)->assignmentsFor([TestActors::record('tasks.task', 1)]);
     }
 }

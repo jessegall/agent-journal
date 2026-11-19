@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Reads;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Exceptions\RepeatedReadRefused;
@@ -13,7 +12,7 @@ use App\Reads\Support\ScopedReadMeter;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -29,7 +28,7 @@ final class RepeatedReadTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(TestActors::user(1), new OwnerAuthority('test'));
         Task::factory()->create(['title' => 'First']);
         Task::factory()->create(['title' => 'Second']);
     }

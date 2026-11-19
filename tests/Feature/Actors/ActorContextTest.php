@@ -9,19 +9,21 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 final class ActorContextTest extends TestCase
 {
+    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_a_request_without_an_authenticated_actor_has_none(): void
@@ -33,7 +35,7 @@ final class ActorContextTest extends TestCase
 
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->actAs(TestActors::user(7));
         $this->assertSame([ActorType::User, TestIds::of(7)], [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id]);
 
         $this->app->forgetScopedInstances();

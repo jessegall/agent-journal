@@ -6,7 +6,7 @@ namespace Tests\Feature\Web;
 
 use App\Web\Support\UserChannel;
 use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -16,17 +16,8 @@ use Tests\TestCase;
  */
 final class UserChannelTest extends TestCase
 {
+    use ActsAsOwner;
     use RefreshHookDatabase;
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_the_owner_joins_their_own_channel_only(): void
     {

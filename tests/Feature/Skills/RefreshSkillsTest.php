@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -27,10 +24,11 @@ use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillOwner;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\RunsTrustedCommands;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -39,6 +37,7 @@ use Tests\TestCase;
  */
 final class RefreshSkillsTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
     use RunsTrustedCommands;
@@ -79,7 +78,7 @@ final class RefreshSkillsTest extends TestCase
         $this->refresh();
         SkillPublication::query()->where('session_id', $session->id)->firstOrFail()->supersede();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->actAs(TestActors::user(7));
         $this->app->make(CommandBus::class)->run(new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')));
 
         $pending = SkillPublication::query()->where('session_id', $session->id)->where('state', PublicationState::Pending->value)->firstOrFail();
@@ -90,7 +89,7 @@ final class RefreshSkillsTest extends TestCase
 
     public function test_only_the_system_refreshes(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->actAs(TestActors::user(7));
 
         $this->expectException(CommandNotRegistered::class);
 

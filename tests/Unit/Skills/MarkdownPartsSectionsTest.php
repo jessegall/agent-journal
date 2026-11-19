@@ -10,6 +10,7 @@ use App\Skills\Values\SkillOwner;
 use App\Skills\Values\SkillSection;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -18,21 +19,14 @@ use Tests\TestCase;
  */
 final class MarkdownPartsSectionsTest extends TestCase
 {
-    private string $root;
+    use UsesTemporaryFolder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/skills-'.bin2hex(random_bytes(6));
+        $this->makeTemporaryFolder('skills');
         File::makeDirectory($this->root.'/resources/skills', recursive: true);
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_the_text_under_the_title_is_the_purpose_and_each_heading_is_a_section_in_file_order(): void
@@ -136,7 +130,7 @@ final class MarkdownPartsSectionsTest extends TestCase
         $this->expectException(SkillSourceInvalid::class);
         $this->expectExceptionMessage('nope.md does not exist');
 
-        (new MarkdownParts())->sectionsOf('nope.md', $this->owner(), 'Shell');
+        new MarkdownParts()->sectionsOf('nope.md', $this->owner(), 'Shell');
     }
 
     public function test_a_file_outside_the_folder_is_refused(): void
@@ -144,7 +138,7 @@ final class MarkdownPartsSectionsTest extends TestCase
         $this->expectException(SkillSourceInvalid::class);
         $this->expectExceptionMessage('is not a relative path inside');
 
-        (new MarkdownParts())->sectionsOf('../secrets.md', $this->owner(), 'Shell');
+        new MarkdownParts()->sectionsOf('../secrets.md', $this->owner(), 'Shell');
     }
 
     public function test_a_file_that_is_not_text_is_refused_as_unreadable(): void
@@ -167,7 +161,7 @@ final class MarkdownPartsSectionsTest extends TestCase
      */
     private function sections(string $name): array
     {
-        return (new MarkdownParts())->sectionsOf('shell.md', $this->owner(), $name);
+        return new MarkdownParts()->sectionsOf('shell.md', $this->owner(), $name);
     }
 
     private function owner(): SkillOwner

@@ -14,6 +14,7 @@ use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -82,6 +83,6 @@ final class RecordVisibilityTest extends TestCase
     {
         $this->startRequestAs($this->writer->id, TestIds::of(50));
 
-        $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible(new RecordIdentity('ledger.entry', TestIds::of(1))));
+        $this->assertFalse($this->app->make(RecordVisibility::class)->isVisible(TestActors::record('ledger.entry', 1)));
     }
 }

@@ -84,7 +84,7 @@ final readonly class MessageRecords implements ConversationResolver
     {
         $this->authorizer->authorize(MessagePolicy::class, Message::class, MessageAbility::Inspect);
 
-        return $this->page(Message::query()->withoutGlobalScopes()->ofInbox($inboxId), $olderCursor, $limit);
+        return $this->page(Message::query()->acrossInboxes()->ofInbox($inboxId), $olderCursor, $limit);
     }
 
     public function sitsAt(string $inboxId): bool

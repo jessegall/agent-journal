@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainEntry;
 use App\Processes\Commands\ApproveRuleBundle;
 use App\Processes\Commands\ApproveRuleProposal;
@@ -33,8 +29,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -43,6 +39,7 @@ use Tests\TestCase;
  */
 final class ActiveRulesTest extends TestCase
 {
+    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_a_module_bundle_classifies_only_after_the_owner_activates_its_exact_digest(): void
@@ -137,13 +134,5 @@ final class ActiveRulesTest extends TestCase
         $classifier = $this->app->make(CommandClassifier::class);
 
         return $classifier->classify($tree, ExecutionContext::inFolder(base_path()))->isKnown();
-    }
-
-    private function asUser(object $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Exceptions\SkillRevisionImmutable;
@@ -17,7 +16,7 @@ use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -74,7 +73,7 @@ final class StoredSkillModelsTest extends TestCase
         $this->assertNotNull($earlier);
         $this->assertTrue($earlier->sentWith($this->draft('First.')->digest()));
         $this->assertFalse($earlier->sentWith($this->draft('Other.')->digest()));
-        $this->assertNull(SkillRequest::earlier(new ActorIdentity(ActorType::User, TestIds::of(9)), 'request-1'));
+        $this->assertNull(SkillRequest::earlier(TestActors::userIdentity(9), 'request-1'));
     }
 
     public function test_visibility_keeps_another_environment_out(): void
@@ -89,7 +88,7 @@ final class StoredSkillModelsTest extends TestCase
 
     private function author(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::User, TestIds::of(7));
+        return TestActors::userIdentity(7);
     }
 
     private function draft(string $text): SkillDraft

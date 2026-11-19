@@ -567,7 +567,9 @@ function selfTest(): int
             $held = $held && file_get_contents($root.'/'.$file) === $code;
         }
 
-        $held || $failed++;
+        if (! $held) {
+            $failed++;
+        }
         printf("  %s  %s\n", $held ? 'ok  ' : 'FAIL', $why);
     }
 

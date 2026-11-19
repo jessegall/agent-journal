@@ -24,7 +24,11 @@ use Tests\Fixtures\Bus\Shop\Handlers\UnreadableRuleItemHandler;
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 final readonly class UnreadableRuleItem extends Command implements HasAuthorizationSubject
 {
-    public function __construct(#[Max(new stdClass)] public int $count) {}
+    public function __construct(
+        /** @phpstan-ignore argument.type (wrong on purpose: the registry must refuse a rule it cannot read) */
+        #[Max(new stdClass)]
+        public int $count,
+    ) {}
 
     /**
      * @return class-string

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\StopCondition;
 use App\Bus\Contracts\CommandBus;
@@ -25,8 +22,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Profiles\TestProposals;
+use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -36,16 +33,10 @@ use Tests\TestCase;
  */
 final class ProfileResolverTest extends TestCase
 {
+    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-    }
 
     public function test_the_revision_table_holds_the_launch_policy_columns(): void
     {

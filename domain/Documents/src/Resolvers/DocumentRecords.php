@@ -57,7 +57,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function revisions(int $documentNumber, int $page): array
     {
-        $document = Document::query()->sharedPublished()->where('number', $documentNumber)->first() ?? throw DocumentMissing::numbered($documentNumber);
+        $document = self::published($documentNumber);
 
         return array_values($document->revisions()->whereNotNull('closed_at')->orderBy('number')->forPage($page, 50)->get()
             ->map(fn (DocumentRevision $revision) => $revision->card())->all());
@@ -65,7 +65,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function revision(int $documentNumber, int $revisionNumber): RevisionView
     {
-        $document = Document::query()->sharedPublished()->with('currentRevision')->where('number', $documentNumber)->first() ?? throw DocumentMissing::numbered($documentNumber);
+        $document = self::published($documentNumber);
         $revision = $document->revisions()->whereNotNull('closed_at')->where('number', $revisionNumber)->first() ?? throw DocumentMissing::numbered($documentNumber);
 
         return $revision->view($document);
@@ -73,7 +73,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function read(int $number, TextSelection $selection, int|null $revision = null, int|null $expectedRevision = null): RecordText
     {
-        $document = Document::query()->sharedPublished()->with('currentRevision')->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
+        $document = self::published($number);
         $current = $document->currentRevisionOrFail()->number;
 
         if ($expectedRevision !== null && $expectedRevision !== $current) {
@@ -87,7 +87,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function show(int $number): DocumentView
     {
-        $document = Document::query()->sharedPublished()->with('currentRevision')->where('number', $number)->first();
+        $document = self::findPublished($number);
 
         return $document?->view() ?? throw DocumentMissing::numbered($number);
     }
@@ -104,7 +104,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function inspect(int $number): RecordInspection
     {
-        $document = Document::query()->sharedPublished()->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
+        $document = self::published($number);
 
         return RecordInspection::from([
             'label' => "doc {$number}",
@@ -118,8 +118,21 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function links(int $number): array
     {
-        $document = Document::query()->sharedPublished()->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
+        $document = self::published($number);
 
         return $this->records->linkedCards($document);
+    }
+
+    /**
+     * The published document with that number, with its current revision; none when it is missing or hidden.
+     */
+    private static function findPublished(int $number): Document|null
+    {
+        return Document::query()->sharedPublished()->with('currentRevision')->where('number', $number)->first();
+    }
+
+    private static function published(int $number): Document
+    {
+        return self::findPublished($number) ?? throw DocumentMissing::numbered($number);
     }
 }

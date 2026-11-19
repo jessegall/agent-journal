@@ -91,6 +91,17 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
+     * Every inbox's messages, for the journal's own work on a message it already holds: it lifts the visibility limit.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function acrossInboxes(Builder $query): void
+    {
+        $query->withoutGlobalScope(MessageVisibility::class);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     protected function casts(): array

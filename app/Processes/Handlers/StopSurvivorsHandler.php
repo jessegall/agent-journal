@@ -17,7 +17,7 @@ final readonly class StopSurvivorsHandler implements CommandHandler
      */
     public function handle(StopSurvivors $command): string
     {
-        $run = ProcessRun::query()->withoutGlobalScopes()->whereKey($command->runId)->lockForUpdate()->sole();
+        $run = ProcessRun::query()->acrossActors()->whereKey($command->runId)->lockForUpdate()->sole();
         if ($run->lifecycle !== LifecycleState::Lost) {
             throw RetryRefused::notLost($run->id);
         }

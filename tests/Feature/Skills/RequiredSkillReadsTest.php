@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\LaunchStarted;
 use App\Agents\Models\Agent;
@@ -29,12 +26,13 @@ use App\Skills\Listeners\RemindRequiredSkills;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
 use Domain\Access\Support\AccessSettings;
-use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\RecordingStack;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -43,7 +41,9 @@ use Tests\TestCase;
  */
 final class RequiredSkillReadsTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
+    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_receipts',
@@ -62,17 +62,13 @@ final class RequiredSkillReadsTest extends TestCase
 
     private const string REMINDER = 'Read the required skill user-guide';
 
-    private string $root;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/journal-skills-'.bin2hex(random_bytes(6));
-        File::makeDirectory($this->root, recursive: true);
-        $this->root = (string) realpath($this->root);
+        $this->makeTemporaryFolder('journal-skills');
         $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->app->instance(AgentStack::class, new RecordingStack());
         $this->artisan('skill:make', [
             'key' => 'user-guide',
@@ -80,13 +76,6 @@ final class RequiredSkillReadsTest extends TestCase
             '--body' => "# Guide\n\nFirst text.\n",
         ])->assertSuccessful();
         $this->app->make(SkillPublishing::class)->refresh();
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_an_edited_required_skill_is_asked_for_again_and_reading_it_clears_the_reminder(): void
@@ -111,7 +100,7 @@ final class RequiredSkillReadsTest extends TestCase
 
     private function launchedReviewer(): AgentSession
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->actAs(TestActors::user(7));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',

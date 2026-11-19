@@ -55,7 +55,7 @@ final readonly class PartAssessments
         $replayed = $this->replays->replay($pair->reader, $pair->contract, $part);
         ReaderPosition::replay($part, $pair->reader, $replayed->consumed);
         $validation = $this->validator->validate($part, $replayed->assessment, $replayed->consumed, $pair->contract);
-        $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
+        $run = ProcessRun::ofAnyActor($part->process_run_id);
         $assessment = OutputAssessment::record($run, $part, $pair->declaration, $pair->reader, $replayed, $validation);
         $this->updates->settled($part);
         if (! $validation->isValid()) {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Enums\RefusalCode;
@@ -20,7 +19,7 @@ use App\Processes\Values\ToolVersions;
 use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -84,7 +83,7 @@ final class ShippedReaderInstallTest extends TestCase
     private function install(ToolVersions $versions): array
     {
         $this->app->forgetScopedInstances();
-        $owner = ActorContext::forUser(TestIds::of(7));
+        $owner = TestActors::user(7);
         $this->app->make(CurrentActorSetter::class)->set($owner, new OwnerAuthority('test'));
 
         return $this->app->make(ShippedReaderInstaller::class)->install($versions, base_path());

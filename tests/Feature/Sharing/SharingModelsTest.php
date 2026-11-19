@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\GatewayEndpointState;
 use App\Sharing\Enums\GatewayOperationType;
@@ -26,6 +24,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -71,7 +70,7 @@ final class SharingModelsTest extends TestCase
     public function test_a_preview_keeps_its_selection_and_a_checksum_over_it(): void
     {
         $configuration = $this->configuration();
-        $target = new ShareSelectedTarget(new RecordIdentity('documents.document', TestIds::of(2)), TestIds::of(3), '4');
+        $target = new ShareSelectedTarget(TestActors::record('documents.document', 2), TestIds::of(3), '4');
         $preview = SharePreview::createFor(TestIds::of(9), $this->root(), [$target], $configuration);
         $other = SharePreview::createFor(TestIds::of(9), $this->root(), [], $configuration);
 
@@ -98,15 +97,15 @@ final class SharingModelsTest extends TestCase
 
     public function test_a_proposal_member_and_audit_are_made_through_their_methods(): void
     {
-        $proposal = Share::propose($this->root(), new ActorIdentity(ActorType::Agent, TestIds::of(5)), CarbonImmutable::now()->addDays(7));
-        $member = ShareMember::approve($proposal, $this->root(), new ShareSelectedTarget(new RecordIdentity('documents.report', TestIds::of(7)), TestIds::of(8), '1'));
-        $audit = ShareAudit::recordFor($proposal, ShareAuditType::Created, new ActorIdentity(ActorType::Agent, TestIds::of(5)), null);
-        $change = ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, new ActorIdentity(ActorType::User, TestIds::of(9)), 'disabled');
+        $proposal = Share::propose($this->root(), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(7));
+        $member = ShareMember::approve($proposal, $this->root(), new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1'));
+        $audit = ShareAudit::recordFor($proposal, ShareAuditType::Created, TestActors::agentIdentity(5), null);
+        $change = ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, TestActors::userIdentity(9), 'disabled');
 
         $this->assertSame(ShareState::Proposed, $proposal->fresh()?->state);
         $this->assertNull($proposal->token_digest);
         $this->assertSame(0, $member->scope_version);
-        $this->assertEquals(new RecordIdentity('documents.report', TestIds::of(7)), $member->target());
+        $this->assertEquals(TestActors::record('documents.report', 7), $member->target());
         $this->assertSame($proposal->id, $audit->share_id);
         $this->assertNull($change->share_id);
         $this->assertSame(ShareAuditType::GatewayChanged, $change->fresh()?->type);
@@ -114,7 +113,7 @@ final class SharingModelsTest extends TestCase
 
     private function root(): RecordIdentity
     {
-        return new RecordIdentity('documents.document', TestIds::of(1));
+        return TestActors::record('documents.document', 1);
     }
 
     private function configuration(): ShareGatewayConfiguration

@@ -8,9 +8,9 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorStore;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
-use App\Records\Support\RecordIdentity;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -26,19 +26,19 @@ final class SignedInScopeTest extends TestCase
     {
         parent::setUp();
 
-        AssignmentRecord::insertUnlessHeld(new RecordIdentity('tasks.task', TestIds::of(1)), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(2)));
+        AssignmentRecord::insertUnlessHeld(TestActors::record('tasks.task', 1), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(2)));
     }
 
     public function test_a_signed_in_user_and_agent_see_assignments_and_the_system_sees_none(): void
     {
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
         $store = $this->app->make(ActorStore::class);
 
         $this->assertCount(1, AssignmentRecord::query()->get());
         $this->assertCount(0, $store->actAsSystem('test', fn () => AssignmentRecord::query()->get()));
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
+        $this->startTestAgentRequest(2, 20);
 
         $this->assertCount(1, AssignmentRecord::query()->get());
     }

@@ -25,8 +25,7 @@ use App\Desks\Models\DeskSeat;
 use App\Desks\Support\SeatChange;
 use App\Desks\Support\SeatChangeResult;
 use Closure;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -38,6 +37,7 @@ use Tests\TestCase;
  */
 final class DeskProvisioningTest extends TestCase
 {
+    use ActsAsOwner;
     use CommitsHookRows;
     use StartsAgentRequests;
 
@@ -58,9 +58,7 @@ final class DeskProvisioningTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
+        $this->startUserRequestAs($this->owner->id);
     }
 
     public function test_installing_twice_creates_main_and_the_source_desks_once(): void

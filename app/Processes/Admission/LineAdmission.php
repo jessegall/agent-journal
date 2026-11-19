@@ -78,7 +78,7 @@ final readonly class LineAdmission implements ShellAdmission
     ): Admission {
         $actor = ActorIdentity::of($this->actors->actor());
         $tree = $this->syntax->parse($line, $dialect);
-        $earlier = ProcessRun::query()->withoutGlobalScopes()->where('admission_id', $requestKey)->first();
+        $earlier = ProcessRun::query()->acrossActors()->where('admission_id', $requestKey)->first();
         if ($earlier !== null) {
             return $this->repeated($earlier, $tree, $line, $actor);
         }

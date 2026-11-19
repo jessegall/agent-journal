@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Bus\Contracts\Command;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Commands\RecordGatewayHealth;
 use App\Sharing\Commands\RecordGatewayOutcome;
@@ -22,12 +20,12 @@ use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ClaimedGatewayOperation;
-use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\TestIds;
+use Tests\Support\Sharing\TestShares;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -53,7 +51,7 @@ final class GatewayRuntimeTest extends TestCase
         parent::setUp();
 
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->share = Share::grant(new RecordIdentity('binders.binder', TestIds::of(1)), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
         ShareGatewayOperation::request($this->configuration, GatewayOperationType::Open);
     }
 
@@ -156,13 +154,6 @@ final class GatewayRuntimeTest extends TestCase
     private function health(string $runId, int $endpointVersion): void
     {
         $this->asSystem(new RecordGatewayHealth($runId, $this->configuration->id, $endpointVersion, true));
-    }
-
-    private function asSystem(Command $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-
-        return $this->throughEntry($command);
     }
 
     /**

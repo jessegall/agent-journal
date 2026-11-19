@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
@@ -19,7 +18,7 @@ use Inertia\Testing\AssertableInertia;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -98,7 +97,7 @@ final class GatewaySettingsPageTest extends TestCase
     {
         $this->configure(FakeShareGateway::KEY, FakeShareGateway::PUBLIC_ORIGIN, [])->assertStatus(303);
         $configuration = ShareGatewayConfiguration::query()->sole();
-        $share = Share::grant(new RecordIdentity('binders.binder', TestIds::of(1)), $this->owner->id, $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $share = Share::grant(TestActors::record('binders.binder', 1), $this->owner->id, $configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
 
         $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.revisions.0.dependentShares.0.id', $share->id));

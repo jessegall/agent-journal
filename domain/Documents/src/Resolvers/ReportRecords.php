@@ -48,21 +48,21 @@ final readonly class ReportRecords implements ReportResolver
 
     public function read(int $number, TextSelection $selection): RecordText
     {
-        $report = Report::query()->sharedPublished()->where('number', $number)->first() ?? throw ReportMissing::numbered($number);
+        $report = self::published($number);
 
         return RecordReading::read("report {$number}", $report, $selection);
     }
 
     public function show(int $number): ReportView
     {
-        $report = Report::query()->sharedPublished()->where('number', $number)->first();
+        $report = self::findPublished($number);
 
         return $report?->view() ?? throw ReportMissing::numbered($number);
     }
 
     public function inspect(int $number): RecordInspection
     {
-        $report = Report::query()->sharedPublished()->where('number', $number)->first() ?? throw ReportMissing::numbered($number);
+        $report = self::published($number);
 
         return RecordInspection::from([
             'label' => "report {$number}",
@@ -76,8 +76,21 @@ final readonly class ReportRecords implements ReportResolver
 
     public function links(int $number): array
     {
-        $report = Report::query()->sharedPublished()->where('number', $number)->first() ?? throw ReportMissing::numbered($number);
+        $report = self::published($number);
 
         return $this->records->linkedCards($report);
+    }
+
+    /**
+     * The published report with that number; none when it is missing or hidden.
+     */
+    private static function findPublished(int $number): Report|null
+    {
+        return Report::query()->sharedPublished()->where('number', $number)->first();
+    }
+
+    private static function published(int $number): Report
+    {
+        return self::findPublished($number) ?? throw ReportMissing::numbered($number);
     }
 }

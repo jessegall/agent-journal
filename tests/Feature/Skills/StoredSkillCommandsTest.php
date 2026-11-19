@@ -7,7 +7,6 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CreateSkill;
@@ -24,6 +23,7 @@ use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillRevisionResult;
 use Illuminate\Support\Facades\Event;
+use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
@@ -36,16 +36,10 @@ use Throwable;
  */
 final class StoredSkillCommandsTest extends TestCase
 {
+    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-    }
 
     public function test_create_gives_revision_1_and_revise_gives_2_keeping_1_readable(): void
     {

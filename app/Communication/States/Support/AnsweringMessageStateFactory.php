@@ -34,7 +34,7 @@ final readonly class AnsweringMessageStateFactory implements StateLoader
             fn (ClaimAuthorization $proof) => $proof->sourceIds(),
             array_values($proofs),
         )));
-        $messages = Message::query()->withoutGlobalScopes()
+        $messages = Message::query()->acrossInboxes()
             ->whereKey(array_map(fn ($claim) => $claim->record->id, array_values($claims)))
             ->readLimit(max(1, count($claims)))
             ->get()

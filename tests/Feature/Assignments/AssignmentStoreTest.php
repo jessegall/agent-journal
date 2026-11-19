@@ -21,6 +21,7 @@ use PDOException;
 use ReflectionProperty;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -46,10 +47,10 @@ final class AssignmentStoreTest extends TestCase
     {
         parent::setUp();
 
-        $this->task = new RecordIdentity('tasks.task', TestIds::of(12));
+        $this->task = TestActors::record('tasks.task', 12);
         $this->builder = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7));
         $this->reviewer = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(8));
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
     }
 
     protected function tearDown(): void
@@ -83,10 +84,10 @@ final class AssignmentStoreTest extends TestCase
 
     public function test_releasing_an_actor_removes_only_its_rows_and_reports_each_change(): void
     {
-        $plan = new RecordIdentity('plans.plan', TestIds::of(3));
+        $plan = TestActors::record('plans.plan', 3);
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder));
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($plan, $this->builder));
-        $kept = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld(new RecordIdentity('tasks.task', TestIds::of(13)), $this->reviewer));
+        $kept = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld(TestActors::record('tasks.task', 13), $this->reviewer));
 
         $result = $this->inTransaction(fn (AssignmentStore $store) => $store->releaseAll($this->builder));
 
@@ -112,7 +113,7 @@ final class AssignmentStoreTest extends TestCase
         $assignment = $this->app->make(AssignmentTransaction::class)->run(function () use (&$attempts, $other) {
             $attempts++;
             $store = $this->app->make(AssignmentStore::class);
-            $store->lockCurrent(new RecordIdentity('tasks.task', TestIds::of(99)));
+            $store->lockCurrent(TestActors::record('tasks.task', 99));
 
             if ($attempts === 1) {
                 $other->table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->reviewer->id, 'created_at' => now(), 'updated_at' => now()]);

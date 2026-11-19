@@ -27,4 +27,19 @@ trait RunsTrustedCommands
 
         return $this->app->make(ActorStore::class)->actAsSystem('test', fn (): mixed => $dispatcher->run($command));
     }
+
+    /**
+     * Runs the command as the system on a fresh request: the scoped instances of the last one are forgotten first.
+     *
+     * @template TResult
+     *
+     * @param  Command<TResult>  $command
+     * @return TResult
+     */
+    private function asSystem(Command $command): mixed
+    {
+        $this->app->forgetScopedInstances();
+
+        return $this->throughEntry($command);
+    }
 }

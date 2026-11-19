@@ -9,7 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Communication\Models\Message;
@@ -32,6 +31,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 use Tests\Support\WritesInboxMessages;
@@ -174,7 +174,7 @@ final class RecordLinksTest extends TestCase
 
     private function messageFor(int $agent): Message
     {
-        $recipient = new StackTarget(TestIds::of($agent), TestIds::of($agent * 10))->actorIdentity();
+        $recipient = TestActors::stack($agent, $agent * 10)->actorIdentity();
 
         return $this->askInboxOf($recipient, "Private plan\nDetails.");
     }
@@ -196,7 +196,7 @@ final class RecordLinksTest extends TestCase
     private function actAsUser(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
+            TestActors::user(1),
             new OwnerAuthority('test'),
         );
     }

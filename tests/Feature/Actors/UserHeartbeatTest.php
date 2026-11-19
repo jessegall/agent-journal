@@ -8,8 +8,8 @@ use App\Actors\Models\UserPresence;
 use App\Actors\Support\DatabaseClock;
 use App\Actors\Support\PresenceWindow;
 use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Schema;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -19,19 +19,10 @@ use Tests\TestCase;
  */
 final class UserHeartbeatTest extends TestCase
 {
+    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = ['users', 'user_presences'];
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_a_signed_in_user_beat_writes_the_one_row_of_that_user(): void
     {

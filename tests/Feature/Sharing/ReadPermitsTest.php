@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Reads\Contracts\ReadMeter;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Exceptions\ReadPermitMissing;
 use App\Sharing\Exceptions\ShareLinkRefused;
 use App\Sharing\Models\Share;
@@ -16,6 +15,7 @@ use App\Sharing\Support\ReadPermits;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -37,7 +37,7 @@ final class ReadPermitsTest extends TestCase
 
         $this->token = ShareToken::generate();
         $configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
-        $this->share = Share::grant(new RecordIdentity('documents.document', TestIds::of(1)), TestIds::of(9), $configuration, $this->token, CarbonImmutable::now()->subMinute());
+        $this->share = Share::grant(TestActors::record('documents.document', 1), TestIds::of(9), $configuration, $this->token, CarbonImmutable::now()->subMinute());
     }
 
     public function test_a_valid_token_yields_a_permit_taken_once_even_for_an_expired_share(): void

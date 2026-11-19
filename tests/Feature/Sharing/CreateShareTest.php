@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\RequestKeyConflict;
 use App\Bus\Exceptions\RequestKeyMissing;
@@ -39,7 +38,9 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
+use Tests\Support\Sharing\TestShares;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -66,16 +67,16 @@ final class CreateShareTest extends TestCase
 
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->instance(BinderPublications::class, new BinderPublications());
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->root = new RecordIdentity('binders.binder', TestIds::of(1));
+        $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102] as $number) {
             Link::recorded($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
 
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
     }
 
     public function test_the_owner_creates_a_share_from_a_fresh_preview_and_reads_its_url(): void
@@ -94,13 +95,13 @@ final class CreateShareTest extends TestCase
         $this->assertEqualsWithDelta(CarbonImmutable::now()->addMinutes(ShareDuration::STANDARD_MINUTES)->getTimestamp(), $share->expires_at->getTimestamp(), 5);
 
         $links = $this->app->make(ShareLinkResolver::class);
-        $this->assertTrue($links->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->isEmpty(), 'A pending share has no address yet.');
+        $this->assertTrue($links->linkFor(TestActors::user(9), $share->id)->isEmpty(), 'A pending share has no address yet.');
 
         $share->state = ShareState::Active;
         $share->save();
 
-        $this->assertSame(FakeShareGateway::PUBLIC_ORIGIN.'/s/'.$share->token_ciphertext, $links->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->get());
-        $this->assertTrue($links->linkFor(ActorContext::forUser(TestIds::of(8)), $share->id)->isEmpty(), 'Only the owner reads the address.');
+        $this->assertSame(FakeShareGateway::PUBLIC_ORIGIN.'/s/'.$share->token_ciphertext, $links->linkFor(TestActors::user(9), $share->id)->get());
+        $this->assertTrue($links->linkFor(TestActors::user(8), $share->id)->isEmpty(), 'Only the owner reads the address.');
     }
 
     public function test_the_answer_and_the_receipt_hold_no_token_or_address(): void
@@ -168,7 +169,7 @@ final class CreateShareTest extends TestCase
     public function test_the_hundred_and_first_live_share_is_refused(): void
     {
         for ($index = 0; $index < Share::MOST_LIVE; $index++) {
-            Share::grant(new RecordIdentity('binders.binder', TestIds::of(1000 + $index)), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+            TestShares::grantForADay(TestActors::record('binders.binder', 1000 + $index), $this->configuration);
         }
 
         $saved = $this->preview([]);
@@ -181,7 +182,7 @@ final class CreateShareTest extends TestCase
     public function test_an_expired_share_whose_state_has_not_caught_up_does_not_count(): void
     {
         for ($index = 0; $index < Share::MOST_LIVE; $index++) {
-            Share::grant(new RecordIdentity('binders.binder', TestIds::of(1000 + $index)), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->subMinute());
+            Share::grant(TestActors::record('binders.binder', 1000 + $index), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->subMinute());
         }
 
         $this->assertSame(ShareState::Pending, $this->create($this->preview([]))->state);

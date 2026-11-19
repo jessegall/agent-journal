@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\CoreApi;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
@@ -27,6 +25,7 @@ use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -69,7 +68,7 @@ final class SkillContractsTest extends TestCase
     {
         $part = MarkdownPart::heading('plans.md', ['Failure', 'Retry']);
         $section = SkillSection::markdown('phases', 'Working a phase', $part);
-        $context = new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(3)), TestIds::of(4), 'main', LaunchProfile::profileFree(), ProgramKey::from('codex'), ProviderKey::from('openai'));
+        $context = new SkillContext(TestActors::agentIdentity(3), TestIds::of(4), 'main', LaunchProfile::profileFree(), ProgramKey::from('codex'), ProviderKey::from('openai'));
 
         $this->assertSame('plans.md > Failure > Retry', $part->selector());
         $this->assertTrue(MarkdownPart::body('plans.md')->isWholeBody());

@@ -8,7 +8,6 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Bus\Support\RequestKey;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\CreateShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Enums\ShareState;
@@ -19,7 +18,6 @@ use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareDuration;
 use App\Sharing\Support\ShareRecordRegistry;
-use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +27,9 @@ use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
+use Tests\Support\Sharing\TestShares;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -50,17 +50,17 @@ final class CreateShareRaceTest extends TestCase
     {
         $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->instance(BinderPublications::class, new BinderPublications());
         $first = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
         $second = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
 
         for ($index = 1; $index < Share::MOST_LIVE; $index++) {
-            Share::grant(new RecordIdentity('binders.binder', TestIds::of(1000 + $index)), TestIds::of(9), $first, ShareToken::generate(), CarbonImmutable::now()->addDay());
+            TestShares::grantForADay(TestActors::record('binders.binder', 1000 + $index), $first);
         }
 
         DB::transaction(fn () => ShareInstallation::lockForAdmission());
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
         $saved = $this->app->make(CommandBus::class)->run(new SaveSharePreview('binders.binder', TestIds::of(1), [], $second->id));
 
         config(['database.connections.second_creator' => config('database.connections.'.config('database.default'))]);
@@ -91,7 +91,7 @@ final class CreateShareRaceTest extends TestCase
     private function create(SavedSharePreview $saved, string $key): Share
     {
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(TestIds::of(9));
+        $this->startTestUserRequest(9);
         $this->app->make(RequestKey::class)->set($key);
         $summary = $this->app->make(CommandBus::class)->run(new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key));
 

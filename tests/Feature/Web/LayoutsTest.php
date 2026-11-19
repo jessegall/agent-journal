@@ -6,8 +6,8 @@ namespace Tests\Feature\Web;
 
 use App\Web\Models\Layout;
 use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Inertia\Testing\AssertableInertia;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -17,22 +17,13 @@ use Tests\TestCase;
  */
 final class LayoutsTest extends TestCase
 {
+    use ActsAsOwner;
     use RefreshHookDatabase;
-
-    private User $owner;
 
     /**
      * @var array<string, mixed>
      */
     private array $shape = ['grid' => ['type' => 'pane', 'id' => 'pane-chat', 'windows' => ['chat'], 'active' => 'chat', 'limitWidth' => false], 'detached' => []];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_a_saved_layout_returns_to_home_and_is_listed_by_name(): void
     {

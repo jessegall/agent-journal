@@ -25,6 +25,7 @@ use Tests\Fixtures\Domains\Errands\ErrandsDomain;
 use Tests\Fixtures\Domains\Errands\ErrandWork;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ final class AssignmentQueryTest extends TestCase
 
         $this->builder = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7));
         $this->reviewer = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(8));
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
     }
 
     public function test_the_subqueries_select_the_held_and_the_assigned_ids_of_one_type(): void
@@ -56,7 +57,7 @@ final class AssignmentQueryTest extends TestCase
         $this->hold($first, $this->builder);
         $this->hold($second, $this->builder);
         $this->hold($third, $this->reviewer);
-        AssignmentRecord::holding(new RecordIdentity('plans.plan', TestIds::of(40)), $this->builder);
+        AssignmentRecord::holding(TestActors::record('plans.plan', 40), $this->builder);
 
         $query = $this->app->make(AssignmentQuery::class);
 

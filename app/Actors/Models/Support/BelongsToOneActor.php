@@ -47,6 +47,17 @@ trait BelongsToOneActor
     }
 
     /**
+     * Every actor's rows, for the journal's own work across them: it lifts the current-actor limit and no other scope.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function acrossActors(Builder $query): void
+    {
+        $query->withoutGlobalScope(static::ownerScope());
+    }
+
+    /**
      * The explicit read of one actor's rows, for the journal's own work on that actor; it lifts the current-actor limit.
      *
      * @param  Builder<static>  $query

@@ -20,8 +20,10 @@ use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\GroupReference;
 use Domain\Access\Support\AccessSettings;
+use Tests\Support\ActsAsActors;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -31,6 +33,7 @@ use Tests\TestCase;
  */
 final class DomainAvailabilityTest extends TestCase
 {
+    use ActsAsActors;
     use AssertsReadBudget;
     use CommitsHookRows;
 
@@ -122,7 +125,7 @@ final class DomainAvailabilityTest extends TestCase
     private function availability(): SettingsDomainAvailability
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->actAs(TestActors::user(7));
         $availability = $this->app->make(DomainAvailability::class);
         $this->assertInstanceOf(SettingsDomainAvailability::class, $availability);
 

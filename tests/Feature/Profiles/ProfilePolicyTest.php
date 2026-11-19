@@ -7,7 +7,6 @@ namespace Tests\Feature\Profiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Agents\Models\RevisionFence;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
@@ -26,6 +25,7 @@ use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileKey;
 use Illuminate\Support\Facades\Event;
+use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
@@ -39,6 +39,7 @@ use Tests\TestCase;
  */
 final class ProfilePolicyTest extends TestCase
 {
+    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const array TABLES = ['profile_revisions', 'profiles', 'revision_fences', 'command_receipts'];
@@ -55,13 +56,6 @@ final class ProfilePolicyTest extends TestCase
             ['name' => 'shell:git.push'],
         ],
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-    }
 
     public function test_a_removed_class_blocks_while_an_exact_grant_passes_and_a_denial_wins(): void
     {

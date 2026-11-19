@@ -9,7 +9,7 @@ use App\Skills\Models\Skill;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -30,7 +30,7 @@ final class SkillAuthoringConsoleTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
     }
 
     public function test_make_edit_preview_and_restore_run_end_to_end(): void

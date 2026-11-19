@@ -6,7 +6,6 @@ namespace Tests\Feature\Sharing;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\GatewayEndpointState;
 use App\Sharing\Enums\ShareAuditActor;
 use App\Sharing\Enums\ShareAuditType;
@@ -23,7 +22,7 @@ use Domain\Access\Support\AccessSettings;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
@@ -50,7 +49,7 @@ final class ShareAuditViewTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->share = Share::grant(new RecordIdentity('binders.binder', TestIds::of(1)), $this->owner->id, $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $this->share = Share::grant(TestActors::record('binders.binder', 1), $this->owner->id, $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
         ShareAudit::recordFor($this->share, ShareAuditType::Created, new ActorIdentity(ActorType::User, $this->owner->id), null);
         ShareAudit::recordFor($this->share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
         ShareAudit::recordFor($this->share, ShareAuditType::ReadDenied, ActorIdentity::system(), 'rate_limited');

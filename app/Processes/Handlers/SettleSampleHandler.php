@@ -23,7 +23,7 @@ final readonly class SettleSampleHandler implements CommandHandler
      */
     public function handle(SettleSample $command): SampleOutcome
     {
-        $request = CommandRequest::query()->whereKey($command->commandRequestId)->lockForUpdate()->sole();
+        $request = CommandRequest::lockedForChange($command->commandRequestId);
         if ($request->state !== RequestState::CapturingSample) {
             throw SampleRefused::notReady($request->nextStep()->command);
         }

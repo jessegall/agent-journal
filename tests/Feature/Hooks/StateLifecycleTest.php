@@ -32,6 +32,7 @@ use RuntimeException;
 use Tests\Fixtures\Hooks\Lifecycle\LifecycleLog;
 use Tests\Fixtures\Hooks\Lifecycle\RecordingStateLoader;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
@@ -55,7 +56,7 @@ final class StateLifecycleTest extends TestCase
         parent::setUp();
 
         DB::table('agent_stacks')->truncate();
-        $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
+        $this->target = TestActors::stack(1, 10);
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), TestLaunchAuthority::forAgent(TestIds::of(1)));
         $this->log = new LifecycleLog();

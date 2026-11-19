@@ -25,7 +25,6 @@ use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\StartsAgentRequests;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -53,7 +52,7 @@ final class NumberAllocationTest extends TestCase
         $this->bootModules(LedgerDomain::class);
         $this->app->make(NumberingOutsideCommands::class)->forbid();
         GlobalGroup::installJournal();
-        $this->startUserRequestAs(TestIds::of(1));
+        $this->startTestUserRequest(1);
         $this->commands = $this->app->make(CommandBus::class);
     }
 
@@ -118,7 +117,7 @@ final class NumberAllocationTest extends TestCase
 
         try {
             $this->app->forgetScopedInstances();
-            $this->startUserRequestAs(TestIds::of(1));
+            $this->startTestUserRequest(1);
             $this->app->make(CommandBus::class)->run(new WriteEntry($ledger, 'waits'));
             $this->fail('The write did not wait on the held lock.');
         } catch (StackLockTimedOut) {

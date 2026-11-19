@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\OpenCommandRequest;
@@ -32,8 +29,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -43,6 +40,7 @@ use Tests\TestCase;
  */
 final class SampleWorkflowTest extends TestCase
 {
+    use ActsAsActors;
     use RefreshHookDatabase;
 
     private TestLaunch $launch;
@@ -169,19 +167,6 @@ final class SampleWorkflowTest extends TestCase
     private function asAgent(object $command): mixed
     {
         $this->launch->startRequest($this->app);
-
-        return $this->app->make(CommandBus::class)->run($command);
-    }
-
-    private function asUser(object $command): mixed
-    {
-        return $this->runAs(ActorContext::forUser(TestIds::of(7)), $command);
-    }
-
-    private function runAs(ActorContext $actor, object $command): mixed
-    {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

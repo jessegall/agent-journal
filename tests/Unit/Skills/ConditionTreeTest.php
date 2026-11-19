@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Policies\AssignmentPolicy;
 use App\Profiles\Enums\AuthorizationType;
@@ -26,6 +24,7 @@ use App\Skills\Values\SkillContext;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Profiles\TestLaunchPolicies;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -172,7 +171,7 @@ final class ConditionTreeTest extends TestCase
             'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
-        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from($program), $provider === null ? null : ProviderKey::from($provider));
+        return new SkillContext(TestActors::agentIdentity(2), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from($program), $provider === null ? null : ProviderKey::from($provider));
     }
 
     private function mainAgentOn(string $program): SkillContext
@@ -192,7 +191,7 @@ final class ConditionTreeTest extends TestCase
         ]);
 
         return new SkillContext(
-            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
+            TestActors::agentIdentity(1),
             TestIds::of(4),
             'main',
             LaunchProfile::of($snapshot),
@@ -204,7 +203,7 @@ final class ConditionTreeTest extends TestCase
     private function profileFreeOn(string $program): SkillContext
     {
         return new SkillContext(
-            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
+            TestActors::agentIdentity(1),
             TestIds::of(4),
             'main',
             LaunchProfile::profileFree(),

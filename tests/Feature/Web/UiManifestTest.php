@@ -18,6 +18,7 @@ use Tests\Fixtures\UiDeclarations\Library\BooksResolver;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfResolver;
+use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -27,22 +28,15 @@ use Tests\TestCase;
  */
 final class UiManifestTest extends TestCase
 {
-    private string $root;
+    use UsesTemporaryFolder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->root = sys_get_temp_dir().'/ui-manifest-'.getmypid();
+        $this->makeTemporaryFolder('ui-manifest');
         File::ensureDirectoryExists("{$this->root}/resources/js/pages");
         File::put("{$this->root}/resources/js/pages/Login.vue", '<template><div /></template>');
-    }
-
-    protected function tearDown(): void
-    {
-        File::deleteDirectory($this->root);
-
-        parent::tearDown();
     }
 
     public function test_two_domains_index_components_get_distinct_literal_imports_from_outside_app(): void

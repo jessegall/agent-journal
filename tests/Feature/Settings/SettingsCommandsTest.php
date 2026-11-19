@@ -7,7 +7,6 @@ namespace Tests\Feature\Settings;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
@@ -44,7 +43,9 @@ use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
@@ -57,6 +58,7 @@ use Throwable;
  */
 final class SettingsCommandsTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -185,7 +187,7 @@ final class SettingsCommandsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent), TestLaunchAuthority::granting(ProfileBase::mainAgent(), []));
         $this->assertRefused(ActorNotAllowed::class, $command);
 
-        $this->actAs(ActorContext::forUser(TestIds::of(8)));
+        $this->actAs(TestActors::user(8));
         $this->assertRefused(SettingsAccessDenied::class, $command);
 
         $this->actAs(ActorContext::forUser($this->ownerId));
@@ -248,11 +250,6 @@ final class SettingsCommandsTest extends TestCase
         $this->assertChange(SettingsOutcome::Unchanged, 2, $this->runCommand($this->commands->resetGroup($this->reviews->review, 2)));
 
         $this->assertSame(6, $this->reviewGroup()->integer($this->reviews->retryLimit));
-    }
-
-    private function actAs(ActorContext $actor): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
     /**

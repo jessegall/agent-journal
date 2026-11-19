@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareState;
@@ -18,13 +15,14 @@ use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareLinkResolver;
-use App\Sharing\Support\ShareToken;
 use App\Sharing\Support\SharingSupervisor;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
+use Tests\Support\Sharing\TestShares;
+use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -52,7 +50,7 @@ final class SharingSupervisorTest extends TestCase
         $this->gateway = new FakeShareGateway();
         $this->app->instance(FakeShareGateway::class, $this->gateway);
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
-        $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
     }
 
@@ -91,7 +89,7 @@ final class SharingSupervisorTest extends TestCase
         $first->begin();
         $first->work();
         $digest = Share::query()->findOrFail($share->id)->token_digest;
-        $link = $this->app->make(ShareLinkResolver::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->get();
+        $link = $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->get();
 
         $restarted = $this->supervisor();
 
@@ -101,7 +99,7 @@ final class SharingSupervisorTest extends TestCase
 
         $this->assertSame(ShareState::Active, Share::query()->findOrFail($share->id)->state);
         $this->assertSame($digest, Share::query()->findOrFail($share->id)->token_digest);
-        $this->assertSame($link, $this->app->make(ShareLinkResolver::class)->linkFor(ActorContext::forUser(TestIds::of(9)), $share->id)->get());
+        $this->assertSame($link, $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->get());
         $this->assertCount(2, $this->gateway->opened);
         $reopened = ShareGatewayEndpoint::query()->where('run_id', $restarted->runId)->sole();
         $this->assertSame(2, $reopened->endpoint_version);
@@ -110,8 +108,8 @@ final class SharingSupervisorTest extends TestCase
 
     public function test_proposals_and_ended_shares_never_open_a_tunnel(): void
     {
-        Share::propose(new RecordIdentity('binders.binder', TestIds::of(1)), new ActorIdentity(ActorType::Agent, TestIds::of(5)), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
-        $revoked = Share::grant(new RecordIdentity('binders.binder', TestIds::of(2)), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        Share::propose(TestActors::record('binders.binder', 1), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $revoked = TestShares::grantForADay(TestActors::record('binders.binder', 2), $this->configuration);
         $revoked->end(ShareState::Revoked);
 
         $this->assertSame(0, $this->supervisor()->begin());
@@ -136,7 +134,7 @@ final class SharingSupervisorTest extends TestCase
 
     private function pendingShare(string $rootId): Share
     {
-        $share = Share::grant(new RecordIdentity('binders.binder', $rootId), TestIds::of(9), $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
+        $share = TestShares::grantForADay(new RecordIdentity('binders.binder', $rootId), $this->configuration);
         ShareGatewayOperation::request($this->configuration, GatewayOperationType::Open);
 
         return $share;
