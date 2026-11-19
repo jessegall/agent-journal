@@ -7,6 +7,7 @@ namespace App\Skills\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
+use App\Hooks\Contracts\FileAccessPolicy;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
 use App\Skills\Contracts\SkillPublisher;
@@ -20,6 +21,7 @@ use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionTree;
+use App\Skills\Support\DeliveredSkillsAccess;
 use App\Skills\Support\EvaluationGuard;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillRegistry;
@@ -50,6 +52,7 @@ final class SkillsServiceProvider extends ServiceProvider
         );
         $this->app->singleton(SkillTargets::class, fn () => new SkillTargets(storage_path('app/skills')));
         $this->app->bind(SkillPublisher::class, HostSkillPublisher::class);
+        $this->app->scoped(FileAccessPolicy::class, DeliveredSkillsAccess::class);
         $this->app->bind(SkillTables::class, fn (Application $app) => new SkillTables(
             $app->make(DatabaseManager::class)->connection()->getSchemaBuilder(),
             ['skills', 'skill_revisions', 'skill_requests', 'skill_generations', 'skill_publications'],

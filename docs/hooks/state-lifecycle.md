@@ -111,6 +111,12 @@ A state that only adds to the answer delegates with `Decision::addContext`; it n
 step records how many context entries its decision added, in `WalkStep::contextCount`, so an inspected call shows a
 delegate that added context.
 
+`Decision::message` adds the same text and also reaches an idle agent. When the hook leaves the agent idle (an allowed
+stop, or the session's end), `AgentMessageDelivery` keeps the text as a `PendingAgentMessage` for the agent and asks
+`ActorAttention` to wake its runtime; `PendingAgentMessages` tells the wake there is work, so the driver types its
+pending-work prompt and a turn starts. The agent's next hook that does not leave it idle hands the kept texts over,
+first in its context, and removes them. A busy agent gets the text in the reply as context, like `addContext`.
+
 ## Boundaries with other designs
 
 - Ticking is not lifecycle. Doc 35 lets a state type opt in to ticks; a tick never enters or resumes a frame, and the

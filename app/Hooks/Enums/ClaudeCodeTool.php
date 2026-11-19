@@ -43,6 +43,19 @@ enum ClaudeCodeTool: string
         };
     }
 
+    /**
+     * Whether the tool reads a file or a folder the agent names, which the file access policy then judges.
+     */
+    public function readsFiles(): bool
+    {
+        return match ($this) {
+            self::Read, self::Glob, self::Grep, self::LS => true,
+            self::Bash, self::Edit, self::MultiEdit, self::Write, self::NotebookEdit, self::WebFetch, self::WebSearch,
+            self::TodoWrite, self::ToolSearch, self::ListMcpResources, self::ReadMcpResource,
+            self::ReadMcpResourceDirectory => false,
+        };
+    }
+
     public function fileOperation(): FileOperation
     {
         return match ($this) {

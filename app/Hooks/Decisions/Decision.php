@@ -15,17 +15,20 @@ use App\Hooks\Exceptions\NoRefusalReason;
 use App\Hooks\Exceptions\NoReplacementLine;
 
 /**
- * A state's answer to one hook: the answer, one transition of the stack, and any context for the agent.
+ * A state's answer to one hook: the answer, one transition of the stack, any context for the agent, and the messages
+ * among that context that wake the agent when the hook leaves it idle.
  */
 final readonly class Decision
 {
     /**
      * @param  list<string>  $context
+     * @param  list<string>  $messages
      */
     private function __construct(
         public Answer $answer,
         public StackTransition $transition,
         public array $context = [],
+        public array $messages = [],
     ) {}
 
     /**
@@ -61,6 +64,14 @@ final readonly class Decision
         return self::delegate()->withContext($text);
     }
 
+    /**
+     * The text added to the agent's context, and kept for its next hook with a wake when this hook leaves it idle.
+     */
+    public static function message(string $text): self
+    {
+        return self::delegate()->withMessage($text);
+    }
+
     public static function push(StateReference $state): self
     {
         return self::delegate()->withPush($state);
@@ -73,7 +84,12 @@ final readonly class Decision
 
     public function withContext(string $text): self
     {
-        return new self($this->answer, $this->transition, [...$this->context, $text]);
+        return new self($this->answer, $this->transition, [...$this->context, $text], $this->messages);
+    }
+
+    public function withMessage(string $text): self
+    {
+        return new self($this->answer, $this->transition, [...$this->context, $text], [...$this->messages, $text]);
     }
 
     public function withPush(StateReference $state): self
@@ -82,7 +98,7 @@ final readonly class Decision
             throw ConflictingStackTransition::forTransition($this->transition->type()->value);
         }
 
-        return new self($this->answer, new PushState($state), $this->context);
+        return new self($this->answer, new PushState($state), $this->context, $this->messages);
     }
 
     public function isDelegating(): bool

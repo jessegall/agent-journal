@@ -47,6 +47,11 @@ final readonly class ContextCompacted implements HookInput
         return $state->onCompaction($this);
     }
 
+    public function leavesAgentIdle(AnswerType $type): bool
+    {
+        return false;
+    }
+
     public function contextStart(): Option
     {
         return Some::create(ContextStartType::Compact);

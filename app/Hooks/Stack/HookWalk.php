@@ -20,6 +20,11 @@ final class HookWalk
     private array $context = [];
 
     /**
+     * @var list<string>
+     */
+    private array $messages = [];
+
+    /**
      * @var list<WalkStep>
      */
     private array $steps = [];
@@ -40,6 +45,7 @@ final class HookWalk
     public function record(Frame $frame, Decision $decision): void
     {
         $this->context = [...$this->context, ...$decision->context];
+        $this->messages = [...$this->messages, ...$decision->messages];
         $this->steps[] = new WalkStep(
             $frame->id,
             $frame->typeKey(),
@@ -70,7 +76,7 @@ final class HookWalk
 
     public function finish(Decision $decision): HookAnswer
     {
-        return new HookAnswer($decision, $this->context, $this->steps, $this->stack);
+        return new HookAnswer($decision, $this->context, $this->steps, $this->stack, $this->messages);
     }
 
     /**

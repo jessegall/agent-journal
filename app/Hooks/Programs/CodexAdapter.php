@@ -7,6 +7,7 @@ namespace App\Hooks\Programs;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Enums\CodexTool;
+use App\Hooks\Enums\FileAccess;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
@@ -44,6 +45,7 @@ final readonly class CodexAdapter implements ProgramAdapter
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
+        private GuardedFiles $files,
     ) {}
 
     public function capabilities(): ProgramCapabilities
@@ -145,9 +147,15 @@ final readonly class CodexAdapter implements ProgramAdapter
             );
         }
 
-        $edit = new FileEditRequested($hook, $this->patchChanges($payload->argument('command')));
+        $changes = $this->patchChanges($payload->argument('command'));
+        $edit = new FileEditRequested($hook, $changes);
 
-        return new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+        return $this->files->guard(
+            $hook,
+            FileAccess::Write,
+            $changes->paths(),
+            fn () => new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original)),
+        );
     }
 
     /**

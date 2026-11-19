@@ -17,6 +17,7 @@ use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Storage\RecordedSteps;
+use App\Hooks\Support\AgentMessageDelivery;
 use App\Hooks\Support\ContextCollection;
 use App\Hooks\Support\FinishedToolCalls;
 use App\Hooks\Support\IncomingWorkList;
@@ -27,7 +28,7 @@ use Closure;
 /**
  * Answers one hook call in one transaction: lock the stack, replay a call already answered before anything else runs,
  * or collect a compaction's reminders, run the session-start step, restore, walk the
- * stack without its finished frames, settle what the program accepts, call the lifecycle methods of the frames that
+ * stack without its finished frames, settle what the program accepts, keep or hand over the states' messages, call the lifecycle methods of the frames that
  * left, arrived or came back on top, then render and save the reply, its steps and the stack together. Nothing is
  * kept when any step fails.
  */
@@ -45,6 +46,7 @@ final readonly class AgentStateMachine
         private FinishedToolCalls $toolCalls,
         private HookShellAdmission $admission,
         private IncomingWorkList $incomingWork,
+        private AgentMessageDelivery $messages,
     ) {}
 
     /**
@@ -93,7 +95,11 @@ final readonly class AgentStateMachine
 
                 $this->lifecycle->refuseChangeDuringCallbacks($this->access->target());
                 $stackBefore = $this->restorer->restore($row->frames);
-                $answer = $this->settle($stackBefore, $input, $capabilities)->withRemindersFirst($reminders);
+                $answer = $this->messages->deliver(
+                    $this->access->target(),
+                    $input,
+                    $this->settle($stackBefore, $input, $capabilities)->withRemindersFirst($reminders),
+                );
                 $this->lifecycle->settle($this->access->target(), $stackBefore, $answer->stack);
                 $reply = $render($answer);
 

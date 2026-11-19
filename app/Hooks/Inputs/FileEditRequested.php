@@ -41,6 +41,11 @@ final readonly class FileEditRequested implements HookInput
         return $state->onFileEdit($this);
     }
 
+    public function leavesAgentIdle(AnswerType $type): bool
+    {
+        return false;
+    }
+
     public function contextStart(): Option
     {
         return None::create();

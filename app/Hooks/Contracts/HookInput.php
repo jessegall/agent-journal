@@ -30,6 +30,12 @@ interface HookInput
     public function answerBy(HookAnswerer $state): Decision;
 
     /**
+     * Whether an answer of that type leaves the agent idle, so the reply's context reaches nobody: only an allowed stop
+     * and a session's end do.
+     */
+    public function leavesAgentIdle(AnswerType $type): bool;
+
+    /**
      * How this hook starts the agent's context, for a session start or a compaction; any other hook starts none.
      *
      * @return Option<ContextStartType>

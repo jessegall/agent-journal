@@ -42,6 +42,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\ListedCommandParser;
+use Tests\Fixtures\Hooks\MessagingState;
 use Tests\Fixtures\Hooks\RewritingState;
 use Tests\Fixtures\Hooks\ScriptedState;
 
@@ -79,6 +80,7 @@ trait CommittedHookStack
         ) use ($tasks): void {
             $event->registry->register('test.tasks', $tasks);
             $event->registry->register('guide', new ClosureStateLoader(fn () => ScriptedState::delegating()));
+            $event->registry->register('test.messaging', new ClosureStateLoader(fn () => new MessagingState()));
             $event->registry->register('test.rewriting', new ClosureStateLoader(fn () => new RewritingState(
                 ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
                 new StateReference('guide', NoSubject::None),
@@ -248,6 +250,8 @@ trait CommittedHookStack
             'process_runs',
             'part_runs',
             'command_requests',
+            'driver_requests',
+            'pending_agent_messages',
         ];
     }
 
