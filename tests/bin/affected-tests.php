@@ -30,6 +30,11 @@ $since = null;
 $files = [];
 
 foreach ($arguments as $argument) {
+    if ($argument === '--none') {
+        fwrite(STDOUT, "No file changed, so no test is affected.\n");
+        exit(0);
+    }
+
     if (str_starts_with($argument, '--since=')) {
         $since = substr($argument, 8);
 
