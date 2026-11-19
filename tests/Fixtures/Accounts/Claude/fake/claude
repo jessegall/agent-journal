@@ -1,0 +1,15 @@
+#!/bin/sh
+# A stand-in for the claude command: a folder holding signed-in is an account signed in as the email it names.
+case "$1" in
+    --version) echo "2.1.323 (Claude Code)" ;;
+    --help) echo "Options: --restricted --strict-mcp-config --mcp-config <file> --settings <file> --tools <tools>" ;;
+    auth)
+        if [ -f "$CLAUDE_CONFIG_DIR/signed-in" ]; then
+            email=$(cat "$CLAUDE_CONFIG_DIR/signed-in")
+            printf '{"loggedIn":true,"email":"%s","token":"fake-secret-token"}\n' "$email"
+        else
+            echo '{"loggedIn":false,"authMethod":"none"}'
+            exit 1
+        fi
+        ;;
+esac

@@ -32,6 +32,37 @@ final readonly class ProgramCompatibility
     ) {}
 
     /**
+     * What the account-free capture of the pinned build checked. Claude Code runs each launch as its own process on
+     * the account's directory; Codex runs one app-server that owns the sign-in and each launch as a thread on it, its
+     * working root an empty trusted folder. How either shares a sign-in needs a signed-in run.
+     */
+    public static function pinned(HookProgram $program): self
+    {
+        return match ($program) {
+            HookProgram::ClaudeCode => new self(
+                $program,
+                '2.1.323',
+                '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
+                ['--restricted', '--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
+                [],
+                AuthenticationArrangement::DirectProcesses,
+                ProgramEvidence::PrerequisiteMissing,
+                'the signed-in procedure of docs/accounts/claude-native-evidence.md',
+            ),
+            HookProgram::Codex => new self(
+                $program,
+                '0.165.0',
+                'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
+                ['app-server', '--add-dir'],
+                ['cli_auth_credentials_store' => 'file'],
+                AuthenticationArrangement::SharedOwner,
+                ProgramEvidence::PrerequisiteMissing,
+                'the signed-in procedure of docs/accounts/codex-native-evidence.md',
+            ),
+        };
+    }
+
+    /**
      * Refuses an account launch whose way of sharing the sign-in the real program has not shown.
      *
      * @throws ProgramArrangementUnproven

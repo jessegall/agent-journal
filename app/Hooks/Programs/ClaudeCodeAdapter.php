@@ -7,9 +7,7 @@ namespace App\Hooks\Programs;
 use App\Hooks\Actions\RecordProgramFailure;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
-use App\Hooks\Enums\AuthenticationArrangement;
 use App\Hooks\Enums\ClaudeCodeTool;
-use App\Hooks\Enums\ProgramEvidence;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Exceptions\UnsupportedHook;
@@ -68,22 +66,10 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         );
     }
 
-    /**
-     * Each launch runs its own process on the account's directory; whether parallel launches share its refresh safely
-     * needs a signed-in run.
-     */
+
     public function compatibility(): ProgramCompatibility
     {
-        return new ProgramCompatibility(
-            HookProgram::ClaudeCode,
-            '2.1.323',
-            '5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7',
-            ['--restricted', '--strict-mcp-config', '--mcp-config', '--settings', '--tools'],
-            [],
-            AuthenticationArrangement::DirectProcesses,
-            ProgramEvidence::PrerequisiteMissing,
-            'the signed-in procedure of docs/accounts/claude-integration.md',
-        );
+        return ProgramCompatibility::pinned(HookProgram::ClaudeCode);
     }
 
     public function modelArguments(string $model): array

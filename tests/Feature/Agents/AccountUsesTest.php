@@ -149,7 +149,7 @@ final class AccountUsesTest extends TestCase
         $held = $this->bus()->run(new HoldAccountUses($account));
         $cancelled = $this->bus()->run(new CancelAccountUses($account));
 
-        $this->assertSame([$session->id], array_map(fn (AccountUse $use) => $use->sessionId, $held));
+        $this->assertSame([$session->id], $held->sessionIds);
         $this->assertSame(0, $cancelled);
 
         try {

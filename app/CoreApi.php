@@ -225,6 +225,7 @@ use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\ExecutionReceipt;
 use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\ExitReceipt;
+use App\Agents\Support\HeldAccountUses;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
@@ -352,9 +353,9 @@ use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
-use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandHandlerTwice;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandListedTwice;
 use App\Bus\Exceptions\CommandNestingTooDeep;
 use App\Bus\Exceptions\CommandNotRegistered;
@@ -1237,6 +1238,7 @@ final class CoreApi
                 SelectedAccount::class,
                 AccountUse::class,
                 AccountUseCounts::class,
+                HeldAccountUses::class,
                 AccountProcessRole::class,
                 LaunchUnavailableReason::class,
                 ProgramFailure::class,

@@ -189,7 +189,7 @@ never native evidence.
 
 | Program | Arrangement | State | Who shows the rest |
 |---|---|---|---|
-| Claude Code 2.1.323 | direct processes: each launch runs its own process on the account directory | prerequisite missing: parallel refresh, Keychain separation and hooks under `--restricted` need a signed-in run | the signed-in procedure of `docs/accounts/claude-integration.md` |
-| Codex 0.165.0 | shared owner: one `codex app-server` owns sign-in and refresh, each launch a thread on it, with `cli_auth_credentials_store = "file"` | prerequisite missing: hooks on threads, separate thread identities and refresh under parallel threads need a signed-in run | the signed-in procedure of `docs/accounts/codex-integration.md` |
+| Claude Code 2.1.323 | direct processes: each launch runs its own process on the account directory | prerequisite missing: parallel refresh, Keychain separation and hooks under `--restricted` need a signed-in run | `tools/accounts/check-claude.php` (`docs/accounts/claude-native-evidence.md`) |
+| Codex 0.165.0 | shared owner: one `codex app-server` owns sign-in and refresh, each launch a thread on it, with `cli_auth_credentials_store = "file"` | prerequisite missing: hooks on threads, separate thread identities and refresh under parallel threads need a signed-in run | `tools/accounts/check-codex.php` (`docs/accounts/codex-native-evidence.md`) |
 
 The Accounts pages stay available while a state is missing; only account launches are refused.

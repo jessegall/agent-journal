@@ -6,10 +6,8 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
-use App\Hooks\Enums\AuthenticationArrangement;
 use App\Hooks\Enums\CodexTool;
 use App\Hooks\Enums\FileOperation;
-use App\Hooks\Enums\ProgramEvidence;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
@@ -58,22 +56,10 @@ final readonly class CodexAdapter implements ProgramAdapter
         );
     }
 
-    /**
-     * One app-server process owns the account's sign-in and refresh, each launch a thread on it, its working root an
-     * empty trusted folder; that the hooks run there and threads keep their own identities needs a signed-in run.
-     */
+
     public function compatibility(): ProgramCompatibility
     {
-        return new ProgramCompatibility(
-            HookProgram::Codex,
-            '0.165.0',
-            'a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a',
-            ['app-server', '--add-dir'],
-            ['cli_auth_credentials_store' => 'file'],
-            AuthenticationArrangement::SharedOwner,
-            ProgramEvidence::PrerequisiteMissing,
-            'the signed-in procedure of docs/accounts/codex-integration.md',
-        );
+        return ProgramCompatibility::pinned(HookProgram::Codex);
     }
 
     public function modelArguments(string $model): array
