@@ -25,7 +25,7 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * An agent the journal launches, with the profile it launches with. It can hold assigned work until it is
+ * An agent the journal starts, with the profile it starts with. It can hold assigned work until it is
  * retired; retirement is final.
  *
  * @property string $id
@@ -52,7 +52,7 @@ final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableMod
     }
 
     /**
-     * A new agent that launches with the profile of this key unless a launch names another.
+     * A new agent that starts with the profile of this key unless a start names another.
      */
     public static function named(string $name, string $profileKey): self
     {

@@ -24,7 +24,7 @@ use Carbon\CarbonImmutable;
 use Domain\Memory\Calls\MemoryCalls;
 use Domain\Memory\Models\Memory;
 use Illuminate\Support\Facades\Storage;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -39,7 +39,7 @@ final class CallRecoveryTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
@@ -47,8 +47,8 @@ final class CallRecoveryTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start();
-        $this->runCommandsAs($this->launch);
+        $this->start = TestStart::start();
+        $this->runCommandsAs($this->start);
     }
 
     public function test_a_keyed_write_sent_again_answers_its_first_result_and_writes_once(): void
@@ -124,7 +124,7 @@ final class CallRecoveryTest extends TestCase
 
     private function admitted(string $line): string
     {
-        $this->launch->startRequest($this->app);
+        $this->start->startRequest($this->app);
         $context = ExecutionContext::inFolder(base_path());
         $requestKey = bin2hex(random_bytes(8));
         $admission = $this->app->make(ShellAdmission::class)->admit($line, ShellDialect::Bash, $context, $requestKey);

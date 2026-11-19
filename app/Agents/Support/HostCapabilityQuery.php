@@ -10,7 +10,7 @@ use App\Agents\Enums\HostCapabilityType;
 use App\Programs\Enums\HookProgram;
 
 /**
- * One capability a launch would need, for a program, how its account signs in and where it runs.
+ * One capability a start would need, for a program, how its account signs in and where it runs.
  */
 final readonly class HostCapabilityQuery
 {

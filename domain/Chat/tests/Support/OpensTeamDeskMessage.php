@@ -16,15 +16,15 @@ use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Tests\Support\LaunchesMainAgents;
+use Tests\Support\StartsMainAgents;
 
 /**
- * The owner, two launched agents and a team desk with the builder seated, holding one message the owner sent the
+ * The owner, two started agents and a team desk with the builder seated, holding one message the owner sent the
  * desk; with the helpers that seat, replace and act as those agents.
  */
 trait OpensTeamDeskMessage
 {
-    use LaunchesMainAgents;
+    use StartsMainAgents;
 
     private User $owner;
 
@@ -48,8 +48,8 @@ trait OpensTeamDeskMessage
     {
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->builder = $this->launchMainAgent('Builder');
-        $this->reviewer = $this->launchMainAgent('Reviewer');
+        $this->builder = $this->startMainAgent('Builder');
+        $this->reviewer = $this->startMainAgent('Reviewer');
         $this->startUserRequestAs($this->owner->id);
         $this->ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
         $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 1, false)));

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
@@ -18,8 +18,8 @@ final class ProgramUnsupported extends InvalidArgumentException implements Comma
         return new self("The journal cannot run the program {$program}. Name claude-code or codex.");
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::ProgramUnsupported;
+        return StartRefusalType::ProgramUnsupported;
     }
 }

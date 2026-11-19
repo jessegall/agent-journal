@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Events\LaunchEnded;
+use App\Agents\Events\SessionClosed;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
@@ -42,7 +42,7 @@ use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 
 /**
  * Records are settled with a reason and become active again when a changed revision is published; a user recovers
@@ -244,7 +244,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $listeners = array_map(
             fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '',
-            $this->app->make(Dispatcher::class)->getRawListeners()[LaunchEnded::class] ?? [],
+            $this->app->make(Dispatcher::class)->getRawListeners()[SessionClosed::class] ?? [],
         );
 
         $this->assertContains(CloseEndedSessionDraft::class.'@handle', $listeners);
@@ -253,7 +253,7 @@ final class SettleAndRecoverTest extends TestCase
     private function endSession(int $agent, int $session): void
     {
         $this->app->make(CloseEndedSessionDraft::class)
-            ->handle(new LaunchEnded(TestIds::of($agent), TestIds::of($session)));
+            ->handle(new SessionClosed(TestIds::of($agent), TestIds::of($session)));
     }
 
     private function target(DraftReference $draft): DraftTarget
@@ -265,7 +265,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of($agent)),
-            TestLaunchAuthority::forAgent(TestIds::of($agent)),
+            TestStartAuthority::forAgent(TestIds::of($agent)),
         );
         $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
         $context = new AgentContext(TestIds::of($agent), TestIds::of($session), $call, null);

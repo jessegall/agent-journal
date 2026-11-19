@@ -9,7 +9,7 @@ use App\Hooks\Events\ContextStarted;
 use Domain\Memory\Support\AgentMemories;
 
 /**
- * Gives an agent its memories, heaviest first, whenever its context starts again: a launch, clear, resume or
+ * Gives an agent its memories, heaviest first, whenever its context starts again: a start, clear, resume or
  * compaction on any program. It only reads; the budget may leave light ones out and says how many.
  */
 final readonly class SupplyMemories implements Listener

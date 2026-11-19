@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
@@ -52,7 +52,7 @@ final class DueWorkOnTickTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'engine_frame_times',
@@ -154,10 +154,10 @@ final class DueWorkOnTickTest extends TestCase
     {
         $this->app->forgetInstance(ServerClock::class);
         $this->app->forgetInstance(MonotonicClock::class);
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
         $source = new RouteHeartbeatSource(
             fn (string $path) => $this->signed(
-                $launch,
+                $start,
                 $path,
                 ['request_key' => bin2hex(random_bytes(8))],
             )->getStatusCode(),

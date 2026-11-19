@@ -8,7 +8,7 @@ about the program, not about protection: a capture installs no protected binary 
 are in `tests/Fixtures/Accounts/Claude`; doc 15 (sections 7, 12 and 20) holds the decisions they serve, and doc 17 the
 final ones. The hook callbacks themselves are in [program-capabilities.md](../hooks/program-capabilities.md).
 
-## The launch invocation
+## The start invocation
 
 ```
 env -i PATH=<protected PATH> HOME=<journal home> \
@@ -34,7 +34,7 @@ env -i PATH=<protected PATH> HOME=<journal home> \
 | `--strict-mcp-config` | only MCP servers from `--mcp-config` load; all other MCP configuration is ignored |
 | `--tools` | the list of available built-in tools; `""` disables all |
 | `--settings` | a settings file or JSON string |
-| `--setting-sources` | which of user, project, local load; the earlier hook capture used `local`, which reads the work folder's `.claude/settings.local.json` and is not the launch configuration |
+| `--setting-sources` | which of user, project, local load; the earlier hook capture used `local`, which reads the work folder's `.claude/settings.local.json` and is not the start configuration |
 | `--bare` | skips hooks, keychain reads and OAuth; auth only by `ANTHROPIC_API_KEY` or `apiKeyHelper`, so not usable with a subscription login |
 | `--safe-mode` | disables customizations (hooks, MCP servers, plugins); not usable, since the journal's hooks must run |
 | `--session-id`, `--no-session-persistence` | a chosen session UUID; no transcript written (print mode only) |
@@ -45,7 +45,7 @@ env -i PATH=<protected PATH> HOME=<journal home> \
 
 Signed out, `auth status --json` answers (`auth-status-signed-out.json`) with `loggedIn`, `authMethod` (`none`),
 `apiProvider`, `configDirectory` and `projectsDirectory` (both inside `CLAUDE_CONFIG_DIR`) and `loginExpiresAt`. The
-launch's pre-check reads these fields: a signed-in account must report `authMethod` `claude.ai` and the expected
+start's pre-check reads these fields: a signed-in account must report `authMethod` `claude.ai` and the expected
 `configDirectory`.
 
 ## MCP tool names
@@ -69,13 +69,13 @@ Every file the program wrote lies inside `CLAUDE_CONFIG_DIR`: `.claude.json` (mo
 | Claim | State | How |
 |---|---|---|
 | Version and binary digest | checked | `claude --version`, sha256 of the installed binary |
-| Flags of the launch invocation exist and combine | checked | the signed-out print run above |
+| Flags of the start invocation exist and combine | checked | the signed-out print run above |
 | An empty account directory gives no credential | checked | `loggedIn: false`, `authMethod: none`, `Not logged in` with no API call |
 | All program writes stay in `CLAUDE_CONFIG_DIR` | checked for signed-out runs | file listing of the three directories |
 | `--restricted` ignores work-folder settings and confines file tools | from the help only | needs a signed-in run with a work-folder `.claude/settings.json` |
 | Journal hooks run under `--restricted` with `--settings` | unchecked | needs a signed-in run |
 | Account A and B use separate Keychain entries, and deleting one leaves the other | unchecked: needs sign-in | task 250's native procedure |
 | `authMethod claude.ai` and `configDirectory` of a signed-in account | unchecked: needs sign-in | task 250 |
-| Parallel launches on one account share a refresh safely | unchecked: needs sign-in | task 250 |
-| An agent reads its own saved output but no other session's or the credentials | unchecked: needs sign-in and the protected host | task 250 and the launcher |
+| Parallel starts on one account share a refresh safely | unchecked: needs sign-in | task 250 |
+| An agent reads its own saved output but no other session's or the credentials | unchecked: needs sign-in and the protected host | task 250 and the starter |
 | Model commands cannot read the Keychain entry | unchecked: needs sign-in | task 250 |

@@ -15,7 +15,7 @@ use App\Profiles\Values\ProfileKey;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Retires each profile, retains the fence of the sessions launched from its current revision in the same transaction,
+ * Retires each profile, retains the fence of the sessions started from its current revision in the same transaction,
  * and tells other subscribers once the revocation committed.
  */
 final readonly class RevokeProfilesHandler implements CommandHandler

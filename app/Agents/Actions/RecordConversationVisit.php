@@ -8,8 +8,8 @@ use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
-use App\Agents\Models\LaunchRecord;
 use App\Agents\Models\ProgramConversation;
+use App\Agents\Models\StartRecord;
 use Carbon\CarbonImmutable;
 
 /**
@@ -32,7 +32,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
     public function entered(string $sessionId, string $nativeId, string $eventId, CarbonImmutable $observedAt): void
     {
         $session = AgentSession::lockedForUpdate($sessionId);
-        $context = LaunchRecord::query()->where('request_id', $session->launch_request_id)->value('context_reference');
+        $context = StartRecord::query()->where('request_id', $session->start_request_id)->value('context_reference');
         $conversation = ProgramConversation::query()->native(
             (string) $session->program,
             self::HOST_SETTINGS,

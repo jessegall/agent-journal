@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Mcp\Console;
 
-use App\AgentRequests\Contracts\LaunchCredentialSource;
+use App\AgentRequests\Contracts\StartTokenSource;
 use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
-use App\AgentRequests\Exceptions\LaunchCredentialRefused;
-use App\AgentRequests\Exceptions\LaunchSettingMissing;
+use App\AgentRequests\Exceptions\StartSettingMissing;
+use App\AgentRequests\Exceptions\StartTokenRefused;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\RelayFrames;
@@ -16,17 +16,17 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 /**
- * The MCP server a launched program starts on stdio: each frame goes to the journal as one signed call whose body is
+ * The MCP server a started program runs on stdio: each frame goes to the journal as one signed call whose body is
  * the frame's exact bytes, and each answer comes back as one line. It reads no journal data itself.
  */
-#[AsCommand(name: 'mcp:relay', description: "Pass a launched program's MCP frames to the journal, signed")]
+#[AsCommand(name: 'mcp:relay', description: "Pass a started program's MCP frames to the journal, signed")]
 final class RelayCommand extends Command
 {
-    public function handle(LaunchCredentialSource $credentials, AgentRequestClient $client): int
+    public function handle(StartTokenSource $credentials, AgentRequestClient $client): int
     {
         try {
-            $settings = $credentials->forThisLaunch();
-        } catch (LaunchSettingMissing|LaunchCredentialRefused $refused) {
+            $settings = $credentials->forThisStart();
+        } catch (StartSettingMissing|StartTokenRefused $refused) {
             fwrite(STDERR, $refused->getMessage()."\n");
 
             return self::FAILURE;

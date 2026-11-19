@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
 use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
@@ -121,7 +121,7 @@ final class CoreCommands
             RetryProcessRun::class,
             CleanProcessOutput::class,
             VerifyRestoredOutput::class,
-            ClaimLaunchGrant::class,
+            ClaimStartGrant::class,
         ];
     }
 

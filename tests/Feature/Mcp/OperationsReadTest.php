@@ -15,12 +15,12 @@ use App\Bus\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use stdClass;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Mcp\CascadeResult;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\LaunchesTestAgent;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsTestAgent;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -31,14 +31,14 @@ use Tests\TestCase;
 final class OperationsReadTest extends TestCase
 {
     use CommitsHookRows;
-    use LaunchesTestAgent;
     use SendsMcpFrames;
     use StartsAgentRequests;
+    use StartsTestAgent;
 
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'assignments',
         'agent_stacks',
@@ -50,14 +50,14 @@ final class OperationsReadTest extends TestCase
     public function test_a_completed_assignment_write_reads_back_with_its_outcome(): void
     {
         $task = Task::factory()->create(['title' => 'Keyed']);
-        $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
+        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set(self::KEY);
         $this->app->make(CommandBus::class)->run(
-            new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->launch->agent)),
+            new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent)),
         );
 
         $result = $this->callMcpTool(
-            $this->launch,
+            $this->start,
             'operations_read',
             ['request_key' => self::KEY],
         )->assertJsonPath('result.isError', false)->json('result.structuredContent');
@@ -72,7 +72,7 @@ final class OperationsReadTest extends TestCase
     public function test_a_1000_outcome_cascade_is_read_whole_by_following_continuations(): void
     {
         $this->receipt(
-            $this->launch->session->id,
+            $this->start->session->id,
             new CascadeResult(
                 'plans.plan 1',
                 array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 1000)),
@@ -84,7 +84,7 @@ final class OperationsReadTest extends TestCase
 
         do {
             $page = $this->callMcpTool(
-                $this->launch,
+                $this->start,
                 'operations_read',
                 $arguments,
             )->assertJsonPath('result.isError', false)->json('result.structuredContent');
@@ -100,21 +100,21 @@ final class OperationsReadTest extends TestCase
     public function test_the_resource_reads_the_same_with_its_continuation_in_the_uri(): void
     {
         $this->receipt(
-            $this->launch->session->id,
+            $this->start->session->id,
             new CascadeResult(
                 'plans.plan 1',
                 array_map(fn (int $number) => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 30)),
             ),
         );
         $tool = $this->callMcpTool(
-            $this->launch,
+            $this->start,
             'operations_read',
             ['request_key' => self::KEY],
         )->json('result.structuredContent');
         $continuation = $tool['next_actions'][0]['arguments']['continuation'];
 
         $resource = $this->sendMcp(
-            $this->launch,
+            $this->start,
             'resources/read',
             ['uri' => 'journal://v1/operations/'.self::KEY.'?continuation='.urlencode($continuation)],
         )->assertOk()->json('result.contents.0');
@@ -125,10 +125,10 @@ final class OperationsReadTest extends TestCase
 
     public function test_another_sessions_key_answers_as_unknown(): void
     {
-        $other = TestLaunch::start();
+        $other = TestStart::start();
         $this->receipt($other->session->id, new CascadeResult('plans.plan 1', []));
 
-        $this->callMcpTool($this->launch, 'operations_read', ['request_key' => self::KEY])
+        $this->callMcpTool($this->start, 'operations_read', ['request_key' => self::KEY])
             ->assertJsonPath('result.isError', false)
             ->assertJsonPath('result.structuredContent.state', 'unknown');
     }
@@ -136,7 +136,7 @@ final class OperationsReadTest extends TestCase
     private function receipt(string $sessionId, CascadeResult $result): void
     {
         CommandReceipt::take(
-            ReceiptCaller::inSession(ActorContext::forAgent($this->launch->agent->id), $sessionId),
+            ReceiptCaller::inSession(ActorContext::forAgent($this->start->agent->id), $sessionId),
             self::KEY,
             new stdClass(),
             ReceiptRetention::standard(),

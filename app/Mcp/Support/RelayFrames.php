@@ -11,7 +11,7 @@ use App\Http\Middleware\Mcp\LimitMcpMessage;
 use Carbon\CarbonImmutable;
 
 /**
- * The relay's side of a launched program's stdio: newline-delimited UTF-8 frames read without buffering past what
+ * The relay's side of a started program's stdio: newline-delimited UTF-8 frames read without buffering past what
  * arrived, admitted with their arrival time into a queue of at most eight, and the journal's answers written back
  * one line each. A frame refused here never reaches the journal; diagnostics go to stderr, never stdout.
  */
@@ -116,7 +116,7 @@ final class RelayFrames
             $reply->status === 401 => $this->refuse(
                 $frame,
                 RefusalCode::Unauthenticated,
-                'The journal did not accept this launch credential.',
+                'The journal did not accept this start token.',
             ),
             $reply->status === 429 => $this->refuse(
                 $frame,

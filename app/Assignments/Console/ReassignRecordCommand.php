@@ -14,7 +14,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Move one record from the holder it has now to another, over a signed call as the agent of the launch.
+ * Move one record from the holder it has now to another, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class ReassignRecordCommand extends Command

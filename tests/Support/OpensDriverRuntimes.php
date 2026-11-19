@@ -10,7 +10,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\RuntimeIntent;
 
 /**
- * Opens a process driver's runtime for a launched session, so the agent has a runtime that can be woken.
+ * Opens a process driver's runtime for a started session, so the agent has a runtime that can be woken.
  */
 trait OpensDriverRuntimes
 {
@@ -27,6 +27,6 @@ trait OpensDriverRuntimes
             null,
             null,
         );
-        $this->app->make(AgentRuntimes::class)->open($session, $intent, 'launch-token');
+        $this->app->make(AgentRuntimes::class)->open($session, $intent, 'start-token');
     }
 }

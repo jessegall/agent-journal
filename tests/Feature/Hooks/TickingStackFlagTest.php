@@ -7,11 +7,11 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Support\AgentContext;
-use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartedAgent;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Decisions\StateReference;
@@ -29,7 +29,7 @@ use Tests\Fixtures\Hooks\Ticks\TickingLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingState;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsAsEngine;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -41,7 +41,7 @@ final class TickingStackFlagTest extends TestCase
     use CommitsHookRows;
     use RunsAsEngine;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
     /**
      * @var list<string> subjects of ticking frames whose work is done
@@ -65,29 +65,29 @@ final class TickingStackFlagTest extends TestCase
 
     public function test_pushing_a_ticking_frame_sets_the_flag_and_removing_the_last_one_clears_it(): void
     {
-        $launched = $this->launch();
-        $this->assertFalse($this->stackOf($launched)->has_ticking_frames);
+        $started = $this->start();
+        $this->assertFalse($this->stackOf($started)->has_ticking_frames);
 
-        $this->push($launched, 'test.plain', 'P');
-        $this->assertFalse($this->stackOf($launched)->has_ticking_frames);
+        $this->push($started, 'test.plain', 'P');
+        $this->assertFalse($this->stackOf($started)->has_ticking_frames);
 
-        $this->push($launched, 'test.ticking', 'T');
-        $this->assertTrue($this->stackOf($launched)->has_ticking_frames);
+        $this->push($started, 'test.ticking', 'T');
+        $this->assertTrue($this->stackOf($started)->has_ticking_frames);
 
         $this->finished = ['T'];
         $this->asEngineFor(
-            $this->targetOf($launched),
-            fn () => $this->app->make(EngineStacks::class)->popExposed($this->targetOf($launched)),
+            $this->targetOf($started),
+            fn () => $this->app->make(EngineStacks::class)->popExposed($this->targetOf($started)),
         );
-        $this->assertFalse($this->stackOf($launched)->has_ticking_frames);
+        $this->assertFalse($this->stackOf($started)->has_ticking_frames);
     }
 
     public function test_the_engine_reads_only_active_flagged_stacks_whose_session_runs(): void
     {
-        $ticking = $this->launch();
-        $plain = $this->launch();
-        $ended = $this->launch();
-        $closed = $this->launch();
+        $ticking = $this->start();
+        $plain = $this->start();
+        $ended = $this->start();
+        $closed = $this->start();
         $this->push($ticking, 'test.ticking', 'T1');
         $this->push($plain, 'test.plain', 'P');
         $this->push($ended, 'test.ticking', 'T2');
@@ -101,21 +101,21 @@ final class TickingStackFlagTest extends TestCase
         );
     }
 
-    private function launch(): LaunchedAgent
+    private function start(): StartedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             Agent::named('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );
     }
 
-    private function push(LaunchedAgent $launched, string $typeKey, string $subject): void
+    private function push(StartedAgent $started, string $typeKey, string $subject): void
     {
         $this->as(
-            $launched,
+            $started,
             fn () => $this->app->make(AgentStacks::class)->push(
-                $this->targetOf($launched),
+                $this->targetOf($started),
                 new StateReference($typeKey, new SubjectReference($subject, 1)),
             ),
         );
@@ -124,32 +124,32 @@ final class TickingStackFlagTest extends TestCase
     /**
      * @param  Closure(): mixed  $work
      */
-    private function as(LaunchedAgent $launched, Closure $work): void
+    private function as(StartedAgent $started, Closure $work): void
     {
         $this->app->forgetScopedInstances();
         $this->app->instance(
             AgentContext::class,
             new AgentContext(
-                $launched->session->agent_id,
-                $launched->session->id,
+                $started->session->agent_id,
+                $started->session->id,
                 new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
                 null,
             ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($launched->session->agent_id),
-            TestLaunchAuthority::forAgent($launched->session->agent_id),
+            ActorContext::forAgent($started->session->agent_id),
+            TestStartAuthority::forAgent($started->session->agent_id),
         );
         $this->app->make(StackTransaction::class)->run($work);
     }
 
-    private function stackOf(LaunchedAgent $launched): AgentStackRow
+    private function stackOf(StartedAgent $started): AgentStackRow
     {
-        return AgentStackRow::query()->authorizedFor($this->targetOf($launched))->sole();
+        return AgentStackRow::query()->authorizedFor($this->targetOf($started))->sole();
     }
 
-    private function targetOf(LaunchedAgent $launched): StackTarget
+    private function targetOf(StartedAgent $started): StackTarget
     {
-        return new StackTarget($launched->session->agent_id, $launched->session->id);
+        return new StackTarget($started->session->agent_id, $started->session->id);
     }
 }

@@ -23,7 +23,7 @@ final class ReportMakeCommand extends Command
 
     protected $description = 'File a new report; it is shared with every agent and user of this journal';
 
-    protected $help = 'Example: php artisan report:make "Check of the launcher" --abstract "What the check found" --file report.md --about "plan 3"';
+    protected $help = 'Example: php artisan report:make "Check of the starter" --abstract "What the check found" --file report.md --about "plan 3"';
 
     public function handle(DocumentCalls $documents): int
     {

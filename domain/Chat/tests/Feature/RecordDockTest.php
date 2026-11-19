@@ -35,7 +35,7 @@ final class RecordDockTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'inboxes',
         'desks',

@@ -11,7 +11,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Give an actor's auto-assignment of one type a new pool and size, over a signed call as the agent of the launch.
+ * Give an actor's auto-assignment of one type a new pool and size, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class ConfigureAutoAssignmentCommand extends Command

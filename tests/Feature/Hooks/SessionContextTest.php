@@ -23,7 +23,7 @@ use Tests\Support\TestActors;
 use Tests\TestCase;
 
 /**
- * Every launch, clear and resume brings the same context a compaction does: the domains' reminders, within the
+ * Every start, clear and resume brings the same context a compaction does: the domains' reminders, within the
  * budget with the required ones kept; a replay brings the recorded reply and runs no listener.
  */
 final class SessionContextTest extends TestCase
@@ -40,7 +40,7 @@ final class SessionContextTest extends TestCase
         new Memory(['text' => 'Use plain words.', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
     }
 
-    public function test_a_launch_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void
+    public function test_a_start_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void
     {
         foreach ([
             ['call-1', SessionStartSource::Startup],

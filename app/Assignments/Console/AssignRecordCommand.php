@@ -14,7 +14,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Give one record to a holder, over a signed call as the agent of the launch.
+ * Give one record to a holder, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class AssignRecordCommand extends Command

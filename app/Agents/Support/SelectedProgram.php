@@ -13,7 +13,7 @@ use App\Agents\Exceptions\ProgramUnsupported;
 use App\Programs\Enums\HookProgram;
 
 /**
- * The program and concrete model a launch runs, the model selection it asked for and where the program came from.
+ * The program and concrete model a start runs, the model selection it asked for and where the program came from.
  */
 final readonly class SelectedProgram
 {
@@ -25,7 +25,7 @@ final readonly class SelectedProgram
     ) {}
 
     /**
-     * The same selection pinned to a profile, for a launch whose selection named none.
+     * The same selection pinned to a profile, for a start whose selection named none.
      */
     public function pinnedTo(string $profileKey, int $profileRevision): self
     {
@@ -86,7 +86,7 @@ final readonly class SelectedProgram
             return [self::supported($parentProgram), ProgramSourceType::ParentSession];
         }
 
-        throw ProgramRequired::forLaunch();
+        throw ProgramRequired::forStart();
     }
 
     /**
@@ -101,7 +101,7 @@ final readonly class SelectedProgram
         $model = $requested->model;
 
         if ($model === null) {
-            return $profile->defaultModel ?? throw DefaultUnavailable::forLaunch();
+            return $profile->defaultModel ?? throw DefaultUnavailable::forStart();
         }
 
         if ($profile !== null && ! $profile->allows($model)) {

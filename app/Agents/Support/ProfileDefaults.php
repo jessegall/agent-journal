@@ -7,7 +7,7 @@ namespace App\Agents\Support;
 use App\Programs\Enums\HookProgram;
 
 /**
- * What a profile decides about a launch, as plain values from its owner: its program (pinned or open), its default
+ * What a profile decides about a start, as plain values from its owner: its program (pinned or open), its default
  * model and the models it allows; an empty allowed list allows any model.
  */
 final readonly class ProfileDefaults

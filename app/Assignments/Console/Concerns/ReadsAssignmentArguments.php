@@ -8,7 +8,7 @@ use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
 
 /**
- * The record an assignment command names by its type and id arguments, and the assignment it read. The launch
+ * The record an assignment command names by its type and id arguments, and the assignment it read. The start
  * decides who calls, never an option.
  */
 trait ReadsAssignmentArguments

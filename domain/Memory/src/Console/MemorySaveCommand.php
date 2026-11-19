@@ -11,7 +11,7 @@ use Domain\Memory\Calls\SaveMemoryCall;
 use Illuminate\Console\Command;
 
 /**
- * Keep a memory of the calling agent, asked of the journal over a signed call with the launch's token: the launch
+ * Keep a memory of the calling agent, asked of the journal over a signed call with the start's token: the start
  * decides whose memory it is, never an option.
  */
 #[JournalRoute(JournalRouteType::Write)]

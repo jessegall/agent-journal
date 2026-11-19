@@ -56,7 +56,7 @@ final class RefreshSkillsTest extends TestCase
 
     public function test_two_refreshes_without_changes_leave_one_generation_and_no_new_publications(): void
     {
-        $this->launch();
+        $this->start();
 
         $first = $this->refresh();
         $second = $this->refresh();
@@ -92,7 +92,7 @@ final class RefreshSkillsTest extends TestCase
 
     public function test_a_stored_edit_leads_to_a_pending_publication_for_a_running_session(): void
     {
-        $session = $this->launch();
+        $session = $this->start();
         $this->refresh();
         SkillPublication::query()->where('session_id', $session->id)->firstOrFail()->supersede();
 
@@ -130,7 +130,7 @@ final class RefreshSkillsTest extends TestCase
         return $this->throughEntry(new RefreshSkills());
     }
 
-    private function launch(): AgentSession
+    private function start(): AgentSession
     {
         $agent = Agent::named('Main', 'main-agent');
         $session = new AgentSession(TestSelections::sessionColumns());

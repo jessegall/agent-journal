@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Exceptions\AssignmentDenied;
@@ -42,8 +42,8 @@ final class AutoAssignmentAccessTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->dispatcher = $this->launched(Agent::named('Main', 'main-agent'));
-        $this->worker = $this->launched(Agent::named('Worker', 'writing-helper'));
+        $this->dispatcher = $this->started(Agent::named('Main', 'main-agent'));
+        $this->worker = $this->started(Agent::named('Worker', 'writing-helper'));
         $this->access = $this->app->make(AutoAssignmentAccess::class);
     }
 
@@ -119,9 +119,9 @@ final class AutoAssignmentAccessTest extends TestCase
     /**
      * The agent with a live session, so its own profile answers what it may do.
      */
-    private function launched(Agent $agent): Agent
+    private function started(Agent $agent): Agent
     {
-        $this->app->make(LaunchSessions::class)->launch(
+        $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),

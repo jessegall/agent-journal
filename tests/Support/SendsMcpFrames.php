@@ -6,10 +6,10 @@ namespace Tests\Support;
 
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 
 /**
- * Posts JSON-RPC frames to the journal's MCP route, signed by a test launch as its relay would sign them.
+ * Posts JSON-RPC frames to the journal's MCP route, signed by a test start as its relay would sign them.
  */
 trait SendsMcpFrames
 {
@@ -19,13 +19,13 @@ trait SendsMcpFrames
      * @return TestResponse<Response>
      */
     protected function sendMcp(
-        TestLaunch $launch,
+        TestStart $start,
         string $method,
         array $params = [],
         array $headers = [],
         int|null $issuedAt = null,
     ): TestResponse {
-        return $this->sendMcpBody($launch, $this->mcpFrame($method, $params), $headers, $issuedAt);
+        return $this->sendMcpBody($start, $this->mcpFrame($method, $params), $headers, $issuedAt);
     }
 
     /**
@@ -33,14 +33,14 @@ trait SendsMcpFrames
      * @return TestResponse<Response>
      */
     protected function sendMcpBody(
-        TestLaunch $launch,
+        TestStart $start,
         string $body,
         array $headers = [],
         int|null $issuedAt = null,
     ): TestResponse {
         $this->app->forgetScopedInstances();
         $server = [
-            ...$launch->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), $issuedAt, target: '/agent/mcp/v1'),
+            ...$start->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), $issuedAt, target: '/agent/mcp/v1'),
             ...$headers,
         ];
 
@@ -55,13 +55,13 @@ trait SendsMcpFrames
      * @return TestResponse<Response>
      */
     protected function callMcpTool(
-        TestLaunch $launch,
+        TestStart $start,
         string $name,
         array $arguments = [],
         array $headers = [],
     ): TestResponse {
         return $this->sendMcp(
-            $launch,
+            $start,
             'tools/call',
             ['name' => $name, 'arguments' => (object) $arguments],
             $headers,

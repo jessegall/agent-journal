@@ -42,7 +42,7 @@ final class DeskProvisioningTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'inboxes',
         'desks',
         'desk_seats',

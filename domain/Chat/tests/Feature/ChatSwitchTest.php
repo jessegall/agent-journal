@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Models\MessageAttention;
@@ -37,7 +37,7 @@ final class ChatSwitchTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'inboxes',
@@ -57,8 +57,8 @@ final class ChatSwitchTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $agent = Agent::named('Builder', 'main-agent');
-        $this->app->make(LaunchSessions::class)
-            ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
+        $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id))->inboxId();
         $this->startUserRequestAs($owner->id);

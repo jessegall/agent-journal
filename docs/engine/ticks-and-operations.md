@@ -129,7 +129,7 @@ Never change a stack from `onTick` itself.
 
 ## Periodic work: engine listeners
 
-Work that belongs to no frame, such as the launch silence sweep, implements `App\Engine\Contracts\EngineListener`:
+Work that belongs to no frame, such as the start silence sweep, implements `App\Engine\Contracts\EngineListener`:
 
 ```php
 final readonly class MarkSilentSessionsOnTick implements EngineListener

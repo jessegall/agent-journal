@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Listeners;
 
-use App\Agents\Events\LaunchEnded;
+use App\Agents\Events\SessionClosed;
 use App\Contracts\Listener;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\DraftClosing;
@@ -18,7 +18,7 @@ final readonly class CloseEndedSessionDraft implements Listener
 {
     public function __construct(private DraftClosing $drafts) {}
 
-    public function handle(LaunchEnded $event): void
+    public function handle(SessionClosed $event): void
     {
         $draft = DocumentDraft::query()->with('document')->heldByAgent($event->agentId)->first();
 

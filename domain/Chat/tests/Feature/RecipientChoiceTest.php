@@ -6,7 +6,7 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
@@ -38,7 +38,7 @@ final class RecipientChoiceTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'inboxes',
@@ -59,8 +59,8 @@ final class RecipientChoiceTest extends TestCase
         $this->app->make(EntryDispatchers::class)
             ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
         $this->inboxOf(ActorIdentity::of($owner));
-        $main = $this->launch('Main');
-        $helper = $this->launch('Helper');
+        $main = $this->start('Main');
+        $helper = $this->start('Helper');
         $this->startUserRequestAs($owner->id);
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(MainSeatTakeover::class)->takeOver(Agent::query()->findOrFail($main[0])),
@@ -75,11 +75,11 @@ final class RecipientChoiceTest extends TestCase
     /**
      * @return array{string, string} the agent id and its session id
      */
-    private function launch(string $name): array
+    private function start(string $name): array
     {
         $agent = Agent::named($name, 'main-agent');
-        $session = $this->app->make(LaunchSessions::class)
-            ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
+        $session = $this->app->make(StartSessions::class)
+            ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
         $this->inboxOf(new ActorIdentity(ActorType::Agent, $agent->id));
 

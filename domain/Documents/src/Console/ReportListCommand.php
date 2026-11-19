@@ -23,7 +23,7 @@ final class ReportListCommand extends Command
 
     protected $description = 'List the reports of this journal, newest first';
 
-    protected $help = 'Example: php artisan report:list --state all --query "launcher"';
+    protected $help = 'Example: php artisan report:list --state all --query "starter"';
 
     public function handle(DocumentCalls $documents): int
     {

@@ -13,6 +13,6 @@ final class OfflineReplyModeInvalid extends InvalidArgumentException
 {
     public static function for(string $value): self
     {
-        return new self("The launch names the offline reply '{$value}', which the journal never grants; launch again.");
+        return new self("The start names the offline reply '{$value}', which the journal never grants; start again.");
     }
 }

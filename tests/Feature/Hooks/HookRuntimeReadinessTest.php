@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Contracts\LaunchTransaction;
+use App\Contracts\StartTransaction;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Hooks\Contracts\ProgramCall;
@@ -101,12 +101,12 @@ final class HookRuntimeReadinessTest extends TestCase
         $this->assertInstanceOf(ProgramCall::class, $call);
     }
 
-    public function test_the_runtime_binds_the_real_parser_launch_transaction_and_state_types(): void
+    public function test_the_runtime_binds_the_real_parser_start_transaction_and_state_types(): void
     {
         $registry = $this->app->make(StateTypes::class)->registry();
 
         $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
-        $this->assertInstanceOf(StackTransaction::class, $this->app->make(LaunchTransaction::class));
+        $this->assertInstanceOf(StackTransaction::class, $this->app->make(StartTransaction::class));
 
         foreach (['hooks.ready', 'tasks.working', 'communication.answering', 'sequences.following'] as $typeKey) {
             $this->assertTrue($registry->has($typeKey), $typeKey);

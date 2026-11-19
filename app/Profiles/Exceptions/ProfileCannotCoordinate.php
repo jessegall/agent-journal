@@ -12,7 +12,7 @@ use App\Profiles\Values\ProfileKey;
 use RuntimeException;
 
 /**
- * A main launch names a profile whose base does not coordinate the journal's work.
+ * A main start names a profile whose base does not coordinate the journal's work.
  */
 final class ProfileCannotCoordinate extends RuntimeException implements CodedRefusal, CommandRefusal
 {

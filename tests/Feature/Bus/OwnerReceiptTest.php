@@ -15,10 +15,10 @@ use App\Http\Middleware\Web\ReadIdempotencyKey;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
-use Tests\Support\ClearsLaunchRows;
+use Tests\Support\ClearsStartRows;
 
 /**
  * A user's keyed write is receipted like an agent's, in the user's own key space: it runs once, a changed payload
@@ -27,7 +27,7 @@ use Tests\Support\ClearsLaunchRows;
  */
 final class OwnerReceiptTest extends CommandBusTestCase
 {
-    use ClearsLaunchRows;
+    use ClearsStartRows;
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2OWNERKEY1';
 
@@ -124,13 +124,13 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->app->make(RequestKey::class)->set(self::KEY);
         $this->app->make(CommandBus::class)->run(new WriteNote('user'));
 
-        $launch = TestLaunch::start();
-        $this->startRequestAs($launch->agent->id, $launch->session->id);
+        $start = TestStart::start();
+        $this->startRequestAs($start->agent->id, $start->session->id);
         $this->app->make(CommandBus::class)->run(new WriteNote('agent'));
 
         $this->assertSame(2, $this->rowCount());
         $this->assertSame(1, CommandReceipt::query()->count());
-        $this->assertSame($launch->session->id, CommandReceipt::query()->sole()->session_id);
+        $this->assertSame($start->session->id, CommandReceipt::query()->sole()->session_id);
     }
 
     public function test_the_idempotency_key_header_keys_the_request(): void

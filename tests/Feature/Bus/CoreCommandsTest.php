@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
-use App\Agents\Commands\LaunchAgent;
+use App\Agents\Commands\StartAgent;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
@@ -74,7 +74,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             CoreCommands::commands(),
             'Every class of a Core Commands folder is one of Core\'s commands.',
         );
-        $this->assertContains(LaunchAgent::class, CoreCommands::commands());
+        $this->assertContains(StartAgent::class, CoreCommands::commands());
         $this->assertContains(RecordUserHeartbeat::class, CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
@@ -130,7 +130,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             RetryProcessRun::class,
             CleanProcessOutput::class,
             VerifyRestoredOutput::class,
-            ClaimLaunchGrant::class,
+            ClaimStartGrant::class,
         ], CoreCommands::privateCommands());
     }
 

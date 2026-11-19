@@ -39,7 +39,7 @@ final class AutoAssignmentCommandsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'auto_assignments',
         'command_receipts',

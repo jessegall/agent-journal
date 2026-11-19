@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Contracts\AssignmentTransaction;
@@ -45,7 +45,7 @@ final class ResumeTaskRunTest extends TestCase
         'task_runs',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -61,8 +61,8 @@ final class ResumeTaskRunTest extends TestCase
     public function test_a_new_occupant_resumes_the_run_and_the_former_one_is_refused(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 1, false);
-        $leaving = $this->launched('First');
-        $arriving = $this->launched('Second');
+        $leaving = $this->started('First');
+        $arriving = $this->started('Second');
         $task = Task::factory()->create();
         AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
@@ -92,7 +92,7 @@ final class ResumeTaskRunTest extends TestCase
 
     public function test_a_direct_holder_that_regained_the_task_resumes_afresh(): void
     {
-        $worker = $this->launched('Third');
+        $worker = $this->started('Third');
         $task = Task::factory()->create();
         $holding = AssignmentRecord::holding(
             $task->assignmentIdentity(),
@@ -109,9 +109,9 @@ final class ResumeTaskRunTest extends TestCase
         $this->assertTrue($this->holderOf($run)?->isSameAs(ActorIdentity::of($worker->agent()->firstOrFail())));
     }
 
-    private function runAs(AgentSession $launch, StartTask|ResumeTaskRun $command): int
+    private function runAs(AgentSession $start, StartTask|ResumeTaskRun $command): int
     {
-        $this->startRequestAs($launch->agent_id, $launch->id);
+        $this->startRequestAs($start->agent_id, $start->id);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);
@@ -122,10 +122,10 @@ final class ResumeTaskRunTest extends TestCase
         return $this->app->make(RunClaims::class)->holderOf($run->assignmentIdentity())->getOrElse(null);
     }
 
-    private function launched(string $name): AgentSession
+    private function started(string $name): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)
-            ->launch(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
+        return $this->app->make(StartSessions::class)
+            ->start(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

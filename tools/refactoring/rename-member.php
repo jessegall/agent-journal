@@ -36,6 +36,45 @@ use PhpParser\ParserFactory;
 /**
  * Marks each method, property and constant declaration with the full name of the type it is declared in.
  */
+/**
+ * A rename this tool refuses, with the reason it prints.
+ */
+final class RenameRefused extends RuntimeException
+{
+    public static function malformed(): self
+    {
+        return new self('a rename is: method|property|constant <class> <old> <new>, or variable <folder> <old> <new>');
+    }
+
+    public static function undeclaredClass(string $class): self
+    {
+        return new self(sprintf('%s is not declared in the project', $class));
+    }
+
+    public static function noMember(string $class, string $what, string $old): self
+    {
+        return new self(sprintf('%s declares no %s %s', $class, $what, $old));
+    }
+
+    /**
+     * @param  list<string>  $others
+     */
+    public static function sharedName(string $what, string $old, array $others): self
+    {
+        return new self(sprintf(
+            'other classes also declare a %s %s, so a call by name cannot be told apart: %s (rename them too with --with=...)',
+            $what,
+            $old,
+            implode(', ', $others),
+        ));
+    }
+
+    public static function nameTaken(string $type, string $what, string $new): self
+    {
+        return new self(sprintf('%s already declares a %s %s', $type, $what, $new));
+    }
+}
+
 final class DeclaringTypeMarker extends NodeVisitorAbstract
 {
     /**
@@ -150,7 +189,7 @@ function renameMember(string $root, array $rename, array $with, bool $dry): arra
     [$what, $owner, $old, $new] = array_pad($rename, 4, '');
 
     if (! in_array($what, ['method', 'property', 'constant', 'variable'], true) || $owner === '' || $old === '' || $new === '') {
-        throw new RuntimeException('a rename is: method|property|constant <class> <old> <new>, or variable <folder> <old> <new>');
+        throw RenameRefused::malformed();
     }
 
     $files = parsedFiles($root, $what === 'variable' ? [$owner] : SEARCHED);
@@ -310,7 +349,7 @@ function memberEdits(array $files, string $what, string $class, string $old, str
     $index = typeIndex($files);
 
     if (! isset($index[$class])) {
-        throw new RuntimeException("{$class} is not declared in the project");
+        throw RenameRefused::undeclaredClass($class);
     }
 
     $family = [];
@@ -322,18 +361,18 @@ function memberEdits(array $files, string $what, string $class, string $old, str
     }
 
     if (! array_filter(array_keys($family), static fn (string $type) => in_array($old, $index[$type][$what], true))) {
-        throw new RuntimeException("{$class} declares no {$what} {$old}");
+        throw RenameRefused::noMember($class, $what, $old);
     }
 
     $others = array_keys(array_filter($index, static fn (array $entry, string $type) => ! isset($family[$type]) && in_array($old, $entry[$what], true), ARRAY_FILTER_USE_BOTH));
 
     if ($what !== 'constant' && $others !== []) {
-        throw new RuntimeException("other classes also declare a {$what} {$old}, so a call by name cannot be told apart: ".implode(', ', $others).' (rename them too with --with=...)');
+        throw RenameRefused::sharedName($what, $old, $others);
     }
 
     foreach (array_keys($family) as $type) {
         if (in_array($new, $index[$type][$what], true)) {
-            throw new RuntimeException("{$type} already declares a {$what} {$new}");
+            throw RenameRefused::nameTaken($type, $what, $new);
         }
     }
 
@@ -526,7 +565,7 @@ function declaringType(Node $node): string
  *
  * @param  list<array{int, int, string}>  $edits
  */
-function applied(string $code, array $edits): string
+function applied(string $source, array $edits): string
 {
     $unique = [];
 
@@ -535,6 +574,7 @@ function applied(string $code, array $edits): string
     }
 
     krsort($unique);
+    $code = $source;
 
     $edited = $code;
 
