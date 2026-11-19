@@ -32,6 +32,7 @@ use App\Agents\Support\HostCapacityLock;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Contracts\CommandHandler;
+use App\Desks\Contracts\ReplyInboxes;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -49,6 +50,7 @@ final readonly class LaunchAgentHandler implements CommandHandler
         private HelperImages $images,
         private HostCapacity $capacity,
         private HostCapacityLock $capacityLock,
+        private ReplyInboxes $replyInboxes,
     ) {}
 
     /**
@@ -59,7 +61,8 @@ final readonly class LaunchAgentHandler implements CommandHandler
     public function handle(LaunchAgent $command): LaunchReceipt
     {
         $request = $command->request;
-        $record = LaunchRecord::accept($request, ActorIdentity::of($command->dispatchedBy()));
+        $dispatcher = ActorIdentity::of($command->dispatchedBy());
+        $record = LaunchRecord::accept($request, $dispatcher, $this->replyInboxes->replyInboxIdFor($dispatcher));
 
         if ($record->session_id !== null) {
             return self::receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
