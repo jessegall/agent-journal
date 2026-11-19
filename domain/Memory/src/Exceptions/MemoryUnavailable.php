@@ -4,16 +4,23 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * A memory that does not exist or belongs to another actor; both answer alike.
  */
-final class MemoryUnavailable extends RuntimeException implements CommandRefusal
+final class MemoryUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     public static function forId(string $memoryId): self
     {
         return new self("Memory {$memoryId} is not one of yours.");
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::RecordUnavailable;
     }
 }
