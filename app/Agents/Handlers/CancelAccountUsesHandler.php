@@ -5,16 +5,23 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Agents\Commands\CancelAccountUses;
+use App\Agents\Events\AccountUseChanged;
+use App\Agents\Models\ProcessStart;
 use App\Contracts\CommandHandler;
+use Illuminate\Contracts\Events\Dispatcher;
 
-/**
- * A launch's session and its process start together, so no launch of the account waits without a process and none
- * is cancelled.
- */
 final readonly class CancelAccountUsesHandler implements CommandHandler
 {
+    public function __construct(private Dispatcher $events) {}
+
     public function handle(CancelAccountUses $command): int
     {
-        return 0;
+        $cancelled = ProcessStart::cancelPendingOf($command->account);
+
+        if ($cancelled > 0) {
+            $this->events->dispatch(new AccountUseChanged($command->account));
+        }
+
+        return $cancelled;
     }
 }

@@ -67,6 +67,16 @@ final class ActiveAccount extends Model implements ReadableModel
     }
 
     /**
+     * Each program's current choice, one row per program made so far.
+     *
+     * @return list<self>
+     */
+    public static function listed(): array
+    {
+        return array_values(self::query()->orderBy('program')->readAll('one row per program')->get()->all());
+    }
+
+    /**
      * Makes the account the one new launches use, and answers whether that changed anything: choosing the one already
      * chosen does not. Launches already running keep the account they started with.
      *

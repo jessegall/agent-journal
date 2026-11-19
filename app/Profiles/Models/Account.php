@@ -105,6 +105,23 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
+     * The owner's accounts that are not removed, by program and name.
+     *
+     * @return list<self>
+     */
+    public static function listed(): array
+    {
+        $accounts = self::query()
+            ->where('state', '<>', AccountState::Removed->value)
+            ->orderBy('program')
+            ->orderBy('label_key')
+            ->readAll('the owner sees every saved account at once')
+            ->get();
+
+        return array_values($accounts->all());
+    }
+
+    /**
      * The program of the account the owner may change, read before its locks are taken in their order.
      *
      * @throws AccountMissing

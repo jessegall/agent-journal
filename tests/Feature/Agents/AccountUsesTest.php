@@ -9,6 +9,7 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\HoldAccountUses;
 use App\Agents\Commands\SettleAccountUses;
@@ -22,7 +23,9 @@ use App\Agents\Exceptions\AccountUseMissing;
 use App\Agents\Exceptions\AccountUsesRemain;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Support\AccountUse;
+use App\Agents\Support\SelectedAccount;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Exceptions\CommandTransactionMissing;
@@ -56,6 +59,7 @@ final class AccountUsesTest extends TestCase
         'agent_stacks',
         'hook_calls',
         'links',
+        'process_starts',
         'command_receipts',
     ];
 
@@ -65,6 +69,11 @@ final class AccountUsesTest extends TestCase
     private const string ACCOUNT_TYPE = 'fixtures.note';
 
     private Agent $agent;
+
+    /**
+     * @var array<string, ProcessStart>
+     */
+    private array $starts = [];
 
     protected function setUp(): void
     {
@@ -109,6 +118,7 @@ final class AccountUsesTest extends TestCase
         $running = $this->sessionOn($first);
         $this->sessionOn($second);
         $ended->endAt(CarbonImmutable::now());
+        ProcessStart::stopProven([$this->starts[$ended->id]->start_key]);
 
         $counts = $this->uses()->counts([$first, $second, $unused]);
         $history = $this->uses()->history($first, 10);
@@ -140,28 +150,33 @@ final class AccountUsesTest extends TestCase
         $this->assertRefused(fn () => $this->bus()->run(new HoldAccountUses($account)));
     }
 
-    public function test_maintenance_holds_the_running_launches_and_settles_only_once_they_ended(): void
+    public function test_maintenance_cancels_unclaimed_starts_and_settles_only_once_claimed_ones_exited(): void
     {
-        Event::fake([AccountUseChanged::class]);
         $account = $this->account();
-        $session = $this->sessionOn($account);
+        $claimed = $this->sessionOn($account);
+        $pending = $this->sessionOn($account);
+        $this->assertTrue($this->starts[$claimed->id]->claim());
+        Event::fake([AccountUseChanged::class]);
 
         $held = $this->bus()->run(new HoldAccountUses($account));
         $cancelled = $this->bus()->run(new CancelAccountUses($account));
 
-        $this->assertSame([$session->id], $held->sessionIds);
-        $this->assertSame(0, $cancelled);
+        $this->assertSame([$claimed->id, $pending->id], $held->sessionIds);
+        $this->assertSame(1, $cancelled);
+        $this->assertFalse($this->starts[$pending->id]->refresh()->claim());
 
         try {
             $this->bus()->run(new SettleAccountUses($account));
-            $this->fail('An account with a running launch was settled.');
+            $this->fail('An account with a claimed start was settled.');
         } catch (AccountUsesRemain) {
-            $session->endAt(CarbonImmutable::now());
+            $claimed->endAt(CarbonImmutable::now());
+            $this->assertSame(1, $this->uses()->counts([$account])->runningFor($account));
+            ProcessStart::stopProven([$this->starts[$claimed->id]->start_key]);
         }
 
         $this->bus()->run(new SettleAccountUses($account));
 
-        Event::assertDispatchedTimes(AccountUseChanged::class, 2);
+        Event::assertDispatchedTimes(AccountUseChanged::class, 3);
     }
 
     public function test_without_accounts_every_launch_is_refused_with_its_program_and_a_safe_reason(): void
@@ -191,7 +206,8 @@ final class AccountUsesTest extends TestCase
     {
         $session = $this->launch();
         $this->passCommandTransaction();
-        $this->links()->link($session, $account);
+        $selected = new SelectedAccount($account, 'claude-code', '/journal/accounts/test', 1);
+        $this->starts[$session->id] = $this->app->make(RegisterPendingStart::class)->register($session, $selected);
 
         return $session;
     }

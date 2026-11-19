@@ -21,6 +21,7 @@ use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\ReassignAgentRuntime;
+use App\Agents\Commands\ReconcileStarts;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RecordRuntime;
 use App\Agents\Commands\ReleaseAgentHold;
@@ -167,6 +168,7 @@ final class CoreCommands
             HoldAccountUses::class,
             CancelAccountUses::class,
             SettleAccountUses::class,
+            ReconcileStarts::class,
             FenceProfileRevision::class,
             LaunchAgent::class,
             CreateAgent::class,
@@ -311,6 +313,7 @@ final class CoreCommands
             PruneSkillPublications::class,
             RecordSkillRead::class,
             FenceProfileRevision::class,
+            ReconcileStarts::class,
             MarkRunsStale::class,
             ReconcileLostRuns::class,
             StopSurvivors::class,

@@ -23,12 +23,4 @@ final readonly class AccountSessions
     {
         return $this->links->among(AgentSession::query(), $account);
     }
-
-    /**
-     * @return Builder<AgentSession>
-     */
-    public function running(RecordIdentity $account): Builder
-    {
-        return $this->links->among(AgentSession::query()->running(), $account);
-    }
 }

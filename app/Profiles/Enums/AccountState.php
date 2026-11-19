@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Profiles\Enums;
 
 use App\Agents\Enums\LaunchUnavailableReason;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * Where a saved account stands: signed in, waiting for its owner to sign in again, being removed, or removed with its
  * label kept for the launches that used it.
  */
+#[TypeScript]
 enum AccountState: string
 {
     case SignedIn = 'signed_in';

@@ -10,6 +10,7 @@ use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AccountUseMissing;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\ProcessStart;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\AccountSessions;
 use App\Agents\Support\AccountUseCounts;
@@ -17,7 +18,8 @@ use App\Records\Contracts\IdentityLinks;
 use App\Records\Support\RecordIdentity;
 
 /**
- * Reads the uses of accounts from the links each launch's session keeps to the account it ran with.
+ * Reads the uses of accounts: how many process starts on each may still have or make a process, and the history of
+ * the sessions linked to an account.
  */
 final readonly class LinkedAccountUses implements AccountUses
 {
@@ -33,7 +35,7 @@ final readonly class LinkedAccountUses implements AccountUses
         $counts = new AccountUseCounts();
 
         foreach ($accounts as $account) {
-            $counts = $counts->with($account, $this->sessions->running($account)->count());
+            $counts = $counts->with($account, ProcessStart::unresolvedCountOf($account));
         }
 
         return $counts;

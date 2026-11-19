@@ -7,6 +7,7 @@ namespace App\Agents\Providers;
 use App\Actors\Contracts\ActorAttention;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
@@ -31,27 +32,29 @@ use App\Agents\Console\ResumeKeyScriptCommand;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Console\RetryDriverRequestCommand;
 use App\Agents\Console\RunKeyScriptCommand;
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\ActorRuntimeResolver;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
-use App\Agents\Contracts\AccountUses;
-use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\Agent;
+use App\Agents\Models\ProcessStart;
+use App\Agents\Models\Support\ProcessStartScope;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
 use App\Agents\Resolvers\CurrentAgentRuntimes;
 use App\Agents\Resolvers\HostLaunchMaterial;
 use App\Agents\Resolvers\LaunchRecords;
+use App\Agents\Resolvers\LinkedAccountUses;
 use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
-use App\Agents\Resolvers\LinkedAccountUses;
 use App\Agents\Resolvers\UnconfiguredAccounts;
 use App\Agents\Resolvers\VerifiedHelperImages;
 use App\Agents\Support\AgentActivity;
@@ -71,6 +74,8 @@ use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Contracts\LaunchTransaction;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -133,7 +138,10 @@ final class AgentsServiceProvider extends ServiceProvider
         ActiveActorCounterRegistry $presentActors,
         AuthorizerProviderRegistration $authorizers,
         PolicyCatalogue $policies,
+        Dispatcher $events,
     ): void {
+        $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
+        $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
         $policies->register('Core', new PolicyRegistration(
             Agent::class,
             AgentPolicy::class,
