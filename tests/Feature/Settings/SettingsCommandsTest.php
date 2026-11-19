@@ -7,6 +7,7 @@ namespace Tests\Feature\Settings;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
+use App\Bus\Contracts\CommandBus;
 use App\Profiles\Values\ProfileBase;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\SetIntegerSetting;
@@ -29,11 +30,11 @@ use App\Settings\Storage\SettingsDocument;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use RuntimeException;
+use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
+use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
 use Tests\Support\TestActors;
@@ -50,6 +51,7 @@ final class SettingsCommandsTest extends TestCase
 {
     use ChangesReviewsSettings;
     use CommitsHookRows;
+    use InstallsCommandModules;
     use UsesReviewsSettings;
 
     /**
@@ -109,15 +111,17 @@ final class SettingsCommandsTest extends TestCase
             $announced++;
         });
 
-        try {
-            DB::transaction(function (): void {
-                $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0));
+        $this->useSettingsBesideTestModules();
+        $this->installCommandModules();
+        $this->actAs(ActorContext::forUser($this->ownerId));
+        $change = $this->commands->integer($this->reviews->retryLimit, 4, 0);
 
-                throw SimulatedFailure::of('The surrounding work failed.');
-            });
-        } catch (RuntimeException) {
-        }
-
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(
+                new SetIntegerSettingThenFail($change->setting, $change->value, $change->expectedRevision),
+            ),
+            SimulatedFailure::class,
+        );
         $this->assertSame(0, $announced);
         $this->assertSame(0, SettingsRecord::query()->count());
     }
