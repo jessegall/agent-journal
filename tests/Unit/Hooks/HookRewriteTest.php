@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;
@@ -22,6 +21,7 @@ use App\Hooks\Storage\WalkStep;
 use App\Processes\Enums\ShellDialect;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Hooks\RewritingState;

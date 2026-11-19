@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\StateReference;
@@ -29,6 +28,7 @@ use Domain\Plans\States\WorkingOnPlanState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\TestCase;

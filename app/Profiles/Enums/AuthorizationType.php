@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
-use BackedEnum;
-use App\Actors\Contracts\Policy;
-use App\Profiles\Values\AbilityGrant;
 use App\Actors\Contracts\Authorizer;
+use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Support\AllowsEverything;
 use App\Profiles\Support\PolicyAuthorizer;
+use App\Profiles\Values\AbilityGrant;
 use App\Profiles\Values\ProfileAuthorization;
+use BackedEnum;
 
 /**
  * How a profile decides what its actors may do: everything, or only the abilities its grants name, through each

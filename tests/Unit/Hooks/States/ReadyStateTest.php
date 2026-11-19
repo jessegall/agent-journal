@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\Denied;
@@ -25,6 +24,7 @@ use App\Processes\Values\CommandPart;
 use App\Processes\Values\ShellCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestIds;
 

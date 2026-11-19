@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\StopRequested;
@@ -14,6 +13,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\Fixtures\Hooks\HookInputs;
 
 final class ReadyTest extends TestCase
