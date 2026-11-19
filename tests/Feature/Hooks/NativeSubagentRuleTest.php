@@ -28,7 +28,7 @@ final class NativeSubagentRuleTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'process_events', 'part_runs', 'process_runs', 'command_requests'];
 
     private TestLaunch $launch;
 

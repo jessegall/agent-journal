@@ -32,7 +32,7 @@ final class HookRelayTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'agent_stacks', 'hook_calls', 'links'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'agent_stacks', 'hook_calls', 'links', 'process_events', 'part_runs', 'process_runs', 'command_requests'];
 
     private const string STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
 

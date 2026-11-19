@@ -30,7 +30,7 @@ final class HookEndpointTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links', 'program_conversations', 'conversation_visits'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links', 'program_conversations', 'conversation_visits', 'process_events', 'part_runs', 'process_runs', 'command_requests'];
 
     private TestLaunch $launch;
 
