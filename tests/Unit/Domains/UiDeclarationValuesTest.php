@@ -9,6 +9,7 @@ use App\Ui\Declarations\ChoiceOption;
 use App\Ui\Declarations\FloatSize;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
+use App\Ui\Declarations\PaneChoice;
 use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Declarations\SlotContext;
@@ -44,7 +45,12 @@ final class UiDeclarationValuesTest extends TestCase
             ->floating(FloatSize::of(400, 500))
             ->options(
                 ToggleOption::make('wide', 'Wide'),
-                ChoiceOption::make('sort', 'Sort', ['new' => 'Newest', 'old' => 'Oldest'], 'new'),
+                ChoiceOption::make(
+                    'sort',
+                    'Sort',
+                    [new PaneChoice('new', 'Newest'), new PaneChoice('old', 'Oldest')],
+                    'new',
+                ),
             )
             ->slots(Slot::record('inspector', 'plan'))
             ->actions(ActionRoute::post('start', LooseResolver::class, 'start'));
@@ -96,7 +102,7 @@ final class UiDeclarationValuesTest extends TestCase
     {
         $this->expectExceptionObject(InvalidPageDeclaration::unknownChoice('sort', 'size'));
 
-        ChoiceOption::make('sort', 'Sort', ['new' => 'Newest'], 'size');
+        ChoiceOption::make('sort', 'Sort', [new PaneChoice('new', 'Newest')], 'size');
     }
 
     public function test_a_float_size_must_be_positive(): void

@@ -157,10 +157,6 @@ if (! $dry) {
 }
 
 /**
- * Where a run has got to, said on the line the move prints anyway. A namespace move is hundreds of
- * classes and a minute of silence otherwise, and silence and a hang look the same from outside.
- */
-/**
  * A folder the move searches for references is not there, so the scan would narrow in silence.
  */
 final class SearchedFolderMissing extends RuntimeException
@@ -170,6 +166,11 @@ final class SearchedFolderMissing extends RuntimeException
         return new self(sprintf('[%s] is searched for references but does not exist.', $folder));
     }
 }
+
+/**
+ * Where a run has got to, said on the line the move prints anyway. A namespace move is hundreds of
+ * classes and a minute of silence otherwise, and silence and a hang look the same from outside.
+ */
 
 function progress(int $at, int $of): string
 {

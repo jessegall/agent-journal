@@ -34,7 +34,12 @@ final class ListedCommandParser implements ShellCommandParser
     private static function knownParts(): array
     {
         return [
-            'composer test' => new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification),
+            'composer test' => new CommandPart(
+                'composer',
+                ['test'],
+                CommandEffect::ChangesFiles,
+                CommandType::Verification,
+            ),
             'journal run tests' => new CommandPart(
                 'journal',
                 ['run', 'tests'],
