@@ -333,6 +333,13 @@ class Tasks(ScopedRepository[Task]):
     def finished_task_ids(self, holder: Ref) -> tuple[int, ...]:
         return tuple(link.target.id for link in sorted(self.links.all_matching(source=holder, link_type=FINISHED_LINK), key=lambda link: link.row_id))
 
+    def open_delegated(self) -> list[Task]:
+        return self.selected(self.query().filter(state=TaskState.OPEN, delegated=True).order("id"))
+
+    def holders(self, task: Task) -> list[Ref]:
+        """What holds the task: the rows whose task in hand it is, or in whose queue it waits."""
+        return [link.source for link_type in (CURRENT_TASK_LINK, QUEUED_LINK) for link in self.links.all_matching(target=Ref.build(task), link_type=link_type)]
+
     def release_task(self, holder: Ref, task_id: int, actor: Actor) -> None:
         for link in self.links.all_matching(source=holder, target=Ref("tasks", task_id), link_type=CURRENT_TASK_LINK):
             self.links.delete(link, actor)

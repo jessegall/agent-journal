@@ -7,6 +7,9 @@ from journal.models.agent import Agent
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.worker import Worker
+from journal.models.worker_state import WorkerState
+from journal.models.support.ref import Ref
+from journal.support.missing_row import MissingRow
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
@@ -22,6 +25,8 @@ from journal.support.time_source import TimeSource
 
 # the profile a worker the journal sends takes when no worker was sent here before it
 FIRST_PROFILE = "journal-medior"
+# a worker in one of these states holds no task any more
+LET_GO = (WorkerState.MERGED, WorkerState.RELEASED)
 
 
 class AutoDispatch(Job):
@@ -41,6 +46,7 @@ class AutoDispatch(Job):
                     self.filled(orchestrator, time)
 
     def filled(self, orchestrator: Agent, time: float) -> None:
+        self.unstranded()
         offers = self.dispatchable(time)
         limit = self.settings.integer(WorkersOptions.AUTO_DISPATCH_LIMIT) or self.settings.integer(WorkersOptions.WORKER_LIMIT)
         places = limit - self.workers.dispatched_count() if limit else len(offers)
@@ -48,6 +54,21 @@ class AutoDispatch(Job):
             current = self.tasks.find(task.row_id)
             if current.is_assignable():
                 self.sent(current, orchestrator)
+
+    def unstranded(self) -> None:
+        """An open task still marked delegated that no worker holds any more, its last one merged or released or gone, is nobody's: on the hosted journal 17 such tasks sat for days (19 Nov), skipped here and taken by the orchestrator for handed out. Its mark is cleared, so it is handed out again."""
+        for task in self.tasks.open_delegated():
+            if not any(self.holds(holder) for holder in self.tasks.holders(task)):
+                self.tasks.save(task.with_(delegated=False), Actor.system())
+                self.logs.save(TaskLog.build(task, "no worker holds it any more, so the journal hands it out again", self.time_source.seconds()), Actor.system())
+
+    def holds(self, holder: Ref) -> bool:
+        if holder.type != Worker.table():
+            return True
+        try:
+            return self.workers.find(holder.id).state not in LET_GO
+        except MissingRow:
+            return False
 
     def dispatchable(self, time: float) -> list[Task]:
         offers = self.assigner.offers()
