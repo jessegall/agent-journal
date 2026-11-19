@@ -198,8 +198,8 @@ class Worker(Helper):
     def limited(self, time: float, resumes_at: float, text: str) -> "Worker":
         return self.moved(LIMITED_MOVE, time).with_(state=WorkerState.LIMITED, pid=0, token_hash="", run_end=text, resumes_at=resumes_at).with_event(WorkerLimited(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, waiting for the usage limit", resumes_at=resumes_at))
 
-    def start_retried(self, resume: str, time: float) -> "Worker":
-        return self.moved(START_RETRY_MOVE, time).with_(resume=resume, pid=0, began=0.0)
+    def start_retried(self, brief: str, time: float) -> "Worker":
+        return self.moved(START_RETRY_MOVE, time).with_(brief=brief, resume="", pid=0, began=0.0)
 
     def is_start_retried(self) -> bool:
         return self.moves.latest((START_RETRY_MOVE, *JOB_STARTS, QUEUE_MOVE, REJECTION_MOVE)) == START_RETRY_MOVE

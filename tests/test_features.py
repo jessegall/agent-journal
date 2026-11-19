@@ -2015,8 +2015,8 @@ def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app
 HOOK_LINE = json.dumps({"type": "system", "subtype": "hook_response", "session_id": "stalled-session"})
 
 
-def stalled_start(app: App, monkeypatch, command: list[str], retried: bool) -> tuple[Workers, list]:
-    """A dispatched worker's run under a start limit of a fraction of a second, its launches gathered instead of started."""
+def stalled_start(app: App, monkeypatch, command: list[str], retried: bool, resume: str = "") -> tuple[Workers, list]:
+    """A dispatched worker's run under a start limit of a fraction of a second, launched on the session it names, its launches gathered instead of started."""
     launched = []
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: launched.append(worker))
     hook(app, "SessionStart")
@@ -2024,7 +2024,8 @@ def stalled_start(app: App, monkeypatch, command: list[str], retried: bool) -> t
     user_set(app, WorkersOptions.START_MINUTES.key, 0.005)
     workers = app.container.get(Workers)
     worker = workers.find(1)
-    worker = workers.save(worker.start_retried("", timing.time()), Actor.system()) if retried else worker
+    worker = workers.save(worker.start_retried(worker.brief, timing.time()), Actor.system()) if retried else worker
+    worker = workers.save(worker.with_(resume=resume), Actor.system())
     launched.clear()
     started_run(app.container.get(WorkerRunner), workers, worker, command, Actor.agent("s1"))
     return workers, launched
@@ -2048,6 +2049,38 @@ def test_a_worker_whose_agent_started_its_session_is_not_stopped_at_the_start_li
     workers, launched = stalled_start(app, monkeypatch, ["sh", "-c", f"echo '{init}'; sleep 1; echo done"], False)
     worker = workers.find(1)
     assert launched == [] and not worker.is_start_retried() and worker.run_end.endswith("done"), "a run whose session began runs on past the start limit to its own end"
+
+
+RESUME_HOOK_LINE = json.dumps({"type": "system", "subtype": "hook_started", "hook_name": "SessionStart:resume", "session_id": "hung-session"})
+
+
+def test_a_worker_whose_resumed_session_never_starts_is_launched_again_in_a_fresh_session_on_its_task(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import FRESH_START_BRIEF
+    workers, launched = stalled_start(app, monkeypatch, ["sh", "-c", f"echo '{RESUME_HOOK_LINE}'; sleep 30"], False, "hung-session")
+    assert [w.id for w in launched] == [1] and workers.find(1).is_start_retried(), "a resumed run that printed only its hook's lines is stopped at the start limit and launched again"
+    assert launched[0].resume == "" and launched[0].brief.startswith(FRESH_START_BRIEF) and "say hello" in launched[0].brief, "not on the session that hung but in a fresh one, carrying its task's brief"
+
+
+def test_a_run_watched_after_a_restart_whose_session_never_starts_is_launched_again_fresh(app: App, monkeypatch):
+    from journal.features.workers.jobs.worker_watch import WorkerWatch
+    from journal.features.workers.seeds.workers_seed import WorkersSeed
+    from journal.features.workers.support.worker_runner import FRESH_START_BRIEF
+    launched = []
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: launched.append(worker))
+    hook(app, "SessionStart")
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    user_set(app, WorkersOptions.START_MINUTES.key, 0.005)
+    workers, runner = app.container.get(Workers), app.container.get(WorkerRunner)
+    launched.clear()
+    output, _ = runner.outputs(workers.find(1))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(RESUME_HOOK_LINE + "\n")
+    hung = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    workers.save(workers.find(1).with_(resume="hung-session").running_as(hung.pid, timing.time() - 60), Actor.system())
+    app.container.get(WorkersSeed).run()
+    app.container.get(WorkerWatch).tick(timing.time())
+    assert hung.wait(timeout=5) == -signal.SIGKILL and [w.id for w in launched] == [1], "a revived run the journal only watches is stopped at the start limit too, not left to the run limit"
+    assert launched[0].resume == "" and launched[0].brief.startswith(FRESH_START_BRIEF) and "say hello" in launched[0].brief, "and launched again in a fresh session on its task"
 
 
 def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app: App, monkeypatch):
