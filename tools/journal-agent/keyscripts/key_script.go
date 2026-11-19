@@ -102,6 +102,9 @@ type KeyScript struct {
 	Parameters []string
 	Start      Expectation
 	Steps      []KeyStep
+	// ProvesResult is whether the script's last step sees the program's own evidence that the change took effect;
+	// a finished run of a script that does not is no proof the change was applied.
+	ProvesResult bool
 }
 
 // arrowDown and arrowUp move a menu's highlight one entry down or up; enterKey chooses the highlighted entry.

@@ -125,7 +125,7 @@ func TestAKeyScriptOfAServedTerminalRunsOnTheLiveScreenAndGate(t *testing.T) {
 	if !slices.Equal(steps, []string{"type /model", "run /model"}) || program.keys() != "/model\r" {
 		t.Fatalf("the run confirmed %q and sent %q", steps, program.keys())
 	}
-	if result.Progress != contracts.ProgressFailed || driver.Generation() != 3 {
+	if result.Script == nil || result.Script.Outcome != keyscripts.ScriptFailed || driver.Generation() != 3 {
 		t.Fatalf("a picker that never showed ended %+v in generation %d", result, driver.Generation())
 	}
 }

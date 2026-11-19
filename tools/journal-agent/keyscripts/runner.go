@@ -25,12 +25,14 @@ const (
 	EntryUnavailable Outcome = "entry-unavailable"
 )
 
-// Result is where a run stopped: its outcome, the step it stopped at and the last reading it saw.
+// Result is where a run stopped: its outcome, the step it stopped at and the last reading it saw; Proven is set on a
+// finished run of a script that proves its result.
 type Result struct {
 	Outcome Outcome
 	Step    int
 	Name    string
 	Seen    screen.Classification
+	Proven  bool
 }
 
 // Progress is one confirmed step, as the run reports it under its driver request: no key text, only what was seen.
@@ -113,7 +115,7 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 	}
 
-	return Result{Outcome: Finished, Step: len(script.Steps)}, nil
+	return Result{Outcome: Finished, Step: len(script.Steps), Proven: script.ProvesResult}, nil
 }
 
 // waitFor reads the screen until it is the expected one or the deadline passes; it never sleeps without reading.

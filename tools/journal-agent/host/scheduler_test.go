@@ -162,3 +162,33 @@ func TestContentBehindARepairedSettingWaitsUntilItIsReconciled(t *testing.T) {
 		t.Fatalf("got %+v", second)
 	}
 }
+
+func TestAKeyScriptRunsAloneAfterTheLeadingSettingsAndBeforeTheContentBehindIt(t *testing.T) {
+	queue := RuntimeQueue{}
+	queue.Add(request(1, operationChangeEffort), request(2, operationKeyScript), request(3, operationDeliver))
+
+	admission := queue.Next()
+	if admission.Script == nil || admission.Script.Sequence != 2 || !equal(sequences(admission.Staged), []int{1}) ||
+		admission.StartsTurn() {
+		t.Fatalf("the first admission is %+v", admission)
+	}
+
+	queue.TurnStarted()
+	if waiting := queue.Next(); !waiting.IsEmpty() {
+		t.Fatalf("a busy runtime admitted %+v while its script ran", waiting)
+	}
+	queue.TurnFinished()
+	if next := queue.Next(); !equal(sequences(next.Deliveries), []int{3}) || next.Script != nil {
+		t.Fatalf("after the script the runtime admitted %+v", next)
+	}
+}
+
+func TestAHeldRuntimeRunsNoKeyScript(t *testing.T) {
+	queue := RuntimeQueue{}
+	queue.Hold()
+	queue.Add(request(1, operationKeyScript))
+
+	if admission := queue.Next(); !admission.IsEmpty() {
+		t.Fatalf("a held runtime admitted %+v", admission)
+	}
+}

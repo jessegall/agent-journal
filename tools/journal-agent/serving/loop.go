@@ -12,6 +12,7 @@ import (
 	"journal-agent/client"
 	"journal-agent/drivers/contracts"
 	"journal-agent/host"
+	"journal-agent/keyscripts"
 )
 
 // Journal is the part of the journal the loop reports to.
@@ -102,6 +103,11 @@ func (loop *Loop) run(ctx context.Context, runtime *liveRuntime, admission host.
 	}
 	for _, setting := range admission.Staged {
 		loop.setting(ctx, runtime, setting)
+	}
+	if admission.Script != nil {
+		loop.startScript(ctx, runtime, *admission.Script)
+
+		return false
 	}
 	if !admission.StartsTurn() {
 		return true
@@ -218,6 +224,110 @@ func (loop *Loop) awaitTurn(ctx context.Context, runtime *liveRuntime) {
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 	loop.activity(ctx, runtime, "idle")
 	loop.advance(ctx, runtime.id)
+}
+
+// startScript runs a key script like a turn: the runtime is busy while it runs, the run waits on its screen in its
+// own goroutine so the loop takes a stop or a wake meanwhile, and the runtime takes more work when it ends.
+func (loop *Loop) startScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
+	loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplying})
+	loop.activity(ctx, runtime, "running")
+	go loop.runScript(ctx, runtime, request)
+}
+
+func (loop *Loop) runScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	result, err := loop.scriptResult(ctx, runtime, request)
+	loop.reportResult(ctx, request, result, err)
+
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
+	loop.activity(ctx, runtime, "idle")
+	loop.advance(ctx, runtime.id)
+}
+
+// scriptResult runs the script on a driver that runs key scripts, reporting each step it confirms, and reads how it
+// ended in the journal's words.
+func (loop *Loop) scriptResult(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+) (contracts.OperationResult, error) {
+	runner, runsScripts := runtime.driver.(contracts.KeyScriptRunner)
+	if !runsScripts {
+		return contracts.OperationResult{
+			Progress: contracts.ProgressUnavailable,
+			Outcome:  contracts.OutcomeTerminalRequired,
+		}, nil
+	}
+	if reporter, reportsSteps := runtime.driver.(stepReporter); reportsSteps {
+		reporter.ReportProgressTo(func(progress keyscripts.Progress) { loop.reportStep(ctx, runtime, request, progress) })
+	}
+
+	result, err := runner.RunKeyScript(ctx, contracts.KeyScriptRequest{
+		Request:    identityOf(request),
+		Script:     text(request.Script),
+		Parameters: parametersOf(request),
+		ResumeStep: request.ScriptStep,
+	})
+	if err != nil || result.Script == nil {
+		return result, err
+	}
+
+	return scriptEnd(*result.Script), nil
+}
+
+// stepReporter is a driver whose key scripts report each step they confirm.
+type stepReporter interface {
+	ReportProgressTo(receiver func(keyscripts.Progress))
+}
+
+// reportStep reports one confirmed step under the script's request: its number and what it saw, never a key.
+func (loop *Loop) reportStep(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	progress keyscripts.Progress,
+) {
+	evidence := progress.Name + ": " + string(progress.Seen.Kind)
+	if progress.Seen.Menu != "" {
+		evidence += " " + progress.Seen.Menu
+	}
+	report := client.RequestReport{
+		RequestID: request.RequestID,
+		Attempt:   request.Attempt,
+		Progress:  string(contracts.ProgressApplying),
+		Script:    &client.ScriptReport{Step: progress.Step, Generation: runtime.driver.Generation(), Evidence: evidence},
+	}
+	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+		log.Printf("step %d of request %s could not be reported: %v", progress.Step, request.RequestID, err)
+	}
+}
+
+// scriptEnd is how a run that stopped ends its request: applied only when the script proved its result on screen,
+// failed with the reason otherwise, and held for the person when the person typed or a step waits for them.
+func scriptEnd(result keyscripts.Result) contracts.OperationResult {
+	switch result.Outcome {
+	case keyscripts.Finished:
+		if result.Proven {
+			return contracts.OperationResult{Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed}
+		}
+		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeUnconfirmed}
+	case keyscripts.ScriptFailed:
+		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeScriptFailed}
+	case keyscripts.EntryUnavailable:
+		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeEntryUnavailable}
+	}
+
+	return contracts.OperationResult{Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}
+}
+
+// parametersOf is the claimed script's parameters by name.
+func parametersOf(request client.ClaimedRequest) map[string]string {
+	values := map[string]string{}
+	for _, parameter := range request.ScriptParameters {
+		values[parameter.Name] = parameter.Value
+	}
+
+	return values
 }
 
 func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime, error) {

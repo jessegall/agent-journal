@@ -177,16 +177,21 @@ func (driver *TerminalDriver) RunKeyScript(
 		return failed(request.Request), err
 	}
 
-	result, err := driver.runtime.Runner.Run(script, request.Parameters)
-	if err != nil || result.Outcome != keyscripts.Finished {
-		return contracts.OperationResult{
-			Request:  request.Request,
-			Progress: contracts.ProgressFailed,
-			Hold:     contracts.HoldNeedsAttention,
-		}, err
+	result, err := driver.run(script, request)
+
+	return contracts.OperationResult{Request: request.Request, Progress: contracts.ProgressApplying, Script: &result}, err
+}
+
+// run starts the script from its first step, or goes on from the step a stopped attempt reached.
+func (driver *TerminalDriver) run(
+	script keyscripts.KeyScript,
+	request contracts.KeyScriptRequest,
+) (keyscripts.Result, error) {
+	if request.ResumeStep != nil {
+		return driver.runtime.Runner.Resume(script, *request.ResumeStep, request.Parameters)
 	}
 
-	return contracts.OperationResult{Request: request.Request, Progress: contracts.ProgressApplying}, nil
+	return driver.runtime.Runner.Run(script, request.Parameters)
 }
 
 // prompt types a prompt into an empty, still composer, waits for its echo and submits it once. An interrupted
