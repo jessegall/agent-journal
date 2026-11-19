@@ -12,6 +12,11 @@ use App\Agents\Exceptions\AgentContextMissing;
 interface CurrentSession
 {
     /**
+     * Whether an agent calls in this request, so it has a session.
+     */
+    public function hasSession(): bool;
+
+    /**
      * @throws AgentContextMissing when no agent calls in this request
      */
     public function sessionId(): string;

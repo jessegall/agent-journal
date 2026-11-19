@@ -13,6 +13,11 @@ final readonly class FixedSession implements CurrentSession
 {
     public function __construct(private string $sessionId) {}
 
+    public function hasSession(): bool
+    {
+        return true;
+    }
+
     public function sessionId(): string
     {
         return $this->sessionId;

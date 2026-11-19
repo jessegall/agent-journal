@@ -11,7 +11,6 @@ use App\Actors\Support\ActorStore;
 use App\Actors\Support\SystemActor;
 use App\Actors\Values\OwnerAuthority;
 use Domain\Access\Models\User;
-use RuntimeException;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\TestCase;
 
@@ -36,10 +35,10 @@ final class SystemActorTest extends TestCase
 
         $inside = $store->actAsSystem('test', fn () => $store->actor()->actorType());
 
-        try {
-            $store->actAsSystem('test', fn () => throw SimulatedFailure::of('failed'));
-        } catch (RuntimeException) {
-        }
+        $this->assertThrows(
+            fn () => $store->actAsSystem('test', fn () => throw SimulatedFailure::of('failed')),
+            SimulatedFailure::class,
+        );
 
         $this->assertSame(ActorType::System, $inside);
         $this->assertSame(ActorType::User, $store->actor()->actorType());

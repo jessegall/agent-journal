@@ -24,7 +24,12 @@ trait ReportsPlanWork
 
         return CommandReport::ending(self::SUCCESS)
             ->line(
-                sprintf('Cascade over %s %s and its unfinished work: %s.', $work->root->recordType, $work->root->recordId, $counts),
+                sprintf(
+                    'Cascade over %s %s and its unfinished work: %s.',
+                    $work->root->recordType,
+                    $work->root->recordId,
+                    $counts,
+                ),
             );
     }
 }

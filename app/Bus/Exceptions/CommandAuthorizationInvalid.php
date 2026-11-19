@@ -21,14 +21,23 @@ final class CommandAuthorizationInvalid extends LogicException
     public static function policyInvalid(string $command, string $policy): self
     {
         return new self(
-            sprintf('%s is authorized by %s, which is no Policy with a public authorize(Actor, subject, ability).', $command, $policy),
+            sprintf(
+                '%s is authorized by %s, which is no Policy with a public authorize(Actor, subject, ability).',
+                $command,
+                $policy,
+            ),
         );
     }
 
     public static function subjectMismatched(string $command, string $subject, string $expected): self
     {
         return new self(
-            sprintf("%s names a subject of type %s, which its policy's authorize does not take (%s).", $command, $subject, $expected),
+            sprintf(
+                "%s names a subject of type %s, which its policy's authorize does not take (%s).",
+                $command,
+                $subject,
+                $expected,
+            ),
         );
     }
 
@@ -45,7 +54,13 @@ final class CommandAuthorizationInvalid extends LogicException
     public static function handlerShape(string $command, string $handler, string $subject): self
     {
         return new self(
-            sprintf('%s handles %s, which declares Authorize, so handle takes exactly (%s, %s).', $handler, $command, $command, $subject),
+            sprintf(
+                '%s handles %s, which declares Authorize, so handle takes exactly (%s, %s).',
+                $handler,
+                $command,
+                $command,
+                $subject,
+            ),
         );
     }
 }

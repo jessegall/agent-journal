@@ -78,7 +78,13 @@ final class ShareMember extends Model implements ReadableModel
     public static function currentOf(Share $share): array
     {
         return array_values(
-            self::query()->ofScope($share)->stillApproved()->orderBy('id')->readAll('a share scope holds at most the preview limit of members')->get()->all(),
+            self::query()
+                ->ofScope($share)
+                ->stillApproved()
+                ->orderBy('id')
+                ->readAll('a share scope holds at most the preview limit of members')
+                ->get()
+                ->all(),
         );
     }
 
@@ -111,7 +117,12 @@ final class ShareMember extends Model implements ReadableModel
         return array_values(
             array_map(
                 strval(...),
-                self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all(),
+                self::query()
+                    ->ofScope($share)
+                    ->stillApproved()
+                    ->readAll('a share scope holds at most the preview limit of members')
+                    ->pluck('link_id')
+                    ->all(),
             ),
         );
     }
@@ -156,9 +167,14 @@ final class ShareMember extends Model implements ReadableModel
     {
         $grouped = [];
 
-        foreach (self::query()->ofScope($share)->stillApproved()->fromSource($source)->readAll('a share scope holds at most the preview limit of members')->get(
-            ['target_type', 'target_id'],
-        ) as $member) {
+        $members = self::query()
+            ->ofScope($share)
+            ->stillApproved()
+            ->fromSource($source)
+            ->readAll('a share scope holds at most the preview limit of members')
+            ->get(['target_type', 'target_id']);
+
+        foreach ($members as $member) {
             $grouped[$member->target_type][] = $member->target();
         }
 

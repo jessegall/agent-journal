@@ -29,6 +29,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
@@ -107,10 +108,13 @@ final class TaskDetailsResolverTest extends TestCase
         $runner = $this->launch('Runner');
         $this->actAs($runner);
 
-        foreach (range(1, 20) as $number) {
-            $this->app->make(CommandBus::class)->run(
-                new StartTask(Task::factory()->create(['title' => "Task {$number}"])->id),
-            );
+        $tasks = Task::factory()
+            ->count(20)
+            ->sequence(fn (Sequence $sequence) => ['title' => sprintf('Task %d', $sequence->index + 1)])
+            ->create();
+
+        foreach ($tasks as $task) {
+            $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         }
 
         $this->asUser();
