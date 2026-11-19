@@ -5,6 +5,8 @@ from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.container.container import Container
 from engine.errors.refusal import Refusal
+from engine.enums.log_level import LogLevel
+from engine.log.system_log_writer import SystemLogWriter
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_setting import ProcessSetting
@@ -22,7 +24,7 @@ class RunEndRecovery:
     run that ended during a restart, or one no runner ever started, releases its queue slot while its agent
     sends no ticks. A run whose folder holds its end is ended from it at once, with no waiting, and the
     tick runs as the server takes over, so a command that ended while the server restarted shows as ended.
-    A run the runner reported first is skipped; one run's refusal leaves the others to go on."""
+    A run the runner reported first is skipped; one run's refusal is logged with its reason and leaves the others to go on."""
 
     def __call__(self, container: Container) -> bool:
         results = [self.end_run(container, process) for process in tuple(container.get(ProcessQuery).all_environments(TIMED_JOB_REASON).running().every_row(RUNNING_REASON))]
@@ -34,7 +36,8 @@ class RunEndRecovery:
             commands = self.commands(container, process)
             for command in commands:
                 bus.run(command, Actor.core(), environment_id=process.environment_id)
-        except Refusal:
+        except Refusal as refusal:
+            container.get(SystemLogWriter).write(LogLevel.WARNING, f"run end recovery could not end run {process.id}: {refusal}")
             return False
         return bool(commands)
 

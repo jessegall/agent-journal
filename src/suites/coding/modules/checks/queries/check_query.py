@@ -1,11 +1,10 @@
 from engine.query.conditions.greater import Greater
 from engine.database.database import Database
 from engine.model.tables import Tables
+from engine.query.conditions.column_compare import ColumnCompare
 from engine.query.conditions.is_null import IsNull
-from engine.query.conditions.less import Less
 from engine.query.query import Query
 from engine.time.timestamp import Timestamp
-from datetime import timedelta
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.conditions.interval_passed import IntervalPassed
 from suites.coding.modules.checks.queries.conditions.task_wait_command_failure import TaskWaitCommandFailure
@@ -36,9 +35,9 @@ class CheckQuery(Query[Check]):
     def due(self, present: Timestamp) -> list[Check]:
         return list(self.filter(stopped=False).matching(IntervalPassed(present.text)).every_row(ACTED_CHECKS_REASON))
 
-    def unreported(self, present: Timestamp, repeat_minutes: int) -> list[Check]:
+    # the failing checks not told since their last run: a check that fails again is told again at once
+    def unreported(self) -> list[Check]:
         failing = self.matching(IsNull("task_wait_id")).filter(stopped=False, last_passed=False)
         unreported_rows = failing.matching(IsNull("reported_at")).every_row(ACTED_CHECKS_REASON)
-        cutoff = Timestamp(present.value - timedelta(minutes=repeat_minutes))
-        repeat_rows = failing.matching(Less("reported_at", cutoff.text)).every_row(ACTED_CHECKS_REASON)
+        repeat_rows = failing.matching(ColumnCompare("last_run_at", ">", "reported_at")).every_row(ACTED_CHECKS_REASON)
         return sorted([*unreported_rows, *repeat_rows], key=lambda check: check.id)
