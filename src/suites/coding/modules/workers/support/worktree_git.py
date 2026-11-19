@@ -67,7 +67,10 @@ UNTRACKED_STATUS = "?? "
 PUBLISHED_FOLDERS = (".claude", ".agents")
 
 GIT_OPTIONS_WITH_VALUE = frozenset({"-c", "-C", "--git-dir", "--work-tree", "--namespace", "--exec-path", "--super-prefix", "--config-env"})
-BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "restore", "clean", "add", "update-ref", "update-index", "config", "fetch", "rm", "mv", "tag", "notes"})
+# the git commands that move a branch, a ref or the shared repository wait in the merge lane, one at a time; a
+# command that only touches its own worktree's index and files (add, rm, mv, restore, clean, update-index) does not,
+# so a dispatch setting up a new worktree never waits behind a merge
+BRANCH_CHANGES = frozenset({"merge", "rebase", "checkout", "switch", "worktree", "stash", "reset", "commit", "cherry-pick", "revert", "branch", "pull", "push", "clone", "am", "apply", "update-ref", "config", "fetch", "tag", "notes"})
 
 
 class WorktreeGit:

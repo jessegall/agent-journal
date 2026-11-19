@@ -15,6 +15,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.models.process import Process
 from engine.query.queries import Queries
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.carried_runs import CarriedRuns
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry
 
@@ -44,6 +45,7 @@ class ProcessRunPlacement(RunPlacement):
             return PlacedRun(request, None, True, None, owner.environment_id)
         command = StartProcess.single_part(agent_id, request.text, str(request.folder), request.process_type.category, int(request.limit_seconds), part_category=request.process_type.value)
         process = self.bus.run(command, Actor.core(), environment_id=owner.environment_id)
+        CarriedRuns.shared(self.outputs.home).carry(process.id)
         return PlacedRun(request, process.id, True, agent_id, owner.environment_id, is_waiting=process.queued_at is not None)
 
     def main_agent_id(self, environment_id: int) -> int | None:
@@ -67,6 +69,9 @@ class ProcessRunPlacement(RunPlacement):
             self.log.append(RequestLogEntry(run.environment_id, run.agent_id, run.request.process_type, run.request.text, execution.exit_code, self.clock.timestamp().text))
             return None
         emitted = execution.stdout + execution.stderr
-        self.outputs.write_output(run.process_id, FIRST_PART, emitted)
-        self.bus.run(EndProcess(run.process_id, execution.exit_code, len(emitted.encode()), emitted.count("\n")), Actor.core(), environment_id=run.environment_id)
+        try:
+            self.outputs.write_output(run.process_id, FIRST_PART, emitted)
+            self.bus.run(EndProcess(run.process_id, execution.exit_code, len(emitted.encode()), emitted.count("\n")), Actor.core(), environment_id=run.environment_id)
+        finally:
+            CarriedRuns.shared(self.outputs.home).release(run.process_id)
         return run.process_id

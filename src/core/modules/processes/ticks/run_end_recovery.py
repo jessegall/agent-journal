@@ -8,6 +8,7 @@ from engine.errors.refusal import Refusal
 from engine.enums.log_level import LogLevel
 from engine.log.system_log_writer import SystemLogWriter
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
+from core.modules.processes.support.carried_runs import CarriedRuns
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
@@ -43,7 +44,7 @@ class RunEndRecovery:
 
     def commands(self, container: Container, process: Process) -> list[Command[object]]:
         folder = container.get(OutputFolder)
-        if folder.has_leader_process(process.id):
+        if folder.has_leader_process(process.id) or CarriedRuns.shared(folder.home).is_carried(process.id):
             return []
         ends = container.get(RunFolderEnds).commands(process)
         if ends:
