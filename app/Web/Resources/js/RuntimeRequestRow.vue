@@ -8,7 +8,11 @@ import { recover } from './runtimeRecovery';
  */
 const props = defineProps<{ request: DriverRequestStatus }>();
 
-function run(action: string, question: string, extra: Record<string, unknown> = {}): void {
+function run(
+    action: string,
+    question: string,
+    extra: Record<string, unknown> = {},
+): void {
     const body = { rowVersion: props.request.rowVersion, ...extra };
 
     recover(`requests/${props.request.requestId}/${action}`, body, question);
@@ -19,34 +23,56 @@ function run(action: string, question: string, extra: Record<string, unknown> = 
     <tr>
         <td class="font-mono">{{ request.sequence }}</td>
         <td>{{ request.operation }}</td>
-        <td>{{ request.progress }}{{ request.outcome ? ` (${request.outcome})` : '' }}</td>
+        <td>
+            {{ request.progress
+            }}{{ request.outcome ? ` (${request.outcome})` : '' }}
+        </td>
         <td>{{ request.expectedTiming }}</td>
         <td>
             <template v-if="request.script">
-                {{ request.script }} step {{ request.scriptStep ?? 0 }}: {{ request.scriptEvidence ?? '' }}
+                {{ request.script }} step {{ request.scriptStep ?? 0 }}:
+                {{ request.scriptEvidence ?? '' }}
             </template>
         </td>
         <td class="flex gap-2">
             <template v-if="request.canRetry">
-                <button type="button" @click="run('retry', 'Why send this request again?')">
+                <button
+                    type="button"
+                    @click="run('retry', 'Why send this request again?')"
+                >
                     Retry
                 </button>
             </template>
             <template v-if="request.canCancel">
-                <button type="button" @click="run('cancel', 'Why cancel this request?')">
+                <button
+                    type="button"
+                    @click="run('cancel', 'Why cancel this request?')"
+                >
                     Cancel
                 </button>
             </template>
             <template v-if="request.canResolve">
                 <button
                     type="button"
-                    @click="run('resolve', 'What evidence shows the delivery arrived?', { applied: true })"
+                    @click="
+                        run(
+                            'resolve',
+                            'What evidence shows the delivery arrived?',
+                            { applied: true },
+                        )
+                    "
                 >
                     Resolve as arrived
                 </button>
                 <button
                     type="button"
-                    @click="run('resolve', 'What evidence shows the delivery never arrived?', { applied: false })"
+                    @click="
+                        run(
+                            'resolve',
+                            'What evidence shows the delivery never arrived?',
+                            { applied: false },
+                        )
+                    "
                 >
                     Resolve as not arrived
                 </button>

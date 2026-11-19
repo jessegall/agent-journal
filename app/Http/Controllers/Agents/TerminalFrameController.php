@@ -24,6 +24,6 @@ final readonly class TerminalFrameController
         return $responses->answer($request->agentId(), fn (): Response => $frames
             ->after($request->agentId(), $request->heldEpoch(), $request->heldSequence())
             ->map(fn (TerminalFrameData $frame): Response => new JsonResponse($frame))
-            ->getOrCall(fn (): Response => new Response(status: Response::HTTP_NO_CONTENT)));
+            ->getOrCall(fn () => new Response(status: Response::HTTP_NO_CONTENT)));
     }
 }

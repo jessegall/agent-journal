@@ -6,7 +6,10 @@ import type { ScreenRunData, ScreenStyleData } from '@generated/types/core';
  */
 defineProps<{ runs: ScreenRunData[]; plain: boolean }>();
 
-function styleOf(style: ScreenStyleData, plain: boolean): Record<string, string> {
+function styleOf(
+    style: ScreenStyleData,
+    plain: boolean,
+): Record<string, string> {
     if (plain) {
         return {};
     }
@@ -24,9 +27,11 @@ function styleOf(style: ScreenStyleData, plain: boolean): Record<string, string>
 </script>
 
 <template>
-    <div class="h-[1lh] whitespace-pre"><span
-        v-for="(run, index) in runs"
-        :key="index"
-        :style="styleOf(run.style, plain)"
-    >{{ run.text }}</span></div>
+    <div class="h-[1lh] whitespace-pre">
+        <template v-for="(run, index) in runs" :key="index"
+            ><span :style="styleOf(run.style, plain)">{{
+                run.text
+            }}</span></template
+        >
+    </div>
 </template>

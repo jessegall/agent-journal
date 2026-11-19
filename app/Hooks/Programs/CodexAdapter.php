@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
-use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Enums\CodexTool;
 use App\Hooks\Enums\FileAccess;
 use App\Hooks\Enums\FileOperation;
@@ -49,7 +49,7 @@ final readonly class CodexAdapter implements ProgramAdapter
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
         private GuardedFiles $files,
-        private ProtectedResources $protection,
+        private CheckProtectedResources $protection,
     ) {}
 
     public function capabilities(): ProgramCapabilities

@@ -14,16 +14,16 @@ use App\Agents\Exceptions\MenuStepRefused;
  */
 final readonly class MenuStep
 {
+    private const string FINGERPRINT = '/^fp1:[0-9a-f]{64}$/';
+
+    private const int MOST_TEXT_CHARACTERS = 200;
+
     public function __construct(
         public string $fingerprint,
         public string|null $choose,
         public string|null $key,
         public string|null $proof,
     ) {}
-
-    private const string FINGERPRINT = '/^fp1:[0-9a-f]{64}$/';
-
-    private const int MOST_TEXT_CHARACTERS = 200;
 
     /**
      * A step of a proven path as the host sent it: a fingerprint, exactly one of a label to choose or a named key, and

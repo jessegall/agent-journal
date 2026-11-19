@@ -35,7 +35,9 @@ defineProps<{ data: StartAccountData }>();
             </div>
             <div class="flex gap-2">
                 <dt class="text-text-3">Ended</dt>
-                <dd class="text-text tabular-nums">{{ data.endedAt ?? 'Still running' }}</dd>
+                <dd class="text-text tabular-nums">
+                    {{ data.endedAt ?? 'Still running' }}
+                </dd>
             </div>
         </dl>
     </div>

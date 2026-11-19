@@ -13,7 +13,6 @@ use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
 use App\Hooks\Actions\AgentStacks;
-use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Actions\CurrentStates;
 use App\Hooks\Actions\UserStacks;
 use App\Hooks\Console\PruneHookHistoryCommand;
@@ -23,8 +22,8 @@ use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\InspectsStacks;
+use App\Hooks\Contracts\ProgramAdapters;
 use App\Hooks\Contracts\ProgramCompatibilities;
-use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Contracts\RunsStackTransactions;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -35,6 +34,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\FailureReceipt;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Models\Support\AgentSessionScope;
+use App\Hooks\Programs\SupportedProgramAdapters;
 use App\Hooks\Resolvers\PinnedCompatibilities;
 use App\Hooks\Stack\AdvisoryStackAdmission;
 use App\Hooks\Stack\RegisteredStateFactory;
@@ -76,8 +76,8 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
             $app->make(Repository::class)->string('accounts.root'),
         ]));
-        $this->app->bind(ProtectedResources::class, CheckProtectedResources::class);
         $this->app->bind(ProgramCompatibilities::class, PinnedCompatibilities::class);
+        $this->app->bind(ProgramAdapters::class, SupportedProgramAdapters::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(

@@ -2,6 +2,7 @@
 import type { DriverRequestStatus, RuntimeStatus } from '@/types/generated';
 import { ref } from 'vue';
 import { recover } from './runtimeRecovery';
+import RuntimeSettingDetail from './RuntimeSettingDetail.vue';
 import RuntimeRequestRow from './RuntimeRequestRow.vue';
 import TerminalView from './TerminalView.vue';
 
@@ -9,7 +10,10 @@ import TerminalView from './TerminalView.vue';
  * One agent runtime as stored: its program, activity, hold, settings and latest driver requests, with a button that
  * releases a hold the owner may release, and for a terminal runtime its live terminal and how many people watch it.
  */
-const props = defineProps<{ status: RuntimeStatus; requests: DriverRequestStatus[] }>();
+const props = defineProps<{
+    status: RuntimeStatus;
+    requests: DriverRequestStatus[];
+}>();
 
 const watching = ref(false);
 
@@ -36,7 +40,8 @@ function age(seconds: number | null): string {
                 <button type="button" @click="releaseHold">Release hold</button>
             </template>
             <span :class="status.isStale ? 'text-warn' : 'text-text-3'">
-                observed {{ age(status.observationAgeSeconds) }}{{ status.isStale ? ', stale' : '' }}
+                observed {{ age(status.observationAgeSeconds)
+                }}{{ status.isStale ? ', stale' : '' }}
             </span>
             <template v-if="status.driverType === 'terminal'">
                 <button type="button" @click="watching = !watching">
@@ -52,15 +57,9 @@ function age(seconds: number | null): string {
         </template>
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 text-sm">
             <dt class="text-text-3">model</dt>
-            <dd>
-                observed {{ status.model.observed ?? 'unknown' }}, staged {{ status.model.staged ?? 'none' }},
-                requested {{ status.model.requested ?? 'none' }}
-            </dd>
+            <RuntimeSettingDetail :setting="status.model" />
             <dt class="text-text-3">effort</dt>
-            <dd>
-                observed {{ status.effort.observed ?? 'unknown' }}, staged {{ status.effort.staged ?? 'none' }},
-                requested {{ status.effort.requested ?? 'none' }}
-            </dd>
+            <RuntimeSettingDetail :setting="status.effort" />
         </dl>
         <table class="text-sm">
             <thead class="text-left text-text-3">
@@ -75,7 +74,7 @@ function age(seconds: number | null): string {
             </thead>
             <tbody>
                 <template v-for="request in requests" :key="request.requestId">
-                  <RuntimeRequestRow :request="request" />
+                    <RuntimeRequestRow :request="request" />
                 </template>
             </tbody>
         </table>

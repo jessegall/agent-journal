@@ -22,7 +22,7 @@ final readonly class WalkedCall
 
     public function answeredBy(HookAnswer $answer): self
     {
-        return new self($this->call, $this->row, $this->stackBefore, $answer);
+        return clone ($this, ['answer' => $answer]);
     }
 
     public function settled(): SettledCall

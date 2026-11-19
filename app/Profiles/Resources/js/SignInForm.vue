@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import type { SignInAttemptData } from '@generated/types/accounts';
-import { cancelSignIn, signInAgain, startSignIn, submitCode } from '@generated/routes/accounts';
+import {
+    cancelSignIn,
+    signInAgain,
+    startSignIn,
+    submitCode,
+} from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import ConfirmAction from '@kit/ConfirmAction';
@@ -45,7 +50,10 @@ function begin(): void {
 function beginAgain(accountId: string): void {
     again
         .transform(() => ({ request_key: crypto.randomUUID() }))
-        .submit(signInAgain({ account: accountId }), { preserveScroll: true, ...formSendingHooks() });
+        .submit(signInAgain({ account: accountId }), {
+            preserveScroll: true,
+            ...formSendingHooks(),
+        });
 }
 
 async function pollChallenge(attemptId: string): Promise<void> {
@@ -99,37 +107,48 @@ function cancel(): void {
     }
 
     forgetChallenge();
-    cancelling.submit(cancelSignIn({ attempt: props.running.id }), { preserveScroll: true, ...formSendingHooks() });
+    cancelling.submit(cancelSignIn({ attempt: props.running.id }), {
+        preserveScroll: true,
+        ...formSendingHooks(),
+    });
 }
 </script>
 
 <template>
     <div class="flex flex-col gap-2 px-4 py-3">
-        <form
-            v-if="running === undefined && accountId === null"
-            class="flex items-end gap-2"
-            @submit.prevent="begin"
-        >
-            <TextField
-                :id="`new-account-${program}`"
-                v-model="start.label"
-                label="Account name"
-                :maxlength="80"
-                :error="start.errors.label"
-            />
-            <Button type="submit" variant="primary" size="small" :pending="start.processing">Sign in</Button>
-        </form>
-        <div v-else-if="running === undefined && accountId !== null">
-            <ConfirmAction
-                label="Sign in again"
-                question="New starts wait and work running on this account must end first. Sign in again?"
-                confirm-label="Sign in again"
-                :pending="again.processing"
-                @confirm="beginAgain(accountId)"
-            />
-        </div>
+        <template v-if="running === undefined && accountId === null">
+            <form class="flex items-end gap-2" @submit.prevent="begin">
+                <TextField
+                    :id="`new-account-${program}`"
+                    v-model="start.label"
+                    label="Account name"
+                    :maxlength="80"
+                    :error="start.errors.label"
+                />
+                <Button
+                    type="submit"
+                    variant="primary"
+                    size="small"
+                    :pending="start.processing"
+                    >Sign in</Button
+                >
+            </form>
+        </template>
+        <template v-else-if="running === undefined && accountId !== null">
+            <div>
+                <ConfirmAction
+                    label="Sign in again"
+                    question="New starts wait and work running on this account must end first. Sign in again?"
+                    confirm-label="Sign in again"
+                    :pending="again.processing"
+                    @confirm="beginAgain(accountId)"
+                />
+            </div>
+        </template>
         <template v-else-if="running !== undefined">
-            <p v-if="challenge.address === null" class="text-small text-text-3">Starting the sign-in…</p>
+            <template v-if="challenge.address === null">
+                <p class="text-small text-text-3">Starting the sign-in…</p>
+            </template>
             <template v-else>
                 <a
                     :href="challenge.address"
@@ -138,25 +157,44 @@ function cancel(): void {
                     class="text-small text-brand-text underline"
                     >Open the sign-in page</a
                 >
-                <p v-if="direction === 'outgoing' && challenge.code" class="text-small text-text-2">
-                    Enter this code there: <span class="font-mono tracking-[0.2em]">{{ challenge.code }}</span>
-                </p>
-                <form v-if="direction === 'paste-back'" class="flex items-end gap-2" @submit.prevent="sendCode">
-                    <TextField
-                        :id="`sign-in-code-${running.id}`"
-                        v-model="codeForm.code"
-                        label="Code from the sign-in page"
-                        code
-                        :maxlength="512"
-                        :error="codeForm.errors.code"
-                    />
-                    <Button type="submit" variant="primary" size="small" :pending="codeForm.processing"
-                        >Send code</Button
+                <template v-if="direction === 'outgoing' && challenge.code">
+                    <p class="text-small text-text-2">
+                        Enter this code there:
+                        <span class="font-mono tracking-[0.2em]">{{
+                            challenge.code
+                        }}</span>
+                    </p>
+                </template>
+                <template v-if="direction === 'paste-back'">
+                    <form
+                        class="flex items-end gap-2"
+                        @submit.prevent="sendCode"
                     >
-                </form>
+                        <TextField
+                            :id="`sign-in-code-${running.id}`"
+                            v-model="codeForm.code"
+                            label="Code from the sign-in page"
+                            code
+                            :maxlength="512"
+                            :error="codeForm.errors.code"
+                        />
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            size="small"
+                            :pending="codeForm.processing"
+                            >Send code</Button
+                        >
+                    </form>
+                </template>
             </template>
             <div>
-                <Button size="small" :pending="cancelling.processing" @click="cancel">Cancel sign-in</Button>
+                <Button
+                    size="small"
+                    :pending="cancelling.processing"
+                    @click="cancel"
+                    >Cancel sign-in</Button
+                >
             </div>
         </template>
         <FormErrors :errors="start.errors" />

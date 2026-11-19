@@ -32,7 +32,7 @@ final readonly class ClaimAnswer implements JsonSerializable
         return [
             'requests' => $this->claimed->requests,
             'watched' => array_map(
-                fn (WatchedRuntime $runtime): array => [
+                fn (WatchedRuntime $runtime) => [
                     'runtime_id' => $runtime->runtimeId,
                     'interval_ms' => $runtime->intervalMs,
                 ],

@@ -39,27 +39,29 @@ function confirm(): void {
 </script>
 
 <template>
-    <Button
-        v-if="!asking"
-        variant="danger"
-        size="small"
-        :pending="pending"
-        @click="ask"
-        >{{ label }}</Button
-    >
-    <div
-        v-else
-        role="alertdialog"
-        :aria-label="question"
-        class="flex items-center gap-2"
-        @keydown.escape.prevent="takeBack"
-    >
-        <span class="text-small text-text-2">{{ question }}</span>
-        <Button ref="cancel" variant="bordered" size="small" @click="takeBack"
-            >Cancel</Button
-        >
-        <Button variant="danger" size="small" @click="confirm">{{
-            confirmLabel
+    <template v-if="!asking">
+        <Button variant="danger" size="small" :pending="pending" @click="ask">{{
+            label
         }}</Button>
-    </div>
+    </template>
+    <template v-else>
+        <div
+            role="alertdialog"
+            :aria-label="question"
+            class="flex items-center gap-2"
+            @keydown.escape.prevent="takeBack"
+        >
+            <span class="text-small text-text-2">{{ question }}</span>
+            <Button
+                ref="cancel"
+                variant="bordered"
+                size="small"
+                @click="takeBack"
+                >Cancel</Button
+            >
+            <Button variant="danger" size="small" @click="confirm">{{
+                confirmLabel
+            }}</Button>
+        </div>
+    </template>
 </template>

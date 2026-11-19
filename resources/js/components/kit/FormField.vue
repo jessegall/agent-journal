@@ -24,11 +24,15 @@ const describedBy = `${props.id}-description`;
             :described-by="error || hint ? describedBy : undefined"
             :invalid="error ? true : undefined"
         />
-        <p v-if="error" :id="describedBy" class="text-small text-danger">
-            {{ error }}
-        </p>
-        <p v-else-if="hint" :id="describedBy" class="text-small text-text-3">
-            {{ hint }}
-        </p>
+        <template v-if="error">
+            <p :id="describedBy" class="text-small text-danger">
+                {{ error }}
+            </p>
+        </template>
+        <template v-else-if="hint">
+            <p :id="describedBy" class="text-small text-text-3">
+                {{ hint }}
+            </p>
+        </template>
     </div>
 </template>

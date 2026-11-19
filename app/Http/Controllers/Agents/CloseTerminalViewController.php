@@ -18,7 +18,7 @@ final readonly class CloseTerminalViewController
         return $responses->run(
             $request->agentId(),
             $request->closeCommand(),
-            fn (): Response => new Response(status: Response::HTTP_NO_CONTENT),
+            fn () => new Response(status: Response::HTTP_NO_CONTENT),
         );
     }
 }

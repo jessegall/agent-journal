@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { AccountListData, AccountRowData } from '@generated/types/accounts';
+import type {
+    AccountListData,
+    AccountRowData,
+} from '@generated/types/accounts';
 import EmptyState from '@kit/EmptyState';
 import PageHeader from '@kit/PageHeader';
 import { computed, ref, watch } from 'vue';
@@ -21,7 +24,8 @@ const selections = ref(props.data.selections);
 
 watch(
     () => props.data.selections,
-    (arrived) => (selections.value = newestSelections(selections.value, arrived)),
+    (arrived) =>
+        (selections.value = newestSelections(selections.value, arrived)),
 );
 
 const programs = computed(() => {
@@ -31,7 +35,10 @@ const programs = computed(() => {
     ]);
 
     for (const row of props.data.rows) {
-        byProgram.set(row.program, [...(byProgram.get(row.program) ?? []), row]);
+        byProgram.set(row.program, [
+            ...(byProgram.get(row.program) ?? []),
+            row,
+        ]);
     }
 
     return [...byProgram.entries()];
@@ -41,12 +48,13 @@ const programs = computed(() => {
 <template>
     <div class="flex flex-col">
         <PageHeader title="Accounts" :count="data.rows.length" />
-        <EmptyState
-            v-if="data.rows.length === 0"
-            icon="accounts"
-            title="No saved accounts yet"
-            text="Sign in to a Claude Code or Codex account below to let agents start with it."
-        />
+        <template v-if="data.rows.length === 0">
+            <EmptyState
+                icon="accounts"
+                title="No saved accounts yet"
+                text="Sign in to a Claude Code or Codex account below to let agents start with it."
+            />
+        </template>
         <template v-for="[program, rows] in programs" :key="program">
             <section :aria-label="programName(program)">
                 <h2 class="px-4 pt-4 pb-1 text-small text-text-3">
@@ -61,12 +69,20 @@ const programs = computed(() => {
                     <template v-for="row in rows" :key="row.id">
                         <AccountRow
                             :account="row"
-                            :is-chosen="isChosen(selections, row.program, row.id)"
+                            :is-chosen="
+                                isChosen(selections, row.program, row.id)
+                            "
                         >
                             <SignInForm
                                 :program="program"
                                 :account-id="row.id"
-                                :running="attemptToRejoin(data.attempts, program, row.id)"
+                                :running="
+                                    attemptToRejoin(
+                                        data.attempts,
+                                        program,
+                                        row.id,
+                                    )
+                                "
                             />
                         </AccountRow>
                     </template>

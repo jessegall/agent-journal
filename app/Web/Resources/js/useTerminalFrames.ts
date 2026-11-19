@@ -18,7 +18,12 @@ const SILENT_MILLISECONDS = 15_000;
 /**
  * Where the view stands: opening, refused with a message, or showing the screen as live, ended or just restarted.
  */
-export type TerminalViewState = 'opening' | 'refused' | 'live' | 'ended' | 'restarted';
+export type TerminalViewState =
+    | 'opening'
+    | 'refused'
+    | 'live'
+    | 'ended'
+    | 'restarted';
 
 /**
  * Holds a viewer's lease on an agent's terminal and polls its frames: opens on mount, renews every 10 seconds,
@@ -45,7 +50,11 @@ export function useTerminalFrames(agentId: string) {
         if (answer.endedAt !== undefined) {
             endedAt.value = answer.endedAt;
         }
-        if (answer.frame === undefined || answer.receivedAt === undefined || !supersedes(answer.frame, drawn.value)) {
+        if (
+            answer.frame === undefined ||
+            answer.receivedAt === undefined ||
+            !supersedes(answer.frame, drawn.value)
+        ) {
             return;
         }
         drawn.value = answer.frame;
@@ -56,7 +65,9 @@ export function useTerminalFrames(agentId: string) {
 
     async function poll(): Promise<void> {
         now.value = Date.now();
-        const reply = await pollJson<TerminalFrameData>(frame.url({ agent: agentId }, { query: { ...held } }));
+        const reply = await pollJson<TerminalFrameData>(
+            frame.url({ agent: agentId }, { query: { ...held } }),
+        );
         if (reply.type === 'refused') {
             refuse(reply.message);
 
@@ -104,7 +115,9 @@ export function useTerminalFrames(agentId: string) {
         state.value = 'live';
         receivedAt.value = Date.now();
         timers.push(window.setInterval(() => void poll(), POLL_MILLISECONDS));
-        timers.push(window.setInterval(() => void keepOpen(), RENEW_MILLISECONDS));
+        timers.push(
+            window.setInterval(() => void keepOpen(), RENEW_MILLISECONDS),
+        );
         void poll();
     }
 
@@ -118,7 +131,10 @@ export function useTerminalFrames(agentId: string) {
     });
 
     function isSilent(): boolean {
-        return state.value === 'live' && now.value - receivedAt.value > SILENT_MILLISECONDS;
+        return (
+            state.value === 'live' &&
+            now.value - receivedAt.value > SILENT_MILLISECONDS
+        );
     }
 
     function ageSeconds(): number {

@@ -11,6 +11,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One open notice about a program's accounts: the program, the safe reason, how often and since when.
+ *
+ * @method static static from(AccountNotice $notice)
+ * @method static static from(array<string, mixed> $payload)
  */
 #[TypeScript]
 final class AccountNoticeData extends Data

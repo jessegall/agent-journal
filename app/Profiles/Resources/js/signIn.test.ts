@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@generated/routes/accounts', () => ({
-    challenge: ({ attempt }: { attempt: string }) => ({ url: `/accounts/sign-ins/${attempt}/challenge` }),
+    challenge: ({ attempt }: { attempt: string }) => ({
+        url: `/accounts/sign-ins/${attempt}/challenge`,
+    }),
 }));
 vi.mock('@kit/xsrfToken', () => ({ xsrfToken: () => 'token' }));
 
@@ -35,8 +37,12 @@ describe('attemptToRejoin', () => {
             attempt({ id: 'running' }),
         ];
 
-        expect(attemptToRejoin(attempts, 'claude-code', null)?.id).toBe('running');
-        expect(attemptToRejoin(attempts, 'claude-code', 'acc-1')?.id).toBe('other-account');
+        expect(attemptToRejoin(attempts, 'claude-code', null)?.id).toBe(
+            'running',
+        );
+        expect(attemptToRejoin(attempts, 'claude-code', 'acc-1')?.id).toBe(
+            'other-account',
+        );
         expect(attemptToRejoin(attempts, 'codex', null)).toBeUndefined();
         expect(isLive(attempt({ state: 'complete' }))).toBe(false);
     });

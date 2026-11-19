@@ -83,7 +83,7 @@ final readonly class Decision
 
     public function withContext(string $text): self
     {
-        return new self($this->answer, $this->transition, [...$this->context, $text], $this->messages);
+        return clone ($this, ['context' => [...$this->context, $text]]);
     }
 
     public function withMessage(string $text): self

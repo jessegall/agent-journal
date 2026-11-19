@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { AccountNoticeReason, AccountNoticesData } from '@generated/types/accounts';
+import type {
+    AccountNoticeReason,
+    AccountNoticesData,
+} from '@generated/types/accounts';
 import { dismiss as dismissRoute } from '@generated/routes/accounts';
 import { Link, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
@@ -23,18 +26,33 @@ const sentences: Record<AccountNoticeReason, string> = {
 const dismissing = useForm({});
 
 function dismiss(noticeId: string): void {
-    dismissing.submit(dismissRoute({ notice: noticeId }), { preserveScroll: true, ...formSendingHooks() });
+    dismissing.submit(dismissRoute({ notice: noticeId }), {
+        preserveScroll: true,
+        ...formSendingHooks(),
+    });
 }
 </script>
 
 <template>
-    <ul v-if="data.notices.length > 0" class="flex flex-col gap-1">
-        <template v-for="notice in data.notices" :key="notice.id">
-            <li class="flex items-center gap-2 text-small text-tone-warn">
-                <span>{{ programName(notice.program) }} {{ sentences[notice.reason] }}</span>
-                <Link href="/accounts" class="text-brand-text underline">Accounts</Link>
-                <Button size="small" :pending="dismissing.processing" @click="dismiss(notice.id)">Dismiss</Button>
-            </li>
-        </template>
-    </ul>
+    <template v-if="data.notices.length > 0">
+        <ul class="flex flex-col gap-1">
+            <template v-for="notice in data.notices" :key="notice.id">
+                <li class="flex items-center gap-2 text-small text-tone-warn">
+                    <span
+                        >{{ programName(notice.program) }}
+                        {{ sentences[notice.reason] }}</span
+                    >
+                    <Link href="/accounts" class="text-brand-text underline"
+                        >Accounts</Link
+                    >
+                    <Button
+                        size="small"
+                        :pending="dismissing.processing"
+                        @click="dismiss(notice.id)"
+                        >Dismiss</Button
+                    >
+                </li>
+            </template>
+        </ul>
+    </template>
 </template>

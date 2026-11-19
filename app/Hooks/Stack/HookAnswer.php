@@ -33,7 +33,7 @@ final readonly class HookAnswer
      */
     public function replacedBy(Decision $decision, AgentStack $stack): self
     {
-        return new self($decision, $this->context, $this->steps, $stack, $this->messages);
+        return clone ($this, ['decision' => $decision, 'stack' => $stack]);
     }
 
     /**
@@ -81,12 +81,6 @@ final readonly class HookAnswer
      */
     public function refusedOn(AgentStack $stackBefore, self $rewrite): self
     {
-        return new self(
-            $this->decision,
-            $this->context,
-            [...$rewrite->steps, ...$this->steps],
-            $stackBefore,
-            $this->messages,
-        );
+        return clone ($this, ['steps' => [...$rewrite->steps, ...$this->steps], 'stack' => $stackBefore]);
     }
 }

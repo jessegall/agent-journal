@@ -29,14 +29,19 @@ export function attemptToRejoin(
     accountId: string | null,
 ): SignInAttemptData | undefined {
     return attempts.find(
-        (attempt) => isLive(attempt) && attempt.program === program && attempt.accountId === accountId,
+        (attempt) =>
+            isLive(attempt) &&
+            attempt.program === program &&
+            attempt.accountId === accountId,
     );
 }
 
 /**
  * Reads the sign-in's challenge over its own no-store request; it is never part of the page.
  */
-export async function readChallenge(attemptId: string): Promise<SignInChallenge> {
+export async function readChallenge(
+    attemptId: string,
+): Promise<SignInChallenge> {
     const response = await fetch(challenge({ attempt: attemptId }).url, {
         method: 'POST',
         credentials: 'same-origin',

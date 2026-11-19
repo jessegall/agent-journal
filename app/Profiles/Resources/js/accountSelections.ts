@@ -22,7 +22,10 @@ export function newestSelections(
     for (const selection of [...shown, ...arrived]) {
         const known = byProgram.get(selection.program);
 
-        if (known === undefined || selection.changeNumber >= known.changeNumber) {
+        if (
+            known === undefined ||
+            selection.changeNumber >= known.changeNumber
+        ) {
             byProgram.set(selection.program, selection);
         }
     }

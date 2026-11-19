@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Support\SessionOutputPaths;
-use App\Hooks\Contracts\ProtectedResources;
+use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Programs\ClaudeAccountProtection;
 use App\Hooks\Programs\ClaudeCodeAdapter;
@@ -96,7 +96,7 @@ final class AccountProtectionTest extends TestCase
 
     public function test_codex_commands_and_patches_reach_only_the_sessions_own_outputs(): void
     {
-        $protection = $this->app->make(ProtectedResources::class);
+        $protection = $this->app->make(CheckProtectedResources::class);
         $patch = "*** Begin Patch\n*** Update File: /journal/accounts/a/config.toml\n*** End Patch";
 
         $this->assertSame('deny', $this->codexDecision('apply_patch', ['command' => $patch]));

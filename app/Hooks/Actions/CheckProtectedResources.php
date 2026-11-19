@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Actions;
 
 use App\Agents\Contracts\SessionOutputAccess;
-use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Inputs\ProtectedFileRead;
 use App\Hooks\Support\ProtectedAccounts;
 
@@ -14,7 +13,7 @@ use App\Hooks\Support\ProtectedAccounts;
  * for the session's own saved outputs, as its current process start granted them; a session with no start or no
  * mapping reads nothing there.
  */
-final readonly class CheckProtectedResources implements ProtectedResources
+final readonly class CheckProtectedResources
 {
     public function __construct(
         private ProtectedAccounts $accounts,

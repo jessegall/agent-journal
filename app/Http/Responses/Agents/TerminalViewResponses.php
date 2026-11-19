@@ -8,8 +8,8 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Exceptions\TerminalViewRefused;
-use App\Agents\Support\TerminalViews;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use Closure;
@@ -24,7 +24,7 @@ final readonly class TerminalViewResponses
     public function __construct(
         private CommandBus $commands,
         private CurrentActor $actor,
-        private TerminalViews $views,
+        private TerminalViewCloser $views,
         private ServerClock $clock,
     ) {}
 

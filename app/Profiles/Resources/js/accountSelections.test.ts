@@ -3,20 +3,26 @@ import { isChosen, newestSelections } from './accountSelections';
 
 describe('newestSelections', () => {
     it('keeps a newer choice when an older page answer arrives late', () => {
-        const shown = [{ program: 'codex', accountId: 'home', changeNumber: 4 }];
+        const shown = [
+            { program: 'codex', accountId: 'home', changeNumber: 4 },
+        ];
         const late = [{ program: 'codex', accountId: 'work', changeNumber: 3 }];
 
         expect(newestSelections(shown, late)).toEqual(shown);
     });
 
     it('takes the arrived choice when it is as new or newer', () => {
-        const shown = [{ program: 'codex', accountId: 'home', changeNumber: 4 }];
-        const arrived = [{ program: 'codex', accountId: 'work', changeNumber: 5 }];
+        const shown = [
+            { program: 'codex', accountId: 'home', changeNumber: 4 },
+        ];
+        const arrived = [
+            { program: 'codex', accountId: 'work', changeNumber: 5 },
+        ];
 
         expect(newestSelections(shown, arrived)).toEqual(arrived);
-        expect(newestSelections(arrived, [{ ...arrived[0], accountId: null }])).toEqual([
-            { program: 'codex', accountId: null, changeNumber: 5 },
-        ]);
+        expect(
+            newestSelections(arrived, [{ ...arrived[0], accountId: null }]),
+        ).toEqual([{ program: 'codex', accountId: null, changeNumber: 5 }]);
     });
 
     it('keeps each program apart', () => {

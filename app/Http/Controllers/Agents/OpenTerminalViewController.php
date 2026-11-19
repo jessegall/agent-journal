@@ -20,7 +20,7 @@ final readonly class OpenTerminalViewController
         return $responses->run(
             $request->agentId(),
             $request->openCommand(),
-            fn (TerminalViewReceipt $receipt): JsonResponse => new JsonResponse($receipt),
+            fn (TerminalViewReceipt $receipt) => new JsonResponse($receipt),
         );
     }
 }

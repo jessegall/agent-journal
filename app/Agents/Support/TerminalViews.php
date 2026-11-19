@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Data\TerminalFrameData;
 use App\Agents\Enums\TerminalFrameState;
 use App\Agents\Exceptions\TerminalViewRefused;
@@ -20,7 +21,7 @@ use PhpOption\Some;
  * Opens, renews and closes a viewer's lease on an agent's terminal, with the refusals an open meets, and answers the
  * frames the viewer should see.
  */
-final readonly class TerminalViews
+final readonly class TerminalViews implements TerminalViewCloser
 {
     public function __construct(private RuntimeScreen $screens) {}
 
@@ -96,8 +97,7 @@ final readonly class TerminalViews
         string $epoch,
         int $after,
         CarbonImmutable $now,
-    ): Option
-    {
+    ): Option {
         $view = TerminalView::query()->ownedBy($viewer)->live()->ofAgent($agentId)->latest('updated_at')->first();
         if ($view === null) {
             return Some::create($this->endedView($agentId, $viewer, $now));

@@ -25,5 +25,6 @@ export function programName(program: string): string {
  */
 export const cleanupProblemText: Record<CleanupProblem, string> = {
     sign_in_not_verified: 'Unable to verify the sign-in was removed.',
-    folder_not_deleted: 'The sign-in was removed, but its folder could not be deleted.',
+    folder_not_deleted:
+        'The sign-in was removed, but its folder could not be deleted.',
 };

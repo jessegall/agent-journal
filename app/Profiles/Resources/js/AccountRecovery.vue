@@ -16,32 +16,44 @@ defineProps<{ cleanups: PendingAttemptCleanupData[] }>();
 const retrying = useForm({});
 
 function retry(attemptId: string): void {
-    retrying.submit(retrySignInCleanup({ attempt: attemptId }), { preserveScroll: true, ...formSendingHooks() });
+    retrying.submit(retrySignInCleanup({ attempt: attemptId }), {
+        preserveScroll: true,
+        ...formSendingHooks(),
+    });
 }
 </script>
 
 <template>
-    <section v-if="cleanups.length > 0" aria-label="Unfinished sign-ins" class="flex flex-col">
-        <h2 class="px-4 pt-4 pb-1 text-small text-text-3">Unfinished sign-ins</h2>
-        <ul>
-            <li
-                v-for="cleanup in cleanups"
-                :key="cleanup.attemptId"
-                class="flex items-center gap-3 border-b border-border px-4 py-3"
-            >
-                <span class="text-card text-text">{{ cleanup.label ?? programName(cleanup.program) }}</span>
-                <span class="text-small text-text-3">{{
-                    cleanup.problem === null ? 'Cleaning up…' : cleanupProblemText[cleanup.problem]
-                }}</span>
-                <Button
-                    v-if="cleanup.awaitsRetry"
-                    class="ml-auto"
-                    size="small"
-                    :pending="retrying.processing"
-                    @click="retry(cleanup.attemptId)"
-                    >Retry cleanup</Button
-                >
-            </li>
-        </ul>
-    </section>
+    <template v-if="cleanups.length > 0">
+        <section aria-label="Unfinished sign-ins" class="flex flex-col">
+            <h2 class="px-4 pt-4 pb-1 text-small text-text-3">
+                Unfinished sign-ins
+            </h2>
+            <ul>
+                <template v-for="cleanup in cleanups" :key="cleanup.attemptId">
+                    <li
+                        class="flex items-center gap-3 border-b border-border px-4 py-3"
+                    >
+                        <span class="text-card text-text">{{
+                            cleanup.label ?? programName(cleanup.program)
+                        }}</span>
+                        <span class="text-small text-text-3">{{
+                            cleanup.problem === null
+                                ? 'Cleaning up…'
+                                : cleanupProblemText[cleanup.problem]
+                        }}</span>
+                        <template v-if="cleanup.awaitsRetry">
+                            <Button
+                                class="ml-auto"
+                                size="small"
+                                :pending="retrying.processing"
+                                @click="retry(cleanup.attemptId)"
+                                >Retry cleanup</Button
+                            >
+                        </template>
+                    </li>
+                </template>
+            </ul>
+        </section>
+    </template>
 </template>

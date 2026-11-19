@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\ProgramAdapter;
+use App\Hooks\Contracts\ProgramAdapters;
 use App\Programs\Enums\HookProgram;
 
 /**
  * The adapter of each supported program.
  */
-final readonly class ProgramAdapters
+final readonly class SupportedProgramAdapters implements ProgramAdapters
 {
     public function __construct(
         private ClaudeCodeAdapter $claudeCode,

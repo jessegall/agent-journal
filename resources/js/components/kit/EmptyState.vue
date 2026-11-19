@@ -15,7 +15,11 @@ defineProps<{ icon: IconName; title: string; text?: string }>();
     >
         <Icon :name="icon" :size="20" />
         <p class="text-card text-text-2">{{ title }}</p>
-        <p v-if="text" class="max-w-[42ch] text-small">{{ text }}</p>
-        <div v-if="$slots.default" class="mt-2"><slot /></div>
+        <template v-if="text">
+            <p class="max-w-[42ch] text-small">{{ text }}</p>
+        </template>
+        <template v-if="$slots.default">
+            <div class="mt-2"><slot /></div>
+        </template>
     </div>
 </template>

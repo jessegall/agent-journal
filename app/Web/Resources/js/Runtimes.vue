@@ -22,13 +22,10 @@ const refusal = computed(() => page.props.errors.review ?? '');
             <p role="alert" class="text-warn">{{ refusal }}</p>
         </template>
         <template v-if="data.runtimes.length === 0">
-          <p class="text-text-3">No agent runtime is open.</p>
+            <p class="text-text-3">No agent runtime is open.</p>
         </template>
         <template v-for="entry in data.runtimes" :key="entry.status.runtimeId">
-          <RuntimeCard
-              :status="entry.status"
-              :requests="entry.requests"
-          />
+            <RuntimeCard :status="entry.status" :requests="entry.requests" />
         </template>
     </div>
 </template>

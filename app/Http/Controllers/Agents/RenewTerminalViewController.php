@@ -20,7 +20,7 @@ final readonly class RenewTerminalViewController
         return $responses->run(
             $request->agentId(),
             $request->renewCommand(),
-            fn (TerminalViewReceipt $receipt): JsonResponse => new JsonResponse($receipt),
+            fn (TerminalViewReceipt $receipt) => new JsonResponse($receipt),
         );
     }
 }

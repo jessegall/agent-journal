@@ -24,7 +24,7 @@ final readonly class WatchedRuntimes
             ->acrossActors()
             ->watchedOnHost($hostId)
             ->get()
-            ->map(fn (TerminalView $view): WatchedRuntime => new WatchedRuntime(
+            ->map(fn (TerminalView $view) => new WatchedRuntime(
                 $view->agent_runtime_id,
                 $view->interval_ms,
             ))
