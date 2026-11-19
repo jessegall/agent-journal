@@ -9,6 +9,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * The Access domain's skill, written in resources/skills/access.md.
@@ -37,12 +38,12 @@ final class AccessSkill implements Skill
         return Conditions::dispatchesWork();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
+        return SkillSections::listed(
             SkillSection::text('purpose', 'Purpose', 'Access decides who may use the journal and what an agent may do.'),
             SkillSection::markdown('who-may-use-the-journal', 'Who may use the journal', MarkdownPart::heading(self::FILE, ['Access', 'Who may use the journal'])),
             SkillSection::markdown('agents', 'Agents', MarkdownPart::heading(self::FILE, ['Access', 'Agents'])),
-        ];
+        );
     }
 }

@@ -9,6 +9,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * Core's journal-profiles skill, written in resources/skills/core/profiles.md.
@@ -37,14 +38,14 @@ final class ProfilesSkill implements Skill
         return Conditions::dispatchesWork();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
+        return SkillSections::listed(
             SkillSection::markdown('what-a-profile-is', 'What a profile is', MarkdownPart::heading(self::FILE, ['Profiles', 'What a profile is'])),
             SkillSection::markdown('types', 'Types', MarkdownPart::heading(self::FILE, ['Profiles', 'Types'])),
             SkillSection::markdown('revisions', 'Revisions', MarkdownPart::heading(self::FILE, ['Profiles', 'Revisions'])),
             SkillSection::markdown('skill-lists', 'Skill lists', MarkdownPart::heading(self::FILE, ['Profiles', 'Skill lists'])),
             SkillSection::markdown('reading-profiles', 'Reading profiles', MarkdownPart::heading(self::FILE, ['Profiles', 'Reading profiles'])),
-        ];
+        );
     }
 }

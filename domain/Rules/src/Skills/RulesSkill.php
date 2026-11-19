@@ -9,6 +9,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * The Rules domain's skill, written in resources/skills/rules.md.
@@ -37,13 +38,13 @@ final class RulesSkill implements Skill
         return Conditions::everyone();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
+        return SkillSections::listed(
             SkillSection::text('purpose', 'Purpose', 'Rules are what every agent of the project must follow.'),
             SkillSection::markdown('what-a-rule-is', 'What a rule is', MarkdownPart::heading(self::FILE, ['Rules', 'What a rule is'])),
             SkillSection::markdown('states', 'States', MarkdownPart::heading(self::FILE, ['Rules', 'States'])),
             SkillSection::markdown('reading-rules', 'Reading rules', MarkdownPart::heading(self::FILE, ['Rules', 'Reading rules'])),
-        ];
+        );
     }
 }

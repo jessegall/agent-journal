@@ -9,6 +9,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * The Sequences domain's skill, written in resources/skills/sequences.md.
@@ -37,12 +38,12 @@ final class SequencesSkill implements Skill
         return Conditions::everyone();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
+        return SkillSections::listed(
             SkillSection::text('purpose', 'Purpose', 'Sequences are steps you follow one at a time.'),
             SkillSection::markdown('what-a-sequence-is', 'What a sequence is', MarkdownPart::heading(self::FILE, ['Sequences', 'What a sequence is'])),
             SkillSection::markdown('following-a-run', 'Following a run', MarkdownPart::heading(self::FILE, ['Sequences', 'Following a run'])),
-        ];
+        );
     }
 }

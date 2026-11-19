@@ -9,6 +9,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * The Chat domain's skill, written in resources/skills/messages.md.
@@ -37,13 +38,13 @@ final class ChatSkill implements Skill
         return Conditions::dispatchesWork();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
+        return SkillSections::listed(
             SkillSection::text('purpose', 'Purpose', 'Messages are how users and agents talk in the journal.'),
             SkillSection::markdown('where-messages-come-from', 'Where messages come from', MarkdownPart::heading(self::FILE, ['Messages', 'Where messages come from'])),
             SkillSection::markdown('states', 'States', MarkdownPart::heading(self::FILE, ['Messages', 'States'])),
             SkillSection::markdown('answering', 'Answering', MarkdownPart::heading(self::FILE, ['Messages', 'Answering'])),
-        ];
+        );
     }
 }
