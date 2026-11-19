@@ -28,11 +28,12 @@ final readonly class AttentionOrigin
     }
 
     /**
-     * A navigation request in one of its rounds: each round wakes the answerer once.
+     * A navigation request in one of its rounds: each round wakes the answerer once. The host's raise that opened it
+     * has no bus receipt; its operation key stands in for one.
      */
-    public static function navigation(string $requestId, int $round, string $receiptId): self
+    public static function navigation(string $requestId, int $round, string $raiseKey): self
     {
-        return new self(self::NAVIGATION, "{$requestId}:{$round}", $receiptId);
+        return new self(self::NAVIGATION, "{$requestId}:{$round}", $raiseKey);
     }
 
     public function keyFor(ActorIdentity $actor): string

@@ -39,12 +39,13 @@ final readonly class NavigationDispatch
 
     /**
      * Gives the request to the main desk and wakes its occupant for this round; with nobody seated the request
-     * waits, given to the desk, for whoever sits down or for its expiry.
+     * waits, given to the desk, for whoever sits down or for its expiry. A host's raise has no bus receipt, so the
+     * raise's own operation key names where the wake came from.
      */
-    public function deliver(NavigationRequest $request, int $round, string $receiptId): void
+    public function deliver(NavigationRequest $request, int $round): void
     {
         $this->mainDesk->receive($request);
-        $origin = AttentionOrigin::navigation($request->id, $round, $receiptId);
+        $origin = AttentionOrigin::navigation($request->id, $round, $request->operation_key);
 
         foreach ($this->mainDesk->occupant() as $occupant) {
             $this->attention->request($occupant, $origin);

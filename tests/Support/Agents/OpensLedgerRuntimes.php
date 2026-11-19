@@ -7,6 +7,7 @@ namespace Tests\Support\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
+use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\RunKeyScript;
@@ -18,11 +19,14 @@ use App\Agents\Support\OpenedRuntime;
 use App\Agents\Values\ScriptParameter;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 
 /**
- * Opens an agent's runtime on a newly enrolled host through the ledger's own commands, and runs commands as the owner
- * of the journal, as the web and the CLI do. The test class runs trusted commands with asSystem.
+ * Opens an agent's runtime on a newly enrolled host through the ledger's own commands, runs commands as the owner
+ * of the journal, as the web and the CLI do, and makes the host's signed calls. The test class runs trusted commands
+ * with asSystem.
  */
 trait OpensLedgerRuntimes
 {
@@ -80,6 +84,28 @@ trait OpensLedgerRuntimes
             $script,
             ScriptParameter::listOf($parameters),
         );
+    }
+
+    /**
+     * A call the host signs with its secret, as tools/journal-agent/client makes it.
+     *
+     * @param  array<string, mixed>|null  $body
+     */
+    private function hostCall(EnrolledHost $host, string $target, array|null $body = null): TestResponse
+    {
+        $content = $body === null ? '' : (string) json_encode($body);
+        $callId = (string) Str::uuid();
+        $issuedAt = CarbonImmutable::now()->getTimestamp();
+        $signature = SignedCall::signatureFor($host->secret, 'POST', $target, $callId, $issuedAt, $content);
+
+        return $this->call('POST', $target, server: [
+            'HTTP_AUTHORIZATION' => "Bearer {$host->secret}",
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ID_HEADER)) => $callId,
+            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ISSUED_AT_HEADER)) => (string) $issuedAt,
+            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::SIGNATURE_HEADER)) => $signature,
+        ], content: $content);
     }
 
     /**

@@ -75,9 +75,9 @@ final class NavigationDispatchTest extends TestCase
 
         $answerer = $this->inTransaction(fn () => $dispatch->answererFor($this->runtimeOf($navigation)));
         $this->assertSame(NavigationAnswerer::MainDesk, $answerer);
-        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1, 'receipt-1'));
-        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1, 'receipt-1'));
-        $this->inTransaction(fn () => $dispatch->deliver($navigation, 2, 'receipt-2'));
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 2));
 
         $holder = $this->holderOf($navigation);
         $mainDesk = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();
@@ -108,7 +108,7 @@ final class NavigationDispatchTest extends TestCase
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
 
         $dispatch = $this->app->make(NavigationDispatch::class);
-        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1, 'receipt-1'));
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1));
 
         $this->assertSame([], $this->attention->wakes);
         $mainDesk = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();

@@ -6,7 +6,6 @@ namespace App\Desks\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\MainDesk;
-use App\Agents\Enums\NavigationState;
 use App\Agents\Models\NavigationRequest;
 use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Contracts\ResponsibilityWriter;
@@ -44,17 +43,16 @@ final readonly class MainDeskNavigation implements MainDesk
 
     public function openRequestsFor(ActorIdentity $actor): int
     {
+        if (! NavigationRequest::query()->acrossActors()->open()->exists()) {
+            return 0;
+        }
         $seated = $this->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
         if (! $seated->getOrElse(false)) {
             return 0;
         }
         $held = AssignmentRecord::query()->heldRecordIds(NavigationRequest::LINK_TYPE, $this->main()->assigneeIdentity());
 
-        return NavigationRequest::query()
-            ->acrossActors()
-            ->whereIn('state', NavigationState::openStates())
-            ->whereIn('id', $held)
-            ->count();
+        return NavigationRequest::query()->acrossActors()->open()->whereIn('id', $held)->count();
     }
 
     private function main(): DeskRecord

@@ -26,6 +26,15 @@ return [
     ],
 
     /*
+    | Navigation requests: how long one waits for the main agent before it expires, and how soon a runtime that
+    | waits behind another runtime's open request of the same menu asks again (doc 54, section 5).
+    */
+    'navigation' => [
+        'expire_minutes' => (int) env('AGENTS_NAVIGATION_EXPIRE_MINUTES', 30),
+        'retry_after_seconds' => (int) env('AGENTS_NAVIGATION_RETRY_AFTER_SECONDS', 30),
+    ],
+
+    /*
     | What this host gives all its helper containers together; each required-container launch reserves its budgets
     | from it and is refused when they do not fit. The defaults are one helper's host maxima (doc 14, section 62).
     */

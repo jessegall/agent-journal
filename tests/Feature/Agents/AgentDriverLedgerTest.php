@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
@@ -63,7 +62,6 @@ use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use Illuminate\Testing\TestResponse;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\Agents\OpensLedgerRuntimes;
@@ -851,27 +849,6 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(2, $request->script_step);
         $this->assertSame(7, $request->script_generation);
         $this->assertSame('menu login-method, stable', $request->script_evidence);
-    }
-
-    /**
-     * A call the host signs with its secret, as tools/journal-agent/client makes it.
-     *
-     * @param  array<string, mixed>|null  $body
-     */
-    private function hostCall(EnrolledHost $host, string $target, array|null $body = null): TestResponse
-    {
-        $content = $body === null ? '' : (string) json_encode($body);
-        $callId = (string) Str::uuid();
-        $issuedAt = CarbonImmutable::now()->getTimestamp();
-        $signature = SignedCall::signatureFor($host->secret, 'POST', $target, $callId, $issuedAt, $content);
-
-        return $this->call('POST', $target, server: [
-            'HTTP_AUTHORIZATION' => "Bearer {$host->secret}",
-            'CONTENT_TYPE' => 'application/json',
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ID_HEADER)) => $callId,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ISSUED_AT_HEADER)) => (string) $issuedAt,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::SIGNATURE_HEADER)) => $signature,
-        ], content: $content);
     }
 
     /**
