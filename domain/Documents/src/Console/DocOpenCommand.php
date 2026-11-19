@@ -30,8 +30,12 @@ final class DocOpenCommand extends Command
             $drafts->keep($draft->documentNumber, $draft->token, $draft->version);
 
             return CommandReport::ending(self::SUCCESS)->line(
-                "doc {$draft->documentNumber} is open at version {$draft->version},"
-                ." from revision {$draft->baseRevisionNumber}.",
+                sprintf(
+                    'doc %s is open at version %s, from revision %s.',
+                    $draft->documentNumber,
+                    $draft->version,
+                    $draft->baseRevisionNumber,
+                ),
             );
         });
     }

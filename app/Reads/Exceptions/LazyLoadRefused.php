@@ -14,8 +14,13 @@ final class LazyLoadRefused extends RuntimeException
     public static function for(string $model, string $relation): self
     {
         return new self(
-            "{$model}->{$relation} was read without being loaded; load it with with('{$relation}') or "
-                ."load('{$relation}') on the whole set first.",
+            sprintf(
+                "%s->%s was read without being loaded; load it with with('%s') or load('%s') on the whole set first.",
+                $model,
+                $relation,
+                $relation,
+                $relation,
+            ),
         );
     }
 }

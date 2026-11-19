@@ -24,8 +24,7 @@ use App\Processes\Values\ExecutionContext;
  */
 final readonly class HookShellAdmission
 {
-    private const string RUNNER_UNAVAILABLE = 'The journal\'s supervised runner cannot run this line, so nothing'
-        .' started.';
+    private const string RUNNER_UNAVAILABLE = "The journal's supervised runner cannot run this line, so nothing started.";
 
     public function __construct(
         private ShellAdmission $admission,

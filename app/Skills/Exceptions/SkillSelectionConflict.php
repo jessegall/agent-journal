@@ -17,8 +17,11 @@ final class SkillSelectionConflict extends RuntimeException implements CodedRefu
     public static function requiredNotSelected(string $key, string $reason): self
     {
         return new self(
-            "The profile requires the skill {$key}, but it is not selected for this launch ({$reason}); change the "
-                ."profile's required skills or the skill's condition.",
+            sprintf(
+                "The profile requires the skill %s, but it is not selected for this launch (%s); change the profile's required skills or the skill's condition.",
+                $key,
+                $reason,
+            ),
         );
     }
 

@@ -19,8 +19,11 @@ final class UnsupportedHook extends LogicException
     public static function forTool(string $program, string $toolName): self
     {
         return new self(
-            "The {$program} adapter does not know the tool {$toolName}, "
-            .'so the call is refused rather than let through.',
+            sprintf(
+                'The %s adapter does not know the tool %s, so the call is refused rather than let through.',
+                $program,
+                $toolName,
+            ),
         );
     }
 

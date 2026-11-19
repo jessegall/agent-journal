@@ -11,8 +11,10 @@ final class ProgramKeyInvalid extends InvalidArgumentException
     public static function for(string $text): self
     {
         return new self(
-            "A program key is 1 to 64 lowercase letters and digits in words joined by single hyphens; \"{$text}\" is "
-                .'not.',
+            sprintf(
+                'A program key is 1 to 64 lowercase letters and digits in words joined by single hyphens; "%s" is not.',
+                $text,
+            ),
         );
     }
 }

@@ -13,8 +13,7 @@ final class DecimalInvalid extends InvalidArgumentException
 {
     public static function notPlain(): self
     {
-        return new self('A decimal is written as an optional minus, digits, and optionally a point followed by '
-            .'digits: no plus, spaces, exponent or words.');
+        return new self('A decimal is written as an optional minus, digits, and optionally a point followed by digits: no plus, spaces, exponent or words.');
     }
 
     public static function tooManyPlaces(int $scale): self

@@ -19,8 +19,7 @@ final class SkillRetireCommand extends Command
 {
     use PrintsSkillRefusals;
 
-    protected $signature = 'skill:retire {number : The skill number or key} {--expected-revision= : The revision you '
-        .'read} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:retire {number : The skill number or key} {--expected-revision= : The revision you read} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Retire a stored skill';
 

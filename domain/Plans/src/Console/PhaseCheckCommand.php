@@ -18,9 +18,7 @@ final class PhaseCheckCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'phase:check {plan : The plan number} {phase : The phase number}'
-        .' {--receipt= : The result receipt of the check}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'phase:check {plan : The plan number} {phase : The phase number} {--receipt= : The result receipt of the check} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Record a validated check result on a phase';
 

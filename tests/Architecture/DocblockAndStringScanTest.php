@@ -59,14 +59,14 @@ final class DocblockAndStringScanTest extends TestCase
     {
         $path = sys_get_temp_dir().'/'.uniqid('docblock_', true).'.php';
         file_put_contents($path, <<<'TEXT'
-            <?php
+        <?php
 
-            /**
-             * @param  array<
-             */
-            function broken(array $values): void {}
+        /**
+         * @param  array<
+         */
+        function broken(array $values): void {}
 
-            TEXT);
+        TEXT);
 
         try {
             $this->expectExceptionObject(DocblockTagInvalid::for($path, 4, '@param'));

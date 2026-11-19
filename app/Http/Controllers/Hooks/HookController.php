@@ -33,8 +33,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class HookController
 {
-    private const string NATIVE_CHILD_REFUSAL = 'A program\'s own subagents never run here (rule 36): '
-        .'start a journal helper or worker instead.';
+    private const string NATIVE_CHILD_REFUSAL = "A program's own subagents never run here (rule 36): start a journal helper or worker instead.";
 
     public function __construct(
         private ProgramAdapters $adapters,

@@ -149,8 +149,7 @@ final class HookEndpointTest extends TestCase
     {
         $this->hook('claude-code', '{"session_id":"session-redacted"}', 'call-1')->assertUnprocessable();
         $notification = '{"session_id":"session-redacted","hook_event_name":"Notification"}';
-        $noCommand = '{"session_id":"session-redacted","hook_event_name":"PreToolUse","tool_name":"Bash",'
-            .'"tool_input":{}}';
+        $noCommand = '{"session_id":"session-redacted","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{}}';
         $this->hook('claude-code', $notification, 'call-2')->assertUnprocessable();
         $this->hook('claude-code', $noCommand, 'call-3')->assertUnprocessable();
     }

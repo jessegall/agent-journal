@@ -18,8 +18,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class ExplainCommandTypeCommand extends Command
 {
-    protected $signature = 'command-type:explain {--line= : The shell line to explain}'
-        .' {--dialect=bash : bash, sh or zsh} {--json : Print the answer as JSON}';
+    protected $signature = 'command-type:explain {--line= : The shell line to explain} {--dialect=bash : bash, sh or zsh} {--json : Print the answer as JSON}';
 
     protected $description = 'Explain how a shell line is read, without running it';
 

@@ -106,8 +106,10 @@ final readonly class RefreshSessionSkills implements Listener
     {
         $keys = $selected->selectedKeys() === [] ? 'none' : implode(', ', $selected->selectedKeys());
 
-        return "Your journal skills changed; they are now: {$keys}. {$program->key} loads skills only when a session "
-            .'starts, so start a new session to use the new set; until then read a skill with php artisan skill:show '
-                .'<key>.';
+        return sprintf(
+            'Your journal skills changed; they are now: %s. %s loads skills only when a session starts, so start a new session to use the new set; until then read a skill with php artisan skill:show <key>.',
+            $keys,
+            $program->key,
+        );
     }
 }

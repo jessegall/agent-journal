@@ -19,8 +19,7 @@ final class ReportListCommand extends Command
     use ReportsRecordCards;
     use RunsCallPipelines;
 
-    protected $signature = 'report:list {--state=active : active, settled or all} {--page=1} {--query= : Only'
-        .' those whose text holds these words} {--after= : Continue after this cursor}';
+    protected $signature = 'report:list {--state=active : active, settled or all} {--page=1} {--query= : Only those whose text holds these words} {--after= : Continue after this cursor}';
 
     protected $description = 'List the reports of this journal, newest first';
 

@@ -15,13 +15,11 @@ final class LinkAddCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'link:add {source : Such as "doc 12"} {target : Such as "task 7"} {--request-key= :'
-        .' Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'link:add {source : Such as "doc 12"} {target : Such as "task 7"} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Link two records, such as doc 12 and task 7';
 
-    protected $help = 'Example: php artisan link:add "report 7" "plan 3"; you must be allowed to change the'
-        .' first record and read the second';
+    protected $help = 'Example: php artisan link:add "report 7" "plan 3"; you must be allowed to change the first record and read the second';
 
     public function handle(): int
     {

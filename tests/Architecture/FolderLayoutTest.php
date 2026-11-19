@@ -44,8 +44,7 @@ final class FolderLayoutTest extends TestCase
         $this->assertSame(
             [],
             $loose,
-            'These classes sit loose at a domain or Core area root; move each into the folder of its type, or that '
-                ."area's Support folder.",
+            "These classes sit loose at a domain or Core area root; move each into the folder of its type, or that area's Support folder.",
         );
     }
 

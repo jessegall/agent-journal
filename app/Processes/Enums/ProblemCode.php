@@ -40,16 +40,14 @@ enum ProblemCode: string
     public function nextAction(): string
     {
         return match ($this) {
-            self::OutputUnrecognized, self::OutputAmbiguous => 'revise the reader so every substantive record is '
-                .'accounted for',
+            self::OutputUnrecognized, self::OutputAmbiguous => 'revise the reader so every substantive record is accounted for',
             self::OutputMissing, self::OutputIncomplete => 'run the check again and keep its output whole',
             self::OutputEncoding => 'fix the encoding the check writes, or declare its output binary',
             self::SummaryMissing, self::SummaryConflict => 'make the check print one terminal summary',
             self::CountsInvalid, self::ProgressTotalStale => 'read the check output by hand; its counts do not add up',
             self::ReaderFailed, self::RecordLimit => 'revise the reader within its limits and prove it again',
             self::ReaderStale => 'propose a reader for the check as it is now',
-            self::ExecutionError, self::ExitUnavailable => 'read the diagnostics; the check itself did not run to an '
-                .'end',
+            self::ExecutionError, self::ExitUnavailable => 'read the diagnostics; the check itself did not run to an end',
             self::OutcomeConflict => 'read the output by hand; its exit and its summary disagree',
             self::NotNormalRun => 'run the check normally; an evidence sample never gives a result',
         };

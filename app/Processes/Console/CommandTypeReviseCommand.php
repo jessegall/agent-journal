@@ -18,10 +18,7 @@ final class CommandTypeReviseCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:revise {proposal : The proposal id}'
-        .' {--expected-revision= : The revision read} {--declaration= : The rule and its examples as JSON}'
-        .' {--evidence= : Why the declared effects are right}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'command-type:revise {proposal : The proposal id} {--expected-revision= : The revision read} {--declaration= : The rule and its examples as JSON} {--evidence= : Why the declared effects are right} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Revise a proposal';
 

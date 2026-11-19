@@ -15,8 +15,7 @@ use Illuminate\Console\Command;
  */
 final class CancelKeyScriptCommand extends Command
 {
-    protected $signature = 'agents:key-script-cancel {request : The driver request}'
-        .' {--row-version= : The row version you read} {--reason= : Why}';
+    protected $signature = 'agents:key-script-cancel {request : The driver request} {--row-version= : The row version you read} {--reason= : Why}';
 
     protected $description = 'Cancel a key script stopped part way';
 

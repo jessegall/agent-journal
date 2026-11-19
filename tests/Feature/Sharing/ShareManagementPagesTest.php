@@ -39,8 +39,7 @@ use Tests\TestCase;
  */
 #[TimeLimit(
     seconds: 10,
-    reason: 'It commits a document and a plan through the bus, renders pages and empties nineteen tables around each '
-        .'test.',
+    reason: 'It commits a document and a plan through the bus, renders pages and empties nineteen tables around each test.',
 )]
 final class ShareManagementPagesTest extends TestCase
 {
@@ -85,10 +84,10 @@ final class ShareManagementPagesTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
-            # Goal
-            Ship it.
+        # Goal
+        Ship it.
 
-            TEXT));
+        TEXT));
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->plan->linkTo($this->document);

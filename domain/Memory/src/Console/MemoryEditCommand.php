@@ -19,9 +19,7 @@ final class MemoryEditCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'memory:edit {memory : The memory id} {--revision= : The revision you read, from'
-        .' memory:list} {--text= : The new text} {--weight= : The new weight, 1 to 10} {--request-key= : Send'
-        .' again under the key a failed attempt printed} {--json}';
+    protected $signature = 'memory:edit {memory : The memory id} {--revision= : The revision you read, from memory:list} {--text= : The new text} {--weight= : The new weight, 1 to 10} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Change the text or weight of a memory of the calling agent';
 

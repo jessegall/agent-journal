@@ -94,28 +94,28 @@ final class ShellLexerTest extends TestCase
     public function test_a_quoted_here_document_exposes_no_substitution(): void
     {
         $line = $this->lex(<<<'TEXT'
-            cat <<'EOF'
-            $(rm a)
-            EOF
-            TEXT);
+        cat <<'EOF'
+        $(rm a)
+        EOF
+        TEXT);
         $body = $this->bodyOf($line);
 
         $this->assertTrue($body->hereDocument?->isQuoted);
         $this->assertNull($body->word);
         $this->assertSame("\$(rm a)\n", $body->range->slice(<<<'TEXT'
-            cat <<'EOF'
-            $(rm a)
-            EOF
-            TEXT));
+        cat <<'EOF'
+        $(rm a)
+        EOF
+        TEXT));
     }
 
     public function test_an_unquoted_here_document_exposes_its_substitution(): void
     {
         $line = $this->lex(<<<'TEXT'
-            cat <<EOF
-            hello $(rm a)
-            EOF
-            TEXT);
+        cat <<EOF
+        hello $(rm a)
+        EOF
+        TEXT);
         $body = $this->bodyOf($line);
 
         $this->assertFalse($body->hereDocument?->isQuoted);
@@ -125,11 +125,11 @@ final class ShellLexerTest extends TestCase
     public function test_a_tab_stripping_here_document_ends_at_an_indented_delimiter(): void
     {
         $line = $this->lex(<<<TEXT
-            cat <<-EOF
-            \thello
-            \tEOF
-            echo after
-            TEXT);
+        cat <<-EOF
+        \thello
+        \tEOF
+        echo after
+        TEXT);
 
         $this->assertTrue($this->bodyOf($line)->hereDocument?->stripsTabs);
         $this->assertSame(ParseOutcome::Complete, $line->outcome);

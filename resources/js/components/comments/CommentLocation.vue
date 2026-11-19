@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getJson } from '@/composables/jsonRequests';
+import { getJson } from '@kit/jsonRequests';
 import { onMounted, ref } from 'vue';
 import type { RecordCommentLocation, TextCommentLocation } from '@/generated/types/core';
 import { location } from '@/routes/comments';

@@ -25,8 +25,9 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
 
     public static function notRetriable(string $requestId, string $progress): self
     {
-        return new self("Request {$requestId} is {$progress}; only a failed or unavailable request is retried, "
-            .'and an uncertain delivery is resolved first.');
+        return new self(
+            sprintf('Request %s is %s; only a failed or unavailable request is retried, and an uncertain delivery is resolved first.', $requestId, $progress),
+        );
     }
 
     public static function notCancellable(string $requestId, string $progress): self
@@ -36,8 +37,9 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
 
     public static function notResolvable(string $requestId): self
     {
-        return new self("Request {$requestId} is no uncertain delivery; only an uncertain delivery, never a wake, "
-            .'is resolved.');
+        return new self(
+            sprintf('Request %s is no uncertain delivery; only an uncertain delivery, never a wake, is resolved.', $requestId),
+        );
     }
 
     public static function notRepairable(string $requestId): self
@@ -52,26 +54,30 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
 
     public static function holdChanged(StackTarget $target, string $expected, string $current): self
     {
-        return new self("The runtime of session {$target->sessionId} is held for {$current}, not {$expected}; "
-            .'read it again.');
+        return new self(
+            sprintf('The runtime of session %s is held for %s, not %s; read it again.', $target->sessionId, $current, $expected),
+        );
     }
 
     public static function holdNotReleasable(StackTarget $target, string $hold): self
     {
-        return new self("The runtime of session {$target->sessionId} is held for {$hold}, which ends only on the "
-            ."program's own evidence.");
+        return new self(
+            sprintf("The runtime of session %s is held for %s, which ends only on the program's own evidence.", $target->sessionId, $hold),
+        );
     }
 
     public static function generationChanged(StackTarget $target, int $expected, int $current): self
     {
-        return new self("The runtime of session {$target->sessionId} is at process generation {$current}, not "
-            ."{$expected}; read it again.");
+        return new self(
+            sprintf('The runtime of session %s is at process generation %s, not %s; read it again.', $target->sessionId, $current, $expected),
+        );
     }
 
     public static function notReassignable(StackTarget $target): self
     {
-        return new self("The runtime of session {$target->sessionId} is not lost or waiting for attention; only "
-            .'such a runtime is moved to a new process.');
+        return new self(
+            sprintf('The runtime of session %s is not lost or waiting for attention; only such a runtime is moved to a new process.', $target->sessionId),
+        );
     }
 
     public static function messageTooLarge(int $bytes, int $limit): self

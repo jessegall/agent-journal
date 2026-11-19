@@ -17,19 +17,19 @@ final class SourceLineMarksTest extends TestCase
     public function test_each_block_carries_its_source_lines(): void
     {
         $markdown = <<<'TEXT'
-            # Goal
+        # Goal
 
-            Ship the editor
-            this week.
+        Ship the editor
+        this week.
 
-            - one
-            - two
+        - one
+        - two
 
-            ```
-            code
-            ```
+        ```
+        code
+        ```
 
-            TEXT;
+        TEXT;
         $html = MarkdownText::body($markdown)->toSafeHtml();
 
         $this->assertStringContainsString('<h1 data-source-first="1" data-source-last="1">Goal</h1>', $html);
@@ -42,10 +42,10 @@ final class SourceLineMarksTest extends TestCase
     public function test_a_part_keeps_the_line_numbers_of_the_whole_text(): void
     {
         $html = new TextPart(<<<'TEXT'
-            ## Later
+        ## Later
 
-            Text.
-            TEXT, 40, 42, null)->toSafeHtml();
+        Text.
+        TEXT, 40, 42, null)->toSafeHtml();
 
         $this->assertStringContainsString('<h2 data-source-first="40" data-source-last="40">Later</h2>', $html);
         $this->assertStringContainsString('<p data-source-first="42" data-source-last="42">Text.</p>', $html);
@@ -62,10 +62,10 @@ final class SourceLineMarksTest extends TestCase
     public function test_a_comment_body_has_no_source_marks(): void
     {
         $this->assertStringNotContainsString('data-source', MarkdownText::safeHtmlOf(<<<'TEXT'
-            # A heading
+        # A heading
 
-            A line.
+        A line.
 
-            TEXT));
+        TEXT));
     }
 }

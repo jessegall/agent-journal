@@ -103,8 +103,14 @@ final readonly class ReaderProofCheck
     {
         $assessment = $this->replays->replay($reader, $contract, $part)->assessment;
         $failures = array_map(
-            fn (OutputProblem $problem): string => "{$problem->code->value} at {$problem->stream?->value} bytes"
-                ." {$problem->start}-{$problem->end}: {$problem->explanation}",
+            fn (OutputProblem $problem): string => sprintf(
+                '%s at %s bytes %s-%s: %s',
+                $problem->code->value,
+                $problem->stream?->value,
+                $problem->start,
+                $problem->end,
+                $problem->explanation,
+            ),
             $assessment->problems,
         );
         $outcome = $contract->exits->outcomeOf($part->end_code);

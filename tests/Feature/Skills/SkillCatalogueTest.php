@@ -46,11 +46,11 @@ final class SkillCatalogueTest extends TestCase
         $this->assertSame('Notes', $entry->name);
         $this->assertStringContainsString(
             <<<'TEXT'
-                ## Notes
+            ## Notes
 
-                A note keeps what an agent learned while it works.
+            A note keeps what an agent learned while it works.
 
-                TEXT,
+            TEXT,
             $entry->rendered->markdown,
         );
     }

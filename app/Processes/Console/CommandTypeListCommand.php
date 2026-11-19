@@ -18,8 +18,7 @@ final class CommandTypeListCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:list'
-        .' {--state= : draft, pending, approved, rejected, withdrawn or superseded} {--json}';
+    protected $signature = 'command-type:list {--state= : draft, pending, approved, rejected, withdrawn or superseded} {--json}';
 
     protected $description = 'List proposals';
 

@@ -15,8 +15,7 @@ final class RequestShareCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'share:request {alias : The word the record is named by, such as doc} {number : The'
-        .' record\'s number} {--request-key= : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = "share:request {alias : The word the record is named by, such as doc} {number : The record's number} {--request-key= : Send again under the key a failed attempt printed} {--json}";
 
     protected $description = 'Propose sharing a record; the owner approves it';
 

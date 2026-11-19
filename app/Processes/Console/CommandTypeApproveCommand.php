@@ -18,11 +18,7 @@ final class CommandTypeApproveCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:approve {proposal : The proposal id}'
-        .' {--expected-revision= : The proposal revision reviewed}'
-        .' {--expected-active-revision=0 : The active rule revision}'
-        .' {--reader-revision= : The proven reader} {--proof= : The reader proof} {--reason=}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'command-type:approve {proposal : The proposal id} {--expected-revision= : The proposal revision reviewed} {--expected-active-revision=0 : The active rule revision} {--reader-revision= : The proven reader} {--proof= : The reader proof} {--reason=} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Approve a proposal';
 

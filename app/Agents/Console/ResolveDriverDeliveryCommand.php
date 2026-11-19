@@ -15,9 +15,7 @@ use Illuminate\Console\Command;
  */
 final class ResolveDriverDeliveryCommand extends Command
 {
-    protected $signature = 'agents:request-resolve {request : The driver request}'
-        .' {--row-version= : The row version you read} {--reason= : Why}'
-        .' {--applied : It arrived; leave it out when it did not}';
+    protected $signature = 'agents:request-resolve {request : The driver request} {--row-version= : The row version you read} {--reason= : Why} {--applied : It arrived; leave it out when it did not}';
 
     protected $description = 'Say whether an uncertain delivery arrived';
 

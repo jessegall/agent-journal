@@ -21,8 +21,11 @@ final class TaskRunNotYours extends RuntimeException implements CodedRefusal, Co
     public static function forRun(int $taskNumber, int $runNumber): self
     {
         return new self(
-            "Run {$runNumber} of task {$taskNumber} is not your current run; read the task and send its current run "
-                .'number.',
+            sprintf(
+                'Run %s of task %s is not your current run; read the task and send its current run number.',
+                $runNumber,
+                $taskNumber,
+            ),
         );
     }
 

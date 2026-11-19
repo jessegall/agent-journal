@@ -19,8 +19,7 @@ final class CommentPlaceUnclear extends RuntimeException implements CodedRefusal
     public static function given(): self
     {
         return new self(
-            'Point at the whole record (no place), or at one section, one span of lines, or one quote with its '
-            .'version.',
+            'Point at the whole record (no place), or at one section, one span of lines, or one quote with its version.',
         );
     }
 

@@ -19,8 +19,7 @@ final class MemoryRemoveCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'memory:remove {memory : The memory id} {--request-key= : Send again under the key a'
-        .' failed attempt printed} {--json}';
+    protected $signature = 'memory:remove {memory : The memory id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Remove a memory of the calling agent';
 

@@ -32,24 +32,24 @@ final class MarkdownPartsSectionsTest extends TestCase
     public function test_the_text_under_the_title_is_the_purpose_and_each_heading_is_a_section_in_file_order(): void
     {
         $this->write(<<<'TEXT'
-            # Shell
+        # Shell
 
-            Commands run through the journal.
+        Commands run through the journal.
 
-            They keep their output.
+        They keep their output.
 
-            ## Running 
-            TEXT
+        ## Running 
+        TEXT
             .<<<'TEXT'
-                commands
+            commands
 
-                Run.
+            Run.
 
-                ## Reading output
+            ## Reading output
 
-                Read.
+            Read.
 
-                TEXT);
+            TEXT);
 
         $sections = $this->sections('Shell');
 
@@ -62,10 +62,10 @@ final class MarkdownPartsSectionsTest extends TestCase
             array_map(fn (SkillSection $section) => $section->heading, $sections),
         );
         $this->assertSame(<<<'TEXT'
-            Commands run through the journal.
+        Commands run through the journal.
 
-            They keep their output.
-            TEXT, $sections[0]->content);
+        They keep their output.
+        TEXT, $sections[0]->content);
         $this->assertSame('Run.', $sections[1]->body(new MarkdownParts(), $this->owner()));
         $this->assertSame('Read.', $sections[2]->body(new MarkdownParts(), $this->owner()));
     }
@@ -73,13 +73,13 @@ final class MarkdownPartsSectionsTest extends TestCase
     public function test_no_text_under_the_title_gives_no_purpose_section(): void
     {
         $this->write(<<<'TEXT'
-            # Shell
+        # Shell
 
-            ## Running commands
+        ## Running commands
 
-            Run.
+        Run.
 
-            TEXT);
+        TEXT);
 
         $this->assertSame(
             ['running-commands'],
@@ -97,31 +97,31 @@ final class MarkdownPartsSectionsTest extends TestCase
     public function test_a_subheading_stays_in_its_section_and_a_fenced_heading_is_no_section(): void
     {
         $this->write(<<<'TEXT'
-            # Shell
+        # Shell
 
-            ## Failure
+        ## Failure
 
-            ### Retry
+        ### Retry
 
-            Again.
+        Again.
 
-            ```markdown
-            ## Not a heading
-            ```
+        ```markdown
+        ## Not a heading
+        ```
 
-            ## Done
+        ## Done
 
-            TEXT);
+        TEXT);
 
         $sections = $this->sections('Shell');
 
         $this->assertSame(['failure', 'done'], array_map(fn (SkillSection $section) => $section->key, $sections));
         $this->assertStringContainsString(
             <<<'TEXT'
-                ### Retry
+            ### Retry
 
-                Again.
-                TEXT,
+            Again.
+            TEXT,
             $sections[0]->body(new MarkdownParts(), $this->owner()),
         );
         $this->assertStringContainsString('## Not a heading', $sections[0]->body(new MarkdownParts(), $this->owner()));
@@ -131,30 +131,30 @@ final class MarkdownPartsSectionsTest extends TestCase
     public function test_front_matter_and_line_endings_do_not_change_the_sections(): void
     {
         $this->write(<<<'TEXT'
-            # Shell
+        # Shell
 
-            Purpose.
+        Purpose.
 
-            ## One
+        ## One
 
-            Text.
+        Text.
 
-            TEXT);
+        TEXT);
         $plain = $this->sections('Shell');
 
         $this->write(<<<TEXT
-            ---
-            name: shell
-            ---\r
-            # Shell\r
-            \r
-            Purpose.\r
-            \r
-            ## One\r
-            \r
-            Text.\r
+        ---
+        name: shell
+        ---\r
+        # Shell\r
+        \r
+        Purpose.\r
+        \r
+        ## One\r
+        \r
+        Text.\r
 
-            TEXT);
+        TEXT);
         $other = $this->sections('Shell');
 
         $this->assertEquals($plain, $other);
@@ -175,13 +175,13 @@ final class MarkdownPartsSectionsTest extends TestCase
     public function test_a_heading_gives_a_kebab_case_key_and_keeps_its_title(string $heading, string $key): void
     {
         $this->write(<<<TEXT
-            # Shell
+        # Shell
 
-            ## {$heading}
+        ## {$heading}
 
-            Text.
+        Text.
 
-            TEXT);
+        TEXT);
 
         $section = $this->sections('Shell')[0];
 
@@ -195,54 +195,54 @@ final class MarkdownPartsSectionsTest extends TestCase
     public static function brokenFiles(): iterable
     {
         yield 'no title' => [<<<'TEXT'
-            ## States
+        ## States
 
-            Text.
+        Text.
 
-            TEXT, 'has no # title before its first ## heading'];
+        TEXT, 'has no # title before its first ## heading'];
         yield 'text before the title' => [
             <<<'TEXT'
-                Intro.
+            Intro.
 
-                # Shell
+            # Shell
 
-                ## States
+            ## States
 
-                TEXT,
+            TEXT,
             'has no # title before its first ## heading',
         ];
         yield 'a deeper heading first' => [
             <<<'TEXT'
-                ### States
+            ### States
 
-                # Shell
+            # Shell
 
-                ## One
+            ## One
 
-                TEXT,
+            TEXT,
             'has no # title before its first ## heading',
         ];
         yield 'no heading at all' => ["Just text.\n", 'has no # title before its first ## heading'];
         yield 'second title' => [<<<'TEXT'
-            # Shell
+        # Shell
 
-            ## States
+        ## States
 
-            # Notes
+        # Notes
 
-            TEXT, 'has a second # title, Notes'];
+        TEXT, 'has a second # title, Notes'];
         yield 'title differs' => [<<<'TEXT'
-            # Shells
+        # Shells
 
-            ## States
+        ## States
 
-            TEXT, 'has the # title Shells, but the skill is named Shell'];
+        TEXT, 'has the # title Shells, but the skill is named Shell'];
         yield 'heading without key' => [<<<'TEXT'
-            # Shell
+        # Shell
 
-            ## ???
+        ## ???
 
-            TEXT, 'has the ## heading ???, which gives no section key'];
+        TEXT, 'has the ## heading ???, which gives no section key'];
     }
 
     #[DataProvider('brokenFiles')]
@@ -276,10 +276,10 @@ final class MarkdownPartsSectionsTest extends TestCase
     public function test_a_file_that_is_not_text_is_refused_as_unreadable(): void
     {
         File::put($this->root.'/resources/skills/shell.md', <<<TEXT
-            # Shell
-            \xB1\xB2
+        # Shell
+        \xB1\xB2
 
-            TEXT);
+        TEXT);
 
         $this->expectException(SkillSourceInvalid::class);
         $this->expectExceptionMessage('cannot be read');

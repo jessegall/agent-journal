@@ -22,8 +22,7 @@ final class AssignRecordCommand extends Command
     use ReadsAssignmentArguments;
     use RunsCallPipelines;
 
-    protected $signature = 'assignment:assign {type} {id} {--to= : The new holder as type:id} {--request-key= :'
-        .' Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'assignment:assign {type} {id} {--to= : The new holder as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Give one record to a holder';
 

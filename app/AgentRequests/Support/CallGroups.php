@@ -69,10 +69,10 @@ final class CallGroups
         ));
         $constructor = $groups === [] ? '' : <<<TEXT
 
-                public function __construct({$properties}
-                ) {}
+            public function __construct({$properties}
+            ) {}
 
-            TEXT;
+        TEXT;
 
         return <<<PHP
         <?php
@@ -131,8 +131,10 @@ final class CallGroups
             $parameters,
         ));
         $values = implode('', array_map(
-            fn (ReflectionParameter $parameter) => "\n            '{$parameter->getName()}' => "
-                ."\${$parameter->getName()},",
+            fn (ReflectionParameter $parameter) => <<<TEXT
+
+                        '{$parameter->getName()}' => \${$parameter->getName()},
+            TEXT,
             $parameters,
         ));
         $answer = '\\'.$endpoint->answer;

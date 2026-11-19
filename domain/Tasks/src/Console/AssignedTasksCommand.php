@@ -21,8 +21,7 @@ final class AssignedTasksCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'task:assigned {--search= : Words in the title} {--state=* : Only these states}'
-        .' {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
+    protected $signature = 'task:assigned {--search= : Words in the title} {--state=* : Only these states} {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
 
     protected $description = 'List the tasks the calling agent holds';
 

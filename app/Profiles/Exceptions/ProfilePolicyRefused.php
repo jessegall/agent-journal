@@ -16,8 +16,10 @@ final class ProfilePolicyRefused extends InvalidArgumentException implements Com
     public static function readOnlyCeiling(ProfileKey $key): self
     {
         return new self(
-            "Profile {$key} is a read-only helper that would change workspace files; "
-            .'a profile that changes the workspace must be a writing_helper.',
+            sprintf(
+                'Profile %s is a read-only helper that would change workspace files; a profile that changes the workspace must be a writing_helper.',
+                $key,
+            ),
         );
     }
 

@@ -16,8 +16,7 @@ use Illuminate\Console\Command;
  */
 final class ReleaseAgentHoldCommand extends Command
 {
-    protected $signature = 'agents:hold-release {agent : The agent} {session : Its session}'
-        .' {--hold= : The hold you read, such as interrupted} {--reason= : Why}';
+    protected $signature = 'agents:hold-release {agent : The agent} {session : Its session} {--hold= : The hold you read, such as interrupted} {--reason= : Why}';
 
     protected $description = 'Release an interrupt or a call for attention on an agent runtime';
 

@@ -19,16 +19,11 @@ final class DocShowCommand extends Command
     use PrintsRecordText;
     use RunsCallPipelines;
 
-    protected $signature = 'doc:show {number} {--section= : A section by number or exact heading} {--lines= : A'
-        .' line range, a-b} {--bullets : Only the bullet lines} {--grep= : Only the lines holding these words}'
-        .' {--all : The whole text, past the usual bound} {--revision= : An earlier revision} {--at-revision='
-        .' : Continue a read begun on this revision} {--draft : Show your own open draft instead of the'
-        .' published text}';
+    protected $signature = 'doc:show {number} {--section= : A section by number or exact heading} {--lines= : A line range, a-b} {--bullets : Only the bullet lines} {--grep= : Only the lines holding these words} {--all : The whole text, past the usual bound} {--revision= : An earlier revision} {--at-revision= : Continue a read begun on this revision} {--draft : Show your own open draft instead of the published text}';
 
     protected $description = 'Show one document: its outline, or the part of its text you ask for';
 
-    protected $help = 'Example: php artisan doc:show 4 prints the outline; doc:show 4 --section 3 or --lines'
-        .' 10-40 prints a part; --draft shows your own open draft';
+    protected $help = 'Example: php artisan doc:show 4 prints the outline; doc:show 4 --section 3 or --lines 10-40 prints a part; --draft shows your own open draft';
 
     public function handle(DocumentCalls $documents): int
     {

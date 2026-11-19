@@ -21,8 +21,7 @@ final class ReportEditCommand extends Command
 
     protected $description = 'Reports never change; this explains how to correct one';
 
-    protected $help = 'A report never changes. To correct one, file a new report with report:make and link it'
-        .' to the old one with --about "report 7".';
+    protected $help = 'A report never changes. To correct one, file a new report with report:make and link it to the old one with --about "report 7".';
 
     public function handle(DocumentCalls $documents): int
     {

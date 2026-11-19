@@ -22,9 +22,7 @@ final class SettingsRecordTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const string STORED = '{"settings":[{"key":"retry_limit","value":4},{"key":"display_name","value":[1,2]},'
-        .'{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared",'
-        .'"value":null}],"toggles":[{"key":"review","value":true}]}';
+    private const string STORED = '{"settings":[{"key":"retry_limit","value":4},{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null}],"toggles":[{"key":"review","value":true}]}';
 
     public function test_the_migration_creates_the_table(): void
     {
@@ -67,8 +65,7 @@ final class SettingsRecordTest extends TestCase
         $record->revise($record->document->withoutSetting('retry_limit')->withoutToggle('review'));
 
         $this->assertSame(
-            '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash",'
-                .'"empty":{},"decimal":1.5}},{"key":"cleared","value":null}],"toggles":[]}',
+            '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null}],"toggles":[]}',
             $this->storedText(),
         );
         $this->assertSame(1, SettingsRecord::lockedForOwner('Library')->revision);
@@ -77,9 +74,7 @@ final class SettingsRecordTest extends TestCase
         $record->revise($record->document->withSetting($retryLimit));
 
         $this->assertSame(
-            '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash",'
-                .'"empty":{},"decimal":1.5}},{"key":"cleared","value":null},{"key":"retry_limit","value":4}],'
-                    .'"toggles":[]}',
+            '{"settings":[{"key":"display_name","value":[1,2]},{"key":"retired_key","value":{"note":"ünïcode/slash","empty":{},"decimal":1.5}},{"key":"cleared","value":null},{"key":"retry_limit","value":4}],"toggles":[]}',
             $this->storedText(),
         );
         $this->assertSame(2, SettingsRecord::lockedForOwner('Library')->revision);
@@ -96,8 +91,7 @@ final class SettingsRecordTest extends TestCase
             'missing toggles list' => ['{"settings":[{"key":"secret_value","value":1}]}'],
             'toggles not a list' => ['{"settings":[],"toggles":{"key":"secret_value"}}'],
             'extra envelope field' => ['{"settings":[],"toggles":[],"secret_value":1}'],
-            'duplicate key' => ['{"settings":[{"key":"secret_value","value":1},{"key":"secret_value","value":2}],'
-                .'"toggles":[]}'],
+            'duplicate key' => ['{"settings":[{"key":"secret_value","value":1},{"key":"secret_value","value":2}],"toggles":[]}'],
             'invalid key' => ['{"settings":[{"key":"Secret Value","value":1}],"toggles":[]}'],
             'entry without value' => ['{"settings":[],"toggles":[{"key":"secret_value"}]}'],
             'entry with an extra field' => ['{"settings":[{"key":"secret_value","value":1,"more":2}],"toggles":[]}'],

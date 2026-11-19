@@ -75,13 +75,13 @@ final class CommentsAndReadsTest extends TestCase
         );
         $this->bus()->run(
             new CreateDocument('Design', 'What we build', <<<'TEXT'
-                # Goal
-                Ship the editor.
+            # Goal
+            Ship the editor.
 
-                ## Risks
-                None.
+            ## Risks
+            None.
 
-                TEXT),
+            TEXT),
         );
     }
 
@@ -106,17 +106,17 @@ final class CommentsAndReadsTest extends TestCase
                 'Sections',
                 'Three parts',
                 <<<'TEXT'
-                    # One
-                    First.
+                # One
+                First.
 
-                    # Two
-                    Second.
+                # Two
+                Second.
 
-                    # Three
-                    Third part.
-                    Still third.
+                # Three
+                Third part.
+                Still third.
 
-                    TEXT,
+                TEXT,
             ),
         );
         $section = $this->bus()->run(
@@ -199,10 +199,10 @@ final class CommentsAndReadsTest extends TestCase
     {
         $lines = implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)));
         $this->bus()->run(new CreateDocument('Long', 'Many lines', <<<TEXT
-            # Long
-            {$lines}
+        # Long
+        {$lines}
 
-            TEXT));
+        TEXT));
 
         $outline = $this->documents()->read(2, new TextSelection());
         $part = $this->documents()->read(2, new TextSelection(section: '1'));

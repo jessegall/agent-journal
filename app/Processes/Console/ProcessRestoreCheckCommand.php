@@ -18,8 +18,7 @@ final class ProcessRestoreCheckCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'process:restore-check {run : The run whose output was restored}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'process:restore-check {run : The run whose output was restored} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Check restored output against its original checksums';
 

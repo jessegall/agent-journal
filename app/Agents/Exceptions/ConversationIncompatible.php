@@ -16,8 +16,10 @@ final class ConversationIncompatible extends RuntimeException implements Command
     public static function forSession(string $sessionId): self
     {
         return new self(
-            "Session {$sessionId} could not prepare its required journal context: the conversation it resumed "
-                .'belongs to other work. No journal work was admitted.',
+            sprintf(
+                'Session %s could not prepare its required journal context: the conversation it resumed belongs to other work. No journal work was admitted.',
+                $sessionId,
+            ),
         );
     }
 

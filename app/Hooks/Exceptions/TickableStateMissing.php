@@ -11,8 +11,11 @@ final class TickableStateMissing extends LogicException
     public static function forType(string $typeKey, string $stateClass): self
     {
         return new self(
-            "The state type {$typeKey} is marked as ticking, but its loader built a {$stateClass}, which is no "
-                .'TickableState.',
+            sprintf(
+                'The state type %s is marked as ticking, but its loader built a %s, which is no TickableState.',
+                $typeKey,
+                $stateClass,
+            ),
         );
     }
 }

@@ -18,8 +18,7 @@ final class CommandTypeRejectCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:reject {proposal : The proposal id} {--reason= : Why it is rejected}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'command-type:reject {proposal : The proposal id} {--reason= : Why it is rejected} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Reject a proposal';
 

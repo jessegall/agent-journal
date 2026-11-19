@@ -46,8 +46,7 @@ return new class extends Migration
         });
 
         // One open wake per runtime: a second is refused by the database, not by a check that could race.
-        DB::statement('CREATE UNIQUE INDEX driver_requests_one_open_wake ON driver_requests (agent_runtime_id) WHERE '
-            ."operation = 'wake' AND progress IN ('accepted', 'staged', 'applying')");
+        DB::statement("CREATE UNIQUE INDEX driver_requests_one_open_wake ON driver_requests (agent_runtime_id) WHERE operation = 'wake' AND progress IN ('accepted', 'staged', 'applying')");
     }
 
     public function down(): void

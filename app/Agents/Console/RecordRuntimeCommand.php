@@ -16,8 +16,7 @@ use Illuminate\Support\Str;
  */
 final class RecordRuntimeCommand extends Command
 {
-    protected $signature = 'agents:runtime-record {agent : The agent} {session : Its session}'
-        .' {--stop : Stop the recording instead of starting one}';
+    protected $signature = 'agents:runtime-record {agent : The agent} {session : Its session} {--stop : Stop the recording instead of starting one}';
 
     protected $description = 'Start or stop a redacted recording of an agent runtime on its host';
 

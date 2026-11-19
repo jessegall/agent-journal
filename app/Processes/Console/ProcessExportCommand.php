@@ -21,8 +21,7 @@ final class ProcessExportCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'process:export {run : The run id} {--part=0 : The syntax node of the part}'
-        .' {--stream=stdout} {--to= : The file to write}';
+    protected $signature = 'process:export {run : The run id} {--part=0 : The syntax node of the part} {--stream=stdout} {--to= : The file to write}';
 
     protected $description = 'Write a part\'s stored output to a file';
 

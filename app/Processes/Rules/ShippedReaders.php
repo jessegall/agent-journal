@@ -234,8 +234,7 @@ final readonly class ShippedReaders
             RecordRule::of(RecordRole::AllowedNoise, '      <property name="about" value={about:rest}'),
             RecordRule::of(
                 RecordRole::Summary,
-                '  <testsuite name="PHP CS Fixer" tests="{tests:int}" assertions="{assertions:int}"'
-                .' failures="{failures:int}" errors="{errors:int}">',
+                '  <testsuite name="PHP CS Fixer" tests="{tests:int}" assertions="{assertions:int}" failures="{failures:int}" errors="{errors:int}">',
             ),
             RecordRule::of(RecordRole::Diagnostic, '    <testcase name="All OK" assertions="{assertions:int}"/>'),
             RecordRule::of(

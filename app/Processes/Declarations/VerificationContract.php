@@ -96,8 +96,12 @@ final readonly class VerificationContract
     public function description(): array
     {
         $exits = array_map(
-            fn (ExitBranch $branch): string => "exit {$branch->status}: {$branch->outcome->value}"
-                ." when {$branch->requires}",
+            fn (ExitBranch $branch): string => sprintf(
+                'exit %s: %s when %s',
+                $branch->status,
+                $branch->outcome->value,
+                $branch->requires,
+            ),
             $this->exits->branches,
         );
 

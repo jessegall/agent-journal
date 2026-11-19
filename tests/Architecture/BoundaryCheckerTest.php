@@ -185,13 +185,11 @@ final class BoundaryCheckerTest extends TestCase
 
         $this->assertStringStartsWith('Domain boundary violations (7):', $report);
         $this->assertStringContainsString(
-            '  tests/Fixtures/Boundary/Plans/UsesForbidden.php:7 uses Tests\Fixtures\Boundary\Chat\Message, but Plans '
-                .'does not require Chat',
+            '  tests/Fixtures/Boundary/Plans/UsesForbidden.php:7 uses Tests\\Fixtures\\Boundary\\Chat\\Message, but Plans does not require Chat',
             $report,
         );
         $this->assertStringEndsWith(
-            "Is the dependency right (add it to the Domain class, with the user's yes), or is the code in the wrong "
-                .'domain?',
+            "Is the dependency right (add it to the Domain class, with the user's yes), or is the code in the wrong domain?",
             $report,
         );
     }

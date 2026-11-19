@@ -91,8 +91,12 @@ final readonly class AccessPolicy
                 if (! $this->grants($access, $resource->area)) {
                     return AccessDecision::refused(
                         AccessRuleType::NotGranted,
-                        "{$operation->name} needs {$access->value} on {$resource->area->value}, which this policy "
-                            .'does not grant.',
+                        sprintf(
+                            '%s needs %s on %s, which this policy does not grant.',
+                            $operation->name,
+                            $access->value,
+                            $resource->area->value,
+                        ),
                     );
                 }
             }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getJson } from '@/composables/jsonRequests';
+import { getJson } from '@kit/jsonRequests';
 import { computed, onMounted, ref } from 'vue';
 import type { TextPart } from '@/generated/types/core';
 import { read } from '@/routes/text';

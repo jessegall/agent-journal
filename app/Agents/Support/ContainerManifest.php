@@ -120,8 +120,7 @@ final readonly class ContainerManifest
         }
 
         if ($privileged || $capabilities !== [] || $user !== self::USER || ! $readOnlyRoot) {
-            throw ManifestRefused::because('a helper runs unprivileged as 10001:10001 on a read-only root with no '
-                .'capabilities');
+            throw ManifestRefused::because('a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities');
         }
 
         if (in_array($network, ['host', 'none', ''], true)) {

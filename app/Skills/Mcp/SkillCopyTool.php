@@ -19,8 +19,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_copy: copies a skill into a new stored skill under a user- key, as skill:copy does.
  */
 #[Name('skills_copy')]
-#[Description('Copy a skill you may read, shipped or stored, into a new stored skill under a user- key; the copy is a '
-    .'snapshot of its text.')]
+#[Description('Copy a skill you may read, shipped or stored, into a new stored skill under a user- key; the copy is a snapshot of its text.')]
 final class SkillCopyTool extends JournalWriteTool
 {
     public function __construct(

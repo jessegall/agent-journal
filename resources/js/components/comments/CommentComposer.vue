@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getJson } from '@/composables/jsonRequests';
+import { getJson } from '@kit/jsonRequests';
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import type { Section, TextSections } from '@/generated/types/core';

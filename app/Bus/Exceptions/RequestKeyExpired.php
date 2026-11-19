@@ -22,8 +22,10 @@ final class RequestKeyExpired extends RuntimeException implements AnswersFromRec
     public static function for(string $key): self
     {
         return new self(
-            "The request_key {$key} is past its retention and is not used again; read the current state, and send a "
-                .'new key for a new write.',
+            sprintf(
+                'The request_key %s is past its retention and is not used again; read the current state, and send a new key for a new write.',
+                $key,
+            ),
         );
     }
 

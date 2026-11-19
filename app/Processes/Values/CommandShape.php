@@ -39,7 +39,10 @@ final readonly class CommandShape
     {
         $limit = ReviewLimit::ShapeCharacters->label();
 
-        return "This command's shape is {$this->length()} characters, past the {$limit} an agent may be sent for "
-            .'classification: split it into shorter commands.';
+        return sprintf(
+            "This command's shape is %s characters, past the %s an agent may be sent for classification: split it into shorter commands.",
+            $this->length(),
+            $limit,
+        );
     }
 }

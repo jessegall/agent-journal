@@ -61,33 +61,33 @@ final class DeskCommunicationRulesTest extends TestCase
 
         return [
             'a desk that is an actor' => ['implementsActor', <<<'TEXT'
-                <?php
-                final class Desk implements Actor
-                {
-                }
+            <?php
+            final class Desk implements Actor
+            {
+            }
 
-                TEXT, [2]],
+            TEXT, [2]],
             'a branch on actor type' => ['comparesActorType', <<<'TEXT'
-                <?php
-                if ($type === ActorType::Agent) {}
+            <?php
+            if ($type === ActorType::Agent) {}
 
-                TEXT, [2]],
+            TEXT, [2]],
             'a bound interface' => ['bindsInterface', <<<'TEXT'
-                <?php
-                #[Bind(Seats::class)]
-                interface SeatReader {}
+            <?php
+            #[Bind(Seats::class)]
+            interface SeatReader {}
 
-                TEXT, [2]],
+            TEXT, [2]],
             'a domain import' => ['namesDomain', <<<'TEXT'
-                <?php
-                use Domain\Chat\ChatDomain;
+            <?php
+            use Domain\Chat\ChatDomain;
 
-                TEXT, [2]],
+            TEXT, [2]],
             'a long line' => ['runsPastWidth', <<<TEXT
-                <?php
-                {$long}
+            <?php
+            {$long}
 
-                TEXT, [2]],
+            TEXT, [2]],
         ];
     }
 

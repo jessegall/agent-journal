@@ -71,10 +71,10 @@ final class ShareStatusTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
-            # Goal
-            Ship it.
+        # Goal
+        Ship it.
 
-            TEXT));
+        TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
         $this->configuration = ShareGatewayConfiguration::configure(

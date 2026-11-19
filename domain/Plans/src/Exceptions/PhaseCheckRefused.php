@@ -19,14 +19,16 @@ final class PhaseCheckRefused extends RuntimeException implements CodedRefusal, 
 
     public static function noReceipt(string $receiptId): self
     {
-        return new self("Receipt {$receiptId} is not a current validated result: rerun the check after the phase, or"
-            .' read its run with journal output read and recover by an approved replay.');
+        return new self(
+            sprintf('Receipt %s is not a current validated result: rerun the check after the phase, or read its run with journal output read and recover by an approved replay.', $receiptId),
+        );
     }
 
     public static function stale(string $receiptId, string $runId): self
     {
-        return new self("Receipt {$receiptId} of run {$runId} is older than the phase's last task change: rerun the"
-            .' check now the phase is written.');
+        return new self(
+            sprintf("Receipt %s of run %s is older than the phase's last task change: rerun the check now the phase is written.", $receiptId, $runId),
+        );
     }
 
     protected function status(): int

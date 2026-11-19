@@ -15,8 +15,7 @@ final class DefaultUnavailable extends InvalidArgumentException implements Comma
 {
     public static function forLaunch(): self
     {
-        return new self('This launch has no configured model default. Name a model, or select a profile with an '
-            .'allowed default.');
+        return new self('This launch has no configured model default. Name a model, or select a profile with an allowed default.');
     }
 
     public function reason(): LaunchRefusalType

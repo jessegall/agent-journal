@@ -86,12 +86,9 @@ final class RegisteredModuleTest extends TestCase
         $this->assertSame([
             '3 uses Tests\Fixtures\Modules\Notes\Api\NoteValue, but Plans does not require Notes',
             '4 uses Domain\Tasks\Models\Task, but Notes does not require Tasks',
-            '5 uses App\Hooks\Actions\AgentStacks, which is private to Core; list it in CoreApi if it is meant to be '
-                .'public, or use what CoreApi lists',
-            '6 uses table module_notes of Notes; only Notes reads, joins, keys or changes its tables, so use what '
-                .'Notes exports',
-            '7 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks '
-                .'exports',
+            '5 uses App\\Hooks\\Actions\\AgentStacks, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists',
+            '6 uses table module_notes of Notes; only Notes reads, joins, keys or changes its tables, so use what Notes exports',
+            '7 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports',
         ], array_map(
             fn (Violation $violation) => "{$violation->line} {$violation->reason()}",
             [...$names, ...$tables],

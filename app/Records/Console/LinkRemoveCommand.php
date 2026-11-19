@@ -15,8 +15,7 @@ final class LinkRemoveCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'link:remove {source : Such as "doc 12"} {target : Such as "task 7"} {--request-key='
-        .' : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'link:remove {source : Such as "doc 12"} {target : Such as "task 7"} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Remove the link between two records; both records stay';
 

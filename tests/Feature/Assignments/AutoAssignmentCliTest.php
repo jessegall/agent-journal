@@ -83,8 +83,7 @@ final class AutoAssignmentCliTest extends TestCase
     {
         $this->artisan('assignment:auto-pools', ['type' => 'tasks.task', '--json' => true])
             ->expectsOutputToContain(
-                '"label":"Open tasks"},{"key":"tasks.named","label":"Named tasks"},'
-                .'{"key":"plans.tasks","label":"Tasks in a started plan"}',
+                '"label":"Open tasks"},{"key":"tasks.named","label":"Named tasks"},{"key":"plans.tasks","label":"Tasks in a started plan"}',
             )
             ->assertExitCode(0);
     }

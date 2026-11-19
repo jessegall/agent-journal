@@ -14,8 +14,10 @@ final class RelationReadUndeclared extends RuntimeException
     public static function for(string $relation): self
     {
         return new self(
-            "Eager loading {$relation} reads all its rows without saying so; declare it with "
-                .'RelationRead::complete(max: n).',
+            sprintf(
+                'Eager loading %s reads all its rows without saying so; declare it with RelationRead::complete(max: n).',
+                $relation,
+            ),
         );
     }
 }

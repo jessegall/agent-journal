@@ -17,8 +17,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class ProvenSkillReadTest extends TestCase
 {
-    private const string FILE = '/host/runtimes/01jd8x0g9m3qz6v4k2t7r5w1ce'
-        .'/journal-skills/skills/journal-plans/SKILL.md';
+    private const string FILE = '/host/runtimes/01jd8x0g9m3qz6v4k2t7r5w1ce/journal-skills/skills/journal-plans/SKILL.md';
 
     /**
      * @return iterable<string, array{ToolResult, ReadEvidence}>

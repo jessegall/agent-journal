@@ -32,16 +32,24 @@ final class SettingsDocumentInvalid extends RuntimeException
     public static function malformedEntry(string $owner, string $list, int $position): self
     {
         return new self(
-            "Entry {$position} of the {$list} list in the settings document of {$owner} is not an object holding "
-                .'exactly a valid key and a value.',
+            sprintf(
+                'Entry %s of the %s list in the settings document of %s is not an object holding exactly a valid key and a value.',
+                $position,
+                $list,
+                $owner,
+            ),
         );
     }
 
     public static function duplicateKey(string $owner, string $list, int $position): self
     {
         return new self(
-            "Entry {$position} of the {$list} list in the settings document of {$owner} repeats the key of an "
-                .'earlier entry.',
+            sprintf(
+                'Entry %s of the %s list in the settings document of %s repeats the key of an earlier entry.',
+                $position,
+                $list,
+                $owner,
+            ),
         );
     }
 }

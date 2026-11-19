@@ -62,10 +62,10 @@ final class SharingTest extends TestCase
     ];
 
     private const string BODY = <<<'TEXT'
-        # Goal
-        Ship it.
+    # Goal
+    Ship it.
 
-        TEXT;
+    TEXT;
 
     private Document $document;
 
@@ -82,19 +82,19 @@ final class SharingTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new CreateDocument('Design', 'What we build', self::BODY));
         $bus->run(new CreateReport('Check', 'What we found', <<<'TEXT'
-            # Found
-            All good.
+        # Found
+        All good.
 
-            TEXT));
+        TEXT));
         $draft = $bus->run(new OpenDocument(1));
         $bus->run(
             new ReplaceDocumentBody(
                 new DraftTarget($draft->documentNumber, $draft->token, $draft->version),
                 <<<'TEXT'
-                    # Draft
-                    Not yet.
+                # Draft
+                Not yet.
 
-                    TEXT,
+                TEXT,
             ),
         );
         $this->document = Document::query()->where('number', 1)->sole();
@@ -137,10 +137,10 @@ final class SharingTest extends TestCase
         );
 
         $this->assertSame(<<<'TEXT'
-            # Found
-            All good.
+        # Found
+        All good.
 
-            TEXT, $content->body);
+        TEXT, $content->body);
         $this->assertSame(['Check', '1'], [$content->card->title, $content->card->publicationVersion]);
     }
 

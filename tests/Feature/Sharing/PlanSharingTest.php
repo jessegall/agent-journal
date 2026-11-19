@@ -53,10 +53,10 @@ final class PlanSharingTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(1), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
-            # Goal
-            Ship it.
+        # Goal
+        Ship it.
 
-            TEXT));
+        TEXT));
         $document = Document::query()->where('number', 1)->sole();
         $plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $plan->addPhase('Secret phase');

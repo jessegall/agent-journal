@@ -46,10 +46,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
     #[ReadBudget(
         queries: 13,
         models: 3_503,
-        formula: 'queries: a constant 11 (stored skills in one batch of up to 1,000, sessions in one of up to 500) '
-            .'+ 2 per distinct pinned profile revision (one here); models: 2 per stored skill (skill, revision) + 3 '
-            .'per running session (session, agent, newest publication) + the newest generation + 2 per distinct '
-            .'pinned profile revision',
+        formula: 'queries: a constant 11 (stored skills in one batch of up to 1,000, sessions in one of up to 500) + 2 per distinct pinned profile revision (one here); models: 2 per stored skill (skill, revision) + 3 per running session (session, agent, newest publication) + the newest generation + 2 per distinct pinned profile revision',
     )]
     public function handle(RefreshSkills $command): RefreshResult
     {

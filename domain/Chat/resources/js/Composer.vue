@@ -9,7 +9,7 @@ import { useMessageDrafts } from './composables/useMessageDrafts';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { reply as replyRoute, send as sendRoute } from '@generated/routes/chat';
 import type { MessageInput } from '@generated/types/chat';
-import type { MessageView } from '@generated/types/core';
+import type { MessageView } from '@kit/CoreTypes';
 
 /**
  * Asks the agent of the chosen conversation, from the person's inbox to the agent's (doc 4, 6.5). The text is the draft of this conversation, so switching

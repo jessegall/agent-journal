@@ -33,23 +33,23 @@ final class PlanSkillTest extends TestCase
             $shown,
         );
         $this->assertStringContainsString(<<<'TEXT'
-            # Plans
+        # Plans
 
-            ## Purpose
+        ## Purpose
 
-            A plan orders the work
-            TEXT, $shown);
+        A plan orders the work
+        TEXT, $shown);
         $this->assertStringContainsString(<<<'TEXT'
-            ## States
+        ## States
 
-            A plan has a type (build, fix, research or cleanup)
-            TEXT, $shown);
+        A plan has a type (build, fix, research or cleanup)
+        TEXT, $shown);
         $this->assertStringContainsString(
             <<<'TEXT'
-                ## Holding plan work
+            ## Holding plan work
 
-                - `plan:assigned` lists the plans you hold.
-                TEXT,
+            - `plan:assigned` lists the plans you hold.
+            TEXT,
             $shown,
         );
         $this->assertLessThan(strpos($shown, '## Holding plan work'), strpos($shown, '## States'));

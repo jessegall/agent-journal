@@ -15,8 +15,12 @@ final class NumberLimitReached extends RuntimeException
     public static function for(NumberGroup $group): self
     {
         return new self(
-            "The number group for {$group->record_type} of {$group->holder_type} {$group->holder_id} has handed out "
-                .'its last number.',
+            sprintf(
+                'The number group for %s of %s %s has handed out its last number.',
+                $group->record_type,
+                $group->holder_type,
+                $group->holder_id,
+            ),
         );
     }
 }

@@ -37,8 +37,7 @@ return new class extends Migration
 
         // One submission key per author and session; a user has no session, so NULLS NOT DISTINCT keeps the key unique
         // for it too.
-        DB::statement('CREATE UNIQUE INDEX comments_submission_unique ON comments (author_type, author_id, '
-            .'author_session_id, submission_key) NULLS NOT DISTINCT');
+        DB::statement('CREATE UNIQUE INDEX comments_submission_unique ON comments (author_type, author_id, author_session_id, submission_key) NULLS NOT DISTINCT');
     }
 
     public function down(): void

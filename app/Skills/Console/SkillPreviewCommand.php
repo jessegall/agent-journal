@@ -27,8 +27,7 @@ use Illuminate\Console\Command;
  */
 final class SkillPreviewCommand extends Command
 {
-    protected $signature = 'skill:preview {key : The key of the skill} {--agent= : One agent whose selection to show} '
-        .'{--json : Print the preview as JSON}';
+    protected $signature = 'skill:preview {key : The key of the skill} {--agent= : One agent whose selection to show} {--json : Print the preview as JSON}';
 
     protected $description = 'Show which agents a skill reaches and why';
 

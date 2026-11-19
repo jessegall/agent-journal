@@ -102,8 +102,7 @@ final class HostCapabilitiesTest extends TestCase
         } catch (AccountContainerUnsupported $refusal) {
             $this->assertSame(LaunchRefusalType::AccountContainerUnsupported, $refusal->reason());
             $this->assertStringStartsWith(
-                'The journal cannot launch account-transport for codex with a subscription account in '
-                    .'required_container mode: ',
+                'The journal cannot launch account-transport for codex with a subscription account in required_container mode: ',
                 $refusal->getMessage(),
             );
             $this->assertStringEndsWith('Nothing was launched.', $refusal->getMessage());
@@ -126,8 +125,7 @@ final class HostCapabilitiesTest extends TestCase
         } catch (HostCapabilityUnsupported $refusal) {
             $this->assertSame(LaunchRefusalType::CapabilityUnsupported, $refusal->reason());
             $this->assertStringStartsWith(
-                'The journal cannot guarantee stop-deadline for claude-code with a subscription account in '
-                    .'required_container mode: ',
+                'The journal cannot guarantee stop-deadline for claude-code with a subscription account in required_container mode: ',
                 $refusal->getMessage(),
             );
         }

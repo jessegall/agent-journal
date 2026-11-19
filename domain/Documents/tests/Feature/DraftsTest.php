@@ -51,16 +51,16 @@ final class DraftsTest extends TestCase
     ];
 
     private const string BODY = <<<'TEXT'
-        # Goal
-        Ship it.
+    # Goal
+    Ship it.
 
-        ## Steps
-        One.
+    ## Steps
+    One.
 
-        ## Risks
-        None.
+    ## Risks
+    None.
 
-        TEXT;
+    TEXT;
 
     protected function setUp(): void
     {
@@ -84,25 +84,25 @@ final class DraftsTest extends TestCase
     {
         $draft = $this->bus()->run(new OpenDocument(1));
         $draft = $this->bus()->run(new ReplaceDocumentSection($this->target($draft), '3', <<<'TEXT'
-            ## Risks
-            Late.
+        ## Risks
+        Late.
 
-            TEXT));
+        TEXT));
         $draft = $this->bus()->run(new ChangeDocumentDetails($this->target($draft), 'Design', 'What we build next'));
         $closed = $this->bus()->run(new CloseDocument($this->target($draft)));
 
         $this->assertSame(3, $draft->version);
         $this->assertSame([2, true], [$closed->revisionNumber, $closed->published]);
         $this->assertStringContainsString(<<<'TEXT'
-            ## Risks
-            Late.
+        ## Risks
+        Late.
 
-            TEXT, $this->documents()->show(1)->body);
+        TEXT, $this->documents()->show(1)->body);
         $this->assertStringContainsString(<<<'TEXT'
-            ## Steps
-            One.
+        ## Steps
+        One.
 
-            TEXT, $this->documents()->show(1)->body);
+        TEXT, $this->documents()->show(1)->body);
         $this->assertSame(self::BODY, $this->documents()->revision(1, 1)->body);
         $this->assertTrue($this->documents()->revision(1, 1)->historical);
         $this->assertCount(2, $this->documents()->revisions(1, 1));
@@ -161,10 +161,10 @@ final class DraftsTest extends TestCase
             [new ReplaceDocumentText($this->target($draft), '.', '!'), TextMatchInvalid::class],
             [
                 new ReplaceDocumentSection($this->target($draft), 'Missing', <<<'TEXT'
-                    ## Missing
-                    Text.
+                ## Missing
+                Text.
 
-                    TEXT),
+                TEXT),
                 SectionMissing::class,
             ],
         ];

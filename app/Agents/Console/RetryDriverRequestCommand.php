@@ -15,8 +15,7 @@ use Illuminate\Console\Command;
  */
 final class RetryDriverRequestCommand extends Command
 {
-    protected $signature = 'agents:request-retry {request : The driver request}'
-        .' {--row-version= : The row version you read} {--reason= : Why}';
+    protected $signature = 'agents:request-retry {request : The driver request} {--row-version= : The row version you read} {--reason= : Why}';
 
     protected $description = 'Send a failed or unavailable driver request again';
 

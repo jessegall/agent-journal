@@ -21,8 +21,10 @@ final class OperationUnavailable extends RuntimeException implements CodedRefusa
     public static function for(string $key): self
     {
         return new self(
-            "No write of this session has the request_key {$key}; one that was rolled back left none and may be sent "
-                .'again.',
+            sprintf(
+                'No write of this session has the request_key %s; one that was rolled back left none and may be sent again.',
+                $key,
+            ),
         );
     }
 

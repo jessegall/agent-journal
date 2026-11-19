@@ -15,11 +15,9 @@ final class TextSectionsCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'text:sections {target : Such as "doc 12"} {--at-revision=} {--after-section=0}'
-        .' {--per-page=50} {--json}';
+    protected $signature = 'text:sections {target : Such as "doc 12"} {--at-revision=} {--after-section=0} {--per-page=50} {--json}';
 
-    protected $description = 'List the sections of one version of the text of a record; nextAfterSection is the'
-        .' --after-section of the next page';
+    protected $description = 'List the sections of one version of the text of a record; nextAfterSection is the --after-section of the next page';
 
     protected $help = 'Example: text:sections "doc 12" --at-revision 4 --after-section 0';
 

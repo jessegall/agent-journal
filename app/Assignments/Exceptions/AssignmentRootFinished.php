@@ -18,8 +18,11 @@ final class AssignmentRootFinished extends RuntimeException implements CodedRefu
     public static function for(RecordIdentity $root): self
     {
         return new self(
-            "{$root->type} {$root->id} is finished, so its work is not given out as a whole; assign single records "
-                .'instead.',
+            sprintf(
+                '%s %s is finished, so its work is not given out as a whole; assign single records instead.',
+                $root->type,
+                $root->id,
+            ),
         );
     }
 

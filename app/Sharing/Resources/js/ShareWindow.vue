@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ShareDetailData, ShareLinkData } from '@generated/types/sharing';
-import { postJson } from '@/composables/jsonRequests';
-import { revealShareLink } from '@/routes/sharing';
+import { postJson } from '@kit/jsonRequests';
+import { revealShareLink } from '@generated/routes/sharing';
 import { router } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';

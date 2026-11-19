@@ -17,16 +17,11 @@ final class CommentPostCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'comment:post {target : Such as "doc 12"} {--body=} {--submission-key=}'
-        .' {--at-revision=} {--section=} {--lines=} {--quote=} {--start-offset=} {--end-offset=}'
-        .' {--request-key= : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'comment:post {target : Such as "doc 12"} {--body=} {--submission-key=} {--at-revision=} {--section=} {--lines=} {--quote=} {--start-offset=} {--end-offset=} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
-    protected $description = 'Comment on a record: on the whole record, or on a section, lines or an exact'
-        .' quote of one revision';
+    protected $description = 'Comment on a record: on the whole record, or on a section, lines or an exact quote of one revision';
 
-    protected $help = 'Examples: comment:post "note 1" --body "Is this open?" | comment:post "doc 12" --body'
-        .' "Why?" --at-revision 4 --lines 12-16 | --at-revision 4 --section 3 | --at-revision 4 --lines 12-12'
-        .' --quote "the plan" --start-offset 5 --end-offset 13. A retry must reuse the printed submission key.';
+    protected $help = 'Examples: comment:post "note 1" --body "Is this open?" | comment:post "doc 12" --body "Why?" --at-revision 4 --lines 12-16 | --at-revision 4 --section 3 | --at-revision 4 --lines 12-12 --quote "the plan" --start-offset 5 --end-offset 13. A retry must reuse the printed submission key.';
 
     public function handle(): int
     {

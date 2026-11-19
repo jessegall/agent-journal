@@ -121,8 +121,7 @@ final readonly class RunInTransaction implements CommandMiddleware
         if (! $this->running->isRunning() && $this->openTransactionHasNoLimits()) {
             throw CommandTransactionMismatch::for(
                 $call->name(),
-                'the open transaction has no lock and statement limits; '
-                .'open it through the bus or the stack transaction',
+                'the open transaction has no lock and statement limits; open it through the bus or the stack transaction',
             );
         }
 

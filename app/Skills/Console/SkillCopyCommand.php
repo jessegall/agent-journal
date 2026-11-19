@@ -18,8 +18,7 @@ final class SkillCopyCommand extends Command
 {
     use PrintsSkillRefusals;
 
-    protected $signature = 'skill:copy {key : The skill to copy} {new-key : A new user- key} {--request-id= : Send '
-        .'again under the id a failed attempt printed}';
+    protected $signature = 'skill:copy {key : The skill to copy} {new-key : A new user- key} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Copy a skill into a new stored skill';
 

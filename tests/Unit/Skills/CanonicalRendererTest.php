@@ -132,19 +132,19 @@ final class CanonicalRendererTest extends TestCase
         File::put(
             $root.'/resources/skills/guide.md',
             <<<'TEXT'
-                # Guide
+            # Guide
 
-                ## Failure
+            ## Failure
 
-                ### Retry
+            ### Retry
 
-                One.
+            One.
 
-                ### Retry
+            ### Retry
 
-                Two.
+            Two.
 
-                TEXT,
+            TEXT,
         );
 
         try {

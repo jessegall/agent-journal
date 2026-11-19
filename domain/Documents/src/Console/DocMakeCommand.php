@@ -19,14 +19,11 @@ final class DocMakeCommand extends Command
     use ReadsRecordBody;
     use RunsCallPipelines;
 
-    protected $signature = 'doc:make {title} {--abstract= : One line saying what it is} {--body= : The text, or'
-        .' - to read it from standard input} {--file= : A local file holding the text} {--about=* : A record'
-        .' it is about, such as "task 12"; up to 50}';
+    protected $signature = 'doc:make {title} {--abstract= : One line saying what it is} {--body= : The text, or - to read it from standard input} {--file= : A local file holding the text} {--about=* : A record it is about, such as "task 12"; up to 50}';
 
     protected $description = 'File a new document; it is shared with every agent and user of this journal';
 
-    protected $help = 'Example: php artisan doc:make "Release plan" --abstract "What ships in 6.0" --file'
-        .' plan.md --about "task 12"';
+    protected $help = 'Example: php artisan doc:make "Release plan" --abstract "What ships in 6.0" --file plan.md --about "task 12"';
 
     public function handle(DocumentCalls $documents): int
     {
@@ -47,8 +44,10 @@ final class DocMakeCommand extends Command
             );
 
             return CommandReport::ending(self::SUCCESS)->line(
-                "Filed as {$filed->label}. Docs are shared with every agent and user of this journal;"
-                .' linked private records stay private.',
+                sprintf(
+                    'Filed as %s. Docs are shared with every agent and user of this journal; linked private records stay private.',
+                    $filed->label,
+                ),
             );
         });
 

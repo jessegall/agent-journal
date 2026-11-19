@@ -73,10 +73,10 @@ final class HookTransactionTest extends TestCase
             );
         } finally {
             $this->assertSame(<<<'TEXT'
-                saw the hook waiting
-                committed
+            saw the hook waiting
+            committed
 
-                TEXT, stream_get_contents($process['stdout']));
+            TEXT, stream_get_contents($process['stdout']));
             proc_close($process['handle']);
         }
 

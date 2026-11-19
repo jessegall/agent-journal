@@ -3,7 +3,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
 import { draftKey } from './composables/useMessageDrafts';
 import type { ChatData } from '@generated/types/chat';
-import type { MessageView } from '@generated/types/core';
+import type { MessageView } from '@kit/CoreTypes';
 import { read as readRoute } from '@generated/routes/chat';
 import Composer from './Composer.vue';
 import MessageList from './MessageList.vue';

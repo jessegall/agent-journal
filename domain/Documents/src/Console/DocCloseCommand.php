@@ -21,8 +21,7 @@ final class DocCloseCommand extends Command
 
     protected $description = 'Close the open draft of a document; a changed text becomes its next revision';
 
-    protected $help = 'Example: php artisan doc:close 4 publishes your changes as the next revision; an'
-        .' unchanged draft adds none';
+    protected $help = 'Example: php artisan doc:close 4 publishes your changes as the next revision; an unchanged draft adds none';
 
     public function handle(DocumentCalls $documents, DraftTokens $drafts): int
     {

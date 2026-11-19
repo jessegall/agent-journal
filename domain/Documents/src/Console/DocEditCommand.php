@@ -20,15 +20,11 @@ final class DocEditCommand extends Command
     use ReadsRecordBody;
     use RunsCallPipelines;
 
-    protected $signature = 'doc:edit {number} {--body= : The new text, or - for standard input} {--file= : A'
-        .' local file holding the new text} {--section= : Replace this section, by number or exact heading,'
-        .' with the body} {--replace= : Text to replace} {--with= : Its replacement} {--title=} {--abstract=}';
+    protected $signature = 'doc:edit {number} {--body= : The new text, or - for standard input} {--file= : A local file holding the new text} {--section= : Replace this section, by number or exact heading, with the body} {--replace= : Text to replace} {--with= : Its replacement} {--title=} {--abstract=}';
 
-    protected $description = 'Edit the open draft of a document: the body, one section, one exact piece, or the'
-        .' title and abstract';
+    protected $description = 'Edit the open draft of a document: the body, one section, one exact piece, or the title and abstract';
 
-    protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace'
-        .' "old words" --with "new words" ; or --title "New title"';
+    protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace "old words" --with "new words" ; or --title "New title"';
 
     public function handle(DocumentCalls $documents, DraftTokens $drafts): int
     {

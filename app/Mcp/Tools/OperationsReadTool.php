@@ -17,9 +17,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * operations_read: what became of your write under a request_key, with its outcomes page by page.
  */
 #[Name('operations_read')]
-#[Description('What became of your write sent with a request_key: completed with its result, refused with the '
-    .'refusal, or unknown when it never ran. Outcomes come 20 at a time; send request_key with the continuation a '
-    .'result gave.')]
+#[Description('What became of your write sent with a request_key: completed with its result, refused with the refusal, or unknown when it never ran. Outcomes come 20 at a time; send request_key with the continuation a result gave.')]
 #[IsReadOnly]
 final class OperationsReadTool extends JournalReadTool
 {

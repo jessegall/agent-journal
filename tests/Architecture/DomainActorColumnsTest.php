@@ -43,8 +43,7 @@ final class DomainActorColumnsTest extends TestCase
         $this->assertSame(
             $expected,
             $columns,
-            'A domain table names an agent or an agent session; name an actor (actor_type, actor_id) or use a frame '
-                .'on the stack.',
+            'A domain table names an agent or an agent session; name an actor (actor_type, actor_id) or use a frame on the stack.',
         );
     }
 

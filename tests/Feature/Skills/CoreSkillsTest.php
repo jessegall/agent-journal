@@ -42,19 +42,19 @@ final class CoreSkillsTest extends TestCase
         );
         $this->assertStringContainsString(
             <<<'TEXT'
-                ## Purpose
+            ## Purpose
 
-                Commands run through the journal, which keeps their output.
+            Commands run through the journal, which keeps their output.
 
-                TEXT,
+            TEXT,
             $rendered,
         );
         $this->assertStringContainsString(
             <<<'TEXT'
-                ## Tests and checks
+            ## Tests and checks
 
-                A test, check or build runs only when its rule has an approved, proven reader.
-                TEXT,
+            A test, check or build runs only when its rule has an approved, proven reader.
+            TEXT,
             $rendered,
         );
     }
@@ -67,10 +67,10 @@ final class CoreSkillsTest extends TestCase
 
         $this->assertSame($rendered, Artisan::output());
         $this->assertStringContainsString(<<<'TEXT'
-            ## Reading skills
+        ## Reading skills
 
-            - `skill:list` lists every skill
-            TEXT, $rendered);
+        - `skill:list` lists every skill
+        TEXT, $rendered);
         $this->assertStringContainsString('a second `#` title, a title that differs from the skill\'s name', $rendered);
     }
 }

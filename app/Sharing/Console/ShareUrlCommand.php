@@ -23,8 +23,7 @@ final class ShareUrlCommand extends Command
         $url = $links->linkFor($owner->actAsOwner(), (string) $this->argument('share'));
 
         if ($url->isEmpty()) {
-            $this->error('This share has no address now: it is not active, has expired, or was granted by another '
-                .'owner.');
+            $this->error('This share has no address now: it is not active, has expired, or was granted by another owner.');
 
             return self::FAILURE;
         }

@@ -19,8 +19,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_restore: saves an earlier revision's content as a new revision, as skill:restore does.
  */
 #[Name('skills_restore')]
-#[Description('Save an earlier revision of a stored skill as its newest revision, checked against today\'s rules; '
-    .'history stays.')]
+#[Description("Save an earlier revision of a stored skill as its newest revision, checked against today's rules; history stays.")]
 final class SkillRestoreTool extends JournalWriteTool
 {
     public function __construct(

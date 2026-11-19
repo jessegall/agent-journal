@@ -15,8 +15,11 @@ final class InvalidTextRange extends RuntimeException implements CommandRefusal
     public static function otherVersion(string $asked, string $read): self
     {
         return new self(
-            "The place names version {$asked}, but version {$read} was read; select the text again on the version "
-                .'you are reading.',
+            sprintf(
+                'The place names version %s, but version %s was read; select the text again on the version you are reading.',
+                $asked,
+                $read,
+            ),
         );
     }
 
@@ -28,8 +31,12 @@ final class InvalidTextRange extends RuntimeException implements CommandRefusal
     public static function badLines(int $first, int $last, int $lineCount): self
     {
         return new self(
-            "Lines {$first} to {$last} are not lines of this text, which has {$lineCount}; give the first line "
-                .'first, both from 1.',
+            sprintf(
+                'Lines %s to %s are not lines of this text, which has %s; give the first line first, both from 1.',
+                $first,
+                $last,
+                $lineCount,
+            ),
         );
     }
 
