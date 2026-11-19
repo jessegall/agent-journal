@@ -20,13 +20,13 @@ use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
-use RuntimeException;
 use Tests\Fixtures\Hooks\Ticks\ScriptedTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\UnreadLoader;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
+use Tests\Support\SimulatedFailure;
 use Tests\TestCase;
 
 /**
@@ -93,7 +93,7 @@ final class TickDeliveryTest extends TestCase
     public function test_a_failed_tick_keeps_its_baseline_so_the_retry_is_told_the_whole_interval(): void
     {
         $this->tickingStack('test.ticking', ['a'], $this->entry);
-        $this->loader->scripts['a'] = fn (TickContext $tick) => count($this->loader->ticks['a']) === 2 ? throw new RuntimeException('The tick failed.') : TickCommands::none();
+        $this->loader->scripts['a'] = fn (TickContext $tick) => count($this->loader->ticks['a']) === 2 ? throw SimulatedFailure::of('The tick failed.') : TickCommands::none();
 
         $this->passAt(0.0);
         $this->passAt(1.0);
@@ -150,7 +150,7 @@ final class TickDeliveryTest extends TestCase
     public function test_a_failing_frame_does_not_stop_the_next_one(): void
     {
         $this->tickingStack('test.ticking', ['a', 'b'], $this->entry);
-        $this->loader->scripts['a'] = fn () => throw new RuntimeException('Frame a failed.');
+        $this->loader->scripts['a'] = fn () => throw SimulatedFailure::of('Frame a failed.');
 
         $this->passAt(0.0);
 

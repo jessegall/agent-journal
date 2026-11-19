@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Engine\Handlers;
 
-use App\Agents\Actions\LaunchHeartbeats;
+use App\Agents\Contracts\RecordsLaunchHeartbeats;
 use App\Contracts\CommandHandler;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Support\EngineAccess;
@@ -16,7 +16,7 @@ final readonly class MarkSilentSessionsHandler implements CommandHandler
 {
     public function __construct(
         private EngineAccess $access,
-        private LaunchHeartbeats $heartbeats,
+        private RecordsLaunchHeartbeats $heartbeats,
     ) {}
 
     public function handle(MarkSilentSessions $command): void

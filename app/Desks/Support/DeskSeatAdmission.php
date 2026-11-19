@@ -6,8 +6,8 @@ namespace App\Desks\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssigneeLocks;
+use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
@@ -29,7 +29,7 @@ final readonly class DeskSeatAdmission implements SeatAdmission
 {
     public function __construct(
         private AssigneeLocks $locks,
-        private AssignmentStore $store,
+        private AssignmentStorage $store,
     ) {}
 
     public function seat(string $deskId, ActorIdentity $actor): AdmittedSeat

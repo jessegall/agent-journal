@@ -6,13 +6,13 @@ namespace Tests\Fixtures\UiDeclarations\Shelf;
 
 use App\Ui\Contracts\SectionResolver;
 use App\Ui\Declarations\SlotContext;
-use RuntimeException;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
+use Tests\Support\SimulatedFailure;
 
 final class BrokenResolver implements SectionResolver
 {
     public function read(SlotContext $context): RecentNotesData
     {
-        throw new RuntimeException('The shelf database is gone.');
+        throw SimulatedFailure::of('The shelf database is gone.');
     }
 }

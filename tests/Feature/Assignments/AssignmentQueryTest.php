@@ -24,6 +24,7 @@ use RuntimeException;
 use Tests\Fixtures\Domains\Errands\ErrandsDomain;
 use Tests\Fixtures\Domains\Errands\ErrandWork;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\SimulatedFailure;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -115,7 +116,7 @@ final class AssignmentQueryTest extends TestCase
         {
             public function countFor(AssigneeIdentity $holder): int
             {
-                return $holder->id === TestIds::of(7) ? 3 : throw new RuntimeException('The count failed.');
+                return $holder->id === TestIds::of(7) ? 3 : throw SimulatedFailure::of('The count failed.');
             }
         });
 

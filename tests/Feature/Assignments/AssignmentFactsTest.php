@@ -25,6 +25,7 @@ use ReflectionProperty;
 use RuntimeException;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SimulatedFailure;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
@@ -81,7 +82,7 @@ final class AssignmentFactsTest extends TestCase
         $this->assertThrows(fn () => $this->app->make(AssignmentTransaction::class)->run(function (): never {
             $this->writer()->assign($this->task, $this->helper);
 
-            throw new RuntimeException('The caller gave up.');
+            throw SimulatedFailure::of('The caller gave up.');
         }), RuntimeException::class);
 
         $this->assertSame([], $this->facts);
@@ -109,7 +110,7 @@ final class AssignmentFactsTest extends TestCase
 
     public function test_a_failing_listener_cannot_undo_the_committed_assignment(): void
     {
-        $this->app->make('events')->listen(AssignmentsChanged::class, fn () => throw new RuntimeException('The listener broke.'));
+        $this->app->make('events')->listen(AssignmentsChanged::class, fn () => throw SimulatedFailure::of('The listener broke.'));
 
         $this->assertThrows(fn () => $this->writer()->assign($this->task, $this->helper), RuntimeException::class);
 

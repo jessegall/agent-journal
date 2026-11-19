@@ -45,6 +45,7 @@ use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SimulatedFailure;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
@@ -130,7 +131,7 @@ final class SettingsCommandsTest extends TestCase
             DB::transaction(function (): void {
                 $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0));
 
-                throw new RuntimeException('The surrounding work failed.');
+                throw SimulatedFailure::of('The surrounding work failed.');
             });
         } catch (RuntimeException) {
         }

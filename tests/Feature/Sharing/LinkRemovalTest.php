@@ -20,6 +20,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\SimulatedFailure;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -67,7 +68,7 @@ final class LinkRemovalTest extends TestCase
         $this->assertThrows(fn () => DB::transaction(function (): void {
             $this->source->unlinkFrom($this->target);
 
-            throw new RuntimeException('rolled back');
+            throw SimulatedFailure::of('rolled back');
         }), RuntimeException::class);
 
         $this->assertNull($this->member->fresh()?->invalidated_at);

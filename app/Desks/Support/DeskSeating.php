@@ -7,12 +7,12 @@ namespace App\Desks\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\ClaimRelease;
+use App\Assignments\Contracts\PublishesAssignmentFacts;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
-use App\Assignments\Support\AssignmentFacts;
 use App\Assignments\Support\AssignmentResult;
 use App\Desks\Contracts\SeatAdmission;
 use App\Desks\Contracts\SeatingWriter;
@@ -29,7 +29,7 @@ final readonly class DeskSeating implements SeatingWriter
         private ResponsibilityWriter $responsibilities,
         private SeatLossRepair $repair,
         private ClaimRelease $claims,
-        private AssignmentFacts $facts,
+        private PublishesAssignmentFacts $facts,
         private CurrentActor $actors,
     ) {}
 

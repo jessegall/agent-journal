@@ -8,12 +8,12 @@ use App\Engine\Values\ScanProgress;
 use App\Engine\Values\TickBatch;
 use App\Engine\Values\TickCandidate;
 use App\Hooks\Contracts\ConditionalStateType;
+use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Exceptions\TickableStateMissing;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Stack\StateTypes;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\WorkOccurrence;
 use App\Reads\Support\ScopedReadMeter;
@@ -30,7 +30,7 @@ final class TickCandidates
 {
     private ScanProgress $progress;
 
-    public function __construct(private readonly StateTypes $types)
+    public function __construct(private readonly ResolvesStateTypes $types)
     {
         $this->progress = ScanProgress::start();
     }

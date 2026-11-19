@@ -2,7 +2,6 @@ package keyscripts
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"journal-agent/screen"
@@ -67,19 +66,20 @@ type Runner struct {
 	gate   *terminal.InputGate
 	screen Screen
 	clock  Clock
-	menu   func() screen.MenuEntries
+	view   View
 	report func(Progress)
 }
 
-// NewRunner runs scripts through the gate; menu reads the entries of the menu on screen and its highlighted one.
-func NewRunner(
-	gate *terminal.InputGate,
-	screen Screen,
-	clock Clock,
-	menu func() screen.MenuEntries,
-	report func(Progress),
-) *Runner {
-	return &Runner{gate: gate, screen: screen, clock: clock, menu: menu, report: report}
+// View is what a run reads besides the screen's kind: the screen's rows and the entries of the menu on it, none
+// while no readable menu is drawn.
+type View interface {
+	Rows() []string
+	MenuEntries() screen.MenuEntries
+}
+
+// NewRunner runs scripts through the gate, reading the screen's kind from screen and its words and menus from view.
+func NewRunner(gate *terminal.InputGate, screen Screen, clock Clock, view View, report func(Progress)) *Runner {
+	return &Runner{gate: gate, screen: screen, clock: clock, view: view, report: report}
 }
 
 // Run starts the script from its first step with the given parameter values.
@@ -97,7 +97,7 @@ func (runner *Runner) Resume(script KeyScript, step int, values map[string]strin
 func (runner *Runner) from(script KeyScript, first int, values map[string]string) (Result, error) {
 	for index := first; index < len(script.Steps); index++ {
 		step := script.Steps[index]
-		seen, matched := runner.waitFor(step.Expect, step.Deadline)
+		seen, matched := runner.waitFor(step.Expect, step.Deadline, values)
 		if !matched {
 			return Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}, nil
 		}
@@ -117,12 +117,16 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 }
 
 // waitFor reads the screen until it is the expected one or the deadline passes; it never sleeps without reading.
-func (runner *Runner) waitFor(expect Expectation, deadline time.Duration) (screen.Classification, bool) {
+func (runner *Runner) waitFor(
+	expect Expectation,
+	deadline time.Duration,
+	values map[string]string,
+) (screen.Classification, bool) {
 	until := runner.clock.Now().Add(deadline)
 
 	for {
 		seen := runner.screen.Classify(runner.clock.Now())
-		if expect.matches(seen) {
+		if expect.matches(seen, runner.view.Rows, values) {
 			return seen, true
 		}
 		if !runner.clock.Now().Before(until) {
@@ -146,26 +150,20 @@ func stoppedBy(err error) (Outcome, error) {
 	}
 }
 
-// selectEntry reads the menu on screen, finds the entry with the step's label and presses the arrow toward it once
-// per entry between it and the highlighted one. Each move waits for the highlight to move one entry closer, read
-// afresh, so it ends only on a reading whose highlighted entry is the wanted one. A label the menu does not show
-// sends no key, and a highlight that goes anywhere else stops the moves; no other entry is ever taken in its place.
+// selectEntry reads the menu on screen, finds the step's entry and presses the arrow toward it once per entry
+// between it and the highlighted one: down or up in a list, right or left on a slider. Each move waits for the
+// highlight to move one entry closer, read afresh, so it ends only on a reading whose highlighted entry is the
+// wanted one. An entry the menu does not show sends no key, and a highlight that goes anywhere else stops the
+// moves; no other entry is ever taken in its place.
 func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error {
-	label, err := step.label(values)
-	if err != nil {
-		return err
-	}
-	entries := runner.menu()
-	distance, err := distanceTo(entries, label)
+	entries := runner.view.MenuEntries()
+	distance, err := distanceTo(step, entries, values)
 	if err != nil {
 		return err
 	}
 
 	for distance != 0 {
-		move, key := 1, arrowDown
-		if distance < 0 {
-			move, key = -1, arrowUp
-		}
+		move, key := towards(entries, distance)
 		if err := runner.gate.Keys(key); err != nil {
 			return err
 		}
@@ -173,7 +171,7 @@ func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error 
 		if !found {
 			return errHighlightAstray
 		}
-		next, err := distanceTo(moved, label)
+		next, err := distanceTo(step, moved, values)
 		if err != nil {
 			return err
 		}
@@ -186,14 +184,27 @@ func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error 
 	return nil
 }
 
-// distanceTo is how many entries the one with the label lies below the highlighted entry; above is negative.
-func distanceTo(entries screen.MenuEntries, label string) (int, error) {
-	target, found := entries.Find(label)
-	if !found {
-		return 0, fmt.Errorf("%w: %q", errEntryNotShown, label)
+// distanceTo is how many entries the step's entry lies after the highlighted entry; before it is negative.
+func distanceTo(step KeyStep, entries screen.MenuEntries, values map[string]string) (int, error) {
+	target, err := step.target(entries, values)
+	if err != nil {
+		return 0, err
 	}
 
 	return target - entries.Highlighted, nil
+}
+
+// towards is the move one entry nearer an entry that lies distance away, and the key that makes it.
+func towards(entries screen.MenuEntries, distance int) (int, string) {
+	forward, backward := arrowDown, arrowUp
+	if entries.Across {
+		forward, backward = arrowRight, arrowLeft
+	}
+	if distance < 0 {
+		return -1, backward
+	}
+
+	return 1, forward
 }
 
 // highlightMoves waits until the menu shows another highlighted entry than before, within the deadline, and gives
@@ -203,7 +214,7 @@ func (runner *Runner) highlightMoves(before string, deadline time.Duration) (scr
 
 	for runner.clock.Now().Before(until) {
 		runner.clock.Sleep(pollInterval)
-		entries := runner.menu()
+		entries := runner.view.MenuEntries()
 		if len(entries.Labels) > 0 && entries.HighlightedLabel() != before {
 			return entries, true
 		}

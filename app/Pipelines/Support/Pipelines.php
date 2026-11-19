@@ -6,6 +6,7 @@ namespace App\Pipelines\Support;
 
 use App\Pipelines\Contracts\Pipable;
 use App\Pipelines\Contracts\PipelineDefinition;
+use App\Pipelines\Contracts\RunsPipelines;
 use App\Pipelines\Exceptions\StepOutOfOrder;
 use Closure;
 use Illuminate\Container\Attributes\Singleton;
@@ -20,7 +21,7 @@ use Illuminate\Contracts\Container\Container;
  * read, throws StepOutOfOrder.
  */
 #[Singleton]
-final class Pipelines
+final class Pipelines implements RunsPipelines
 {
     /**
      * @var array<class-string<Pipable>, Closure(object): object>

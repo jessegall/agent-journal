@@ -6,6 +6,7 @@ namespace App\Agents\Actions;
 
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\PresenceWindow;
+use App\Agents\Contracts\RecordsLaunchHeartbeats;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
@@ -17,7 +18,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * Follows a launch by its heartbeats. A session whose beats stop for a presence window is marked silent, which only
  * means absent: silence never times a session out. The host's verified report that the program exited ends it.
  */
-final readonly class LaunchHeartbeats
+final readonly class LaunchHeartbeats implements RecordsLaunchHeartbeats
 {
     public function __construct(
         private LaunchTransaction $transaction,

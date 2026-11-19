@@ -59,13 +59,14 @@ final class ProfileResolverTest extends TestCase
         $snapshot = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
 
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
-        $this->assertSame(HookProgram::Codex, $snapshot->launch->program);
-        $this->assertFalse($snapshot->launch->programPinned);
-        $this->assertSame(['opus', 'sonnet'], $snapshot->launch->allowedModels);
-        $this->assertSame([], $snapshot->launch->stopConditions->conditions);
-        $this->assertSame(ExecutionModeType::RequiredContainer, $snapshot->launch->execution->mode);
-        $this->assertSame($activation->configurationHash, $snapshot->launch->provenance->configurationHash);
-        $this->assertSame(PolicyOriginType::GlobalDefault, $snapshot->launch->provenance->originOf('access'));
+        $launch = $snapshot->launch;
+        $this->assertSame(HookProgram::Codex, $launch->program);
+        $this->assertFalse($launch->programPinned);
+        $this->assertSame(['opus', 'sonnet'], $launch->allowedModels);
+        $this->assertSame([], $launch->stopConditions->conditions);
+        $this->assertSame(ExecutionModeType::RequiredContainer, $launch->execution->mode);
+        $this->assertSame($activation->configurationHash, $launch->provenance->configurationHash);
+        $this->assertSame(PolicyOriginType::GlobalDefault, $launch->provenance->originOf('access'));
     }
 
     public function test_a_writer_profile_keeps_clean_worktree_and_the_required_container(): void
@@ -74,13 +75,14 @@ final class ProfileResolverTest extends TestCase
 
         $snapshot = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'));
 
+        $launch = $snapshot->launch;
         $this->assertSame(ProfileBase::writingHelper()->key, $snapshot->base->key);
         $this->assertSame(
             [StopCondition::CLEAN_WORKTREE],
-            array_map(fn (StopCondition $condition) => $condition->key, $snapshot->launch->stopConditions->conditions),
+            array_map(fn (StopCondition $condition) => $condition->key, $launch->stopConditions->conditions),
         );
-        $this->assertSame(ExecutionModeType::RequiredContainer, $snapshot->launch->execution->mode);
-        $this->assertSame(ProfileLaunchPolicy::HELPER_IMAGE, $snapshot->launch->execution->imageReference);
+        $this->assertSame(ExecutionModeType::RequiredContainer, $launch->execution->mode);
+        $this->assertSame(ProfileLaunchPolicy::HELPER_IMAGE, $launch->execution->imageReference);
     }
 
     public function test_a_key_without_an_activated_revision_is_profiles_unavailable(): void

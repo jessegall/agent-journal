@@ -22,8 +22,8 @@ use Domain\Documents\Models\Document;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Foundation\Application;
-use RuntimeException;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SimulatedFailure;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -158,7 +158,7 @@ final class SharingListenerTest extends TestCase
 
             public function run(Command $command): mixed
             {
-                throw new RuntimeException("select * from shares where token = '{$this->token}'");
+                throw SimulatedFailure::of("select * from shares where token = '{$this->token}'");
             }
         });
 

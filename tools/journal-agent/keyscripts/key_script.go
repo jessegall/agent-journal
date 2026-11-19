@@ -4,6 +4,7 @@ package keyscripts
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"journal-agent/screen"
@@ -30,27 +31,56 @@ const (
 	ChooseEntry Action = "choose-entry"
 )
 
-// Expectation is the screen a step needs before it acts: a kind and, for a menu, its family.
+// Expectation is the screen a step needs before it acts: a kind and, for a menu, its family; or Shows, words that
+// must appear together on one row of whatever screen is drawn, such as a typed command's echo or a confirmation.
+// A word may name a parameter in braces, such as "set effort level to {effort}"; case does not count.
 type Expectation struct {
-	Kind screen.Kind
-	Menu string
+	Kind  screen.Kind
+	Menu  string
+	Shows []string
 }
 
-// AnyScreen is the expectation of a step that may act on whatever stable screen it finds, such as a slash command
-// typed into the composer.
+// AnyScreen is the expectation of a step that may act on whatever stable screen it finds.
 var AnyScreen = Expectation{}
 
-// matches is whether a stable reading is the expected screen.
-func (expectation Expectation) matches(reading screen.Classification) bool {
-	if expectation == AnyScreen {
+// matches is whether a reading is the expected screen: a stable one of its kind, or one showing its words.
+func (expectation Expectation) matches(
+	reading screen.Classification,
+	rows func() []string,
+	values map[string]string,
+) bool {
+	if len(expectation.Shows) > 0 {
+		return showsTogether(rows(), expectation.Shows, values)
+	}
+	if expectation.Kind == "" {
 		return reading.Stable
 	}
 
 	return reading.Stable && reading.Kind == expectation.Kind && reading.Menu == expectation.Menu
 }
 
+// showsTogether is whether one row holds every word, each with its parameters filled in, in any case.
+func showsTogether(rows []string, words []string, values map[string]string) bool {
+	for _, row := range rows {
+		row = strings.ToLower(row)
+		all := true
+		for _, word := range words {
+			for name, value := range values {
+				word = strings.ReplaceAll(word, "{"+name+"}", value)
+			}
+			all = all && strings.Contains(row, strings.ToLower(word))
+		}
+		if all {
+			return true
+		}
+	}
+
+	return false
+}
+
 // KeyStep is one step: the screen it waits for, within its deadline, and the one action it then takes. An entry
-// step finds its entry by the value of its Parameter when it names one, or else by its fixed Label.
+// step finds its entry by the value of its Parameter when it names one, by its Marked note, or else by its fixed
+// Label.
 type KeyStep struct {
 	Name      string
 	Expect    Expectation
@@ -59,6 +89,8 @@ type KeyStep struct {
 	Parameter string
 	Label     string
 	Deadline  time.Duration
+	// Marked makes an entry step find the one entry carrying this note, such as "(current)".
+	Marked string
 }
 
 // KeyScript is a versioned recipe for one program build: its registered name, the parameters it is given, the
@@ -79,6 +111,12 @@ const (
 	enterKey  = "\r"
 )
 
+// arrowRight and arrowLeft move a slider's marker one label across.
+const (
+	arrowRight = "\x1b[C"
+	arrowLeft  = "\x1b[D"
+)
+
 // Choose is the step that chooses the entry with the label in the menu: it finds the entry on screen, moves the
 // highlight onto it, checks it and presses Enter, and refuses when the menu shows no such entry.
 func Choose(menu, label string, deadline time.Duration) KeyStep {
@@ -86,6 +124,27 @@ func Choose(menu, label string, deadline time.Duration) KeyStep {
 
 	return KeyStep{Name: "choose " + label + " in " + menu, Expect: expect, Action: ChooseEntry, Label: label,
 		Deadline: deadline}
+}
+
+// target is the index of the entry the step looks for in these entries: the one carrying its marked note, or the
+// one its label names; an entry the menu does not show exactly once is errEntryNotShown.
+func (step KeyStep) target(entries screen.MenuEntries, values map[string]string) (int, error) {
+	if step.Marked != "" {
+		if index, found := entries.FindMarked(step.Marked); found {
+			return index, nil
+		}
+
+		return 0, fmt.Errorf("%w: %q", errEntryNotShown, step.Marked)
+	}
+	label, err := step.label(values)
+	if err != nil {
+		return 0, err
+	}
+	if index, found := entries.Find(label); found {
+		return index, nil
+	}
+
+	return 0, fmt.Errorf("%w: %q", errEntryNotShown, label)
 }
 
 // label is the entry the step looks for: its parameter's value, or its fixed label when it names no parameter.
