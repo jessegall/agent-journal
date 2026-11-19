@@ -282,6 +282,12 @@ case	HoldReason::TrustRequired
 case	HoldReason::UnknownScreen
 case	HoldReason::UpdateRequired
 case	HoldReason::UsageLimited
+case	HookEvent::PostToolUse
+case	HookEvent::PreToolUse
+case	HookEvent::SessionEnd
+case	HookEvent::SessionStart
+case	HookEvent::Stop
+case	HookEvent::UserPromptSubmit
 case	HookProgram::ClaudeCode
 case	HookProgram::Codex
 case	HostCapabilityType::AccountTransport
@@ -4683,6 +4689,7 @@ enum	GatewayOutcome
 enum	GenerationState
 enum	GroupAvailability
 enum	HoldReason
+enum	HookEvent
 enum	HookProgram
 enum	HostCapabilityType
 enum	Icon
@@ -8652,6 +8659,8 @@ method	HookController::__invoke()
 method	HookController::failure()
 method	HookDeadlineExpired::forCall()
 method	HookDigestChanged::forCall()
+method	HookEvent::isToolCall()
+method	HookEvent::startsSession()
 method	HookFailure::__construct()
 method	HookIdentity::__construct()
 method	HookIdentityExpired::forCall()
@@ -8666,6 +8675,7 @@ method	HookPayload::__construct()
 method	HookPayload::argument()
 method	HookPayload::callsAnyOf()
 method	HookPayload::endReason()
+method	HookPayload::event()
 method	HookPayload::isFromNativeChild()
 method	HookPayload::isSessionStart()
 method	HookPayload::isStopContinuation()
