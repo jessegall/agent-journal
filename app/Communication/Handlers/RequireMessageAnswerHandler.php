@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Models\AssignmentRecord;
@@ -24,7 +23,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class RequireMessageAnswerHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private InboxResolver $inboxes,
         private ResponsibilityWriter $responsibilities,
         private Dispatcher $events,
@@ -40,7 +38,7 @@ final readonly class RequireMessageAnswerHandler implements CommandHandler
     public function handle(RequireMessageAnswer $command): void
     {
         $message = Message::lockedById($command->messageId);
-        $author = ActorIdentity::of($this->actors->actor());
+        $author = ActorIdentity::of($command->dispatchedBy());
 
         if (! $message->isWrittenBy($author)) {
             throw MessageMissing::forId($command->messageId);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
-use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorContext;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Models\ClaimAuthorization;
 use App\Assignments\Storage\AssignmentStore;
@@ -28,7 +28,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class MessageReading
 {
     public function __construct(
-        private CurrentActor $actors,
         private InboxResolver $inboxes,
         private ProvedClaims $proved,
         private AssignmentStore $store,
@@ -37,19 +36,19 @@ final readonly class MessageReading
     ) {}
 
     /**
-     * The inbox under its shared guard and the reader's membership of it.
+     * The inbox under its shared guard and the given reader's membership of it.
      *
      * @return array{Inbox, InboxMembership}
      *
      * @throws InboxUnavailable
      */
-    public function admit(string $inboxId): array
+    public function admit(string $inboxId, ActorContext $reader): array
     {
         $inbox = $this->inboxes->resolve($inboxId);
         $access = $this->inboxes->accessFor($inbox);
         $access->lockShared($inbox);
 
-        return [$inbox, $access->membership($inbox, $this->actors->actor())];
+        return [$inbox, $access->membership($inbox, $reader)];
     }
 
     /**
