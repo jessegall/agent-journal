@@ -23,7 +23,7 @@ from journal.repositories.worker_todos import WorkerTodos
 from journal.repositories.workers import Workers
 from journal.features.usage.support.process_usage_store import ProcessUsageStore
 
-ACTIVE_WORKER_STATES = (WorkerState.DISPATCHED, WorkerState.READY, WorkerState.DELIVERED)
+ACTIVE_WORKER_STATES = (WorkerState.DISPATCHED, WorkerState.READY, WorkerState.CLOCKING_OUT, WorkerState.DELIVERED)
 
 
 class WorkerController(Controller[Worker]):

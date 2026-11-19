@@ -269,6 +269,11 @@ class StoryChecks:
     def expect_worker(self, n: int, **fields) -> None:
         self.expect_row("workers", n, fields)
 
+    def expect_worker_brief_holding(self, n: int, *parts: str) -> None:
+        brief = self.api_row("workers", n)["brief"]
+        missing = [part for part in parts if part not in brief]
+        assert not missing, f"worker {n}'s brief holds no {missing}: {brief}"
+
     def expect_plan(self, n: int, **fields) -> None:
         self.expect_row("plans", n, fields)
 

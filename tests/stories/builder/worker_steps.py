@@ -23,7 +23,7 @@ from tests.stories.builder.step_result import StepResult
 
 
 class WorkerSteps:
-    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, a command it only tries, which may be refused, a test turn it already holds and its end, a clock-out left running beside its next steps, a file it commits in its worktree, and the journal's own dispatch of the next tasks."""
+    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, a command it only tries, which may be refused, a test turn it already holds and its end, a clock-out left running beside its next steps and its end in the journal after its command answered, a file it commits in its worktree, and the journal's own dispatch of the next tasks."""
 
     def agent_dispatches_worker(self, agent: StoryAgent, name: str, task: int) -> int:
         self.agent_runs(agent, f"worker dispatch '{name}' --task {task} --changes 'the files of its task' --profile journal-medior --model sonnet --tests 'Scoped tests'")
@@ -104,6 +104,13 @@ class WorkerSteps:
         thread, outcomes = self.clock_outs_going.pop(agent.number)
         thread.join(30)
         return self.record_command(f"the {agent.role}'s first clock-out ends", outcomes[0])
+
+    def worker_clock_out_ends_in_the_journal(self, agent: StoryAgent) -> StepResult:
+        running, deadline = self.app.container.get(ClockOutsRunning), time.time() + 30
+        while running.is_running(agent.number) and time.time() < deadline:
+            time.sleep(0.05)
+        assert not running.is_running(agent.number), f"the {agent.role}'s clock-out still runs in the journal"
+        return self.observed(f"the {agent.role}'s clock-out ends in the journal", None, None)
 
     def worker_commits_a_file_in_its_worktree(self, agent: StoryAgent, path: str, text: str) -> StepResult:
         folder = next((self.app.config.home / "worktrees").glob(f"{agent.number}-*"))

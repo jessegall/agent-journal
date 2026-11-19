@@ -17,6 +17,7 @@ from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
 from journal.events.rows.worker_memory_warning import WorkerMemoryWarning
 from journal.events.rows.worker_ready import WorkerReady
+from journal.events.rows.worker_clock_out_continues import WorkerClockOutContinues
 from journal.events.rows.worker_delivered import WorkerDelivered
 from journal.events.rows.worker_review_failed import WorkerReviewFailed
 from journal.events.rows.worker_reviewed import WorkerReviewed
@@ -54,6 +55,8 @@ LIMITED_MOVE = "stopped at the usage limit"
 RUN_LIMIT_REASON = "run limit"
 # the move that hands a worker a point back, the one that takes its work in, and its clock-out
 REJECTION_MOVE, MERGED, DELIVERY_MOVE = "sent back", "merged", "clocked out"
+# the move of a clock-out that goes on in the journal by itself after its command answered the worker
+CLOCK_OUT_CONTINUES = "clock-out goes on in the journal"
 # the moves that start a job, and the move to the next task of a queue inside it
 JOB_MOVE = "sent a job"
 JOB_STARTS = ("dispatched", JOB_MOVE)
@@ -62,7 +65,7 @@ QUEUE_MOVE = "moved on to task"
 
 @dataclass(frozen=True)
 class Worker(Helper):
-    """An agent sent to write one bounded job, in a worktree of its own when it changes code: out while dispatched whatever its process, so one ended unreported or mid-report still counts as out until its report is filed; idle once it reported, until its report is acted on; in review while the journal's reviewer reviews what it clocked out with, and queued for review from its clock-out until a reviewer takes it; retired once stopped or acted on. It keeps each move it made with its time, how many of its test runs in a row have failed, how its merged work fit the model it ran on, what its runs have cost in dollars, when its work was last merged and for which task, when it goes on by itself after stopping at the usage limit, the branch it commits on, and, for one sent to the team's pool, the team server's number of the request that asked for it and the branch on origin its worktree is cut from. Its job began at its dispatch or at a job sent to it; a move to the next task of its queue is the same job going on."""
+    """An agent sent to write one bounded job, in a worktree of its own when it changes code: out while dispatched whatever its process, so one ended unreported or mid-report still counts as out until its report is filed; clocking out while its clock-out goes on in the journal after its command answered it; idle once it reported, until its report is acted on; in review while the journal's reviewer reviews what it clocked out with, and queued for review from its clock-out until a reviewer takes it; retired once stopped or acted on. It keeps each move it made with its time, how many of its test runs in a row have failed, how its merged work fit the model it ran on, what its runs have cost in dollars, when its work was last merged and for which task, when it goes on by itself after stopping at the usage limit, the branch it commits on, and, for one sent to the team's pool, the team server's number of the request that asked for it and the branch on origin its worktree is cut from. Its job began at its dispatch or at a job sent to it; a move to the next task of its queue is the same job going on."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("name", "brief")
     unshown_fields: ClassVar[tuple[str, ...]] = ("transcript_bytes",)
@@ -161,6 +164,9 @@ class Worker(Helper):
 
     def delivered(self, time: float) -> "Worker":
         return self.contacted(time).moved(DELIVERY_MOVE, time).with_(state=WorkerState.DELIVERED).with_event(WorkerDelivered(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, clocked out"))
+
+    def clock_out_continued(self, time: float) -> "Worker":
+        return self.moved(CLOCK_OUT_CONTINUES, time).with_(state=WorkerState.CLOCKING_OUT).with_event(WorkerClockOutContinues(environment_id=self.environment_id, time=time, worker=self.mention()))
 
     def review_requested(self, time: float, report: str) -> "Worker":
         return self.contacted(time).moved(DELIVERY_MOVE, time).with_(state=WorkerState.DELIVERED, review_pending=True, review_queued_at=time).with_event(WorkerReviewRequested(environment_id=self.environment_id, time=time, worker=self.mention(), report=report))
@@ -266,7 +272,7 @@ class Worker(Helper):
         return self.is_unfinished() and bool(self.moves.steps) and self.moves.steps[-1][0] == QUEUE_TURN_END
 
     def is_active(self) -> bool:
-        return self.is_running() or self.is_delivered()
+        return self.is_running() or self.is_delivered() or self.is_clocking_out()
 
     def is_closed(self) -> bool:
         return self.state in (WorkerState.STOPPED, WorkerState.MERGED, WorkerState.RELEASED, WorkerState.UNFINISHED)
@@ -296,6 +302,9 @@ class Worker(Helper):
 
     def is_delivered(self) -> bool:
         return self.state == WorkerState.DELIVERED
+
+    def is_clocking_out(self) -> bool:
+        return self.state == WorkerState.CLOCKING_OUT
 
     def is_dispatched(self) -> bool:
         return self.state == WorkerState.DISPATCHED

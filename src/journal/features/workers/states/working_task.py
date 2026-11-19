@@ -9,6 +9,7 @@ from journal.events.agent.wait_request import WaitRequest
 from journal.events.agent.stop import Stop
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.task_closed import TaskClosed
+from journal.events.rows.worker_clock_out_continues import WorkerClockOutContinues
 from journal.events.rows.worker_delivered import WorkerDelivered
 from journal.events.rows.worker_review_requested import WorkerReviewRequested
 from journal.events.rows.worker_silent import WorkerSilent
@@ -27,7 +28,7 @@ KIND_REFUSALS = {TEST_RUN: WorkersNudges.TEST_QUEUE, BUILD: WorkersNudges.BUILD_
 
 @dataclass(frozen=True)
 class WorkingTask(BaseState):
-    """A worker at work on its task, pushed over Void when it clocks in, or at its session's first hook while it is out on the task it holds, and popped back to Void when its work is delivered, sent to review, or its task is closed by the user: its writes wait while the journal rebases its worktree, it never runs git, it runs only the kinds of command the setting allows, a test or a build refused with the line to queue it with the journal, its stop is held until it clocks out, told the output of its own still running or the to-do items still open, it is told the end of each of its outputs, its journal await and journal stuck push the wait and the stuck state over its work, and a quiet span past its length tells it to log."""
+    """A worker at work on its task, pushed over Void when it clocks in, or at its session's first hook while it is out on the task it holds, and popped back to Void when its work is delivered, sent to review, its clock-out goes on in the journal by itself, or its task is closed by the user: its writes wait while the journal rebases its worktree, it never runs git, it runs only the kinds of command the setting allows, a test or a build refused with the line to queue it with the journal, its stop is held until it clocks out, told the output of its own still running or the to-do items still open, it is told the end of each of its outputs, its journal await and journal stuck push the wait and the stuck state over its work, and a quiet span past its length tells it to log."""
 
     name = "working_task"
     title = "At work on its task"
@@ -75,6 +76,9 @@ class WorkingTask(BaseState):
     def on_worker_review_requested(self, event: WorkerReviewRequested, settings: Settings) -> Transition:
         return self.pop() if is_mine(event) else self.none()
 
+    def on_worker_clock_out_continues(self, event: WorkerClockOutContinues, settings: Settings) -> Transition:
+        return self.pop() if is_mine(event) else self.none()
 
-def is_mine(event: WorkerDelivered | WorkerReviewRequested) -> bool:
+
+def is_mine(event: WorkerDelivered | WorkerReviewRequested | WorkerClockOutContinues) -> bool:
     return event.worker.id in {worker.id for worker in event.data.part(SessionWorkersPart).session_workers}
