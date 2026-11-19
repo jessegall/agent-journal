@@ -497,7 +497,7 @@ function declaringType(Node $node): string
  *
  * @param  list<array{int, int, string}>  $edits
  */
-function applied(string $code, array $edits): string
+function applied(string $source, array $edits): string
 {
     $unique = [];
 
@@ -506,6 +506,7 @@ function applied(string $code, array $edits): string
     }
 
     krsort($unique);
+    $code = $source;
 
     foreach ($unique as [$start, $end, $text]) {
         // a declared property's name spans its $, which the new name keeps

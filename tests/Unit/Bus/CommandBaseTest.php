@@ -61,7 +61,7 @@ final class CommandBaseTest extends TestCase
             fn (ReflectionProperty $property): string => $property->getName(),
             new ReflectionClass(BoundItem::class)->getProperties(),
         );
-        $grammar = new CommandGrammar(fn (string $class): bool => true);
+        $grammar = new CommandGrammar(fn (string $class) => true);
 
         $this->assertSame(['title', 'quantity'], $properties);
         $this->assertNull($grammar->problemWithProperties(BoundItem::class));
