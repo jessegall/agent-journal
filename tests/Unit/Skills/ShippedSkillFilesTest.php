@@ -55,7 +55,7 @@ final class ShippedSkillFilesTest extends TestCase
     public function test_a_shipped_skill_publishes_its_purpose_and_every_heading_of_its_file(string $class, string $purpose, string $domain, string $file): void
     {
         $root = $domain === '' ? base_path() : base_path("domain/{$domain}");
-        $rendered = (new CanonicalRenderer(new MarkdownParts()))->render(new $class(), new SkillOwner('Owner', $root, [], true))->markdown;
+        $rendered = new CanonicalRenderer(new MarkdownParts())->render(new $class(), new SkillOwner('Owner', $root, [], true))->markdown;
 
         preg_match_all('/^## (.+)$/m', $rendered, $published);
         preg_match_all('/^## (.+)$/m', (string) file_get_contents(base_path($file)), $written);
