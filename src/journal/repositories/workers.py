@@ -67,6 +67,9 @@ class Workers(ScopedRepository[Worker]):
     def unfinished_accepted(self, dispatcher: str, accepts: Callable[[Worker], bool]) -> list[Worker]:
         return [worker for worker in self.matching(state=WorkerState.UNFINISHED, dispatcher=dispatcher) if accepts(worker)]
 
+    def unreviewed_deliveries(self) -> list[Worker]:
+        return self.selected(self.query().filter(state=WorkerState.DELIVERED, review_pending=False).order("id"))
+
     def queued_reviews(self) -> list[Worker]:
         return self.selected(self.query().filter(state=WorkerState.DELIVERED, review_pending=True).filter_greater("review_queued_at", 0).order("review_queued_at"))
 

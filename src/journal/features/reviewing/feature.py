@@ -6,6 +6,7 @@ from journal.support.card_type import CardType
 from journal.support.card_colouring import CardColouring
 from journal.features.feature import Feature
 from journal.features.reviewing.commands.reviewer_command import ReviewerCommand
+from journal.features.reviewing.jobs.review_backlog import ReviewBacklog
 from journal.features.reviewing.listeners.reviewer_loss import ReviewerLoss
 from journal.features.reviewing.reviewing_part import ReviewingPart
 from journal.features.reviewing.support.reviewing_data import ReviewingData
@@ -35,6 +36,7 @@ class ReviewingFeature(Feature[ReviewingData]):
     helper_listeners = {AgentRole.REVIEWER: (ReviewerTestFailed, ReviewerTestPassed)}
     options = (ReviewingOptions.REVIEWER,)
     commands = (ReviewerCommand,)
+    jobs = (ReviewBacklog,)
     helper_commands = {AgentRole.REVIEWER: (ReviewCommand,)}
     data = (ReviewingDataReader,)
     listeners = (ReviewerStart, ReviewerRetirement, ReviewerLoss, ReviewerTestPassed, ReviewerTestFailed, ReviewReportSteps)
