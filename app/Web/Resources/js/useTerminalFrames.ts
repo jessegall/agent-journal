@@ -1,7 +1,7 @@
 import type { ScreenFrameData, TerminalFrameData } from '@generated/types/core';
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
-import { deleteLeaving, pollJson, postJson, putJson } from '@/composables/jsonRequests';
-import { close, frame, open, renew } from '@/routes/agents/terminal';
+import { deleteLeaving, pollJson, postJson, putJson } from '@kit/jsonRequests';
+import { close, frame, open, renew } from '@generated/routes/agents/terminal';
 import { supersedes } from './terminalFrameOrder';
 
 /**
