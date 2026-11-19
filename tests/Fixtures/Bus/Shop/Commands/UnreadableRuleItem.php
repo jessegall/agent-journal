@@ -25,7 +25,9 @@ use Tests\Fixtures\Bus\Shop\Handlers\UnreadableRuleItemHandler;
 final readonly class UnreadableRuleItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        /** @phpstan-ignore argument.type (wrong on purpose: the registry must refuse a rule it cannot read) */
+        /**
+         * @phpstan-ignore argument.type (wrong on purpose: the registry must refuse a rule it cannot read)
+         */
         #[Max(new stdClass)]
         public int $count,
     ) {}

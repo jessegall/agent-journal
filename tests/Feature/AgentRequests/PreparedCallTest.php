@@ -27,6 +27,8 @@ final class PreparedCallTest extends TestCase
 {
     private const string BODY = '{"jsonrpc":"2.0","id":1,"method":"ping"}';
 
+    private const array PIN = ['JOURNAL_PROFILE' => 'main-agent', 'JOURNAL_PROFILE_REVISION' => '1'];
+
     public function test_a_transport_retry_sends_a_prepared_call_unchanged(): void
     {
         Http::fake(['journal.test/*' => Http::sequence()->pushStatus(502)->push(['ok' => true])]);
@@ -168,8 +170,6 @@ final class PreparedCallTest extends TestCase
             'JOURNAL_LAUNCH_TOKEN',
         );
     }
-
-    private const array PIN = ['JOURNAL_PROFILE' => 'main-agent', 'JOURNAL_PROFILE_REVISION' => '1'];
 
     private function settings(): AgentClientSettings
     {

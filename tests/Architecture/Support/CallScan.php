@@ -34,7 +34,9 @@ final readonly class CallScan implements FileScan
     {
         $calls = [];
 
-        /** @var list<Expr\MethodCall|Expr\StaticCall|Expr\NullsafeMethodCall> $found */
+        /**
+         * @var list<Expr\MethodCall|Expr\StaticCall|Expr\NullsafeMethodCall> $found
+         */
         $found = new NodeFinder()->find(
             $file->statements,
             fn (

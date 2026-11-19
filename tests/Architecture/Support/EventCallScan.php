@@ -23,16 +23,6 @@ use Tests\Support\ScanCache\FileScan;
  */
 final readonly class EventCallScan implements FileScan
 {
-    public function key(): string
-    {
-        return 'event-calls-2';
-    }
-
-    public function findingsIn(ParsedFile $file): array
-    {
-        return self::of($file);
-    }
-
     private const array EVENT_FACADES = ['Illuminate\\Support\\Facades\\Event', 'Event'];
 
     /**
@@ -48,6 +38,16 @@ final readonly class EventCallScan implements FileScan
         'dispatch' => true,
         'until' => true,
     ];
+
+    public function key(): string
+    {
+        return 'event-calls-2';
+    }
+
+    public function findingsIn(ParsedFile $file): array
+    {
+        return self::of($file);
+    }
 
     /**
      * @return list<EventCall>

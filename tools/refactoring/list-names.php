@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Lists every name the code declares, one per line as "kind<TAB>name<TAB>file:line", so the names can be read and
+ * Lists every name the code declares, one per line as "type<TAB>name<TAB>file:line", so the names can be read and
  * judged together: classes, interfaces, traits and enums, and their methods, properties, constants and enum cases.
  *
  *   php tools/refactoring/list-names.php app tests/Architecture/Support
@@ -37,8 +37,8 @@ $reviewedFile = $mode === '--list' ? '' : (string) array_shift($arguments);
 $names = declaredNames($arguments);
 
 if ($mode === '--list') {
-    foreach ($names as [$kind, $name, $location]) {
-        echo "{$kind}\t{$name}\t{$location}\n";
+    foreach ($names as [$declarationType, $name, $location]) {
+        echo "{$declarationType}\t{$name}\t{$location}\n";
     }
 
     exit(0);
@@ -65,9 +65,9 @@ if ($unreviewed === []) {
 
 echo count($unreviewed)." declared names were not reviewed yet; read each, rename what is not plain programming English, then record them with --accept:\n";
 
-foreach ($names as [$kind, $name, $location]) {
-    if (in_array("{$kind}\t{$name}", $unreviewed, true)) {
-        echo "  {$kind} {$name} ({$location})\n";
+foreach ($names as [$declarationType, $name, $location]) {
+    if (in_array("{$declarationType}\t{$name}", $unreviewed, true)) {
+        echo "  {$declarationType} {$name} ({$location})\n";
     }
 }
 
@@ -99,11 +99,11 @@ function declaredNames(array $folders): array
                 }
 
                 $typeName = $type->name->toString();
-                $names[] = [kindOf($type), $typeName, "{$path}:{$type->getStartLine()}"];
+                $names[] = [declarationTypeOf($type), $typeName, "{$path}:{$type->getStartLine()}"];
 
                 foreach ($type->stmts as $member) {
-                    foreach (membersOf($member) as [$kind, $name]) {
-                        $names[] = [$kind, "{$typeName}::{$name}", "{$path}:{$member->getStartLine()}"];
+                    foreach (membersOf($member) as [$declarationType, $name]) {
+                        $names[] = [$declarationType, "{$typeName}::{$name}", "{$path}:{$member->getStartLine()}"];
                     }
                 }
             }
@@ -113,7 +113,7 @@ function declaredNames(array $folders): array
     return $names;
 }
 
-function kindOf(ClassLike $type): string
+function declarationTypeOf(ClassLike $type): string
 {
     return match (true) {
         $type instanceof Interface_ => 'interface',

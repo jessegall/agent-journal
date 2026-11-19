@@ -27,7 +27,7 @@ final class ActorCategoryRuleTest extends TestCase
         'app/Sharing/Models/ShareAudit.php' => 'maps the kind of actor to the label an audit line shows',
     ];
 
-    public function test_no_code_chooses_behaviour_by_the_kind_of_actor(): void
+    public function test_no_code_chooses_behaviour_by_the_type_of_actor(): void
     {
         $root = dirname(__DIR__, 2);
         $findings = [];

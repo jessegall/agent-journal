@@ -59,8 +59,7 @@ trait InstallsCommandModules
 
     /**
      * The command registry with the test modules, and nothing in the database.
-     */
-    /**
+     *
      * @param  list<string>  $alsoRequired
      */
     protected function installCommandRegistry(
