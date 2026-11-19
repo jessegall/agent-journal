@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Hooks\Contracts\FileEditPermission;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
-use App\Profiles\Values\LaunchProfileAuthority;
+use App\Profiles\Values\StartProfileAuthority;
 
 /**
  * Reads the acting agent's pinned profile: it may change workspace files when its access grants editing them. An
@@ -22,10 +22,10 @@ final readonly class ProfileFileEditPermission implements FileEditPermission
     {
         $authority = $this->actors->authority();
 
-        if (! $authority instanceof LaunchProfileAuthority) {
+        if (! $authority instanceof StartProfileAuthority) {
             return true;
         }
 
-        return $authority->profile->launch->access->grants(AccessType::Edit, ResourceAreaType::Workspace);
+        return $authority->profile->start->access->grants(AccessType::Edit, ResourceAreaType::Workspace);
     }
 }

@@ -12,7 +12,7 @@ use App\Profiles\Values\ProfileKey;
 use RuntimeException;
 
 /**
- * A profile key with no profile, or a profile with no activated revision: no launch can read it.
+ * A profile key with no profile, or a profile with no activated revision: no start can read it.
  */
 final class ProfileMissing extends RuntimeException implements CodedRefusal, CommandRefusal
 {

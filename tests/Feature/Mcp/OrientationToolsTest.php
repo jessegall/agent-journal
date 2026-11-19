@@ -11,7 +11,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -31,16 +31,16 @@ final class OrientationToolsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'plans',
         'assignments',
         'agent_stacks',
     ];
 
-    private TestLaunch $caller;
+    private TestStart $caller;
 
-    private TestLaunch $other;
+    private TestStart $other;
 
     protected function setUp(): void
     {
@@ -48,8 +48,8 @@ final class OrientationToolsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->caller = TestLaunch::start();
-        $this->other = TestLaunch::start();
+        $this->caller = TestStart::start();
+        $this->other = TestStart::start();
         $this->startUserRequestAs($owner->id);
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 

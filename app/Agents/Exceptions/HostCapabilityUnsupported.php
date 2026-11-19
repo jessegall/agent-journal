@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Agents\Support\HostCapability;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A launch whose configured guarantee needs a host or program capability the recorded evidence does not prove;
+ * A start whose configured guarantee needs a host or program capability the recorded evidence does not prove;
  * it is refused before any work starts.
  */
 final class HostCapabilityUnsupported extends RuntimeException implements CommandRefusal
@@ -19,15 +19,15 @@ final class HostCapabilityUnsupported extends RuntimeException implements Comman
     {
         return new self(
             sprintf(
-                'The journal cannot guarantee %s: %s Nothing was launched.',
+                'The journal cannot guarantee %s: %s Nothing was started.',
                 $capability->query->describe(),
                 $capability->reason,
             ),
         );
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::CapabilityUnsupported;
+        return StartRefusalType::CapabilityUnsupported;
     }
 }

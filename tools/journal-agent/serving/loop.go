@@ -1,5 +1,5 @@
 // Package serving carries out the requests a host claims: it files them with the scheduler, opens each runtime's
-// driver once from its launch grant, runs every admission on the driver and reports each result back to the journal
+// driver once from its start grant, runs every admission on the driver and reports each result back to the journal
 // (doc 40 revision 3, sections 10, 16, 17 and 21).
 package serving
 
@@ -16,7 +16,7 @@ import (
 
 // Journal is the part of the journal the loop reports to.
 type Journal interface {
-	LaunchGrant(ctx context.Context, runtimeID string) (client.Grant, error)
+	StartGrant(ctx context.Context, runtimeID string) (client.Grant, error)
 	ReportRequest(ctx context.Context, report client.RequestReport) error
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
@@ -30,7 +30,7 @@ type Runtime interface {
 	Finished() <-chan error
 }
 
-// Opener starts the driver of a runtime from its launch grant; it is the one place that chooses by driver type.
+// Opener starts the driver of a runtime from its start grant; it is the one place that chooses by driver type.
 type Opener func(runtimeID string, grant client.Grant) (Runtime, error)
 
 // Loop carries out claimed requests, one runtime at a time in its accepted order.
@@ -226,7 +226,7 @@ func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime
 	if runtime, found := loop.runtimes[runtimeID]; found {
 		return runtime, nil
 	}
-	grant, err := loop.journal.LaunchGrant(ctx, runtimeID)
+	grant, err := loop.journal.StartGrant(ctx, runtimeID)
 	if err != nil {
 		return nil, err
 	}

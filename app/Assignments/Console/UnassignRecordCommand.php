@@ -13,7 +13,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Release one record from the holder it has now, over a signed call as the agent of the launch.
+ * Release one record from the holder it has now, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class UnassignRecordCommand extends Command

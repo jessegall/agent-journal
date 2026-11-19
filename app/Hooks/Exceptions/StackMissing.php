@@ -10,6 +10,6 @@ final class StackMissing extends RuntimeException
 {
     public static function forTarget(string $target): self
     {
-        return new self("The stack of {$target} does not exist; its launch creates one.");
+        return new self("The stack of {$target} does not exist; its start creates one.");
     }
 }

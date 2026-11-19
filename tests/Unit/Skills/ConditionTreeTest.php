@@ -19,10 +19,10 @@ use App\Skills\Conditions\Conditions;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Support\ConditionTree;
-use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\SkillContext;
+use App\Skills\Values\StartProfile;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use Tests\Fixtures\Profiles\TestStartPolicies;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -252,7 +252,7 @@ final class ConditionTreeTest extends TestCase
             'model' => 'opus',
             'skillAllowlist' => null,
             'requiredSkills' => [],
-            'launch' => TestLaunchPolicies::for(ProfileBase::readOnlyHelper()),
+            'start' => TestStartPolicies::for(ProfileBase::readOnlyHelper()),
             'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
@@ -260,7 +260,7 @@ final class ConditionTreeTest extends TestCase
             TestActors::agentIdentity(2),
             TestIds::of(3),
             'main',
-            LaunchProfile::of($snapshot),
+            StartProfile::of($snapshot),
             ProgramKey::from($program),
             $provider === null ? null : ProviderKey::from($provider),
         );
@@ -276,7 +276,7 @@ final class ConditionTreeTest extends TestCase
             'model' => 'opus',
             'skillAllowlist' => null,
             'requiredSkills' => [],
-            'launch' => TestLaunchPolicies::for(ProfileBase::mainAgent()),
+            'start' => TestStartPolicies::for(ProfileBase::mainAgent()),
             'authorization' => new ProfileAuthorization(AuthorizationType::Policies, [
                 new AbilityGrant(AssignmentPolicy::class, AssignmentAbility::Dispatch),
             ]),
@@ -286,7 +286,7 @@ final class ConditionTreeTest extends TestCase
             TestActors::agentIdentity(1),
             TestIds::of(4),
             'main',
-            LaunchProfile::of($snapshot),
+            StartProfile::of($snapshot),
             ProgramKey::from($program),
             ProviderKey::from('openai'),
         );
@@ -298,7 +298,7 @@ final class ConditionTreeTest extends TestCase
             TestActors::agentIdentity(1),
             TestIds::of(4),
             'main',
-            LaunchProfile::profileFree(),
+            StartProfile::profileFree(),
             ProgramKey::from($program),
             ProviderKey::from('openai'),
         );

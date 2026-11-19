@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * The retained intent to fence every session launched from one revoked configuration revision, named by an opaque
+ * The retained intent to fence every session started from one revoked configuration revision, named by an opaque
  * reference. Host reconciliation stops those sessions and marks the fence reconciled; until then it stays pending.
  *
  * @property string $id

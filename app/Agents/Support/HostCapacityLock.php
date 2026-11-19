@@ -8,7 +8,7 @@ use Illuminate\Database\DatabaseManager;
 
 /**
  * Serializes capacity reservations on this host: one transaction-scoped advisory lock, released with the transaction,
- * so two launches never both fit into the same free room.
+ * so two starts never both fit into the same free room.
  */
 final readonly class HostCapacityLock
 {

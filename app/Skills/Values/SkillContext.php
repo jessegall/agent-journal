@@ -10,8 +10,8 @@ use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
 
 /**
- * The facts every skill condition of one boundary reads: who acts, its session, environment, launch profile with what
- * it grants, program and provider. A program or provider the launch does not resolve is null, and the
+ * The facts every skill condition of one boundary reads: who acts, its session, environment, start profile with what
+ * it grants, program and provider. A program or provider the start does not resolve is null, and the
  * conditions that need it answer unavailable. It holds no token or secret.
  */
 final readonly class SkillContext
@@ -20,7 +20,7 @@ final readonly class SkillContext
         public ActorIdentity $actor,
         public string $sessionId,
         public string $environment,
-        public LaunchProfile $profile,
+        public StartProfile $profile,
         public ProgramKey|null $program,
         public ProviderKey|null $provider,
     ) {}

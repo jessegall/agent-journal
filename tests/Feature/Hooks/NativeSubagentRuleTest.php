@@ -6,22 +6,22 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Agents\Events\LaunchSettingsRequested;
+use App\Agents\Events\StartSettingsRequested;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Support\StackTarget;
-use App\Hooks\Actions\LaunchStacks;
+use App\Hooks\Actions\StartStacks;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use App\Programs\Enums\HookProgram;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
- * Rule 36: a program's own subagents never run. Every program's launch settings deny its native child tools, and the
+ * Rule 36: a program's own subagents never run. Every program's start settings deny its native child tools, and the
  * hook endpoint refuses a call to one of them, or a call from inside a native child, before it touches a session.
  */
 final class NativeSubagentRuleTest extends TestCase
@@ -31,7 +31,7 @@ final class NativeSubagentRuleTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'process_events',
@@ -40,32 +40,32 @@ final class NativeSubagentRuleTest extends TestCase
         'command_requests',
     ];
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->launch = TestLaunch::start('main-agent');
+        $this->start = TestStart::start('main-agent');
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($this->launch->agent->id),
-            TestLaunchAuthority::forAgent($this->launch->agent->id),
+            ActorContext::forAgent($this->start->agent->id),
+            TestStartAuthority::forAgent($this->start->agent->id),
         );
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(LaunchStacks::class)->open($this->target()),
+            fn () => $this->app->make(StartStacks::class)->open($this->target()),
         );
     }
 
-    public function test_rule_36_every_program_launch_denies_each_native_child_tool(): void
+    public function test_rule_36_every_program_start_denies_each_native_child_tool(): void
     {
         foreach (HookProgram::cases() as $program) {
             $settings = new IsolatedHookSettings();
-            $this->app->make(Dispatcher::class)->dispatch(new LaunchSettingsRequested($program->value, $settings));
+            $this->app->make(Dispatcher::class)->dispatch(new StartSettingsRequested($program->value, $settings));
             $denied = json_decode($settings->content(), true, flags: JSON_THROW_ON_ERROR)['permissions']['deny'];
 
             $this->assertNotSame([], $program->nativeChildTools(), $program->value);
             foreach ($program->nativeChildTools() as $toolName) {
-                $this->assertContains($toolName, $denied, "{$program->value} launches without denying {$toolName}");
+                $this->assertContains($toolName, $denied, "{$program->value} starts without denying {$toolName}");
             }
         }
     }
@@ -114,13 +114,13 @@ final class NativeSubagentRuleTest extends TestCase
         return $this->call(
             'POST',
             "/hooks/{$program}",
-            server: $this->launch->serverHeaders($body, 'call-1', target: "/hooks/{$program}"),
+            server: $this->start->serverHeaders($body, 'call-1', target: "/hooks/{$program}"),
             content: $body,
         );
     }
 
     private function target(): StackTarget
     {
-        return new StackTarget($this->launch->agent->id, $this->launch->session->id);
+        return new StackTarget($this->start->agent->id, $this->start->session->id);
     }
 }

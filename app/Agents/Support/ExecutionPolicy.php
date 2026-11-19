@@ -8,7 +8,7 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
 
 /**
- * Where and with what one launch runs: host or required container, the verified image a container uses, its
+ * Where and with what one start runs: host or required container, the verified image a container uses, its
  * worktree, its budgets and the network capabilities it was admitted with. It holds no provider or journal secret.
  */
 final readonly class ExecutionPolicy

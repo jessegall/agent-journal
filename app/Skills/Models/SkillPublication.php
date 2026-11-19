@@ -393,7 +393,7 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * The session's first publication: the set its program was launched with, which a program that loads skills only
+     * The session's first publication: the set its program was started with, which a program that loads skills only
      * at a new session keeps.
      */
     public static function firstOfSession(string $sessionId): self

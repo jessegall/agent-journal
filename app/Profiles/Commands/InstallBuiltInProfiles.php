@@ -12,7 +12,7 @@ use App\Profiles\Handlers\InstallBuiltInProfilesHandler;
 use App\Profiles\Values\ProfileActivation;
 
 /**
- * The journal activates its built-in profiles, with the project's proposal, the first time a launch needs one.
+ * The journal activates its built-in profiles, with the project's proposal, the first time a start needs one.
  *
  * @extends Command<ProfileActivation>
  */

@@ -13,7 +13,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\LaunchesMainAgents;
+use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -23,14 +23,14 @@ use Tests\Support\WritesInboxMessages;
 final class ChatHostTest extends TestCase
 {
     use CommitsHookRows;
-    use LaunchesMainAgents;
+    use StartsMainAgents;
     use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'inboxes',
@@ -48,7 +48,7 @@ final class ChatHostTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $session = $this->launchedMainAgentSession();
+        $session = $this->startedMainAgentSession();
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId();
         $window = ['window' => ['chat.conversation' => ['session' => $session->id]], 'session' => $session->id];

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Processes\Enums\CommandClass;
@@ -35,8 +35,8 @@ final class ProfilePermissionsTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $helper = Agent::named('Reader', 'read-only-helper');
-        $this->app->make(LaunchSessions::class)
-            ->launch($helper, TestSelections::of('claude-code'), TestSelections::requestId());
+        $this->app->make(StartSessions::class)
+            ->start($helper, TestSelections::of('claude-code'), TestSelections::requestId());
         $this->startUserRequestAs($owner->id);
 
         $permissions = $this->app->make(CommandPermissionResolver::class)->forActor(ActorIdentity::of($helper));

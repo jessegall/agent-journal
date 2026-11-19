@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\AgentRequests\Support\LaunchProfilePin;
+use App\AgentRequests\Support\StartProfilePin;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Exceptions\OfflineReplySealInvalid;
 use Illuminate\Container\Attributes\Config;
 
 /**
- * The journal's seal over a launch's offline reply: it binds the reply to the launch token and profile pin with the
- * application key, so settings edited by hand or copied to another launch are refused before any neutral reply.
+ * The journal's seal over a start's offline reply: it binds the reply to the start token and profile pin with the
+ * application key, so settings edited by hand or copied to another start are refused before any neutral reply.
  */
 final readonly class OfflineReplySeal
 {
@@ -20,7 +20,7 @@ final readonly class OfflineReplySeal
         private string $key,
     ) {}
 
-    public function seal(string $token, LaunchProfilePin $profile, OfflineReplyMode $mode): string
+    public function seal(string $token, StartProfilePin $profile, OfflineReplyMode $mode): string
     {
         $sealed = implode("\n", [$token, $profile->key, $profile->revision, $mode->value]);
 
@@ -28,12 +28,12 @@ final readonly class OfflineReplySeal
     }
 
     /**
-     * @throws OfflineReplySealInvalid when the seal was not issued for this launch, pin and reply
+     * @throws OfflineReplySealInvalid when the seal was not issued for this start, pin and reply
      */
-    public function verify(string $token, LaunchProfilePin $profile, OfflineReplyMode $mode, string $seal): void
+    public function verify(string $token, StartProfilePin $profile, OfflineReplyMode $mode, string $seal): void
     {
         if (! hash_equals($this->seal($token, $profile, $mode), $seal)) {
-            throw OfflineReplySealInvalid::forLaunch();
+            throw OfflineReplySealInvalid::forStart();
         }
     }
 }

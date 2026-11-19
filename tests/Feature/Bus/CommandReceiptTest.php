@@ -19,7 +19,7 @@ use App\Bus\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
@@ -32,15 +32,15 @@ final class CommandReceiptTest extends CommandBusTestCase
 {
     private const string KEY = '01JD8X0G9M3QZ6V4K2RECEIPT1';
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->installCommandModules();
-        $this->launch = TestLaunch::start();
-        $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
+        $this->start = TestStart::start();
+        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set(self::KEY);
     }
 
@@ -52,7 +52,7 @@ final class CommandReceiptTest extends CommandBusTestCase
             'command_receipts',
             'assignments',
             'tasks',
-            'launch_credentials',
+            'start_tokens',
             'agent_sessions',
             'agents',
         ] as $table) {
@@ -131,7 +131,7 @@ final class CommandReceiptTest extends CommandBusTestCase
     {
         $task = Task::factory()->create(['title' => 'Keyed']);
         $bus = $this->app->make(CommandBus::class);
-        $command = new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->launch->agent));
+        $command = new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->start->agent));
 
         $first = $bus->run($command);
         $repeat = $bus->run($command);

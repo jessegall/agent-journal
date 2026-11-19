@@ -47,8 +47,8 @@ final class SkillPreviewTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileBase::readOnlyHelper(), 'Review.'),
         )));
-        $this->main = $this->launch('Main', 'main-agent', null);
-        $this->reviewer = $this->launch('Reviewer', 'read-only-helper', 1);
+        $this->main = $this->start('Main', 'main-agent', null);
+        $this->reviewer = $this->start('Reviewer', 'read-only-helper', 1);
     }
 
     public function test_journal_plans_lists_the_main_agent_as_match_and_a_read_only_helper_as_no_match(): void
@@ -102,7 +102,7 @@ final class SkillPreviewTest extends TestCase
         ];
     }
 
-    private function launch(string $name, string $profileKey, int|null $profileRevision): Agent
+    private function start(string $name, string $profileKey, int|null $profileRevision): Agent
     {
         $agent = Agent::named($name, $profileKey);
         $session = new AgentSession(

@@ -1,4 +1,4 @@
-// Package profiles holds the launch profile of each supported agent program build.
+// Package profiles holds the start profile of each supported agent program build.
 package profiles
 
 import (
@@ -12,7 +12,7 @@ import (
 	"journal-agent/profiles/contracts"
 )
 
-// ClaudeCode is the launch profile of Claude Code 2.1.323: isolated settings, no user, project or local settings, no
+// ClaudeCode is the start profile of Claude Code 2.1.323: isolated settings, no user, project or local settings, no
 // MCP servers, an explicit tool set without any route that starts another agent, and exact session IDs.
 type ClaudeCode struct{}
 
@@ -55,13 +55,13 @@ func (ClaudeCode) AllowedTools() []string {
 	return slices.Clone(claudeCodeAllowedTools)
 }
 
-func (profile ClaudeCode) Arguments(launch contracts.Launch) ([]string, error) {
-	if launch.SessionID == "" {
-		return nil, errors.New("a claude launch needs an exact session ID")
+func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
+	if start.SessionID == "" {
+		return nil, errors.New("a claude start needs an exact session ID")
 	}
 
 	arguments := []string{
-		"--settings", filepath.Join(launch.SettingsFolder, "settings.json"),
+		"--settings", filepath.Join(start.SettingsFolder, "settings.json"),
 		"--setting-sources", "",
 		"--strict-mcp-config",
 		"--agents", "{}",
@@ -70,30 +70,30 @@ func (profile ClaudeCode) Arguments(launch contracts.Launch) ([]string, error) {
 	}
 	arguments = append(arguments, claudeCodeDelegationTools...)
 
-	if launch.Model != "" {
-		arguments = append(arguments, "--model", launch.Model)
+	if start.Model != "" {
+		arguments = append(arguments, "--model", start.Model)
 	}
 
-	if launch.Resume {
-		arguments = append(arguments, "--resume", launch.SessionID)
+	if start.Resume {
+		arguments = append(arguments, "--resume", start.SessionID)
 	} else {
-		arguments = append(arguments, "--session-id", launch.SessionID)
+		arguments = append(arguments, "--session-id", start.SessionID)
 	}
 
-	if launch.Mode == contracts.ProcessMode {
+	if start.Mode == contracts.ProcessMode {
 		arguments = append(arguments, "--print", "--output-format", "stream-json", "--verbose")
 	}
 
-	if launch.Prompt != "" {
-		arguments = append(arguments, launch.Prompt)
+	if start.Prompt != "" {
+		arguments = append(arguments, start.Prompt)
 	}
 
 	return arguments, nil
 }
 
-// Environment drops every inherited Claude Code variable: one from the launching session marks the program as its
+// Environment drops every inherited Claude Code variable: one from the starting session marks the program as its
 // child (no transcript, the parent's permission mode) and others could turn on agent teams or forked skills.
-func (ClaudeCode) Environment(inherited []string, _ contracts.Launch) []string {
+func (ClaudeCode) Environment(inherited []string, _ contracts.Start) []string {
 	kept := make([]string, 0, len(inherited))
 
 	for _, entry := range inherited {
@@ -107,7 +107,7 @@ func (ClaudeCode) Environment(inherited []string, _ contracts.Launch) []string {
 	return kept
 }
 
-func (ClaudeCode) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFile, error) {
+func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile, error) {
 	settings := map[string]any{
 		"permissions": map[string]any{
 			"allow": claudeCodeAllowedWithoutAsking,
@@ -115,14 +115,14 @@ func (ClaudeCode) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFi
 		},
 	}
 
-	if launch.Effort != "" {
-		settings["effortLevel"] = launch.Effort
+	if start.Effort != "" {
+		settings["effortLevel"] = start.Effort
 	}
 
-	if launch.HookCommand != "" {
+	if start.HookCommand != "" {
 		hooks := map[string]any{}
 		for _, event := range nativeHookEvents {
-			hooks[event] = []map[string]any{{"hooks": []map[string]any{{"type": "command", "command": relayCommand(launch.HookCommand, claudeCodeJournalName)}}}}
+			hooks[event] = []map[string]any{{"hooks": []map[string]any{{"type": "command", "command": relayCommand(start.HookCommand, claudeCodeJournalName)}}}}
 		}
 		settings["hooks"] = hooks
 	}

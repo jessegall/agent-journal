@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Commands\LaunchAgent;
+use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Enums\LaunchOriginType;
+use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Exceptions\ContainerUnavailable;
 use App\Agents\Exceptions\ManifestRefused;
@@ -22,10 +22,10 @@ use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
-use App\Agents\Support\LaunchPolicy;
-use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ManifestMount;
-use App\Agents\Support\PreparedLaunch;
+use App\Agents\Support\PreparedStart;
+use App\Agents\Support\StartPolicy;
+use App\Agents\Support\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Values\ProfileBase;
 use Domain\Access\Models\User;
@@ -37,7 +37,7 @@ use Tests\TestCase;
 
 /**
  * A writing helper's container gets exactly the listed controls; anything more is refused by name, and a required
- * container launch is admitted only on a proven host, with a verified image and room left, before anything is kept.
+ * container start is admitted only on a proven host, with a verified image and room left, before anything is kept.
  */
 final class ContainerManifestTest extends TestCase
 {
@@ -46,13 +46,13 @@ final class ContainerManifestTest extends TestCase
 
     private const string IMAGE = 'registry.example/journal-helper@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
-    public function test_a_writer_launch_compiles_a_manifest_with_exactly_the_listed_controls(): void
+    public function test_a_writer_start_compiles_a_manifest_with_exactly_the_listed_controls(): void
     {
         $manifest = ContainerManifest::compile(
             $this->prepared(),
             ProfileBase::writingHelper()->defaultAccess(),
             $this->policy(),
-            'journal-launch-1',
+            'journal-start-1',
         );
 
         $this->assertSame(
@@ -66,7 +66,7 @@ final class ContainerManifestTest extends TestCase
                 'verified-default',
                 false,
                 [],
-                'journal-launch-1',
+                'journal-start-1',
             ],
             [
                 $manifest->image,
@@ -88,7 +88,7 @@ final class ContainerManifestTest extends TestCase
                 $this->prepared(),
                 ProfileBase::readOnlyHelper()->defaultAccess(),
                 $this->policy(),
-                'journal-launch-1',
+                'journal-start-1',
             )->mounts[0]->writable,
         );
     }
@@ -96,9 +96,9 @@ final class ContainerManifestTest extends TestCase
     public function test_the_mount_follows_the_access_declaration_not_the_type(): void
     {
         $writerAccess = ProfileBase::writingHelper()->defaultAccess();
-        $readerLaunch = $this->prepared();
+        $readerStart = $this->prepared();
 
-        $manifest = ContainerManifest::compile($readerLaunch, $writerAccess, $this->policy(), 'journal-launch-1');
+        $manifest = ContainerManifest::compile($readerStart, $writerAccess, $this->policy(), 'journal-start-1');
 
         $this->assertTrue($manifest->mounts[0]->writable);
     }
@@ -191,7 +191,7 @@ final class ContainerManifestTest extends TestCase
     {
         $this->signIn();
 
-        $this->assertThrows(fn () => $this->launch($this->containerRequest()), ContainerUnavailable::class);
+        $this->assertThrows(fn () => $this->start($this->containerRequest()), ContainerUnavailable::class);
 
         $this->assertSame(0, CapacityReservation::query()->count());
     }
@@ -220,9 +220,9 @@ final class ContainerManifestTest extends TestCase
         });
         $this->app->instance(HostCapacity::class, new HostCapacity(3, 16 * 1024 ** 3, 50 * 1024 ** 3));
 
-        $this->launch($this->containerRequest());
+        $this->start($this->containerRequest());
 
-        $this->assertThrows(fn () => $this->launch($this->containerRequest()), CapacityUnavailable::class);
+        $this->assertThrows(fn () => $this->start($this->containerRequest()), CapacityUnavailable::class);
         $this->assertSame(1, CapacityReservation::query()->count());
     }
 
@@ -231,10 +231,10 @@ final class ContainerManifestTest extends TestCase
         $this->assertThrows($make, ManifestRefused::class);
     }
 
-    private function prepared(): PreparedLaunch
+    private function prepared(): PreparedStart
     {
-        return new PreparedLaunch(
-            'launch-1',
+        return new PreparedStart(
+            'start-1',
             TestSelections::of(),
             ExecutionModeType::RequiredContainer,
             'policy-1',
@@ -261,25 +261,25 @@ final class ContainerManifestTest extends TestCase
         $this->startUserRequestAs($owner->id);
     }
 
-    private function containerRequest(): LaunchRequest
+    private function containerRequest(): StartRequest
     {
         $agent = Agent::named('Builder', 'writing-helper');
 
-        return new LaunchRequest(
+        return new StartRequest(
             TestSelections::requestId(),
             $agent->id,
             TestSelections::of(),
-            LaunchOriginType::OwnerRequest,
+            StartOriginType::OwnerRequest,
             'helpers.job 1',
             null,
             ConversationModeType::New,
             null,
-            LaunchPolicy::withoutProfile($this->policy()),
+            StartPolicy::withoutProfile($this->policy()),
         );
     }
 
-    private function launch(LaunchRequest $request): mixed
+    private function start(StartRequest $request): mixed
     {
-        return $this->app->make(CommandBus::class)->run(new LaunchAgent($request));
+        return $this->app->make(CommandBus::class)->run(new StartAgent($request));
     }
 }

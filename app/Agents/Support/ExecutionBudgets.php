@@ -7,7 +7,7 @@ namespace App\Agents\Support;
 use App\Agents\Exceptions\ExecutionBudgetInvalid;
 
 /**
- * The resources one launch may use (doc 14, section 62): every limit above zero, memory and swap equal, and none above
+ * The resources one start may use (doc 14, section 62): every limit above zero, memory and swap equal, and none above
  * the host's maxima for one helper.
  */
 final readonly class ExecutionBudgets
@@ -90,7 +90,7 @@ final readonly class ExecutionBudgets
     }
 
     /**
-     * The per-launch defaults: 2 cores, 4 GiB memory and swap, 256 processes, 1,024 files, 256 MiB tmp, a 10 GiB
+     * The per-start defaults: 2 cores, 4 GiB memory and swap, 256 processes, 1,024 files, 256 MiB tmp, a 10 GiB
      * workspace and six hours.
      */
     public static function defaults(): self

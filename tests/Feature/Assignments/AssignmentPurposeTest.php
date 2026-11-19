@@ -24,7 +24,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
@@ -43,7 +43,7 @@ final class AssignmentPurposeTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'inboxes',
         'desks',
@@ -53,7 +53,7 @@ final class AssignmentPurposeTest extends TestCase
         'command_receipts',
     ];
 
-    private TestLaunch $worker;
+    private TestStart $worker;
 
     private DeskSeat $seat;
 
@@ -63,7 +63,7 @@ final class AssignmentPurposeTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->worker = TestLaunch::start('writing-helper');
+        $this->worker = TestStart::start('writing-helper');
         $this->seat = DeskSeat::query()->ofDesk(DeskRecord::openNamed('team', 'Team', 1, false))->sole();
         $this->startUserRequestAs($owner->id);
     }

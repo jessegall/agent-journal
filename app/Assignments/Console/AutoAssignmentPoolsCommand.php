@@ -11,7 +11,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * List the pools a record type may be drawn from, over a signed call as the agent of the launch.
+ * List the pools a record type may be drawn from, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Read)]
 final class AutoAssignmentPoolsCommand extends Command

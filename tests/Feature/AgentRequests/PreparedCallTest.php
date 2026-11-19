@@ -6,13 +6,13 @@ namespace Tests\Feature\AgentRequests;
 
 use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
-use App\AgentRequests\Exceptions\LaunchCredentialRefused;
-use App\AgentRequests\Exceptions\LaunchSettingMissing;
+use App\AgentRequests\Exceptions\StartSettingMissing;
+use App\AgentRequests\Exceptions\StartTokenRefused;
 use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
-use App\AgentRequests\Support\LaunchProfilePin;
 use App\AgentRequests\Support\SignedCall;
+use App\AgentRequests\Support\StartProfilePin;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * A prepared signed call is sent unchanged on a retry and answers with any status; the launch credential is refused
+ * A prepared signed call is sent unchanged on a retry and answers with any status; the start token is refused
  * when it is missing, a placeholder or reached without HTTPS.
  */
 final class PreparedCallTest extends TestCase
@@ -106,9 +106,9 @@ final class PreparedCallTest extends TestCase
         Http::assertSent(function (Request $request): bool {
             $callId = $request->header(SignedCall::ID_HEADER)[0];
             $issuedAt = (int) $request->header(SignedCall::ISSUED_AT_HEADER)[0];
-            $pin = new LaunchProfilePin('main-agent', 1);
+            $pin = new StartProfilePin('main-agent', 1);
             $signature = SignedCall::agentSignatureFor(
-                'launch-token',
+                'start-token',
                 'POST',
                 $request->url(),
                 $callId,
@@ -119,7 +119,7 @@ final class PreparedCallTest extends TestCase
 
             return $request->body() === self::BODY
                 && $request->header(SignedCall::SIGNATURE_HEADER) === [$signature]
-                && $request->header('Authorization') === ['Bearer launch-token'];
+                && $request->header('Authorization') === ['Bearer start-token'];
         });
     }
 
@@ -127,12 +127,12 @@ final class PreparedCallTest extends TestCase
     {
         Http::fake();
 
-        foreach (['', '${JOURNAL_LAUNCH_TOKEN}', '<token>'] as $token) {
+        foreach (['', '${JOURNAL_START_TOKEN}', '<token>'] as $token) {
             $this->assertThrows(
                 fn () => new EnvironmentCredentialSource(
-                    ['JOURNAL_URL' => 'http://127.0.0.1:8000', 'JOURNAL_LAUNCH_TOKEN' => $token],
-                )->forThisLaunch(),
-                LaunchCredentialRefused::class,
+                    ['JOURNAL_URL' => 'http://127.0.0.1:8000', 'JOURNAL_START_TOKEN' => $token],
+                )->forThisStart(),
+                StartTokenRefused::class,
             );
         }
 
@@ -143,36 +143,36 @@ final class PreparedCallTest extends TestCase
     {
         $this->assertThrows(
             fn () => new EnvironmentCredentialSource(
-                ['JOURNAL_URL' => 'http://journal.example', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token'],
-            )->forThisLaunch(),
-            LaunchCredentialRefused::class,
+                ['JOURNAL_URL' => 'http://journal.example', 'JOURNAL_START_TOKEN' => 'start-token'],
+            )->forThisStart(),
+            StartTokenRefused::class,
         );
 
         $this->assertSame(
             'https://journal.example',
             new EnvironmentCredentialSource(
-                ['JOURNAL_URL' => 'https://journal.example/', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token', ...self::PIN],
-            )->forThisLaunch()->journalUrl,
+                ['JOURNAL_URL' => 'https://journal.example/', 'JOURNAL_START_TOKEN' => 'start-token', ...self::PIN],
+            )->forThisStart()->journalUrl,
         );
         $this->assertSame(
             'http://localhost:8000',
             new EnvironmentCredentialSource(
-                ['JOURNAL_URL' => 'http://localhost:8000', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token', ...self::PIN],
-            )->forThisLaunch()->journalUrl,
+                ['JOURNAL_URL' => 'http://localhost:8000', 'JOURNAL_START_TOKEN' => 'start-token', ...self::PIN],
+            )->forThisStart()->journalUrl,
         );
     }
 
     public function test_a_missing_setting_is_named(): void
     {
         $this->assertThrows(
-            fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example'])->forThisLaunch(),
-            LaunchSettingMissing::class,
-            'JOURNAL_LAUNCH_TOKEN',
+            fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example'])->forThisStart(),
+            StartSettingMissing::class,
+            'JOURNAL_START_TOKEN',
         );
     }
 
     private function settings(): AgentClientSettings
     {
-        return new AgentClientSettings('http://journal.test', 'launch-token', new LaunchProfilePin('main-agent', 1));
+        return new AgentClientSettings('http://journal.test', 'start-token', new StartProfilePin('main-agent', 1));
     }
 }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Agents\Support\HostCapability;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A launch whose program, account and execution mode the recorded evidence does not prove; no process is released,
+ * A start whose program, account and execution mode the recorded evidence does not prove; no process is released,
  * no account is changed and nothing falls back to the host or to API billing.
  */
 final class AccountContainerUnsupported extends RuntimeException implements CommandRefusal
@@ -18,12 +18,12 @@ final class AccountContainerUnsupported extends RuntimeException implements Comm
     public static function for(HostCapability $capability): self
     {
         return new self(
-            "The journal cannot launch {$capability->query->describe()}: {$capability->reason} Nothing was launched.",
+            "The journal cannot start {$capability->query->describe()}: {$capability->reason} Nothing was started.",
         );
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::AccountContainerUnsupported;
+        return StartRefusalType::AccountContainerUnsupported;
     }
 }

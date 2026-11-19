@@ -22,7 +22,7 @@ final readonly class HostCapability
     ) {}
 
     /**
-     * Refuses a launch that needs this capability unless the evidence proves it; nothing is started or changed.
+     * Refuses a start that needs this capability unless the evidence proves it; nothing is started or changed.
      *
      * @throws AccountContainerUnsupported
      * @throws ContainerUnavailable

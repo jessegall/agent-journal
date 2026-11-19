@@ -15,9 +15,9 @@ use App\Skills\Exceptions\ConditionWriteRefused;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Support\ConditionRegistry;
 use App\Skills\Support\ConditionTree;
-use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\SkillConditionRegistration;
 use App\Skills\Values\SkillContext;
+use App\Skills\Values\StartProfile;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Mockery;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
@@ -29,7 +29,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsNotesModule;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 use Throwable;
 
@@ -114,7 +114,7 @@ final class NamedConditionsTest extends TestCase
         $groups = NumberGroup::query()->count();
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent('evaluating-agent'),
-            TestLaunchAuthority::forAgent('evaluating-agent'),
+            TestStartAuthority::forAgent('evaluating-agent'),
         );
 
         $result = $this->app->make(ConditionTree::class)->hydrate(
@@ -167,7 +167,7 @@ final class NamedConditionsTest extends TestCase
             TestActors::agentIdentity(5),
             TestIds::of(6),
             'main',
-            LaunchProfile::profileFree(),
+            StartProfile::profileFree(),
             ProgramKey::from('codex'),
             ProviderKey::from('openai'),
         );

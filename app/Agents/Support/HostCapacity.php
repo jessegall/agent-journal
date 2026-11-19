@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 /**
- * What the host gives all its helper containers together (config agents.host_capacity); launches reserve from it.
+ * What the host gives all its helper containers together (config agents.host_capacity); starts reserve from it.
  */
 final readonly class HostCapacity
 {

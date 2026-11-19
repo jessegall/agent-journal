@@ -14,12 +14,12 @@ use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Values\ProfileKey;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
-use App\Skills\Support\LaunchProgram;
-use App\Skills\Values\LaunchProfile;
+use App\Skills\Support\StartProgram;
 use App\Skills\Values\SkillContext;
+use App\Skills\Values\StartProfile;
 
 /**
- * Reads the facts skill conditions decide on for one agent's session: the profile revision it was launched with,
+ * Reads the facts skill conditions decide on for one agent's session: the profile revision it was started with,
  * its program and provider. It reads no token or secret.
  */
 final readonly class SkillContextResolver
@@ -76,7 +76,7 @@ final readonly class SkillContextResolver
             throw SkillAgentHidden::for();
         }
 
-        $session = AgentSession::latestOf($agent->id) ?? throw SkillContextUnavailable::neverLaunched($agent->id);
+        $session = AgentSession::latestOf($agent->id) ?? throw SkillContextUnavailable::neverStarted($agent->id);
 
         return $this->contextOf($agent, $session, $this->profileOf($session));
     }
@@ -97,7 +97,7 @@ final readonly class SkillContextResolver
 
     /**
      * The context of each of these sessions, by session id, reading their agents in one query, for trusted Core work
-     * such as a refresh; a session whose context is unavailable, such as a helper launched without a profile, is
+     * such as a refresh; a session whose context is unavailable, such as a helper started without a profile, is
      * left out, as it gets no selection of its own.
      *
      * @param  list<AgentSession>  $sessions
@@ -124,9 +124,9 @@ final readonly class SkillContextResolver
         return $contexts;
     }
 
-    private function contextOf(Agent $agent, AgentSession $session, LaunchProfile $profile): SkillContext
+    private function contextOf(Agent $agent, AgentSession $session, StartProfile $profile): SkillContext
     {
-        $program = LaunchProgram::of($session->program);
+        $program = StartProgram::of($session->program);
 
         return new SkillContext(
             actor: new ActorIdentity(ActorType::Agent, $agent->id),
@@ -141,9 +141,9 @@ final readonly class SkillContextResolver
     /**
      * The profile revision the session was pinned to; sessions pinned alike share one read.
      */
-    private function profileOf(AgentSession $session): LaunchProfile
+    private function profileOf(AgentSession $session): StartProfile
     {
-        return LaunchProfile::of($this->profiles->snapshotAt(
+        return StartProfile::of($this->profiles->snapshotAt(
             ProfileKey::from($session->profile_key),
             $session->profile_revision,
         ));

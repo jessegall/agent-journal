@@ -6,7 +6,7 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Contracts\AssignmentTransaction;
@@ -47,7 +47,7 @@ final class TaskRunTest extends TestCase
         'task_runs',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -103,8 +103,8 @@ final class TaskRunTest extends TestCase
     public function test_an_actor_that_lost_its_desk_seat_cannot_finish_the_desk_run(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 1, false);
-        $leaving = $this->launched('First');
-        $arriving = $this->launched('Second');
+        $leaving = $this->started('First');
+        $arriving = $this->started('Second');
         $task = Task::factory()->create();
         AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
@@ -139,10 +139,10 @@ final class TaskRunTest extends TestCase
         return $this->app->make(RunClaims::class)->holderOf($run->assignmentIdentity())->getOrElse(null);
     }
 
-    private function launched(string $name): AgentSession
+    private function started(string $name): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)
-            ->launch(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
+        return $this->app->make(StartSessions::class)
+            ->start(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

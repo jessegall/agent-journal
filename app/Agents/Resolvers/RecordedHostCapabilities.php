@@ -18,11 +18,11 @@ use JsonException;
 
 /**
  * Answers from the checked-in matrix docs/accounts/container-capabilities.json; a capability without a row is
- * unverified, so nothing that needs it launches.
+ * unverified, so nothing that needs it starts.
  */
 final readonly class RecordedHostCapabilities implements HostCapabilities
 {
-    private const string UNRECORDED_EVIDENCE = 'docs/accounts/launch-handshake.md';
+    private const string UNRECORDED_EVIDENCE = 'docs/accounts/start-handshake.md';
 
     public function __construct(private string $matrixPath) {}
 

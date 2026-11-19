@@ -143,7 +143,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}, ErrConversationUnknown
 	}
 
-	launch := profilecontracts.Launch{
+	start := profilecontracts.Start{
 		Mode:           profilecontracts.ProcessMode,
 		SettingsFolder: driver.runtime.SettingsFolder,
 		SessionID:      driver.runtime.ConversationID,
@@ -154,7 +154,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		Effort:         driver.effort,
 		WorkFolder:     driver.runtime.WorkingFolder,
 	}
-	command, err := driver.command(launch)
+	command, err := driver.command(start)
 	if err != nil {
 		return contracts.OperationResult{}, err
 	}
@@ -162,7 +162,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 	driver.generation++
 	command.Env = append(command.Env,
 		"JOURNAL_URL="+driver.runtime.JournalURL,
-		"JOURNAL_LAUNCH_TOKEN="+driver.runtime.Credential,
+		"JOURNAL_START_TOKEN="+driver.runtime.Credential,
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(driver.generation),
 		"JOURNAL_BYPASS_LOG="+filepath.Join(driver.runtime.SettingsFolder, BypassLogName),
 	)
@@ -181,30 +181,30 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying, Hold: contracts.HoldNone}, nil
 }
 
-func (driver *ProcessDriver) command(launch profilecontracts.Launch) (*exec.Cmd, error) {
+func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, error) {
 	profile := driver.runtime.Profile
-	files, err := profile.SettingsFiles(launch)
+	files, err := profile.SettingsFiles(start)
 	if err != nil {
 		return nil, err
 	}
-	if err := os.MkdirAll(launch.SettingsFolder, 0o700); err != nil {
+	if err := os.MkdirAll(start.SettingsFolder, 0o700); err != nil {
 		return nil, err
 	}
 	for _, file := range files {
 		if file.LinkTo != "" {
 			continue
 		}
-		if err := os.WriteFile(filepath.Join(launch.SettingsFolder, file.Name), file.Content, 0o600); err != nil {
+		if err := os.WriteFile(filepath.Join(start.SettingsFolder, file.Name), file.Content, 0o600); err != nil {
 			return nil, err
 		}
 	}
-	arguments, err := profile.Arguments(launch)
+	arguments, err := profile.Arguments(start)
 	if err != nil {
 		return nil, err
 	}
 	command := exec.Command(profile.Program(), arguments...)
 	command.Dir = driver.runtime.WorkingFolder
-	command.Env = profile.Environment(WithoutJournalVariables(os.Environ()), launch)
+	command.Env = profile.Environment(WithoutJournalVariables(os.Environ()), start)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return command, nil
 }
@@ -243,7 +243,7 @@ func staged(request contracts.RequestIdentity) contracts.OperationResult {
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressStaged, Hold: contracts.HoldNone}
 }
 
-// WithoutJournalVariables keeps the host's own journal variables out of the child: only the launch credential the
+// WithoutJournalVariables keeps the host's own journal variables out of the child: only the start token the
 // driver adds itself may reach it, never the host secret.
 func WithoutJournalVariables(environment []string) []string {
 	kept := make([]string, 0, len(environment))
@@ -258,8 +258,8 @@ func WithoutJournalVariables(environment []string) []string {
 
 // RegisterProcessDriver makes the process driver available to the factory; runtimeOf supplies what the grant alone
 // does not say: the runtime's folders, its conversation and the generation the journal last recorded.
-func RegisterProcessDriver(factory *host.RuntimeFactory, runtimeOf func(grant host.LaunchGrant) (ProcessRuntime, int, error)) {
-	factory.Register(ProcessDriverType, func(grant host.LaunchGrant) (contracts.AgentDriver, error) {
+func RegisterProcessDriver(factory *host.RuntimeFactory, runtimeOf func(grant host.StartGrant) (ProcessRuntime, int, error)) {
+	factory.Register(ProcessDriverType, func(grant host.StartGrant) (contracts.AgentDriver, error) {
 		runtime, generation, err := runtimeOf(grant)
 		if err != nil {
 			return nil, err

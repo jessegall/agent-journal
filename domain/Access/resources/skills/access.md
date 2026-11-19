@@ -8,4 +8,4 @@ Users sign in to the journal, and the journal's access settings name which of th
 
 ## Agents
 
-An agent acts as itself: its launch decides who it is, never an option it passes. What an agent may read and change is decided by the journal for that agent, and a refusal says what was refused.
+An agent acts as itself: its start decides who it is, never an option it passes. What an agent may read and change is decided by the journal for that agent, and a refusal says what was refused.
