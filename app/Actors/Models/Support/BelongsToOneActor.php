@@ -87,6 +87,7 @@ trait BelongsToOneActor
     public static function lockedForActorOrUnheld(string $id): static|null
     {
         return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
-            ?? static::query()->withoutGlobalScope(static::ownerScope())->whereNull('actor_id')->whereKey($id)->lockForUpdate()->first();
+
+                    ?? static::query()->withoutGlobalScope(static::ownerScope())->whereNull('actor_id')->whereKey($id)->lockForUpdate()->first();
     }
 }

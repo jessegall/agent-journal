@@ -101,7 +101,7 @@ final class SettingsCatalogueTest extends TestCase
         $this->assertSame('integerChoice', $catalogue['groups'][0]['settings'][1]['constraints']['type']);
     }
 
-    public function test_an_invalid_stored_value_shows_as_invalid_and_a_reset_at_the_shown_revision_restores_the_default(): void
+    public function test_an_invalid_stored_value_shows_invalid_and_a_reset_at_its_revision_restores_the_default(): void
     {
         $this->storeDirectly('Reviews', fn (SettingsDocument $document) => $document
             ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of('secret text')))

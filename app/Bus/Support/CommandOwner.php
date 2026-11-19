@@ -18,7 +18,8 @@ final readonly class CommandOwner
     public const string CORE = 'Core';
 
     /**
-     * @param  string  $namespace  the owner's namespace, whose Commands, Handlers and CommandMiddleware folders hold its parts
+     * @param  string  $namespace  the owner's namespace, whose Commands, Handlers and CommandMiddleware folders hold
+     *   its parts
      * @param  string  $domainClass  the owner's Domain class, or CORE, as a middleware scope names it
      * @param  list<class-string>  $commands
      * @param  list<MiddlewareDeclaration>  $middleware

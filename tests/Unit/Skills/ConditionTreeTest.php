@@ -48,7 +48,9 @@ final class ConditionTreeTest extends TestCase
 
         $this->assertSame(json_decode(self::SECTION_6_JSON, true), $php->toArray());
 
-        foreach ([$this->reviewerOn('codex'), $this->reviewerOn('claude-code'), $this->mainAgentOn('codex')] as $context) {
+        foreach ([$this->reviewerOn('codex'), $this
+            ->reviewerOn('claude-code'), $this
+            ->mainAgentOn('codex')] as $context) {
             $this->assertSame($php->evaluate($context)->outcome, $json->evaluate($context)->outcome);
         }
 

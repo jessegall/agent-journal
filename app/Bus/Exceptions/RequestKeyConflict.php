@@ -22,7 +22,8 @@ final class RequestKeyConflict extends RuntimeException implements AnswersFromRe
     public static function for(string $key): self
     {
         return new self(
-            "The request_key {$key} was used for a different write; use a new key for a new write, or read it with operations_read.",
+            "The request_key {$key} was used for a different write; use a new key for a new write, or read it with "
+                .'operations_read.',
         );
     }
 

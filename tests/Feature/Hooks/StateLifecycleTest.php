@@ -97,7 +97,7 @@ final class StateLifecycleTest extends TestCase
         $this->assertSame(['A', 'B'], $this->storedSubjects());
     }
 
-    public function test_a_push_over_a_finished_top_exits_it_and_enters_the_new_frame_without_resuming_the_parent(): void
+    public function test_a_push_over_a_finished_top_exits_it_and_enters_the_new_frame_not_the_parent(): void
     {
         $this->push('A');
         $this->push('B');

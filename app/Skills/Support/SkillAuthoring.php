@@ -68,7 +68,9 @@ final readonly class SkillAuthoring
 
         return $this->container->make(
             SkillResolver::class,
-        )->find($key)->origin === SkillOrigin::Shipped ? throw ShippedSkillReadOnly::for($key->key) : throw SkillMissing::for($key);
+        )->find($key)->origin === SkillOrigin::Shipped
+            ? throw ShippedSkillReadOnly::for($key->key)
+            : throw SkillMissing::for($key);
     }
 
     /**
@@ -215,7 +217,8 @@ final readonly class SkillAuthoring
     /**
      * One numbered revision of a stored skill, as the fields a reader shows.
      *
-     * @return array{revision: int, name: string, description: string, condition: mixed, sections: list<array{key: string, heading: string, markdown: string}>}
+     * @return array{revision: int, name: string, description: string, condition: mixed, sections: list<array{key:
+     *   string, heading: string, markdown: string}>}
      */
     public function revisionFields(Skill $skill, int $number): array
     {

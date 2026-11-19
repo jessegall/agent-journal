@@ -52,7 +52,7 @@ final class AgentRequestKeyTest extends TestCase
         $this->task = Task::factory()->create(['title' => 'Keyed work']);
     }
 
-    public function test_a_cli_assign_retried_with_the_same_request_key_returns_the_stored_result_without_a_second_change(): void
+    public function test_a_cli_assign_retried_with_its_request_key_returns_the_stored_result_unchanged(): void
     {
         $this->runCommandsAs($this->main);
         $arguments = [

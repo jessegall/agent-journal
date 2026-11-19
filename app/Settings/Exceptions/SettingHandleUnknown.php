@@ -15,7 +15,8 @@ final class SettingHandleUnknown extends LogicException
     public static function for(string $owner, string $key): self
     {
         return new self(
-            "No registered definition of {$owner} declares the setting {$key}: inject the registered definition instead of constructing another.",
+            "No registered definition of {$owner} declares the setting {$key}: inject the registered definition "
+                .'instead of constructing another.',
         );
     }
 
@@ -27,7 +28,8 @@ final class SettingHandleUnknown extends LogicException
     public static function definition(string $definition): self
     {
         return new self(
-            "This {$definition} is not the registered one: inject the registered definition instead of constructing another.",
+            "This {$definition} is not the registered one: inject the registered definition instead of constructing "
+                .'another.',
         );
     }
 }

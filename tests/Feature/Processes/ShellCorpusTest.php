@@ -156,7 +156,8 @@ final class ShellCorpusTest extends TestCase
     }
 
     /**
-     * @return list<array{id: string, source: string, dialect: string, origins: list<array<string, mixed>>, expected: array<string, mixed>}>
+     * @return list<array{id: string, source: string, dialect: string, origins: list<array<string, mixed>>, expected:
+     *   array<string, mixed>}>
      */
     private function cases(): array
     {

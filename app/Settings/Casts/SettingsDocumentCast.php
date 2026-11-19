@@ -111,7 +111,10 @@ final class SettingsDocumentCast implements CastsAttributes
         $entries = [];
 
         foreach ($list as $position => $entry) {
-            if (! $entry instanceof stdClass || ! $this->holdsExactly($entry, ['key', 'value']) || ! is_string($entry->key) || ! SettingKey::isValidKey($entry->key)) {
+            if (! $entry instanceof stdClass
+                || ! $this->holdsExactly($entry, ['key', 'value'])
+                || ! is_string($entry->key)
+                || ! SettingKey::isValidKey($entry->key)) {
                 throw SettingsDocumentInvalid::malformedEntry($owner, $listName, $position);
             }
 

@@ -19,7 +19,8 @@ final class UiSlotMismatch extends UiDeclarationError
     public static function parameterMissing(string $page, string $slot, string $parameter): self
     {
         return new self(
-            "Page {$page} offers the record slot {$slot} on the route parameter {$parameter}, which its path does not have.",
+            "Page {$page} offers the record slot {$slot} on the route parameter {$parameter}, which its path does "
+                .'not have.',
         );
     }
 }

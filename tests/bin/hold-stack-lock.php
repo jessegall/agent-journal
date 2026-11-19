@@ -31,7 +31,8 @@ $row = $select->fetch(PDO::FETCH_ASSOC);
 fwrite(STDOUT, "locked\n");
 fflush(STDOUT);
 
-$waiting = $database->prepare("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND datname = current_database() AND pid <> pg_backend_pid()");
+$waiting = $database->prepare("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND datname = "
+    .'current_database() AND pid <> pg_backend_pid()');
 
 $clearSnapshot = $database->prepare('SELECT pg_stat_clear_snapshot()');
 

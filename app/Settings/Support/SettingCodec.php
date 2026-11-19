@@ -35,7 +35,9 @@ final readonly class SettingCodec
      */
     public function encodeString(string $owner, StringSetting $setting, string $value): EncodedValue
     {
-        return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+        return $setting->accepts($value)
+            ? EncodedValue::of($value)
+            : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
     public function encodeBoolean(bool $value): EncodedValue
@@ -48,7 +50,9 @@ final readonly class SettingCodec
      */
     public function encodeInteger(string $owner, IntegerSetting $setting, int $value): EncodedValue
     {
-        return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+        return $setting->accepts($value)
+            ? EncodedValue::of($value)
+            : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
     /**
@@ -72,7 +76,9 @@ final readonly class SettingCodec
      */
     public function encodeOption(string $owner, OptionSetting $setting, string|int $value): EncodedValue
     {
-        return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key(), $setting->type());
+        return $setting->accepts($value)
+            ? EncodedValue::of($value)
+            : throw SettingValueInvalid::for($owner, $setting->key(), $setting->type());
     }
 
     /**

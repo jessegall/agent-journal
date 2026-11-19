@@ -137,7 +137,10 @@ final readonly class TableScan implements FileScan
     {
         $table = self::argument($call, 0);
 
-        if ($table instanceof Expr\Closure || $table instanceof Expr\ArrowFunction || $table instanceof MethodCall || $table instanceof StaticCall) {
+        if ($table instanceof Expr\Closure
+            || $table instanceof Expr\ArrowFunction
+            || $table instanceof MethodCall
+            || $table instanceof StaticCall) {
             return [];
         }
 

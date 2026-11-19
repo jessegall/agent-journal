@@ -291,6 +291,15 @@ final class DriverRequest extends Model implements ReadableModel
         $this->finish(RequestProgress::Failed, $outcome);
     }
 
+    /**
+     * The host could not carry the request out at all, such as when its runtime could not be opened; a person may
+     * send it again.
+     */
+    public function markUnavailable(RequestOutcome $outcome): void
+    {
+        $this->finish(RequestProgress::Unavailable, $outcome);
+    }
+
     public function markUncertain(): void
     {
         $this->finish(RequestProgress::DeliveryUncertain, null);
@@ -352,6 +361,12 @@ final class DriverRequest extends Model implements ReadableModel
             'script' => $this->script_id,
             'scriptStep' => $this->script_step,
             'scriptEvidence' => $this->script_evidence,
+            'rowVersion' => $this->row_version,
+            'canRetry' => $this->canRetry(),
+            'canCancel' => $this->canCancel(),
+            'canResolve' => $this->canResolve(),
+            'canResumeScript' => $this->canResumeScript(),
+            'canCancelScript' => $this->isStoppedKeyScript(),
         ]);
     }
 

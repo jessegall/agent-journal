@@ -101,7 +101,7 @@ final class SettingsCommandsTest extends TestCase
         $this->assertSame(4, $this->reviewGroup()->integer($this->reviews->retryLimit));
     }
 
-    public function test_each_changing_command_announces_one_change_after_commit_and_no_other_command_announces_any(): void
+    public function test_each_changing_command_announces_one_change_after_commit_and_no_other_does(): void
     {
         $announced = [];
         Event::listen(SettingsChanged::class, function (SettingsChanged $event) use (&$announced): void {

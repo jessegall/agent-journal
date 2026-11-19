@@ -34,7 +34,8 @@ final readonly class DeclarationRules
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                if (! is_subclass_of($name, Domain::class) || ($reflection = new ReflectionClass($name))->isAbstract()) {
+                if (! is_subclass_of($name, Domain::class)
+                    || ($reflection = new ReflectionClass($name))->isAbstract()) {
                     continue;
                 }
 
@@ -68,7 +69,9 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach ($files as $path) {
-            if ($this->isInADomain($path) || $this->liesIn($path, $sharedFolders) || in_array($path, $starterKitFiles, true)) {
+            if ($this->isInADomain($path)
+                || $this->liesIn($path, $sharedFolders)
+                || in_array($path, $starterKitFiles, true)) {
                 continue;
             }
 

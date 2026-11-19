@@ -25,6 +25,10 @@ final class TextSelection extends Data
 
     public function isOutlineOnly(): bool
     {
-        return $this->section === null && $this->firstLine === null && ! $this->bullets && $this->words === null && ! $this->all;
+        return $this->section === null
+            && $this->firstLine === null
+            && ! $this->bullets
+            && $this->words === null
+            && ! $this->all;
     }
 }

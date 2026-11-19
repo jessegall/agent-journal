@@ -19,7 +19,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * skills_preview: who a skill reaches among the agents the caller may see, or one agent's selection.
  */
 #[Name('skills_preview')]
-#[Description('Which agents you may see a skill reaches, each with match, no_match or unavailable and a safe reason; with agent_id, that agent\'s whole selection. Changes nothing.')]
+#[Description('Which agents you may see a skill reaches, each with match, no_match or unavailable and a safe reason; '
+    .'with agent_id, that agent\'s whole selection. Changes nothing.')]
 #[IsReadOnly]
 final class SkillPreviewTool extends JournalReadTool
 {

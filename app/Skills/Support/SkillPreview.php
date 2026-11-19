@@ -28,7 +28,8 @@ final readonly class SkillPreview
     ) {}
 
     /**
-     * @return array{key: string, audience: string, condition: array<string, mixed>, agents: list<array{agent: string, name: string, outcome: string, reason: string}>}
+     * @return array{key: string, audience: string, condition: array<string, mixed>, agents: list<array{agent: string,
+     *   name: string, outcome: string, reason: string}>}
      */
     public function audience(SkillEntry $skill): array
     {
@@ -39,7 +40,9 @@ final readonly class SkillPreview
 
         return [
             'key' => $skill->key->key,
-            'audience' => $skill->condition instanceof Everyone ? 'everyone in the authorized installation scope' : 'agents whose condition matches',
+            'audience' => $skill->condition instanceof Everyone
+                ? 'everyone in the authorized installation scope'
+                : 'agents whose condition matches',
             'condition' => $skill->condition->toArray(),
             'agents' => $rows,
         ];

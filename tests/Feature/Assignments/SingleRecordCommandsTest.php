@@ -62,7 +62,9 @@ final class SingleRecordCommandsTest extends TestCase
                 [
                     'changed' => 1,
                     'outcomes' => [
-                        ['type' => 'changed', 'record' => ['holder' => ['type' => 'agent', 'id' => (string) $this->helper->agent->id]]],
+                        ['type' => 'changed', 'record' => ['holder' => ['type' => 'agent', 'id' => (string) $this->helper
+                            ->agent
+                            ->id]]],
                     ],
                 ],
             );

@@ -141,7 +141,8 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public function isClaimable(): bool
     {
-        return $this->outcome_code === null && ($this->run_id === null || $this->lease_ends_at === null || ! $this->lease_ends_at->isFuture());
+        return $this->outcome_code === null
+            && ($this->run_id === null || $this->lease_ends_at === null || ! $this->lease_ends_at->isFuture());
     }
 
     /**

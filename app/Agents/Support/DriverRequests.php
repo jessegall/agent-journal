@@ -34,7 +34,9 @@ final readonly class DriverRequests
             $idempotencyKey,
         )->first();
         if ($existing !== null) {
-            return $existing->payload_digest === $digest ? $existing : throw DriverRequestRefused::keyConflict($idempotencyKey);
+            return $existing->payload_digest === $digest
+                ? $existing
+                : throw DriverRequestRefused::keyConflict($idempotencyKey);
         }
 
         if ($runtime->activity->isStopping()) {

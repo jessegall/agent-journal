@@ -15,7 +15,8 @@ final class LaunchRequestConflict extends RuntimeException implements CommandRef
     public static function forRequest(string $requestId): self
     {
         return new self(
-            "Launch request {$requestId} was already sent with different contents. Send a new request id for a different launch.",
+            "Launch request {$requestId} was already sent with different contents. Send a new request id for a "
+                .'different launch.',
         );
     }
 }

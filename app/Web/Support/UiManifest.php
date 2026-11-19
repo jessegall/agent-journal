@@ -91,7 +91,9 @@ final readonly class UiManifest
         ];
 
         foreach ($artifacts as $path => $content) {
-            if (trim($content) === '' || ! str_contains($content, $hash) && $path !== 'bootstrap/cache/ui-components.php') {
+            if (trim($content) === ''
+                || ! str_contains($content, $hash)
+                && $path !== 'bootstrap/cache/ui-components.php') {
                 throw UiManifestInvalid::emptyOrUnmarked($path);
             }
         }

@@ -22,7 +22,7 @@ use Tests\Support\TestIds;
  */
 final class DomainDisabledCommandsTest extends CommandBusTestCase
 {
-    public function test_a_command_of_a_switched_off_domain_is_refused_for_users_and_agents_without_building_its_handler(): void
+    public function test_a_switched_off_domains_command_is_refused_for_everyone_without_building_its_handler(): void
     {
         $this->installCommandModules();
         $this->switchOff('Plans');

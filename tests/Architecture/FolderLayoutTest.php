@@ -24,7 +24,9 @@ final class FolderLayoutTest extends TestCase
     {
         $loose = [];
 
-        foreach ([...glob(base_path('domain/*/src'), GLOB_ONLYDIR) ?: [], ...glob(app_path('*'), GLOB_ONLYDIR) ?: []] as $root) {
+        foreach ([...glob(base_path('domain/*/src'), GLOB_ONLYDIR)
+            ?: [], ...glob(app_path('*'), GLOB_ONLYDIR)
+            ?: []] as $root) {
             // a domain's root is its src folder, named after the domain's package folder
             $name = basename($root) === 'src' ? basename(dirname($root)) : basename($root);
 
@@ -42,7 +44,8 @@ final class FolderLayoutTest extends TestCase
         $this->assertSame(
             [],
             $loose,
-            "These classes sit loose at a domain or Core area root; move each into the folder of its type, or that area's Support folder.",
+            'These classes sit loose at a domain or Core area root; move each into the folder of its type, or that '
+                ."area's Support folder.",
         );
     }
 

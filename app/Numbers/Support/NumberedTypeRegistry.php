@@ -36,7 +36,8 @@ final class NumberedTypeRegistry
         $this->declaredOfLinkType = [];
 
         foreach ($this->declared as $declared) {
-            if (! is_subclass_of($declared->model, Numbered::class) || ! in_array(HasNumber::class, class_uses_recursive($declared->model), true)) {
+            if (! is_subclass_of($declared->model, Numbered::class)
+                || ! in_array(HasNumber::class, class_uses_recursive($declared->model), true)) {
                 throw NumberedModelInvalid::notNumbered($declared->model);
             }
 

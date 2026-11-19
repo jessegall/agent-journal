@@ -42,7 +42,9 @@ final class ReadOrderTest extends TestCase
                 }
             }
 
-            if ($last === false || ! str_ends_with($last['column'], '.'.$model->getKeyName()) && $last['column'] !== $model->getKeyName()) {
+            if ($last === false
+                || ! str_ends_with($last['column'], '.'.$model->getKeyName())
+                && $last['column'] !== $model->getKeyName()) {
                 $faults[] = "{$class}'s read order does not end in its key {$model->getKeyName()}";
             }
         }

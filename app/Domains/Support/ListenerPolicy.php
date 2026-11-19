@@ -115,11 +115,15 @@ final readonly class ListenerPolicy
     {
         [$class, $method] = array_pad(explode('@', $listener, 2), 2, 'handle');
 
-        if (! class_exists($class) || ! method_exists($class, $method) || ! $this->firstParameterAccepts(new ReflectionMethod($class, $method), $event)) {
+        if (! class_exists($class)
+            || ! method_exists($class, $method)
+            || ! $this->firstParameterAccepts(new ReflectionMethod($class, $method), $event)) {
             throw InvalidListener::staleCache($listener, $event);
         }
 
-        if (! class_exists($event) || ! is_subclass_of($event, Event::class) || new ReflectionClass($event)->isAbstract()) {
+        if (! class_exists($event)
+            || ! is_subclass_of($event, Event::class)
+            || new ReflectionClass($event)->isAbstract()) {
             throw InvalidListener::notAConcreteEvent($listener, $event);
         }
 

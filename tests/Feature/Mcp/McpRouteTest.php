@@ -107,7 +107,7 @@ final class McpRouteTest extends TestCase
         $this->artisan('mcp:start', ['handle' => 'journal'])->assertFailed();
     }
 
-    public function test_the_route_runs_the_agent_check_the_message_limit_and_the_rate_limit_after_the_package_middleware(): void
+    public function test_the_route_runs_the_agent_message_and_rate_checks_after_the_package_middleware(): void
     {
         $route = Route::getRoutes()->getByName('mcp.journal');
 

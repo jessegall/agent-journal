@@ -24,7 +24,8 @@ final class InvalidExports extends DomainDeclarationError
     public static function notAnEvent(string $owner, string $name): self
     {
         return new self(
-            "{$owner} exports {$name} under events, but it is not a final class implementing App\\Contracts\\Event; move it to the list it belongs in.",
+            "{$owner} exports {$name} under events, but it is not a final class implementing App\\Contracts\\Event; "
+                .'move it to the list it belongs in.',
         );
     }
 
@@ -36,21 +37,24 @@ final class InvalidExports extends DomainDeclarationError
     public static function notAnInterface(string $owner, string $name): self
     {
         return new self(
-            "{$owner} exports {$name} under contracts, but it is not an interface; export its interface, or move it to values.",
+            "{$owner} exports {$name} under contracts, but it is not an interface; export its interface, or move it "
+                .'to values.',
         );
     }
 
     public static function notACommand(string $owner, string $name): self
     {
         return new self(
-            "{$owner} exports {$name} under commands, but it is not a final class implementing App\\Bus\\Contracts\\Command; move it to the list it belongs in.",
+            "{$owner} exports {$name} under commands, but it is not a final class implementing "
+                .'App\\Bus\\Contracts\\Command; move it to the list it belongs in.',
         );
     }
 
     public static function notAnException(string $owner, string $name): self
     {
         return new self(
-            "{$owner} exports {$name} under exceptions, but it is not a Throwable in an Exceptions namespace; move it there or to the list it belongs in.",
+            "{$owner} exports {$name} under exceptions, but it is not a Throwable in an Exceptions namespace; move "
+                .'it there or to the list it belongs in.',
         );
     }
 
@@ -62,14 +66,16 @@ final class InvalidExports extends DomainDeclarationError
     public static function supportOutsideCore(string $owner, string $name): self
     {
         return new self(
-            "{$owner} exports {$name} under support, which only Core may use; export it under the list its type belongs in.",
+            "{$owner} exports {$name} under support, which only Core may use; export it under the list its type "
+                .'belongs in.',
         );
     }
 
     public static function unknownSupport(string $name): self
     {
         return new self(
-            "Core exports {$name} under support, which is not one of its listed support types; give it an interface or move it to values.",
+            "Core exports {$name} under support, which is not one of its listed support types; give it an interface "
+                .'or move it to values.',
         );
     }
 }

@@ -213,7 +213,10 @@ class ReadBuilder extends Builder
         $relation->addEagerConstraints($models);
         $constraints($relation);
         $query = $relation->getQuery();
-        $readsOnePerParent = $relation instanceof BelongsTo || $relation instanceof HasOne || $relation instanceof MorphOne || $relation instanceof MorphTo;
+        $readsOnePerParent = $relation instanceof BelongsTo
+            || $relation instanceof HasOne
+            || $relation instanceof MorphOne
+            || $relation instanceof MorphTo;
 
         if ($query instanceof self && $readsOnePerParent) {
             $query->readAll('one row per parent of the eager load');
@@ -309,9 +312,11 @@ class ReadBuilder extends Builder
 
     private function defaultLimit(): int
     {
-        return $this->model instanceof ReadableModel ? $this->model->defaultReadLimit() : (int) Container::getInstance()->make('config')->get(
-            'reads.default_limit',
-            50,
-        );
+        return $this->model instanceof ReadableModel
+            ? $this->model->defaultReadLimit()
+            : (int) Container::getInstance()->make('config')->get(
+                'reads.default_limit',
+                50,
+            );
     }
 }
