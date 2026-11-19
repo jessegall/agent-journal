@@ -10,6 +10,8 @@ class SaveLibraryCopy(Command[LibraryCopy]):
     """Writes the copy that makes a local row follow an item of the shared server, with the version both sides agree
     on. The row is one that is here, or one made from the item in the same transaction."""
 
+    lock = True
+
     share: str
     item_id: int
     base_version: int

@@ -11,8 +11,6 @@ class ChooseAgentControl(Command[Agent]):
     for it. A choice that compacts or clears the context carries why it is asked: a user, unless a rule says
     otherwise."""
 
-    lock = False
-
     agent_id: int
     key: str
     value: str

@@ -8,5 +8,7 @@ from core.modules.drivers.models.driver_grant import DriverGrant
 class JudgeRefusalSkip(Command[DriverGrant]):
     """A main agent's or a user's answer to a confirmed skip of a helper: approved or declined."""
 
+    lock = True
+
     skip_id: int
     is_approved: bool

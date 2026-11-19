@@ -6,8 +6,6 @@ from engine.driver.agent_message import AgentMessage
 
 @dataclass(frozen=True)
 class RecordAgentMessage(Command[None]):
-    lock = False
-
     agent_id: int
     agent_message: AgentMessage
     source: str

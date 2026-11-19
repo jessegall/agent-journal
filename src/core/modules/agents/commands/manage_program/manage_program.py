@@ -7,7 +7,5 @@ from engine.command.command import Command
 class ManageProgram(Command[int]):
     """Imports a program's project command hooks into the shared managed store."""
 
-    lock = False
-
     program: str
     folder: str

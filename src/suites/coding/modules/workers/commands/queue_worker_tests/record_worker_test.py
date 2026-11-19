@@ -10,6 +10,8 @@ REMOVED_RUN_NOTE = "lost: process {process} is gone with no result recorded"
 class RecordWorkerTest(Command[None]):
     """Records how the process of a worker's test ended, and what follows when it was that worker's last."""
 
+    lock = True
+
     proof_id: int
     passed: bool
     output_note: str

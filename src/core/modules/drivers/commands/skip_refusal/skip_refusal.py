@@ -9,6 +9,8 @@ class SkipRefusal(Command[DriverGrant]):
     """Passes the refusal of one rule or guard that just refused the agent, saying why; a guard's skip is used
     at once."""
 
+    lock = True
+
     name: str
     reason: str
     is_used: bool = False

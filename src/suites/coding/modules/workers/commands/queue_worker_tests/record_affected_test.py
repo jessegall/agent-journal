@@ -7,6 +7,8 @@ from engine.command.command import Command
 class RecordAffectedTest(Command[None]):
     """Records the end of a picker or selected test process."""
 
+    lock = True
+
     test_id: int
     process_id: int
     passed: bool

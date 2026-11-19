@@ -9,6 +9,8 @@ class RedeemPhoneCode(Command[Phone]):
     """Pairs the phone that brought a pairing code, keeping the digest of the session token the viewer gave
     it."""
 
+    lock = True
+
     code: str
     token_digest: str
     name: str

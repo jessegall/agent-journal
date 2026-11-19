@@ -10,7 +10,5 @@ class StopAgentProgram(Command[Stopped]):
     """Stops the program of an agent and ends its row once the program is gone; the reason is who had it stopped.
     It takes no write lock while it waits for the program to go."""
 
-    lock = False
-
     agent_id: int
     reason: StopReason

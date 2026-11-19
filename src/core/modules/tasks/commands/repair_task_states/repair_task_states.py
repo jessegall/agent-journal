@@ -7,3 +7,5 @@ from engine.command.command import Command
 class RepairTaskStates(Command[int]):
     """Repairs task states that should never exist: a wait on a task that has ended, and a holder left on an
     open task; answers how many it repaired."""
+
+    lock = True

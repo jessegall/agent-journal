@@ -16,8 +16,6 @@ class DispatchWorker(Command[WorkerLaunch]):
     may give it the session of a program that is not started, so the hooks of that session are the
     worker's. A worker that takes another's place goes on in the stopped worker's open worktree instead."""
 
-    lock = False
-
     task_id: int
     library_links: tuple[str, ...] = ()
     library_copies: tuple[str, ...] = ()

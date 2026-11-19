@@ -7,5 +7,7 @@ from engine.command.command import Command
 class ReadNextMerge(Command[str]):
     """The merger reads the next worker waiting, with its tasks, proofs and log lines."""
 
+    lock = True
+
     process_id: int | None = None
     json_output: bool = False

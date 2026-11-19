@@ -8,4 +8,6 @@ from core.modules.documents.models.doc_revision import DocRevision
 class KeepRevision(Command[DocRevision]):
     """Saves and closes a document's open revision."""
 
+    lock = True
+
     doc_id: int

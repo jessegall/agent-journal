@@ -1,4 +1,3 @@
-from engine.actor.actor import Actor
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.repository.repository import Repository
@@ -11,12 +10,11 @@ from suites.coding.modules.workers.commands.ask_merge.ask_merge import AskMerge
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.merge_ask import MergeAsk
 from suites.coding.modules.workers.support.merge_ask_outcome import MergeAskOutcome
-from suites.coding.modules.workers.support.merge_ask_scope import MergeAskScope
 from suites.coding.modules.workers.support.worker_free_task import WorkerFreeTask
 
 
 class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
-    """Records a worker's ask for the merge of its whole unit after the checks of MergeAskScope, and delivers
+    """Records a worker's ask for the merge of its whole unit after the checks MergeAskScope made before this write, and delivers
     its worktree ready for the merge, which starts the merger. Just before, while the worktree is still cut so
     the task is not sent at once, it gives the worker the next free task it may take once the merge is done;
     the ask names its tasks before that, so the free task is never part of it.
@@ -26,15 +24,12 @@ class AskMergeHandler(Handler[AskMerge, MergeAskOutcome]):
     command = AskMerge
     disabled_scopes = [ActorScope]
 
-    def __init__(self, scope: MergeAskScope, repository: Repository, settings: SettingValues, main_line: MainAgentLine, free_task: WorkerFreeTask) -> None:
-        self.scope, self.repository, self.settings, self.main_line = scope, repository, settings, main_line
+    def __init__(self, repository: Repository, settings: SettingValues, main_line: MainAgentLine, free_task: WorkerFreeTask) -> None:
+        self.repository, self.settings, self.main_line = repository, settings, main_line
         self.free_task = free_task
 
-    def check_rows(self, command: AskMerge, actor: Actor) -> None:
-        self.scope.checked(command.worker_id, command.note, command.last_task)
-
     def handle(self, command: AskMerge, context: Context) -> MergeAskOutcome:
-        part = self.scope.checked(command.worker_id, command.note, command.last_task)
+        part = command.part
         task_ids = ",".join(str(task_id) for task_id in part.task_ids)
         merge_request = self.repository.save(MergeAsk(creator_id=context.actor.id, worktree_id=part.worktree.id, commit_id=part.commit_id, task_ids=task_ids, unit_name=part.unit.merge_name,
                                                   note=command.note, is_full=part.is_full), context)

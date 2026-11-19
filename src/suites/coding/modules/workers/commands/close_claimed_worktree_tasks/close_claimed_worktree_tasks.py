@@ -9,5 +9,4 @@ class CloseClaimedWorktreeTasks(Command[bool]):
     hand: its tasks close as merged, its folder goes and its worker goes on. Says whether it was closed. It holds no
     write turn of its own, so its git runs while no other write waits; each record it makes is a write of its own."""
 
-    lock = False
     worktree_id: int

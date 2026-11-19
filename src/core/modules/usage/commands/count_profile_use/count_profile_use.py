@@ -7,4 +7,6 @@ from engine.command.command import Command
 class CountProfileUse(Command[None]):
     """A subagent was started under this profile."""
 
+    lock = True
+
     profile: str

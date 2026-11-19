@@ -9,4 +9,6 @@ class ClaimAgentWake(Command[AgentWake | None]):
     """Takes one due wake obligation through its next move, in its own write (doc 1310 section 6.4): the claimed row
     when the owner may now send it, or nothing."""
 
+    lock = True
+
     wake_id: int

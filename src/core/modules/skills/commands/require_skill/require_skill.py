@@ -8,5 +8,7 @@ from core.modules.skills.models.agent_skill import AgentSkill
 class RequireSkill(Command[AgentSkill]):
     """Makes a skill due for an agent, unless the agent holds the skill's current text loaded."""
 
+    lock = True
+
     agent_id: int
     skill: str

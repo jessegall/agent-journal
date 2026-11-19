@@ -10,6 +10,8 @@ from core.modules.messages.models.message import Message
 class CommentText(Command[Message]):
     """Writes a comment linked to a model row, with an optional selection for a document or report."""
 
+    lock = True
+
     text_model: type[Model]
     row_id: int
     text: str

@@ -9,6 +9,7 @@ from engine.subcommand.subcommand import Subcommand
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.ask_merge.ask_merge import AskMerge
 from suites.coding.modules.workers.support.merge_ask_outcome import MergeAskOutcome
+from suites.coding.modules.workers.support.merge_ask_scope import MergeAskScope
 
 
 class AskMergeSubcommand(Subcommand[AskMerge, MergeAskOutcome]):
@@ -19,8 +20,8 @@ class AskMergeSubcommand(Subcommand[AskMerge, MergeAskOutcome]):
     name = "ask-merge"
     external = True
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, scope: MergeAskScope) -> None:
+        self.queries, self.scope = queries, scope
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("note", help="what the merge contains, what you changed from the briefs and what you could not check")
@@ -29,7 +30,7 @@ class AskMergeSubcommand(Subcommand[AskMerge, MergeAskOutcome]):
     def command(self, arguments: Namespace, caller: Caller) -> AskMerge:
         if not self.queries.query(Agent).filter(id=caller.actor.id, role=Worker.key).exists():
             raise Refusal("journal worker ask-merge is for workers", "journal worker merge merges a worker's work")
-        return AskMerge(caller.actor.id, arguments.note, arguments.up_to)
+        return AskMerge(caller.actor.id, arguments.note, self.scope.checked(caller.actor.id, arguments.note, arguments.up_to))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MergeAskOutcome):

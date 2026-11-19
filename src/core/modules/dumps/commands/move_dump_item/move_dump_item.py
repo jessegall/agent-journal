@@ -9,6 +9,8 @@ class MoveDumpItem(Command[DumpLine]):
     """Notes an item of a dump, or files it with the rows it became, or fails it with the reason; the dump
     closes when every item is filed or failed."""
 
+    lock = True
+
     dump_id: int
     item: str
     action: str

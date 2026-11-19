@@ -9,6 +9,8 @@ class RecordWorktreeMerge(Command[MergeOutcome]):
     """Saves what a merge's git work came to: the worktree is merged, or its clashing files go back to the worker. A
     reason, when given, is what every delivered task closes with."""
 
+    lock = True
+
     worktree_id: int
     conflicts: tuple[str, ...]
     commit_before_merge: str = ""

@@ -7,8 +7,6 @@ from engine.command.command import Command
 class RecordAgentNotice(Command[None]):
     """Stores an agent notice for reading by its row number."""
 
-    lock = False
-
     agent_id: int
     text: str
     source: str

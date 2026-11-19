@@ -10,4 +10,6 @@ class RecordRequestRuns(Command[None]):
     """Writes the rows of the journal commands and viewer requests of one environment that the request log held,
     and prunes the oldest rows past the newest kept."""
 
+    lock = True
+
     entries: Sequence[RequestLogEntry]

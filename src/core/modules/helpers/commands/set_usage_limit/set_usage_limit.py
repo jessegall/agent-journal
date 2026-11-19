@@ -11,6 +11,8 @@ class SetUsageLimit(Command[UsageLimit]):
     """Sets a user's limit on a program's plan allowance, for a window; a budget counts from what the window
     holds now."""
 
+    lock = True
+
     program: str
     window: UsageLimitWindow
     mode: UsageLimitMode

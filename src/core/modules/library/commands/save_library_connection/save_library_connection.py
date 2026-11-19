@@ -9,6 +9,8 @@ from core.modules.library.models.library_connection import LibraryConnection
 class SaveLibraryConnection(Command[LibraryConnection]):
     """Writes the connection to a shared server after the server accepted the token, and clears why sync stopped."""
 
+    lock = True
+
     address_text: str
     address: str
     server_key: str

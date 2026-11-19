@@ -7,5 +7,7 @@ from core.modules.plans.models.phase_task import PhaseTask
 class PlacePhase(Command[PhaseTask]):
     """Places a task at the end of a phase, taking it out of the phase it was in."""
 
+    lock = True
+
     task_id: int
     phase_id: int

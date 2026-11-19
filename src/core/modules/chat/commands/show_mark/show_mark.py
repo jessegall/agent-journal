@@ -10,6 +10,8 @@ from core.modules.chat.models.chat_mark import ChatMark
 class ShowMark(Command[ChatMark]):
     """Shows a mark in an environment's chat, or brings the shown mark with the same key up to date."""
 
+    lock = True
+
     type: StrEnum
     variant: StrEnum
     key: str

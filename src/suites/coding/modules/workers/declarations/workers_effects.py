@@ -6,10 +6,9 @@ from suites.coding.modules.workers.effects.inactive_helper_effect import Inactiv
 from suites.coding.modules.workers.effects.inactive_worker_stop_effect import InactiveWorkerStopEffect
 from suites.coding.modules.workers.effects.merge_job_report_effect import MergeJobReportEffect
 from suites.coding.modules.workers.effects.missing_process_effect import MissingProcessEffect
-from suites.coding.modules.workers.effects.orphan_worktree_effect import OrphanWorktreeEffect
 from suites.coding.modules.workers.effects.phase_test_effect import PhaseTestEffect
 from suites.coding.modules.workers.effects.record_todo_list_effect import RecordTodoListEffect
 from suites.coding.modules.workers.effects.unmerged_worker_effect import UnmergedWorkerEffect
 from suites.coding.modules.workers.effects.worker_report_effect import WorkerReportEffect
 
-WORKERS_EFFECTS = [HandedTaskEffect, FullContextCompactionEffect, WorkerReportEffect, OrphanWorktreeEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]
+WORKERS_EFFECTS = [HandedTaskEffect, FullContextCompactionEffect, WorkerReportEffect, MissingProcessEffect, InactiveWorkerStopEffect, CacheRefreshEffect, MergeJobReportEffect, RequestCompactionEffect, InactiveHelperEffect, PhaseTestEffect, RecordTodoListEffect, UnmergedWorkerEffect]

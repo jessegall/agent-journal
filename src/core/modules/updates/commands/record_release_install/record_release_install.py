@@ -9,6 +9,8 @@ from core.modules.updates.models.release_install import ReleaseInstall
 class RecordReleaseInstall(Command[ReleaseInstall]):
     """Records an installation step and its failure reason when it fails."""
 
+    lock = True
+
     install_id: int
     step: UpdateStep
     detail: str = ""

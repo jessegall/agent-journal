@@ -8,4 +8,6 @@ from core.modules.processes.models.reader import Reader
 class ChooseDefaultReader(Command[Reader]):
     """Makes the reader the default of its commands, in place of the one that was."""
 
+    lock = True
+
     name: str

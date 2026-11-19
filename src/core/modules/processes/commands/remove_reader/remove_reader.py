@@ -8,4 +8,6 @@ from core.modules.processes.models.reader import Reader
 class RemoveReader(Command[Reader]):
     """Removes the reader of that name."""
 
+    lock = True
+
     name: str

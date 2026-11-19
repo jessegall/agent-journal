@@ -8,5 +8,7 @@ from engine.execution.classes.execution_class import ExecutionClass
 class SaveExecutionClass(Command[str]):
     """Keeps a class the person added, or the person's change to a built-in class, for the next line it holds."""
 
+    lock = True
+
     execution_class: ExecutionClass
     is_override: bool

@@ -9,6 +9,8 @@ class AddReader(Command[Reader]):
     """Adds a reader, or changes the fields given of the one that has the name; a field left out stays as it
     was."""
 
+    lock = True
+
     name: str
     commands: str = ""
     lines: str = ""

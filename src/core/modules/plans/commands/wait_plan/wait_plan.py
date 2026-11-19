@@ -6,6 +6,8 @@ from core.modules.plans.models.plan import Plan
 
 @dataclass(frozen=True)
 class WaitPlan(Command[Plan]):
+    lock = True
+
     plan_id: int
     reason: str
     targets: tuple[str, ...]

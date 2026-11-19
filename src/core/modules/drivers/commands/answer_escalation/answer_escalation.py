@@ -9,5 +9,7 @@ class AnswerEscalation(Command[AgentEscalation]):
     """The responder's answer to an escalation: the agent goes on with these words, its deferrals and counts
     cleared."""
 
+    lock = True
+
     escalation_id: int
     text: str

@@ -10,6 +10,8 @@ from core.modules.helpers.support.helper_started import HelperStarted
 class StartHelper(Command[HelperStarted]):
     """Starts a helper of a profile on a job."""
 
+    lock = True
+
     profile: str
     brief: str
     program: str = ""

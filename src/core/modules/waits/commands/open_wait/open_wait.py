@@ -10,6 +10,8 @@ from core.modules.waits.models.enums.wait_type import WaitType
 class OpenWait(Command[Wait]):
     """Opens a wait of the calling agent: on rows named table:id, or a report that it is stuck."""
 
+    lock = True
+
     type: WaitType
     focus: str
     targets: Sequence[str] = ()

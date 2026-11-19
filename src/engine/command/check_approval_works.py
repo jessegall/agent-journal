@@ -8,7 +8,5 @@ from engine.command.errors.user_approval_refusal import UserApprovalRefusal
 class CheckApprovalWorks(Command[None]):
     """Tries the action an approval would run, as the user who would accept it, and keeps nothing."""
 
-    lock = False
-
     approval: UserApprovalRefusal
     arguments: tuple[str, ...]

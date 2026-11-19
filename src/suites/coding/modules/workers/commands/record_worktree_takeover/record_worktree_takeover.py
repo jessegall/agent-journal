@@ -9,6 +9,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 class RecordWorktreeTakeover(Command[Worktree], TasksChangedTogether):
     """Gives a stopped worker's open worktree to a new worker, with the tasks and the plan the stopped worker held,
     so the new worker goes on where the stopped one left off: its commits, proofs and files stay as they were."""
+    lock = True
 
     worktree_id: int
     worker_id: int

@@ -9,6 +9,8 @@ class RecordReminderPasses(Command[ReminderPass]):
     """Keeps how many times in a row an agent let a reminder pass for each thing it named; 0 starts that count
     again."""
 
+    lock = True
+
     agent_id: int
     key: str
     counts: tuple[tuple[str, int], ...]

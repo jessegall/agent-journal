@@ -8,5 +8,7 @@ from suites.coding.modules.workers.support.worker_test_command_entry import Work
 class NameWorkerTests(Command[None]):
     """Gives a worker test commands by name, replacing a name it already has."""
 
+    lock = True
+
     worker_id: int
     commands: tuple[WorkerTestCommandEntry, ...]

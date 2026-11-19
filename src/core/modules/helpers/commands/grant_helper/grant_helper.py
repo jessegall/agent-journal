@@ -8,6 +8,8 @@ from core.modules.helpers.models.helper_grant import ALTERNATIVE_SEPARATOR, Help
 class GrantHelper(Command[HelperGrant]):
     """Says what one helper may run; a later grant for the same program replaces the earlier one."""
 
+    lock = True
+
     helper_id: int
     program: str
     subcommands: str

@@ -8,4 +8,3 @@ from core.modules.phone.commands.support.phone_invitation import PhoneInvitation
 class PairPhone(Command[PhoneInvitation]):
     """Gives the calling user a short code that pairs one phone with the viewer as them."""
 
-    lock = False

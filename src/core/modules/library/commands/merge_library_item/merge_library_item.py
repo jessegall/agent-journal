@@ -10,6 +10,8 @@ class MergeLibraryItem(Command[LibraryCopy]):
     """Brings the row of a copy to a newer version of its item and makes that version the new base. It is
     refused when the row changed since the round read it."""
 
+    lock = True
+
     copy_id: int
     item: LibraryItem
     row_version: int

@@ -12,8 +12,6 @@ class StartAgentProgram(Command[Dispatch]):
     with. The answer says whether it was started, runs already, is being started by another, failed or may not
     start. It takes no write lock, since a launcher can take seconds to answer."""
 
-    lock = False
-
     agent_id: int
     arguments: Sequence[str]
     folder: str

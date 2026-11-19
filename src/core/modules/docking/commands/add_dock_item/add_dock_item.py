@@ -9,6 +9,8 @@ class AddDockItem(Command[DockItem]):
     """Docks an item of a declared type above the chat of the environment in scope, within the limits of the
     type and the dock. A text given replaces the line the item reads from its row."""
 
+    lock = True
+
     type: str
     row_model: str
     row_id: int

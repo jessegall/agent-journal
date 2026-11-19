@@ -1,5 +1,6 @@
 import sqlite3
 from collections.abc import Callable, Sequence
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import fields, replace
 from typing import TypeVar
 
@@ -27,7 +28,8 @@ IDENTITY_FIELDS = (*BOOKKEEPING_FIELDS, "creator_id")
 
 class Repository:
     """Saves and deletes rows of any model: works out the change, asks the guards, writes it, logs it and runs
-    the listeners, all inside the command's transaction; update saves new values on a row just read, without
+    the listeners, all inside the command's transaction, or, for a command that takes no lock, inside a transaction
+    of that one save, so a row never lands without its event; update saves new values on a row just read, without
     reading it a second time; a change of only the metadata is saved by save_metadata alone."""
 
     def __init__(self, database: Database, tables: Tables, queries: Queries, guards: Guards, listeners: Listeners, log: EventLog,
@@ -42,7 +44,15 @@ class Repository:
     def update(self, stored: M, context: Context, **values: object) -> M:
         return self.save_change(stored, stored.changed(**values), context)
 
+    # the command's transaction when it took the lock, else a short one for this save alone
+    def one_save(self) -> AbstractContextManager[None]:
+        return nullcontext() if self.database.has_transaction else self.database.transaction()
+
     def insert_many(self, models: Sequence[M], context: Context) -> list[M]:
+        with self.one_save():
+            return self.inserted_many(models, context)
+
+    def inserted_many(self, models: Sequence[M], context: Context) -> list[M]:
         if not models:
             return []
         if any(type(model) is not type(models[0]) or model.is_saved for model in models):
@@ -58,6 +68,10 @@ class Repository:
         return saved_rows
 
     def update_many(self, stored_rows: Sequence[M], context: Context, **values: object) -> list[M]:
+        with self.one_save():
+            return self.updated_many(stored_rows, context, **values)
+
+    def updated_many(self, stored_rows: Sequence[M], context: Context, **values: object) -> list[M]:
         changes = [change for change in (Change(row, self.scopes.applied(row.changed(**values)), context) for row in stored_rows) if not change.is_empty]
         if len({(type(change.row), tuple(change.stored_fields)) for change in changes}) > 1:
             raise ValueError("update_many needs rows of one model that change the same fields")
@@ -89,10 +103,11 @@ class Repository:
         change = Change(stored, model, context)
         if change.is_empty and not (stores_metadata and change.has_metadata_change) and change.old_row is not None:
             return change.old_row
-        skipped = self.guards.helper_question(change)
-        saved = self.persist(model, change)
-        self.logged(saved, change, skipped)
-        return saved
+        with self.one_save():
+            skipped = self.guards.helper_question(change)
+            saved = self.persist(model, change)
+            self.logged(saved, change, skipped)
+            return saved
 
     def merge(self, existing: M | None, model: M, context: Context) -> M:
         if existing is None:
@@ -112,16 +127,18 @@ class Repository:
         if any(type(model) is not type(models[0]) for model in models):
             raise ValueError("delete_many_stored needs rows of the same model")
         changes = [Change(model, None, context) for model in models]
-        skipped = [self.guards.helper_question(change) for change in changes]
-        self.listeners.run_deletion_listeners_many(changes)
-        for model, change, skipped_guards in zip(models, changes, skipped, strict=True):
-            self.remove_stored(model, change, skipped_guards)
+        with self.one_save():
+            skipped = [self.guards.helper_question(change) for change in changes]
+            self.listeners.run_deletion_listeners_many(changes)
+            for model, change, skipped_guards in zip(models, changes, skipped, strict=True):
+                self.remove_stored(model, change, skipped_guards)
 
     def delete_change(self, stored: Model | None, model: Model, context: Context) -> None:
         change: Change[Model] = Change(stored, None, context)
-        skipped = self.guards.helper_question(change)
-        self.listeners.run_deletion_listeners(change)
-        self.remove_stored(model, change, skipped)
+        with self.one_save():
+            skipped = self.guards.helper_question(change)
+            self.listeners.run_deletion_listeners(change)
+            self.remove_stored(model, change, skipped)
 
     def remove_stored(self, model: Model, change: Change[Model], skipped: frozenset[str]) -> None:
         table = self.tables.table(type(model))

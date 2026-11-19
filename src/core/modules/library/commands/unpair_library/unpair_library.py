@@ -9,4 +9,6 @@ class UnpairLibrary(Command[LibraryDisconnection]):
     """Removes the token and stops sync; the copies stay and wait, or go with the connection when include_copies
     is set."""
 
+    lock = True
+
     include_copies: bool = False

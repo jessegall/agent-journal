@@ -9,8 +9,6 @@ class PrepareWorktree(Command[None]):
     the environment named in it, with the links and copies the order adds to the environment's own. A
     profile names the one whose instruction files the worktree gets."""
 
-    lock = False
-
     folder: str
     source: str
     environment: str

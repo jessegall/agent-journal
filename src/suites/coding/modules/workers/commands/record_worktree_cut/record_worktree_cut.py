@@ -10,6 +10,7 @@ from suites.coding.modules.workers.support.task_source_copy import TaskSourceCop
 class RecordWorktreeCut(Command[Worktree], TasksChangedTogether):
     """Saves that git cut a worktree and it is prepared, delegates the dispatched tasks to its worker and starts
     the first."""
+    lock = True
 
     worktree_id: int
     base_commit: str

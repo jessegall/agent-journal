@@ -7,4 +7,3 @@ from engine.command.command import Command
 class ResetHookNumbers(Command[None]):
     """Starts the developer's counts of what hooks cost again."""
 
-    lock = False

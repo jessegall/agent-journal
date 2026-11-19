@@ -9,8 +9,6 @@ LIMIT_WARNING_SOURCE = "helpers.limit-warning"
 class SendHelperLimitWarning(Command[None]):
     """Tells a parent its helper is near a limit."""
 
-    lock = False
-
     helper_id: int
     parent_id: int
     job_id: int

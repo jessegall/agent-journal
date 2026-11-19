@@ -9,7 +9,5 @@ from core.modules.library.support.library_user import LibraryUser
 class SetLibraryRole(Command[LibraryUser]):
     """Gives a user of the shared server another role."""
 
-    lock = False
-
     user_id: int
     role: LibraryRole

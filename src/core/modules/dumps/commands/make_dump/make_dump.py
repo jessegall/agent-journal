@@ -8,6 +8,8 @@ from core.modules.dumps.models.dump import Dump
 class MakeDump(Command[Dump]):
     """Creates a project dump with an item for each part or the whole brief."""
 
+    lock = True
+
     brief: str
     parts: tuple[str, ...] = ()
     files: tuple[str, ...] = ()

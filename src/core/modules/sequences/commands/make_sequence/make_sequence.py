@@ -9,8 +9,6 @@ from core.modules.sequences.models.sequence import Sequence
 class MakeSequence(Command[Sequence]):
     """Writes a sequence with its title and its steps in order."""
 
-    lock = False
-
     title: str
     steps: Steps[str]
     triggers: str = "[]"

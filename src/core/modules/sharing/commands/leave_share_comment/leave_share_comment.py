@@ -8,6 +8,8 @@ from core.modules.sharing.models.share_comment import ShareComment
 class LeaveShareComment(Command[ShareComment]):
     """A visitor comments on what a link shows, under a name of their own."""
 
+    lock = True
+
     link_id: int
     visitor_name: str
     text: str

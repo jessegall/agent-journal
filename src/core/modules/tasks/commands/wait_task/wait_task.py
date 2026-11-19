@@ -6,6 +6,8 @@ from core.modules.tasks.models.task import Task
 
 @dataclass(frozen=True)
 class WaitTask(Command[Task]):
+    lock = True
+
     task_id: int
     reason: str
     targets: tuple[str, ...]

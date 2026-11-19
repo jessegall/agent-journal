@@ -10,5 +10,7 @@ class EndStalledProofRun(Command[None]):
     """Ends the test run of a proof that has run longer than the limit, records it as failed, and tells the worker
     and the merger."""
 
+    lock = True
+
     proof_id: int
     minutes: int

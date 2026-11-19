@@ -11,6 +11,8 @@ from core.modules.drivers.support.assembled_step import AssembledStep
 class RecordHookCall(Command[HookReply]):
     """Keeps what the rules answered about one hook of an agent, and answers the hook."""
 
+    lock = True
+
     event: HookEvent
     agent_id: int
     answers: RuleAnswers

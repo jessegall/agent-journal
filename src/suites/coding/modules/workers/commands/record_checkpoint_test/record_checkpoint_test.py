@@ -7,5 +7,7 @@ from engine.command.command import Command
 class RecordCheckpointTest(Command[None]):
     """Records how the process of a test of a checkpoint run ended."""
 
+    lock = True
+
     test_id: int
     passed: bool

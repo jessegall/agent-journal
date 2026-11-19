@@ -8,9 +8,12 @@ from engine.command.errors.command_error import CommandError
 R = TypeVar("R", covariant=True)
 @dataclass(frozen=True)
 class Command(Generic[R]):
-    """A request to change something, holding only the data the request needs."""
+    """A request to change something, holding only the data the request needs. A command takes no lock: each save
+    it makes is a short write of its own. A command whose own saves must land together, or that refuses after a
+    save, opts in with lock = True and then holds the write turn for its whole handler, so it does no git, file or
+    program work there."""
 
-    lock: ClassVar[bool] = True
+    lock: ClassVar[bool] = False
 
     @classmethod
     def label(cls) -> str:

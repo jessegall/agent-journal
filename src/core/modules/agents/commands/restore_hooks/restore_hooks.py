@@ -7,4 +7,3 @@ from engine.command.command import Command
 class RestoreHooks(Command[int]):
     """Restores every managed project hook to its source file."""
 
-    lock = False

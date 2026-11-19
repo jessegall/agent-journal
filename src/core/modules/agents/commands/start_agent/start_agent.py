@@ -13,6 +13,8 @@ class StartAgent(Command[Agent]):
     session of an environment that has a main agent runs on that agent's row. A session that announces itself
     with its first hook says so, and reads as running from then on."""
 
+    lock = True
+
     session: str
     program: str
     role: str

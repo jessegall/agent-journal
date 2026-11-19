@@ -9,8 +9,6 @@ class RunPluginCommand(Command[PluginCommandRun]):
     """Runs a shell line at the root of the checkout of an agent, for a plugin or a user; a run of a kind the
     plugin declares is queued as that kind."""
 
-    lock = False
-
     agent_id: int
     line: str
     is_readonly: bool

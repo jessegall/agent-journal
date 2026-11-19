@@ -8,6 +8,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 @dataclass(frozen=True)
 class RecordWorktreeRelease(Command[Worktree], TasksChangedTogether):
     """Saves that a worker is taken off its work: its worktree is abandoned and its tasks are released."""
+    lock = True
 
     worktree_id: int
     reason: str

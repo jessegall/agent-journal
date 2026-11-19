@@ -8,6 +8,8 @@ from core.modules.skills.models.agent_skill import AgentSkill
 class LoadSkill(Command[AgentSkill]):
     """Marks a skill loaded for an agent, with the digest of the text it read."""
 
+    lock = True
+
     agent_id: int
     skill: str
     digest: str

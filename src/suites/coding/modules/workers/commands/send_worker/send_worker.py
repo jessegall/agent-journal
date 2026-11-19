@@ -9,6 +9,8 @@ from core.modules.drivers.models.agent_line import AgentLine
 
 @dataclass(frozen=True)
 class SendWorker(Command[AgentLine], TasksChangedTogether):
+    lock = True
+
     worker_id: int
     job: str = ""
     task_ids: tuple[int, ...] = ()

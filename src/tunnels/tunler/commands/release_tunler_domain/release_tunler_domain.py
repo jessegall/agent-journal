@@ -7,6 +7,4 @@ from engine.command.command import Command
 class ReleaseTunlerDomain(Command[str]):
     """Takes a domain off the logged-in tunler account, so anyone can claim it."""
 
-    lock = False
-
     domain: str

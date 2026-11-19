@@ -7,4 +7,3 @@ from engine.command.command import Command
 class LogoutTunler(Command[str]):
     """Logs this machine out of tunler and stops the tunnel it keeps open."""
 
-    lock = False

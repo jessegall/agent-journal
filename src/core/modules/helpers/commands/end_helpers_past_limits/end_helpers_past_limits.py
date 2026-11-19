@@ -7,4 +7,3 @@ from engine.command.command import Command
 class EndHelpersPastLimits(Command[None]):
     """Warns about each helper near its time or cost limit, and stops each one past it."""
 
-    lock = False

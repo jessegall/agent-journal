@@ -9,6 +9,8 @@ class SendMessage(Command[Message]):
     message; the files are uploaded ones it takes along; a comment names the row it is on, as a model and a
     number."""
 
+    lock = True
+
     text: str
     parent_id: int | None = None
     files: tuple[str, ...] = ()

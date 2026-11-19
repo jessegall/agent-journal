@@ -8,6 +8,8 @@ from core.modules.drivers.models.driver_grant import DriverGrant
 class AnswerRefusalSkip(Command[DriverGrant]):
     """The agent's final answer to its held skip: confirmed, with what it tried instead, or withdrawn."""
 
+    lock = True
+
     skip_id: int
     is_confirmed: bool
     tried: str = ""

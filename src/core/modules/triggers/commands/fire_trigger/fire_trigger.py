@@ -8,4 +8,6 @@ from core.modules.triggers.models.trigger import Trigger
 class FireTrigger(Command[Trigger]):
     """Notes that a scheduled trigger gave its text, and sets its next time or ends it."""
 
+    lock = True
+
     trigger_id: int

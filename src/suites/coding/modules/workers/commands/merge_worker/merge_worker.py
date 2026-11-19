@@ -9,8 +9,6 @@ class MergeWorker(Command[MergeOutcome]):
     """Takes a worker's checked work into the environment's branch, or sends it back to the worker on a clash.
     """
 
-    lock = False
-
     worker_id: int
     important_answer: str = ""
     reconciled: str = ""

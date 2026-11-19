@@ -7,6 +7,4 @@ from engine.command.command import Command
 class InstallTunler(Command[str]):
     """Installs tunler on this machine from a tunler server."""
 
-    lock = False
-
     server: str

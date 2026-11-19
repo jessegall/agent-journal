@@ -13,6 +13,8 @@ class MoveSequenceRun(Command[SequenceLine]):
     undone. End closes the run named by run_id, or the top one, when what it was about has reached its end;
     subject_id is the row that started the run."""
 
+    lock = True
+
     action: str
     sequence_id: int | None = None
     reason: str = ""

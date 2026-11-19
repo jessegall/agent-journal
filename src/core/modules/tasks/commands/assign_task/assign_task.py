@@ -8,5 +8,7 @@ from core.modules.tasks.models.task import Task
 class AssignTask(Command[Task]):
     """Gives a task to an actor: a user or an agent."""
 
+    lock = True
+
     task_id: int
     actor_id: int

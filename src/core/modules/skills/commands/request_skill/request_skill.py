@@ -8,7 +8,5 @@ from core.modules.skills.models.skill_request import SkillRequest
 class RequestSkill(Command[SkillRequest]):
     """Asks that an agent read a skill; the skills module makes it due once the request is saved."""
 
-    lock = False
-
     agent_id: int
     skill: str

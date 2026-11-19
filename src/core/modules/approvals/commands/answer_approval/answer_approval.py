@@ -8,8 +8,6 @@ from core.modules.approvals.support.approval_result import ApprovalResult
 
 @dataclass(frozen=True)
 class AnswerApproval(Command[ApprovalResult]):
-    lock = False
-
     row_id: int
     decision: ApprovalDecision
     saved: SavedScope | None = None

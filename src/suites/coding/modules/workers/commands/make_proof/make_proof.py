@@ -9,6 +9,8 @@ class MakeProof(Command[Proof]):
     """Shows how a worker met one point of its task's brief, or shows it again after it was sent back short.
     """
 
+    lock = True
+
     point: int
     text: str
     task_id: int

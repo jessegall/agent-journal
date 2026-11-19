@@ -6,6 +6,4 @@ from suites.coding.modules.workers.models.worker_operation import WorkerOperatio
 
 @dataclass(frozen=True)
 class RunWorkerOperation(Command[str]):
-    lock = False
-
     operation: WorkerOperation

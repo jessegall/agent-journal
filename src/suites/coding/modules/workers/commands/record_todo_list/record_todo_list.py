@@ -8,5 +8,7 @@ from suites.coding.modules.workers.models.enums.todo_state import TodoState
 class RecordTodoList(Command[int]):
     """Records the to-do list an agent program just wrote, in place of the one it had."""
 
+    lock = True
+
     agent_id: int
     items: tuple[tuple[str, TodoState], ...]

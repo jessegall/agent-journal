@@ -8,6 +8,8 @@ from core.modules.memories.models.memory import Memory
 class MakeMemory(Command[Memory]):
     """Makes a memory that belongs to the agent that runs it, with its keywords."""
 
+    lock = True
+
     text: str
     weight: int | None = None
     keywords: tuple[str, ...] = ()

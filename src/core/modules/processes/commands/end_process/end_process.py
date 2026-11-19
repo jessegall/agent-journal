@@ -9,6 +9,8 @@ class EndProcess(Command[Process]):
     """Ends a process finished on exit code 0 or failed on another, and keeps its output unless the run was
     short."""
 
+    lock = True
+
     row_id: int
     exit_code: int
     byte_count: int

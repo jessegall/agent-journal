@@ -7,4 +7,3 @@ from engine.command.command import Command
 class UpdateTunler(Command[str]):
     """Updates the tunler program to the newest its server offers."""
 
-    lock = False

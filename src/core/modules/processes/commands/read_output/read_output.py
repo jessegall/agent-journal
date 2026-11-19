@@ -8,6 +8,8 @@ from core.modules.processes.commands.support.output_lines import OutputLines
 class ReadOutput(Command[OutputLines]):
     """Reads what a run printed in one way: summary, all, lines, tail or reader; the output counts as read."""
 
+    lock = True
+
     process_id: int
     summary: bool = False
     all: bool = False

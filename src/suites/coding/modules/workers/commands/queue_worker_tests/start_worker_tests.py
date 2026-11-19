@@ -9,4 +9,6 @@ class StartWorkerTests(Command[None]):
     """Starts the worker tests planned, with their checkouts made, before this write; the run queue decides how
     many run at once."""
 
+    lock = True
+
     plan: WorkerTestPlan
