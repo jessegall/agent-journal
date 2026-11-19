@@ -16,6 +16,7 @@ use App\Agents\Exceptions\LaunchRequestConflict;
 use App\Agents\Exceptions\SessionSelectionFixed;
 use App\Agents\Models\Agent;
 use App\Agents\Models\LaunchRecord;
+use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\ProfileDefaults;
@@ -110,6 +111,6 @@ final class LaunchRecordTest extends TestCase
     {
         $origin = $owner === null ? LaunchOriginType::MainLaunch : LaunchOriginType::OwnerRequest;
 
-        return new LaunchRequest($requestId, $agent->id, SelectedProgram::resolve('claude-code', $model, null, null), $origin, $owner, null, ConversationModeType::New, null, TestSelections::onHost());
+        return new LaunchRequest($requestId, $agent->id, SelectedProgram::resolve('claude-code', $model, null, null), $origin, $owner, null, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
     }
 }

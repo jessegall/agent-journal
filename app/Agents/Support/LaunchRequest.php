@@ -22,8 +22,13 @@ final readonly class LaunchRequest
         public string|null $contextReference,
         public ConversationModeType $conversationMode,
         public string|null $parentSessionId,
-        public ExecutionPolicy $execution,
+        public LaunchPolicy $policy,
     ) {}
+
+    public function execution(): ExecutionPolicy
+    {
+        return $this->policy->execution;
+    }
 
     /**
      * The fingerprint of everything the request asks, so a repeat under the same id can be told from a changed one.
@@ -47,8 +52,7 @@ final readonly class LaunchRequest
             $this->contextReference,
             $this->conversationMode->value,
             $this->parentSessionId,
-            $this->execution->mode->value,
-            $this->execution->imageReference,
+            $this->policy->digest(),
         ], JSON_THROW_ON_ERROR));
     }
 }

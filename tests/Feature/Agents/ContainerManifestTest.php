@@ -22,6 +22,7 @@ use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\PreparedLaunch;
@@ -137,7 +138,7 @@ final class ContainerManifestTest extends TestCase
     {
         $agent = Agent::named('Builder', 'writing-helper');
 
-        return new LaunchRequest(TestSelections::requestId(), $agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, 'helpers.job 1', null, ConversationModeType::New, null, $this->policy());
+        return new LaunchRequest(TestSelections::requestId(), $agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, 'helpers.job 1', null, ConversationModeType::New, null, LaunchPolicy::withoutProfile($this->policy()));
     }
 
     private function launch(LaunchRequest $request): mixed
