@@ -318,6 +318,7 @@ use App\Assignments\Support\PoolReference;
 use App\Assignments\Support\RecordIds;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\OneLine;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -1434,6 +1435,7 @@ final class CoreApi
                 AssignmentHolders::class,
                 AssignmentHolder::class,
                 HandledBy::class,
+                OneLine::class,
                 RepeatableRead::class,
                 RequiresRequestKey::class,
                 RetainedActorRequestKey::class,
