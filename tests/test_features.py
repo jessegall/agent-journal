@@ -7478,7 +7478,7 @@ def test_a_brief_branch_only_origin_holds_is_fetched_and_checked_out_and_a_repos
     git_run(app.config.root.parent, "clone", "-q", "--bare", str(root / "platform"), str(origin))
     git_run(root / "platform", "branch", "-D", "feature/payroll-v2")
     git_run(root / "platform", "remote", "add", "origin", str(origin))
-    _, folder, _ = worktree_worker(app, monkeypatch, "platform and mobile, on feature/payroll-v2")
+    _, folder, _ = worktree_worker(app, monkeypatch, "Repositories: platform, mobile, on feature/payroll-v2")
     assert (folder / "platform" / "payroll.php").is_file(), "fetched from origin and cut from it"
     assert (folder / "mobile" / "app.php").is_file() and git_run(root / "mobile", "rev-parse", "--verify", "-q", "refs/heads/feature/payroll-v2").returncode != 0, "mobile, without the branch, is cut from its own checkout"
 
@@ -7521,3 +7521,15 @@ def test_a_brief_branch_is_checked_out_from_a_checkout_cloned_with_main_only(app
     git_run(root / "platform", "remote", "add", "-t", "main", "origin", str(origin))
     _, folder, _ = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2.")
     assert (folder / "platform" / "payroll.php").is_file(), "the base is made from the fetched ref and the worker cut from it"
+
+
+def test_a_release_line_a_brief_tells_about_is_no_base(app: App, monkeypatch):
+    """Task briefs tell where things stand ("merged on release/0.5", "fails on release/0.6"): the first build after the base
+    branches took every "on <branch>" as one and made a base of release/0.5 (19 Nov)."""
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "release/0.5")
+    committed(root / "platform", "release.php", "<?php\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    _, folder, _ = worktree_worker(app, monkeypatch, "platform: built and merged on release/0.5 through task 3762; check 2174 fails on release/0.5. Base the carry on main.")
+    assert not (folder / "platform" / "release.php").exists(), "told about, release/0.5 is no base"
+    assert not (app.config.home / "bases").exists()

@@ -28,9 +28,10 @@ AUTOSTASH = "autostash"
 REBASE_STEPS = "fix only the files that clash, keeping both sides' changes and removing every conflict marker; never run git, since the journal adds them and goes on with the rebase when you clock out"
 CONFLICT_MARKER = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
 REBUILD_SUBJECT = "Build the built files again on the project's branch"
-# a brief that names the branch its work is on ("platform, on feature/payroll-v2", "base: fix/totals") gives each inner repository
-# holding that branch a checkout of it, which the worker's branch is cut from and its commits are merged into
-BRIEF_BRANCH = re.compile(r"(?:\bon|\bbase:?|\bbranch:?)\s+`?((?:feature|fix|hotfix|bugfix|release|stage|chore)/[\w.\-/]*[\w-])`?", re.IGNORECASE)
+# a brief that names the branch its work is on, in its repositories sentence ("Repositories: platform, on feature/payroll-v2")
+# or after "base:" / "base branch:", gives each inner repository holding that branch a checkout of it, which the worker's branch
+# is cut from and its commits are merged into; a branch a brief only tells about ("merged on release/0.5") is none
+BRIEF_BRANCH = re.compile(r"(?:\brepositories:[^.\n]*?\bon|\bbase(?:\s+branch)?:)\s+`?((?:feature|fix|hotfix|bugfix|release|stage|chore)/[\w.\-/]*[\w-])`?", re.IGNORECASE)
 BASES = "bases"
 
 
