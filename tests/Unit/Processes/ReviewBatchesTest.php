@@ -27,7 +27,7 @@ final class ReviewBatchesTest extends TestCase
 
     public function test_no_batch_exceeds_its_count_or_character_cap(): void
     {
-        $shapes = array_map(fn (int $index): CommandShape => $this->shape("shape-{$index}", 900), range(1, 50));
+        $shapes = array_map(fn (int $index) => $this->shape("shape-{$index}", 900), range(1, 50));
 
         $batches = ReviewBatches::of($shapes);
 

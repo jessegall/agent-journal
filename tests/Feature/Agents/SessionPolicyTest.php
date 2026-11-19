@@ -16,9 +16,8 @@ use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -27,16 +26,8 @@ use Tests\TestCase;
  */
 final class SessionPolicyTest extends TestCase
 {
-    use ActsAsOwner;
     use RefreshHookDatabase;
-    use StartsAgentRequests;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->startUserRequestAs($this->owner->id);
-    }
+    use StartsOwnerRequest;
 
     public function test_a_launch_freezes_its_policy_with_its_session(): void
     {

@@ -116,7 +116,7 @@ class DomainServiceProvider extends ServiceProvider
      */
     protected function domainClasses(): array
     {
-        return require $this->app->basePath('bootstrap/domains.php');
+        return DomainRegistry::installedClasses($this->app->basePath());
     }
 
     /**

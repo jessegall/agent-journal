@@ -37,7 +37,7 @@ final class PreparedCallTest extends TestCase
         $client->sendPrepared($call, ['Mcp-Method' => 'ping'], $deadline);
         $client->sendPrepared($call, ['Mcp-Method' => 'ping'], $deadline);
 
-        $sent = Http::recorded()->map(fn (array $pair): array => [
+        $sent = Http::recorded()->map(fn (array $pair) => [
             $pair[0]->url(),
             $pair[0]->body(),
             $pair[0]->header(SignedCall::ID_HEADER),

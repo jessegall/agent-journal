@@ -93,8 +93,7 @@ final class RegisteredModuleTest extends TestCase
 
     private function registry(): DomainRegistry
     {
-        /** @var list<string> $domainClasses */
-        $domainClasses = require base_path('bootstrap/domains.php');
+        $domainClasses = DomainRegistry::installedClasses(base_path());
 
         return DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class]);
     }

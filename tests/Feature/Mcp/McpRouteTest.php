@@ -6,8 +6,8 @@ namespace Tests\Feature\Mcp;
 
 use Illuminate\Support\Facades\Route;
 use Laravel\Mcp\Server\Registrar;
-use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\LaunchesTestAgent;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -19,20 +19,12 @@ use Tests\TestCase;
 final class McpRouteTest extends TestCase
 {
     use CommitsHookRows;
+    use LaunchesTestAgent;
     use SendsMcpFrames;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials'];
 
     private const string ROUTE = '/agent/mcp/v1';
-
-    private TestLaunch $launch;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->launch = TestLaunch::start();
-    }
 
     public function test_a_signed_initialize_answers_with_the_journal_server_and_only_tools_and_resources(): void
     {

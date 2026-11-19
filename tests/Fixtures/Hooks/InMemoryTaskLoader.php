@@ -30,7 +30,7 @@ final class InMemoryTaskLoader implements StateLoader
 
     public function statesFor(StateReferences $references): StateSet
     {
-        return StateSet::build($references, fn (StateReference $reference): AgentState => $this->stateFor($reference));
+        return StateSet::build($references, fn (StateReference $reference) => $this->stateFor($reference));
     }
 
     private function stateFor(StateReference $reference): AgentState

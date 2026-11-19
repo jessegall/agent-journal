@@ -9,8 +9,8 @@ use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Values\RuleExample;
-use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\LaunchesTestAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -22,17 +22,9 @@ use Tests\TestCase;
  */
 final class CommandTypeRoutesTest extends TestCase
 {
+    use LaunchesTestAgent;
     use RefreshHookDatabase;
     use SendsSignedCalls;
-
-    private TestLaunch $launch;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->launch = TestLaunch::start();
-    }
 
     public function test_explaining_an_unknown_line_opens_its_request_and_names_the_propose_step(): void
     {

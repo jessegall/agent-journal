@@ -14,8 +14,15 @@ trait ActsAsOwner
 {
     protected User $owner;
 
+    /**
+     * Makes the owner once, however many of the test's traits ask for it.
+     */
     protected function setUpActsAsOwner(): void
     {
+        if (isset($this->owner)) {
+            return;
+        }
+
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }

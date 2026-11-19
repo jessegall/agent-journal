@@ -23,8 +23,7 @@ final class SkillDeclarationsTest extends TestCase
 {
     public function test_core_comes_first_and_a_domain_without_skills_contributes_none(): void
     {
-        /** @var list<string> $domainClasses */
-        $domainClasses = require base_path('bootstrap/domains.php');
+        $domainClasses = DomainRegistry::installedClasses(base_path());
         $owners = DomainRegistry::from($domainClasses)->skillDeclarations(CoreSkills::owner());
 
         $this->assertSame('Core', $owners[0]->name);
@@ -36,8 +35,7 @@ final class SkillDeclarationsTest extends TestCase
 
     public function test_a_registered_module_contributes_its_skill_under_its_own_name(): void
     {
-        /** @var list<string> $domainClasses */
-        $domainClasses = require base_path('bootstrap/domains.php');
+        $domainClasses = DomainRegistry::installedClasses(base_path());
         $owners = DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner());
         $notes = array_values(array_filter($owners, fn (SkillOwner $owner) => $owner->name === 'Notes'))[0];
 

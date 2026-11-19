@@ -3,7 +3,6 @@ package keyscripts
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"journal-agent/screen"
@@ -22,8 +21,8 @@ const (
 	ScriptFailed Outcome = "script-failed"
 	// WaitingForHuman is a run that reached a step for the person to act.
 	WaitingForHuman Outcome = "waiting-for-human"
-	// EntryUnavailable is a run whose wanted entry was not in the menu: the highlight reached the end, wrapped round
-	// or used up its move budget, and nothing was chosen.
+	// EntryUnavailable is a run whose wanted entry the menu on screen did not show by its label, or showed more than
+	// once: no key was sent for it and nothing was chosen.
 	EntryUnavailable Outcome = "entry-unavailable"
 )
 
@@ -54,27 +53,33 @@ type Clock interface {
 	Sleep(duration time.Duration)
 }
 
+// errEntryNotShown is a label the menu on screen shows on no entry, or on more than one.
+var errEntryNotShown = errors.New("the menu on screen shows no single entry with that label")
+
+// errHighlightAstray is a highlight that did not move one entry toward the wanted entry after a key.
+var errHighlightAstray = errors.New("the highlight did not move one entry toward the wanted entry")
+
 // pollInterval is how often a waiting step reads the screen again.
 const pollInterval = 50 * time.Millisecond
 
 // Runner runs key scripts one step at a time through the input gate, reporting each confirmed step.
 type Runner struct {
-	gate      *terminal.InputGate
-	screen    Screen
-	clock     Clock
-	highlight func() string
-	report    func(Progress)
+	gate   *terminal.InputGate
+	screen Screen
+	clock  Clock
+	menu   func() screen.MenuEntries
+	report func(Progress)
 }
 
-// NewRunner runs scripts through the gate; highlight reads the highlighted entry of the menu on screen.
+// NewRunner runs scripts through the gate; menu reads the entries of the menu on screen and its highlighted one.
 func NewRunner(
 	gate *terminal.InputGate,
 	screen Screen,
 	clock Clock,
-	highlight func() string,
+	menu func() screen.MenuEntries,
 	report func(Progress),
 ) *Runner {
-	return &Runner{gate: gate, screen: screen, clock: clock, highlight: highlight, report: report}
+	return &Runner{gate: gate, screen: screen, clock: clock, menu: menu, report: report}
 }
 
 // Run starts the script from its first step with the given parameter values.
@@ -99,21 +104,11 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		if step.Action == WaitForHuman {
 			return Result{Outcome: WaitingForHuman, Step: index, Name: step.Name, Seen: seen}, nil
 		}
-		if step.Action == SelectEntry {
-			if selected, err := runner.selectEntry(step, values); err != nil || !selected {
-				return Result{Outcome: EntryUnavailable, Step: index, Name: step.Name, Seen: seen}, err
-			}
-			runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 
-			continue
-		}
+		if err := runner.act(step, values); err != nil {
+			outcome, cause := stoppedBy(err)
 
-		err := runner.act(step, values)
-		if errors.Is(err, terminal.ErrPersonTyping) {
-			return Result{Outcome: Paused, Step: index, Name: step.Name, Seen: seen}, nil
-		}
-		if err != nil {
-			return Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}, err
+			return Result{Outcome: outcome, Step: index, Name: step.Name, Seen: seen}, cause
 		}
 		runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 	}
@@ -137,49 +132,84 @@ func (runner *Runner) waitFor(expect Expectation, deadline time.Duration) (scree
 	}
 }
 
-// selectEntry moves the highlight down one key at a time, each only after the highlight changed, until the
-// highlighted entry holds the wanted label. A highlight that does not move, comes back to an entry it showed before
-// or runs out of moves means the entry is unavailable; no other entry is ever taken in its place.
-func (runner *Runner) selectEntry(step KeyStep, values map[string]string) (bool, error) {
-	label, given := values[step.Parameter]
-	if !given {
-		return false, fmt.Errorf("the step %q needs the parameter %q", step.Name, step.Parameter)
+// stoppedBy is the outcome of a run whose step failed with err, and the error the run gives back, if any.
+func stoppedBy(err error) (Outcome, error) {
+	switch {
+	case errors.Is(err, terminal.ErrPersonTyping):
+		return Paused, nil
+	case errors.Is(err, errEntryNotShown):
+		return EntryUnavailable, nil
+	case errors.Is(err, errHighlightAstray):
+		return ScriptFailed, nil
+	default:
+		return ScriptFailed, err
 	}
-	visited := map[string]bool{}
-
-	for move := 0; move <= step.MoveBudget; move++ {
-		current := runner.highlight()
-		if strings.Contains(current, label) {
-			return true, nil
-		}
-		if visited[current] || move == step.MoveBudget {
-			return false, nil
-		}
-		visited[current] = true
-
-		if err := runner.gate.Keys(arrowDown); err != nil {
-			return false, err
-		}
-		if !runner.highlightMoves(current, step.Deadline) {
-			return false, nil
-		}
-	}
-
-	return false, nil
 }
 
-// highlightMoves waits until the highlighted entry is another than before, within the deadline.
-func (runner *Runner) highlightMoves(before string, deadline time.Duration) bool {
+// selectEntry reads the menu on screen, finds the entry with the step's label and presses the arrow toward it once
+// per entry between it and the highlighted one. Each move waits for the highlight to move one entry closer, read
+// afresh, so it ends only on a reading whose highlighted entry is the wanted one. A label the menu does not show
+// sends no key, and a highlight that goes anywhere else stops the moves; no other entry is ever taken in its place.
+func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error {
+	label, err := step.label(values)
+	if err != nil {
+		return err
+	}
+	entries := runner.menu()
+	distance, err := distanceTo(entries, label)
+	if err != nil {
+		return err
+	}
+
+	for distance != 0 {
+		move, key := 1, arrowDown
+		if distance < 0 {
+			move, key = -1, arrowUp
+		}
+		if err := runner.gate.Keys(key); err != nil {
+			return err
+		}
+		moved, found := runner.highlightMoves(entries.HighlightedLabel(), step.Deadline)
+		if !found {
+			return errHighlightAstray
+		}
+		next, err := distanceTo(moved, label)
+		if err != nil {
+			return err
+		}
+		if next != distance-move {
+			return errHighlightAstray
+		}
+		entries, distance = moved, next
+	}
+
+	return nil
+}
+
+// distanceTo is how many entries the one with the label lies below the highlighted entry; above is negative.
+func distanceTo(entries screen.MenuEntries, label string) (int, error) {
+	target, found := entries.Find(label)
+	if !found {
+		return 0, fmt.Errorf("%w: %q", errEntryNotShown, label)
+	}
+
+	return target - entries.Highlighted, nil
+}
+
+// highlightMoves waits until the menu shows another highlighted entry than before, within the deadline, and gives
+// that reading.
+func (runner *Runner) highlightMoves(before string, deadline time.Duration) (screen.MenuEntries, bool) {
 	until := runner.clock.Now().Add(deadline)
 
 	for runner.clock.Now().Before(until) {
 		runner.clock.Sleep(pollInterval)
-		if runner.highlight() != before {
-			return true
+		entries := runner.menu()
+		if len(entries.Labels) > 0 && entries.HighlightedLabel() != before {
+			return entries, true
 		}
 	}
 
-	return false
+	return screen.MenuEntries{}, false
 }
 
 func (runner *Runner) act(step KeyStep, values map[string]string) error {
@@ -187,12 +217,20 @@ func (runner *Runner) act(step KeyStep, values map[string]string) error {
 	case PressKey, Scroll:
 		return runner.gate.Keys(step.Keys)
 	case TypeText:
-		value, given := values[step.Parameter]
-		if !given {
-			return fmt.Errorf("the step %q needs the parameter %q", step.Name, step.Parameter)
+		value, err := step.parameterValue(values)
+		if err != nil {
+			return err
 		}
 
 		return runner.gate.Keys(value)
+	case SelectEntry:
+		return runner.selectEntry(step, values)
+	case ChooseEntry:
+		if err := runner.selectEntry(step, values); err != nil {
+			return err
+		}
+
+		return runner.gate.Keys(enterKey)
 	default:
 		return nil
 	}

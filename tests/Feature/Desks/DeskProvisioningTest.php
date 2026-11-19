@@ -25,9 +25,8 @@ use App\Desks\Models\DeskSeat;
 use App\Desks\Support\SeatChange;
 use App\Desks\Support\SeatChangeResult;
 use Closure;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -37,9 +36,8 @@ use Tests\TestCase;
  */
 final class DeskProvisioningTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
+    use StartsOwnerRequest;
 
     private const array TABLES = [
         'users',
@@ -53,13 +51,6 @@ final class DeskProvisioningTest extends TestCase
         'assignments',
         'command_receipts',
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->startUserRequestAs($this->owner->id);
-    }
 
     public function test_installing_twice_creates_main_and_the_source_desks_once(): void
     {

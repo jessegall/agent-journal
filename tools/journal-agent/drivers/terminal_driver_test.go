@@ -44,6 +44,11 @@ func (clock *replayClock) Sleep(duration time.Duration) {
 	}
 }
 
+// noMenu is the reading of a screen that shows no menu.
+func noMenu() screen.MenuEntries {
+	return screen.MenuEntries{}
+}
+
 // recordedTurn replays the recorded Claude Code turn up to the given second, behind a terminal driver whose keys go
 // to a buffer: the recording plays the program's side.
 func recordedTurn(t *testing.T, until time.Duration) (*TerminalDriver, *replayClock, *bytes.Buffer) {
@@ -62,7 +67,7 @@ func recordedTurn(t *testing.T, until time.Duration) (*TerminalDriver, *replayCl
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	classifier := screen.NewClassifier(layout, reader)
-	runner := keyscripts.NewRunner(gate, classifier, clock, func() string { return "" }, func(keyscripts.Progress) {})
+	runner := keyscripts.NewRunner(gate, classifier, clock, noMenu, func(keyscripts.Progress) {})
 
 	return NewTerminalDriver(TerminalRuntime{
 		Profile:    "claude@2.1.323",

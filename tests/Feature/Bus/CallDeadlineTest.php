@@ -53,7 +53,7 @@ final class CallDeadlineTest extends TestCase
     {
         $this->signedSecondsAgo(14);
 
-        [$lockTimeout, $deadline] = $this->throughMiddleware(fn (): array => [
+        [$lockTimeout, $deadline] = $this->throughMiddleware(fn () => [
             $this->app->make(StackTransaction::class)->run(fn (): mixed => $this->app->make(ConnectionInterface::class)->scalar("SELECT current_setting('lock_timeout')")),
             $this->app->make(OperationDeadline::class),
         ]);

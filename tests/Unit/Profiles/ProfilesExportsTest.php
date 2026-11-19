@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Profiles;
 
 use App\CoreApi;
+use App\Domains\Support\DomainRegistry;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
@@ -34,7 +35,7 @@ final class ProfilesExportsTest extends TestCase
 
     public function test_no_profiles_domain_is_registered_or_autoloaded(): void
     {
-        $domains = require base_path('bootstrap/domains.php');
+        $domains = DomainRegistry::installedClasses(base_path());
         $composer = json_decode((string) file_get_contents(base_path('composer.json')), true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame([], array_values(array_filter($domains, fn (string $class) => str_contains($class, 'Profiles'))));

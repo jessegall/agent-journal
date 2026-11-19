@@ -6,8 +6,8 @@ namespace Tests\Feature\Mcp;
 
 use App\Agents\Contracts\LaunchReadiness;
 use Carbon\CarbonImmutable;
-use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\LaunchesTestAgent;
 use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
@@ -17,18 +17,10 @@ use Tests\TestCase;
 final class ReadinessDiscoveryTest extends TestCase
 {
     use CommitsHookRows;
+    use LaunchesTestAgent;
     use SendsMcpFrames;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials'];
-
-    private TestLaunch $launch;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->launch = TestLaunch::start();
-    }
 
     public function test_a_tools_list_sets_discovered_at_to_the_signed_issue_time(): void
     {

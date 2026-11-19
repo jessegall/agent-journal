@@ -6,7 +6,6 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Enums\OutputStream;
@@ -24,8 +23,8 @@ use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\LaunchesTestAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestRunAdmissions;
@@ -37,10 +36,9 @@ use Tests\TestCase;
  */
 final class ReaderProposalTest extends TestCase
 {
+    use LaunchesTestAgent;
     use RefreshHookDatabase;
     use SendsSignedCalls;
-
-    private TestLaunch $launch;
 
     private CommandRequest $request;
 
@@ -49,7 +47,6 @@ final class ReaderProposalTest extends TestCase
         parent::setUp();
 
         Storage::fake(SpoolRecorder::DISK);
-        $this->launch = TestLaunch::start();
         $requestId = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',
             str_repeat('a', 64),
@@ -164,12 +161,5 @@ final class ReaderProposalTest extends TestCase
         $part->finishDraining();
 
         return $run;
-    }
-
-    private function runAsAgent(object $command): mixed
-    {
-        $this->launch->startRequest($this->app);
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

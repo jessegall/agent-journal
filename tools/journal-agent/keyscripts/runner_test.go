@@ -1,7 +1,6 @@
 package keyscripts
 
 import (
-	"bytes"
 	"testing"
 	"time"
 
@@ -35,14 +34,18 @@ func (clock *replayClock) Sleep(duration time.Duration) {
 }
 
 type run struct {
-	runner  *Runner
-	gate    *terminal.InputGate
-	program *bytes.Buffer
-	clock   *replayClock
-	steps   []Progress
+	runner *Runner
+	gate   *terminal.InputGate
+	menu   *liveMenu
+	clock  *replayClock
+	steps  []Progress
 }
 
-// newRun replays the Claude Code folder-trust recording until the trust menu is drawn and holds still.
+// trustedFolder is the folder-trust entry the scripts choose.
+const trustedFolder = "Yes, I trust this folder"
+
+// newRun replays the Claude Code folder-trust recording until the trust menu is drawn and holds still; from there
+// the menu answers the runner's keys itself.
 func newRun(t *testing.T) *run {
 	t.Helper()
 	layout := profiles.ClaudeCode{}.Screens()
@@ -56,11 +59,16 @@ func newRun(t *testing.T) *run {
 	}
 	clock := &replayClock{now: time.Unix(0, 0), start: time.Unix(0, 0), reader: reader, fixture: fixture}
 	clock.Sleep(fixture.Output[len(fixture.Output)-1].Offset)
-	program := &bytes.Buffer{}
-	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
-	result := &run{gate: gate, program: program, clock: clock}
-	highlight := func() string { return "" }
-	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, highlight, func(step Progress) {
+	options := screen.OptionList{Markers: []string{"❯ "}}
+	menu := newLiveMenu(t, reader, options)
+	gate := terminal.NewInputGate(menu, reader, layout.Composer, clock.Now)
+	result := &run{gate: gate, menu: menu, clock: clock}
+	entries := func() screen.MenuEntries {
+		entries, _ := options.Entries(reader.Snapshot())
+
+		return entries
+	}
+	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, entries, func(step Progress) {
 		result.steps = append(result.steps, step)
 	})
 
@@ -73,14 +81,14 @@ func trustScript(steps ...KeyStep) KeyScript {
 
 func TestEachConfirmedStepSendsExactlyOneKey(t *testing.T) {
 	run := newRun(t)
-	script := trustScript(MoveAndChoose("folder-trust", 1, 2*time.Second)...)
+	script := trustScript(Choose("folder-trust", trustedFolder, 2*time.Second))
 
 	result, err := run.runner.Run(script, nil)
-	if err != nil || result.Outcome != Finished {
-		t.Fatalf("the run ended %+v, %v", result, err)
+	if err != nil || result.Outcome != Finished || run.menu.chosen != trustedFolder {
+		t.Fatalf("the run ended %+v, %v, choosing %q", result, err, run.menu.chosen)
 	}
-	if run.program.String() != "\x1b[B\r" || len(run.steps) != 2 {
-		t.Fatalf("the program got %q after %d confirmed steps", run.program.String(), len(run.steps))
+	if run.menu.sent() != "\x1b[B\r" || len(run.steps) != 1 {
+		t.Fatalf("the program got %q after %d confirmed steps", run.menu.sent(), len(run.steps))
 	}
 }
 
@@ -98,29 +106,29 @@ func TestAScreenThatIsNotTheExpectedOneStopsTheScriptAtItsStep(t *testing.T) {
 	if err != nil || result.Outcome != ScriptFailed || result.Name != "type at the prompt" {
 		t.Fatalf("the run ended %+v, %v, not failed at its second step", result, err)
 	}
-	if run.program.String() != "\x1b[B" {
-		t.Fatalf("the program got %q: no key may follow the failed step", run.program.String())
+	if run.menu.sent() != "\x1b[B" {
+		t.Fatalf("the program got %q: no key may follow the failed step", run.menu.sent())
 	}
 }
 
 func TestAPersonsKeyPausesTheScriptAndResumeStartsFromAFreshCheckpoint(t *testing.T) {
 	run := newRun(t)
-	script := trustScript(MoveAndChoose("folder-trust", 1, 2*time.Second)...)
+	script := trustScript(Choose("folder-trust", trustedFolder, 2*time.Second))
 	run.gate.Human([]byte("\x1b[A"))
 
 	result, err := run.runner.Run(script, nil)
 	if err != nil || result.Outcome != Paused || result.Step != 0 {
 		t.Fatalf("the run ended %+v, %v, not paused at its first step", result, err)
 	}
-	if run.program.String() != "\x1b[A" {
-		t.Fatalf("the program got %q: only the person's key may have gone through", run.program.String())
+	if run.menu.sent() != "\x1b[A" {
+		t.Fatalf("the program got %q: only the person's key may have gone through", run.menu.sent())
 	}
 
 	run.gate.Choose(terminal.CancelPendingWork, "")
 	run.gate.Human([]byte("\r"))
 	before := run.clock.Now()
 	result, err = run.runner.Resume(script, 0, nil)
-	if err != nil || result.Outcome != Finished || !run.clock.Now().After(before) {
+	if err != nil || result.Outcome != Finished || run.menu.chosen != trustedFolder || !run.clock.Now().After(before) {
 		t.Fatalf("the resumed run ended %+v, %v, without reading its checkpoint afresh", result, err)
 	}
 }

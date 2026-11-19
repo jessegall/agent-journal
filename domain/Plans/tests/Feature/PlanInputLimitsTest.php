@@ -28,7 +28,7 @@ final class PlanInputLimitsTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
-    private const array TABLES = ['plans', 'phases', 'command_receipts'];
+    private const array TABLES = ['plans', 'command_receipts'];
 
     private const string PLAN_ID = '01jd8x0g9m3qz6v4k2t7r00000';
 

@@ -15,9 +15,8 @@ use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\SeatChange;
 use App\Desks\Support\SeatChangeResult;
-use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsOwnerRequest;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -27,9 +26,8 @@ use Tests\TestCase;
  */
 final class SeatLossTest extends TestCase
 {
-    use ActsAsOwner;
     use CommitsHookRows;
-    use StartsAgentRequests;
+    use StartsOwnerRequest;
 
     private const array TABLES = [
         'users',
@@ -41,13 +39,6 @@ final class SeatLossTest extends TestCase
         'assignments',
         'claim_authorizations',
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->startUserRequestAs($this->owner->id);
-    }
 
     public function test_replacing_a_seat_ends_its_claims_and_keeps_the_others(): void
     {

@@ -119,7 +119,7 @@ final class ContinuationTest extends TestCase
         $pages = $this->app->make(RetainedPages::class);
         $retained = $pages->keep(['task-1', 'task-2', 'task-3']);
 
-        $entries = $pages->resolve($retained, 0, fn (array $omitted): array => ['task-3' => 'third', 'task-1' => 'first']);
+        $entries = $pages->resolve($retained, 0, fn (array $omitted) => ['task-3' => 'third', 'task-1' => 'first']);
 
         $this->assertSame(['task-1' => 'first', 'task-3' => 'third'], $entries->entries);
         $this->assertSame(1, $entries->unavailableCount);
@@ -133,7 +133,7 @@ final class ContinuationTest extends TestCase
 
         $this->expectExceptionObject(ContinuationStale::expired());
 
-        $this->app->make(RetainedPages::class)->resolve($retained, 0, fn (array $omitted): array => []);
+        $this->app->make(RetainedPages::class)->resolve($retained, 0, fn (array $omitted) => []);
     }
 
     public function test_a_10000_character_line_continues_by_character_offset_without_splitting_a_character(): void
