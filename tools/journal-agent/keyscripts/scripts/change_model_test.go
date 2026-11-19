@@ -76,6 +76,18 @@ const (
 	enter = "\r"
 )
 
+func TestClaudeCodeChangeModelChoosesTheModelForTheSessionAndEndsWhenClaudeCodeSaysItIsSet(t *testing.T) {
+	result, keys := replayScript(t, profiles.ClaudeCode{}.Screens(), "claude-code/2.1.323/keyscripts/model-choice",
+		7500*time.Millisecond, claudeCodeChangeModel(), map[string]string{"model": "Haiku 5.5"})
+
+	if result.Outcome != keyscripts.Finished {
+		t.Fatalf("ChangeModel ended %+v", result)
+	}
+	if want := "/model" + enter + strings.Repeat(down, 4) + "s"; keys != want {
+		t.Fatalf("Claude Code got %q, not %q", keys, want)
+	}
+}
+
 func TestCodexChangeModelChoosesTheModelAndEndsWhenCodexSaysItChanged(t *testing.T) {
 	result, keys := replayScript(t, profiles.Codex{}.Screens(), "codex/0.165.0/keyscripts/model-choice",
 		24500*time.Millisecond, codexChangeModel(), map[string]string{"model": "GPT-6-Luna"})
@@ -137,13 +149,21 @@ func TestTheRecordedScriptsAreRegisteredAndTheMcpLoginIsNot(t *testing.T) {
 }
 
 func TestNoScriptTypesACredential(t *testing.T) {
-	scripts := []keyscripts.KeyScript{claudeCodeChangeModel(), codexChangeModel(), claudeCodeChangeEffort(),
-		codexChangeEffort()}
-
-	for _, script := range scripts {
+	for _, script := range recorded() {
 		for _, step := range script.Steps {
 			if step.Action == keyscripts.TypeText {
 				t.Fatalf("%s types a parameter at %q; only menu keys and slash commands are scripted", script.Name, step.Name)
+			}
+		}
+	}
+}
+
+func TestNoScriptMovesThroughAMenuByCountedArrowKeys(t *testing.T) {
+	for _, script := range recorded() {
+		for _, step := range script.Steps {
+			if strings.Contains(step.Keys, "\x1b[A") || strings.Contains(step.Keys, "\x1b[B") {
+				t.Fatalf("%s for %s presses an arrow at %q; a menu entry is found by its label", script.Name,
+					script.Profile, step.Name)
 			}
 		}
 	}

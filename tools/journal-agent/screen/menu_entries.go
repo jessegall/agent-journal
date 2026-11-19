@@ -3,24 +3,85 @@ package screen
 import (
 	"regexp"
 	"strings"
+	"unicode"
 
 	"journal-agent/screen/contracts"
 )
 
-// entryName is an option's name: after any "N." number, up to its first gap of two spaces or more.
-var entryName = regexp.MustCompile(`^(?:\d+\.\s+)?(.+?)(?:\s{2,}|$)`)
-
-// MenuEntries is the options of a drawn menu, in order, with the index of the highlighted one; Across is a menu
-// laid out left to right, moved with the side arrows, such as a slider.
+// MenuEntries is the option list a menu shows: each entry's text, in order, and the index of the highlighted one.
+// Across is a menu laid out left to right and moved with the side arrows, such as a slider.
 type MenuEntries struct {
 	Labels      []string
 	Highlighted int
 	Across      bool
 }
 
+// entryNumber is the "3. " a program puts before an entry's label.
+var entryNumber = regexp.MustCompile(`^\d+\.\s+`)
+
+// Find is the index of the one entry whose label is the given one, as labelOf reads it; found is false when no entry
+// or more than one holds it, so a neighbour is never taken for it.
+func (entries MenuEntries) Find(label string) (index int, found bool) {
+	return entries.findOne(func(text string) bool { return labelOf(text, label) })
+}
+
+// FindMarked is the index of the one entry whose text carries the note, such as "(current)"; found is false when
+// no entry or more than one carries it.
+func (entries MenuEntries) FindMarked(note string) (index int, found bool) {
+	return entries.findOne(func(text string) bool { return strings.Contains(text, note) })
+}
+
+func (entries MenuEntries) findOne(holds func(text string) bool) (int, bool) {
+	index := -1
+	for position, text := range entries.Labels {
+		if !holds(text) {
+			continue
+		}
+		if index >= 0 {
+			return -1, false
+		}
+		index = position
+	}
+
+	return index, index >= 0
+}
+
+// HighlightedLabel is the text of the highlighted entry.
+func (entries MenuEntries) HighlightedLabel() string {
+	return entries.Labels[entries.Highlighted]
+}
+
+// labelOf is whether an entry's text names the label, in any case. The entry's label is its first column, after its
+// number and up to the gap of two spaces before its description; the wanted label is all of it, or all of it but a
+// note such as "(current)" or "✔". So "Opus" is not the label of "Opus 5.5", nor "GPT-6" of "GPT-6-Sol".
+func labelOf(text, label string) bool {
+	column, _, _ := strings.Cut(entryNumber.ReplaceAllString(text, ""), "  ")
+	if strings.EqualFold(column, label) {
+		return true
+	}
+	if len(column) <= len(label)+1 || column[len(label)] != ' ' || !strings.EqualFold(column[:len(label)], label) {
+		return false
+	}
+	note := []rune(column[len(label)+1:])
+
+	return !unicode.IsLetter(note[0]) && !unicode.IsDigit(note[0])
+}
+
 // EntryReader is a menu region that can read its entries.
 type EntryReader interface {
 	Entries(snapshot contracts.Snapshot) (MenuEntries, bool)
+}
+
+// MenuEntries reads the entries of the menu family on screen, when its option region can read them.
+func (layout Layout) MenuEntries(snapshot contracts.Snapshot) (MenuEntries, bool) {
+	for _, family := range layout.Menus {
+		reader, readable := family.Options.(EntryReader)
+		if readable && family.matches(snapshot) {
+			return reader.Entries(snapshot)
+		}
+	}
+
+	return MenuEntries{}, false
 }
 
 // View is what a key script reads besides the screen's kind: its rows, and the entries of the menu on it.
@@ -38,92 +99,9 @@ func (view View) Rows() []string {
 	return view.reader.Snapshot().Rows
 }
 
-// MenuEntries reads the entries of the menu on screen; drawn is false while no readable menu is.
-func (view View) MenuEntries() (MenuEntries, bool) {
-	return view.layout.MenuEntries(view.reader.Snapshot())
-}
+// MenuEntries is the entries of the menu on screen; no entries while no readable menu is drawn.
+func (view View) MenuEntries() MenuEntries {
+	entries, _ := view.layout.MenuEntries(view.reader.Snapshot())
 
-// MenuEntries reads the entries of the menu family on screen, when its option region can read them.
-func (layout Layout) MenuEntries(snapshot contracts.Snapshot) (MenuEntries, bool) {
-	for _, family := range layout.Menus {
-		reader, readable := family.Options.(EntryReader)
-		if readable && family.matches(snapshot) {
-			return reader.Entries(snapshot)
-		}
-	}
-
-	return MenuEntries{}, false
-}
-
-// IndexMarked is the index of the one entry whose text carries the note, such as "(current)", or -1 when no entry
-// or more than one does.
-func (entries MenuEntries) IndexMarked(note string) int {
-	found := -1
-
-	for index, text := range entries.Labels {
-		if !strings.Contains(text, note) {
-			continue
-		}
-		if found >= 0 {
-			return -1
-		}
-		found = index
-	}
-
-	return found
-}
-
-// IndexOf is the index of the one entry named label, in any case, or -1 when no entry or more than one is. An
-// entry's name is its text after any "N." number up to its first wide gap, such as "Haiku 5.5" in "5.  Haiku 5.5
-// Fastest for quick answers"; a note after one space, such as "GPT-6.1-Sol (current)", still names "GPT-6.1-Sol".
-func (entries MenuEntries) IndexOf(label string) int {
-	found := -1
-
-	for index, text := range entries.Labels {
-		if !names(text, label) {
-			continue
-		}
-		if found >= 0 {
-			return -1
-		}
-		found = index
-	}
-
-	return found
-}
-
-func names(text, label string) bool {
-	match := entryName.FindStringSubmatch(text)
-	if match == nil {
-		return false
-	}
-
-	name := strings.ToLower(match[1])
-	label = strings.ToLower(label)
-
-	return name == label || strings.HasPrefix(name, label+" (")
-}
-
-// Entries reads every option of the list, top to bottom, and which one is highlighted; found is false while no
-// option list is drawn.
-func (region OptionList) Entries(snapshot contracts.Snapshot) (MenuEntries, bool) {
-	rows, found := region.Rows(snapshot)
-	if !found {
-		return MenuEntries{}, false
-	}
-
-	entries := MenuEntries{Highlighted: -1}
-	for row := rows.First; row < rows.Last; row++ {
-		text := []rune(plainSpaces(snapshot.Rows[row]))
-		column, highlighted := region.highlight(snapshot.Rows[row])
-		if highlighted {
-			entries.Highlighted = len(entries.Labels)
-		}
-		if !highlighted {
-			column = len(text) - len([]rune(strings.TrimLeft(string(text), " ")))
-		}
-		entries.Labels = append(entries.Labels, strings.TrimSpace(string(text[min(column, len(text)):])))
-	}
-
-	return entries, entries.Highlighted >= 0
+	return entries
 }

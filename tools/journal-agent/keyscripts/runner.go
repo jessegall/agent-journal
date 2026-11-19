@@ -2,8 +2,6 @@ package keyscripts
 
 import (
 	"errors"
-	"fmt"
-	"slices"
 	"time"
 
 	"journal-agent/screen"
@@ -22,8 +20,8 @@ const (
 	ScriptFailed Outcome = "script-failed"
 	// WaitingForHuman is a run that reached a step for the person to act.
 	WaitingForHuman Outcome = "waiting-for-human"
-	// EntryUnavailable is a run whose wanted entry was not in the menu: the highlight reached the end, wrapped round
-	// or used up its move budget, and nothing was chosen.
+	// EntryUnavailable is a run whose wanted entry the menu on screen did not show by its label, or showed more than
+	// once: no key was sent for it and nothing was chosen.
 	EntryUnavailable Outcome = "entry-unavailable"
 )
 
@@ -54,6 +52,12 @@ type Clock interface {
 	Sleep(duration time.Duration)
 }
 
+// errEntryNotShown is a label the menu on screen shows on no entry, or on more than one.
+var errEntryNotShown = errors.New("the menu on screen shows no single entry with that label")
+
+// errHighlightAstray is a highlight that did not move one entry toward the wanted entry after a key.
+var errHighlightAstray = errors.New("the highlight did not move one entry toward the wanted entry")
+
 // pollInterval is how often a waiting step reads the screen again.
 const pollInterval = 50 * time.Millisecond
 
@@ -66,10 +70,11 @@ type Runner struct {
 	report func(Progress)
 }
 
-// View is what a run reads besides the screen's kind: the screen's rows and the entries of the menu on it.
+// View is what a run reads besides the screen's kind: the screen's rows and the entries of the menu on it, none
+// while no readable menu is drawn.
 type View interface {
 	Rows() []string
-	MenuEntries() (screen.MenuEntries, bool)
+	MenuEntries() screen.MenuEntries
 }
 
 // NewRunner runs scripts through the gate, reading the screen's kind from screen and its words and menus from view.
@@ -99,21 +104,11 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		if step.Action == WaitForHuman {
 			return Result{Outcome: WaitingForHuman, Step: index, Name: step.Name, Seen: seen}, nil
 		}
-		if step.Action == SelectEntry {
-			if selected, err := runner.selectEntry(step, values); err != nil || !selected {
-				return Result{Outcome: EntryUnavailable, Step: index, Name: step.Name, Seen: seen}, err
-			}
-			runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 
-			continue
-		}
+		if err := runner.act(step, values); err != nil {
+			outcome, cause := stoppedBy(err)
 
-		err := runner.act(step, values)
-		if errors.Is(err, terminal.ErrPersonTyping) {
-			return Result{Outcome: Paused, Step: index, Name: step.Name, Seen: seen}, nil
-		}
-		if err != nil {
-			return Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}, err
+			return Result{Outcome: outcome, Step: index, Name: step.Name, Seen: seen}, cause
 		}
 		runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 	}
@@ -141,79 +136,86 @@ func (runner *Runner) waitFor(
 	}
 }
 
-// selectEntry finds the wanted entry among the menu's entries on screen, by its parameter's name or by its marked
-// note, and moves the highlight straight to it, one key at a time, each only after the highlight reached the next
-// entry. It never counts keys in advance of the screen: an entry that is not on screen, or found twice, is
-// unavailable and no key is sent; a list that changes under the moves, or a highlight that does not follow, stops
-// it. It ends only with the wanted entry highlighted.
-func (runner *Runner) selectEntry(step KeyStep, values map[string]string) (bool, error) {
-	entries, drawn := runner.view.MenuEntries()
-	if !drawn {
-		return false, nil
+// stoppedBy is the outcome of a run whose step failed with err, and the error the run gives back, if any.
+func stoppedBy(err error) (Outcome, error) {
+	switch {
+	case errors.Is(err, terminal.ErrPersonTyping):
+		return Paused, nil
+	case errors.Is(err, errEntryNotShown):
+		return EntryUnavailable, nil
+	case errors.Is(err, errHighlightAstray):
+		return ScriptFailed, nil
+	default:
+		return ScriptFailed, err
 	}
-	target, err := wantedEntry(step, entries, values)
-	if err != nil || target < 0 {
-		return false, err
+}
+
+// selectEntry reads the menu on screen, finds the step's entry and presses the arrow toward it once per entry
+// between it and the highlighted one: down or up in a list, right or left on a slider. Each move waits for the
+// highlight to move one entry closer, read afresh, so it ends only on a reading whose highlighted entry is the
+// wanted one. An entry the menu does not show sends no key, and a highlight that goes anywhere else stops the
+// moves; no other entry is ever taken in its place.
+func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error {
+	entries := runner.view.MenuEntries()
+	distance, err := distanceTo(step, entries, values)
+	if err != nil {
+		return err
 	}
 
-	for move := 0; entries.Highlighted != target; move++ {
-		if move == step.MoveBudget {
-			return false, nil
-		}
-		next, key := towards(entries, target)
+	for distance != 0 {
+		move, key := towards(entries, distance)
 		if err := runner.gate.Keys(key); err != nil {
-			return false, err
+			return err
 		}
-		moved, followed := runner.highlightReaches(entries, next, step.Deadline)
-		if !followed {
-			return false, nil
+		moved, found := runner.highlightMoves(entries.HighlightedLabel(), step.Deadline)
+		if !found {
+			return errHighlightAstray
 		}
-		entries = moved
+		next, err := distanceTo(step, moved, values)
+		if err != nil {
+			return err
+		}
+		if next != distance-move {
+			return errHighlightAstray
+		}
+		entries, distance = moved, next
 	}
 
-	return entries.Highlighted == target, nil
+	return nil
 }
 
-// wantedEntry is the index of the entry a step wants: the one carrying its marked note, or the one its parameter
-// names; -1 when the menu has none, or more than one.
-func wantedEntry(step KeyStep, entries screen.MenuEntries, values map[string]string) (int, error) {
-	if step.Marked != "" {
-		return entries.IndexMarked(step.Marked), nil
-	}
-	label, given := values[step.Parameter]
-	if !given {
-		return -1, fmt.Errorf("the step %q needs the parameter %q", step.Name, step.Parameter)
+// distanceTo is how many entries the step's entry lies after the highlighted entry; before it is negative.
+func distanceTo(step KeyStep, entries screen.MenuEntries, values map[string]string) (int, error) {
+	target, err := step.target(entries, values)
+	if err != nil {
+		return 0, err
 	}
 
-	return entries.IndexOf(label), nil
+	return target - entries.Highlighted, nil
 }
 
-// towards is the entry one move nearer the target and the key that makes the move: down or up in a list, right or
-// left on a slider.
-func towards(entries screen.MenuEntries, target int) (int, string) {
+// towards is the move one entry nearer an entry that lies distance away, and the key that makes it.
+func towards(entries screen.MenuEntries, distance int) (int, string) {
 	forward, backward := arrowDown, arrowUp
 	if entries.Across {
 		forward, backward = arrowRight, arrowLeft
 	}
-	if target < entries.Highlighted {
-		return entries.Highlighted - 1, backward
+	if distance < 0 {
+		return -1, backward
 	}
 
-	return entries.Highlighted + 1, forward
+	return 1, forward
 }
 
-// highlightReaches waits, within the deadline, until the same list of entries shows its highlight on the next one.
-func (runner *Runner) highlightReaches(
-	before screen.MenuEntries,
-	next int,
-	deadline time.Duration,
-) (screen.MenuEntries, bool) {
+// highlightMoves waits until the menu shows another highlighted entry than before, within the deadline, and gives
+// that reading.
+func (runner *Runner) highlightMoves(before string, deadline time.Duration) (screen.MenuEntries, bool) {
 	until := runner.clock.Now().Add(deadline)
 
 	for runner.clock.Now().Before(until) {
 		runner.clock.Sleep(pollInterval)
-		entries, drawn := runner.view.MenuEntries()
-		if drawn && entries.Highlighted == next && slices.Equal(entries.Labels, before.Labels) {
+		entries := runner.view.MenuEntries()
+		if len(entries.Labels) > 0 && entries.HighlightedLabel() != before {
 			return entries, true
 		}
 	}
@@ -226,12 +228,20 @@ func (runner *Runner) act(step KeyStep, values map[string]string) error {
 	case PressKey, Scroll:
 		return runner.gate.Keys(step.Keys)
 	case TypeText:
-		value, given := values[step.Parameter]
-		if !given {
-			return fmt.Errorf("the step %q needs the parameter %q", step.Name, step.Parameter)
+		value, err := step.parameterValue(values)
+		if err != nil {
+			return err
 		}
 
 		return runner.gate.Keys(value)
+	case SelectEntry:
+		return runner.selectEntry(step, values)
+	case ChooseEntry:
+		if err := runner.selectEntry(step, values); err != nil {
+			return err
+		}
+
+		return runner.gate.Keys(enterKey)
 	default:
 		return nil
 	}

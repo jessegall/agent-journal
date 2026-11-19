@@ -13,9 +13,6 @@ import (
 // the longest being a person's pause before Codex drew its reasoning picker.
 const stepDeadline = 5 * time.Second
 
-// pickerMoveBudget bounds the moves through a picker: the recorded pickers show at most a dozen entries.
-const pickerMoveBudget = 20
-
 // claudeCode and codex are the program builds the scripts are recorded for.
 const (
 	claudeCode = "claude@2.1.323"
@@ -45,16 +42,16 @@ func command(name, echo string) []keyscripts.KeyStep {
 // find is a step that moves a picker's highlight onto the entry its parameter names.
 func find(name, family, parameter string) keyscripts.KeyStep {
 	return keyscripts.KeyStep{Name: name, Expect: menu(family), Action: keyscripts.SelectEntry, Parameter: parameter,
-		Deadline: stepDeadline, MoveBudget: pickerMoveBudget}
+		Deadline: stepDeadline}
 }
 
 // findMarked is a step that moves a picker's highlight onto the one entry carrying the note.
 func findMarked(name, family, note string) keyscripts.KeyStep {
 	return keyscripts.KeyStep{Name: name, Expect: menu(family), Action: keyscripts.SelectEntry, Marked: note,
-		Deadline: stepDeadline, MoveBudget: pickerMoveBudget}
+		Deadline: stepDeadline}
 }
 
-// press is a step that sends one key to a stable picker, after the highlight was checked by the step before it.
+// press is a step that sends one key to a stable picker, after the step before it checked the highlight.
 func press(name, family, keys string) keyscripts.KeyStep {
 	return keyscripts.KeyStep{Name: name, Expect: menu(family), Action: keyscripts.PressKey, Keys: keys,
 		Deadline: stepDeadline}
@@ -64,6 +61,23 @@ func press(name, family, keys string) keyscripts.KeyStep {
 func evidence(name string, words ...string) keyscripts.KeyStep {
 	return keyscripts.KeyStep{Name: name, Expect: shows(words...), Action: keyscripts.WaitForScreen,
 		Deadline: stepDeadline}
+}
+
+// claudeCodeChangeModel chooses a model in Claude Code's /model picker for this session only, and ends when Claude
+// Code says it set the model (recording claude-code/2.1.323/keyscripts/model-choice).
+func claudeCodeChangeModel() keyscripts.KeyScript {
+	return keyscripts.KeyScript{
+		Name:       "ChangeModel",
+		Version:    2,
+		Profile:    claudeCode,
+		Parameters: []string{"model"},
+		Start:      ready,
+		Steps: append(command("/model", "❯ /model"),
+			find("find the model", "model-picker", "model"),
+			press("set it for this session only", "model-picker", "s"),
+			evidence("see the model applied", "set model to {model}"),
+		),
+	}
 }
 
 // codexChangeModel chooses a model in Codex's /model picker, keeps the reasoning level Codex marks as its default
@@ -82,19 +96,6 @@ func codexChangeModel() keyscripts.KeyScript {
 			press("keep the default reasoning", "reasoning-picker", "\r"),
 			evidence("see the model applied", "model changed to {model}"),
 		),
-	}
-}
-
-// claudeCodeChangeModel opens Claude Code's /model picker and moves its highlight onto the model. It stops there:
-// no recording of this build holds a confirmed choice yet, so choosing and the applied evidence are not scripted.
-func claudeCodeChangeModel() keyscripts.KeyScript {
-	return keyscripts.KeyScript{
-		Name:       "ChangeModel",
-		Version:    2,
-		Profile:    claudeCode,
-		Parameters: []string{"model"},
-		Start:      ready,
-		Steps:      append(command("/model", "❯ /model"), find("find the model", "model-picker", "model")),
 	}
 }
 
@@ -137,10 +138,15 @@ func claudeCodeChangeEffort() keyscripts.KeyScript {
 // Registered is every key script the host may run. The MCP login has no recording through to its result, so it is
 // not registered for any build (doc 40, section 26; task 1233).
 func Registered() *keyscripts.Registry {
-	return keyscripts.NewRegistry(
+	return keyscripts.NewRegistry(recorded()...)
+}
+
+// recorded is every key script a recording shows, for each build it was recorded on.
+func recorded() []keyscripts.KeyScript {
+	return []keyscripts.KeyScript{
 		claudeCodeChangeModel(),
 		codexChangeModel(),
 		claudeCodeChangeEffort(),
 		codexChangeEffort(),
-	)
+	}
 }

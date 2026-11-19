@@ -3,6 +3,7 @@
 package keyscripts
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -23,9 +24,11 @@ const (
 	WaitForScreen Action = "wait-for-screen"
 	// WaitForHuman stops the script for the person to act, with the step named.
 	WaitForHuman Action = "wait-for-human"
-	// SelectEntry finds the wanted entry by its name on screen and moves the menu's highlight straight to it, one
-	// confirmed move at a time, ending only with exactly that entry highlighted; never a neighbour.
+	// SelectEntry reads the menu on screen, finds the entry by its label and moves the highlight onto it from the
+	// highlighted entry, one confirmed move at a time; a label not on screen sends nothing.
 	SelectEntry Action = "select-entry"
+	// ChooseEntry selects the entry as SelectEntry does, checks the highlight is on it, and only then presses Enter.
+	ChooseEntry Action = "choose-entry"
 )
 
 // Expectation is the screen a step needs before it acts: a kind and, for a menu, its family; or Shows, words that
@@ -75,18 +78,18 @@ func showsTogether(rows []string, words []string, values map[string]string) bool
 	return false
 }
 
-// KeyStep is one step: the screen it waits for, within its deadline, and the one action it then takes.
+// KeyStep is one step: the screen it waits for, within its deadline, and the one action it then takes. An entry
+// step finds its entry by the value of its Parameter when it names one, by its Marked note, or else by its fixed
+// Label.
 type KeyStep struct {
 	Name      string
 	Expect    Expectation
 	Action    Action
 	Keys      string
 	Parameter string
+	Label     string
 	Deadline  time.Duration
-	// MoveBudget is how many moves a SelectEntry step may make before the entry counts as unavailable.
-	MoveBudget int
-	// Marked makes a SelectEntry step find the one entry carrying this note, such as "(current)", instead of a
-	// parameter's value.
+	// Marked makes an entry step find the one entry carrying this note, such as "(current)".
 	Marked string
 }
 
@@ -101,11 +104,12 @@ type KeyScript struct {
 	Steps      []KeyStep
 }
 
-// arrowDown moves a menu's highlight one entry down.
-const arrowDown = "\x1b[B"
-
-// arrowUp moves a menu's highlight one entry up.
-const arrowUp = "\x1b[A"
+// arrowDown and arrowUp move a menu's highlight one entry down or up; enterKey chooses the highlighted entry.
+const (
+	arrowDown = "\x1b[B"
+	arrowUp   = "\x1b[A"
+	enterKey  = "\r"
+)
 
 // arrowRight and arrowLeft move a slider's marker one label across.
 const (
@@ -113,18 +117,51 @@ const (
 	arrowLeft  = "\x1b[D"
 )
 
-// MoveAndChoose is the steps that move a menu's highlight down by moves entries and choose it, one confirmed movement
-// at a time: each move waits for the menu again, so a menu that changed stops the script before the next key.
-func MoveAndChoose(menu string, moves int, deadline time.Duration) []KeyStep {
+// Choose is the step that chooses the entry with the label in the menu: it finds the entry on screen, moves the
+// highlight onto it, checks it and presses Enter, and refuses when the menu shows no such entry.
+func Choose(menu, label string, deadline time.Duration) KeyStep {
 	expect := Expectation{Kind: screen.MenuShown, Menu: menu}
-	steps := make([]KeyStep, 0, moves+1)
 
-	for move := range moves {
-		name := "move " + string(rune('1'+move)) + " down in " + menu
-		steps = append(steps, KeyStep{Name: name, Expect: expect, Action: PressKey, Keys: arrowDown, Deadline: deadline})
+	return KeyStep{Name: "choose " + label + " in " + menu, Expect: expect, Action: ChooseEntry, Label: label,
+		Deadline: deadline}
+}
+
+// target is the index of the entry the step looks for in these entries: the one carrying its marked note, or the
+// one its label names; an entry the menu does not show exactly once is errEntryNotShown.
+func (step KeyStep) target(entries screen.MenuEntries, values map[string]string) (int, error) {
+	if step.Marked != "" {
+		if index, found := entries.FindMarked(step.Marked); found {
+			return index, nil
+		}
+
+		return 0, fmt.Errorf("%w: %q", errEntryNotShown, step.Marked)
+	}
+	label, err := step.label(values)
+	if err != nil {
+		return 0, err
+	}
+	if index, found := entries.Find(label); found {
+		return index, nil
 	}
 
-	choose := KeyStep{Name: "choose in " + menu, Expect: expect, Action: PressKey, Keys: "\r", Deadline: deadline}
+	return 0, fmt.Errorf("%w: %q", errEntryNotShown, label)
+}
 
-	return append(steps, choose)
+// label is the entry the step looks for: its parameter's value, or its fixed label when it names no parameter.
+func (step KeyStep) label(values map[string]string) (string, error) {
+	if step.Parameter == "" {
+		return step.Label, nil
+	}
+
+	return step.parameterValue(values)
+}
+
+// parameterValue is the value the run gives the step's parameter.
+func (step KeyStep) parameterValue(values map[string]string) (string, error) {
+	value, given := values[step.Parameter]
+	if !given {
+		return "", fmt.Errorf("the step %q needs the parameter %q", step.Name, step.Parameter)
+	}
+
+	return value, nil
 }
