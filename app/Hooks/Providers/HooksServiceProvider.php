@@ -15,7 +15,11 @@ use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\IncomingWorkRegistration;
+use App\Hooks\Contracts\InspectsStacks;
+use App\Hooks\Contracts\ResolvesStateTypes;
+use App\Hooks\Contracts\RunsStackTransactions;
 use App\Hooks\Contracts\StateFactory;
+use App\Hooks\Inspection\StackInspectionQuery;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\FailureReceipt;
 use App\Hooks\Models\HookCall;
@@ -43,6 +47,9 @@ final class HooksServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(InspectsStacks::class, StackInspectionQuery::class);
+        $this->app->bind(RunsStackTransactions::class, StackTransaction::class);
+        $this->app->bind(ResolvesStateTypes::class, StateTypes::class);
         $this->app->singleton(IncomingWorkList::class);
         $this->app->singleton(IncomingWorkRegistration::class, IncomingWorkList::class);
         $this->app->singleton(StateTypes::class);

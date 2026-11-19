@@ -21,6 +21,8 @@ use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
 use App\Mcp\Models\RetainedPage;
+use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Support\Pipelines;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\Profile;
@@ -68,6 +70,11 @@ final class CoreServiceProvider extends ServiceProvider
         'Skills',
         'Web',
     ];
+
+    public function register(): void
+    {
+        $this->app->bind(RunsPipelines::class, Pipelines::class);
+    }
 
     public function boot(LinkTypeRegistry $links): void
     {

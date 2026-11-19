@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
+use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Exceptions\TickSubjectUndeclared;
 use App\Hooks\Exceptions\WorkOccurrenceStale;
-use App\Hooks\Stack\StateTypes;
 use App\Hooks\Values\WorkLockSet;
 use Closure;
 
@@ -24,7 +24,7 @@ final class TickOrigins
      */
     private array $running = [];
 
-    public function __construct(private readonly StateTypes $types) {}
+    public function __construct(private readonly ResolvesStateTypes $types) {}
 
     /**
      * Runs one tick command with its lock set.

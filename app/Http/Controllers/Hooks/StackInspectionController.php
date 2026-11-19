@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Hooks;
 
 use App\Agents\Support\StackTarget;
-use App\Hooks\Inspection\StackInspectionQuery;
+use App\Hooks\Contracts\InspectsStacks;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class StackInspectionController
 {
-    public function __construct(private StackInspectionQuery $inspections) {}
+    public function __construct(private InspectsStacks $inspections) {}
 
     public function __invoke(string $agentId, string $sessionId): JsonResponse
     {

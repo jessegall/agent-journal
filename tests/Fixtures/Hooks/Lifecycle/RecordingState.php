@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Hooks\Lifecycle;
 
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
-use RuntimeException;
+use Tests\Support\SimulatedFailure;
 
 /**
  * A fixture state that writes each lifecycle call it gets to a shared log.
@@ -27,7 +27,7 @@ final class RecordingState extends AgentState
     public function onEnter(LifecycleContext $context): void
     {
         if (in_array($this->subject, $this->log->failingEnters, true)) {
-            throw new RuntimeException("enter of {$this->subject} failed");
+            throw SimulatedFailure::of("enter of {$this->subject} failed");
         }
 
         $this->log->calls[] = "enter:{$this->subject}";

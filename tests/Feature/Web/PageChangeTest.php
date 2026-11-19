@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SimulatedFailure;
 use Tests\TestCase;
 
 /**
@@ -113,7 +114,7 @@ final class PageChangeTest extends TestCase
             $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {
                 $this->app->make('events')->dispatch(new TaskFinished($task->id));
 
-                throw new RuntimeException('The change fails.');
+                throw SimulatedFailure::of('The change fails.');
             });
         } catch (RuntimeException) {
         }

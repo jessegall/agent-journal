@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
+use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Support\Pipelines;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\OutputRequirement;
@@ -88,6 +90,7 @@ final class ClassificationTest extends TestCase
     private function parse(string $line): ShellTree
     {
         $container = new Container();
+        $container->bind(RunsPipelines::class, Pipelines::class);
         $container->instance(ContainerContract::class, $container);
 
         return $container->make(TreeParser::class)->parse($line, ShellDialect::Bash);

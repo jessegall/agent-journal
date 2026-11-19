@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Contracts\WorkOccurrenceGuard;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\States\ReadyState;
@@ -15,7 +16,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 /**
  * Builds the state type registry on first use, once per worker, and keeps it; a build that fails is tried again next time.
  */
-final class StateTypes
+final class StateTypes implements ResolvesStateTypes
 {
     private StateTypeRegistry|null $registry = null;
 

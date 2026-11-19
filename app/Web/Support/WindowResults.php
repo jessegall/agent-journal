@@ -6,6 +6,7 @@ namespace App\Web\Support;
 
 use App\Ui\Contracts\VisibilityCheck;
 use App\Ui\Declarations\ResolverDefinition;
+use App\Web\Contracts\ReadsWindowResults;
 use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
@@ -25,7 +26,7 @@ use Throwable;
  * ready with the reader's Data serialized inside this boundary, or failed with a neutral message while the error is
  * logged with the key. A sign-in, CSRF, validation or redirect response still reaches the browser as it is.
  */
-final readonly class WindowResults
+final readonly class WindowResults implements ReadsWindowResults
 {
     public function __construct(
         private VisibilityChecks $visibility,

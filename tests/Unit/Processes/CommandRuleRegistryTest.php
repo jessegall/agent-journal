@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
+use App\Pipelines\Contracts\RunsPipelines;
+use App\Pipelines\Support\Pipelines;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\OperandType;
 use App\Processes\Enums\ShellDialect;
@@ -123,6 +125,7 @@ final class CommandRuleRegistryTest extends TestCase
     private function lookUp(CommandRuleRegistry $registry, string $line): CommandRule|UnresolvedFact
     {
         $container = new Container();
+        $container->bind(RunsPipelines::class, Pipelines::class);
         $container->instance(ContainerContract::class, $container);
         $part = $container->make(TreeParser::class)->parse($line, ShellDialect::Bash)->executableParts()[0];
 

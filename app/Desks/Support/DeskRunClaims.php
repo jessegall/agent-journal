@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Desks\Support;
 
 use App\Actors\Support\ActorIdentity;
+use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Models\ClaimAuthorization;
-use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
@@ -27,7 +27,7 @@ use PhpOption\Option;
 final readonly class DeskRunClaims implements RunClaims
 {
     public function __construct(
-        private AssignmentStore $store,
+        private AssignmentStorage $store,
         private ResponsibilityWriter $responsibilities,
         private ProvedClaims $proved,
     ) {}

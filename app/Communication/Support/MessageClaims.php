@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
+use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Contracts\ResponsibilityWriter;
-use App\Assignments\Storage\AssignmentStore;
 use App\Communication\Models\Message;
 
 /**
@@ -14,7 +14,7 @@ use App\Communication\Models\Message;
 final readonly class MessageClaims
 {
     public function __construct(
-        private AssignmentStore $store,
+        private AssignmentStorage $store,
         private ResponsibilityWriter $responsibilities,
     ) {}
 

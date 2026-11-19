@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Storage;
 
+use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
@@ -24,7 +25,7 @@ use PhpOption\Some;
  * Core's private writes and reads of the one current holder per record. Every call runs inside an assignment
  * transaction; the writer and retirement decide who may do what before they call it.
  */
-final readonly class AssignmentStore
+final readonly class AssignmentStore implements AssignmentStorage
 {
     public function __construct(private ConnectionInterface $database) {}
 
