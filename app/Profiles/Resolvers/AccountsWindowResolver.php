@@ -8,9 +8,12 @@ use App\Agents\Contracts\AccountUses;
 use App\Http\Data\Profiles\AccountListData;
 use App\Http\Data\Profiles\AccountRowData;
 use App\Http\Data\Profiles\AccountSelectionData;
+use App\Http\Data\Profiles\SignInAttemptData;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
+use App\Profiles\Models\SignInAttempt;
 use App\Ui\Contracts\PageResolver;
+use Carbon\CarbonImmutable;
 
 /**
  * The Accounts page: every saved account that is not removed, with whether new launches use it and how many launches
@@ -34,6 +37,7 @@ final readonly class AccountsWindowResolver implements PageResolver
                 $counts->runningFor($account->recordIdentity()),
             ), $accounts),
             array_map(AccountSelectionData::fromSelection(...), $selections),
+            array_map(SignInAttemptData::fromAttempt(...), SignInAttempt::recentFor(CarbonImmutable::now())),
         );
     }
 }

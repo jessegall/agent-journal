@@ -8,6 +8,7 @@ use App\AgentRequests\Support\SignedCall;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Values\ClaimedSignIn;
+use App\Profiles\Values\SignInChallenge;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Response;
@@ -49,6 +50,19 @@ final readonly class SignedSignInHost implements SignInHost
             'identity' => $identity,
         ]);
         $this->send("/host/sign-ins/{$claimed->attemptId}/report", $body);
+    }
+
+    public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void
+    {
+        $body = (string) json_encode(['address' => $challenge->address, 'code' => $challenge->code]);
+        $this->send("/host/sign-ins/{$claimed->attemptId}/challenge", $body);
+    }
+
+    public function pendingCode(ClaimedSignIn $claimed): string|null
+    {
+        $response = $this->send("/host/sign-ins/{$claimed->attemptId}/code", '');
+
+        return $response->status() === 204 ? null : (string) $response->json('code');
     }
 
     private function send(string $path, string $body): Response

@@ -671,6 +671,7 @@ use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
@@ -693,6 +694,7 @@ use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Exceptions\SignInAttemptStale;
+use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Support\BaseOverride;
 use App\Profiles\Support\ClassRule;
 use App\Profiles\Support\OperationRule;
@@ -1663,6 +1665,7 @@ final class CoreApi
                 MaintainAccount::class,
                 BeginSignIn::class,
                 CancelSignIn::class,
+                SubmitSignInCode::class,
                 HoldAccountUses::class,
                 CancelAccountUses::class,
                 SettleAccountUses::class,
@@ -1873,6 +1876,7 @@ final class CoreApi
                 AccountLabelInvalid::class,
                 SignInAttemptMissing::class,
                 SignInAttemptStale::class,
+                SignInCodeInvalid::class,
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 InvalidRecordIds::class,

@@ -113,11 +113,14 @@ use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\MaintainAccount;
+use App\Profiles\Commands\PublishSignInChallenge;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\ReportSignIn;
 use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\SubmitSignInCode;
 use App\Profiles\Commands\SwitchAccount;
+use App\Profiles\Commands\TakeSignInCode;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
 use App\Settings\Commands\DisableSettingGroup;
@@ -268,6 +271,9 @@ final class CoreCommands
             MaintainAccount::class,
             BeginSignIn::class,
             CancelSignIn::class,
+            SubmitSignInCode::class,
+            PublishSignInChallenge::class,
+            TakeSignInCode::class,
             ClaimSignIn::class,
             ReportSignIn::class,
             CompleteSignIn::class,
@@ -342,6 +348,8 @@ final class CoreCommands
             ReportStopped::class,
             ReportFailure::class,
             ReconcileStarts::class,
+            PublishSignInChallenge::class,
+            TakeSignInCode::class,
             ClaimSignIn::class,
             ReportSignIn::class,
             CompleteSignIn::class,

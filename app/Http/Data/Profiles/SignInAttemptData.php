@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Data\Profiles;
+
+use App\Profiles\Enums\SignInState;
+use App\Profiles\Enums\SignInType;
+use App\Profiles\Models\SignInAttempt;
+use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
+/**
+ * One sign-in as its owner sees it: its program, the name a new account gets or the account it signs in again, its
+ * state and deadline. Never its folder, its process or its challenge, which only the no-store read gives.
+ */
+#[TypeScript]
+final class SignInAttemptData extends Data
+{
+    public function __construct(
+        public readonly string $id,
+        public readonly string $program,
+        public readonly SignInType $type,
+        public readonly string|null $label,
+        public readonly string|null $accountId,
+        public readonly SignInState $state,
+        public readonly string $expiresAt,
+    ) {}
+
+    public static function fromAttempt(SignInAttempt $attempt): self
+    {
+        return new self(
+            $attempt->id,
+            $attempt->program,
+            $attempt->type(),
+            $attempt->label,
+            $attempt->account_id,
+            $attempt->state,
+            $attempt->expires_at->toIso8601String(),
+        );
+    }
+}

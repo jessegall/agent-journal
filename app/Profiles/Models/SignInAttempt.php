@@ -6,6 +6,7 @@ namespace App\Profiles\Models;
 
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\SignInState;
+use App\Profiles\Enums\SignInType;
 use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Models\Support\HumanAccounts;
 use App\Profiles\Values\AccountLabel;
@@ -180,6 +181,30 @@ final class SignInAttempt extends Model implements ReadableModel
             ->pluck('id');
 
         return array_values(array_map(strval(...), $ids->all()));
+    }
+
+    /**
+     * The owner's sign-ins that still run or ended within the last quarter hour, newest first, so a failure stays
+     * visible for a while.
+     *
+     * @return list<self>
+     */
+    public static function recentFor(CarbonImmutable $now): array
+    {
+        $attempts = self::query()
+            ->where(fn (Builder $recent) => $recent
+                ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+                ->orWhere('updated_at', '>=', $now->subMinutes(15)))
+            ->orderByDesc('created_at')
+            ->readLimit(50)
+            ->get();
+
+        return array_values($attempts->all());
+    }
+
+    public function type(): SignInType
+    {
+        return $this->account_id === null ? SignInType::NewAccount : SignInType::SignInAgain;
     }
 
     public function isLive(): bool

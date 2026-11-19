@@ -6,6 +6,7 @@ namespace Tests\Fixtures\Profiles;
 
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Support\PrivateAccountProcess;
+use App\Profiles\Values\SignInChallenge;
 use App\Profiles\Values\SignInVerification;
 
 /**
@@ -17,6 +18,13 @@ final readonly class FinishingProtocol implements SignInProtocol
     {
         return PrivateAccountProcess::start(['/bin/sh', '-c', 'exit 0'], ['PATH' => '/usr/bin:/bin'], $directory);
     }
+
+    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
+    {
+        return new SignInChallenge('https://example.test/approve', 'CODE-1');
+    }
+
+    public function acceptCode(PrivateAccountProcess $process, string $code): void {}
 
     public function hasFinished(PrivateAccountProcess $process): bool
     {

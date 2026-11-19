@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInProtocol;
+use App\Profiles\Values\SignInChallenge;
 use App\Profiles\Values\SignInVerification;
 use Illuminate\Contracts\Config\Repository;
 
@@ -39,6 +40,18 @@ final readonly class CodexSignIn implements SignInProtocol
 
         return $process;
     }
+
+    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
+    {
+        $deviceCode = $this->deviceCodeFrom($process);
+
+        return $deviceCode === null ? null : new SignInChallenge($deviceCode['address'], $deviceCode['code']);
+    }
+
+    /**
+     * A device sign-in's code goes out to the person only; nothing typed is ever given to the program.
+     */
+    public function acceptCode(PrivateAccountProcess $process, string $code): void {}
 
     public function hasFinished(PrivateAccountProcess $process): bool
     {

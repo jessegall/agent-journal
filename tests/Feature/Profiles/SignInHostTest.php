@@ -21,6 +21,8 @@ use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignInProtocols;
 use App\Profiles\Values\ClaimedSignIn;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
@@ -42,7 +44,14 @@ final class SignInHostTest extends TestCase
     use CommitsHookRows;
     use RunsTrustedCommands;
 
-    private const array TABLES = ['accounts', 'active_accounts', 'sign_in_attempts', 'command_receipts', 'hosts'];
+    private const array TABLES = [
+        'accounts',
+        'active_accounts',
+        'sign_in_attempts',
+        'command_receipts',
+        'hosts',
+        'users',
+    ];
 
     private string $root;
 
@@ -89,6 +98,52 @@ final class SignInHostTest extends TestCase
         $this->call('POST', '/host/sign-ins/claim')->assertUnauthorized();
 
         $this->assertSame(SignInState::Starting, $this->attempt($attemptId)->state);
+    }
+
+    public function test_the_challenge_reaches_only_the_owner_no_store_and_a_typed_code_reaches_the_host_once(): void
+    {
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $host = $this->enrollHost();
+        $this->actingAs($owner)->post('/accounts/sign-ins', [
+            'program' => 'claude-code',
+            'request_key' => 'request-1',
+            'label' => 'Work',
+        ])->assertStatus(303);
+        $attemptId = (string) $this->signed($host, '/host/sign-ins/claim')->json('attempt_id');
+        $challenge = ['address' => 'https://claude.ai/oauth/authorize?secret-state', 'code' => null];
+        $this->signed($host, "/host/sign-ins/{$attemptId}/challenge", $challenge)->assertNoContent();
+
+        $page = $this->actingAs($owner)->get('/accounts')->assertOk();
+        $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge")->assertOk();
+        $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/code", ['code' => ' 1234 '])->assertStatus(303);
+
+        $this->assertSame($attemptId, $page->viewData('page')['props']['page']['data']['attempts'][0]['id']);
+        $this->assertStringNotContainsString('secret-state', (string) $page->getContent());
+        $this->assertSame('https://claude.ai/oauth/authorize?secret-state', $read->json('address'));
+        $this->assertStringContainsString('no-store', (string) $read->headers->get('Cache-Control'));
+        $this->assertSame('1234', $this->signed($host, "/host/sign-ins/{$attemptId}/code")->json('code'));
+        $this->signed($host, "/host/sign-ins/{$attemptId}/code")->assertNoContent();
+        $stranger = User::factory()->create();
+        $this->assertFalse($this->actingAs($stranger)->post("/accounts/sign-ins/{$attemptId}/challenge")->isOk());
+    }
+
+    public function test_a_code_with_a_control_character_and_a_cancelled_sign_in_give_the_host_nothing(): void
+    {
+        $owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $host = $this->enrollHost();
+        $attemptId = $this->begin();
+        $this->signed($host, '/host/sign-ins/claim');
+
+        $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/code", ['code' => "12\u{0007}34"]);
+        $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/cancel")->assertStatus(303);
+        $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '1234']);
+
+        $this->signed($host, "/host/sign-ins/{$attemptId}/code")->assertNoContent();
+        $this->assertSame(SignInState::Cancelled, $this->attempt($attemptId)->state);
+        $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge");
+        $this->assertNull($read->json('address'));
     }
 
     public function test_the_runner_makes_the_folder_private_and_reports_what_the_check_says(): void

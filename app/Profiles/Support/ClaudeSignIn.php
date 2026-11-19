@@ -6,6 +6,8 @@ namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Exceptions\SignInCodeInvalid;
+use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInCode;
 use App\Profiles\Values\SignInVerification;
 use Illuminate\Contracts\Config\Repository;
 
@@ -17,8 +19,6 @@ use Illuminate\Contracts\Config\Repository;
  */
 final readonly class ClaudeSignIn implements SignInProtocol
 {
-    private const int CODE_LIMIT = 512;
-
     public function __construct(private Repository $config) {}
 
     public function begin(string $directory): PrivateAccountProcess
@@ -28,6 +28,18 @@ final readonly class ClaudeSignIn implements SignInProtocol
             $this->environment($directory),
             $directory,
         );
+    }
+
+    public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
+    {
+        $address = $this->addressFrom($process);
+
+        return $address === null ? null : new SignInChallenge($address, null);
+    }
+
+    public function acceptCode(PrivateAccountProcess $process, string $code): void
+    {
+        $this->submitCode($process, $code);
     }
 
     public function hasFinished(PrivateAccountProcess $process): bool
@@ -69,13 +81,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
      */
     public function submitCode(PrivateAccountProcess $process, string $code): void
     {
-        $code = trim($code);
-
-        if ($code === '' || strlen($code) > self::CODE_LIMIT || preg_match('/[\p{Cc}]/u', $code) === 1) {
-            throw SignInCodeInvalid::make();
-        }
-
-        $process->send($code);
+        $process->send(SignInCode::from($code)->code);
     }
 
     private function program(): string

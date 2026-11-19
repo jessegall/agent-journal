@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Profiles\Pages;
 
 use App\Profiles\Http\Controllers\ActivateAccountController;
+use App\Profiles\Http\Controllers\CancelSignInController;
 use App\Profiles\Http\Controllers\RenameAccountController;
+use App\Profiles\Http\Controllers\SignInChallengeController;
+use App\Profiles\Http\Controllers\StartSignInController;
+use App\Profiles\Http\Controllers\SubmitSignInCodeController;
 use App\Profiles\Resolvers\AccountsWindowResolver;
 use App\Profiles\Support\AccountOwnerCheck;
 use App\Ui\Contracts\ProvidesNavigation;
@@ -31,6 +35,10 @@ final class ProfilesPages implements ProvidesNavigation, ProvidesPages
                 ->actions(
                     ActionRoute::post('{account}/activate', ActivateAccountController::class, 'activate'),
                     ActionRoute::patch('{account}', RenameAccountController::class, 'rename'),
+                    ActionRoute::post('sign-ins', StartSignInController::class, 'start-sign-in'),
+                    ActionRoute::post('sign-ins/{attempt}/challenge', SignInChallengeController::class, 'challenge'),
+                    ActionRoute::post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code'),
+                    ActionRoute::post('sign-ins/{attempt}/cancel', CancelSignInController::class, 'cancel-sign-in'),
                 ),
         ];
     }

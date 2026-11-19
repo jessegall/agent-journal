@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
 /**
  * Where one sign-in attempt stands, from starting the program's own sign-in to its end.
  */
+#[TypeScript]
 enum SignInState: string
 {
     case Starting = 'starting';

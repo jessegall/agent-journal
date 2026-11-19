@@ -62,12 +62,39 @@ final readonly class PrivateSignInProcesses
     private function waitForEnd(SignInProtocol $protocol, PrivateAccountProcess $process, ClaimedSignIn $claimed): void
     {
         $deadline = CarbonImmutable::parse($claimed->expiresAt);
+        $isPublished = false;
 
         while (! $protocol->hasFinished($process) && CarbonImmutable::now()->lessThan($deadline)) {
+            $isPublished = $isPublished || $this->publishChallenge($protocol, $process, $claimed);
+            $code = $this->host->pendingCode($claimed);
+
+            if ($code !== null) {
+                $protocol->acceptCode($process, $code);
+            }
+
             ($this->pause)();
         }
 
         $process->stop();
+    }
+
+    /**
+     * Hands the person the program's challenge once it printed one, and answers whether it did.
+     */
+    private function publishChallenge(
+        SignInProtocol $protocol,
+        PrivateAccountProcess $process,
+        ClaimedSignIn $claimed,
+    ): bool {
+        $challenge = $protocol->challengeFrom($process);
+
+        if ($challenge === null) {
+            return false;
+        }
+
+        $this->host->publishChallenge($claimed, $challenge);
+
+        return true;
     }
 
     /**
