@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from collections.abc import Mapping
 
 from core.modules.agents.models.agent import Agent
-from core.modules.usage.support.plan_window import PlanWindow
+from engine.provider.plan_window import PlanWindow
 from core.modules.usage.support.session_status import SessionStatus
 
 

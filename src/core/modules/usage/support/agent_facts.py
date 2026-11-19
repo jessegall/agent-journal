@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 
-from core.modules.usage.support.plan_window import PlanWindow
+from engine.provider.plan_window import PlanWindow
 from core.modules.usage.support.session_cost import SessionCost
 
 

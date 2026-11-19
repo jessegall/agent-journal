@@ -10,7 +10,7 @@ from engine.time.clock import Clock
 from engine.journal.journal_home import ENDED_STATUS_FOLDER, JournalHome
 from engine.provider.status_file_fields import StatusFileFields
 from engine.time.timestamp import Timestamp
-from core.modules.usage.support.plan_window import PlanWindow
+from engine.provider.plan_window import PlanWindow
 from core.modules.usage.support.session_status import SessionStatus
 
 PLAN_FILE = "plan.json"

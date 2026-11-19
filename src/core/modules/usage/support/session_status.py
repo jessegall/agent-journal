@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from engine.provider.context_window import ContextWindow
 from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_mapping
-from core.modules.usage.support.plan_window import PlanWindow
+from engine.provider.plan_window import PlanWindow
 
 WINDOW_TITLES = {"five_hour": "5 hours", "seven_day": "7 days"}
 

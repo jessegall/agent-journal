@@ -23,7 +23,7 @@ from core.modules.helpers.support.program_readiness import ProgramReadiness
 from core.modules.helpers.support.usage_limits import UsageLimits
 from engine.setting.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
-from core.modules.usage.support.plan_window import PlanWindow
+from engine.provider.plan_window import PlanWindow
 
 OUTAGES_REASON = "the state of a program comes from every outage it had, latest end first"
 

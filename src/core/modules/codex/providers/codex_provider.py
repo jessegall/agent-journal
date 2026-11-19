@@ -5,6 +5,7 @@ from engine.enums.capability_proof import CapabilityProof
 from engine.provider.model_efforts import ModelEfforts
 from core.modules.codex.support.codex_settings import MODEL_EFFORTS
 from engine.provider.context_window import ContextWindow
+from engine.provider.plan_window import PlanWindow
 from engine.provider.control_choice import ControlChoice
 from engine.provider.control_group import ControlGroup
 from engine.provider.program_server_file import ProgramServerFile
@@ -43,6 +44,7 @@ from engine.provider.transcript_tail import TranscriptTail
 from engine.types.type_guards import is_list, is_mapping
 from engine.private.server_keys import ServerKeys
 from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
+from core.modules.codex.providers.support.codex_plan_windows import CodexPlanWindows
 from core.modules.codex.providers.support.codex_session_effort import CodexSessionEffort
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
@@ -208,6 +210,12 @@ class CodexProvider(Provider):
         path = self.transcript(home.folder.parent, session)
         counts = [CodexTokenCount.parsed(line) for line in TranscriptTail(path).lines()] if path else []
         return next((count for count in reversed(counts) if count is not None), None)
+
+    def plan_windows(self, home: JournalHome, session: str) -> tuple[PlanWindow, ...]:
+        path = self.transcript(home.project_folder, session)
+        if path is None:
+            return ()
+        return next((windows for line in reversed(TranscriptTail(path).lines()) if line.strip() and (windows := CodexPlanWindows.parsed(line))), ())
 
     def session_effort(self, home: JournalHome, session: str) -> str:
         path = self.transcript(home.folder.parent, session)

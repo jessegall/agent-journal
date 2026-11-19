@@ -18,6 +18,9 @@ from engine.query.query import Query
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.enums.hook_event_name import HookEventName
+from engine.journal.journal_home import JournalHome
+from engine.provider.plan_window import PlanWindow
+from engine.provider.providers import Providers
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.usage.support.compaction import Compaction
@@ -43,8 +46,9 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     name = "show"
     environment_refusal = "usage is shown for one environment"
 
-    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, share: ContextShare, lockdown: ProgramLockdown, context_compactions: ContextCompactions, current_window: CurrentContextWindow, types: HelperTypeBook) -> None:
+    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, share: ContextShare, lockdown: ProgramLockdown, context_compactions: ContextCompactions, current_window: CurrentContextWindow, types: HelperTypeBook, providers: Providers, home: JournalHome) -> None:
         self.types = types
+        self.providers, self.home = providers, home
         self.lockdown, self.context_compactions, self.current_window = lockdown, context_compactions, current_window
         self.activity, self.share = activity, share
         self.queries, self.agents, self.files = queries, agents, files
@@ -57,14 +61,22 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         opened = tuple(self.agents.matching(activity).every_row(RUNNING_AGENTS_REASON))
         counted = opened if arguments.open_only else (*opened, *self.ended_helpers(self.agents, opened))
         statuses = {agent.session: self.with_share(agent) for agent in counted}
-        return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses), activity.pending)
+        return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.plan_windows(opened, statuses), activity.pending)
+
+    def plan_windows(self, opened: tuple[Agent, ...], statuses: dict[str, SessionStatus]) -> tuple[PlanWindow, ...]:
+        main = next((agent for agent in opened if agent.is_main), None)
+        if main is not None:
+            windows = self.providers.provider(main.program).plan_windows(self.home, main.session)
+            if windows is not None:
+                return windows
+        return self.files.plan_windows(statuses)
 
     def with_share(self, agent: Agent) -> SessionStatus:
         status = self.files.status(agent.session)
         usage = self.share.agent_usage(agent)
         if self.current_window.is_unknown(agent):
             return replace(status, context=replace(status.context, used_percentage=None, total_input_tokens=None))
-        if status.context.used_percentage is None:
+        if usage.percent is None:
             return status
         return replace(status, context=ContextWindow(usage.percent, usage.used_tokens, status.context.read_at, usage.window_tokens), context_limit_tokens=usage.limit_tokens)
 

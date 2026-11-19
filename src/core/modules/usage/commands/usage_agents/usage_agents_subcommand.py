@@ -34,7 +34,7 @@ from core.modules.plans.models.plan_card import PlanCard
 from core.modules.usage.support.agent_blocked import AgentBlocked
 from core.modules.usage.support.agent_facts import AgentFacts
 from core.modules.usage.support.agent_facts_list import AgentFactsList
-from core.modules.usage.support.plan_window import PlanWindow
+from engine.provider.plan_window import PlanWindow
 from core.modules.usage.support.session_status import SessionStatus
 from core.modules.usage.support.status_files import StatusFiles
 
@@ -120,9 +120,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     def facts(self, card: AgentCard, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool, merged: MergedWork | None) -> AgentFacts:
         behaviours = self.types.behaviours(card.role)
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), behaviours)
+        windows = self.providers.provider(card.program).plan_windows(self.home, card.session)
         return AgentFacts(card.id, self.model(status) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           self.current_round(json.loads(card.tasks), merged), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, self.effort(status), behaviours.takes_jobs, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
+                          card.job_instruction, self.effort(status), behaviours.takes_jobs, card.job_returned, card.last_activity, self.helper_job(card), card.helper_job_title, titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, (status.windows or account) if windows is None else windows, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None,
                           helper_job_program=card.helper_job_program, occupant_launch=self.occupant_launch(card), is_helper_job_open=card.is_helper_job_open, is_context_unknown=self.is_context_unknown(card, status))
 
     @staticmethod

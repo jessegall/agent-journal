@@ -1,6 +1,7 @@
 from engine.file.file_access import FileAccess
 import os
 from engine.provider.context_window import ContextWindow
+from engine.provider.plan_window import PlanWindow
 from abc import ABC, abstractmethod
 from dataclasses import replace
 from collections.abc import Mapping, Sequence
@@ -241,6 +242,9 @@ class Provider(ABC):
 
     def context_window(self, home: JournalHome, session: str) -> ContextWindow:
         return ContextWindow(self.context_percent(home, session), self.context_tokens(home, session))
+
+    def plan_windows(self, home: JournalHome, session: str) -> tuple[PlanWindow, ...] | None:
+        return None
 
     def session_effort(self, home: JournalHome, session: str) -> str:
         return ""
