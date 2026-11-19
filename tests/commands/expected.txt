@@ -1392,6 +1392,7 @@ workers.built_paths =
 workers.build_command = ''
 workers.command_kinds = 'read, search, edit, package, network, check, process, test run, build, unknown'
 workers.allowed_models = claude journal-medior: sonnet, opus | claude journal-senior: sonnet, opus | claude reviewer: sonnet | claude verifier: sonnet | codex journal-medior: gpt-5.6-sol, gpt-6.1-sol, gpt-6-astra | codex journal-senior: gpt-5.6-sol, gpt-6.1-sol, gpt-6-astra | codex reviewer: gpt-5.6-sol, gpt-6.1-sol | codex verifier: gpt-5.6-sol, gpt-6.1-sol
+workers.start_minutes = 10
 checks.repeat_minutes = 60
 shell.foreground = 15
 shell.report_dismissals = 3

@@ -16,7 +16,7 @@ from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_chat import WorkerChat
 from journal.features.workers.support.worker_reports import WorkerReports
 from journal.support.actor import Actor
-from journal.models.worker import Worker
+from journal.models.worker import STALLED_START_END, Worker
 from journal.models.model_tier import ModelTier
 from journal.providers.providers import Providers
 from journal.features.profiles.support.profile_files import ProfileFiles
@@ -39,14 +39,15 @@ SESSION_POLL_SECONDS = 0.5
 TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
 ERROR_STATUS = -3
-ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}", ERROR_STATUS: "failed: {report}"}
+STALLED_STATUS = -4
+ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}", ERROR_STATUS: "failed: {report}", STALLED_STATUS: STALLED_START_END + " its session in {start:g} minutes, twice: {report}"}
 
 
 # the variable the hook script reads the seconds a worker waits for its journal from, when the journal cannot be asked
 LOCKOUT_VARIABLE = "JOURNAL_LOCKOUT_SECONDS"
 
 class WorkerRunner:
-    """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
+    """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends. A run whose agent has not started its session within the start minutes is stopped and launched again on its job once, with the session it was launched with; the second such run ends as unfinished."""
 
     def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat, libraries: WorkerLibraries, commands: WorktreeCommands, setup: HelperSetup, supervisor: SupervisorLink, time_source: TimeSource) -> None:
         self.time_source, self.supervisor = time_source, supervisor
@@ -95,7 +96,18 @@ class WorkerRunner:
             return
         worker = self.workers.save(self.workers.find(worker.row_id).running_as(process.pid, self.time_source.seconds()), actor)
         self.supervisor.group(worker.environment_id, process.pid)
-        self.finish(worker, self.waited(worker, process, actor), actor)
+        self.ended(worker, self.waited(worker, process, actor), actor)
+
+    def ended(self, launched: Worker, code: int, actor: Actor) -> None:
+        current = self.workers.find(launched.row_id)
+        if code == STALLED_STATUS and current.is_running() and not current.is_start_retried():
+            self.relaunched(launched, current, actor)
+            return
+        self.finish(launched, code, actor)
+
+    def relaunched(self, launched: Worker, current: Worker, actor: Actor) -> None:
+        self.session_ended(current)
+        self.start(self.workers.save(current.start_retried(launched.resume, self.time_source.seconds()), actor), actor)
 
     def worker_variables(self, worker: Worker, token: AgentToken) -> dict[str, str]:
         return {**self.setup.variables(self.environments.find(worker.environment_id).name, Actor.worker(worker.id), token), LOCKOUT_VARIABLE: str(self.settings.integer(LOCKOUT_OPTION))}
@@ -107,16 +119,32 @@ class WorkerRunner:
             except subprocess.TimeoutExpired:
                 worker = self.workers.find(worker.row_id)
                 if self.remaining_seconds(worker) == 0:
-                    os.killpg(process.pid, signal.SIGKILL)
-                    process.wait()
-                    return TIMEOUT_STATUS
+                    return self.killed(process, TIMEOUT_STATUS)
+                if self.is_start_stalled(worker):
+                    return self.killed(process, STALLED_STATUS)
                 worker = self.session_recorded(worker, actor)
+
+    @staticmethod
+    def killed(process: subprocess.Popen, code: int) -> int:
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait()
+        return code
 
     def wait_step(self, worker: Worker) -> float | None:
         remaining = self.remaining_seconds(worker)
+        start_remaining = self.start_remaining_seconds(worker)
+        if start_remaining:
+            remaining = start_remaining if remaining is None else min(remaining, start_remaining)
         if worker.resume:
             return remaining
         return SESSION_POLL_SECONDS if remaining is None else min(remaining, SESSION_POLL_SECONDS)
+
+    def start_remaining_seconds(self, worker: Worker) -> float | None:
+        limit = self.start_minutes() * 60
+        return max(0.0, limit - (self.time_source.seconds() - worker.began)) if limit else None
+
+    def is_start_stalled(self, worker: Worker) -> bool:
+        return self.start_remaining_seconds(worker) == 0 and not self.providers.lookup(worker.provider).is_work_started(self.read(self.outputs(worker)[0]))
 
     def session_recorded(self, worker: Worker, actor: Actor) -> Worker:
         output, err = self.outputs(worker)
@@ -149,7 +177,7 @@ class WorkerRunner:
         resume = ended.session or self.latest_session(worker)
         report = self.shortened_report(ended.error or ended.report) or "(nothing printed)"
         code = code or (ERROR_STATUS if ended.error else 0)
-        outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
+        outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes(), start=self.start_minutes()) if code else report
         current = self.workers.find(worker.row_id)
         current = self.cost_recorded(current.with_(resume=resume or current.resume), ended.cost_dollars, actor)
         resumes_at = UsageLimit.reset_at(f"{ended.error}\n{ended.report}", self.time_source.seconds())
@@ -209,6 +237,9 @@ class WorkerRunner:
 
     def minutes(self) -> float:
         return self.settings.decimal(WorkersOptions.TIMEOUT)
+
+    def start_minutes(self) -> float:
+        return self.settings.decimal(WorkersOptions.START_MINUTES)
 
     def outputs(self, worker: Worker) -> tuple[Path, Path]:
         folder = self.config.home / "runtime" / "workers"

@@ -288,6 +288,9 @@ class Claude(Provider):
     def output_session(self, output: str, err: str) -> str:
         return next((row.session for row in ClaudeStreamRow.lines(output) if row.session), "")
 
+    def is_work_started(self, output: str) -> bool:
+        return any(row.is_work for row in ClaudeStreamRow.lines(output))
+
     def worktree_hooks(self, root: Path, folder: Path, script: Path, command: str) -> None:
         if self.has_journal_hooks(folder / self.home / self.settings_file):
             return

@@ -47,6 +47,9 @@ ENDED_UNFINISHED = "ended without clocking out"
 QUEUE_TURN_END = "ended mid-queue"
 # how a run that went past the time limit says it was stopped
 RUN_LIMIT_END = "stopped after"
+# how a run whose agent never started its session says it ended, and the move that launches the job once more after the first such run
+STALLED_START_END = "never started"
+START_RETRY_MOVE = "launched again after a stalled start"
 LIMITED_MOVE = "stopped at the usage limit"
 RUN_LIMIT_REASON = "run limit"
 # the move that hands a worker a point back, the one that takes its work in, and its clock-out
@@ -184,10 +187,16 @@ class Worker(Helper):
 
     def unfinished(self, time: float, text: str) -> "Worker":
         attempts = sum(1 for word, _ in self.moves.steps if word == ENDED_UNFINISHED) + 1
-        return self.moved(ENDED_UNFINISHED, time).with_(state=WorkerState.UNFINISHED, pid=0, token_hash="", run_end=text).with_event(WorkerUnfinished(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, ended without clocking out", times=attempts, is_run_limit=text.startswith(RUN_LIMIT_END)))
+        return self.moved(ENDED_UNFINISHED, time).with_(state=WorkerState.UNFINISHED, pid=0, token_hash="", run_end=text).with_event(WorkerUnfinished(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, ended without clocking out", times=attempts, is_run_limit=text.startswith(RUN_LIMIT_END), is_stalled_start=text.startswith(STALLED_START_END)))
 
     def limited(self, time: float, resumes_at: float, text: str) -> "Worker":
         return self.moved(LIMITED_MOVE, time).with_(state=WorkerState.LIMITED, pid=0, token_hash="", run_end=text, resumes_at=resumes_at).with_event(WorkerLimited(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, waiting for the usage limit", resumes_at=resumes_at))
+
+    def start_retried(self, resume: str, time: float) -> "Worker":
+        return self.moved(START_RETRY_MOVE, time).with_(resume=resume, pid=0, began=0.0)
+
+    def is_start_retried(self) -> bool:
+        return self.moves.latest((START_RETRY_MOVE, *JOB_STARTS, QUEUE_MOVE, REJECTION_MOVE)) == START_RETRY_MOVE
 
     def queue_turn_ended(self, time: float, task: int) -> "Worker":
         return self.moved(QUEUE_TURN_END, time).with_(state=WorkerState.UNFINISHED, pid=0, token_hash="").with_event(WorkerQueueTurnEnded(environment_id=self.environment_id, time=time, worker=self.mention(), task=task))

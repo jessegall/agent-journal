@@ -260,6 +260,9 @@ class Provider(ABC):
     def output_session(self, output: str, err: str) -> str:
         return ""
 
+    def is_work_started(self, output: str) -> bool:
+        return bool(output.strip())
+
     def answer(self, hook: Hook, decision: Decision) -> Response:
         return self.reply(hook, decision, self.user_line_key)
 
