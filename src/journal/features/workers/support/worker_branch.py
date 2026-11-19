@@ -81,11 +81,23 @@ class WorkerBranch:
     def inner_checkout(self, worker: Worker, name: str) -> Path:
         """The checkout of the inner repository name that the worker's branch is cut from and merged into: the project's own, or, when the brief names a branch this repository holds and the project's checkout is not on it, a checkout of that branch the journal keeps under its home (bases/<name>/<branch>), made once from the local branch or from origin's; a branch git has out elsewhere already is used where it is."""
         checkout = self.config.root / name
+        own = f"refs/heads/{self.name(worker)}"
+        started = None
         for branch in dict.fromkeys(BRIEF_BRANCH.findall(worker.brief or "")):
             base = self.base_checkout(checkout, name, branch)
-            if base is not None:
-                return base
+            if base is None:
+                continue
+            if started is None:
+                started = self.git("rev-parse", "--verify", "-q", own, cwd=checkout).returncode == 0
+            if started and not self.is_cut_from(own, base, checkout):
+                continue
+            return base
         return checkout
+
+    def is_cut_from(self, own: str, base: Path, checkout: Path) -> bool:
+        """Whether the worker's branch was cut from the base checkout's branch: where the two meet lies beyond the project's checkout. A worker cut from the project's checkout before its brief named a branch meets the base inside it, so it keeps merging there and never pours the project's branch into the base."""
+        fork = self.git("merge-base", own, "HEAD", cwd=base).stdout.strip()
+        return bool(fork) and self.git("merge-base", "--is-ancestor", fork, "HEAD", cwd=checkout).returncode != 0
 
     def base_checkout(self, checkout: Path, name: str, branch: str) -> Path | None:
         path = self.config.home / BASES / name / branch.replace("/", "--")
