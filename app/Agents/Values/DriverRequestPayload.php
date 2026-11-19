@@ -11,7 +11,7 @@ namespace App\Agents\Values;
 final readonly class DriverRequestPayload
 {
     /**
-     * @param  array<string, string>|null  $scriptParameters
+     * @param  array<string, string>  $scriptParameters
      */
     private function __construct(
         public string|null $message = null,
@@ -19,7 +19,7 @@ final readonly class DriverRequestPayload
         public string|null $effort = null,
         public string|null $scriptId = null,
         public int|null $scriptVersion = null,
-        public array|null $scriptParameters = null,
+        public array $scriptParameters = [],
     ) {}
 
     public static function nothing(): self

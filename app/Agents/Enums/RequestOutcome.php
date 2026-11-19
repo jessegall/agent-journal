@@ -18,5 +18,6 @@ enum RequestOutcome: string
     case EntryUnavailable = 'entry_unavailable';
     case StopUnconfirmed = 'stop_unconfirmed';
     case ScriptFailed = 'script_failed';
+    case Unconfirmed = 'unconfirmed';
     case Refused = 'refused';
 }

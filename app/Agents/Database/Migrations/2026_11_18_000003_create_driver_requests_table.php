@@ -34,7 +34,7 @@ return new class extends Migration
             $table->string('script_id')->nullable();
             $table->unsignedInteger('script_version')->nullable();
             $table->unsignedInteger('script_step')->nullable();
-            $table->json('script_parameters')->nullable();
+            $table->json('script_parameters');
             $table->unsignedBigInteger('script_generation')->nullable();
             $table->string('script_evidence', 500)->nullable();
             $table->string('hold_reason', 32);

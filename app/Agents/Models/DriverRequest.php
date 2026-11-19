@@ -10,9 +10,12 @@ use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
+use App\Agents\Values\NavigationGoal;
+use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -50,7 +53,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $script_id
  * @property int|null $script_version
  * @property int|null $script_step
- * @property array<string, string>|null $script_parameters
+ * @property array<string, string> $script_parameters
  * @property int|null $script_generation
  * @property string|null $script_evidence
  * @property HoldReason $hold_reason
@@ -260,6 +263,20 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * The key script this request runs, with its version and parameters, as a navigation request's goal.
+     *
+     * @throws NavigationRaiseRefused
+     */
+    public function scriptGoal(): NavigationGoal
+    {
+        if ($this->script_id === null || $this->script_version === null) {
+            throw NavigationRaiseRefused::notAKeyScript($this->id);
+        }
+
+        return new NavigationGoal($this->script_id, $this->script_version, $this->script_parameters);
+    }
+
+    /**
      * Whether the stopped key script reached a step it can go on from.
      */
     public function canResumeScript(): bool
@@ -341,6 +358,10 @@ final class DriverRequest extends Model implements ReadableModel
             $this->message,
             $this->model,
             $this->effort,
+            $this->script_id,
+            $this->script_version,
+            ScriptParameter::listOf($this->script_parameters),
+            $this->script_step,
         );
     }
 

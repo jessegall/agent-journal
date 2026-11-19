@@ -24,4 +24,15 @@ final readonly class ScriptParameter
     {
         return array_column(array_map(fn (self $parameter) => (array) $parameter, $parameters), 'value', 'name');
     }
+
+    /**
+     * The parameters of names and values, in their order.
+     *
+     * @param  array<string, string>  $values
+     * @return list<self>
+     */
+    public static function listOf(array $values): array
+    {
+        return array_map(fn (string $name, string $value) => new self($name, $value), array_keys($values), $values);
+    }
 }

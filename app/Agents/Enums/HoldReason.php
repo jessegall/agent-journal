@@ -26,6 +26,7 @@ enum HoldReason: string
     case UnknownScreen = 'unknown_screen';
     case ScreenUnreadable = 'screen_unreadable';
     case NeedsAttention = 'needs_attention';
+    case NavigationNeeded = 'navigation_needed';
 
     /**
      * Whether only a person can clear the hold: a screen the program shows that the journal never answers alone.
@@ -34,7 +35,8 @@ enum HoldReason: string
     {
         return match ($this) {
             self::PermissionRequired, self::TrustRequired, self::OnboardingRequired, self::LoginRequired,
-            self::UpdateRequired, self::UnknownScreen, self::ScreenUnreadable, self::NeedsAttention => true,
+            self::UpdateRequired, self::UnknownScreen, self::ScreenUnreadable, self::NeedsAttention,
+            self::NavigationNeeded => true,
             self::None,
             self::Interrupted,
             self::Compacting,

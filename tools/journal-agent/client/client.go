@@ -32,15 +32,38 @@ type ClaimedRequest struct {
 	Message   *string `json:"message"`
 	Model     *string `json:"model"`
 	Effort    *string `json:"effort"`
+	// Script is the key script a key_script request runs, with its version, its parameters and the step it stopped
+	// at, which a resumed run goes on from; all empty for any other request.
+	Script           *string           `json:"script"`
+	ScriptVersion    *int              `json:"scriptVersion"`
+	ScriptParameters []ScriptParameter `json:"scriptParameters"`
+	ScriptStep       *int              `json:"scriptStep"`
+}
+
+// ScriptParameter mirrors App\Agents\Values\ScriptParameter: one named value a key script request gives its script.
+type ScriptParameter struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // RequestReport mirrors App\Http\Data\Agents\RequestProgressReportData.
 type RequestReport struct {
-	RequestID     string  `json:"request_id"`
-	Attempt       int     `json:"attempt"`
-	Progress      string  `json:"progress"`
-	ActualBinding *string `json:"actual_binding"`
-	Outcome       *string `json:"outcome"`
+	RequestID     string        `json:"request_id"`
+	Attempt       int           `json:"attempt"`
+	Progress      string        `json:"progress"`
+	ActualBinding *string       `json:"actual_binding"`
+	Outcome       *string       `json:"outcome"`
+	Script        *ScriptReport `json:"script,omitempty"`
+	// OperationKey names one raise or report call, so the journal takes a repeated call once; empty for the others.
+	OperationKey string `json:"operation_key,omitempty"`
+}
+
+// ScriptReport mirrors App\Http\Data\Agents\ScriptProgressData: the step a key script confirmed, the screen
+// generation it matched and what it saw.
+type ScriptReport struct {
+	Step       int    `json:"step"`
+	Generation int    `json:"generation"`
+	Evidence   string `json:"evidence"`
 }
 
 // ActivityReport mirrors App\Http\Data\Agents\RuntimeActivityReportData.

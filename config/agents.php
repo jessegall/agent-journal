@@ -5,12 +5,13 @@ declare(strict_types=1);
 return [
 
     /*
-    | The maintenance key scripts an operator may run on an agent's terminal, by name, each with its parameters and
-    | their rules. The host registers the same names (tools/journal-agent/keyscripts); nothing else runs (doc 40,
-    | section 26).
+    | The maintenance key scripts an operator may run on an agent's terminal, by name, each with its version, its
+    | parameters and their rules. The host registers exactly these names and versions
+    | (tools/journal-agent/keyscripts/scripts, recorded()); nothing else runs (doc 40, section 26).
     */
     'key_scripts' => [
-        'LoginMcp' => ['version' => 1, 'parameters' => ['server' => 'required|string|max:200']],
+        'ChangeModel' => ['version' => 2, 'parameters' => ['model' => 'required|string|max:200']],
+        'ChangeEffort' => ['version' => 1, 'parameters' => ['effort' => 'required|string|max:200']],
     ],
 
     /*
