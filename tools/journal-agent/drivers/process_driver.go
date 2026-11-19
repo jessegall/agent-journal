@@ -40,6 +40,10 @@ type ProcessRuntime struct {
 	WorkingFolder  string
 	HookCommand    string
 	Profile        profilecontracts.ProgramProfile
+	// Environment is the prepared start's clean environment the child starts from; the host's own never reaches it.
+	Environment []string
+	// Account is the saved account each child signs in with.
+	Account *profilecontracts.AccountStart
 }
 
 // ProcessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
@@ -153,6 +157,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		Model:          driver.model,
 		Effort:         driver.effort,
 		WorkFolder:     driver.runtime.WorkingFolder,
+		Account:        driver.runtime.Account,
 	}
 	command, err := driver.command(start)
 	if err != nil {
@@ -201,7 +206,7 @@ func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, e
 	}
 	command := exec.Command(profile.Program(), arguments...)
 	command.Dir = driver.runtime.WorkingFolder
-	command.Env = profile.Environment(WithoutJournalVariables(os.Environ()), start)
+	command.Env = profile.Environment(WithoutJournalVariables(driver.runtime.Environment), start)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	return command, nil
 }

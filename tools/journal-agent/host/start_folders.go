@@ -1,6 +1,7 @@
 package host
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -47,6 +48,30 @@ func WriteStartFolders(settingsFolder string, folders []client.StartFolder) ([]s
 	}
 
 	return arguments, nil
+}
+
+// RequireNoLinks refuses a settings folder with a link anywhere from the state folder down to it: a link there
+// could send a start's generated settings into the account folder or the work folder.
+func RequireNoLinks(stateFolder, settingsFolder string) error {
+	relative, err := filepath.Rel(stateFolder, settingsFolder)
+	if err != nil || checkInside(relative) != nil {
+		return fmt.Errorf("the settings folder %s is not inside the host state %s", settingsFolder, stateFolder)
+	}
+	path := stateFolder
+	for _, part := range strings.Split(relative, string(filepath.Separator)) {
+		path = filepath.Join(path, part)
+		info, err := os.Lstat(path)
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("the settings folder passes through the link %s", path)
+		}
+	}
+	return nil
 }
 
 func checkInside(path string) error {

@@ -131,10 +131,18 @@ func (Codex) Environment(inherited []string, start contracts.Start) []string {
 		kept = append(kept, entry)
 	}
 
+	if start.Account != nil {
+		return append(kept, "CODEX_HOME="+start.Account.Folder)
+	}
 	return append(kept, "CODEX_HOME="+start.SettingsFolder)
 }
 
+// SettingsFiles are the isolated home's files of a start with no account. A saved account's config.toml and hooks
+// belong to the account, prepared by the host under the account's lock, and are never replaced from here.
 func (Codex) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile, error) {
+	if start.Account != nil {
+		return nil, nil
+	}
 	var config strings.Builder
 	config.WriteString("[features]\n")
 	for _, feature := range codexAgentFeatures {
@@ -190,6 +198,22 @@ var codexHookEvents = []codexHookEvent{
 
 // codexHooks gives the hooks.json that runs the command on every event, and the [hooks.state] tables that mark each
 // hook trusted, hashed the way Codex hashes a command hook's identity, so the hooks run without a trust prompt.
+// CodexAccountHooks are a saved account's hooks.json, which relays every native event to the journal, and the
+// config.toml tables that trust each of those hooks, one table a hook.
+func CodexAccountHooks(accountFolder, hookCommand string) ([]byte, []string, error) {
+	hooks, trust, err := codexHooks(filepath.Join(accountFolder, "hooks.json"), relayCommand(hookCommand, codexJournalName))
+	if err != nil {
+		return nil, nil, err
+	}
+	var tables []string
+	for _, table := range strings.Split(trust, "\n[") {
+		if table = strings.TrimSpace(table); table != "" {
+			tables = append(tables, "["+strings.TrimPrefix(table, "[")+"\n")
+		}
+	}
+	return hooks, tables, nil
+}
+
 func codexHooks(hookFile, command string) ([]byte, string, error) {
 	events := map[string]any{}
 	var trust strings.Builder

@@ -70,6 +70,10 @@ func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
 	}
 	arguments = append(arguments, claudeCodeDelegationTools...)
 
+	if start.Account != nil {
+		arguments = append(arguments, "--restricted", "--mcp-config", filepath.Join(start.SettingsFolder, "mcp.json"))
+	}
+
 	if start.Model != "" {
 		arguments = append(arguments, "--model", start.Model)
 	}
@@ -127,12 +131,75 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 		settings["hooks"] = hooks
 	}
 
+	if start.Account == nil {
+		content, err := json.MarshalIndent(settings, "", "  ")
+		return []contracts.SettingsFile{{Name: "settings.json", Content: content}}, err
+	}
+	if err := mergeProtection(settings, start.Account.Protection); err != nil {
+		return nil, err
+	}
 	content, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {
 		return nil, err
 	}
 
-	return []contracts.SettingsFile{{Name: "settings.json", Content: content}}, nil
+	return []contracts.SettingsFile{
+		{Name: "settings.json", Content: content},
+		{Name: "mcp.json", Content: []byte(`{"mcpServers":{}}`)},
+	}, nil
+}
+
+// mergeProtection adds the account's checked protection settings to the start's own: permission lists are joined,
+// and any other setting is added when the start has none, never replaced. A setting both name differently refuses
+// the start, since one side would lose.
+func mergeProtection(settings map[string]any, protection string) error {
+	var account map[string]any
+	if err := json.Unmarshal([]byte(protection), &account); err != nil {
+		return fmt.Errorf("the account's protection settings are not JSON: %w", err)
+	}
+	permissions, _ := settings["permissions"].(map[string]any)
+	accountPermissions, _ := account["permissions"].(map[string]any)
+	delete(account, "permissions")
+	for name, value := range accountPermissions {
+		list, isList := value.([]any)
+		if !isList {
+			if err := addSetting(permissions, "permissions."+name, name, value); err != nil {
+				return err
+			}
+			continue
+		}
+		permissions[name] = joinRules(permissions[name], list)
+	}
+	for name, value := range account {
+		if err := addSetting(settings, name, name, value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func addSetting(settings map[string]any, path, name string, value any) error {
+	existing, present := settings[name]
+	if present && fmt.Sprint(existing) != fmt.Sprint(value) {
+		return fmt.Errorf("the account's protection setting %s would replace the start's own", path)
+	}
+	settings[name] = value
+	return nil
+}
+
+// joinRules is the start's rules followed by each account rule it does not have yet.
+func joinRules(own any, account []any) []string {
+	var joined []string
+	if rules, isList := own.([]string); isList {
+		joined = slices.Clone(rules)
+	}
+	for _, rule := range account {
+		text := fmt.Sprint(rule)
+		if !slices.Contains(joined, text) {
+			joined = append(joined, text)
+		}
+	}
+	return joined
 }
 
 func (ClaudeCode) RejectContrary(extraArguments []string) error {

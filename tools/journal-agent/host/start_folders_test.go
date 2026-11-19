@@ -51,3 +51,21 @@ func TestAStartPathLeavingTheSettingsFolderIsRefusedBeforeAnyWrite(t *testing.T)
 		t.Fatal("a folder was written before the refusal")
 	}
 }
+
+func TestASettingsFolderReachedThroughALinkIsRefused(t *testing.T) {
+	state := t.TempDir()
+	elsewhere := t.TempDir()
+	if err := os.Symlink(elsewhere, filepath.Join(state, "runtimes")); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := RequireNoLinks(state, filepath.Join(state, "runtimes", "r1")); err == nil {
+		t.Fatal("a settings folder behind a link was accepted")
+	}
+	if err := RequireNoLinks(state, filepath.Join(state, "..", "r1")); err == nil {
+		t.Fatal("a settings folder outside the state was accepted")
+	}
+	if err := RequireNoLinks(state, filepath.Join(state, "plain", "r1")); err != nil {
+		t.Fatalf("a plain settings folder was refused: %v", err)
+	}
+}

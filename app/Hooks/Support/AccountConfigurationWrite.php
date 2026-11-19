@@ -22,6 +22,20 @@ final readonly class AccountConfigurationWrite
      */
     public function addTrust(string $accountDirectory, CodexFolderTrust $trust): bool
     {
+        return $this->prepare($accountDirectory, [], [], $trust);
+    }
+
+    /**
+     * Adds, in one locked write, each top-level setting and each table the file lacks and the root's trust, and
+     * answers whether it changed the file. A setting or table already there is left exactly as it is.
+     *
+     * @param  array<string, string>  $settings  top-level keys and their TOML values, such as the file sign-in store
+     * @param  list<string>  $tables  whole TOML tables, each known by its header line
+     *
+     * @throws AccountConfigurationUnwritten
+     */
+    public function prepare(string $accountDirectory, array $settings, array $tables, CodexFolderTrust $trust): bool
+    {
         $path = rtrim($accountDirectory, '/').'/config.toml';
         $lock = fopen($path.'.lock', 'c');
 
@@ -31,12 +45,13 @@ final readonly class AccountConfigurationWrite
 
         try {
             $current = is_file($path) ? (string) file_get_contents($path) : '';
+            $prepared = $this->withTables($this->withSettings($current, $settings), [...$tables, $trust->tomlTable()]);
 
-            if ($trust->isIn($current)) {
+            if ($prepared === $current) {
                 return false;
             }
 
-            $this->replace($path, $this->withTrust($current, $trust));
+            $this->replace($path, $prepared);
 
             return true;
         } finally {
@@ -45,15 +60,49 @@ final readonly class AccountConfigurationWrite
         }
     }
 
-    private function withTrust(string $current, CodexFolderTrust $trust): string
+    /**
+     * The configuration with each missing top-level setting put first, where no table can claim it.
+     *
+     * @param  array<string, string>  $settings
+     */
+    private function withSettings(string $current, array $settings): string
     {
-        $separator = match (true) {
-            $current === '' => '',
-            str_ends_with($current, "\n") => "\n",
-            default => "\n\n",
-        };
+        $firstTable = preg_match('/^\[/m', $current, $match, PREG_OFFSET_CAPTURE) === 1 ? $match[0][1] : null;
+        $topLevel = substr($current, 0, $firstTable);
+        $missing = '';
 
-        return $current.$separator.$trust->tomlTable();
+        foreach ($settings as $name => $value) {
+            if (preg_match('/^'.preg_quote($name, '/').'\s*=/m', $topLevel) !== 1) {
+                $missing .= sprintf("%s = %s\n", $name, $value);
+            }
+        }
+
+        return $missing.$current;
+    }
+
+    /**
+     * @param  list<string>  $tables
+     */
+    private function withTables(string $current, array $tables): string
+    {
+        $prepared = $current;
+
+        foreach ($tables as $table) {
+            $header = explode("\n", trim($table))[0];
+
+            if (str_contains($prepared, $header)) {
+                continue;
+            }
+
+            $separator = match (true) {
+                $prepared === '' => '',
+                str_ends_with($prepared, "\n") => "\n",
+                default => "\n\n",
+            };
+            $prepared .= $separator.trim($table)."\n";
+        }
+
+        return $prepared;
     }
 
     /**

@@ -45,9 +45,4 @@ final readonly class CodexFolderTrust
 
         return "[projects.\"{$path}\"]\ntrust_level = \"trusted\"\n";
     }
-
-    public function isIn(string $configuration): bool
-    {
-        return str_contains($configuration, explode("\n", $this->tomlTable())[0]);
-    }
 }

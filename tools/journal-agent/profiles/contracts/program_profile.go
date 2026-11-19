@@ -26,6 +26,16 @@ type Start struct {
 	// WorkFolder is the folder the program works in, when the host knows it; a profile reads which of its own
 	// discovery roots that folder holds.
 	WorkFolder string
+	// Account is the saved account the start signs in with, as its prepared claim gives it; nil for a start with
+	// no account, such as a recording.
+	Account *AccountStart
+}
+
+// AccountStart is what a start on a saved account adds to the profile's own settings: the account's folder on the
+// host and the native protection settings its adapter checked, as JSON, merged into the start's settings.
+type AccountStart struct {
+	Folder     string
+	Protection string
 }
 
 // SettingsFile is one generated file of the isolated settings folder: its name and content. A sign-in is never one:

@@ -92,8 +92,8 @@ func serve(arguments []string) error {
 	}
 	defer listener.Close()
 	journal := client.New(enrollment)
-	opener := runtimeOpener{stateFolder: *stateFolder, journalURL: journal.JournalURL(), hookCommand: *hookCommand,
-		socket: socket}
+	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
+		journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket}
 	loop := serving.NewLoop(journal, startPreparation(journal, *stateFolder, *installationFolder), opener.open)
 	watcher, err := host.NewScreenWatcher(ctx, journal, socket)
 	if err != nil {
@@ -116,7 +116,8 @@ func serve(arguments []string) error {
 // a process runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
 // owns.
 type runtimeOpener struct {
-	stateFolder string
+	stateFolder        string
+	installationFolder string
 	journalURL  string
 	hookCommand string
 	socket      *host.AttachSocket
@@ -137,11 +138,15 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 	if err := pinnedBuild(profile, grant.Runtime.ProgramBuild); err != nil {
 		return nil, fmt.Errorf("runtime %s: %w", runtimeID, err)
 	}
+	environment, err := cleanEnvironmentOf(opener.stateFolder, opener.installationFolder, runtimeID, prepared)
+	if err != nil {
+		return nil, err
+	}
 	switch grant.Runtime.DriverType {
 	case drivers.ProcessDriverType:
-		return opener.processRuntime(runtimeID, grant, profile)
+		return opener.processRuntime(runtimeID, prepared, profile, environment)
 	case drivers.TerminalDriverType:
-		return opener.terminalRuntime(runtimeID, grant, profile)
+		return opener.terminalRuntime(runtimeID, prepared, profile, environment)
 	}
 
 	return nil, fmt.Errorf("runtime %s runs under the %s driver, which this host has no driver for", runtimeID,
@@ -152,9 +157,15 @@ func (opener runtimeOpener) open(runtimeID string, prepared host.PreparedStart) 
 // pinned profile of its program and the model the journal asked for.
 func (opener runtimeOpener) processRuntime(
 	runtimeID string,
-	grant client.Grant,
+	prepared host.PreparedStart,
 	profile contracts.ProgramProfile,
+	environment []string,
 ) (serving.Runtime, error) {
+	grant := prepared.Grant
+	settingsFolder := filepath.Join(opener.stateFolder, "runtimes", runtimeID)
+	if err := host.RequireNoLinks(opener.stateFolder, settingsFolder); err != nil {
+		return nil, err
+	}
 	conversationID, err := newConversationID()
 	if err != nil {
 		return nil, err
@@ -164,10 +175,12 @@ func (opener runtimeOpener) processRuntime(
 		Credential:     grant.Token,
 		ProfilePin:     grant.ProfileEnvironment(),
 		ConversationID: conversationID,
-		SettingsFolder: filepath.Join(opener.stateFolder, "runtimes", runtimeID),
+		SettingsFolder: settingsFolder,
 		WorkingFolder:  grant.Runtime.Folder,
 		HookCommand:    opener.hookCommand,
 		Profile:        profile,
+		Environment:    environment,
+		Account:        accountOf(prepared),
 	}, grant.Runtime.ProcessGeneration)
 	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
 	if grant.Runtime.Model != nil {
@@ -186,10 +199,13 @@ func (opener runtimeOpener) processRuntime(
 // same screen the person sees, and every key, the person's too, passes the one gate.
 func (opener runtimeOpener) terminalRuntime(
 	runtimeID string,
-	grant client.Grant,
+	prepared host.PreparedStart,
 	profile contracts.ProgramProfile,
+	environment []string,
 ) (serving.Runtime, error) {
-	request, err := startOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant)
+	grant := prepared.Grant
+	request, err := startOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant,
+		environment, accountOf(prepared))
 	if err != nil {
 		return nil, err
 	}
@@ -314,6 +330,28 @@ func forwardKeys(in io.Reader, connection net.Conn) {
 	}
 }
 
+// accountOf is the saved account a prepared start signs in with.
+func accountOf(prepared host.PreparedStart) *contracts.AccountStart {
+	return &contracts.AccountStart{
+		Folder:     prepared.Claim.Directory,
+		Protection: prepared.Claim.Recipe.ProtectionSettings,
+	}
+}
+
+// cleanEnvironmentOf is the prepared start's environment: the host's platform variables, an empty home and empty
+// folders of the runtime's own, the protected installation's PATH and the account recipe's settings.
+func cleanEnvironmentOf(
+	stateFolder, installationFolder, runtimeID string,
+	prepared host.PreparedStart,
+) ([]string, error) {
+	runtimeFolder := filepath.Join(stateFolder, "runtimes", runtimeID)
+	return host.CleanEnvironment(os.Environ(), prepared.Claim.Recipe, host.StartFolders{
+		Home:         filepath.Join(runtimeFolder, "home"),
+		EmptyFolders: filepath.Join(runtimeFolder, "empty"),
+		Installation: installationFolder,
+	})
+}
+
 // startPreparation prepares every runtime start of this host: the grant and account claim saved in its private state,
 // and the start refused unless it runs from the verified installation under a protected arrangement the host proved.
 func startPreparation(journal *client.Client, stateFolder, installationFolder string) host.StartPreparation {
@@ -383,7 +421,12 @@ func openMainRuntime(
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant)
+	environment, err := cleanEnvironmentOf(stateFolder, installationFolder, opened.RuntimeID, prepared)
+	if err != nil {
+		return host.AttachRequest{}, err
+	}
+	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant,
+		environment, accountOf(prepared))
 }
 
 // startOf builds the program's terminal start for a runtime from its pinned profile and its start grant: the
@@ -394,6 +437,8 @@ func startOf(
 	profile contracts.ProgramProfile,
 	stateFolder, journalURL, hookCommand, runtimeID string,
 	grant client.Grant,
+	environment []string,
+	account *contracts.AccountStart,
 ) (host.AttachRequest, error) {
 	conversationID, err := newConversationID()
 	if err != nil {
@@ -405,6 +450,10 @@ func startOf(
 		SessionID:      conversationID,
 		HookCommand:    hookCommand,
 		WorkFolder:     grant.Runtime.Folder,
+		Account:        account,
+	}
+	if err := host.RequireNoLinks(stateFolder, start.SettingsFolder); err != nil {
+		return host.AttachRequest{}, err
 	}
 	if err := writeSettings(profile, start); err != nil {
 		return host.AttachRequest{}, err
@@ -418,7 +467,7 @@ func startOf(
 		return host.AttachRequest{}, err
 	}
 	startArguments = append(startArguments, folderArguments...)
-	environment := append(profile.Environment(drivers.WithoutJournalVariables(os.Environ()), start),
+	environment = append(profile.Environment(drivers.WithoutJournalVariables(environment), start),
 		"JOURNAL_URL="+journalURL, "JOURNAL_START_TOKEN="+grant.Token,
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(grant.Runtime.ProcessGeneration),
 		"JOURNAL_BYPASS_LOG="+filepath.Join(start.SettingsFolder, drivers.BypassLogName))
