@@ -22,6 +22,7 @@ use Tests\Fixtures\Hooks\Ticks\CountingTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\UnreadLoader;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Engine\TickingFramePlace;
 use Tests\TestCase;
 
 /**
@@ -138,25 +139,28 @@ final class TickCandidatesTest extends TestCase
     /**
      * A running session's stack with the given number of ticking frames named after the prefix.
      *
-     * @return list<array{string, int, string}> stack id, position and frame id of each ticking frame
+     * @return list<TickingFramePlace>
      */
     private function stackWith(int $tickingFrames, string $prefix): array
     {
         $subjects = array_map(fn (int $number) => "{$prefix}-{$number}", range(1, $tickingFrames));
         $row = $this->tickingStack('test.ticking', $subjects, CarbonImmutable::now());
 
-        return array_map(fn (int $index) => [$row->id, $index + 2, $subjects[$index]], array_keys($subjects));
+        return array_map(
+            fn (int $index) => new TickingFramePlace($row->id, $index + 2, $subjects[$index]),
+            array_keys($subjects),
+        );
     }
 
     /**
-     * @param  list<array{string, int, string}>  $frames
+     * @param  list<TickingFramePlace>  $frames
      * @return list<string>
      */
     private function inStackOrder(array $frames): array
     {
-        usort($frames, fn (array $one, array $other) => [$one[0], $one[1]] <=> [$other[0], $other[1]]);
+        usort($frames, fn (TickingFramePlace $one, TickingFramePlace $other) => $one->compare($other));
 
-        return array_map(fn (array $frame) => $frame[2], $frames);
+        return array_map(fn (TickingFramePlace $frame) => $frame->frameId, $frames);
     }
 
     private function availability(): DomainAvailability

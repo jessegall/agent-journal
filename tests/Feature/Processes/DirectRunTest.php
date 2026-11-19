@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Processes\Calls\AdmitLineCall;
+use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ProcessRun;
+use Illuminate\Testing\TestResponse;
 use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
@@ -25,7 +28,7 @@ final class DirectRunTest extends TestCase
 
     public function test_an_unknown_line_is_refused_with_its_request_and_nothing_starts(): void
     {
-        $reply = $this->signed($this->launch, '/agent/processes/admit', $this->line('acme verify'))->assertStatus(422);
+        $reply = $this->admit('acme verify')->assertStatus(422);
 
         $this->assertSame('admission_refused', $reply->json('code'));
         $this->assertSame('command-unknown', $reply->json('details.reason_code'));
@@ -36,18 +39,14 @@ final class DirectRunTest extends TestCase
 
     public function test_a_known_line_is_admitted_as_a_queued_run(): void
     {
-        $reply = $this->signed($this->launch, '/agent/processes/admit', $this->line('cat composer.json'))->assertOk();
+        $reply = $this->admit('cat composer.json')->assertOk();
 
         $this->assertSame($reply->json('run_id'), ProcessRun::query()->withoutGlobalScopes()->sole()->id);
     }
 
     public function test_a_lost_admission_answer_asked_again_under_its_key_starts_the_run_once(): void
     {
-        $runId = $this->signed(
-            $this->launch,
-            '/agent/processes/admit',
-            $this->line('cat composer.json'),
-        )->json('run_id');
+        $runId = $this->admit('cat composer.json')->json('run_id');
         $path = "/agent/processes/admissions/{$runId}";
 
         $first = $this->signed($this->launch, $path, ['request_key' => 'take-1'])->json();
@@ -75,11 +74,15 @@ final class DirectRunTest extends TestCase
             ->assertExitCode(0);
     }
 
-    /**
-     * @return array<string, string>
-     */
-    private function line(string $line): array
+    private function admit(string $line): TestResponse
     {
-        return ['line' => $line, 'dialect' => 'bash', 'working_folder' => base_path(), 'request_key' => 'direct-1'];
+        $call = AdmitLineCall::from([
+            'line' => $line,
+            'dialect' => ShellDialect::Bash,
+            'workingFolder' => base_path(),
+            'requestKey' => 'direct-1',
+        ]);
+
+        return $this->signed($this->launch, '/agent/processes/admit', $call->toArray());
     }
 }

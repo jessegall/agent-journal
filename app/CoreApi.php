@@ -947,6 +947,7 @@ use App\Ui\Declarations\ChoiceOption;
 use App\Ui\Declarations\FloatSize;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page as UiPage;
+use App\Ui\Declarations\PaneChoice;
 use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Declarations\SlotContext;
@@ -1456,6 +1457,7 @@ final class CoreApi
                 FloatSize::class,
                 NavigationItem::class,
                 UiPage::class,
+                PaneChoice::class,
                 Section::class,
                 Slot::class,
                 SlotContext::class,
