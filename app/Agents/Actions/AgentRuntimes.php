@@ -14,18 +14,18 @@ use Illuminate\Support\Str;
 
 /**
  * Opens a session's runtime in Starting and, when the intent carries content, its first delivery; called inside the
- * launch transaction, it opens none of its own.
+ * start transaction, it opens none of its own.
  */
 final readonly class AgentRuntimes
 {
     /**
      * @return array{0: AgentRuntime, 1: DriverRequest|null}
      */
-    public function open(AgentSession $session, RuntimeIntent $intent, string $launchToken): array
+    public function open(AgentSession $session, RuntimeIntent $intent, string $startToken): array
     {
         $runtime = AgentRuntime::forIntent($session, $intent);
         $runtime->begin();
-        $runtime->holdLaunchGrant($launchToken);
+        $runtime->holdStartGrant($startToken);
 
         if ($intent->firstMessage === null) {
             return [$runtime, null];

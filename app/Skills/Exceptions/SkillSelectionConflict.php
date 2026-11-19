@@ -9,7 +9,7 @@ use App\Bus\Enums\RefusalCode;
 use RuntimeException;
 
 /**
- * A launch whose profile requires a skill the selection does not hold; the launch is refused until the profile or the
+ * A start whose profile requires a skill the selection does not hold; the start is refused until the profile or the
  * skill's targeting changes.
  */
 final class SkillSelectionConflict extends RuntimeException implements CodedRefusal
@@ -18,7 +18,7 @@ final class SkillSelectionConflict extends RuntimeException implements CodedRefu
     {
         return new self(
             sprintf(
-                "The profile requires the skill %s, but it is not selected for this launch (%s); change the profile's required skills or the skill's condition.",
+                "The profile requires the skill %s, but it is not selected for this start (%s); change the profile's required skills or the skill's condition.",
                 $key,
                 $reason,
             ),

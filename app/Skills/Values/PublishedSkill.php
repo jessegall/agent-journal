@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 /**
- * A skill delivered to a launch: its key, the digest of its text and the absolute path of its SKILL.md.
+ * A skill delivered to a start: its key, the digest of its text and the absolute path of its SKILL.md.
  */
 final readonly class PublishedSkill
 {

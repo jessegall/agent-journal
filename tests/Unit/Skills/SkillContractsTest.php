@@ -19,12 +19,12 @@ use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillKeyInvalid;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\StoredSkillSource;
-use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
+use App\Skills\Values\StartProfile;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -90,7 +90,7 @@ final class SkillContractsTest extends TestCase
             TestActors::agentIdentity(3),
             TestIds::of(4),
             'main',
-            LaunchProfile::profileFree(),
+            StartProfile::profileFree(),
             ProgramKey::from('codex'),
             ProviderKey::from('openai'),
         );

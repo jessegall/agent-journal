@@ -35,7 +35,7 @@ A skill's condition is a tree of `App\Skills\Conditions\Conditions`: `everyone()
 `all`, `any` and `not`. A result is match, no match or unavailable; unavailable never becomes a match. A domain adds
 named conditions through `ProvidesSkillConditions`, each evaluator reading only its own facts; a write inside an
 evaluation is refused. A profile's skill allowlist narrows the selection (absent keeps all, empty keeps none), and its
-required skills must be selected or the launch is refused naming the skill.
+required skills must be selected or the start is refused naming the skill.
 
 `skill:preview <key>` shows who a skill reaches and why; `--agent` shows one agent's whole selection.
 
@@ -53,7 +53,7 @@ skills. Every write is a new revision; a retry with the same request id returns 
 - Staged sets live in the journal container under `storage/app/skills/generations/<generation>/<publication>/`, a
   checked copy with a `manifest.json` of identities and hashes. The journal owns them; `skill:prune` removes only files
   it staged whose bytes still match, never by a name prefix.
-- The programs run on the host, so the launch grant carries the delivered files and the host writes them into the
+- The programs run on the host, so the start grant carries the delivered files and the host writes them into the
   runtime's own settings folder before it spawns the program: `journal-skills/` passed with `--plugin-dir` for Claude
   Code, `skills/` inside the isolated `CODEX_HOME` for Codex. Nothing is written into an account folder or a checkout.
 - A session reads its skills as receipts: a whole read proven by a tool call, counted per context; a file existing never

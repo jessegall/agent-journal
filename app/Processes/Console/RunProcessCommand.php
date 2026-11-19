@@ -23,7 +23,7 @@ final class RunProcessCommand extends Command
     use RunsCallPipelines;
 
     /**
-     * Variables a child never inherits: the journal's launch token and the run's event key.
+     * Variables a child never inherits: the journal's start token and the run's event key.
      */
     protected $signature = 'process:run {--admission= : The admitted run to start} {--line= : A shell line to admit and run directly} {--dialect=bash : bash, sh or zsh} {--permit= : An evidence permit to run its exact command line once} {--request-key= : The key this use of the line or permit goes under, to get its answer again}';
 

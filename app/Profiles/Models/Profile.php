@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A profile's lasting identity: its stable key, its label and which of its revisions is current. A retired profile
- * keeps its key and revisions but is no longer offered to new launches.
+ * keeps its key and revisions but is no longer offered to new starts.
  *
  * @property string $id
  * @property string $key
@@ -103,7 +103,7 @@ final class Profile extends Model implements ReadableModel
     }
 
     /**
-     * Takes the profile out of new launches; its key and revisions stay.
+     * Takes the profile out of new starts; its key and revisions stay.
      */
     public function retire(): void
     {

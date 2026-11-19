@@ -14,7 +14,7 @@ use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
@@ -28,7 +28,7 @@ final class CallDeadlineTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials'];
+    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens'];
 
     public function test_a_call_signed_18_seconds_ago_gets_about_one_second(): void
     {
@@ -73,14 +73,14 @@ final class CallDeadlineTest extends TestCase
 
     public function test_a_call_signed_25_seconds_ago_is_refused_before_any_handler_runs(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
 
-        $this->sendMcp($launch, 'tools/list', issuedAt: CarbonImmutable::now()->subSeconds(25)->getTimestamp())
+        $this->sendMcp($start, 'tools/list', issuedAt: CarbonImmutable::now()->subSeconds(25)->getTimestamp())
             ->assertStatus(408)
             ->assertJsonPath('id', 1)
             ->assertJsonPath('error.data.code', 'deadline_expired');
 
-        $this->assertNull($launch->session->fresh()?->discovered_at);
+        $this->assertNull($start->session->fresh()?->discovered_at);
     }
 
     private function signedSecondsAgo(int $seconds): void

@@ -15,7 +15,7 @@ use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\ExecutionContext;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -30,7 +30,7 @@ final class RunnerCapabilityTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     private string $folder;
 
@@ -39,8 +39,8 @@ final class RunnerCapabilityTest extends TestCase
         parent::setUp();
 
         Storage::fake(SpoolRecorder::DISK);
-        $this->launch = TestLaunch::start();
-        $this->runCommandsAs($this->launch);
+        $this->start = TestStart::start();
+        $this->runCommandsAs($this->start);
         $this->folder = sys_get_temp_dir().'/runner-'.bin2hex(random_bytes(4));
         mkdir($this->folder);
         file_put_contents($this->folder.'/data.txt', <<<'TEXT'
@@ -97,7 +97,7 @@ final class RunnerCapabilityTest extends TestCase
 
     private function admit(string $line): Admission
     {
-        $this->launch->startRequest($this->app);
+        $this->start->startRequest($this->app);
         $context = ExecutionContext::inFolder($this->folder);
         $requestKey = bin2hex(random_bytes(8));
 

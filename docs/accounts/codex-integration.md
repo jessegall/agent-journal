@@ -15,7 +15,7 @@ with a real account; every claim below that needs one is marked missing, not ass
   authentication`, falls back from WebSockets to HTTPS, ends with `turn.failed` and **exits 0**
   (`exec-signed-out.jsonl`).
 
-So the launch checks the account before starting (`login status`, or `account/read` on the app-server) and never
+So the start checks the account before starting (`login status`, or `account/read` on the app-server) and never
 starts `exec` on an account it has not checked. A run's outcome is read from the `turn.failed` or `turn.completed`
 event, never from the exit status. Only that `Missing bearer` 401 is a checked signed-out shape; every other error text
 is Unknown (doc 15, section 13).
@@ -50,10 +50,10 @@ The decision for task 236, with what is missing named:
    `turn/completed`; stopping the owner ends every thread on it, which the host reports per thread.
 2. **Separate processes only with evidence.** Several `codex exec` processes on one `auth.json` race their refresh;
    Codex's CI guide forbids sharing the file. They stay refused until task 251 shows a supported shared refresh.
-3. **Missing native evidence**, each a prerequisite of shipping parallel Codex launches: whether app-server threads
+3. **Missing native evidence**, each a prerequisite of shipping parallel Codex starts: whether app-server threads
    run the account's `hooks.json` hooks as `exec` does; whether two threads keep separate hook session identities;
    restart persistence of a sign-in and reuse by a later process; a refresh under parallel threads. Until task 251
-   records them, parallel Codex launches are refused, not assumed.
+   records them, parallel Codex starts are refused, not assumed.
 
 ## Work-folder trust and project configuration
 

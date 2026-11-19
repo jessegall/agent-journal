@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 
 /**
  * The Rules commands on the bus (doc 19, phase 2): proposing answers the new rule's id, removing raises its fact,
@@ -74,7 +74,7 @@ final class RuleCommandsTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(3)),
-            TestLaunchAuthority::forAgent(TestIds::of(3)),
+            TestStartAuthority::forAgent(TestIds::of(3)),
         );
         $rule = Rule::proposed(
             'No phase waits on the user.',
@@ -95,7 +95,7 @@ final class RuleCommandsTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(3)),
-            TestLaunchAuthority::forAgent(TestIds::of(3)),
+            TestStartAuthority::forAgent(TestIds::of(3)),
         );
         $rule = Rule::proposed(
             'No phase waits on the user.',

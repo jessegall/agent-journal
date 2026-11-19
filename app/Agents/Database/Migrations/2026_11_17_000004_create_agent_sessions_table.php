@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('program_source', 16);
             $table->string('profile_key', 128);
             $table->unsignedInteger('profile_revision');
-            $table->ulid('launch_request_id')->index();
+            $table->ulid('start_request_id')->index();
             $table->ulid('skill_generation_id')->nullable();
             $table->ulid('current_conversation_id')->nullable();
             $table->string('status', 16)->default('active');

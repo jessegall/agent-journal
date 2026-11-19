@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
-use App\Agents\Commands\LaunchAgent;
+use App\Agents\Actions\StartSessions;
+use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Enums\ConversationModeType;
-use App\Agents\Enums\LaunchOriginType;
+use App\Agents\Enums\StartOriginType;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
-use App\Agents\Support\LaunchPolicy;
-use App\Agents\Support\LaunchRequest;
+use App\Agents\Support\StartPolicy;
+use App\Agents\Support\StartRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
@@ -44,7 +44,7 @@ final class ConversationVisitTest extends TestCase
 
     public function test_a_b_a_in_one_process_gives_three_ordered_visits_on_one_session(): void
     {
-        $session = $this->launch('helpers.job 1');
+        $session = $this->start('helpers.job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
 
         $visits->entered($session->id, 'native-a', 'call-1', CarbonImmutable::now());
@@ -60,7 +60,7 @@ final class ConversationVisitTest extends TestCase
 
     public function test_a_retry_with_the_same_event_id_adds_no_visit(): void
     {
-        $session = $this->launch('helpers.job 1');
+        $session = $this->start('helpers.job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
 
         $visits->entered($session->id, 'native-a', 'call-1', CarbonImmutable::now());
@@ -71,11 +71,11 @@ final class ConversationVisitTest extends TestCase
 
     public function test_a_resume_into_a_conversation_of_another_context_is_refused_and_adds_no_visit(): void
     {
-        $first = $this->launch('helpers.job 1');
+        $first = $this->start('helpers.job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
         $visits->entered($first->id, 'native-a', 'call-1', CarbonImmutable::now());
-        $this->app->make(LaunchSessions::class)->end($first);
-        $second = $this->launch('helpers.job 2');
+        $this->app->make(StartSessions::class)->end($first);
+        $second = $this->start('helpers.job 2');
 
         $this->assertThrows(
             fn () => $visits->entered($second->id, 'native-a', 'call-2', CarbonImmutable::now()),
@@ -88,7 +88,7 @@ final class ConversationVisitTest extends TestCase
 
     public function test_the_reader_gives_an_agents_conversations_with_their_last_model(): void
     {
-        $session = $this->launch('helpers.job 1');
+        $session = $this->start('helpers.job 1');
         $this->app->make(RecordConversationVisit::class)->entered(
             $session->id,
             'native-a',
@@ -116,22 +116,22 @@ final class ConversationVisitTest extends TestCase
         );
     }
 
-    private function launch(string $context): AgentSession
+    private function start(string $context): AgentSession
     {
-        $request = new LaunchRequest(
+        $request = new StartRequest(
             TestSelections::requestId(),
             $this->agent->id,
             TestSelections::of(),
-            LaunchOriginType::OwnerRequest,
+            StartOriginType::OwnerRequest,
             $context,
             $context,
             ConversationModeType::New,
             null,
-            LaunchPolicy::withoutProfile(TestSelections::onHost()),
+            StartPolicy::withoutProfile(TestSelections::onHost()),
         );
 
         return AgentSession::query()->findOrFail(
-            $this->app->make(CommandBus::class)->run(new LaunchAgent($request))->sessionId,
+            $this->app->make(CommandBus::class)->run(new StartAgent($request))->sessionId,
         );
     }
 }

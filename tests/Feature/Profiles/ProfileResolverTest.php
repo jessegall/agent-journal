@@ -16,7 +16,7 @@ use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
-use App\Profiles\Values\ProfileLaunchPolicy;
+use App\Profiles\Values\ProfileStartPolicy;
 use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -27,7 +27,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
- * The profile reader answers from the activated revision only: its type maps to Core's role, its launch policy comes
+ * The profile reader answers from the activated revision only: its type maps to Core's role, its start policy comes
  * back whole with the writer's clean-worktree stop condition and required container, a key without an activated
  * revision is profiles-unavailable, and the proposal file changes nothing the reader answers.
  */
@@ -38,7 +38,7 @@ final class ProfileResolverTest extends TestCase
 
     private const array TABLES = ['profile_revisions', 'profiles', 'command_receipts'];
 
-    public function test_the_revision_table_holds_the_launch_policy_columns(): void
+    public function test_the_revision_table_holds_the_start_policy_columns(): void
     {
         $this->assertTrue(Schema::hasColumns('profile_revisions', [
             'program',
@@ -59,14 +59,14 @@ final class ProfileResolverTest extends TestCase
         $snapshot = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
 
         $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
-        $launch = $snapshot->launch;
-        $this->assertSame(HookProgram::Codex, $launch->program);
-        $this->assertFalse($launch->programPinned);
-        $this->assertSame(['opus', 'sonnet'], $launch->allowedModels);
-        $this->assertSame([], $launch->stopConditions->conditions);
-        $this->assertSame(ExecutionModeType::RequiredContainer, $launch->execution->mode);
-        $this->assertSame($activation->configurationHash, $launch->provenance->configurationHash);
-        $this->assertSame(PolicyOriginType::GlobalDefault, $launch->provenance->originOf('access'));
+        $start = $snapshot->start;
+        $this->assertSame(HookProgram::Codex, $start->program);
+        $this->assertFalse($start->programPinned);
+        $this->assertSame(['opus', 'sonnet'], $start->allowedModels);
+        $this->assertSame([], $start->stopConditions->conditions);
+        $this->assertSame(ExecutionModeType::RequiredContainer, $start->execution->mode);
+        $this->assertSame($activation->configurationHash, $start->provenance->configurationHash);
+        $this->assertSame(PolicyOriginType::GlobalDefault, $start->provenance->originOf('access'));
     }
 
     public function test_a_writer_profile_keeps_clean_worktree_and_the_required_container(): void
@@ -75,14 +75,14 @@ final class ProfileResolverTest extends TestCase
 
         $snapshot = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'));
 
-        $launch = $snapshot->launch;
+        $start = $snapshot->start;
         $this->assertSame(ProfileBase::writingHelper()->key, $snapshot->base->key);
         $this->assertSame(
             [StopCondition::CLEAN_WORKTREE],
-            array_map(fn (StopCondition $condition) => $condition->key, $launch->stopConditions->conditions),
+            array_map(fn (StopCondition $condition) => $condition->key, $start->stopConditions->conditions),
         );
-        $this->assertSame(ExecutionModeType::RequiredContainer, $launch->execution->mode);
-        $this->assertSame(ProfileLaunchPolicy::HELPER_IMAGE, $launch->execution->imageReference);
+        $this->assertSame(ExecutionModeType::RequiredContainer, $start->execution->mode);
+        $this->assertSame(ProfileStartPolicy::HELPER_IMAGE, $start->execution->imageReference);
     }
 
     public function test_a_key_without_an_activated_revision_is_profiles_unavailable(): void
@@ -116,13 +116,13 @@ final class ProfileResolverTest extends TestCase
         $after = $this->resolver()->snapshotFor(ProfileKey::from('journal-reviewer'));
 
         $this->assertSame($before->base->key, $after->base->key);
-        $this->assertEquals($before->launch->provenance, $after->launch->provenance);
+        $this->assertEquals($before->start->provenance, $after->start->provenance);
         $this->artisan('profile:show', ['key' => 'journal-reviewer'])
             ->expectsOutputToContain('Starts from: Read-only helper')
             ->assertSuccessful();
     }
 
-    public function test_a_damaged_launch_policy_column_fails_the_read(): void
+    public function test_a_damaged_start_policy_column_fails_the_read(): void
     {
         $this->activate('journal-reviewer', ProfileBase::readOnlyHelper());
         DB::table('profile_revisions')->update(['access_policy' => '{"class_grants": 3}']);

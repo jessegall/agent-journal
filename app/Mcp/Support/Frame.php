@@ -10,7 +10,7 @@ use Laravel\Mcp\Enums\RequestHeader;
 use Laravel\Mcp\Transport\JsonRpcRequest;
 
 /**
- * One JSON-RPC message a launched program wrote, as the exact bytes it wrote, with the moment the relay admitted it.
+ * One JSON-RPC message a started program wrote, as the exact bytes it wrote, with the moment the relay admitted it.
  * Its deadline is 20 seconds after admission.
  */
 final readonly class Frame

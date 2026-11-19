@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 /**
- * The settings file a launched program reads from its own isolated settings folder: only the journal's hooks and
+ * The settings file a started program reads from its own isolated settings folder: only the journal's hooks and
  * the journal's tool rules, never anything from the user's own configuration (rule 2).
  */
 final class IsolatedHookSettings

@@ -15,7 +15,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 
 /**
  * Other domains read tasks only through Tasks' published reads: progress counts and visibility checks, with an actor.
@@ -28,7 +28,7 @@ final class TaskReadsTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(3)),
-            TestLaunchAuthority::forAgent(TestIds::of(3)),
+            TestStartAuthority::forAgent(TestIds::of(3)),
         );
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Test the walk']);

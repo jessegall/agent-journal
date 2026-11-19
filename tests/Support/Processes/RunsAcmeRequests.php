@@ -32,10 +32,10 @@ use App\Processes\Values\ReaderDefinition;
 use App\Processes\Values\RecordRule;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
-use Tests\Support\RunsCommandsAsLaunch;
+use Tests\Support\RunsCommandsAsStart;
 use Tests\Support\TestRunAdmissions;
 
 /**
@@ -45,7 +45,7 @@ use Tests\Support\TestRunAdmissions;
 trait RunsAcmeRequests
 {
     use ActsAsActors;
-    use RunsCommandsAsLaunch;
+    use RunsCommandsAsStart;
 
     private const string PASSED_OUTPUT = <<<'TEXT'
     {"test":"a","status":"ok"}
@@ -59,14 +59,14 @@ trait RunsAcmeRequests
 
     TEXT;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     private string $requestId;
 
     private function openAcmeRequest(): void
     {
         Storage::fake(SpoolRecorder::DISK);
-        $this->launch = TestLaunch::start();
+        $this->start = TestStart::start();
         $this->requestId = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',
             str_repeat('a', 64),
@@ -109,9 +109,9 @@ trait RunsAcmeRequests
         $part->finishDraining();
         $recorder->finish($part, PartEnd::exited($status));
         if ($read) {
-            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output/summary", [])->assertOk();
+            $this->signed($this->start, "/agent/processes/runs/{$runId}/output/summary", [])->assertOk();
             $tail = ['part' => 1, 'stream' => 'stdout', 'lines' => 50];
-            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();
+            $this->signed($this->start, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();
         }
         $this->runAsAgent(new SettleSample($this->requestId));
 
@@ -136,7 +136,7 @@ trait RunsAcmeRequests
 
     private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun
     {
-        $actor = new ActorIdentity(ActorType::Agent, $this->launch->agent->id);
+        $actor = new ActorIdentity(ActorType::Agent, $this->start->agent->id);
         $projectKey = (string) config('processes.project_key');
         $run = ProcessRun::admit($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
         $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));

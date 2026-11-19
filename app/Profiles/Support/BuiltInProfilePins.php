@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use App\Agents\Contracts\BuiltInLaunchProfiles;
+use App\Agents\Contracts\BuiltInStartProfiles;
 use App\Agents\Support\SelectedProgram;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
@@ -15,10 +15,10 @@ use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 
 /**
- * The built-in profile a launch without a profile of its own is pinned to, activated with the project's proposal the
+ * The built-in profile a start without a profile of its own is pinned to, activated with the project's proposal the
  * first time one is needed; activation is idempotent, so an unchanged definition adds no revision.
  */
-final readonly class BuiltInProfilePins implements BuiltInLaunchProfiles
+final readonly class BuiltInProfilePins implements BuiltInStartProfiles
 {
     public function __construct(
         private ProfileResolver $profiles,

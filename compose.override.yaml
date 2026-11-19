@@ -10,6 +10,7 @@ services:
                 '--host=0.0.0.0',
                 '--port=8000',
                 '--watch',
+                '--caddyfile=.docker/app/Caddyfile',
             ]
         environment:
             # Server-side rendering in development goes to the Vite container, not to localhost inside this one.

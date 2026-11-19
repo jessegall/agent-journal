@@ -9,7 +9,7 @@
     "CLAUDE_CONFIG_DIR": "<empty directory>",
     "ANTHROPIC_CONFIG_DIR": "<empty directory>"
   },
-  "launch_invocation": [
+  "start_invocation": [
     "claude", "-p",
     "--restricted",
     "--strict-mcp-config", "--mcp-config", "<journal mcp.json>",

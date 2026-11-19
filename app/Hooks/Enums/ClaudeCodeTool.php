@@ -65,7 +65,7 @@ enum ClaudeCodeTool: string
     }
 
     /**
-     * Whether the tool finds or reads MCP tools and resources, which the launch limits to the journal's server.
+     * Whether the tool finds or reads MCP tools and resources, which the start limits to the journal's server.
      */
     public function discoversJournalTools(): bool
     {

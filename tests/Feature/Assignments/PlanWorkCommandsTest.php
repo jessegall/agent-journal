@@ -11,7 +11,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
@@ -31,7 +31,7 @@ final class PlanWorkCommandsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'plans',
         'phases',
@@ -39,9 +39,9 @@ final class PlanWorkCommandsTest extends TestCase
         'assignments',
     ];
 
-    private TestLaunch $main;
+    private TestStart $main;
 
-    private TestLaunch $helper;
+    private TestStart $helper;
 
     private Plan $plan;
 
@@ -51,8 +51,8 @@ final class PlanWorkCommandsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->main = TestLaunch::start('main-agent');
-        $this->helper = TestLaunch::start('read-only-helper');
+        $this->main = TestStart::start('main-agent');
+        $this->helper = TestStart::start('read-only-helper');
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);

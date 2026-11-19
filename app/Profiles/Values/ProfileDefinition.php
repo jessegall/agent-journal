@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 /**
- * What an owner activates for one profile: its stable key, label and the content of its next revision, its launch
+ * What an owner activates for one profile: its stable key, label and the content of its next revision, its start
  * policy included. A null skill allowlist means every applicable skill; an empty one means none.
  */
 final readonly class ProfileDefinition
@@ -22,7 +22,7 @@ final readonly class ProfileDefinition
         public string $model,
         public array|null $skillAllowlist,
         public array $requiredSkills,
-        public ProfileLaunchPolicy $launch,
+        public ProfileStartPolicy $start,
         public ProfileAuthorization $authorization,
     ) {}
 
@@ -32,8 +32,8 @@ final readonly class ProfileDefinition
      */
     public function differsFrom(ProfileSnapshot $active): bool
     {
-        $mine = $this->launch;
-        $theirs = $active->launch;
+        $mine = $this->start;
+        $theirs = $active->start;
 
         return ! $this->base->is($active->base)
             || $this->instructions !== $active->instructions

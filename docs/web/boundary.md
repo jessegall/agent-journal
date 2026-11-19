@@ -8,7 +8,7 @@ Every request has one actor, kept in `App\Actors\ActorContext` for that request 
 
 | Actor | Filled by | Reads |
 |---|---|---|
-| Agent | `AuthenticateAgent`, after the launch credential and the signed call check out | its own rows, through the agent scope |
+| Agent | `AuthenticateAgent`, after the start token and the signed call check out | its own rows, through the agent scope |
 | User | the Access domain's middleware, after its policy lets the user in (task 117) | every agent's rows the user may inspect, through `visibleToUser` |
 
 A user who selects an agent stays the actor; the agent is the target. Nothing forges an agent context for a user.

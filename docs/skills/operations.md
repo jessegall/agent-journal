@@ -23,8 +23,8 @@ agent read it in this context, and whether its program needs a new session to lo
 - **A failed publication.** `skill:status` shows the reason and the command `php artisan skill:retry <publication>`.
   Fix the cause (a full disk, a folder the journal did not create at the target), then retry: it publishes the same
   generation again. Once the session has a newer publication, a retry is refused; run `skill:refresh` instead.
-- **A launch refused.** A grant whose set is not delivered is refused, so nothing spawns without its skills; retry or
-  refresh, then launch again. A required skill outside the selection refuses the launch naming the skill: change the
+- **A start refused.** A grant whose set is not delivered is refused, so nothing spawns without its skills; retry or
+  refresh, then start again. A required skill outside the selection refuses the start naming the skill: change the
   profile or the skill's condition.
 - **A held session.** A session whose new set waits may read, including `skill:status`, but changes no file until the
   set is delivered; it is released by itself.

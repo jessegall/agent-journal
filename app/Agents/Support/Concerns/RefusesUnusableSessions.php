@@ -18,11 +18,11 @@ trait RefusesUnusableSessions
      */
     private function refuseUnusableSession(AgentSession $session): void
     {
-        if ($session->credential === null) {
+        if ($session->startToken === null) {
             throw CredentialRejected::unknown();
         }
 
-        if ($session->credential->isRevoked()) {
+        if ($session->startToken->isRevoked()) {
             throw CredentialRejected::revoked();
         }
 

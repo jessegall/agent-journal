@@ -16,12 +16,12 @@ A profile's name never decides its permissions; its type does.
 
 ## Revisions
 
-Every activation appends a new revision; earlier revisions stay readable and never change. A launch keeps the revision it started with, so a change reaches only launches that start after it. A retired profile keeps its key and revisions, but no new launch can choose it.
+Every activation appends a new revision; earlier revisions stay readable and never change. A start keeps the revision it started with, so a change reaches only starts made after it. A retired profile keeps its key and revisions, but no new start can choose it.
 
 ## Skill lists
 
 - The skill allowlist narrows the skills that apply to the agent. When it is absent, every applicable skill is offered; when it is empty, none is.
-- Required skills must be among the skills selected for the launch.
+- Required skills must be among the skills selected for the start.
 
 A profile never makes a skill apply that its own condition excludes.
 

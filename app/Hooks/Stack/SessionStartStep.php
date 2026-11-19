@@ -12,7 +12,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * What the machine does for every new hook, after the replay check and inside its transaction: a session start, also
- * after a clear or a resume, records the native conversation the journal session entered, checked against its launch
+ * after a clear or a resume, records the native conversation the journal session entered, checked against its start
  * context; a compaction adds a visit to the current conversation; every other hook starts nothing.
  */
 final readonly class SessionStartStep

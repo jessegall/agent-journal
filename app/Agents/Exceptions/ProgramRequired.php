@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 /**
- * A launch with no program from the caller, its profile or its parent session.
+ * A start with no program from the caller, its profile or its parent session.
  */
 final class ProgramRequired extends InvalidArgumentException implements CommandRefusal
 {
-    public static function forLaunch(): self
+    public static function forStart(): self
     {
-        return new self('Name a program for this main-agent launch, or select a profile that defines one.');
+        return new self('Name a program for this main-agent start, or select a profile that defines one.');
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::ProgramRequired;
+        return StartRefusalType::ProgramRequired;
     }
 }

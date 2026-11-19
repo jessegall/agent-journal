@@ -2,6 +2,7 @@
 import { router, useForm } from '@inertiajs/vue3';
 import type { RecordCard } from '@kit/CoreTypes';
 import Button from '@kit/Button';
+import { addLink, removeLink } from '@kit/linkRoutes';
 import FormErrors from '@kit/FormErrors';
 import { formSendingHooks } from '@kit/usePageChanges';
 
@@ -14,11 +15,11 @@ const props = defineProps<{ source: string; links: RecordCard[] }>();
 const form = useForm({ source: props.source, target: '' });
 
 function add(): void {
-    form.post('/links/add', { preserveScroll: true, onSuccess: () => form.reset('target'), ...formSendingHooks() });
+    form.post(addLink.url(), { preserveScroll: true, onSuccess: () => form.reset('target'), ...formSendingHooks() });
 }
 
 function remove(link: RecordCard): void {
-    router.post('/links/remove', { source: props.source, target: link.label }, { preserveScroll: true, ...formSendingHooks() });
+    router.post(removeLink.url(), { source: props.source, target: link.label }, { preserveScroll: true, ...formSendingHooks() });
 }
 </script>
 

@@ -65,7 +65,7 @@ final class SessionSkillsTest extends TestCase
 
     public function test_a_skill_that_starts_to_apply_joins_and_a_retargeted_one_leaves_at_the_next_boundary(): void
     {
-        $session = $this->launchedMainAgent();
+        $session = $this->startedMainAgent();
         $this->assertNotContains('user-probe', $this->latestKeys($session));
 
         $this->artisan(
@@ -100,7 +100,7 @@ final class SessionSkillsTest extends TestCase
 
     public function test_a_set_that_waits_holds_the_session_and_an_unchanged_one_does_not(): void
     {
-        $session = $this->launchedMainAgent();
+        $session = $this->startedMainAgent();
         $this->boundary($session);
         $this->assertSame([], $this->stack->pushed);
 

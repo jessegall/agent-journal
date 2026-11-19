@@ -9,7 +9,7 @@ use App\Actors\Contracts\Policy;
 use BackedEnum;
 
 /**
- * Who may administer agent profiles and the main launch: only the owner holds the ability, so the grants decide.
+ * Who may administer agent profiles and the main start: only the owner holds the ability, so the grants decide.
  */
 final readonly class ProfileAdministrationPolicy implements Policy
 {

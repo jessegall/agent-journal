@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Actors\Contracts\WorkStacks;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Exceptions\HostUnavailable;
-use App\Agents\Exceptions\LaunchRootRefused;
+use App\Agents\Exceptions\StartRootRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
@@ -24,7 +24,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
 {
     public function __construct(
         private WorkStacks $workStacks,
-        private LaunchSessions $launches,
+        private StartSessions $starts,
     ) {}
 
     public function handle(OpenAgentRuntime $command): OpenedRuntime
@@ -35,7 +35,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         }
 
         if (! $host->permitsFolder($command->folder)) {
-            throw LaunchRootRefused::outsideRoots($command->folder);
+            throw StartRootRefused::outsideRoots($command->folder);
         }
 
         $parent = $this->parentSessionFor($command);
@@ -58,7 +58,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
             null,
         );
 
-        return $this->launches->launch(
+        return $this->starts->start(
             Agent::query()->findOrFail($command->agentId),
             $selection,
             (string) Str::ulid(),
@@ -71,7 +71,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
      * An actor working in a session opens only a child of it, on that session's host and inside its folder; an actor
      * that works in none opens a top-level runtime anywhere its host permits.
      *
-     * @throws LaunchRootRefused
+     * @throws StartRootRefused
      */
     private function parentSessionFor(OpenAgentRuntime $command): AgentSession|null
     {
@@ -87,7 +87,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         if ($parentRuntime === null
             || $parentRuntime->host_id !== $command->hostId
             || ! str_starts_with($command->folder, rtrim($parentRuntime->canonical_folder, '/'))) {
-            throw LaunchRootRefused::foreignToAgent();
+            throw StartRootRefused::foreignToAgent();
         }
 
         return $parent;

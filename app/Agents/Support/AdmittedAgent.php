@@ -8,7 +8,7 @@ use App\Actors\Contracts\AuthoritySource;
 
 /**
  * An agent call that passed its credential, its signature and its profile pin: the context it acts in and the profile
- * its launch was pinned to, loaded once for the request.
+ * its start was pinned to, loaded once for the request.
  */
 final readonly class AdmittedAgent
 {

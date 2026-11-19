@@ -43,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $staged_effort
  * @property string|null $observed_effort
  * @property CarbonImmutable|null $settings_observed_at
- * @property string|null $launch_grant
+ * @property string|null $start_grant
  * @property int $process_generation
  * @property CarbonImmutable|null $last_observed_at
  * @property int $row_version
@@ -67,7 +67,7 @@ final class AgentRuntime extends Model implements ReadableModel
     {
         return [
             'driver_type' => DriverType::class,
-            'launch_grant' => 'encrypted',
+            'start_grant' => 'encrypted',
             'activity' => RuntimeActivity::class,
             'hold_reason' => HoldReason::class,
             'settings_observed_at' => 'immutable_datetime',
@@ -280,21 +280,21 @@ final class AgentRuntime extends Model implements ReadableModel
     }
 
     /**
-     * Keeps the launch credential for the host's one launch grant; it is encrypted at rest and cleared when claimed.
+     * Keeps the start token for the host's one start grant; it is encrypted at rest and cleared when claimed.
      */
-    public function holdLaunchGrant(string $token): void
+    public function holdStartGrant(string $token): void
     {
-        $this->launch_grant = $token;
+        $this->start_grant = $token;
         $this->save();
     }
 
     /**
-     * Hands the launch credential over once: the first claim gets it and clears it, any later claim gets nothing.
+     * Hands the start token over once: the first claim gets it and clears it, any later claim gets nothing.
      */
-    public function claimLaunchGrant(): string|null
+    public function claimStartGrant(): string|null
     {
-        $token = $this->launch_grant;
-        $this->launch_grant = null;
+        $token = $this->start_grant;
+        $this->start_grant = null;
         $this->save();
 
         return $token;
@@ -353,15 +353,15 @@ final class AgentRuntime extends Model implements ReadableModel
 
     /**
      * Moves the runtime to a new process generation on the given host, starting again with nothing held and the
-     * rotated credential waiting for that host's launch grant; reports of the old generation are refused after it.
+     * rotated credential waiting for that host's start grant; reports of the old generation are refused after it.
      */
-    public function reassignTo(string $hostId, string $launchToken): void
+    public function reassignTo(string $hostId, string $startToken): void
     {
         $this->host_id = $hostId;
         $this->process_generation++;
         $this->activity = RuntimeActivity::Starting;
         $this->hold_reason = HoldReason::None;
-        $this->launch_grant = $launchToken;
+        $this->start_grant = $startToken;
         $this->save();
     }
 

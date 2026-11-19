@@ -15,7 +15,7 @@ use App\Processes\Support\EvidenceRuns;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\PermitLimits;
 use Illuminate\Support\Facades\Storage;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -30,7 +30,7 @@ final class EvidencePermitTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     private string $folder;
 
@@ -40,8 +40,8 @@ final class EvidencePermitTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start();
-        $this->runCommandsAs($this->launch);
+        $this->start = TestStart::start();
+        $this->runCommandsAs($this->start);
         $this->folder = sys_get_temp_dir().'/evidence-'.bin2hex(random_bytes(4));
         mkdir($this->folder.'/project', recursive: true);
         touch($this->folder.'/project/notes.txt');
@@ -94,7 +94,7 @@ final class EvidencePermitTest extends TestCase
 
     private function agent(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::Agent, $this->launch->agent->id);
+        return new ActorIdentity(ActorType::Agent, $this->start->agent->id);
     }
 
     private function assertRefused(callable $attempt): void

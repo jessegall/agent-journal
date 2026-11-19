@@ -36,7 +36,7 @@ final class TaskCommandsTest extends TestCase
         'tasks',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',

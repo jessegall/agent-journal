@@ -13,7 +13,7 @@ use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
-use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use Tests\Fixtures\Profiles\TestStartPolicies;
 use Tests\TestCase;
 
 /**
@@ -63,13 +63,13 @@ final class ProfilesExportsTest extends TestCase
             'model' => 'opus',
             'skillAllowlist' => null,
             'requiredSkills' => [],
-            'launch' => TestLaunchPolicies::for(ProfileBase::readOnlyHelper()),
+            'start' => TestStartPolicies::for(ProfileBase::readOnlyHelper()),
             'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
         $none = ProfileSnapshot::from([
             ...$absent->all(),
             'key' => $absent->key,
-            'launch' => $absent->launch,
+            'start' => $absent->start,
             'skillAllowlist' => [],
         ]);
 

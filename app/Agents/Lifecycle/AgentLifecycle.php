@@ -8,7 +8,7 @@ use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Models\Agent;
 
 /**
- * The one lock on an agent's row that orders its life: work given to it and launches take the shared lock, which
+ * The one lock on an agent's row that orders its life: work given to it and starts take the shared lock, which
  * refuses a missing or retired agent; retirement takes the exclusive lock, so it waits for those to commit and they
  * wait for it. Callers hold it inside their own transaction.
  */

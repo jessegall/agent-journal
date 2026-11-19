@@ -17,7 +17,7 @@ use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
@@ -31,7 +31,7 @@ final class TaskAuthoringTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
-    private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks'];
+    private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'start_tokens', 'agent_stacks'];
 
     private const string AGENT = '01jd8x0g9m3qz6v4k2agent001';
 
@@ -136,9 +136,9 @@ final class TaskAuthoringTest extends TestCase
 
     public function test_an_agent_creates_one_open_task_as_itself_and_its_session(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
 
-        $taskId = $this->signed($launch, '/agent/tasks/create', [
+        $taskId = $this->signed($start, '/agent/tasks/create', [
             'title' => 'From the agent',
             'brief' => 'What it asks.',
             'request_key' => bin2hex(random_bytes(8)),
@@ -146,7 +146,7 @@ final class TaskAuthoringTest extends TestCase
 
         $task = Task::query()->findOrFail($taskId);
         $this->assertSame(
-            [ActorType::Agent, $launch->agent->id, TaskState::Open],
+            [ActorType::Agent, $start->agent->id, TaskState::Open],
             [$task->creator_type, $task->creator_id, $task->state],
         );
         $this->assertSame(1, Task::query()->count());
@@ -154,11 +154,11 @@ final class TaskAuthoringTest extends TestCase
 
     public function test_a_stale_revision_is_a_conflict_and_the_newer_text_stays(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
         $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
         $task->describe('Second', 'Second brief');
 
-        $this->signed($launch, '/agent/tasks/edit', [
+        $this->signed($start, '/agent/tasks/edit', [
             'task_id' => $task->id,
             'expected_revision' => 1,
             'title' => 'Stale',
@@ -170,10 +170,10 @@ final class TaskAuthoringTest extends TestCase
 
     public function test_the_agent_route_and_the_bus_give_the_same_edit(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
         $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
 
-        $this->signed($launch, '/agent/tasks/edit', [
+        $this->signed($start, '/agent/tasks/edit', [
             'task_id' => $task->id,
             'expected_revision' => 1,
             'brief' => 'Route brief',

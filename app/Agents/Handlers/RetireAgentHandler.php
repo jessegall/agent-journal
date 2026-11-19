@@ -7,7 +7,7 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
-use App\Agents\Actions\LaunchCredentials;
+use App\Agents\Actions\StartTokens;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentRetirementDenied;
@@ -36,7 +36,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         private CurrentAuthorizer $authorizer,
         private AgentLifecycle $lifecycle,
         private AgentSessions $sessions,
-        private LaunchCredentials $credentials,
+        private StartTokens $credentials,
         private AssignmentStorage $store,
         private PublishesAssignmentFacts $facts,
         private DriverRequests $requests,
@@ -44,7 +44,7 @@ final readonly class RetireAgentHandler implements CommandHandler
 
     public function handle(RetireAgent $command): AssignmentResult
     {
-        // The exclusive lifecycle lock comes first, so a launch of the same agent waits or is retried as a whole.
+        // The exclusive lifecycle lock comes first, so a start of the same agent waits or is retried as a whole.
         $target = $this->lifecycle->lockExclusive($command->agentId);
         $caller = ActorIdentity::of($command->dispatchedBy());
         $this->requireAuthority($caller, $target);
@@ -77,7 +77,7 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         $sessions = AgentSession::query()
             ->where('agent_id', $target->id)
-            ->with('credential')
+            ->with('startToken')
             ->readAll('every session of the retiring agent ends')
             ->get();
 
@@ -94,7 +94,7 @@ final readonly class RetireAgentHandler implements CommandHandler
 
             $this->sessions->end($session);
 
-            if ($session->credential !== null) {
+            if ($session->startToken !== null) {
                 $this->credentials->revoke($session);
             }
         }

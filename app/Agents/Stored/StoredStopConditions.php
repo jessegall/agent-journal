@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * The stop conditions of a launch as the JSON column holds them.
+ * The stop conditions of a start as the JSON column holds them.
  */
 #[MapName(SnakeCaseMapper::class)]
 final class StoredStopConditions extends Data

@@ -11,7 +11,7 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\PendingWorkSources;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
-use App\Contracts\LaunchTransaction;
+use App\Contracts\StartTransaction;
 use App\Hooks\Actions\AgentStacks;
 use App\Hooks\Actions\CurrentStates;
 use App\Hooks\Actions\UserStacks;
@@ -65,7 +65,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(IncomingWorkList::class);
         $this->app->singleton(IncomingWorkRegistration::class, IncomingWorkList::class);
         $this->app->singleton(StateTypes::class);
-        $this->app->bind(LaunchTransaction::class, StackTransaction::class);
+        $this->app->bind(StartTransaction::class, StackTransaction::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(

@@ -11,7 +11,7 @@ use Domain\Memory\Calls\RemoveMemoryCall;
 use Illuminate\Console\Command;
 
 /**
- * Remove a memory of the calling agent, asked of the journal over a signed call with the launch's token: the launch
+ * Remove a memory of the calling agent, asked of the journal over a signed call with the start's token: the start
  * decides whose memory it is, never an option.
  */
 #[JournalRoute(JournalRouteType::Write)]

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Hooks\Enums;
 
 /**
- * Why an agent's context starts again: a launch, a clear, a resume or a compaction.
+ * Why an agent's context starts again: a start, a clear, a resume or a compaction.
  */
 enum ContextStartType: string
 {
-    case Launch = 'launch';
+    case Start = 'start';
     case Clear = 'clear';
     case Resume = 'resume';
     case Compact = 'compact';
@@ -17,7 +17,7 @@ enum ContextStartType: string
     public static function fromSource(SessionStartSource $source): self
     {
         return match ($source) {
-            SessionStartSource::Startup => self::Launch,
+            SessionStartSource::Startup => self::Start,
             SessionStartSource::Clear => self::Clear,
             SessionStartSource::Resume => self::Resume,
             SessionStartSource::Compact => self::Compact,
@@ -31,7 +31,7 @@ enum ContextStartType: string
     {
         return match ($this) {
             self::Clear, self::Compact => true,
-            self::Launch, self::Resume => false,
+            self::Start, self::Resume => false,
         };
     }
 }

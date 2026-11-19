@@ -10,7 +10,7 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 
 /**
- * The execution budgets of a launch as the JSON column holds them.
+ * The execution budgets of a start as the JSON column holds them.
  */
 #[MapName(SnakeCaseMapper::class)]
 final class StoredExecutionBudgets extends Data

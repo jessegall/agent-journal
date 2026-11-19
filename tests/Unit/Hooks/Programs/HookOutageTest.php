@@ -63,7 +63,7 @@ final class HookOutageTest extends TestCase
         $this->assertSame(CallFailure::Unreachable, CallFailure::fromStatus(null));
     }
 
-    public function test_a_server_answer_is_refused_even_for_a_launch_that_passes_outages(): void
+    public function test_a_server_answer_is_refused_even_for_a_start_that_passes_outages(): void
     {
         foreach ([403, 404, 503] as $status) {
             $reply = json_decode(OutageReply::for(CallFailure::fromStatus($status), true, 'PreToolUse')->stdout, true);

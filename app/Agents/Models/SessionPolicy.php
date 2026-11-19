@@ -8,7 +8,7 @@ use App\Agents\Exceptions\SessionPolicyFrozen;
 use App\Agents\Stored\StoredAccessPolicy;
 use App\Agents\Stored\StoredExecutionPolicy;
 use App\Agents\Stored\StoredStopConditions;
-use App\Agents\Support\LaunchPolicy;
+use App\Agents\Support\StartPolicy;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -18,8 +18,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * The policy one session was launched under, written once with the launch and never changed: a later profile
- * revision reaches only the next launch.
+ * The policy one session was started under, written once with the start and never changed: a later profile
+ * revision reaches only the next start.
  *
  * @property string $id
  * @property string $session_id
@@ -65,9 +65,9 @@ final class SessionPolicy extends Model implements ReadableModel
     }
 
     /**
-     * Freezes the launch's policy with the session it started.
+     * Freezes the start's policy with the session it started.
      */
-    public static function freeze(AgentSession $session, LaunchPolicy $policy): self
+    public static function freeze(AgentSession $session, StartPolicy $policy): self
     {
         $frozen = new self();
         $frozen->session_id = $session->id;
@@ -83,9 +83,9 @@ final class SessionPolicy extends Model implements ReadableModel
         return $frozen;
     }
 
-    public function policy(): LaunchPolicy
+    public function policy(): StartPolicy
     {
-        return new LaunchPolicy(
+        return new StartPolicy(
             $this->access_policy->toAccessPolicy(),
             $this->stop_conditions->toStopConditions(),
             $this->execution_policy->toExecutionPolicy(),
