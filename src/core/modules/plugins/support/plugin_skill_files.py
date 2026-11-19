@@ -7,14 +7,16 @@ from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.skills.support.skill_catalogue import FRONT_MATTER_MARK, PLUGIN_KEY
 from core.modules.skills.support.skill_projects import SkillProjects
+from core.modules.skills.support.plugin_skill_removal import PluginSkillRemoval
 
 
 
 class PluginSkillFiles:
-    """Publishes enabled plugin skills in project and worktree program folders."""
+    """Publishes enabled plugin skills in project and worktree program folders, and takes away the ones the plugin
+    published before and ships no more."""
 
-    def __init__(self, projects: SkillProjects, providers: Providers) -> None:
-        self.projects, self.providers = projects, providers
+    def __init__(self, projects: SkillProjects, providers: Providers, removal: PluginSkillRemoval) -> None:
+        self.projects, self.providers, self.removal = projects, providers, removal
 
     def names(self, folder: Path, manifest: PluginManifest) -> list[str]:
         if not manifest.skills_folder:
@@ -24,7 +26,9 @@ class PluginSkillFiles:
     # a root reached again through a linked folder, as a worktree's links to the project's folders are, is written once
     def publish(self, folder: Path, manifest: PluginManifest) -> None:
         roots = list(dict.fromkeys(root.resolve() for root in self.projects.roots(self.providers.skill_folders())))
-        for name in self.names(folder, manifest):
+        names = self.names(folder, manifest)
+        self.removal.remove_unshipped(manifest.name, frozenset(names))
+        for name in names:
             text = self.with_plugin_key(SkillContents.read(folder / manifest.skills_folder / name / SKILL_FILE).text, manifest.name)
             for root in roots:
                 target = root / name / SKILL_FILE
