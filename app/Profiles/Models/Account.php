@@ -135,7 +135,7 @@ final class Account extends Model implements ReadableModel
             ->exists();
 
         if ($taken) {
-            throw AccountLabelTaken::for($this->program, $label);
+            throw AccountLabelTaken::for($this->program, $label->label);
         }
 
         $this->name($label);

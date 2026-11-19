@@ -8,7 +8,6 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
-use App\Profiles\Values\AccountLabel;
 use RuntimeException;
 
 /**
@@ -18,9 +17,9 @@ final class AccountLabelTaken extends RuntimeException implements CodedRefusal, 
 {
     use RendersRefusal;
 
-    public static function for(string $program, AccountLabel $label): self
+    public static function for(string $program, string $label): self
     {
-        return new self("Another {$program} account is already named \"{$label->label}\".");
+        return new self("Another {$program} account is already named \"{$label}\".");
     }
 
     protected function status(): int
