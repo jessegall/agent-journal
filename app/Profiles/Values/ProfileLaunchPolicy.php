@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
@@ -59,8 +58,8 @@ final readonly class ProfileLaunchPolicy
             $programPinned,
             $allowedModels,
             AccessPolicy::defaultsFor($role),
-            StopConditions::defaultsFor($role),
-            self::defaultExecution($role),
+            StopConditions::make($role, $type->defaultStopConditions()),
+            self::defaultExecution($type),
             new ProfileProvenance(
                 $configurationHash,
                 array_map(fn (string $field) => new FieldOrigin($field, PolicyOriginType::GlobalDefault), self::FIELDS),
@@ -69,14 +68,14 @@ final readonly class ProfileLaunchPolicy
     }
 
     /**
-     * Where a role runs by default: on the protected host, or in a required container of the journal's helper image,
+     * Where a type runs by default: on the protected host, or in a required container of the journal's helper image,
      * which the host resolves to its verified digest.
      */
-    private static function defaultExecution(AgentRole $role): ExecutionPolicy
+    private static function defaultExecution(ProfileType $type): ExecutionPolicy
     {
-        $mode = $role->defaultExecutionMode();
+        $mode = $type->defaultExecutionMode();
         $image = $mode === ExecutionModeType::RequiredContainer ? self::HELPER_IMAGE : null;
 
-        return ExecutionPolicy::make($role, $mode, $image, self::WORKSPACE, ExecutionBudgets::defaults(), []);
+        return ExecutionPolicy::make($mode, $image, self::WORKSPACE, ExecutionBudgets::defaults(), []);
     }
 }

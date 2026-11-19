@@ -88,7 +88,7 @@ final class HookRecoveryTest extends TestCase
         $this->assertNull($launched->session->refresh()->end_evidence);
         $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
         $this->assertSame(StackStatus::Active, $this->stackOf($launched)->status);
-        $this->assertSame(['hooks.main_ready', 'tasks.working'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($launched)->frames->all()));
+        $this->assertSame(['hooks.ready', 'tasks.working'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($launched)->frames->all()));
         $this->assertSame(TaskState::Started, $task->fresh()?->state);
         $this->assertSame(0, DB::table('hook_calls')->count());
     }
@@ -115,7 +115,7 @@ final class HookRecoveryTest extends TestCase
         $replacement = $this->app->make(LaunchSessions::class)->launch($exited->session->loadMissing('agent')->agent, TestSelections::of('claude-code'), TestSelections::requestId());
 
         $this->assertNotSame($exited->session->id, $replacement->session->id);
-        $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($replacement)->frames->all()));
+        $this->assertSame(['hooks.ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($replacement)->frames->all()));
     }
 
     private function launch(): LaunchedAgent

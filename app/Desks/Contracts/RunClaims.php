@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Desks\Contracts;
 
-use PhpOption\Option;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Desks\Exceptions\RunClaimRefused;
 use App\Records\Support\RecordIdentity;
+use PhpOption\Option;
 
 /**
  * Who works on a run of some work: the actor holding the work itself, or an actor seated at the desk that holds it,

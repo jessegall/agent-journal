@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use App\Profiles\Exceptions\BuiltInProfileMissing;
 use App\Profiles\Enums\ProfileType;
+use App\Profiles\Exceptions\BuiltInProfileMissing;
 use App\Profiles\Values\ProfileKey;
 
 /**

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Support\AgentContext;
+use App\Assignments\Enums\AssignmentAbility;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
@@ -18,6 +20,7 @@ use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Mcp\Support\McpInstructions;
 use Carbon\CarbonImmutable;
+use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -40,7 +43,7 @@ final class McpInstructionsTest extends TestCase
 
     public function test_a_reviewer_hears_only_its_own_journeys(): void
     {
-        $instructions = $this->app->make(McpInstructions::class)->for(AgentRole::ReadOnlyHelper);
+        $instructions = new McpInstructions(new FixedCurrentAuthorizer())->forCaller();
 
         $this->assertStringContainsString('sequences (journal sequence)', $instructions);
         $this->assertStringNotContainsString('helper dispatch', $instructions);
@@ -49,8 +52,8 @@ final class McpInstructionsTest extends TestCase
 
     public function test_the_instructions_stay_short_and_name_no_token_or_path(): void
     {
-        foreach (AgentRole::cases() as $role) {
-            $instructions = $this->app->make(McpInstructions::class)->for($role);
+        foreach ([[], [AssignmentAbility::Dispatch]] as $granted) {
+            $instructions = new McpInstructions(new FixedCurrentAuthorizer($granted))->forCaller();
 
             $this->assertLessThan(1500, mb_strlen($instructions));
             $this->assertStringNotContainsString('/', str_replace(['journal output, journal reader'], '', $instructions));
@@ -64,6 +67,7 @@ final class McpInstructionsTest extends TestCase
     private function startAs(AgentRole $role): array
     {
         $this->callAs('call-1', hash('sha256', 'call-1'));
+        $this->app->instance(CurrentAuthorizer::class, new FixedCurrentAuthorizer([AssignmentAbility::Dispatch]));
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), $role->value, new SignedCall('call-1', CarbonImmutable::now(), hash('sha256', 'call-1')), null));
         $start = new SessionStarted(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', hash('sha256', 'call-1')), new SessionStartDetails('native-1', SessionStartSource::Startup));
         $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);

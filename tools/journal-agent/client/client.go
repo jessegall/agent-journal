@@ -116,6 +116,8 @@ type Grant struct {
 	Folders         []LaunchFolder `json:"folders"`
 	ProfileKey      string         `json:"profile_key"`
 	ProfileRevision int            `json:"profile_revision"`
+	OfflineReply    string         `json:"offline_reply"`
+	OfflineSeal     string         `json:"offline_reply_seal"`
 }
 
 // ProfileEnvironment is the launch's pinned authorization profile as environment entries; none when it has no pin.
@@ -123,7 +125,12 @@ func (grant Grant) ProfileEnvironment() []string {
 	if grant.ProfileKey == "" {
 		return nil
 	}
-	return []string{"JOURNAL_PROFILE=" + grant.ProfileKey, "JOURNAL_PROFILE_REVISION=" + strconv.Itoa(grant.ProfileRevision)}
+	return []string{
+		"JOURNAL_PROFILE=" + grant.ProfileKey,
+		"JOURNAL_PROFILE_REVISION=" + strconv.Itoa(grant.ProfileRevision),
+		"JOURNAL_OFFLINE_REPLY=" + grant.OfflineReply,
+		"JOURNAL_OFFLINE_REPLY_SEAL=" + grant.OfflineSeal,
+	}
 }
 
 // LaunchGrant takes a runtime's grant; the journal refuses it while what the launch needs, such as its skills, is not

@@ -32,7 +32,7 @@ final class StackInspectionTest extends TestCase
         $inspection = $this->actingAs(User::factory()->create())->getJson('/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10))->assertOk()->json();
 
         $this->assertSame([TestIds::of(1), TestIds::of(10), 'active'], [$inspection['agentId'], $inspection['sessionId'], $inspection['status']]);
-        $this->assertSame(['hooks.main_ready', 'test.tasks', 'guide'], array_column($inspection['frames'], 'typeKey'));
+        $this->assertSame(['hooks.ready', 'test.tasks', 'guide'], array_column($inspection['frames'], 'typeKey'));
         $this->assertSame([null, ['id' => '42', 'runNumber' => 1], null], array_column($inspection['frames'], 'subject'));
         $this->assertSame([true, false, false], array_column($inspection['frames'], 'isBottom'));
         $this->assertSame('call-2', $inspection['lastCall']['hookId']);

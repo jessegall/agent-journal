@@ -17,7 +17,6 @@ use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\EngineStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\StackMissing;
 use App\Hooks\Exceptions\StackTooDeep;
@@ -66,7 +65,7 @@ final class StateLifecycleTest extends TestCase
             $event->registry->register('test.tasks', $this->tasks);
             $event->registry->register('test.plans', $plans);
         });
-        $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
     }
 
     protected function tearDown(): void
@@ -124,7 +123,7 @@ final class StateLifecycleTest extends TestCase
 
         $this->assertEquals(['A' => $entered['A']], $this->storedEntryTimes());
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
-        $restored = $this->app->make(StackRestorer::class)->restore($row->frames, ReadyStateType::MainAgent)->frames();
+        $restored = $this->app->make(StackRestorer::class)->restore($row->frames)->frames();
         $this->assertEquals($entered['A'], $restored[1]->enteredAt);
         $this->assertEquals($row->frames->all()[0]->enteredAt, $restored[0]->enteredAt);
     }
@@ -208,14 +207,14 @@ final class StateLifecycleTest extends TestCase
         $row = AgentStackRow::query()->forTarget($this->target)->sole();
         $restorer = $this->app->make(StackRestorer::class);
 
-        $this->assertCount(2, $restorer->restore($row->frames, ReadyStateType::MainAgent)->frames());
+        $this->assertCount(2, $restorer->restore($row->frames)->frames());
 
         $records = $row->frames->all();
         $tooMany = new FrameRecords([$records[0], ...array_map(fn (int $number) => new FrameRecord("frame-{$number}", $this->task((string) $number), false, 1, CarbonImmutable::now()), range(1, 100))]);
 
         $this->expectException(StackTooDeep::class);
 
-        $restorer->restore($tooMany, ReadyStateType::MainAgent);
+        $restorer->restore($tooMany);
     }
 
     /**

@@ -35,7 +35,7 @@ final class SkillMakeTool extends JournalWriteTool
             'name' => $schema->string()->max(255),
             'description' => $schema->string()->max(1024)->required(),
             'body' => $schema->string()->max(262144)->description('The Markdown body; one section per top-level heading.')->required(),
-            'conditions' => $schema->string()->max(32768)->description('The condition as JSON, such as {"type":"main-agent","version":1}.'),
+            'conditions' => $schema->string()->max(32768)->description('The condition as JSON, such as {"type":"agent-types","version":1,"keys":["main-agent"]}.'),
             'request_id' => $schema->string()->max(64),
         ];
     }
@@ -44,7 +44,12 @@ final class SkillMakeTool extends JournalWriteTool
     {
         $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
         $key = $arguments->text('key');
-        $draft = new SkillDraft($arguments->optionalText('name') ?? $key, $arguments->text('description'), $this->authoring->sectionsOf($arguments->text('body')), $this->authoring->conditionOf($arguments->optionalText('conditions'), [], false));
+        $draft = new SkillDraft(
+            $arguments->optionalText('name') ?? $key,
+            $arguments->text('description'),
+            $this->authoring->sectionsOf($arguments->text('body')),
+            $this->authoring->conditionOf($arguments->optionalText('conditions'), []),
+        );
 
         return ToolResult::ok($this->authoring->receipt($this->commands->run(new CreateSkill($key, $requestId, $draft)), $requestId), []);
     }

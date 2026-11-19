@@ -15,7 +15,6 @@ use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\InvalidBottomState;
 use App\Hooks\Exceptions\StackAlreadyClosed;
@@ -79,23 +78,23 @@ final class AgentStacksTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_creating_a_stack_gives_it_one_bottom_state_of_the_role(): void
+    public function test_creating_a_stack_gives_it_the_one_ready_bottom(): void
     {
-        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target));
 
         $frames = $this->storedFrames();
 
         $this->assertCount(1, $frames);
         $this->assertTrue($frames[0]->isBottom);
-        $this->assertSame('hooks.main_ready', $frames[0]->reference->typeKey);
+        $this->assertSame('hooks.ready', $frames[0]->reference->typeKey);
     }
 
     public function test_creating_the_same_stack_again_leaves_the_first_one(): void
     {
-        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target));
         $firstFrameId = $this->storedFrames()[0]->id;
 
-        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target));
 
         $this->assertSame(1, DB::table('agent_stacks')->count());
         $this->assertSame($firstFrameId, $this->storedFrames()[0]->id);
@@ -103,10 +102,10 @@ final class AgentStacksTest extends TestCase
 
     public function test_a_stack_a_racing_launch_committed_first_is_kept_and_the_transaction_goes_on(): void
     {
-        $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'hooks.main_ready');
+        $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'hooks.ready');
 
         $this->transaction()->run(function (): void {
-            $this->launchStacks()->open($this->target, ReadyStateType::MainAgent);
+            $this->launchStacks()->open($this->target);
             DB::table('domain_writes')->insert(['name' => 'after the race']);
         });
 
@@ -114,20 +113,20 @@ final class AgentStacksTest extends TestCase
         $this->assertSame(['after the race'], DB::table('domain_writes')->pluck('name')->all());
     }
 
-    public function test_a_racing_stack_of_another_role_is_refused(): void
+    public function test_a_racing_stack_with_another_bottom_type_is_refused(): void
     {
-        $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'hooks.read_only_helper_ready');
+        $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'hooks.main_ready');
 
         $this->expectException(InvalidBottomState::class);
 
-        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target));
     }
 
     public function test_a_stack_changes_only_inside_a_transaction(): void
     {
         $this->expectException(StackTransactionRequired::class);
 
-        $this->launchStacks()->open($this->target, ReadyStateType::MainAgent);
+        $this->launchStacks()->open($this->target);
     }
 
     public function test_a_push_commits_together_with_the_domain_write(): void
@@ -139,7 +138,7 @@ final class AgentStacksTest extends TestCase
             $this->stacks()->push($this->target, $this->task(42));
         });
 
-        $this->assertSame(['hooks.main_ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(['hooks.ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
         $this->assertSame(['task 42 started'], DB::table('domain_writes')->pluck('name')->all());
     }
 
@@ -179,10 +178,10 @@ final class AgentStacksTest extends TestCase
         $this->createStack();
 
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None)));
-        $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(['hooks.ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
 
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None)));
-        $this->assertSame(['hooks.main_ready', 'test.switched_on'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(['hooks.ready', 'test.switched_on'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
     }
 
     public function test_a_push_saves_the_stack_without_a_frame_switched_off_since_it_was_stored(): void
@@ -199,7 +198,7 @@ final class AgentStacksTest extends TestCase
         $enabled = false;
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
-        $this->assertSame(['hooks.main_ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(['hooks.ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
     }
 
     public function test_a_push_of_a_switched_off_domains_state_is_declined_without_reading_its_subject(): void
@@ -211,7 +210,7 @@ final class AgentStacksTest extends TestCase
 
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('plans.working', new SubjectReference(TestIds::of(999), 1))));
 
-        $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(['hooks.ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
     }
 
     public function test_a_push_onto_another_agents_stack_is_refused(): void
@@ -312,7 +311,7 @@ final class AgentStacksTest extends TestCase
 
     private function createStack(): void
     {
-        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target));
     }
 
     private function task(int $number): StateReference

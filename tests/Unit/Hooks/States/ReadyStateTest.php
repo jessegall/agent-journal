@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\Denied;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\FileOperation;
-use App\Hooks\Enums\ReadyStateType;
-use App\Hooks\Exceptions\UnknownReadyState;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ShellCommandRequested;
-use App\Hooks\States\MainAgentReadyState;
-use App\Hooks\States\ReadOnlyHelperReadyState;
 use App\Hooks\States\ReadyState;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
@@ -31,15 +28,19 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestIds;
 
-final class RoleReadyTest extends TestCase
+/**
+ * The one ready bottom state: it leaves every shell line to Core's admission, answers every hook, and lets a file change
+ * only when the agent's profile grants it.
+ */
+final class ReadyStateTest extends TestCase
 {
     /**
      * @return iterable<string, array{ReadyState}>
      */
     public static function roles(): iterable
     {
-        yield 'main agent' => [new MainAgentReadyState()];
-        yield 'read-only helper' => [new ReadOnlyHelperReadyState()];
+        yield 'a profile that edits files' => [new ReadyState(new FixedFileEditPermission(true))];
+        yield 'a profile that edits none' => [new ReadyState(new FixedFileEditPermission(false))];
     }
 
     /**
@@ -67,16 +68,16 @@ final class RoleReadyTest extends TestCase
         $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($command))->answerType());
     }
 
-    public function test_the_main_agent_may_edit_files(): void
+    public function test_a_profile_that_edits_files_may_edit(): void
     {
         $edit = $this->edit(['app/Domains/Contracts/Domain.php']);
 
-        $this->assertSame(AnswerType::Allow, new MainAgentReadyState()->onFileEdit($edit)->answerType());
+        $this->assertSame(AnswerType::Allow, new ReadyState(new FixedFileEditPermission(true))->onFileEdit($edit)->answerType());
     }
 
-    public function test_a_read_only_helper_refuses_an_edit_and_names_every_path(): void
+    public function test_a_profile_without_file_changes_refuses_an_edit_and_names_every_path(): void
     {
-        $decision = new ReadOnlyHelperReadyState()->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']));
+        $decision = new ReadyState(new FixedFileEditPermission(false))->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('app/Domains/Contracts/Domain.php, docs/hooks/dependencies.md', $decision->refusalReason());
@@ -88,20 +89,6 @@ final class RoleReadyTest extends TestCase
         foreach (HookInputs::all() as $input) {
             $this->assertFalse($this->answerOf($input, $ready)->isDelegating());
         }
-    }
-
-    public function test_each_type_key_builds_its_own_bottom_state(): void
-    {
-        $this->assertInstanceOf(MainAgentReadyState::class, ReadyStateType::forKey('hooks.main_ready')->newState());
-        $this->assertSame(ReadOnlyHelperReadyState::class, ReadyStateType::forKey('hooks.read_only_helper_ready')->newState()::class);
-        $this->assertSame(MainAgentReadyState::class, ReadyStateType::MainAgent->newState()::class);
-    }
-
-    public function test_an_unknown_role_cannot_be_launched(): void
-    {
-        $this->expectException(UnknownReadyState::class);
-
-        ReadyStateType::forKey('hooks.ready');
     }
 
     /**

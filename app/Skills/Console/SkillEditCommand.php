@@ -21,7 +21,7 @@ final class SkillEditCommand extends Command
 {
     use PrintsSkillRefusals, ReadsAudienceOptions;
 
-    protected $signature = 'skill:edit {number : The skill number or key} {--expected-revision= : The revision you read} {--name=} {--description=} {--body= : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=*} {--type=*} {--program=*} {--provider=*} {--main-agent} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:edit {number : The skill number or key} {--expected-revision= : The revision you read} {--name=} {--description=} {--body= : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=*} {--type=*} {--program=*} {--provider=*} {--ability=*} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Save a new revision of a stored skill';
 
@@ -38,7 +38,7 @@ final class SkillEditCommand extends Command
                 (string) ($this->option('name') ?? $current->name),
                 (string) ($this->option('description') ?? $current->description),
                 $this->option('body') === null ? $current->sections : $console->sectionsOf($console->bodyOf((string) $this->option('body'))),
-                $this->hasAudienceOptions() ? $console->conditionOf($this->conditionsOption(), $this->audience(), (bool) $this->option('main-agent')) : $current->condition,
+                $this->hasAudienceOptions() ? $console->conditionOf($this->conditionsOption(), $this->audience()) : $current->condition,
             );
 
             return $console->savedLines($commands->run(new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft)));

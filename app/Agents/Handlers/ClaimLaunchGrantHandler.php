@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\AgentRequests\Support\LaunchProfilePin;
 use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Events\LaunchGrantRequested;
 use App\Agents\Support\HostRuntimes;
 use App\Agents\Support\LaunchAdditions;
 use App\Agents\Support\LaunchGrant;
+use App\Agents\Support\OfflineReplySeal;
 use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -17,6 +19,7 @@ final readonly class ClaimLaunchGrantHandler implements CommandHandler
     public function __construct(
         private HostRuntimes $runtimes,
         private Dispatcher $events,
+        private OfflineReplySeal $seal,
     ) {}
 
     /**
@@ -36,7 +39,15 @@ final readonly class ClaimLaunchGrantHandler implements CommandHandler
         $this->events->dispatch(new LaunchGrantRequested($runtime->agent_session_id, $additions));
 
         $session = $runtime->load('session')->session;
+        $pin = new LaunchProfilePin((string) $session->profile_key, (int) $session->profile_revision);
 
-        return new LaunchGrant($token, $additions->folders(), $session->profile_key, $session->profile_revision);
+        return new LaunchGrant(
+            $token,
+            $additions->folders(),
+            $session->profile_key,
+            $session->profile_revision,
+            $additions->offlineReply(),
+            $this->seal->seal($token, $pin, $additions->offlineReply()),
+        );
     }
 }

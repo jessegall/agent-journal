@@ -11,15 +11,10 @@ use App\Agents\Contracts\CurrentSession;
  */
 final readonly class FixedSession implements CurrentSession
 {
-    public function __construct(private string $sessionId, private bool $mainAgent = true) {}
+    public function __construct(private string $sessionId) {}
 
     public function sessionId(): string
     {
         return $this->sessionId;
-    }
-
-    public function isMainAgent(): bool
-    {
-        return $this->mainAgent;
     }
 }

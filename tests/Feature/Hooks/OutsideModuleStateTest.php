@@ -23,7 +23,7 @@ final class OutsideModuleStateTest extends TestCase
     {
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
 
-        $this->assertSame(['hooks.main_ready', 'notes.writing'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', 'notes.writing'], $this->storedTypeKeys());
         $this->assertSame('{"decision":"block","reason":"Finish the note first."}', $this->answerStop('call-2'));
     }
 

@@ -39,7 +39,7 @@ final readonly class WordReading
 
     public function placedAs(WordPlace $place): self
     {
-        return clone($this, ['place' => $place]);
+        return clone ($this, ['place' => $place]);
     }
 
     public function end(): int

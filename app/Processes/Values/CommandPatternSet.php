@@ -31,4 +31,20 @@ final readonly class CommandPatternSet
     {
         return array_any($this->patterns, fn (CommandPattern $pattern) => $pattern->matches($argv));
     }
+
+    /**
+     * @return list<list<string>>
+     */
+    public function toArray(): array
+    {
+        return array_map(fn (CommandPattern $pattern) => $pattern->toArray(), $this->patterns);
+    }
+
+    /**
+     * @param  list<list<string>>  $stored
+     */
+    public static function fromArray(array $stored): self
+    {
+        return new self(array_map(CommandPattern::fromArray(...), $stored));
+    }
 }

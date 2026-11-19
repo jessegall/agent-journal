@@ -32,7 +32,7 @@ trait BuildsTickingStacks
         $agent = Agent::named('Ticking agent', AgentRole::MainAgent);
         $session = $this->app->make(AgentSessions::class)->start($agent, TestSelections::of(), TestSelections::requestId());
         $records = [
-            new FrameRecord("{$session->id}-ready", new StateReference('hooks.main_ready', NoSubject::None), true, 1, $enteredAt),
+            new FrameRecord("{$session->id}-ready", new StateReference('hooks.ready', NoSubject::None), true, 1, $enteredAt),
             new FrameRecord("{$session->id}-plain", new StateReference($plainType, NoSubject::None), false, 1, $enteredAt),
         ];
 

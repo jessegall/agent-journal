@@ -10,11 +10,11 @@ use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\EngineStack;
 use App\Hooks\Contracts\EngineTargetAccess;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Lifecycle\FrameLifecycle;
+use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StackRestorer;
-use App\Hooks\Stack\StateTypes;
 use App\Hooks\Stack\StatePush;
+use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\StackTransaction;
 
 /**
@@ -42,7 +42,7 @@ final readonly class EngineStacks implements EngineStack
         }
 
         $row = AgentStackRow::lockAuthorizedFor($target);
-        $this->statePush->push($target, $row, $row->frames->role(), $reference);
+        $this->statePush->push($target, $row, $reference);
     }
 
     /**
@@ -59,7 +59,7 @@ final readonly class EngineStacks implements EngineStack
             return;
         }
 
-        $before = $this->restorer->restore($row->frames, $row->frames->role());
+        $before = $this->restorer->restore($row->frames);
         $after = $before->withoutExposedInactive();
 
         if ($after->frameIds() === $before->frameIds()) {

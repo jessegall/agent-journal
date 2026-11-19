@@ -10,6 +10,8 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Values\PolicyRegistration;
 use App\Agents\Contracts\BuiltInLaunchProfiles;
 use App\Agents\Contracts\LaunchProfileAdmission;
+use App\Hooks\Contracts\FileEditPermission;
+use App\Processes\Contracts\CommandPermissionResolver;
 use App\Profiles\Console\ProfileActivateCommand;
 use App\Profiles\Console\ProfileListCommand;
 use App\Profiles\Console\ProfileRevokeCommand;
@@ -25,7 +27,9 @@ use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ConfiguredOperations;
 use App\Profiles\Support\ProfileAuthorizerProvider;
+use App\Profiles\Support\ProfileFileEditPermission;
 use App\Profiles\Support\ProfileLaunchAdmission;
+use App\Profiles\Support\ProfilePermissionReader;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -36,6 +40,8 @@ final class ProfilesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(CommandPermissionResolver::class, ProfilePermissionReader::class);
+        $this->app->scoped(FileEditPermission::class, ProfileFileEditPermission::class);
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
         $this->app->bind(KnownOperations::class, ConfiguredOperations::class);
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);

@@ -10,7 +10,6 @@ use App\Agents\Events\LaunchSettingsRequested;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Actions\LaunchStacks;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use App\Programs\Enums\HookProgram;
@@ -39,7 +38,7 @@ final class NativeSubagentRuleTest extends TestCase
 
         $this->launch = TestLaunch::start('hooks.main_ready');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id), TestLaunchAuthority::forAgent($this->launch->agent->id));
-        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target(), ReadyStateType::MainAgent));
+        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target()));
     }
 
     public function test_rule_36_every_program_launch_denies_each_native_child_tool(): void

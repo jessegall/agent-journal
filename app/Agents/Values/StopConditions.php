@@ -57,19 +57,7 @@ final readonly class StopConditions
             throw StopConditionsInvalid::overAttempt($attemptSeconds);
         }
 
-        if ($role === AgentRole::WritingHelper && ! in_array(StopCondition::CLEAN_WORKTREE, $keys, true)) {
-            throw StopConditionsInvalid::cleanWorktreeMissing();
-        }
-
         return new self($conditions, $attemptSeconds);
-    }
-
-    /**
-     * A role's conditions when its profile adds none: clean-worktree for a writing helper, none for the others.
-     */
-    public static function defaultsFor(AgentRole $role): self
-    {
-        return self::make($role, $role === AgentRole::WritingHelper ? [StopCondition::cleanWorktree()] : []);
     }
 
     /**

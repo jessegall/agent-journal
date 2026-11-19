@@ -6,7 +6,6 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Enums\ProgramStopDecision;
-use App\Hooks\Enums\ReadyStateType;
 
 /**
  * The reply the host gives a program when a hook call to the journal fails. During an outage the main agent goes on
@@ -17,9 +16,9 @@ final class OutageReply
 {
     public const string OUTAGE_REASON = 'The journal is unreachable, so this helper cannot act until it is back.';
 
-    public static function for(CallFailure $failure, ReadyStateType $role, string $nativeEvent): ProgramReply
+    public static function for(CallFailure $failure, bool $passesOutages, string $nativeEvent): ProgramReply
     {
-        if ($failure->isOutage() && $role === ReadyStateType::MainAgent) {
+        if ($failure->isOutage() && $passesOutages) {
             return self::neutral($nativeEvent);
         }
 

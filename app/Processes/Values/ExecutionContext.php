@@ -51,7 +51,7 @@ final readonly class ExecutionContext
 
     public function withWorkingFolder(string $workingFolder): self
     {
-        return clone($this, ['workingFolder' => $workingFolder]);
+        return clone ($this, ['workingFolder' => $workingFolder]);
     }
 
     /**
@@ -59,7 +59,7 @@ final readonly class ExecutionContext
      */
     public function withEnvironment(array $environment): self
     {
-        return clone($this, ['environment' => $environment]);
+        return clone ($this, ['environment' => $environment]);
     }
 
     /**
@@ -67,7 +67,7 @@ final readonly class ExecutionContext
      */
     public function withPrograms(array $programs): self
     {
-        return clone($this, ['programs' => $programs]);
+        return clone ($this, ['programs' => $programs]);
     }
 
     /**
@@ -75,7 +75,7 @@ final readonly class ExecutionContext
      */
     public function withPositional(array $positional): self
     {
-        return clone($this, ['positional' => $positional]);
+        return clone ($this, ['positional' => $positional]);
     }
 
     /**
@@ -85,16 +85,16 @@ final readonly class ExecutionContext
      */
     public function insideAlias(string $aliasId, array $arguments): self
     {
-        return clone($this, ['positional' => $arguments, 'aliases' => [...$this->aliases, $aliasId]]);
+        return clone ($this, ['positional' => $arguments, 'aliases' => [...$this->aliases, $aliasId]]);
     }
 
     public function withPipefail(bool $pipefail): self
     {
-        return clone($this, ['pipefail' => $pipefail]);
+        return clone ($this, ['pipefail' => $pipefail]);
     }
 
     public function withLastStatus(int $status): self
     {
-        return clone($this, ['lastStatus' => $status]);
+        return clone ($this, ['lastStatus' => $status]);
     }
 }

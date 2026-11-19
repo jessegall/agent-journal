@@ -56,7 +56,7 @@ final class AgentStateMachineTest extends TestCase
         $reply = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), $this->stopReply());
 
         $this->assertSame('{}', $reply->stdout);
-        $this->assertSame(['hooks.main_ready', 'test.tasks'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', 'test.tasks'], $this->storedTypeKeys());
     }
 
     #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]
@@ -68,7 +68,7 @@ final class AgentStateMachineTest extends TestCase
 
         $command = json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command'];
         $this->assertStringStartsWith('journal process run --admission ', $command);
-        $this->assertSame(['hooks.main_ready', 'test.rewriting', 'guide'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', 'test.rewriting', 'guide'], $this->storedTypeKeys());
         $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
     }
 
@@ -80,7 +80,7 @@ final class AgentStateMachineTest extends TestCase
         $reply = $this->machine()->answer($this->shell('composer test'), $this->capabilities(RewriteSupport::NeedsApproval), new OperationDeadline(3000), $this->shellReply(RewriteSupport::NeedsApproval));
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
-        $this->assertSame(['hooks.main_ready', 'test.rewriting'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', 'test.rewriting'], $this->storedTypeKeys());
         $this->assertSame(AnswerType::Deny, HookCall::query()->sole()->answer->type);
     }
 
@@ -118,7 +118,7 @@ final class AgentStateMachineTest extends TestCase
             $this->fail('The adapter failure was swallowed.');
         } catch (TestFailure) {
             $this->assertSame(0, HookCall::query()->count());
-            $this->assertSame(['hooks.main_ready', 'test.tasks'], $this->storedTypeKeys());
+            $this->assertSame(['hooks.ready', 'test.tasks'], $this->storedTypeKeys());
         }
     }
 

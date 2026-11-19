@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Hooks\States\ReadyState;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
@@ -68,13 +69,13 @@ final class HookLaunchTest extends TestCase
         $this->assertNotSame($first->token, $second->token);
         $this->assertSame('claude-code', $first->session->fresh()?->program);
         $this->assertSame($second->session->id, $this->app->make(CredentialLookup::class)->sessionFor($second->token)->id);
-        $this->assertSame(['hooks.main_ready'], $this->bottomOf($first));
-        $this->assertSame(['hooks.main_ready'], $this->bottomOf($second));
+        $this->assertSame(['hooks.ready'], $this->bottomOf($first));
+        $this->assertSame(['hooks.ready'], $this->bottomOf($second));
     }
 
-    public function test_the_role_of_the_agent_selects_its_bottom_state(): void
+    public function test_every_launch_starts_on_the_one_ready_bottom(): void
     {
-        $this->assertSame(['hooks.read_only_helper_ready'], $this->bottomOf($this->launch('hooks.read_only_helper_ready')));
+        $this->assertSame([ReadyState::TYPE_KEY], $this->bottomOf($this->launch('hooks.read_only_helper_ready')));
     }
 
     public function test_an_unknown_role_refuses_the_launch_and_keeps_nothing(): void

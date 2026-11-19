@@ -86,12 +86,12 @@ final readonly class ArgumentGrammar
 
     public function withOptions(OptionGrammar ...$options): self
     {
-        return clone($this, ['options' => [...$this->options, ...array_values($options)]]);
+        return clone ($this, ['options' => [...$this->options, ...array_values($options)]]);
     }
 
     public function withOperands(OperandType ...$operands): self
     {
-        return clone($this, ['operands' => [...$this->operands, ...array_values($operands)]]);
+        return clone ($this, ['operands' => [...$this->operands, ...array_values($operands)]]);
     }
 
     /**
@@ -99,12 +99,12 @@ final readonly class ArgumentGrammar
      */
     public function repeating(): self
     {
-        return clone($this, ['repeatsLastOperand' => true]);
+        return clone ($this, ['repeatsLastOperand' => true]);
     }
 
     public function endingOptionsAtDoubleDash(): self
     {
-        return clone($this, ['endsOptionsAtDoubleDash' => true]);
+        return clone ($this, ['endsOptionsAtDoubleDash' => true]);
     }
 
     /**
@@ -112,7 +112,7 @@ final readonly class ArgumentGrammar
      */
     public function requiringOperands(int $count): self
     {
-        return clone($this, ['minimumOperands' => $count]);
+        return clone ($this, ['minimumOperands' => $count]);
     }
 
     /**
@@ -120,7 +120,7 @@ final readonly class ArgumentGrammar
      */
     public function acceptingNumericOptions(): self
     {
-        return clone($this, ['acceptsNumericOptions' => true]);
+        return clone ($this, ['acceptsNumericOptions' => true]);
     }
 
     /**

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Sharing;
 
+use App\Http\Data\Support\OptionalOrMissing;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
-use App\Http\Data\Support\OptionalOrMissing;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

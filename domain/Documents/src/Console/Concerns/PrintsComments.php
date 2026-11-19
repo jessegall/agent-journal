@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\Text\Enums\TextAnchorType;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Comments\Data\CommentDetails;
+use App\Text\Enums\TextAnchorType;
 use App\Text\Values\TextAnchor;
 
 /**

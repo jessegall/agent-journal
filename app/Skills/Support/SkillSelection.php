@@ -60,12 +60,15 @@ final readonly class SkillSelection
     {
         return hash('sha256', (string) json_encode([
             'session' => $context->sessionId,
-            'role' => $context->agentRole->value,
             'environment' => $context->environment,
             'profile' => $context->profile->revisionText(),
             'program' => $context->program?->key,
             'provider' => $context->provider?->key,
-            'skills' => array_map(fn (SkillEntry $skill) => [$skill->key->key, $skill->rendered->digest], $selected),
+            'skills' => array_map(fn (SkillEntry $skill) => [
+                $skill->key->key,
+                $skill->rendered->digest,
+                $skill->condition->toArray(),
+            ], $selected),
         ], JSON_THROW_ON_ERROR));
     }
 }

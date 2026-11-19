@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
@@ -154,7 +155,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_bottom_state_that_delegates_fails_with_the_steps_it_took(): void
     {
-        $delegatingBottom = new class extends ReadyState
+        $delegatingBottom = new class(new FixedFileEditPermission()) extends ReadyState
         {
             public function onStop(StopRequested $input): Decision
             {
@@ -330,7 +331,7 @@ final class AgentStackTest extends TestCase
 
     private function ready(): Frame
     {
-        return new Frame('ready', $this->reference('ready'), new ReadyState(), CarbonImmutable::now(), bottom: true);
+        return new Frame('ready', $this->reference('ready'), new ReadyState(new FixedFileEditPermission()), CarbonImmutable::now(), bottom: true);
     }
 
     private function frame(string $id, AgentState $state): Frame

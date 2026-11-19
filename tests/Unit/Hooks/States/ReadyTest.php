@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\StopRequested;
@@ -39,7 +40,7 @@ final class ReadyTest extends TestCase
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_ready_allows_each_hook(HookInput $input): void
     {
-        $this->assertSame('allow', $input->answerBy(new ReadyState())->answerType()->value);
+        $this->assertSame('allow', $input->answerBy(new ReadyState(new FixedFileEditPermission()))->answerType()->value);
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
@@ -50,7 +51,7 @@ final class ReadyTest extends TestCase
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void
     {
-        $this->assertFalse(new ReadyState()->isFinished());
+        $this->assertFalse(new ReadyState(new FixedFileEditPermission())->isFinished());
     }
 
     /**

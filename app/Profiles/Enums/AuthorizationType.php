@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Profiles\Enums;
 
+use BackedEnum;
+use App\Actors\Contracts\Policy;
+use App\Profiles\Values\AbilityGrant;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Support\AllowsEverything;
@@ -27,6 +30,20 @@ enum AuthorizationType: string
         return match ($this) {
             self::AllowsEverything => new AllowsEverything(),
             self::Policies => new PolicyAuthorizer($authorization, $catalogue),
+        };
+    }
+
+    /**
+     * Whether these grants hold a class-level ability, the part of a decision that needs no record.
+     *
+     * @param  list<AbilityGrant>  $grants
+     * @param  class-string<Policy>  $policy
+     */
+    public function grants(array $grants, string $policy, BackedEnum $ability): bool
+    {
+        return match ($this) {
+            self::AllowsEverything => true,
+            self::Policies => array_any($grants, fn (AbilityGrant $grant) => $grant->isFor($policy, $ability)),
         };
     }
 }

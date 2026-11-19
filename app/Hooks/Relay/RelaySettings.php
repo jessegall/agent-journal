@@ -7,7 +7,9 @@ namespace App\Hooks\Relay;
 use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\LaunchEnvironment;
 use App\AgentRequests\Support\LaunchProfilePin;
-use App\Hooks\Enums\ReadyStateType;
+use App\Agents\Enums\OfflineReplyMode;
+use App\Agents\Exceptions\OfflineReplySealInvalid;
+use App\Agents\Support\OfflineReplySeal;
 
 /**
  * What the relay of one launch needs, given to the program's environment by the launch: where the journal
@@ -19,26 +21,31 @@ final readonly class RelaySettings
         public string $journalUrl,
         public string $token,
         public LaunchProfilePin $profile,
-        public ReadyStateType $role,
+        public bool $passesOutages,
         public string $bypassLogPath,
         public int $timeoutSeconds = 10,
         public int $processGeneration = 0,
     ) {}
 
     /**
-     * The launch's credential with the role and bypass file its environment names.
+     * The launch's credential with the offline reply and bypass file its environment names; the reply counts only
+     * under the seal the journal issued for this launch.
      *
      * @param  array<string, string>  $environment
+     *
+     * @throws OfflineReplySealInvalid
      */
-    public static function forLaunch(AgentClientSettings $client, array $environment): self
+    public static function forLaunch(AgentClientSettings $client, array $environment, OfflineReplySeal $seal): self
     {
         $launch = new LaunchEnvironment($environment);
+        $mode = OfflineReplyMode::fromLaunch($launch->value('JOURNAL_OFFLINE_REPLY'));
+        $seal->verify($client->token, $client->profile, $mode, $launch->value('JOURNAL_OFFLINE_REPLY_SEAL'));
 
         return new self(
             $client->journalUrl,
             $client->token,
             $client->profile,
-            ReadyStateType::forKey($launch->value('JOURNAL_ROLE')),
+            $mode->passesOutages(),
             $launch->value('JOURNAL_BYPASS_LOG'),
             processGeneration: (int) ($environment['JOURNAL_PROCESS_GENERATION'] ?? 0),
         );
@@ -57,7 +64,9 @@ final readonly class RelaySettings
 
     public function hookPath(string $program): string
     {
-        return $this->processGeneration > 0 ? "/hooks/{$program}?generation={$this->processGeneration}" : "/hooks/{$program}";
+        return $this->processGeneration > 0
+            ? "/hooks/{$program}?generation={$this->processGeneration}"
+            : "/hooks/{$program}";
     }
 
     public function client(): AgentClientSettings

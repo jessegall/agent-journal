@@ -137,7 +137,7 @@ final class HookScopeTest extends TestCase
     private function storeFor(StackTarget $target): void
     {
         new AgentStackRow()->startFor($target, new FrameRecords([
-            new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now()),
+            new FrameRecord('ready', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now()),
         ]), new TickingTypes([]));
         new HookCall()->recordFor(
             new HookIdentity($target->agentId, $target->sessionId, 'hook-1', str_repeat('a', 64)),

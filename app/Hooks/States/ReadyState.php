@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\States;
 
+use App\Hooks\Contracts\FileEditPermission;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileEditRequested;
@@ -15,10 +16,15 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 
 /**
- * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states.
+ * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states. Whether it lets a
+ * file change is what the agent's profile grants, never the agent's role.
  */
 class ReadyState extends AgentState
 {
+    public const string TYPE_KEY = 'hooks.ready';
+
+    public function __construct(private readonly FileEditPermission $permission) {}
+
     public function onSessionStart(SessionStarted $input): Decision
     {
         return Decision::allow();
@@ -36,7 +42,13 @@ class ReadyState extends AgentState
 
     public function onFileEdit(FileEditRequested $input): Decision
     {
-        return Decision::allow();
+        if ($this->permission->mayEditFiles()) {
+            return Decision::allow();
+        }
+
+        $paths = implode(', ', $input->changes->paths());
+
+        return Decision::deny("Your profile grants no changes to workspace files, so this edit of {$paths} is refused.");
     }
 
     public function onStop(StopRequested $input): Decision

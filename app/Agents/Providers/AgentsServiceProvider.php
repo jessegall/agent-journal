@@ -48,14 +48,12 @@ use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\RequestSession;
-use App\Agents\Support\RolePermissionResolver;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Bus\Contracts\CallerSession;
 use App\Contracts\LaunchTransaction;
-use App\Processes\Contracts\CommandPermissionResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -68,7 +66,6 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->app->scoped(ActorRuntimeResolver::class, CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
-        $this->app->scoped(CommandPermissionResolver::class, RolePermissionResolver::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);

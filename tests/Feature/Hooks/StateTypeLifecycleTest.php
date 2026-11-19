@@ -7,7 +7,6 @@ namespace Tests\Feature\Hooks;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
@@ -81,9 +80,9 @@ final class StateTypeLifecycleTest extends TestCase
         $this->assertTrue($registry->has('notes.reading'));
 
         $stack = $this->app->make(StackRestorer::class)->restore(new FrameRecords([
-            new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now()),
+            new FrameRecord('ready', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now()),
             new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now()),
-        ]), ReadyStateType::MainAgent);
+        ]));
 
         $this->assertSame(['ready', 'note-1'], $stack->frameIds());
     }

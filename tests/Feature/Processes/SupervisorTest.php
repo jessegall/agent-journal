@@ -9,7 +9,6 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\PartEndType;
-use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Execution\RecordedRunEvents;
 use App\Processes\Execution\SpawnedProcess;

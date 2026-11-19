@@ -12,7 +12,6 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Actions\LaunchStacks;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use App\Processes\Values\AdmissionRefusal;
@@ -43,7 +42,7 @@ final class HookEndpointTest extends TestCase
         $this->launch = TestLaunch::start('hooks.main_ready');
         $this->launch->openRuntime($this->app);
         $this->asLaunchedAgent(fn () => $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(LaunchStacks::class)->open($this->target(), ReadyStateType::MainAgent),
+            fn () => $this->app->make(LaunchStacks::class)->open($this->target()),
         ));
     }
 

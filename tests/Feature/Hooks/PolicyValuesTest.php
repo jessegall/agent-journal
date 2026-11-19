@@ -23,14 +23,15 @@ use App\Agents\Values\StopConditions;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Stack\StateTypes;
-use App\Hooks\States\HelperReadyState;
-use App\Hooks\States\WritingHelperReadyState;
+use App\Hooks\States\ReadyState;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Operations\Exceptions\UnknownAccessType;
+use App\Processes\Values\ProcessGrants;
+use App\Profiles\Enums\ProfileType;
 use Illuminate\Events\Dispatcher;
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\TestCase;
 
 /**
@@ -39,17 +40,12 @@ use Tests\TestCase;
  */
 final class PolicyValuesTest extends TestCase
 {
-    public function test_a_writing_helper_stack_restores_its_own_bottom(): void
+    public function test_every_stack_restores_the_one_ready_bottom(): void
     {
-        $key = AgentRole::WritingHelper->value;
-        $registry = new StateTypes(new Dispatcher())->registry();
+        $registry = new StateTypes(new Dispatcher(), FixedFileEditPermission::loader())->registry();
+        $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
 
-        $state = $registry->get($key)->statesFor(new StateReferences([new StateReference($key, NoSubject::None)]))->stateAt(0);
-
-        $this->assertSame('hooks.writing_helper_ready', $key);
-        $this->assertSame(ReadyStateType::WritingHelper, ReadyStateType::forKey($key));
-        $this->assertInstanceOf(WritingHelperReadyState::class, $state);
-        $this->assertInstanceOf(HelperReadyState::class, ReadyStateType::ReadOnlyHelper->newState());
+        $this->assertInstanceOf(ReadyState::class, $registry->get(ReadyState::TYPE_KEY)->statesFor($ready)->stateAt(0));
     }
 
     public function test_each_role_gets_its_section_51_grants(): void
@@ -83,7 +79,7 @@ final class PolicyValuesTest extends TestCase
         $edit = new Operation('tool', 'tool:edit', [AccessType::Edit], [new ResourceRequest(ResourceAreaType::Workspace, '/workspace/a.php')], [], 1);
         $secret = new Operation('tool', 'tool:read', [AccessType::Read], [new ResourceRequest(ResourceAreaType::Protected, '/home/.claude')], [], 1);
         $writer = AccessPolicy::defaultsFor(AgentRole::WritingHelper);
-        $denying = AccessPolicy::make(AgentRole::WritingHelper, $writer->classGrants, [new OperationGrant('shell:git.push', [])], ['shell:git.push'], [], []);
+        $denying = AccessPolicy::make(AgentRole::WritingHelper, $writer->classGrants, [new OperationGrant('shell:git.push', [])], ['shell:git.push'], [], [], ProcessGrants::everything());
 
         $this->assertSame([false, AccessRuleType::NotGranted], [$writer->decide($push)->allowed, $writer->decide($push)->rule]);
         $this->assertSame([true, AccessRuleType::ClassGrant], [$writer->decide($edit)->allowed, $writer->decide($edit)->rule]);
@@ -94,18 +90,17 @@ final class PolicyValuesTest extends TestCase
 
     public function test_a_protected_grant_and_a_reader_above_its_ceiling_are_refused(): void
     {
-        $this->assertRefused(AccessPolicyInvalid::class, fn () => AccessPolicy::make(AgentRole::MainAgent, [new ClassGrant(ResourceAreaType::Protected, [AccessType::Read])], [], [], [], []));
-        $this->assertRefused(AccessPolicyInvalid::class, fn () => AccessPolicy::make(AgentRole::ReadOnlyHelper, [new ClassGrant(ResourceAreaType::Workspace, [AccessType::Edit])], [], [], [], []));
+        $this->assertRefused(AccessPolicyInvalid::class, fn () => AccessPolicy::make(AgentRole::MainAgent, [new ClassGrant(ResourceAreaType::Protected, [AccessType::Read])], [], [], [], [], ProcessGrants::everything()));
+        $this->assertRefused(AccessPolicyInvalid::class, fn () => AccessPolicy::make(AgentRole::ReadOnlyHelper, [new ClassGrant(ResourceAreaType::Workspace, [AccessType::Edit])], [], [], [], [], ProcessGrants::readingOnly()));
         $this->assertRefused(UnknownAccessType::class, fn () => AccessType::fromKey('unknown'));
     }
 
-    public function test_a_writer_always_has_clean_worktree_and_stop_budgets_are_checked(): void
+    public function test_a_writer_type_starts_with_a_clean_worktree_and_stop_budgets_are_checked(): void
     {
-        $this->assertSame([StopCondition::CLEAN_WORKTREE], array_map(fn (StopCondition $condition) => $condition->key, StopConditions::defaultsFor(AgentRole::WritingHelper)->conditions));
-        $this->assertSame([], StopConditions::defaultsFor(AgentRole::ReadOnlyHelper)->conditions);
-        $this->assertSame(30, StopConditions::defaultsFor(AgentRole::MainAgent)->attemptSeconds);
+        $this->assertSame([StopCondition::CLEAN_WORKTREE], array_map(fn (StopCondition $condition) => $condition->key, ProfileType::WritingHelper->defaultStopConditions()));
+        $this->assertSame([], ProfileType::ReadOnlyHelper->defaultStopConditions());
+        $this->assertSame(30, StopConditions::make(AgentRole::MainAgent, [])->attemptSeconds);
 
-        $this->assertRefused(StopConditionsInvalid::class, fn () => StopConditions::make(AgentRole::WritingHelper, []));
         $this->assertRefused(StopConditionsInvalid::class, fn () => StopConditions::make(AgentRole::ReadOnlyHelper, [$this->condition('slow', 61)], 120));
         $this->assertRefused(StopConditionsInvalid::class, fn () => StopConditions::make(AgentRole::ReadOnlyHelper, [$this->condition('a', 20), $this->condition('b', 20)]));
         $this->assertRefused(StopConditionsInvalid::class, fn () => StopConditions::make(AgentRole::ReadOnlyHelper, [], 121));
@@ -119,12 +114,12 @@ final class PolicyValuesTest extends TestCase
         $budgets = ExecutionBudgets::defaults();
 
         $this->assertSame([2, 4 * 1024 ** 3, 4 * 1024 ** 3, 256, 1024, 256 * 1024 ** 2, 10 * 1024 ** 3, 21600], [$budgets->cpuCores, $budgets->memoryBytes, $budgets->memorySwapBytes, $budgets->processes, $budgets->openFiles, $budgets->tmpBytes, $budgets->workspaceBytes, $budgets->wallSeconds]);
-        $this->assertSame(ExecutionModeType::ProtectedHost, AgentRole::MainAgent->defaultExecutionMode());
-        $this->assertSame(ExecutionModeType::RequiredContainer, AgentRole::ReadOnlyHelper->defaultExecutionMode());
-        $this->assertSame(ExecutionModeType::RequiredContainer, ExecutionPolicy::make(AgentRole::WritingHelper, ExecutionModeType::RequiredContainer, 'registry/helper@sha256:abc', 'worktree-1', $budgets, [])->mode);
+        $this->assertSame(ExecutionModeType::ProtectedHost, ProfileType::MainAgent->defaultExecutionMode());
+        $this->assertSame(ExecutionModeType::RequiredContainer, ProfileType::ReadOnlyHelper->defaultExecutionMode());
+        $this->assertSame(ExecutionModeType::RequiredContainer, ExecutionPolicy::make(ExecutionModeType::RequiredContainer, 'registry/helper@sha256:abc', 'worktree-1', $budgets, [])->mode);
 
-        $this->assertRefused(ExecutionPolicyInvalid::class, fn () => ExecutionPolicy::make(AgentRole::WritingHelper, ExecutionModeType::ProtectedHost, null, 'worktree-1', $budgets, []));
-        $this->assertRefused(ExecutionPolicyInvalid::class, fn () => ExecutionPolicy::make(AgentRole::ReadOnlyHelper, ExecutionModeType::RequiredContainer, null, 'worktree-1', $budgets, []));
+        $this->assertTrue(ProfileType::WritingHelper->isContainerRequired());
+        $this->assertRefused(ExecutionPolicyInvalid::class, fn () => ExecutionPolicy::make(ExecutionModeType::RequiredContainer, null, 'worktree-1', $budgets, []));
         $this->assertRefused(ExecutionBudgetInvalid::class, fn () => ExecutionBudgets::make(9, 1024, 1024, 1, 1, 1, 1, 1));
         $this->assertRefused(ExecutionBudgetInvalid::class, fn () => ExecutionBudgets::make(2, 1024, 2048, 1, 1, 1, 1, 1));
         $this->assertRefused(ExecutionBudgetInvalid::class, fn () => ExecutionBudgets::make(0, 1024, 1024, 1, 1, 1, 1, 1));

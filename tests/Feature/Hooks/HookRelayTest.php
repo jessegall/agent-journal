@@ -9,7 +9,6 @@ use App\Agents\Models\LaunchBypass;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Enums\CallFailure;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Relay\CallbackEnvelope;
@@ -23,6 +22,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Hooks\JournalUnreachable;
 use Tests\Support\CommitsHookRows;
@@ -51,7 +51,6 @@ final class HookRelayTest extends TestCase
         $this->launch = TestLaunch::start('hooks.main_ready');
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open(
             new StackTarget($this->launch->agent->id, $this->launch->session->id),
-            ReadyStateType::MainAgent,
         ));
         $this->bypassLog = sys_get_temp_dir().'/hook-relay-bypasses-'.getmypid().'.jsonl';
     }
@@ -88,19 +87,41 @@ final class HookRelayTest extends TestCase
         $this->assertStringContainsString('"nativeEvent":"PreToolUse","failure":"unreachable"', (string) file_get_contents($this->bypassLog));
     }
 
-    public function test_a_server_error_counts_as_an_outage_too(): void
+    public function test_a_gateway_failure_counts_as_an_outage(): void
     {
-        Http::fake(['*' => Http::response('', 503)]);
+        Http::fake(['*' => Http::response('', 502)]);
 
         $this->assertSame('{}', $this->relay(self::STOP)->stdout);
         $this->assertFileExists($this->bypassLog);
+    }
+
+    /**
+     * @return iterable<string, array{int, string}>
+     */
+    public static function serverAnswers(): iterable
+    {
+        yield 'forbidden' => [403, ''];
+        yield 'not found' => [404, ''];
+        yield 'unavailable' => [503, ''];
+        yield 'a malformed success' => [200, '{"stdout":'];
+    }
+
+    #[DataProvider('serverAnswers')]
+    public function test_a_server_answer_is_passed_on_as_a_refusal_and_never_bypassed(int $status, string $body): void
+    {
+        Http::fake(['*' => Http::response($body, $status)]);
+
+        $reply = $this->relay(self::SHELL);
+
+        $this->assertStringContainsString('"permissionDecision":"deny"', $reply->stdout);
+        $this->assertFileDoesNotExist($this->bypassLog);
     }
 
     public function test_a_helper_is_refused_during_an_outage_and_logs_nothing(): void
     {
         Http::fake(fn () => throw JournalUnreachable::now());
 
-        $reply = $this->relay(self::SHELL, ReadyStateType::ReadOnlyHelper);
+        $reply = $this->relay(self::SHELL, passesOutages: false);
 
         $this->assertStringContainsString(OutageReply::OUTAGE_REASON, $reply->stdout);
         $this->assertFileDoesNotExist($this->bypassLog);
@@ -167,7 +188,7 @@ final class HookRelayTest extends TestCase
         $reply = $this->relay(self::STOP);
 
         $this->assertSame(1, $sent);
-        $this->assertEquals(OutageReply::for(CallFailure::Unreachable, ReadyStateType::MainAgent, 'Stop'), $reply);
+        $this->assertEquals(OutageReply::for(CallFailure::Unreachable, true, 'Stop'), $reply);
         $this->assertCount(1, glob($this->bypassLog.'.pending/*.json') ?: []);
     }
 
@@ -188,9 +209,9 @@ final class HookRelayTest extends TestCase
         $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
     }
 
-    private function relay(string $payload, ReadyStateType $role = ReadyStateType::MainAgent, string|null $token = null): ProgramReply
+    private function relay(string $payload, bool $passesOutages = true, string|null $token = null): ProgramReply
     {
-        $settings = new RelaySettings('http://journal.test', $token ?? $this->launch->token, $this->launch->pin(), $role, $this->bypassLog);
+        $settings = new RelaySettings('http://journal.test', $token ?? $this->launch->token, $this->launch->pin(), $passesOutages, $this->bypassLog);
 
         return $this->app->make(HookRelay::class)->relay(HookProgram::ClaudeCode, $payload, $settings);
     }

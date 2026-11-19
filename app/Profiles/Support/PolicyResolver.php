@@ -17,6 +17,7 @@ use App\Agents\Values\StopConditions;
 use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Contracts\KnownOperations;
 use App\Profiles\Enums\PolicyOriginType;
+use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileDefinition;
@@ -116,6 +117,7 @@ final readonly class PolicyResolver
             array_values(array_unique($denials)),
             [],
             [],
+            AccessPolicy::defaultsFor($role)->processes,
         );
     }
 
@@ -127,7 +129,7 @@ final readonly class PolicyResolver
      */
     private function stopConditions(AgentRole $role, ProposedProfile $profile): StopConditions
     {
-        $conditions = StopConditions::defaultsFor($role)->conditions;
+        $conditions = ProfileType::forRole($role)->defaultStopConditions();
 
         foreach ($profile->stopConditions as $condition) {
             $same = array_filter($conditions, fn (StopCondition $kept) => $kept->key === $condition->key);
@@ -151,16 +153,16 @@ final readonly class PolicyResolver
      */
     private function execution(AgentRole $role, ProposedProfile $profile): ExecutionPolicy
     {
-        $mode = $profile->container ?? $role->defaultExecutionMode();
+        $type = ProfileType::forRole($role);
+        $mode = $profile->container ?? $type->defaultExecutionMode();
 
-        if ($role === AgentRole::WritingHelper && $mode !== ExecutionModeType::RequiredContainer) {
+        if ($type->isContainerRequired() && $mode !== ExecutionModeType::RequiredContainer) {
             throw ProfilePolicyRefused::writerOutsideContainer($profile->key);
         }
 
         $image = $mode === ExecutionModeType::RequiredContainer ? ProfileLaunchPolicy::HELPER_IMAGE : null;
 
         return ExecutionPolicy::make(
-            $role,
             $mode,
             $image,
             ProfileLaunchPolicy::WORKSPACE,

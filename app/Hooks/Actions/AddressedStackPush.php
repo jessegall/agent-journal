@@ -8,7 +8,6 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StatePush;
 use App\Hooks\Support\StackTransaction;
@@ -28,21 +27,22 @@ final readonly class AddressedStackPush
     {
         $this->transaction->requireOpen($target);
 
-        $role = $this->roleOf($target);
-        $this->statePush->push($target, AgentStackRow::lockAuthorizedFor($target), $role, $state);
+        $this->requireRunning($target);
+        $this->statePush->push($target, AgentStackRow::lockAuthorizedFor($target), $state);
     }
 
     /**
-     * The role of the target's agent, read from its running session.
+     * Refuses a target whose session is not running.
      */
-    private function roleOf(StackTarget $target): ReadyStateType
+    private function requireRunning(StackTarget $target): void
     {
-        $session = AgentSession::query()->with('agent')->whereKey($target->sessionId)->where('agent_id', $target->agentId)->first();
+        $session = AgentSession::query()
+            ->whereKey($target->sessionId)
+            ->where('agent_id', $target->agentId)
+            ->first();
 
         if ($session === null || ! $session->isActive()) {
             throw StackTargetRefused::forTarget($target->description());
         }
-
-        return ReadyStateType::forKey($session->agent->role);
     }
 }

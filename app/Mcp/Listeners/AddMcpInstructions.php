@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mcp\Listeners;
 
-use App\Agents\Enums\AgentRole;
-use App\Agents\Support\AgentContext;
 use App\Contracts\Listener;
 use App\Hooks\Events\ContextStarted;
 use App\Mcp\Support\McpInstructions;
@@ -18,11 +16,10 @@ final readonly class AddMcpInstructions implements Listener
 {
     public function __construct(
         private McpInstructions $instructions,
-        private AgentContext $agent,
     ) {}
 
     public function handle(ContextStarted $event): void
     {
-        $event->reminders->add($this->instructions->for(AgentRole::from($this->agent->role)), true);
+        $event->reminders->add($this->instructions->forCaller(), true);
     }
 }

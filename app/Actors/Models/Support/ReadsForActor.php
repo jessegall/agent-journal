@@ -20,7 +20,7 @@ trait ReadsForActor
     /**
      * The global scope that keeps the current owner's rows.
      *
-     * @return class-string<\Illuminate\Database\Eloquent\Scope<\Illuminate\Database\Eloquent\Model>>
+     * @return class-string<\Illuminate\Database\Eloquent\Scope<Model>>
      */
     abstract protected static function ownerScope(): string;
 

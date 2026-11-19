@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\WorkOccurrenceGuard;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Events\StateTypesRequested;
+use App\Hooks\States\ReadyState;
+use App\Hooks\States\Support\ReadyStateLoader;
 use App\Hooks\States\Support\StateTypeRegistry;
 use App\Hooks\Ticks\TickingTypes;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -18,7 +19,9 @@ final class StateTypes
 {
     private StateTypeRegistry|null $registry = null;
 
-    public function __construct(private readonly Dispatcher $events) {}
+    public function __construct(private readonly Dispatcher $events,
+        private ReadyStateLoader $readyStates,
+    ) {}
 
     public function registry(): StateTypeRegistry
     {
@@ -42,9 +45,7 @@ final class StateTypes
     {
         $registry = new StateTypeRegistry();
 
-        foreach (ReadyStateType::cases() as $role) {
-            $registry->register($role->value, $role);
-        }
+        $registry->register(ReadyState::TYPE_KEY, $this->readyStates);
 
         $this->events->dispatch(new StateTypesRequested($registry));
         $registry->freeze();

@@ -10,6 +10,7 @@ use App\Agents\Events\LaunchStarted;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
+use App\Assignments\Policies\AssignmentPolicy;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
@@ -80,7 +81,7 @@ final class SessionSkillsTest extends TestCase
         $session = $this->launchedMainAgent();
         $this->assertNotContains('user-probe', $this->latestKeys($session));
 
-        $this->artisan('skill:make', ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n", '--main-agent' => true])
+        $this->artisan('skill:make', ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n", '--ability' => [AssignmentPolicy::class.':dispatch']])
             ->assertSuccessful();
         $reminders = $this->boundary($session);
 

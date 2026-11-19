@@ -30,6 +30,7 @@ trait ReadsAudienceOptions
             'agent-types' => 'type',
             'programs' => 'program',
             'providers' => 'provider',
+            'abilities' => 'ability',
         ];
 
         return array_map(fn (string $option) => $this->optionValues($option), $optionsByType);
@@ -46,7 +47,6 @@ trait ReadsAudienceOptions
     private function hasAudienceOptions(): bool
     {
         return $this->conditionsOption() !== null
-            || (bool) $this->option('main-agent')
             || array_filter($this->audience()) !== [];
     }
 }

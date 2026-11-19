@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\ManifestRefused;
+use App\Agents\Values\AccessPolicy;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
 
 /**
  * What the protected host starts a helper container with (doc 14, section 63): the image by digest, an unprivileged
@@ -55,13 +57,19 @@ final readonly class ContainerManifest
     ) {}
 
     /**
-     * The manifest of one prepared launch: its workspace mounted at /workspace, writable only for a writing helper.
+     * The manifest of one prepared launch: its workspace mounted at /workspace, writable only when the launch's access
+     * declaration grants changing workspace files, whatever the profile is called.
      *
      * @throws ManifestRefused
      */
-    public static function compile(PreparedLaunch $launch, ExecutionPolicy $policy, string $network): self
-    {
-        $mount = new ManifestMount($launch->workspace, self::WORKDIR, $launch->role === AgentRole::WritingHelper);
+    public static function compile(
+        PreparedLaunch $launch,
+        AccessPolicy $access,
+        ExecutionPolicy $policy,
+        string $network,
+    ): self {
+        $writable = $access->grants(AccessType::Edit, ResourceAreaType::Workspace);
+        $mount = new ManifestMount($launch->workspace, self::WORKDIR, $writable);
 
         return self::make((string) $policy->imageReference, self::USER, true, [], false, $network, [$mount], [], $policy->budgets);
     }

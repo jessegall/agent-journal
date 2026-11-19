@@ -7,7 +7,6 @@ namespace App\Hooks\Stack;
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReferences;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Storage\FrameRecord;
@@ -24,9 +23,9 @@ final readonly class StackRestorer
         private StateFactory $factory,
     ) {}
 
-    public function restore(FrameRecords $records, ReadyStateType $role): AgentStack
+    public function restore(FrameRecords $records): AgentStack
     {
-        $records->checkBottomFor($role);
+        $records->checkBottom();
         $all = $records->all();
 
         if (count($all) > AgentStack::DEEPEST) {

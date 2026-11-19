@@ -18,7 +18,6 @@ use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\RuntimeIntent;
 use App\Agents\Support\SelectedProgram;
 use App\Contracts\CommandHandler;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
 
 final readonly class OpenAgentRuntimeHandler implements CommandHandler

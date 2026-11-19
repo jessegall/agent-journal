@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use Tests\Support\InstallsBuiltInProfiles;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
@@ -30,6 +29,7 @@ use App\Skills\Values\SkillOwner;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\Guide\BrokenGuideSkill;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -41,8 +41,8 @@ use Tests\TestCase;
 final class RefreshSkillsTest extends TestCase
 {
     use CommitsHookRows;
-    use RunsTrustedCommands;
     use InstallsBuiltInProfiles;
+    use RunsTrustedCommands;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts', 'agent_sessions', 'agents'];
 

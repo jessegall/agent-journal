@@ -34,7 +34,7 @@ final class ProfilesSkill implements Skill
 
     public function condition(): SkillCondition
     {
-        return Conditions::mainAgent();
+        return Conditions::dispatchesWork();
     }
 
     public function sections(): array

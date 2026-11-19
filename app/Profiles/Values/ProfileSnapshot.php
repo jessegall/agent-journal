@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
+use App\Processes\Values\ProcessGrants;
 use App\Profiles\Enums\ProfileType;
 use Spatie\LaravelData\Data;
 
@@ -28,4 +29,12 @@ final class ProfileSnapshot extends Data
         public readonly ProfileLaunchPolicy $launch,
         public readonly ProfileAuthorization $authorization,
     ) {}
+
+    /**
+     * What this revision lets a launch run, from its access declaration.
+     */
+    public function processGrants(): ProcessGrants
+    {
+        return $this->launch->access->processes;
+    }
 }

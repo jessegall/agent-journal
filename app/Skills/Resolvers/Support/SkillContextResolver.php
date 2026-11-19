@@ -122,7 +122,6 @@ final readonly class SkillContextResolver
 
         return new SkillContext(
             actor: new ActorIdentity(ActorType::Agent, $agent->id),
-            agentRole: $agent->agentRole(),
             sessionId: $session->id,
             environment: self::ENVIRONMENT,
             profile: $profile,

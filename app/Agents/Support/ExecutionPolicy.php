@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
 
@@ -27,18 +26,19 @@ final readonly class ExecutionPolicy
     ) {}
 
     /**
-     * A writing helper always runs in a required container, and a container always names its verified image.
+     * A container always names its verified image.
      *
      * @param  list<string>  $networkCapabilities
      *
      * @throws ExecutionPolicyInvalid
      */
-    public static function make(AgentRole $role, ExecutionModeType $mode, string|null $imageReference, string $worktree, ExecutionBudgets $budgets, array $networkCapabilities): self
-    {
-        if ($role === AgentRole::WritingHelper && $mode !== ExecutionModeType::RequiredContainer) {
-            throw ExecutionPolicyInvalid::containerRequired($role);
-        }
-
+    public static function make(
+        ExecutionModeType $mode,
+        string|null $imageReference,
+        string $worktree,
+        ExecutionBudgets $budgets,
+        array $networkCapabilities,
+    ): self {
         if ($mode === ExecutionModeType::RequiredContainer && $imageReference === null) {
             throw ExecutionPolicyInvalid::imageMissing();
         }

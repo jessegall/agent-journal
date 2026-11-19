@@ -30,7 +30,6 @@ final class OverviewReadTool extends JournalReadTool
             'status' => $schema->string()->required(),
             'agent_id' => $schema->string()->required(),
             'session_id' => $schema->string()->required(),
-            'role' => $schema->string()->required(),
             'stack_state' => $schema->string()->nullable()->required(),
             'sections' => $schema->object()->required(),
             'next_actions' => $schema->array()->required(),

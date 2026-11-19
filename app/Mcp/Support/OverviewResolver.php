@@ -36,7 +36,6 @@ final readonly class OverviewResolver
         return ToolResult::ok([
             'agent_id' => $this->agent->agentId,
             'session_id' => $this->agent->sessionId,
-            'role' => $this->agent->role,
             'stack_state' => $this->states->top(new StackTarget($this->agent->agentId, $this->agent->sessionId))
                 ->map(fn (StateReference $state): string => $state->typeKey)
                 ->getOrElse(null),

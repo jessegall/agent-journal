@@ -16,6 +16,9 @@ use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
+use App\Processes\Values\CommandClassSet;
+use App\Processes\Values\CommandPatternSet;
+use App\Processes\Values\ProcessGrants;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
@@ -56,7 +59,7 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
                 self::decode($attributes['allowed_models']),
                 self::access($role, self::decode($attributes['access_policy'])),
                 self::stopConditions($role, self::decode($attributes['stop_conditions'])),
-                self::execution($role, self::decode($attributes['execution_policy'])),
+                self::execution(self::decode($attributes['execution_policy'])),
                 self::provenance((string) $attributes['configuration_hash'], self::decode($attributes['provenance'])),
             );
         } catch (JsonException|InvalidArgumentException|TypeError|ValueError|ErrorException $failure) {
@@ -90,6 +93,7 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
                 'denials' => $value->access->denials,
                 'paths' => $value->access->paths,
                 'destinations' => $value->access->destinations,
+                'processes' => self::processesStored($value->access->processes),
             ]),
             'stop_conditions' => self::encode([
                 'attempt_seconds' => $value->stopConditions->attemptSeconds,
@@ -144,6 +148,37 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
             $stored['denials'],
             $stored['paths'],
             $stored['destinations'],
+            self::processes($stored['processes']),
+        );
+    }
+
+    /**
+     * @return array{allowed: list<string>, denied: list<string>, ceiling: list<string>,
+     *     allowed_patterns: list<list<string>>, denied_patterns: list<list<string>>}
+     */
+    private static function processesStored(ProcessGrants $grants): array
+    {
+        return [
+            'allowed' => $grants->allowed->toArray(),
+            'denied' => $grants->denied->toArray(),
+            'ceiling' => $grants->ceiling->toArray(),
+            'allowed_patterns' => $grants->allowedPatterns->toArray(),
+            'denied_patterns' => $grants->deniedPatterns->toArray(),
+        ];
+    }
+
+    /**
+     * @param  array{allowed: list<string>, denied: list<string>, ceiling: list<string>,
+     *     allowed_patterns: list<list<string>>, denied_patterns: list<list<string>>}  $stored
+     */
+    private static function processes(array $stored): ProcessGrants
+    {
+        return new ProcessGrants(
+            CommandClassSet::fromArray($stored['allowed']),
+            CommandClassSet::fromArray($stored['denied']),
+            CommandClassSet::fromArray($stored['ceiling']),
+            CommandPatternSet::fromArray($stored['allowed_patterns']),
+            CommandPatternSet::fromArray($stored['denied_patterns']),
         );
     }
 
@@ -168,12 +203,11 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
     /**
      * @param  array<string, mixed>  $stored
      */
-    private static function execution(AgentRole $role, array $stored): ExecutionPolicy
+    private static function execution(array $stored): ExecutionPolicy
     {
         $budgets = $stored['budgets'];
 
         return ExecutionPolicy::make(
-            $role,
             ExecutionModeType::from($stored['mode']),
             $stored['image'],
             $stored['worktree'],

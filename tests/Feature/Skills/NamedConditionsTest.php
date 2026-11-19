@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Domains\Support\DomainRegistry;
 use App\Numbers\Models\NumberGroup;
 use App\Programs\Values\ProgramKey;
@@ -137,6 +136,6 @@ final class NamedConditionsTest extends TestCase
 
     private function context(): SkillContext
     {
-        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(5)), AgentRole::MainAgent, TestIds::of(6), 'main', LaunchProfile::profileFree(), ProgramKey::from('codex'), ProviderKey::from('openai'));
+        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(5)), TestIds::of(6), 'main', LaunchProfile::profileFree(), ProgramKey::from('codex'), ProviderKey::from('openai'));
     }
 }

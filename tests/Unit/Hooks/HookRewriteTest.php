@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Hooks\Contracts\StateLoader;
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\RepeatedCommandRewrite;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ShellCommandRequested;
@@ -19,6 +17,7 @@ use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Stack\HookRewrite;
 use App\Hooks\States\AgentState;
+use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;
 use App\Processes\Enums\ShellDialect;
 use Carbon\CarbonImmutable;
@@ -35,7 +34,7 @@ final class HookRewriteTest extends TestCase
     {
         $rewriter = new RewritingState(['composer test' => 'journal run tests']);
 
-        $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, $rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
 
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame('journal run tests', $answer->decision->replacementLine());
@@ -69,7 +68,7 @@ final class HookRewriteTest extends TestCase
     {
         $rewriter = new RewritingState(['composer test' => 'journal run tests'], $this->guide());
 
-        $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, $rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
 
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame(['ready', 'rewriter', 'pushed-1'], $answer->stack->frameIds());
@@ -82,14 +81,14 @@ final class HookRewriteTest extends TestCase
 
         $this->expectException(RepeatedCommandRewrite::class);
 
-        $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, $rewriter), $this->command('composer test'));
+        $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
     }
 
     public function test_a_command_nobody_rewrites_is_walked_once(): void
     {
         $rewriter = new RewritingState(['composer test' => 'journal run tests']);
 
-        $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, $rewriter), $this->command('git status'));
+        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('git status'));
 
         $this->assertSame(AnswerType::Allow, $answer->decision->answerType());
         $this->assertSame(1, $rewriter->askedCount);
@@ -100,9 +99,9 @@ final class HookRewriteTest extends TestCase
         return new HookRewrite(new ListedCommandParser());
     }
 
-    private function stack(ReadyStateType $role, RewritingState $rewriter): AgentStack
+    private function stack(RewritingState $rewriter): AgentStack
     {
-        return $this->stackOn($role->value, $this->bottomOf($role), $rewriter);
+        return $this->stackOn(ReadyState::TYPE_KEY, new ReadyState(new FixedFileEditPermission()), $rewriter);
     }
 
     /**
@@ -122,11 +121,6 @@ final class HookRewriteTest extends TestCase
             new Frame('ready', $noSubject($bottomTypeKey), $bottom, CarbonImmutable::now(), bottom: true),
             new Frame('rewriter', $noSubject('rewriter'), $rewriter, CarbonImmutable::now()),
         ], $factory);
-    }
-
-    private function bottomOf(StateLoader $role): AgentState
-    {
-        return $role->statesFor(new StateReferences([new StateReference('ready', NoSubject::None)]))->stateAt(0);
     }
 
     private function guide(): StateReference

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Skills\Conditions;
 
+use App\Actors\Values\AbilityRequirement;
+use App\Assignments\Enums\AssignmentAbility;
+use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Policies\AssignmentPolicy;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Values\ProgramKey;
@@ -22,9 +26,21 @@ final class Conditions
         return new Everyone();
     }
 
-    public static function mainAgent(): MainAgent
+    public static function granted(AbilityRequirement ...$requirements): Abilities
     {
-        return new MainAgent();
+        return new Abilities(array_values($requirements));
+    }
+
+    /**
+     * An actor whose profile lets it hand work to others: the guidance for coordinating the journal's work.
+     */
+    public static function dispatchesWork(): Abilities
+    {
+        return self::granted(new AbilityRequirement(
+            AssignmentPolicy::class,
+            AssignmentRecord::class,
+            AssignmentAbility::Dispatch,
+        ));
     }
 
     public static function profiles(ProfileKey ...$keys): Profiles

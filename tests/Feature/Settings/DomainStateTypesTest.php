@@ -46,7 +46,7 @@ final class DomainStateTypesTest extends TestCase
         $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertSame('Tasks', $working->owner);
         $this->assertSame(new WorkingOnTaskStateFactory($this->app->make(TaskRecords::class))->schemaVersion(), $working->schemaVersion());
-        $this->assertNotInstanceOf(ConditionalStateType::class, $types->get('hooks.main_ready'));
+        $this->assertNotInstanceOf(ConditionalStateType::class, $types->get('hooks.ready'));
     }
 
     public function test_a_domains_ticking_state_type_is_wrapped_and_still_ticks(): void

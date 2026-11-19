@@ -101,7 +101,7 @@ final class HookRuntimeReadinessTest extends TestCase
         $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
         $this->assertInstanceOf(StackTransaction::class, $this->app->make(LaunchTransaction::class));
 
-        foreach (['hooks.main_ready', 'hooks.read_only_helper_ready', 'tasks.working', 'communication.answering', 'sequences.following'] as $typeKey) {
+        foreach (['hooks.ready', 'tasks.working', 'communication.answering', 'sequences.following'] as $typeKey) {
             $this->assertTrue($registry->has($typeKey), $typeKey);
         }
     }

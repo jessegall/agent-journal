@@ -21,7 +21,7 @@ final class SkillMakeCommand extends Command
 {
     use PrintsSkillRefusals, ReadsAudienceOptions;
 
-    protected $signature = 'skill:make {key : A new user- key} {--name= : The display name, the key unless given} {--description= : What the skill is for} {--body=- : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=* : Profile keys} {--type=* : Profile types} {--program=* : Program keys} {--provider=* : Provider keys} {--main-agent : Only the main agent} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:make {key : A new user- key} {--name= : The display name, the key unless given} {--description= : What the skill is for} {--body=- : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=* : Profile keys} {--type=* : Profile types} {--program=* : Program keys} {--provider=* : Provider keys} {--ability=* : An ability the profile must grant, as policy class:ability} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Store a new skill';
 
@@ -37,7 +37,7 @@ final class SkillMakeCommand extends Command
                 (string) ($this->option('name') ?? $key),
                 (string) $this->option('description'),
                 $console->sectionsOf($console->bodyOf((string) $this->option('body'))),
-                $console->conditionOf($this->conditionsOption(), $this->audience(), (bool) $this->option('main-agent')),
+                $console->conditionOf($this->conditionsOption(), $this->audience()),
             );
 
             return $console->savedLines($commands->run(new CreateSkill($key, $requestId, $draft)));

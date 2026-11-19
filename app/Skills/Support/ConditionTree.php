@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\AbilityRequirement;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
+use App\Skills\Conditions\Abilities;
 use App\Skills\Conditions\AgentTypes;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
 use App\Skills\Conditions\Environments;
 use App\Skills\Conditions\Everyone;
-use App\Skills\Conditions\MainAgent;
 use App\Skills\Conditions\Named;
 use App\Skills\Conditions\Not;
 use App\Skills\Conditions\Profiles;
@@ -53,6 +55,7 @@ final readonly class ConditionTree
         private Container $container,
         private EvaluationGuard $guard,
         private ExceptionHandler $failures,
+        private PolicyCatalogue $policies,
     ) {}
 
     /**
@@ -135,7 +138,9 @@ final readonly class ConditionTree
 
         return match ($node->type) {
             Everyone::TYPE => $this->leaf($node, Everyone::VERSION, fn () => new Everyone()),
-            MainAgent::TYPE => $this->leaf($node, MainAgent::VERSION, fn () => new MainAgent()),
+            Abilities::TYPE => $this->keyed($node, Abilities::VERSION, fn (array $keys) => new Abilities(
+                array_map(fn (string $key) => $this->requirementOf($key, $node), $keys),
+            )),
             Profiles::TYPE => $this->keyed($node, Profiles::VERSION, fn (array $keys) => new Profiles(
                 array_map(ProfileKey::from(...), $keys),
             )),
@@ -169,6 +174,27 @@ final readonly class ConditionTree
         $node->requireShape($version, []);
 
         return $make();
+    }
+
+    /**
+     * The requirement a stored key names, read from the policies registered now; an unknown policy or ability is
+     * refused when the condition is read, before any skill is delivered.
+     *
+     * @throws SkillConditionInvalid
+     */
+    private function requirementOf(string $key, ConditionNode $node): AbilityRequirement
+    {
+        [$policy, $ability] = str_contains($key, ':') ? explode(':', $key, 2) : [$key, ''];
+
+        foreach ($this->policies->grantable() as $registration) {
+            $granted = $registration->policy === $policy ? $registration->abilities::tryFrom($ability) : null;
+
+            if ($granted !== null) {
+                return new AbilityRequirement($registration->policy, $registration->model, $granted);
+            }
+        }
+
+        throw SkillConditionInvalid::field($node->at('keys'), "names no ability a registered policy grants: {$key}");
     }
 
     /**

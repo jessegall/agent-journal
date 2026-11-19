@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actors\Support;
 
-use BackedEnum;
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
+use App\Actors\Contracts\Policy;
+use App\Actors\Exceptions\ActorNotAllowed;
+use BackedEnum;
 
 /**
  * The authorizer an actor's profile gives it, from the provider its actor type registered.

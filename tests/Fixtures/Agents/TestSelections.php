@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
@@ -54,6 +53,6 @@ final class TestSelections
      */
     public static function onHost(): ExecutionPolicy
     {
-        return ExecutionPolicy::make(AgentRole::MainAgent, ExecutionModeType::ProtectedHost, null, '/workspaces/test', ExecutionBudgets::defaults(), []);
+        return ExecutionPolicy::make(ExecutionModeType::ProtectedHost, null, '/workspaces/test', ExecutionBudgets::defaults(), []);
     }
 }

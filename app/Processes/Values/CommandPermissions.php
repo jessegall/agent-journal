@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
-use App\Processes\Enums\CommandClass;
-
 /**
  * What one actor may run (doc 21 revision 6, sections 10 and 28): allowed and denied classes, allowed and denied exact
- * patterns, and the role's ceiling that no allow goes past. A denied pattern or class beats every allow; an exact
+ * patterns, and the declared ceiling that no allow goes past. A denied pattern or class beats every allow; an exact
  * allowed pattern admits a command its classes alone would not, within the ceiling.
  */
 final readonly class CommandPermissions
@@ -24,43 +22,24 @@ final readonly class CommandPermissions
     ) {}
 
     /**
-     * The built-in defaults of an agent role: a read-only helper reads, uses version control and the journal, and its
-     * ceiling never admits a write, edit, delete, process control, privilege change, install, check or build; the main
-     * agent may run every known class.
+     * The permissions a declaration grants, named by where they come from, such as a profile revision.
      */
-    public static function forReadOnlyHelper(string $source): self
+    public static function granted(string $source, ProcessGrants $grants): self
     {
         return new self(
             $source,
-            CommandClassSet::of(CommandClass::Read, CommandClass::VersionControl, CommandClass::JournalOperation),
-            CommandClassSet::of(CommandClass::PrivilegeChange),
-            CommandClassSet::of(CommandClass::Read, CommandClass::VersionControl, CommandClass::JournalOperation, CommandClass::Network),
-            CommandPatternSet::of(),
-            CommandPatternSet::of(),
+            $grants->allowed,
+            $grants->denied,
+            $grants->ceiling,
+            $grants->allowedPatterns,
+            $grants->deniedPatterns,
             1,
         );
     }
 
-    public static function forMainAgent(string $source): self
-    {
-        $everything = CommandClassSet::of(...CommandClass::cases());
-
-        return new self($source, $everything, CommandClassSet::empty(), $everything, CommandPatternSet::of(), CommandPatternSet::of(), 1);
-    }
-
-    /**
-     * A signed-in user, whom no agent role ceiling limits.
-     */
-    public static function forUser(): self
-    {
-        $everything = CommandClassSet::of(...CommandClass::cases());
-
-        return new self('user', $everything, CommandClassSet::empty(), $everything, CommandPatternSet::of(), CommandPatternSet::of(), 1);
-    }
-
     public function allowing(CommandPattern ...$patterns): self
     {
-        return clone($this, ['allowedPatterns' => $this->allowedPatterns->with(CommandPatternSet::of(...$patterns))]);
+        return clone ($this, ['allowedPatterns' => $this->allowedPatterns->with(CommandPatternSet::of(...$patterns))]);
     }
 
     /**
@@ -68,7 +47,7 @@ final readonly class CommandPermissions
      */
     public function revoking(CommandClassSet $classes, CommandPatternSet $patterns): self
     {
-        return clone($this, ['denied' => $this->denied->union($classes), 'deniedPatterns' => $this->deniedPatterns->with($patterns), 'revision' => $this->revision + 1]);
+        return clone ($this, ['denied' => $this->denied->union($classes), 'deniedPatterns' => $this->deniedPatterns->with($patterns), 'revision' => $this->revision + 1]);
     }
 
     /**

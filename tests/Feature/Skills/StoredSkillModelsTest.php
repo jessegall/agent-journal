@@ -46,12 +46,12 @@ final class StoredSkillModelsTest extends TestCase
     {
         $skill = Skill::start(SkillKey::from('user-review-notes'), $this->author(), 'main');
         $first = $skill->appendRevision($this->draft('First.'), Conditions::everyone(), $this->author());
-        $second = $skill->appendRevision($this->draft('Second.'), Conditions::mainAgent(), $this->author());
+        $second = $skill->appendRevision($this->draft('Second.'), Conditions::dispatchesWork(), $this->author());
 
         $this->assertSame([1, 2], [$first->revision, $second->revision]);
         $this->assertSame($second->id, $skill->current_revision_id);
         $this->assertSame('First.', SkillRevision::numbered($skill, 1)->sections[0]->content);
-        $this->assertSame(['type' => 'main-agent', 'version' => 1], SkillRevision::currentOf($skill)->conditionThrough($this->app->make(ConditionTree::class))->toArray());
+        $this->assertSame(Conditions::dispatchesWork()->toArray(), SkillRevision::currentOf($skill)->conditionThrough($this->app->make(ConditionTree::class))->toArray());
 
         $restored = $skill->restoreFrom($first, Conditions::everyone(), $this->author());
         $this->assertSame(3, $restored->revision);

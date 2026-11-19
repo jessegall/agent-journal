@@ -20,7 +20,7 @@ final readonly class StackInspectionQuery
     {
         $row = AgentStackRow::query()->authorizedFor($target)->firstOrFail();
         $lastCall = $row->links()->among(HookCall::query()->authorizedFor($target))->latest('id')->first();
-        $stack = $this->restorer->restore($row->frames, $row->frames->role());
+        $stack = $this->restorer->restore($row->frames);
 
         return StackInspection::of($row, $stack, InspectedCall::optionalOrMissing($lastCall));
     }

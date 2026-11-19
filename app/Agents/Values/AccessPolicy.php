@@ -9,6 +9,7 @@ use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
+use App\Processes\Values\ProcessGrants;
 
 /**
  * What one role may do: access types per resource area, exact operation grants, explicit denials, the paths and
@@ -36,6 +37,7 @@ final readonly class AccessPolicy
         public array $denials,
         public array $paths,
         public array $destinations,
+        public ProcessGrants $processes,
     ) {}
 
     /**
@@ -47,8 +49,15 @@ final readonly class AccessPolicy
      *
      * @throws AccessPolicyInvalid
      */
-    public static function make(AgentRole $role, array $classGrants, array $operationGrants, array $denials, array $paths, array $destinations): self
-    {
+    public static function make(
+        AgentRole $role,
+        array $classGrants,
+        array $operationGrants,
+        array $denials,
+        array $paths,
+        array $destinations,
+        ProcessGrants $processes,
+    ): self {
         foreach ($classGrants as $grant) {
             if ($grant->area === ResourceAreaType::Protected) {
                 throw AccessPolicyInvalid::protectedGrant($role);
@@ -61,7 +70,7 @@ final readonly class AccessPolicy
             }
         }
 
-        return new self($role, $classGrants, $operationGrants, $denials, $paths, $destinations);
+        return new self($role, $classGrants, $operationGrants, $denials, $paths, $destinations, $processes);
     }
 
     /**
@@ -91,7 +100,9 @@ final readonly class AccessPolicy
             ],
         };
 
-        return self::make($role, $grants, [], [], [], []);
+        $processes = $role === AgentRole::ReadOnlyHelper ? ProcessGrants::readingOnly() : ProcessGrants::everything();
+
+        return self::make($role, $grants, [], [], [], [], $processes);
     }
 
     /**

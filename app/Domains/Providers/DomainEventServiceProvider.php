@@ -7,8 +7,8 @@ namespace App\Domains\Providers;
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\AvailableListener;
-use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\DomainRegistry;
+use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\ListenerPolicy;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 

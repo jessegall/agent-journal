@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Values;
 
+use App\Actors\Values\AbilityRequirement;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Values\ProfileSnapshot;
 
@@ -29,6 +30,15 @@ final readonly class LaunchProfile
     public function isProfileFree(): bool
     {
         return $this->snapshot === null;
+    }
+
+    /**
+     * Whether the pinned profile grants the requirement; a session launched without one is granted nothing.
+     */
+    public function grants(AbilityRequirement $requirement): bool
+    {
+        return $this->snapshot !== null
+            && $this->snapshot->authorization->grants($requirement->policy, $requirement->ability);
     }
 
     /**

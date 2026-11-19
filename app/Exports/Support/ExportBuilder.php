@@ -41,7 +41,7 @@ final readonly class ExportBuilder
      */
     public function events(string ...$events): self
     {
-        return clone($this, ['events' => [...$this->events, ...self::plainList('events', $events)]]);
+        return clone ($this, ['events' => [...$this->events, ...self::plainList('events', $events)]]);
     }
 
     /**
@@ -49,7 +49,7 @@ final readonly class ExportBuilder
      */
     public function contracts(string ...$contracts): self
     {
-        return clone($this, ['contracts' => [...$this->contracts, ...self::plainList('contracts', $contracts)]]);
+        return clone ($this, ['contracts' => [...$this->contracts, ...self::plainList('contracts', $contracts)]]);
     }
 
     /**
@@ -57,7 +57,7 @@ final readonly class ExportBuilder
      */
     public function values(string ...$values): self
     {
-        return clone($this, ['values' => [...$this->values, ...self::plainList('values', $values)]]);
+        return clone ($this, ['values' => [...$this->values, ...self::plainList('values', $values)]]);
     }
 
     /**
@@ -65,7 +65,7 @@ final readonly class ExportBuilder
      */
     public function commands(string ...$commands): self
     {
-        return clone($this, ['commands' => [...$this->commands, ...self::plainList('commands', $commands)]]);
+        return clone ($this, ['commands' => [...$this->commands, ...self::plainList('commands', $commands)]]);
     }
 
     /**
@@ -73,7 +73,7 @@ final readonly class ExportBuilder
      */
     public function exceptions(string ...$exceptions): self
     {
-        return clone($this, ['exceptions' => [...$this->exceptions, ...self::plainList('exceptions', $exceptions)]]);
+        return clone ($this, ['exceptions' => [...$this->exceptions, ...self::plainList('exceptions', $exceptions)]]);
     }
 
     /**
@@ -81,7 +81,7 @@ final readonly class ExportBuilder
      */
     public function support(string ...$support): self
     {
-        return clone($this, ['support' => [...$this->support, ...self::plainList('support', $support)]]);
+        return clone ($this, ['support' => [...$this->support, ...self::plainList('support', $support)]]);
     }
 
     /**

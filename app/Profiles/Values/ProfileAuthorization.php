@@ -56,6 +56,16 @@ final readonly class ProfileAuthorization
     }
 
     /**
+     * Whether this profile grants a class-level ability, without a record to decide on.
+     *
+     * @param  class-string<Policy>  $policy
+     */
+    public function grants(string $policy, BackedEnum $ability): bool
+    {
+        return $this->type->grants($this->grants, $policy, $ability);
+    }
+
+    /**
      * @return list<array{policy: class-string<Policy>, ability_type: class-string<BackedEnum>, ability: int|string}>
      */
     public function grantsAsArrays(): array

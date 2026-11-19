@@ -18,7 +18,6 @@ use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Support\StackTransaction;
@@ -73,14 +72,14 @@ final class ConditionalReviewStateTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
         $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
-        $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
     }
 
     public function test_while_the_group_is_on_a_push_adds_the_review_frame(): void
     {
         $this->pushReview();
 
-        $this->assertSame(['hooks.main_ready', ReviewStateType::TYPE_KEY], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', ReviewStateType::TYPE_KEY], $this->storedTypeKeys());
     }
 
     public function test_while_the_group_is_off_a_push_is_declined_and_a_stored_frame_is_removed_for_good(): void
@@ -89,11 +88,11 @@ final class ConditionalReviewStateTest extends TestCase
         $this->switchReview(off: true, expectedRevision: 0);
 
         $this->pushReview();
-        $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready'], $this->storedTypeKeys());
 
         $this->switchReview(off: false, expectedRevision: 1);
 
-        $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys(), 'Switching the group on again brings back no removed frame.');
+        $this->assertSame(['hooks.ready'], $this->storedTypeKeys(), 'Switching the group on again brings back no removed frame.');
     }
 
     public function test_a_retained_factory_reads_the_settings_of_each_request(): void

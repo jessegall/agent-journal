@@ -56,6 +56,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorLabelSet;
 use App\Actors\Support\AllowsEverything;
 use App\Actors\Support\CurrentUser;
+use App\Actors\Values\AbilityRequirement;
 use App\Actors\Values\OwnerAuthority;
 use App\Actors\Values\PolicyRegistration;
 use App\Actors\Values\TrustedEntryAuthority;
@@ -114,6 +115,7 @@ use App\Agents\Enums\LaunchDisposition;
 use App\Agents\Enums\LaunchOriginType;
 use App\Agents\Enums\LaunchRefusalType;
 use App\Agents\Enums\ModelSelectionType;
+use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
@@ -141,6 +143,7 @@ use App\Agents\Exceptions\LaunchRequestConflict;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
+use App\Agents\Exceptions\OfflineReplyModeInvalid;
 use App\Agents\Exceptions\ProgramConflict;
 use App\Agents\Exceptions\ProgramRequired;
 use App\Agents\Exceptions\ProgramUnsupported;
@@ -557,6 +560,7 @@ use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandOperation;
 use App\Processes\Values\CommandPart;
 use App\Processes\Values\CommandPattern;
+use App\Processes\Values\CommandPatternSet;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\EmptyRunPolicy;
 use App\Processes\Values\ExecutableBinding;
@@ -568,6 +572,7 @@ use App\Processes\Values\NextStep;
 use App\Processes\Values\OptionGrammar;
 use App\Processes\Values\OutputContract;
 use App\Processes\Values\PartClassification;
+use App\Processes\Values\ProcessGrants;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
 use App\Processes\Values\ProgressPolicy;
@@ -801,13 +806,13 @@ use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RestoreSkill;
 use App\Skills\Commands\RetireSkill;
 use App\Skills\Commands\ReviseSkill;
+use App\Skills\Conditions\Abilities;
 use App\Skills\Conditions\AgentTypes;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Conditions\Environments;
 use App\Skills\Conditions\Everyone;
-use App\Skills\Conditions\MainAgent;
 use App\Skills\Conditions\Named;
 use App\Skills\Conditions\Not;
 use App\Skills\Conditions\Profiles;
@@ -1155,6 +1160,8 @@ final class CoreApi
                 ClassGrant::class,
                 AccessDecision::class,
                 AccessPolicy::class,
+                ProcessGrants::class,
+                CommandPatternSet::class,
                 StopCondition::class,
                 StopConditions::class,
                 ExecutionBudgets::class,
@@ -1304,6 +1311,7 @@ final class CoreApi
                 ToolResult::class,
                 ToolOutcome::class,
                 ActorIdentity::class,
+                AbilityRequirement::class,
                 PolicyRegistration::class,
                 AssigneeIdentity::class,
                 AssignmentRequest::class,
@@ -1470,6 +1478,7 @@ final class CoreApi
                 ShareState::class,
                 ProfileKey::class,
                 ProfileType::class,
+                OfflineReplyMode::class,
                 ProfileSnapshot::class,
                 ProfileLaunchPolicy::class,
                 ProfileAuthorization::class,
@@ -1494,7 +1503,7 @@ final class CoreApi
                 SkillOwner::class,
                 SkillOrigin::class,
                 MarkdownParts::class,
-                MainAgent::class,
+                Abilities::class,
                 Profiles::class,
                 AgentTypes::class,
                 Programs::class,
@@ -1605,6 +1614,7 @@ final class CoreApi
             )
             ->exceptions(
                 AutoAssignmentSizeInvalid::class,
+                OfflineReplyModeInvalid::class,
                 SkillSourceInvalid::class,
                 EngineActorRequired::class,
                 ActiveActorCounterRepeated::class,

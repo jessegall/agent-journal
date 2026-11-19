@@ -39,7 +39,7 @@ final readonly class HookAnswer
      */
     public function withRemindersFirst(array $reminders): self
     {
-        return clone($this, ['context' => [...$reminders, ...$this->context]]);
+        return clone ($this, ['context' => [...$reminders, ...$this->context]]);
     }
 
     public function isRewrite(): bool

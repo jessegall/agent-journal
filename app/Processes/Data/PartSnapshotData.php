@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Processes\Data;
 
-use App\Processes\Values\OutputProblem;
-use App\Processes\Values\PartActivity;
 use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ReaderPosition;
+use App\Processes\Values\OutputProblem;
+use App\Processes\Values\PartActivity;
 use Spatie\LaravelData\Data;
 
 /**

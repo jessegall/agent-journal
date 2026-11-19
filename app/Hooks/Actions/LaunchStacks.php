@@ -8,9 +8,9 @@ use App\Actors\Contracts\ServerClock;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Support\StackTransaction;
@@ -30,17 +30,23 @@ final readonly class LaunchStacks
     ) {}
 
     /**
-     * Opens the stack with the bottom state of the role, or leaves the one a racing launch opened first.
+     * Opens the stack with the ready bottom state, or leaves the one a racing launch opened first.
      */
-    public function open(StackTarget $target, ReadyStateType $role): void
+    public function open(StackTarget $target): void
     {
         $this->transaction->requireOpen($target);
 
         AgentStackRow::insertIfMissing($target, new FrameRecords([
-            new FrameRecord((string) Str::ulid(), new StateReference($role->value, NoSubject::None), true, $role->schemaVersion(), $this->clock->now()),
+            new FrameRecord(
+                (string) Str::ulid(),
+                new StateReference(ReadyState::TYPE_KEY, NoSubject::None),
+                true,
+                1,
+                $this->clock->now(),
+            ),
         ]), $this->types->ticking());
 
-        AgentStackRow::lockAuthorizedFor($target)->frames->checkBottomFor($role);
+        AgentStackRow::lockAuthorizedFor($target)->frames->checkBottom();
     }
 
     public function close(StackTarget $target): void

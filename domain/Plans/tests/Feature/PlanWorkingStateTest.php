@@ -74,7 +74,7 @@ final class PlanWorkingStateTest extends TestCase
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Cancelled->value]);
 
         $this->assertTrue($this->planFrame($restorer, $row)->isFinished());
-        $this->assertTrue($restorer->restore($row->frames, $row->frames->role())->top()->isBottom());
+        $this->assertTrue($restorer->restore($row->frames)->top()->isBottom());
     }
 
     /**
@@ -82,7 +82,7 @@ final class PlanWorkingStateTest extends TestCase
      */
     private function planFrame(StackRestorer $restorer, AgentStackRow $row): Frame
     {
-        $frames = $restorer->restore($row->frames, $row->frames->role())->frames();
+        $frames = $restorer->restore($row->frames)->frames();
 
         return $frames[array_key_last($frames)];
     }

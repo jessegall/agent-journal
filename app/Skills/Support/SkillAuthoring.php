@@ -98,18 +98,18 @@ final readonly class SkillAuthoring
     }
 
     /**
-     * The condition JSON a command names: --conditions as written, or the audience flags as one all group, or empty
-     * for Everyone. Mixing the two, or a flag without a value, is refused.
+     * The condition JSON a command names: --conditions as written, or the audience and ability flags as one all
+     * group, or empty for Everyone. Mixing the two, or a flag without a value, is refused.
      *
      * @param  array<string, list<string>>  $audience  each flag's values, by condition type
      *
      * @throws SkillConditionInvalid
      */
-    public function conditionOf(string|null $conditions, array $audience, bool $mainAgent): string
+    public function conditionOf(string|null $conditions, array $audience): string
     {
         $named = array_filter($audience, fn (array $values) => $values !== []);
 
-        if ($conditions !== null && ($named !== [] || $mainAgent)) {
+        if ($conditions !== null && $named !== []) {
             throw SkillConditionInvalid::field('--conditions', 'cannot be mixed with audience flags; use one or the other');
         }
 
@@ -123,7 +123,7 @@ final readonly class SkillAuthoring
             return $conditions;
         }
 
-        $children = $mainAgent ? [['type' => 'main-agent', 'version' => 1]] : [];
+        $children = [];
 
         foreach ($named as $type => $values) {
             $children[] = ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($values))];

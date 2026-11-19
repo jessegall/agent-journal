@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
+use Tests\Support\RefreshHookDatabase;
+use App\Assignments\Enums\AssignmentAbility;
+use App\Assignments\Policies\AssignmentPolicy;
+use App\Profiles\Values\AbilityGrant;
+use App\Profiles\Enums\AuthorizationType;
+use App\Profiles\Values\ProfileAuthorization;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileKey;
@@ -30,6 +35,8 @@ use Tests\TestCase;
  */
 final class ConditionTreeTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string SECTION_6_JSON = '{"type":"all","version":1,"children":[{"type":"profiles","version":1,"keys":["journal-reviewer"]},{"type":"programs","version":1,"keys":["codex"]}]}';
 
     public function test_the_php_condition_and_the_section_6_json_agree_for_the_same_context(): void
@@ -47,13 +54,13 @@ final class ConditionTreeTest extends TestCase
         $this->assertSame(ConditionOutcome::NoMatch, $json->evaluate($this->reviewerOn('claude-code'))->outcome);
     }
 
-    public function test_main_agent_reads_the_trusted_role_and_agent_types_read_the_profile_type(): void
+    public function test_abilities_read_the_pinned_profiles_grants_and_agent_types_read_its_type(): void
     {
-        $this->assertSame(ConditionOutcome::Match, Conditions::mainAgent()->evaluate($this->mainAgentOn('codex'))->outcome);
-        $this->assertSame(ConditionOutcome::NoMatch, Conditions::mainAgent()->evaluate($this->reviewerOn('codex'))->outcome);
+        $this->assertSame(ConditionOutcome::Match, Conditions::dispatchesWork()->evaluate($this->mainAgentOn('codex'))->outcome);
+        $this->assertSame(ConditionOutcome::NoMatch, Conditions::dispatchesWork()->evaluate($this->reviewerOn('codex'))->outcome);
         $this->assertSame(ConditionOutcome::Match, Conditions::agentTypes(ProfileType::ReadOnlyHelper)->evaluate($this->reviewerOn('codex'))->outcome);
         $this->assertSame(ConditionOutcome::NoMatch, Conditions::agentTypes(ProfileType::WritingHelper)->evaluate($this->reviewerOn('codex'))->outcome);
-        $this->assertSame('profile-free', Conditions::profiles(ProfileKey::from('journal-reviewer'))->evaluate($this->mainAgentOn('codex'))->reason);
+        $this->assertSame('profile-free', Conditions::profiles(ProfileKey::from('journal-reviewer'))->evaluate($this->profileFreeOn('codex'))->reason);
     }
 
     public function test_an_unavailable_fact_stays_unavailable_through_not_and_groups(): void
@@ -64,10 +71,10 @@ final class ConditionTreeTest extends TestCase
         $this->assertSame(ConditionOutcome::Unavailable, $providers->evaluate($unknownProvider)->outcome);
         $this->assertSame(ConditionOutcome::Unavailable, Conditions::not($providers)->evaluate($unknownProvider)->outcome);
         $this->assertSame(ConditionOutcome::Unavailable, Conditions::all(Conditions::everyone(), $providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::NoMatch, Conditions::all(Conditions::mainAgent(), $providers)->evaluate($unknownProvider)->outcome);
+        $this->assertSame(ConditionOutcome::NoMatch, Conditions::all(Conditions::dispatchesWork(), $providers)->evaluate($unknownProvider)->outcome);
         $this->assertSame(ConditionOutcome::Match, Conditions::any(Conditions::everyone(), $providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::Unavailable, Conditions::any(Conditions::mainAgent(), $providers)->evaluate($unknownProvider)->outcome);
-        $this->assertSame(ConditionOutcome::Match, Conditions::not(Conditions::mainAgent())->evaluate($unknownProvider)->outcome);
+        $this->assertSame(ConditionOutcome::Unavailable, Conditions::any(Conditions::dispatchesWork(), $providers)->evaluate($unknownProvider)->outcome);
+        $this->assertSame(ConditionOutcome::Match, Conditions::not(Conditions::dispatchesWork())->evaluate($unknownProvider)->outcome);
     }
 
     public function test_an_unregistered_named_condition_is_unavailable_and_keeps_its_source(): void
@@ -129,6 +136,23 @@ final class ConditionTreeTest extends TestCase
         return $node;
     }
 
+    public function test_an_ability_condition_is_read_back_and_asks_the_target_not_the_caller(): void
+    {
+        $stored = json_encode(Conditions::dispatchesWork()->toArray(), JSON_THROW_ON_ERROR);
+        $condition = $this->tree()->fromJson($stored);
+
+        $this->assertEquals(Conditions::dispatchesWork(), $condition);
+        $this->assertSame(ConditionOutcome::Match, $condition->evaluate($this->mainAgentOn('codex'))->outcome);
+        $this->assertSame(ConditionOutcome::NoMatch, $condition->evaluate($this->reviewerOn('codex'))->outcome);
+    }
+
+    public function test_an_ability_no_registered_policy_grants_is_refused_when_read(): void
+    {
+        $this->expectException(SkillConditionInvalid::class);
+
+        $this->tree()->fromJson('{"type":"abilities","version":1,"keys":["App\\\\Nowhere\\\\Policy:work"]}');
+    }
+
     private function tree(): ConditionTree
     {
         return $this->app->make(ConditionTree::class);
@@ -148,11 +172,44 @@ final class ConditionTreeTest extends TestCase
             'authorization' => BuiltInAuthorizations::for(ProfileType::ReadOnlyHelper),
         ]);
 
-        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), AgentRole::ReadOnlyHelper, TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from($program), $provider === null ? null : ProviderKey::from($provider));
+        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from($program), $provider === null ? null : ProviderKey::from($provider));
     }
 
     private function mainAgentOn(string $program): SkillContext
     {
-        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(1)), AgentRole::MainAgent, TestIds::of(4), 'main', LaunchProfile::profileFree(), ProgramKey::from($program), ProviderKey::from('openai'));
+        $snapshot = ProfileSnapshot::from([
+            'key' => ProfileKey::from('main-agent'),
+            'revision' => 1,
+            'type' => ProfileType::MainAgent,
+            'instructions' => 'Lead.',
+            'model' => 'opus',
+            'skillAllowlist' => null,
+            'requiredSkills' => [],
+            'launch' => TestLaunchPolicies::for(ProfileType::MainAgent),
+            'authorization' => new ProfileAuthorization(AuthorizationType::Policies, [
+                new AbilityGrant(AssignmentPolicy::class, AssignmentAbility::Dispatch),
+            ]),
+        ]);
+
+        return new SkillContext(
+            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
+            TestIds::of(4),
+            'main',
+            LaunchProfile::of($snapshot),
+            ProgramKey::from($program),
+            ProviderKey::from('openai'),
+        );
+    }
+
+    private function profileFreeOn(string $program): SkillContext
+    {
+        return new SkillContext(
+            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
+            TestIds::of(4),
+            'main',
+            LaunchProfile::profileFree(),
+            ProgramKey::from($program),
+            ProviderKey::from('openai'),
+        );
     }
 }

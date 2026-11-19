@@ -6,7 +6,6 @@ namespace App\Hooks\Stack;
 
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Models\AgentStackRow;
 
@@ -23,10 +22,10 @@ final readonly class StatePush
         private StateTypes $types,
     ) {}
 
-    public function push(StackTarget $target, AgentStackRow $row, ReadyStateType $role, StateReference $reference): void
+    public function push(StackTarget $target, AgentStackRow $row, StateReference $reference): void
     {
         $this->lifecycle->refuseChangeDuringCallbacks($target);
-        $before = $this->restorer->restore($row->frames, $role);
+        $before = $this->restorer->restore($row->frames);
         $after = $before->withoutExposedInactive()->withStateOnTop($reference);
 
         if ($after->frameIds() === $before->frameIds()) {

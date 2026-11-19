@@ -26,6 +26,7 @@ use App\Agents\Support\HostCapacity;
 use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\PreparedLaunch;
+use App\Agents\Values\AccessPolicy;
 use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -47,12 +48,22 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_writer_launch_compiles_a_manifest_with_exactly_the_listed_controls(): void
     {
-        $manifest = ContainerManifest::compile($this->prepared(AgentRole::WritingHelper), $this->policy(), 'journal-launch-1');
+        $manifest = ContainerManifest::compile($this->prepared(AgentRole::WritingHelper), AccessPolicy::defaultsFor(AgentRole::WritingHelper), $this->policy(), 'journal-launch-1');
 
         $this->assertSame([self::IMAGE, '10001:10001', '/workspace', true, [], true, 'verified-default', false, [], 'journal-launch-1'], [$manifest->image, $manifest->user, $manifest->workdir, $manifest->readOnlyRoot, $manifest->capabilities, $manifest->noNewPrivileges, $manifest->seccomp, $manifest->privileged, $manifest->publishedPorts, $manifest->network]);
         $this->assertEquals([new ManifestMount('/workspaces/helper-7', '/workspace', true)], $manifest->mounts);
         $this->assertSame(2, $manifest->budgets->cpuCores);
-        $this->assertFalse(ContainerManifest::compile($this->prepared(AgentRole::ReadOnlyHelper), $this->policy(), 'journal-launch-1')->mounts[0]->writable);
+        $this->assertFalse(ContainerManifest::compile($this->prepared(AgentRole::ReadOnlyHelper), AccessPolicy::defaultsFor(AgentRole::ReadOnlyHelper), $this->policy(), 'journal-launch-1')->mounts[0]->writable);
+    }
+
+    public function test_the_mount_follows_the_access_declaration_not_the_type(): void
+    {
+        $writerAccess = AccessPolicy::defaultsFor(AgentRole::WritingHelper);
+        $readerLaunch = $this->prepared(AgentRole::ReadOnlyHelper);
+
+        $manifest = ContainerManifest::compile($readerLaunch, $writerAccess, $this->policy(), 'journal-launch-1');
+
+        $this->assertTrue($manifest->mounts[0]->writable);
     }
 
     public function test_a_parent_folder_a_credential_mount_a_mutable_tag_and_a_privileged_flag_are_refused(): void
@@ -113,7 +124,7 @@ final class ContainerManifestTest extends TestCase
 
     private function policy(): ExecutionPolicy
     {
-        return ExecutionPolicy::make(AgentRole::WritingHelper, ExecutionModeType::RequiredContainer, self::IMAGE, 'helper-7', ExecutionBudgets::defaults(), []);
+        return ExecutionPolicy::make(ExecutionModeType::RequiredContainer, self::IMAGE, 'helper-7', ExecutionBudgets::defaults(), []);
     }
 
     private function signIn(): void

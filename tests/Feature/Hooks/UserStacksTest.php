@@ -58,7 +58,7 @@ final class UserStacksTest extends TestCase
 
         $this->pushInTransaction($this->target);
 
-        $this->assertSame(['hooks.main_ready', 'notes.writing'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', 'notes.writing'], $this->storedTypeKeys());
     }
 
     public function test_a_user_push_of_a_switched_off_conditional_state_stores_nothing(): void
@@ -69,7 +69,7 @@ final class UserStacksTest extends TestCase
             fn () => $this->app->make(UserStacks::class)->push($this->target, new StateReference('test.switched_off', NoSubject::None)),
         );
 
-        $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready'], $this->storedTypeKeys());
     }
 
     public function test_an_agent_cannot_use_the_user_path(): void

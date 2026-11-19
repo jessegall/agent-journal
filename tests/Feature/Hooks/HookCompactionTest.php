@@ -87,7 +87,7 @@ final class HookCompactionTest extends TestCase
 
         $this->assertSame(TaskState::Started, $this->task->fresh()?->state);
         $this->assertSame(1, $this->run->fresh()?->current_step);
-        $this->assertSame(['hooks.main_ready', 'tasks.working', 'sequences.following'], $this->storedTypeKeys());
+        $this->assertSame(['hooks.ready', 'tasks.working', 'sequences.following'], $this->storedTypeKeys());
     }
 
     public function test_a_replayed_compaction_runs_no_reminder_listener(): void

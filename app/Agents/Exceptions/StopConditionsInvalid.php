@@ -47,9 +47,4 @@ final class StopConditionsInvalid extends InvalidArgumentException implements Co
     {
         return new self("The stop condition {$key} keeps 1 to 65536 bytes of output, not {$bytes}.");
     }
-
-    public static function cleanWorktreeMissing(): self
-    {
-        return new self('A writing helper always checks clean-worktree before it finishes; it cannot be removed.');
-    }
 }

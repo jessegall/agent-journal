@@ -8,21 +8,21 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
 use App\Hooks\Exceptions\StateTypeUnknown;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
-use App\Hooks\States\MainAgentReadyState;
-use App\Hooks\States\ReadOnlyHelperReadyState;
+use App\Hooks\States\ReadyState;
+use App\Hooks\States\Support\ReadyStateLoader;
 use App\Hooks\States\Support\StateTypeRegistry;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\FixedServerClock;
@@ -75,7 +75,7 @@ final class StateLoaderTest extends TestCase
             $buildCount++;
             $event->registry->register('tasks.working', new InMemoryTaskLoader());
         });
-        $types = new StateTypes($events);
+        $types = new StateTypes($events, FixedFileEditPermission::loader());
 
         $first = $types->registry();
         $second = $types->registry();
@@ -83,17 +83,15 @@ final class StateLoaderTest extends TestCase
         $this->assertSame($first, $second);
         $this->assertSame(1, $buildCount);
         $this->assertTrue($first->has('tasks.working'));
-        $this->assertSame(ReadyStateType::MainAgent, $first->get('hooks.main_ready'));
-        $this->assertSame(ReadyStateType::ReadOnlyHelper, $first->get('hooks.read_only_helper_ready'));
+        $this->assertInstanceOf(ReadyStateLoader::class, $first->get(ReadyState::TYPE_KEY));
     }
 
-    public function test_the_built_in_roles_build_their_own_bottom_states(): void
+    public function test_the_ready_type_builds_the_one_bottom_state(): void
     {
-        $registry = new StateTypes(new Dispatcher())->registry();
-        $noSubject = fn (string $key) => new StateReference($key, NoSubject::None);
+        $registry = new StateTypes(new Dispatcher(), FixedFileEditPermission::loader(false))->registry();
+        $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
 
-        $this->assertSame(MainAgentReadyState::class, $registry->get('hooks.main_ready')->statesFor(new StateReferences([$noSubject('hooks.main_ready')]))->stateAt(0)::class);
-        $this->assertSame(ReadOnlyHelperReadyState::class, $registry->get('hooks.read_only_helper_ready')->statesFor(new StateReferences([$noSubject('hooks.read_only_helper_ready')]))->stateAt(0)::class);
+        $this->assertSame(ReadyState::class, $registry->get(ReadyState::TYPE_KEY)->statesFor($ready)->stateAt(0)::class);
     }
 
     public function test_a_failed_build_is_not_kept_and_the_next_use_builds_again(): void
@@ -109,7 +107,7 @@ final class StateLoaderTest extends TestCase
 
             $event->registry->register('tasks.working', new InMemoryTaskLoader());
         });
-        $types = new StateTypes($events);
+        $types = new StateTypes($events, FixedFileEditPermission::loader());
 
         try {
             $types->registry();
@@ -127,7 +125,7 @@ final class StateLoaderTest extends TestCase
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active]);
         $events = new Dispatcher();
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
-        $factory = new RegisteredStateFactory(new StateTypes($events), new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00')));
+        $factory = new RegisteredStateFactory(new StateTypes($events, FixedFileEditPermission::loader()), new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00')));
         $reference = new StateReference('tasks.working', new SubjectReference('42', 1));
 
         $first = $factory->frameFor($reference);

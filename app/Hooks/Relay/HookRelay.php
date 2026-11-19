@@ -10,19 +10,22 @@ use App\AgentRequests\Support\AgentCallReply;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\Agents\Support\LoggedBypass;
 use App\Hooks\Enums\CallFailure;
-use App\Hooks\Enums\ReadyStateType;
+use App\Hooks\Exceptions\ProgramReplyMalformed;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Client\ConnectionException;
+use JsonException;
 
 /**
  * What the host runs for every native hook call: upload the bypasses logged while the journal was away, give the
  * callback its own envelope, keep it, post it, send the same envelope again once if the journal could not be reached,
- * and give the program the journal's reply. When the journal cannot answer before the deadline, give the outage reply
- * for the role and, for a main agent, log the bypass.
+ * and give the program the journal's reply. Only a transport failure is an outage: then the launch's sealed offline
+ * reply answers, and a neutral one is logged as a bypass. Any status or malformed body from the journal is its answer
+ * and is refused, never bypassed. While disconnected the relay cannot see a profile revoked meanwhile; every call
+ * after reconnection is authenticated again with the pinned profile.
  */
 final readonly class HookRelay
 {
@@ -55,9 +58,12 @@ final readonly class HookRelay
         }
 
         $pending->acknowledge($envelope);
-        $answer = json_decode($reply->body, true, 4, JSON_THROW_ON_ERROR);
 
-        return new ProgramReply((string) $answer['stdout'], (string) $answer['stderr'], (int) $answer['exitCode']);
+        try {
+            return ProgramReply::fromJournal($reply->body);
+        } catch (JsonException|ProgramReplyMalformed) {
+            return $this->answerWithoutJournal(CallFailure::Refused, $payload, $settings, $log);
+        }
     }
 
     /**
@@ -70,7 +76,13 @@ final readonly class HookRelay
     private function send(CallbackEnvelope $envelope, RelaySettings $settings): AgentCallReply
     {
         for ($attempt = 1; ; $attempt++) {
-            $call = $this->client->prepareWithId($settings->client(), $settings->hookPath($envelope->program), $envelope->body, $envelope->id, $envelope->issuedAt);
+            $call = $this->client->prepareWithId(
+                $settings->client(),
+                $settings->hookPath($envelope->program),
+                $envelope->body,
+                $envelope->id,
+                $envelope->issuedAt,
+            );
 
             try {
                 return $this->client->sendPrepared($call, [], $envelope->deadline());
@@ -82,15 +94,23 @@ final readonly class HookRelay
         }
     }
 
-    private function answerWithoutJournal(CallFailure $failure, string $payload, RelaySettings $settings, BypassLog $log): ProgramReply
-    {
+    private function answerWithoutJournal(
+        CallFailure $failure,
+        string $payload,
+        RelaySettings $settings,
+        BypassLog $log,
+    ): ProgramReply {
         $event = ProgramEventName::of($payload);
 
-        if ($failure->isOutage() && $settings->role === ReadyStateType::MainAgent) {
-            $log->append(LoggedBypass::from(['nativeEvent' => $event, 'failure' => $failure->value, 'occurredAt' => CarbonImmutable::now()]));
+        if ($failure->isOutage() && $settings->passesOutages) {
+            $log->append(LoggedBypass::from([
+                'nativeEvent' => $event,
+                'failure' => $failure->value,
+                'occurredAt' => CarbonImmutable::now(),
+            ]));
         }
 
-        return OutageReply::for($failure, $settings->role, $event);
+        return OutageReply::for($failure, $settings->passesOutages, $event);
     }
 
     private function uploadBypasses(RelaySettings $settings, BypassLog $log): void

@@ -33,7 +33,7 @@ final class PlanSkill implements Skill
 
     public function condition(): SkillCondition
     {
-        return Conditions::any(Conditions::mainAgent(), Conditions::agentTypes(ProfileType::WritingHelper));
+        return Conditions::any(Conditions::dispatchesWork(), Conditions::agentTypes(ProfileType::WritingHelper));
     }
 
     public function sections(): array

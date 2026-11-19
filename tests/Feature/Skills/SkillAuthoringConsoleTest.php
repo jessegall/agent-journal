@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
+use App\Assignments\Policies\AssignmentPolicy;
 use App\Skills\Models\Skill;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
@@ -17,6 +18,8 @@ use Tests\TestCase;
  */
 final class SkillAuthoringConsoleTest extends TestCase
 {
+    private const string DISPATCH = AssignmentPolicy::class.':dispatch';
+
     use CommitsHookRows;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
@@ -65,14 +68,17 @@ final class SkillAuthoringConsoleTest extends TestCase
 
     public function test_conditions_and_audience_flags_are_not_mixed_and_flags_compile_to_one_all_group(): void
     {
-        $this->artisan('skill:make', ['key' => 'user-mixed', '--description' => 'Mixed', '--body' => 'Text.', '--conditions' => self::REVIEWERS, '--main-agent' => true])
+        $this->artisan('skill:make', ['key' => 'user-mixed', '--description' => 'Mixed', '--body' => 'Text.', '--conditions' => self::REVIEWERS, '--ability' => [self::DISPATCH]])
             ->expectsOutputToContain('cannot be mixed with audience flags')
             ->assertFailed();
 
-        $this->artisan('skill:make', ['key' => 'user-codex-main', '--description' => 'Codex main', '--body' => 'Text.', '--main-agent' => true, '--program' => ['codex']])->assertSuccessful();
+        $this->artisan('skill:make', ['key' => 'user-codex-main', '--description' => 'Codex main', '--body' => 'Text.', '--ability' => [self::DISPATCH], '--program' => ['codex']])->assertSuccessful();
 
         Artisan::call('skill:revision', ['number' => 'user-codex-main', 'revision' => 1]);
-        $this->assertStringContainsString('{"type":"all","version":1,"children":[{"type":"main-agent","version":1},{"type":"programs","version":1,"keys":["codex"]}]}', Artisan::output());
+        $this->assertStringContainsString(json_encode(['type' => 'all', 'version' => 1, 'children' => [
+            ['type' => 'programs', 'version' => 1, 'keys' => ['codex']],
+            ['type' => 'abilities', 'version' => 1, 'keys' => [self::DISPATCH]],
+        ]], JSON_THROW_ON_ERROR), Artisan::output());
     }
 
     public function test_editing_a_shipped_skill_offers_a_copy(): void

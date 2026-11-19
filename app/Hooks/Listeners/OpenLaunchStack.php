@@ -8,7 +8,6 @@ use App\Agents\Events\LaunchStarted;
 use App\Agents\Support\StackTarget;
 use App\Contracts\Listener;
 use App\Hooks\Actions\LaunchStacks;
-use App\Hooks\Enums\ReadyStateType;
 
 /**
  * Opens the launched agent's stack with the bottom state of its role, in the launch transaction. A launch with an
@@ -20,6 +19,6 @@ final readonly class OpenLaunchStack implements Listener
 
     public function handle(LaunchStarted $event): void
     {
-        $this->stacks->open(new StackTarget($event->agentId, $event->sessionId), ReadyStateType::forKey($event->role));
+        $this->stacks->open(new StackTarget($event->agentId, $event->sessionId));
     }
 }

@@ -31,6 +31,6 @@ final readonly class AgentStacks implements AgentStack
         $this->transaction->requireOpen($target);
         $this->access->checkTarget($target);
 
-        $this->statePush->push($target, AgentStackRow::lockFor($target), $this->access->role(), $state);
+        $this->statePush->push($target, AgentStackRow::lockFor($target), $state);
     }
 }

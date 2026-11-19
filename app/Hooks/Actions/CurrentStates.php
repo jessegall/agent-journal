@@ -29,7 +29,7 @@ final readonly class CurrentStates implements CurrentState
     public function top(StackTarget $target): Option
     {
         return AgentStackRow::activeFor($target)->map(function (AgentStackRow $row): StateReference {
-            $stack = $this->restorer->restore($row->frames, $row->frames->role());
+            $stack = $this->restorer->restore($row->frames);
 
             return $stack->top()->reference;
         });
@@ -42,7 +42,7 @@ final readonly class CurrentStates implements CurrentState
     private function highestUnfinished(StackTarget $target, Closure $matches): Option
     {
         return AgentStackRow::activeFor($target)->flatMap(function (AgentStackRow $row) use ($matches): Option {
-            foreach (array_reverse($this->restorer->restore($row->frames, $row->frames->role())->frames()) as $frame) {
+            foreach (array_reverse($this->restorer->restore($row->frames)->frames()) as $frame) {
                 if ($matches($frame) && ! $frame->isFinished()) {
                     return Option::fromValue($frame->reference);
                 }

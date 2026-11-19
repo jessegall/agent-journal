@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\Storage;
 
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\InvalidBottomState;
+use App\Hooks\States\ReadyState;
 use App\Hooks\Ticks\TickingTypes;
 
 /**
@@ -41,21 +41,9 @@ final readonly class FrameRecords
     }
 
     /**
-     * The role the bottom frame stands for.
-     *
-     * @throws InvalidBottomState when the stack has no ready frame at its bottom
+     * @throws InvalidBottomState unless the first frame, and only the first, is the ready bottom state
      */
-    public function role(): ReadyStateType
-    {
-        $first = $this->records[0] ?? throw InvalidBottomState::missing();
-
-        return ReadyStateType::tryFrom($first->reference->typeKey) ?? throw InvalidBottomState::missing();
-    }
-
-    /**
-     * @throws InvalidBottomState unless the first frame, and only the first, is the bottom state of the role
-     */
-    public function checkBottomFor(ReadyStateType $role): void
+    public function checkBottom(): void
     {
         $first = $this->records[0] ?? null;
 
@@ -63,8 +51,8 @@ final readonly class FrameRecords
             throw InvalidBottomState::missing();
         }
 
-        if ($first->reference->typeKey !== $role->value) {
-            throw InvalidBottomState::ofAnotherRole($first->reference->typeKey, $role->value);
+        if ($first->reference->typeKey !== ReadyState::TYPE_KEY) {
+            throw InvalidBottomState::ofAnotherRole($first->reference->typeKey, ReadyState::TYPE_KEY);
         }
 
         foreach (array_slice($this->records, 1) as $record) {

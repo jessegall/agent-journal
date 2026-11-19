@@ -6,7 +6,6 @@ namespace Tests\Unit\Skills;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileKey;
@@ -38,7 +37,7 @@ final class SkillSelectionTest extends TestCase
         $selection = new SkillSelection()->select($this->skills(), $this->helper(null, []));
 
         $this->assertSame(['journal', 'journal-review'], $selection->selectedKeys());
-        $this->assertSame('no_match:not-main-agent', $selection->excluded[0]->reason);
+        $this->assertSame('no_match:ability-not-granted', $selection->excluded[0]->reason);
     }
 
     public function test_an_empty_allowlist_selects_none(): void
@@ -59,7 +58,7 @@ final class SkillSelectionTest extends TestCase
     public function test_a_required_skill_outside_the_selection_is_refused_with_its_key_and_reason(): void
     {
         $this->expectException(SkillSelectionConflict::class);
-        $this->expectExceptionMessage('requires the skill journal-main, but it is not selected for this launch (no_match:not-main-agent)');
+        $this->expectExceptionMessage('requires the skill journal-main, but it is not selected for this launch (no_match:ability-not-granted)');
 
         new SkillSelection()->select($this->skills(), $this->helper(null, ['journal-main']));
     }
@@ -93,7 +92,7 @@ final class SkillSelectionTest extends TestCase
     {
         return [
             $this->entry('journal', Conditions::everyone()),
-            $this->entry('journal-main', Conditions::mainAgent()),
+            $this->entry('journal-main', Conditions::dispatchesWork()),
             $this->entry('journal-review', Conditions::profiles(ProfileKey::from('journal-reviewer'))),
         ];
     }
@@ -121,6 +120,6 @@ final class SkillSelectionTest extends TestCase
             'authorization' => BuiltInAuthorizations::for(ProfileType::ReadOnlyHelper),
         ]);
 
-        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), AgentRole::ReadOnlyHelper, TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);
+        return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);
     }
 }

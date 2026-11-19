@@ -20,7 +20,6 @@ use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Inputs\HookIdentity;
@@ -84,7 +83,7 @@ trait CommittedHookStack
             )));
         });
         $this->callAs('call-1');
-        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target, ReadyStateType::MainAgent));
+        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
     }
 
     /**

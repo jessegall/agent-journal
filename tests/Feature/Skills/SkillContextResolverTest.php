@@ -7,10 +7,10 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Enums\AgentRole;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Enums\ProfileType;
@@ -51,8 +51,8 @@ final class SkillContextResolverTest extends TestCase
         $this->startRequestAs($helper->id, $helperSession->id);
         $helperContext = $this->app->make(SkillContext::class);
 
-        $this->assertSame(ConditionOutcome::Match, Conditions::mainAgent()->evaluate($mainContext)->outcome);
-        $this->assertSame(ConditionOutcome::NoMatch, Conditions::mainAgent()->evaluate($helperContext)->outcome);
+        $this->assertSame(ConditionOutcome::Match, Conditions::dispatchesWork()->evaluate($mainContext)->outcome);
+        $this->assertSame(ConditionOutcome::NoMatch, Conditions::dispatchesWork()->evaluate($helperContext)->outcome);
         $this->assertSame(ProfileType::MainAgent, $mainContext->profile->snapshot?->type);
         $this->assertSame('claude-code', $helperContext->program?->key);
         $this->assertSame('anthropic', $helperContext->provider?->key);

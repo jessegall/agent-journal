@@ -7,7 +7,6 @@ namespace App\Hooks\Support;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
-use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\HookIdentityExpired;
 use App\Hooks\Inputs\HookIdentity;
 use Carbon\CarbonImmutable;
@@ -27,14 +26,6 @@ final readonly class StackAccess
     public function target(): StackTarget
     {
         return new StackTarget($this->context()->agentId, $this->context()->sessionId);
-    }
-
-    /**
-     * The bottom state the calling agent's role has.
-     */
-    public function role(): ReadyStateType
-    {
-        return ReadyStateType::forKey($this->context()->role);
     }
 
     /**
