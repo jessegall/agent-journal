@@ -10,7 +10,6 @@ use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Values\SkillEntry;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Lists the skill catalogue: each skill's key, name, owner, origin, current revision of a stored skill and digest, or
@@ -22,10 +21,10 @@ final class SkillListCommand extends Command
 
     protected $description = 'List the skills of the catalogue';
 
-    public function handle(Container $container): int
+    public function handle(SkillResolver $skills): int
     {
         try {
-            $skills = $container->make(SkillResolver::class)->all();
+            $skills = $skills->all();
         } catch (SkillSourceInvalid|SkillConflict|SkillDeclarationInvalid $failure) {
             $this->error($failure->getMessage());
 

@@ -20,7 +20,6 @@ use App\Skills\Support\SkillAuthoring;
 use App\Skills\Support\SkillPreview;
 use App\Skills\Values\SkillKey;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Explains who a skill reaches, as the journal's owner: every agent with its match, no match or unavailable answer and
@@ -32,12 +31,12 @@ final class SkillPreviewCommand extends Command
 
     protected $description = 'Show which agents a skill reaches and why';
 
-    public function handle(Container $container, SkillAuthoring $authoring, SkillPreview $preview): int
+    public function handle(SkillResolver $skills, SkillAuthoring $authoring, SkillPreview $preview): int
     {
         $authoring->actAsOwner();
 
         try {
-            $resolver = $container->make(SkillResolver::class);
+            $resolver = $skills;
             $skill = $resolver->find(SkillKey::from((string) $this->argument('key')));
 
             if ($this->option('agent') !== null) {
