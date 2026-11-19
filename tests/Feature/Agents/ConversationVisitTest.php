@@ -56,9 +56,9 @@ final class ConversationVisitTest extends TestCase
         $session = $this->launch('helpers.job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
 
-        $visits->entered($session->id, 'native-a', 'call-1', CarbonImmutable::now());
-        $visits->entered($session->id, 'native-b', 'call-2', CarbonImmutable::now());
-        $visits->entered($session->id, 'native-a', 'call-3', CarbonImmutable::now());
+        $visits->entered($session->id, 'native-a', null, 'call-1', CarbonImmutable::now());
+        $visits->entered($session->id, 'native-b', null, 'call-2', CarbonImmutable::now());
+        $visits->entered($session->id, 'native-a', null, 'call-3', CarbonImmutable::now());
 
         $kept = ConversationVisit::query()->where('session_id', $session->id)->orderBy('sequence_number')->get();
         $this->assertSame([1, 2, 3], $kept->pluck('sequence_number')->all());
@@ -72,8 +72,8 @@ final class ConversationVisitTest extends TestCase
         $session = $this->launch('helpers.job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
 
-        $visits->entered($session->id, 'native-a', 'call-1', CarbonImmutable::now());
-        $visits->entered($session->id, 'native-a', 'call-1', CarbonImmutable::now());
+        $visits->entered($session->id, 'native-a', null, 'call-1', CarbonImmutable::now());
+        $visits->entered($session->id, 'native-a', null, 'call-1', CarbonImmutable::now());
 
         $this->assertSame(1, ConversationVisit::query()->where('session_id', $session->id)->count());
     }
@@ -82,12 +82,12 @@ final class ConversationVisitTest extends TestCase
     {
         $first = $this->launch('helpers.job 1');
         $visits = $this->app->make(RecordConversationVisit::class);
-        $visits->entered($first->id, 'native-a', 'call-1', CarbonImmutable::now());
+        $visits->entered($first->id, 'native-a', null, 'call-1', CarbonImmutable::now());
         $this->app->make(LaunchSessions::class)->end($first);
         $second = $this->launch('helpers.job 2');
 
         $this->assertThrows(
-            fn () => $visits->entered($second->id, 'native-a', 'call-2', CarbonImmutable::now()),
+            fn () => $visits->entered($second->id, 'native-a', null, 'call-2', CarbonImmutable::now()),
             ConversationIncompatible::class,
         );
 
@@ -101,6 +101,7 @@ final class ConversationVisitTest extends TestCase
         $this->app->make(RecordConversationVisit::class)->entered(
             $session->id,
             'native-a',
+            null,
             'call-1',
             CarbonImmutable::now(),
         );

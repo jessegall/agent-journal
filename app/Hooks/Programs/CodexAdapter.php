@@ -19,7 +19,6 @@ use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
-use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
@@ -71,7 +70,7 @@ final readonly class CodexAdapter implements ProgramAdapter
     {
         return match ($payload->hookEventName) {
             'SessionStart' => new JudgedCall(
-                new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $payload->startSource())),
+                new SessionStarted($hook, $payload->startDetails()),
                 fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
             ),
             'UserPromptSubmit' => new JudgedCall(

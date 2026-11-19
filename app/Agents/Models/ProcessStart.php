@@ -120,6 +120,41 @@ final class ProcessStart extends Model implements ReadableModel
     }
 
     /**
+     * The session's start that may still run, locked: the newest one not cancelled or stopped; none for a session
+     * the journal does not supervise.
+     */
+    public static function lockedCurrentOf(string $sessionId): self|null
+    {
+        return self::supervised()->unresolved()->where('session_id', $sessionId)->orderByDesc('created_at')->lockForUpdate()
+            ->first();
+    }
+
+    /**
+     * The session's start that may still run, for reading what it granted; none when no start runs.
+     */
+    public static function currentOf(string $sessionId): self|null
+    {
+        return self::supervised()->unresolved()->where('session_id', $sessionId)->orderByDesc('created_at')->first();
+    }
+
+    /**
+     * Starts the next mapping of the session's outputs: grants of an earlier mapping no longer count.
+     */
+    public function advanceOutputGeneration(): void
+    {
+        $this->output_generation++;
+        $this->save();
+    }
+
+    /**
+     * The settings store the start's program keeps its conversations in: its account's folder, named by identity.
+     */
+    public function settingsIdentity(): string
+    {
+        return $this->account_type.':'.$this->account_id;
+    }
+
+    /**
      * The session's latest start, for telling which account and generation a failure it reports belongs to.
      */
     public static function latestOfSession(string $sessionId): self|null

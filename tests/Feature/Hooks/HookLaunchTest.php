@@ -123,9 +123,9 @@ final class HookLaunchTest extends TestCase
         $launched = $this->launch('main-agent');
         $visits = $this->app->make(RecordConversationVisit::class);
 
-        $visits->entered($launched->session->id, 'program-session-1', 'call-1', CarbonImmutable::now());
+        $visits->entered($launched->session->id, 'program-session-1', null, 'call-1', CarbonImmutable::now());
         $framesBefore = $this->bottomOf($launched);
-        $visits->entered($launched->session->id, 'program-session-2', 'call-2', CarbonImmutable::now());
+        $visits->entered($launched->session->id, 'program-session-2', null, 'call-2', CarbonImmutable::now());
 
         $this->assertSame(1, AgentSession::query()->count());
         $this->assertSame(

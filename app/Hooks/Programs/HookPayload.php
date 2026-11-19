@@ -9,6 +9,7 @@ use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Exceptions\UnreadablePayload;
+use App\Hooks\Inputs\SessionStartDetails;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
@@ -39,6 +40,7 @@ final class HookPayload extends Data
         public readonly string|Optional $promptId = new Optional(),
         public readonly string|Optional $turnId = new Optional(),
         public readonly string|Optional $error = new Optional(),
+        public readonly string|Optional $transcriptPath = new Optional(),
     ) {}
 
     /**
@@ -74,6 +76,17 @@ final class HookPayload extends Data
             $toolNames,
             true,
         );
+    }
+
+    /**
+     * The conversation a session start entered: its id, why it started and the transcript file the program named for
+     * it, when it named one.
+     */
+    public function startDetails(): SessionStartDetails
+    {
+        $transcriptPath = is_string($this->transcriptPath) ? $this->transcriptPath : null;
+
+        return new SessionStartDetails($this->sessionId, $this->startSource(), $transcriptPath);
     }
 
     public function isSessionStart(): bool

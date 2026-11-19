@@ -44,6 +44,7 @@ use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RecordsLaunchHeartbeats;
+use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
@@ -71,6 +72,7 @@ use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\FrozenSessionPolicies;
+use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
 use App\Assignments\Contracts\AgentAuthority;
@@ -127,6 +129,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
         $this->app->bindIf(ActiveAccountReader::class, UnconfiguredAccounts::class);
         $this->app->bind(AccountUses::class, LinkedAccountUses::class);
+        $this->app->bind(SessionOutputAccess::class, GrantedSessionOutputs::class);
         $this->app->bind(
             LaunchCredentialSource::class,
             fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))),

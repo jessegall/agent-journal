@@ -22,7 +22,6 @@ use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
-use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
@@ -131,7 +130,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         $source = $payload->startSource();
         $input = $source === SessionStartSource::Compact
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
-            : new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $source));
+            : new SessionStarted($hook, $payload->startDetails());
 
         return new JudgedCall($input, fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));
     }

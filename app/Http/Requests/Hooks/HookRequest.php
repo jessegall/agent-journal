@@ -26,6 +26,7 @@ final class HookRequest extends FormRequest
             'tool_response' => ['sometimes', 'array'],
             'prompt' => ['sometimes', 'string'],
             'source' => ['sometimes', 'string'],
+            'transcript_path' => ['sometimes', 'string', 'max:1024'],
             'reason' => ['sometimes', 'string'],
             'stop_hook_active' => ['sometimes', 'boolean'],
             'agent_id' => ['sometimes', 'string'],

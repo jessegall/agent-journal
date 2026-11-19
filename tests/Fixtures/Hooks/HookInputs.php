@@ -60,7 +60,7 @@ final class HookInputs
         return [
             'session start' => new SessionStarted(
 $hook,
- new SessionStartDetails('vendor-1', SessionStartSource::Startup),
+ new SessionStartDetails('vendor-1', SessionStartSource::Startup, null),
 ),
             'prompt' => new PromptSubmitted($hook, new PromptDetails('prompt-1', 'Build the plan.', 'prompt-1')),
             'shell command' => new ShellCommandRequested(

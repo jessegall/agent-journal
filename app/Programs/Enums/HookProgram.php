@@ -88,4 +88,25 @@ enum HookProgram: string
     {
         return ['--model', $model];
     }
+
+    /**
+     * Whether a transcript file name is that of the native conversation: Claude Code writes <session id>.jsonl,
+     * Codex rollout-<time>-<session id>.jsonl.
+     */
+    public function namesTranscriptOf(string $fileName, string $nativeId): bool
+    {
+        return match ($this) {
+            self::ClaudeCode => $fileName === $nativeId.'.jsonl',
+            self::Codex => str_starts_with($fileName, 'rollout-') && str_ends_with($fileName, '-'.$nativeId.'.jsonl'),
+        };
+    }
+
+    /**
+     * Whether the program saves a conversation's large tool outputs in a folder named for it beside its transcript;
+     * Claude Code does, Codex keeps them in the transcript.
+     */
+    public function keepsOutputsBesideTranscript(): bool
+    {
+        return $this === self::ClaudeCode;
+    }
 }
