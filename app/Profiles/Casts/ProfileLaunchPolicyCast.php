@@ -13,14 +13,10 @@ use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileProvenance;
 use App\Programs\Enums\HookProgram;
-use ErrorException;
+use Exception;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
-use InvalidArgumentException;
 use JsonException;
-use Spatie\LaravelData\Exceptions\CannotCastData;
-use Spatie\LaravelData\Exceptions\CannotCastEnum;
-use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 use ValueError;
 
@@ -50,10 +46,7 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
                 StoredExecutionPolicy::from(self::decode($attributes['execution_policy']))->toExecutionPolicy(),
                 self::provenance((string) $attributes['configuration_hash'], self::decode($attributes['provenance'])),
             );
-        } catch (
-            JsonException|InvalidArgumentException|TypeError|ValueError|ErrorException
-            |CannotCreateData|CannotCastData|CannotCastEnum $failure
-        ) {
+        } catch (Exception|TypeError|ValueError $failure) {
             throw ProfileRevisionUnreadable::forRevision((string) $model->getKey(), $failure);
         }
     }

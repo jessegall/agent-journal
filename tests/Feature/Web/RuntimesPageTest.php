@@ -108,7 +108,7 @@ final class RuntimesPageTest extends TestCase
     {
         $this->switchChatOff();
         $this->openRuntime();
-        $runtime = AgentRuntime::query()->firstOrFail();
+        $runtime = AgentRuntime::query()->with('session')->firstOrFail();
         $runtime->hold_reason = HoldReason::Interrupted;
         $runtime->save();
 

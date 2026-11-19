@@ -52,7 +52,10 @@ final class StoredAccessPolicy extends Data
     {
         return AccessPolicy::make(
             array_map(fn (StoredClassGrant $grant): ClassGrant => $grant->toClassGrant(), $this->classGrants),
-            array_map(fn (StoredOperationGrant $grant): OperationGrant => $grant->toOperationGrant(), $this->operationGrants),
+            array_map(
+                fn (StoredOperationGrant $grant): OperationGrant => $grant->toOperationGrant(),
+                $this->operationGrants,
+            ),
             $this->denials,
             $this->paths,
             $this->destinations,

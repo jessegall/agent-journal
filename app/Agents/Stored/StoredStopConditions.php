@@ -37,7 +37,10 @@ final class StoredStopConditions extends Data
     public function toStopConditions(): StopConditions
     {
         return StopConditions::make(
-            array_map(fn (StoredStopCondition $condition): StopCondition => $condition->toStopCondition(), $this->conditions),
+            array_map(
+                fn (StoredStopCondition $condition): StopCondition => $condition->toStopCondition(),
+                $this->conditions,
+            ),
             $this->attemptSeconds,
         );
     }

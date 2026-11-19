@@ -35,7 +35,10 @@ final class StoredOperationGrant extends Data
     {
         return new OperationGrant(
             $this->operation,
-            array_map(fn (StoredResource $resource): ResourceRequest => $resource->toResourceRequest(), $this->resources),
+            array_map(
+                fn (StoredResource $resource): ResourceRequest => $resource->toResourceRequest(),
+                $this->resources,
+            ),
         );
     }
 }
