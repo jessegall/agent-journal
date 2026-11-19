@@ -4,11 +4,13 @@ from argparse import REMAINDER, ArgumentParser, Namespace
 from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
 from core.modules.helpers.commands.grant_helper.grant_helper import GrantHelper
-from core.modules.helpers.models.helper_grant import HelperGrant
+from core.modules.helpers.models.helper_grant import ALTERNATIVE_SEPARATOR, HelperGrant
 
 
 class GrantHelperSubcommand(Subcommand[GrantHelper, HelperGrant]):
-    """`journal helper grant <n> <program> <subcommands> [<arguments and values>]`, alternatives split by a bar."""
+    """`journal helper grant <n> <program> <subcommands> [<arguments and values>]`, alternatives split by a bar. The
+    allowed words may come one by one or as one bar-split word, and a program quoted with its words is split into
+    them, so a grant is kept the same way however the line was written."""
 
     cli_name = "helper"
     name = "grant"
@@ -20,4 +22,6 @@ class GrantHelperSubcommand(Subcommand[GrantHelper, HelperGrant]):
         parser.add_argument("allowed_arguments", nargs=REMAINDER)
 
     def command(self, arguments: Namespace, caller: Caller) -> GrantHelper:
-        return GrantHelper(arguments.helper_id, arguments.program, arguments.subcommands, "".join(arguments.allowed_arguments))
+        words = [*arguments.program.split(), arguments.subcommands, *arguments.allowed_arguments]
+        allowed = (part for word in words[2:] for part in word.split(ALTERNATIVE_SEPARATOR) if part)
+        return GrantHelper(arguments.helper_id, words[0], words[1], ALTERNATIVE_SEPARATOR.join(allowed))
