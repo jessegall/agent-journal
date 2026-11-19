@@ -23,7 +23,7 @@ final readonly class OpenHostMainRuntimeHandler implements CommandHandler
      */
     public function handle(OpenHostMainRuntime $command): OpenedRuntime
     {
-        $opened = $this->runtimes->handle($command->asAgentRuntime());
+        $opened = $this->runtimes->handle($command->asAgentRuntime()->withDispatcher($command->dispatchedBy()));
         $this->takeover->takeOver(Agent::query()->findOrFail($command->agentId));
 
         return $opened;

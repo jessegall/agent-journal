@@ -20,6 +20,7 @@ final readonly class ReportRuntimeHeartbeatHandler implements CommandHandler
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
         $session = AgentSession::query()->findOrFail($runtime->agent_session_id);
 
-        $this->heartbeats->record($session, new RuntimeEvidence($command->hostId, $command->processGeneration, $command->evidence));
+        $evidence = new RuntimeEvidence($command->hostId, $command->processGeneration, $command->evidence);
+        $this->heartbeats->record($session, $evidence, $command->dispatchedBy());
     }
 }
