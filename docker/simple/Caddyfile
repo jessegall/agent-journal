@@ -4,12 +4,22 @@
 	# ports a user without privileges may take; compose publishes them as 80 and 443
 	http_port 8080
 	https_port 8443
+	# the ingress in front of the server is on a private network: its forwarded address of the client is believed, so
+	# the login gate counts wrong passwords for each client and not for the ingress
+	servers {
+		trusted_proxies static private_ranges
+		# the forwarded addresses are read from the right, past the trusted ones, so an address a client writes into
+		# the header itself is never taken for its own
+		trusted_proxies_strict
+	}
 }
 
 {$JOURNAL_ADDRESS} {
 	encode gzip
-	basic_auth {
-		{$JOURNAL_USER} {$JOURNAL_PASSWORD_HASH}
+	# the login gate checks the username and password, and refuses an address after three wrong ones in a minute
+	forward_auth 127.0.0.1:8429 {
+		uri /login
+		header_up X-Journal-Client {client_ip}
 	}
 	reverse_proxy 127.0.0.1:8421 {
 		# the login stays with Caddy: the journal behind it never sees it
