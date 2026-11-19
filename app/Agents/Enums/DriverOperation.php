@@ -19,4 +19,16 @@ enum DriverOperation: string
     case Interrupt = 'interrupt';
     case Stop = 'stop';
     case KeyScript = 'key_script';
+    case StartRecording = 'start_recording';
+    case StopRecording = 'stop_recording';
+
+    /**
+     * The operations that act on the runtime itself rather than its turns; a host takes them before any other work.
+     *
+     * @return list<self>
+     */
+    public static function control(): array
+    {
+        return [self::Stop, self::Interrupt, self::StartRecording, self::StopRecording];
+    }
 }

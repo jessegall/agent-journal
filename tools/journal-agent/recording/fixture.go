@@ -99,6 +99,8 @@ type Fixture struct {
 	ScriptParameters    []ScriptParameter    `json:"script_parameters"`
 	ExpectedKeys        []ExpectedKeys       `json:"expected_keys"`
 	ExpectedTransitions []ExpectedTransition `json:"expected_transitions"`
+	// Cut says why the recording ended before it was stopped, such as reaching its size bound; empty when it was not.
+	Cut string `json:"cut,omitempty"`
 }
 
 // Save writes the fixture into the folder, creating it.

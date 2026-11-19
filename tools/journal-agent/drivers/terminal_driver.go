@@ -102,6 +102,9 @@ func (driver *TerminalDriver) Interrupt(
 	_ context.Context,
 	interrupt contracts.InterruptRequest,
 ) (contracts.OperationResult, error) {
+	if interrupt.Turn == 0 || interrupt.Turn != driver.Turns() {
+		return alreadyIdle(interrupt.Request), nil
+	}
 	if err := driver.runtime.Gate.Keys(interruptKey); err != nil {
 		return failed(interrupt.Request), err
 	}

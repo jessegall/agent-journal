@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Contracts\AgentHeartbeatSource;
+use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Handlers\RecordHeartbeatHandler;
 use App\Agents\Models\AgentRuntime;

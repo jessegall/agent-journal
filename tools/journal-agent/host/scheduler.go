@@ -14,6 +14,8 @@ const (
 	operationChangeEffort = "change_effort"
 	operationInterrupt    = "interrupt"
 	operationStop         = "stop"
+	operationStartRecord  = "start_recording"
+	operationStopRecord   = "stop_recording"
 )
 
 // maxBatch is the fixed cut-off of consecutive deliveries one turn takes.
@@ -45,6 +47,9 @@ type RuntimeQueue struct {
 	pending []client.ClaimedRequest
 	busy    bool
 	held    bool
+	// reconciling is set while a repaired setting waits for the program's own evidence that it took effect; content
+	// behind it waits too.
+	reconciling bool
 }
 
 // Add puts claimed requests behind the ones already waiting, in sequence order.
@@ -64,6 +69,9 @@ func (queue *RuntimeQueue) TurnFinished() { queue.busy = false }
 func (queue *RuntimeQueue) Hold()         { queue.held = true }
 func (queue *RuntimeQueue) Release()      { queue.held = false }
 
+// SettingsReconciled records the program's evidence that a repaired setting took effect, so content may run again.
+func (queue *RuntimeQueue) SettingsReconciled() { queue.reconciling = false }
+
 // Next takes what may run now out of the queue. A stop or an interrupt goes first, past everything; an interrupt also
 // holds the runtime, so nothing waiting restarts work until it is released. A held runtime admits nothing else. A
 // busy runtime only stages the settings at the front of the queue. An idle one stages those settings, then takes the
@@ -80,7 +88,7 @@ func (queue *RuntimeQueue) Next() Admission {
 	}
 
 	admission := queue.takeLeadingSettings()
-	if queue.busy {
+	if queue.busy || queue.reconciling {
 		return admission
 	}
 	for len(queue.pending) > 0 {
@@ -99,7 +107,7 @@ func (queue *RuntimeQueue) Next() Admission {
 
 func (queue *RuntimeQueue) takeControl() (client.ClaimedRequest, bool) {
 	for at, request := range queue.pending {
-		if request.Operation == operationStop || request.Operation == operationInterrupt {
+		if isControl(request) {
 			queue.pending = append(queue.pending[:at], queue.pending[at+1:]...)
 			return request, true
 		}
@@ -121,8 +129,21 @@ func (queue *RuntimeQueue) takeLeadingSettings() Admission {
 		}
 		latest[setting.Operation] = len(admission.Staged)
 		admission.Staged = append(admission.Staged, setting)
+		if setting.Attempt > 0 {
+			queue.reconciling = true
+		}
 	}
 	return admission
+}
+
+// isControl answers whether the request acts on the runtime itself rather than its turns: a stop, an interrupt or
+// a recording; it goes first and never waits behind content.
+func isControl(request client.ClaimedRequest) bool {
+	switch request.Operation {
+	case operationStop, operationInterrupt, operationStartRecord, operationStopRecord:
+		return true
+	}
+	return false
 }
 
 func isSetting(request client.ClaimedRequest) bool {

@@ -34,8 +34,12 @@ type EffortChange struct {
 	Effort  string
 }
 
-// InterruptRequest asks the program to stop its current turn.
-type InterruptRequest struct{ Request RequestIdentity }
+// InterruptRequest asks the program to stop the turn it was bound to when the host accepted it; Turn is zero when no
+// turn was admitted then, so the interrupt can never reach a later turn.
+type InterruptRequest struct {
+	Request RequestIdentity
+	Turn    int
+}
 
 // StopRequest asks the program to end.
 type StopRequest struct{ Request RequestIdentity }
@@ -73,6 +77,10 @@ const (
 	OutcomeTimedOut  Outcome = "timed_out"
 	// OutcomeTerminalRequired answers a key script sent to a runtime that has no terminal to type it into.
 	OutcomeTerminalRequired Outcome = "terminal_required"
+	// OutcomeAlreadyIdle answers an interrupt whose turn had ended: nothing is interrupted and the hold stays.
+	OutcomeAlreadyIdle Outcome = "already_idle"
+	// OutcomeStopUnconfirmed answers a stop whose signals were sent but whose exit could not be proven.
+	OutcomeStopUnconfirmed Outcome = "stop_unconfirmed"
 )
 
 // Hold is why a runtime waits on something other than the journal.

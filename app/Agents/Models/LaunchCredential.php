@@ -48,6 +48,16 @@ final class LaunchCredential extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Replaces the token: the old one stops working at once, and the session keeps its one credential row.
+     */
+    public function rotateTo(string $tokenHash): void
+    {
+        $this->token_hash = $tokenHash;
+        $this->revoked_at = null;
+        $this->save();
+    }
+
     public function revokeAt(CarbonImmutable $time): void
     {
         $this->revoked_at = $time;

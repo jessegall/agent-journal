@@ -102,6 +102,8 @@ use App\AgentRequests\Values\CallAnswer;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
 use App\AgentRequests\Values\ReportLine;
+use App\Agents\Commands\CancelDriverRequest;
+use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
@@ -112,13 +114,20 @@ use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
+use App\Agents\Commands\ReassignAgentRuntime;
 use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\RecordRuntime;
+use App\Agents\Commands\ReleaseAgentHold;
+use App\Agents\Commands\RepairDriverSettings;
 use App\Agents\Commands\ReportDriverTurn;
 use App\Agents\Commands\ReportRequestProgress;
 use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\ResolveDriverDelivery;
+use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
@@ -153,10 +162,14 @@ use App\Agents\Enums\LaunchRefusalType;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Enums\ProgramSourceType;
+use App\Agents\Enums\RecoveryAction;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Events\AgentHoldReleased;
+use App\Agents\Events\AgentRuntimeReassigned;
+use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Events\LaunchAccepted;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Exceptions\AccessPolicyInvalid;
@@ -966,6 +979,9 @@ final class CoreApi
                 StateTypesRequested::class,
                 AssignmentsChanged::class,
                 LaunchEnded::class,
+                DriverRequestRecovered::class,
+                AgentHoldReleased::class,
+                AgentRuntimeReassigned::class,
                 ProfileRevisionRevoked::class,
                 LaunchAccepted::class,
                 EngineTicked::class,
@@ -1517,6 +1533,7 @@ final class CoreApi
                 RuntimeActivity::class,
                 HoldReason::class,
                 RequestProgress::class,
+                RecoveryAction::class,
                 RequestOutcome::class,
                 ExpectedTiming::class,
                 DriverOperation::class,
@@ -1617,6 +1634,15 @@ final class CoreApi
                 ChangeAgentEffort::class,
                 InterruptAgent::class,
                 StopAgent::class,
+                RetryDriverRequest::class,
+                CancelDriverRequest::class,
+                ResolveDriverDelivery::class,
+                RepairDriverSettings::class,
+                ReleaseAgentHold::class,
+                ResumeKeyScript::class,
+                CancelKeyScript::class,
+                ReassignAgentRuntime::class,
+                RecordRuntime::class,
                 ClaimDriverRequests::class,
                 ReportRuntimeActivity::class,
                 ReportRequestProgress::class,

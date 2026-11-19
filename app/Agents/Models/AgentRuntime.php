@@ -6,6 +6,7 @@ namespace App\Agents\Models;
 
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
+use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestProgress;
@@ -283,6 +284,71 @@ final class AgentRuntime extends Model implements ReadableModel
         $this->save();
 
         return $token;
+    }
+
+    /**
+     * The requested model and effort again, from the newest setting request of each that is still open, after one
+     * was cancelled; none open leaves nothing requested.
+     */
+    public function recomputeRequestedSettings(): void
+    {
+        $open = $this->requests()
+            ->whereIn('progress', RequestProgress::open())
+            ->whereIn('operation', [DriverOperation::ChangeModel, DriverOperation::ChangeEffort])
+            ->orderBy('sequence')
+            ->readAll('the open setting requests of one runtime decide what it has requested')
+            ->get();
+
+        $this->requested_model = $open->where('operation', DriverOperation::ChangeModel)->last()?->model;
+        $this->requested_effort = $open->where('operation', DriverOperation::ChangeEffort)->last()?->effort;
+        $this->save();
+    }
+
+    /**
+     * Whether a person may release the runtime's hold: an interrupt or a call for attention. A hold the program
+     * itself shows, such as compacting or a login, ends only on the program's own evidence.
+     */
+    public function canReleaseHold(): bool
+    {
+        return in_array($this->hold_reason, [HoldReason::Interrupted, HoldReason::NeedsAttention], true);
+    }
+
+    public function isHeldFor(HoldReason $reason): bool
+    {
+        return $this->hold_reason === $reason;
+    }
+
+    public function releaseHold(): void
+    {
+        $this->holdFor(HoldReason::None);
+    }
+
+    /**
+     * Whether an operator may move the runtime to a new process: its host lost it or could not prove what runs.
+     */
+    public function canBeReassigned(): bool
+    {
+        return $this->hold_reason === HoldReason::NeedsAttention
+            || $this->activity === RuntimeActivity::HostUnavailable;
+    }
+
+    public function isAtGeneration(int $processGeneration): bool
+    {
+        return $this->process_generation === $processGeneration;
+    }
+
+    /**
+     * Moves the runtime to a new process generation on the given host, starting again with nothing held and the
+     * rotated credential waiting for that host's launch grant; reports of the old generation are refused after it.
+     */
+    public function reassignTo(string $hostId, string $launchToken): void
+    {
+        $this->host_id = $hostId;
+        $this->process_generation++;
+        $this->activity = RuntimeActivity::Starting;
+        $this->hold_reason = HoldReason::None;
+        $this->launch_grant = $launchToken;
+        $this->save();
     }
 
     public function requestModel(string $model): void

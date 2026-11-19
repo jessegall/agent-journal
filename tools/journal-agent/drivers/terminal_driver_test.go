@@ -103,8 +103,9 @@ func TestAnInterruptHoldsTheRuntimeAndAWakeDoesNotRestartWork(t *testing.T) {
 	driver, _, program := recordedTurn(t, 11*time.Second)
 	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Message: firstPrompt})
 
-	interrupt, err := driver.Interrupt(context.Background(), contracts.InterruptRequest{Request: request("stop")})
-	if err != nil || interrupt.Hold != contracts.HoldInterrupted {
+	bound := contracts.InterruptRequest{Request: request("stop"), Turn: driver.Turns()}
+	interrupt, err := driver.Interrupt(context.Background(), bound)
+	if err != nil || interrupt.Hold != contracts.HoldInterrupted || interrupt.Outcome == contracts.OutcomeAlreadyIdle {
 		t.Fatalf("the interrupt ended %+v, %v", interrupt, err)
 	}
 	wake, err := driver.Wake(context.Background(), contracts.WakeRequest{Request: request("wake")})
@@ -113,6 +114,21 @@ func TestAnInterruptHoldsTheRuntimeAndAWakeDoesNotRestartWork(t *testing.T) {
 	}
 	if strings.Contains(program.String(), pendingWorkPrompt) || driver.Turns() != 1 {
 		t.Fatalf("the held runtime got %q", program.String())
+	}
+}
+
+func TestAnInterruptBoundToAnEarlierTurnInterruptsNothing(t *testing.T) {
+	driver, _, program := recordedTurn(t, 11*time.Second)
+	driver.Deliver(context.Background(), contracts.Delivery{Request: request("one"), Message: firstPrompt})
+	typed := program.String()
+
+	late := contracts.InterruptRequest{Request: request("late"), Turn: driver.Turns() - 1}
+	interrupt, err := driver.Interrupt(context.Background(), late)
+	if err != nil || interrupt.Outcome != contracts.OutcomeAlreadyIdle || interrupt.Hold != contracts.HoldInterrupted {
+		t.Fatalf("the late interrupt ended %+v, %v", interrupt, err)
+	}
+	if program.String() != typed {
+		t.Fatalf("the late interrupt typed %q", strings.TrimPrefix(program.String(), typed))
 	}
 }
 

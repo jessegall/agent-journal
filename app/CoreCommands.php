@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Agents\Commands\CancelDriverRequest;
+use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
@@ -16,13 +18,20 @@ use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
+use App\Agents\Commands\ReassignAgentRuntime;
 use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\RecordRuntime;
+use App\Agents\Commands\ReleaseAgentHold;
+use App\Agents\Commands\RepairDriverSettings;
 use App\Agents\Commands\ReportDriverTurn;
 use App\Agents\Commands\ReportRequestProgress;
 use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\ResolveDriverDelivery;
+use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
@@ -162,6 +171,15 @@ final class CoreCommands
             InterruptAgent::class,
             StopAgent::class,
             RunKeyScript::class,
+            RetryDriverRequest::class,
+            CancelDriverRequest::class,
+            ResolveDriverDelivery::class,
+            RepairDriverSettings::class,
+            ReleaseAgentHold::class,
+            ResumeKeyScript::class,
+            CancelKeyScript::class,
+            ReassignAgentRuntime::class,
+            RecordRuntime::class,
             ClaimDriverRequests::class,
             ClaimLaunchGrant::class,
             ReportRuntimeActivity::class,

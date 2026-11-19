@@ -144,3 +144,21 @@ func TestAnInterruptGoesFirstAndHoldsEverythingElse(t *testing.T) {
 		t.Fatal("the release did not let the pending delivery run")
 	}
 }
+
+func TestContentBehindARepairedSettingWaitsUntilItIsReconciled(t *testing.T) {
+	queue := RuntimeQueue{}
+	repaired := request(1, operationChangeEffort)
+	repaired.Attempt = 1
+	queue.Add(repaired, request(2, operationDeliver))
+
+	first := queue.Next()
+	if !equal(sequences(first.Staged), []int{1}) || len(first.Deliveries) != 0 {
+		t.Fatalf("content ran before the repaired setting was reconciled: %+v", first)
+	}
+
+	queue.SettingsReconciled()
+	second := queue.Next()
+	if !equal(sequences(second.Deliveries), []int{2}) {
+		t.Fatalf("got %+v", second)
+	}
+}

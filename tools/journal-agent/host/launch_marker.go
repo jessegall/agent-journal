@@ -93,6 +93,12 @@ func (markers Markers) Reconcile() (map[string]Reconciliation, error) {
 	return outcomes, nil
 }
 
+// MayStartAgain answers whether a runtime whose marker needed attention may be started again: only once the journal
+// shows a newer process generation for it, which an operator's reassignment gives after proving the old one stopped.
+func MayStartAgain(marker LaunchMarker, journalGeneration int) bool {
+	return journalGeneration > marker.ProcessGeneration
+}
+
 func reconcile(marker LaunchMarker) Reconciliation {
 	if marker.ProcessID == 0 || marker.StartIdentity == "" {
 		return NeedsAttention

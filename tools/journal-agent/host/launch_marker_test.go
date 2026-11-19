@@ -43,3 +43,11 @@ func TestAProcessWhoseStartDiffersNeedsAttention(t *testing.T) {
 		t.Fatalf("got %v", outcomes)
 	}
 }
+
+func TestARuntimeNeedingAttentionStartsAgainOnlyUnderANewerGeneration(t *testing.T) {
+	marker := LaunchMarker{RuntimeID: "runtime", ProcessGeneration: 3}
+
+	if MayStartAgain(marker, 3) || !MayStartAgain(marker, 4) {
+		t.Fatal("a runtime needing attention may start only under a newer generation")
+	}
+}

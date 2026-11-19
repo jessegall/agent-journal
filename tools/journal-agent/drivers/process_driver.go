@@ -48,6 +48,7 @@ type ProcessDriver struct {
 	model      string
 	effort     string
 	child      *exec.Cmd
+	childGroup host.OwnedGroup
 	finished   chan error
 }
 
@@ -94,14 +95,34 @@ func (driver *ProcessDriver) ChangeEffort(_ context.Context, change contracts.Ef
 	return staged(change.Request), nil
 }
 
-// Interrupt signals the process group of the current child only.
+// Interrupt signals the process group of the child running the turn the interrupt is bound to; when that turn has
+// ended, nothing is signalled, the answer is AlreadyIdle and the runtime stays held.
 func (driver *ProcessDriver) Interrupt(_ context.Context, interrupt contracts.InterruptRequest) (contracts.OperationResult, error) {
-	return driver.signalChild(interrupt.Request, syscall.SIGINT, contracts.HoldInterrupted)
+	driver.mutex.Lock()
+	defer driver.mutex.Unlock()
+
+	if driver.child == nil || interrupt.Turn != driver.turns {
+		return alreadyIdle(interrupt.Request), nil
+	}
+	if err := driver.childGroup.Signal(syscall.SIGINT); err != nil {
+		return contracts.OperationResult{}, err
+	}
+
+	return contracts.OperationResult{Request: interrupt.Request, Progress: contracts.ProgressApplying, Hold: contracts.HoldInterrupted}, nil
 }
 
-// Stop ends the current child's process group; with no child running there is nothing to end.
+// Stop ends the current child's process group in bounded stages, gracefully and then by force, and answers applied
+// only when the exit is proven; with no child running there is nothing to end.
 func (driver *ProcessDriver) Stop(_ context.Context, stop contracts.StopRequest) (contracts.OperationResult, error) {
-	return driver.signalChild(stop.Request, syscall.SIGTERM, "")
+	driver.mutex.Lock()
+	group, running := driver.childGroup, driver.child != nil
+	driver.mutex.Unlock()
+
+	if !running {
+		return contracts.OperationResult{Request: stop.Request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed, Hold: contracts.HoldNone}, nil
+	}
+
+	return stopResult(stop.Request, group.Stop(host.DefaultStopStages)), nil
 }
 
 // pendingWorkPrompt is the one prompt a wake sends: it asks the agent to look at its own scoped work.
@@ -148,6 +169,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 
 	driver.turns++
 	driver.child = command
+	driver.childGroup = host.OwnedGroupOf(command.Process.Pid)
 	driver.finished = make(chan error, 1)
 	go driver.wait(command, driver.finished)
 
@@ -190,20 +212,26 @@ func (driver *ProcessDriver) wait(command *exec.Cmd, finished chan<- error) {
 	finished <- err
 }
 
-func (driver *ProcessDriver) signalChild(request contracts.RequestIdentity, signal syscall.Signal, hold contracts.Hold) (contracts.OperationResult, error) {
-	driver.mutex.Lock()
-	defer driver.mutex.Unlock()
+func alreadyIdle(request contracts.RequestIdentity) contracts.OperationResult {
+	return contracts.OperationResult{
+		Request:  request,
+		Progress: contracts.ProgressApplied,
+		Outcome:  contracts.OutcomeAlreadyIdle,
+		Hold:     contracts.HoldInterrupted,
+	}
+}
 
-	if driver.child == nil || driver.child.Process == nil {
-		return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed, Hold: contracts.HoldNone}, nil
+// stopResult reports a stop: applied once the exit is proven, unconfirmed while it is not, and refused for a process
+// that is not the child the host started.
+func stopResult(request contracts.RequestIdentity, outcome host.StopOutcome) contracts.OperationResult {
+	switch outcome {
+	case host.StopProven:
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed, Hold: contracts.HoldNone}
+	case host.StopNotOwned:
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeRefused, Hold: contracts.HoldNeedsAttention}
+	default:
+		return contracts.OperationResult{Request: request, Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeStopUnconfirmed, Hold: contracts.HoldNeedsAttention}
 	}
-	if err := syscall.Kill(-driver.child.Process.Pid, signal); err != nil {
-		return contracts.OperationResult{}, err
-	}
-	if hold == "" {
-		hold = contracts.HoldNone
-	}
-	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying, Hold: hold}, nil
 }
 
 func staged(request contracts.RequestIdentity) contracts.OperationResult {

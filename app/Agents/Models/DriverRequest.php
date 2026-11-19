@@ -165,6 +165,117 @@ final class DriverRequest extends Model implements ReadableModel
         $this->finish(RequestProgress::Unavailable, null);
     }
 
+    /**
+     * Whether the request is still at the row version the caller read.
+     */
+    public function isAtRowVersion(int $rowVersion): bool
+    {
+        return $this->row_version === $rowVersion;
+    }
+
+    /**
+     * Whether a person may send the request again: it failed or was unavailable, so nothing of it was written.
+     */
+    public function canRetry(): bool
+    {
+        return in_array($this->progress, [RequestProgress::Failed, RequestProgress::Unavailable], true);
+    }
+
+    /**
+     * Sends the request again under its own key, as a new attempt: a report of an older attempt is refused after it.
+     */
+    public function retry(): void
+    {
+        $this->attempt_version++;
+        $this->outcome = null;
+        $this->moveTo(RequestProgress::Accepted);
+        $this->save();
+    }
+
+    /**
+     * Whether the request has not started on its runtime, so cancelling it leaves nothing half done.
+     */
+    public function canCancel(): bool
+    {
+        return in_array($this->progress, [RequestProgress::Accepted, RequestProgress::Staged], true);
+    }
+
+    /**
+     * Whether a person may say how an uncertain delivery ended; a wake has no delivery to resolve.
+     */
+    public function canResolve(): bool
+    {
+        return $this->progress === RequestProgress::DeliveryUncertain && $this->operation !== DriverOperation::Wake;
+    }
+
+    /**
+     * A person found evidence that the uncertain delivery arrived.
+     */
+    public function resolveAsApplied(): void
+    {
+        $this->markApplied('resolved_by_person');
+    }
+
+    /**
+     * A person found evidence that the uncertain delivery never arrived, so it may be retried.
+     */
+    public function resolveAsNotApplied(): void
+    {
+        $this->finish(RequestProgress::Unavailable, null);
+    }
+
+    /**
+     * Whether the request changes a setting of the runtime: its model or its effort.
+     */
+    public function changesASetting(): bool
+    {
+        return in_array($this->operation, [DriverOperation::ChangeModel, DriverOperation::ChangeEffort], true);
+    }
+
+    /**
+     * Whether a person may repair the request in place: a setting change that failed or could not be made.
+     */
+    public function canRepair(): bool
+    {
+        return $this->changesASetting() && $this->canRetry();
+    }
+
+    /**
+     * Gives the failed setting change a new value in its own place in the queue, as a new attempt; the host then
+     * waits for the program's evidence of it before any content behind it runs.
+     */
+    public function repairWith(DriverRequestPayload $payload): void
+    {
+        $this->carry($payload);
+        $this->payload_digest = $payload->digestFor($this->operation->value);
+        $this->retry();
+    }
+
+    /**
+     * Whether the request is a key script stopped part way, which a person may resume or cancel.
+     */
+    public function isStoppedKeyScript(): bool
+    {
+        return $this->operation === DriverOperation::KeyScript && ! $this->progress->isFinal();
+    }
+
+    /**
+     * Whether the stopped key script reached a step it can go on from.
+     */
+    public function canResumeScript(): bool
+    {
+        return $this->isStoppedKeyScript() && $this->script_step !== null;
+    }
+
+    /**
+     * Sends the key script again from its recorded step, as a new attempt; the host goes on only once that step's
+     * screen is read afresh.
+     */
+    public function resumeScript(): void
+    {
+        $this->retry();
+    }
+
     public function supersede(): void
     {
         $this->finish(RequestProgress::Superseded, null);

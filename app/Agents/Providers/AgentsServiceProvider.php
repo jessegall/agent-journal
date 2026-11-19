@@ -19,8 +19,17 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SendSignedCalls;
+use App\Agents\Console\CancelDriverRequestCommand;
+use App\Agents\Console\CancelKeyScriptCommand;
 use App\Agents\Console\EnrollHostCommand;
+use App\Agents\Console\ReassignAgentRuntimeCommand;
+use App\Agents\Console\RecordRuntimeCommand;
+use App\Agents\Console\ReleaseAgentHoldCommand;
+use App\Agents\Console\RepairDriverSettingsCommand;
+use App\Agents\Console\ResolveDriverDeliveryCommand;
+use App\Agents\Console\ResumeKeyScriptCommand;
 use App\Agents\Console\RetireAgentCommand;
+use App\Agents\Console\RetryDriverRequestCommand;
 use App\Agents\Console\RunKeyScriptCommand;
 use App\Agents\Contracts\ActorRuntimeResolver;
 use App\Agents\Contracts\HelperImages;
@@ -48,6 +57,7 @@ use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\AgentVisibility;
 use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseLaunchTransaction;
+use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\RequestSession;
@@ -82,6 +92,11 @@ final class AgentsServiceProvider extends ServiceProvider
             HelperImages::class,
             fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')),
         );
+        $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
+            $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
+            $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),
+            $this->app->make('config')->integer('agents.driver_budgets.deliver_max_bytes'),
+        ));
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
             $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
@@ -117,7 +132,7 @@ final class AgentsServiceProvider extends ServiceProvider
             Agent::class,
             AgentPolicy::class,
             AgentAbility::class,
-            ownerOnly: [AgentAbility::RunKeyScript, AgentAbility::Inspect, AgentAbility::Steer],
+            ownerOnly: [AgentAbility::RunKeyScript, AgentAbility::Inspect, AgentAbility::Steer, AgentAbility::Recover],
             coordinatorOnly: [AgentAbility::RetireOthers],
         ));
         $actors->register(ActorType::Agent, AgentActors::class);
@@ -129,6 +144,15 @@ final class AgentsServiceProvider extends ServiceProvider
             RetireAgentCommand::class,
             EnrollHostCommand::class,
             RunKeyScriptCommand::class,
+            RetryDriverRequestCommand::class,
+            CancelDriverRequestCommand::class,
+            ResolveDriverDeliveryCommand::class,
+            RepairDriverSettingsCommand::class,
+            ReleaseAgentHoldCommand::class,
+            ResumeKeyScriptCommand::class,
+            CancelKeyScriptCommand::class,
+            ReassignAgentRuntimeCommand::class,
+            RecordRuntimeCommand::class,
             GenerateCallsCommand::class,
         ]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent->value, AgentAssignees::class));

@@ -35,17 +35,33 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
             ->where('host_id', $command->hostId)
             ->get()
             ->keyBy('id');
-        $pending = DriverRequest::query()
-            ->whereIn('agent_runtime_id', $runtimes->keys()->all())
+        $runtimeIds = $runtimes->keys()->all();
+        $control = DriverRequest::query()
+            ->whereIn('agent_runtime_id', $runtimeIds)
             ->where('progress', RequestProgress::Accepted)
+            ->whereIn('operation', DriverOperation::control())
+            ->orderBy('sequence')
+            ->lockForUpdate()
+            ->readAll('every waiting stop, interrupt and recording of one host is taken before other work')
+            ->get();
+        $pending = DriverRequest::query()
+            ->whereIn('agent_runtime_id', $runtimeIds)
+            ->where('progress', RequestProgress::Accepted)
+            ->whereNotIn('operation', DriverOperation::control())
             ->orderBy('sequence')
             ->lockForUpdate()
             ->limit($command->limit * max(1, $runtimes->count()))
             ->get()
             ->groupBy('agent_runtime_id');
 
-        $claimed = [];
         $now = CarbonImmutable::now();
+        $claimed = [];
+
+        foreach ($control as $request) {
+            $request->stage($now);
+            $claimed[] = $request->claimed();
+        }
+
         for ($round = 0; count($claimed) < $command->limit && $pending->isNotEmpty(); $round++) {
             foreach ($pending as $runtimeId => $requests) {
                 $request = $requests->shift();

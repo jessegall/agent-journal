@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Agents\Support\StackTarget;
-use App\Agents\Support\DriverRequests;
-use App\Agents\Models\AgentRuntime;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
@@ -17,8 +14,11 @@ use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Policies\AgentPolicy;
+use App\Agents\Support\DriverRequests;
+use App\Agents\Support\StackTarget;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssigneeIdentity;

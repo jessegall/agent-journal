@@ -7,7 +7,6 @@ namespace App\Agents\Support;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestProgress;
-use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
@@ -88,6 +87,14 @@ final readonly class DriverRequests
         $this->lockedRuntime($target)->markStopping();
 
         return $request;
+    }
+
+    /**
+     * The target's runtime, locked for a change, refused when its session has ended.
+     */
+    public function runtimeOf(StackTarget $target): AgentRuntime
+    {
+        return $this->lockedRuntime($target);
     }
 
     private function lockedRuntime(StackTarget $target): AgentRuntime

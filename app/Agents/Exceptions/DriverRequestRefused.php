@@ -18,6 +18,67 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
         return new self("Agent {$target->agentId} has no runtime in session {$target->sessionId}.");
     }
 
+    public static function changedSinceRead(string $requestId, int $expected, int $current): self
+    {
+        return new self("Request {$requestId} is at row version {$current}, not {$expected}; read it again.");
+    }
+
+    public static function notRetriable(string $requestId, string $progress): self
+    {
+        return new self("Request {$requestId} is {$progress}; only a failed or unavailable request is retried, "
+            .'and an uncertain delivery is resolved first.');
+    }
+
+    public static function notCancellable(string $requestId, string $progress): self
+    {
+        return new self("Request {$requestId} is {$progress}; only a request that has not started is cancelled.");
+    }
+
+    public static function notResolvable(string $requestId): self
+    {
+        return new self("Request {$requestId} is no uncertain delivery; only an uncertain delivery, never a wake, "
+            .'is resolved.');
+    }
+
+    public static function notRepairable(string $requestId): self
+    {
+        return new self("Request {$requestId} is no failed setting change; only those are repaired in place.");
+    }
+
+    public static function noStoppedScript(string $requestId): self
+    {
+        return new self("Request {$requestId} is no key script stopped part way.");
+    }
+
+    public static function holdChanged(StackTarget $target, string $expected, string $current): self
+    {
+        return new self("The runtime of session {$target->sessionId} is held for {$current}, not {$expected}; "
+            .'read it again.');
+    }
+
+    public static function holdNotReleasable(StackTarget $target, string $hold): self
+    {
+        return new self("The runtime of session {$target->sessionId} is held for {$hold}, which ends only on the "
+            ."program's own evidence.");
+    }
+
+    public static function generationChanged(StackTarget $target, int $expected, int $current): self
+    {
+        return new self("The runtime of session {$target->sessionId} is at process generation {$current}, not "
+            ."{$expected}; read it again.");
+    }
+
+    public static function notReassignable(StackTarget $target): self
+    {
+        return new self("The runtime of session {$target->sessionId} is not lost or waiting for attention; only "
+            .'such a runtime is moved to a new process.');
+    }
+
+    public static function messageTooLarge(int $bytes, int $limit): self
+    {
+        return new self("The message is {$bytes} bytes; a delivery carries at most {$limit}.");
+    }
+
     public static function sessionEnded(StackTarget $target): self
     {
         return new self("Session {$target->sessionId} has ended; a new launch starts a new session.");

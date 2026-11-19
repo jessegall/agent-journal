@@ -14,6 +14,17 @@ return [
     ],
 
     /*
+    | The budgets of the driver ledger: how much one host poll takes and waits, and how large a delivery may be.
+    */
+    'driver_budgets' => [
+        // The most requests one host poll takes, and the longest a poll waits for one (doc 40, sections 10 and 60).
+        'claim_batch_max' => (int) env('AGENTS_CLAIM_BATCH_MAX', 20),
+        'long_poll_max_seconds' => (int) env('AGENTS_LONG_POLL_MAX_SECONDS', 10),
+        // The largest message a delivery carries; a longer one is refused before it is accepted (section 19).
+        'deliver_max_bytes' => (int) env('AGENTS_DELIVER_MAX_BYTES', 64 * 1024),
+    ],
+
+    /*
     | What this host gives all its helper containers together; each required-container launch reserves its budgets
     | from it and is refused when they do not fit. The defaults are one helper's host maxima (doc 14, section 62).
     */

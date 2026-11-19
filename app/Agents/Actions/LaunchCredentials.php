@@ -26,6 +26,20 @@ final readonly class LaunchCredentials
         return $token;
     }
 
+    /**
+     * A new token for the session in place of its old one, after the old process is proven stopped.
+     *
+     * @return string the token, which the journal never shows or stores again
+     */
+    public function rotate(AgentSession $session): string
+    {
+        $token = Str::random(64);
+        $credential = $session->loadMissing('credential')->credential ?? throw CredentialRejected::unknown();
+        $credential->rotateTo(self::hashOf($token));
+
+        return $token;
+    }
+
     public function revoke(AgentSession $session): void
     {
         $credential = $session->loadMissing('credential')->credential ?? throw CredentialRejected::unknown();
