@@ -23,7 +23,7 @@ REVIVE_WINDOW_SECONDS = 30 * 60
 
 
 class WorkerWatch(Job):
-    """Every two seconds, each worker the journal found still out at boot is checked: one whose process has ended has its report filed from its files, one past its time limit is stopped, so a restart never loses a worker. A worker whose run the restart cut off, its process gone with no end in its output and its output still moving in the half hour before the boot, is started again in its own session at the first look, so a restart never stops the work either; one whose process had been gone longer is only closed. A worker whose clock-out went on in the journal by itself when the restart came is started again in its own session and told to clock out again."""
+    """Every two seconds, each worker the journal found still out at boot is checked: one whose process has ended has its report filed from its files, one past its time limit is stopped, and one whose session has not begun within the start minutes is stopped and launched again as the runner launches a stalled start, so a restart never loses a worker. A worker whose run the restart cut off, its process gone with no end in its output and its output still moving in the half hour before the boot, is started again in its own session at the first look, so a restart never stops the work either; one whose process had been gone longer is only closed. A worker whose clock-out went on in the journal by itself when the restart came is started again in its own session and told to clock out again."""
 
     interval_seconds = 2.0
 

@@ -24,6 +24,8 @@ from journal.repositories.scope import Scope
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.agents import Agents
 from journal.repositories.workers import Workers
+from journal.repositories.tasks import Tasks
+from journal.models.support.ref import Ref
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
 from journal.features.workers.support.worker_libraries import WorkerLibraries
@@ -40,6 +42,9 @@ TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
 ERROR_STATUS = -3
 STALLED_STATUS = -4
+# what a worker whose resumed session never started is told as its job is launched again in a fresh session
+FRESH_START_BRIEF = ("Your last session could not be resumed: its agent never started. This is a fresh session on the same job, in the same "
+                     "worktree, with what you changed and committed so far in place: read it before you go on.")
 ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}", ERROR_STATUS: "failed: {report}", STALLED_STATUS: STALLED_START_END + " its session in {start:g} minutes, twice: {report}"}
 
 
@@ -47,15 +52,16 @@ ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {r
 LOCKOUT_VARIABLE = "JOURNAL_LOCKOUT_SECONDS"
 
 class WorkerRunner:
-    """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends. A run whose agent has not started its session within the start minutes is stopped and launched again on its job once, with the session it was launched with; the second such run ends as unfinished."""
+    """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends. A run whose agent has not started its session within the start minutes, one it waits on or one it watches after a restart, is stopped and launched again on its job once, in a fresh session, carrying its task's brief when the stalled run resumed a session, since resuming that session is what hung; the second such run ends as unfinished."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat, libraries: WorkerLibraries, commands: WorktreeCommands, setup: HelperSetup, supervisor: SupervisorLink, time_source: TimeSource) -> None:
-        self.time_source, self.supervisor = time_source, supervisor
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat, libraries: WorkerLibraries, commands: WorktreeCommands, setup: HelperSetup, supervisor: SupervisorLink, time_source: TimeSource, tasks: Tasks) -> None:
+        self.time_source, self.supervisor, self.tasks = time_source, supervisor, tasks
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
         self.environments, self.profiles, self.agents, self.chat, self.libraries, self.commands = environments, profiles, agents, chat, libraries, commands
         self.setup = setup
         self._locks: dict[int, threading.Lock] = {}
         self._locks_lock = threading.Lock()
+        self._started_runs: set[tuple[int, float]] = set()
 
     def lock(self, worker_id: int) -> threading.Lock:
         with self._locks_lock:
@@ -107,7 +113,12 @@ class WorkerRunner:
 
     def relaunched(self, launched: Worker, current: Worker, actor: Actor) -> None:
         self.session_ended(current)
-        self.start(self.workers.save(current.start_retried(launched.resume, self.time_source.seconds()), actor), actor)
+        brief = self.fresh_brief(current) if launched.resume else current.brief
+        self.start(self.workers.save(current.start_retried(brief, self.time_source.seconds()), actor), actor)
+
+    def fresh_brief(self, worker: Worker) -> str:
+        tasks = [self.tasks.find(n) for n in self.tasks.holder_task_ids(Ref.build(worker))]
+        return "\n\n".join((FRESH_START_BRIEF, *(f"Task {task.id}: {task.title}\n\n{task.brief}" for task in tasks), f"The last job you were sent:\n\n{worker.brief}"))
 
     def worker_variables(self, worker: Worker, token: AgentToken) -> dict[str, str]:
         return {**self.setup.variables(self.environments.find(worker.environment_id).name, Actor.worker(worker.id), token), LOCKOUT_VARIABLE: str(self.settings.integer(LOCKOUT_OPTION))}
@@ -144,7 +155,13 @@ class WorkerRunner:
         return max(0.0, limit - (self.time_source.seconds() - worker.began)) if limit else None
 
     def is_start_stalled(self, worker: Worker) -> bool:
-        return self.start_remaining_seconds(worker) == 0 and not self.providers.lookup(worker.provider).is_work_started(self.read(self.outputs(worker)[0]))
+        run = (worker.pid, worker.began)
+        if self.start_remaining_seconds(worker) != 0 or run in self._started_runs:
+            return False
+        if self.providers.lookup(worker.provider).is_work_started(self.read(self.outputs(worker)[0])):
+            self._started_runs.add(run)
+            return False
+        return True
 
     def session_recorded(self, worker: Worker, actor: Actor) -> Worker:
         output, err = self.outputs(worker)
@@ -158,6 +175,10 @@ class WorkerRunner:
         if self.remaining_seconds(worker) == 0:
             os.killpg(worker.pid, signal.SIGKILL)
             self.finish(worker, TIMEOUT_STATUS, actor)
+            return True
+        if self.is_start_stalled(worker):
+            os.killpg(worker.pid, signal.SIGKILL)
+            self.ended(worker, STALLED_STATUS, actor)
             return True
         return False
 
