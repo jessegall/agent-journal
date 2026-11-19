@@ -65,10 +65,7 @@ func showsTogether(rows []string, words []string, values map[string]string) bool
 		row = strings.ToLower(row)
 		all := true
 		for _, word := range words {
-			for name, value := range values {
-				word = strings.ReplaceAll(word, "{"+name+"}", value)
-			}
-			all = all && strings.Contains(row, strings.ToLower(word))
+			all = all && strings.Contains(row, strings.ToLower(filled(word, values)))
 		}
 		if all {
 			return true
@@ -91,6 +88,28 @@ type KeyStep struct {
 	Deadline  time.Duration
 	// Marked makes an entry step find the one entry carrying this note, such as "(current)".
 	Marked string
+	// Proof is text that must show on a stable screen after the step's action, such as "set model to {model}", a
+	// parameter named in braces filled with the run's value; it is matched without loss (screen.Proof).
+	Proof string
+}
+
+// proof is the step's proof with the run's values filled in; proves is false for a step with none.
+func (step KeyStep) proof(values map[string]string) (proof screen.Proof, proves bool, err error) {
+	if step.Proof == "" {
+		return screen.Proof{}, false, nil
+	}
+	proof, err = screen.NewProof(filled(step.Proof, values))
+
+	return proof, true, err
+}
+
+// filled is the text with each parameter named in braces replaced by the run's value.
+func filled(text string, values map[string]string) string {
+	for name, value := range values {
+		text = strings.ReplaceAll(text, "{"+name+"}", value)
+	}
+
+	return text
 }
 
 // KeyScript is a versioned recipe for one program build: its registered name, the parameters it is given, the
@@ -102,9 +121,12 @@ type KeyScript struct {
 	Parameters []string
 	Start      Expectation
 	Steps      []KeyStep
-	// ProvesResult is whether the script's last step sees the program's own evidence that the change took effect;
-	// a finished run of a script that does not is no proof the change was applied.
-	ProvesResult bool
+}
+
+// ProvesResult is whether the script's last step has a proof, so a finished run shows the change took effect; a
+// script without one states that finishing it proves nothing.
+func (script KeyScript) ProvesResult() bool {
+	return len(script.Steps) > 0 && script.Steps[len(script.Steps)-1].Proof != ""
 }
 
 // arrowDown and arrowUp move a menu's highlight one entry down or up; enterKey chooses the highlighted entry.

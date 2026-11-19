@@ -129,27 +129,77 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		if err := runner.act(step, values); err != nil {
 			return runner.stopped(err, index, step, seen)
 		}
+		if unproven, stopped := runner.proofMissing(index, step, values); stopped {
+			return unproven, nil
+		}
 		runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 	}
 
-	return Result{Outcome: Finished, Step: len(script.Steps), Proven: script.ProvesResult}, nil
+	return Result{Outcome: Finished, Step: len(script.Steps), Proven: script.ProvesResult()}, nil
+}
+
+// proofMissing waits within the step's deadline for a stable screen holding the step's proof; when it never shows,
+// the run stops for navigation with no further key, or fails on a screen that may not leave the host. A step with
+// no proof is never stopped here.
+func (runner *Runner) proofMissing(index int, step KeyStep, values map[string]string) (Result, bool) {
+	proof, proves, err := step.proof(values)
+	if !proves {
+		return Result{}, false
+	}
+	failed := Result{Outcome: ScriptFailed, Step: index, Name: step.Name}
+	if err != nil {
+		return failed, true
+	}
+
+	until := runner.clock.Now().Add(step.Deadline)
+	for {
+		seen := runner.screen.Classify(runner.clock.Now())
+		if seen.Stable && proof.SeenIn(runner.screen.Snapshot().Rows) {
+			return Result{}, false
+		}
+		if !runner.clock.Now().Before(until) {
+			failed.Seen = seen
+			if navigation, raised := runner.navigation(NoProof, index, step, seen); raised {
+				return navigation, true
+			}
+
+			return failed, true
+		}
+		runner.clock.Sleep(pollInterval)
+	}
+}
+
+// navigation is the run stopped at the step for the main agent, on the screen as it stands; raised is false on a
+// screen that may not leave the host, such as a secret prompt.
+func (runner *Runner) navigation(
+	reason UncertaintyReason,
+	index int,
+	step KeyStep,
+	seen screen.Classification,
+) (Result, bool) {
+	snapshot := runner.screen.Snapshot()
+	if !runner.program.Layout.Exportable(snapshot) {
+		return Result{}, false
+	}
+	uncertainty := runner.uncertainty(reason, index, step, seen, snapshot)
+
+	return Result{Outcome: NavigationNeeded, Step: index, Name: step.Name, Seen: seen, Uncertainty: &uncertainty}, true
 }
 
 // unmatched is how a run ends whose step's screen did not come: on a stable menu, known or not, that may leave the
 // host it needs navigation; on any other screen, a ready prompt, a draft, a turn or a secret prompt, it failed.
 func (runner *Runner) unmatched(index int, step KeyStep, seen screen.Classification) Result {
-	stopped := Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}
-	snapshot := runner.screen.Snapshot()
+	failed := Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}
 	pickable := seen.Kind == screen.MenuShown || (seen.Kind == screen.Unknown && seen.Options)
 	typing := runner.gate.Owner() == terminal.HumanInput
-	if !seen.Stable || !pickable || typing || !runner.program.Layout.Exportable(snapshot) {
-		return stopped
+	if !seen.Stable || !pickable || typing {
+		return failed
+	}
+	if navigation, raised := runner.navigation(NoEntry, index, step, seen); raised {
+		return navigation
 	}
 
-	uncertainty := runner.uncertainty(NoEntry, index, step, seen, snapshot)
-	stopped.Outcome, stopped.Uncertainty = NavigationNeeded, &uncertainty
-
-	return stopped
+	return failed
 }
 
 // uncertainty is the stable screen the run stopped on, as the main agent may see it.
@@ -206,13 +256,11 @@ func (runner *Runner) waitFor(
 // not on the wanted entry needs navigation, on a screen that may leave the host, before any Enter; anything else
 // ends with its outcome, and the error the run gives back, if any.
 func (runner *Runner) stopped(err error, index int, step KeyStep, seen screen.Classification) (Result, error) {
-	reason, uncertain := uncertaintyOf(err)
-	snapshot := runner.screen.Snapshot()
-	if uncertain && runner.program.Layout.Exportable(snapshot) {
+	if reason, uncertain := uncertaintyOf(err); uncertain {
 		now := runner.screen.Classify(runner.clock.Now())
-		uncertainty := runner.uncertainty(reason, index, step, now, snapshot)
-
-		return Result{Outcome: NavigationNeeded, Step: index, Name: step.Name, Seen: now, Uncertainty: &uncertainty}, nil
+		if navigation, raised := runner.navigation(reason, index, step, now); raised {
+			return navigation, nil
+		}
 	}
 
 	outcome, cause := stoppedBy(err)

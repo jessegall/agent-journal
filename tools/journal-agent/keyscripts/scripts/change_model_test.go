@@ -171,3 +171,11 @@ func TestNoScriptMovesThroughAMenuByCountedArrowKeys(t *testing.T) {
 		}
 	}
 }
+
+func TestNoRecordedScriptClaimsToProveItsResult(t *testing.T) {
+	for _, script := range recorded() {
+		if script.ProvesResult() {
+			t.Fatalf("%s for %s claims a proof no recording holds", script.Name, script.Profile)
+		}
+	}
+}
