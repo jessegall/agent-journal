@@ -35,9 +35,9 @@ use Tests\TestCase;
  */
 final class StartAgentTest extends TestCase
 {
+    use HasResearcherAgent;
     use RefreshHookDatabase;
     use StartsOwnerRequest;
-    use HasResearcherAgent;
 
     public function test_a_session_without_a_selection_cannot_be_written(): void
     {

@@ -15,8 +15,8 @@ use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Boundary\EventCalls\Plans\Events\PlanStarted;
 use Tests\Fixtures\Boundary\EventCalls\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain;
-use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\JudgesFixtureFiles;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 

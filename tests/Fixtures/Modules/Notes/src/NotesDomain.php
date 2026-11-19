@@ -58,7 +58,6 @@ use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\RetainNote;
-use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
 use Tests\Fixtures\Modules\Notes\Commands\SystemNote;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
@@ -206,7 +205,6 @@ final class NotesDomain extends Domain implements
             RetainNote::class,
             LimitNote::class,
             CopyLimitNote::class,
-            SetIntegerSettingThenFail::class,
         ];
     }
 

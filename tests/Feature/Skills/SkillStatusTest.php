@@ -66,9 +66,9 @@ final class SkillStatusTest extends TestCase
 
     public function test_it_shows_the_ready_generation_and_a_failed_publication_with_its_reason_and_retry(): void
     {
-        $delivered = $this->publish($this->startSession('Main', 'main-agent'), 'First text.');
+        $delivered = $this->publish($this->openAgentSession('Main', 'main-agent'), 'First text.');
         $this->app->instance(SkillPublisher::class, new FullDiskPublisher($this->app->make(HostSkillPublisher::class)));
-        $failed = $this->publish($this->startSession('Helper', 'writing-helper'), 'Second text.');
+        $failed = $this->publish($this->openAgentSession('Helper', 'writing-helper'), 'Second text.');
 
         Artisan::call('skill:status', ['--json' => true]);
         $status = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
@@ -89,8 +89,8 @@ final class SkillStatusTest extends TestCase
 
     public function test_an_agent_sees_only_its_own_sessions(): void
     {
-        $own = $this->publish($this->startSession('Main', 'main-agent'), 'First text.');
-        $other = $this->publish($this->startSession('Helper', 'writing-helper'), 'Second text.');
+        $own = $this->publish($this->openAgentSession('Main', 'main-agent'), 'First text.');
+        $other = $this->publish($this->openAgentSession('Helper', 'writing-helper'), 'Second text.');
         $agentId = AgentSession::byId($own->session_id)->agent_id;
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agentId),
@@ -112,7 +112,7 @@ final class SkillStatusTest extends TestCase
         }
     }
 
-    private function startSession(string $name, string $profileKey): AgentSession
+    private function openAgentSession(string $name, string $profileKey): AgentSession
     {
         $agent = Agent::named($name, $profileKey);
         $session = new AgentSession(TestSelections::sessionColumns());

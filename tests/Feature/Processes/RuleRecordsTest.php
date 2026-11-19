@@ -39,8 +39,8 @@ use Tests\TestCase;
  */
 final class RuleRecordsTest extends TestCase
 {
-    use RefreshHookDatabase;
     use ChecksSchemaTables;
+    use RefreshHookDatabase;
 
     private const string PROJECT = 'acme-project';
 
