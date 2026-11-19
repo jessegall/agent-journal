@@ -108,3 +108,19 @@ files itself.
 | Codex | `CODEX_HOME` = account folder | none | `OPENAI_API_KEY`, `CODEX_API_KEY` | `app-server`, `--add-dir` | `cli_auth_credentials_store = "file"` |
 
 The journal's own `JOURNAL_*` hook environment is unchanged by the recipe and set by the launcher as before.
+
+### Codex folder trust
+
+Codex runs the journal's hooks only in a trusted folder, and a trusted folder's own `.codex/config.toml` loads with
+it (see [codex-integration.md](codex-integration.md)). So the host trusts only an empty working root the journal
+made, never an agent's work folder and never a parent: `CodexFolderTrust::forWorkingRoot` refuses a folder outside
+the working roots folder, a link, or one that already holds anything. The work folder is given to the thread as a
+writable extra folder instead.
+
+`AccountConfigurationWrite::addTrust` adds that trust to the account's `config.toml` on the host: under a short lock
+file beside it, it reads the latest file, keeps every entry (hooks, the file sign-in store, earlier trusts), adds only
+the new `[projects."<exact path>"]` table and replaces the file with one rename, so a reader sees the old or the new
+file whole and a failed write leaves the old one. It never stops or waits for running threads. The lock serialises
+writers; it is not what keeps project settings out, the empty root is. Whether the pinned build runs the hooks in such
+a root, and keeps hostile work-folder files out after trust, later edits and a second concurrent worker, is the
+`hooks-run-in-empty-root` item of the Codex native evidence; until it passes the Codex arrangement stays refused.
