@@ -34,6 +34,29 @@ The lock was held by a separate `psql` session (`SELECT ... FOR UPDATE` on the a
 
 In the test suite an uncontended hook call commits in a few tens of milliseconds including setup, and a held lock under a 300 ms deadline times out in about 250 ms (`HookTransactionTest`). The configured limits are a 300 second retry window, a 5 second operation deadline with four fifths of it for the lock wait, 7 days for hook calls and 30 days for closed stacks.
 
+## Driver operations, proven live (plan 26, task 923)
+
+Run on 19 November through a local `journal-agent serve` against the version 6 server, with Core's owner commands
+and the cheapest models. The pinned builds are Claude Code 2.1.323 and codex 0.165.0; any other build is refused by
+the host before any work starts (`build 2.1.999 of claude is not the pinned build 2.1.323`).
+
+| Operation | Claude Code, process mode (Haiku) | codex, process mode (gpt-6-luna) | Terminal mode, both programs |
+| --- | --- | --- | --- |
+| Deliver | applied, one real turn per delivery batch | applied | not run live: needs `journal-agent attach` in a real terminal |
+| ChangeModel, ChangeEffort | staged, then applied with the next turn | not run live | not run live |
+| Wake | an idle runtime with nothing pending settles as no work | not run live | not run live |
+| Interrupt | the runtime is held as interrupted until released (`agents:hold-release`) | held as interrupted; the interrupt ends with its turn | not run live |
+| Stop | exit proven, runtime stopped, session ended | refused for a runtime whose host restarted (its one-time grant was used): reassignment covers it | not run live |
+| Hook calls | reach the journal, through `bin/journal-hook claude-code` | through `bin/journal-hook codex` | not run live |
+
+Rule 36 at launch: Claude Code starts with `--agents {}` and the delegation tools in `--disallowedTools`, and a prompt
+asking for the Task tool ran without any child; codex starts with `features.multi_agent` and every related feature
+set to false. Not yet shown live: a contradictory control at launch, and the same evidence after a resume and after a
+reassignment.
+
+Limits found by the live run: the hook relay boots the whole app, so on a machine without the app's database and
+Redis it needs their addresses (task 1229); a host's unavailable report is recorded as failed (task 1230).
+
 ## The reply contract (plan 2, task 66)
 
 The adapters share these reply shapes, checked against the vendor documentation on 2026-11-17, not against a running pinned program:
