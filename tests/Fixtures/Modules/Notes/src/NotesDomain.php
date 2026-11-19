@@ -47,11 +47,13 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditRules;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordWriteNote;
 use Tests\Fixtures\Modules\Notes\Commands\ClearNotes;
+use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
 use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
 use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
+use Tests\Fixtures\Modules\Notes\Commands\LimitNote;
 use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
@@ -82,7 +84,20 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommandRules, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesSkillConditions, ProvidesSkills, ProvidesStates
+final class NotesDomain extends Domain implements
+    ProvidesAssignables,
+    ProvidesCommandMiddleware,
+    ProvidesCommandRules,
+    ProvidesCommands,
+    ProvidesLinkRecords,
+    ProvidesNavigation,
+    ProvidesNumberedModels,
+    ProvidesPages,
+    ProvidesPolicies,
+    ProvidesSections,
+    ProvidesSkillConditions,
+    ProvidesSkills,
+    ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -107,12 +122,20 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function numberedModels(): array
     {
-        return [NumberedModel::global(Note::class), NumberedModel::global(NotePage::class), NumberedModel::global(NoteSnapshot::class)];
+        return [
+            NumberedModel::global(Note::class),
+            NumberedModel::global(NotePage::class),
+            NumberedModel::global(NoteSnapshot::class),
+        ];
     }
 
     public function linkRecords(): array
     {
-        return [Note::LINK_TYPE => NoteLinkRecords::class, NotePage::LINK_TYPE => NotePageLinkRecords::class, NoteSnapshot::LINK_TYPE => NoteSnapshotLinkRecords::class];
+        return [
+            Note::LINK_TYPE => NoteLinkRecords::class,
+            NotePage::LINK_TYPE => NotePageLinkRecords::class,
+            NoteSnapshot::LINK_TYPE => NoteSnapshotLinkRecords::class,
+        ];
     }
 
     public function policies(): array
@@ -154,12 +177,35 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function sections(): array
     {
-        return [Section::make('count', 'Notes', 'chat.dock', SlotContextType::Session, NoteSectionResolver::class, 'NoteSection.vue')];
+        return [Section::make(
+            'count',
+            'Notes',
+            'chat.dock',
+            SlotContextType::Session,
+            NoteSectionResolver::class,
+            'NoteSection.vue',
+        )];
     }
 
     public function commands(): array
     {
-        return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, SystemNote::class, ClearNotes::class, EngineNote::class, EngineCopyNote::class, KeepNote::class, RetainNote::class];
+        return [
+            WriteNote::class,
+            PinNote::class,
+            CopyNote::class,
+            RefuseNote::class,
+            IgnoreFailedNote::class,
+            OpenTransactionNote::class,
+            UserNote::class,
+            SystemNote::class,
+            ClearNotes::class,
+            EngineNote::class,
+            EngineCopyNote::class,
+            KeepNote::class,
+            RetainNote::class,
+            LimitNote::class,
+            CopyLimitNote::class,
+        ];
     }
 
     public function skills(): array
@@ -169,7 +215,9 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function skillConditions(): array
     {
-        return [new SkillConditionRegistration('notes.has-notes', 1, HasNotesParameters::class, HasNotesCondition::class)];
+        return [
+            new SkillConditionRegistration('notes.has-notes', 1, HasNotesParameters::class, HasNotesCondition::class),
+        ];
     }
 
     public function commandMiddleware(): array
@@ -190,7 +238,13 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function commandRules(): array
     {
         return [
-            CommandRule::forProgram('notes.notes-cli.list', new ProgramSpellings('notes-cli'), ['list'], ArgumentGrammar::options(['--all']), CommandClassSet::of(CommandClass::Read)),
+            CommandRule::forProgram(
+                'notes.notes-cli.list',
+                new ProgramSpellings('notes-cli'),
+                ['list'],
+                ArgumentGrammar::options(['--all']),
+                CommandClassSet::of(CommandClass::Read),
+            ),
         ];
     }
 }
