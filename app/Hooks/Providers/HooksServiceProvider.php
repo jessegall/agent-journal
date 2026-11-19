@@ -62,7 +62,9 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
         $this->app->singleton(
             OperationDeadline::class,
-            fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')),
+            fn () => new OperationDeadline(
+                $this->app->make('config')->integer('hooks.operation_deadline_milliseconds'),
+            ),
         );
         $this->app->singleton(
             ContextBudget::class,

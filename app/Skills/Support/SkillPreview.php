@@ -66,7 +66,10 @@ final readonly class SkillPreview
     {
         $selected = $this->selection->select($skills, $this->contexts->forAgent($agent));
         $excluded = array_column(
-            array_map(fn (ExcludedSkill $excluded) => ['key' => $excluded->key->key, 'reason' => $excluded->reason], $selected->excluded),
+            array_map(
+                fn (ExcludedSkill $excluded) => ['key' => $excluded->key->key, 'reason' => $excluded->reason],
+                $selected->excluded,
+            ),
             'reason',
             'key',
         );

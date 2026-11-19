@@ -30,7 +30,9 @@ final class AreaCycleTest extends TestCase
         );
         $this->assertSame(
             [],
-            AreaCycles::ofEdges(['Domain\\Plans' => ['Domain\\Tasks' => 'd'], 'Domain\\Tasks' => ['App\\Hooks' => 'e']])->cycles(),
+            AreaCycles::ofEdges(
+                ['Domain\\Plans' => ['Domain\\Tasks' => 'd'], 'Domain\\Tasks' => ['App\\Hooks' => 'e']],
+            )->cycles(),
         );
     }
 

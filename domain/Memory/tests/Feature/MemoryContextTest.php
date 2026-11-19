@@ -71,7 +71,10 @@ final class MemoryContextTest extends TestCase
 
         $context = $this->answer(
             'call-2',
-            new SessionStarted($this->identity('call-2'), new SessionStartDetails('codex-thread-1', SessionStartSource::Startup)),
+            new SessionStarted(
+                $this->identity('call-2'),
+                new SessionStartDetails('codex-thread-1', SessionStartSource::Startup),
+            ),
             'onSessionStart',
         );
 

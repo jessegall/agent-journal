@@ -99,7 +99,13 @@ final readonly class SkillAuthoring
             fn ($section) => new SectionDraft(
                 Str::slug($section->heading),
                 $section->heading,
-                trim($section->lastLine > $section->firstLine ? $text->lines($section->firstLine + 1, $section->lastLine) : '', "\n"),
+                trim(
+                    $section->lastLine > $section->firstLine ? $text->lines(
+                        $section->firstLine + 1,
+                        $section->lastLine,
+                    ) : '',
+                    "\n",
+                ),
             ),
             array_filter($headings, fn ($section) => $section->level === $top),
         ));

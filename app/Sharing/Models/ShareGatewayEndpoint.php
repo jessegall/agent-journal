@@ -89,7 +89,9 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public static function lockRunningOf(ShareGatewayConfiguration $configuration, string $runId): Option
     {
         return Option::fromValue(
-            self::query()->ofConfiguration($configuration->id)->ofRun($runId)->stillRunning()->orderByDesc('endpoint_version')->lockForUpdate()->first(),
+            self::query()->ofConfiguration(
+                $configuration->id,
+            )->ofRun($runId)->stillRunning()->orderByDesc('endpoint_version')->lockForUpdate()->first(),
         );
     }
 
@@ -101,7 +103,9 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public static function newestRunningOf(ShareGatewayConfiguration $configuration): Option
     {
         return Option::fromValue(
-            self::query()->ofConfiguration($configuration->id)->stillRunning()->orderByDesc('endpoint_version')->first(),
+            self::query()->ofConfiguration(
+                $configuration->id,
+            )->stillRunning()->orderByDesc('endpoint_version')->first(),
         );
     }
 
@@ -113,7 +117,10 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public static function openOfRun(string $runId): array
     {
         return array_values(
-            self::query()->ofRun($runId)->where('state', GatewayEndpointState::Open->value)->orderBy('id')->readLimit(Share::MOST_LIVE)->get()->all(),
+            self::query()->ofRun($runId)->where(
+                'state',
+                GatewayEndpointState::Open->value,
+            )->orderBy('id')->readLimit(Share::MOST_LIVE)->get()->all(),
         );
     }
 

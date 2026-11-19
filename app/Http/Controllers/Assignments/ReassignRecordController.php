@@ -12,7 +12,8 @@ use App\Http\Requests\Assignments\ReassignRecordRequest;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Moves one record from the holder it is expected to have to another. A plain 200: an agent's call is a POST because its body is signed.
+ * Moves one record from the holder it is expected to have to another. A plain 200: an agent's call is a POST because
+ * its body is signed.
  */
 final readonly class ReassignRecordController
 {

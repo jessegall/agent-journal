@@ -114,7 +114,10 @@ final class CommandFolderTest extends TestCase
         foreach (array_keys($registry->handlerMap()) as $command) {
             array_push(
                 $classes,
-                ...array_map(fn (RegisteredMiddleware $entry) => $entry->declaration->middleware, $registry->middlewareFor($command)),
+                ...array_map(
+                    fn (RegisteredMiddleware $entry) => $entry->declaration->middleware,
+                    $registry->middlewareFor($command),
+                ),
             );
         }
 

@@ -91,7 +91,10 @@ final class TickCandidatesTest extends TestCase
         );
         $this->assertContains(
             'a-2',
-            array_map(fn (FrameRecord $record) => $record->id, AgentStackRow::query()->tickingOpen()->readLimit(1)->sole()->frames->all()),
+            array_map(
+                fn (FrameRecord $record) => $record->id,
+                AgentStackRow::query()->tickingOpen()->readLimit(1)->sole()->frames->all(),
+            ),
         );
     }
 
@@ -120,7 +123,9 @@ final class TickCandidatesTest extends TestCase
         [$first, $second] = $this->nextBatch(100)->candidates;
         $row = AgentStackRow::query()->authorizedFor($first->target)->sole();
         $row->saveFrames(
-            new FrameRecords(array_values(array_filter($row->frames->all(), fn (FrameRecord $record) => $record->id !== 'a-2'))),
+            new FrameRecords(
+                array_values(array_filter($row->frames->all(), fn (FrameRecord $record) => $record->id !== 'a-2')),
+            ),
             $this->app->make(StateTypes::class)->ticking(),
         );
 

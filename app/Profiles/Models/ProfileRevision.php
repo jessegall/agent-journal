@@ -28,7 +28,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One numbered, immutable revision of a profile: the built-in profile it starts from, its instructions, default model, skill lists, launch policy
+ * One numbered, immutable revision of a profile: the built-in profile it starts from, its instructions, default model,
+ * skill lists, launch policy
  * and who wrote it. A null skill allowlist means every applicable skill; an empty one means none. The launch policy
  * is kept in its own columns and read back through ProfileLaunchPolicyCast.
  *

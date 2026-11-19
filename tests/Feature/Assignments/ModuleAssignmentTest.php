@@ -26,7 +26,8 @@ use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * A module outside the domain folder declares its own assignable record: its notes take a holder like any record, an agent
+ * A module outside the domain folder declares its own assignable record: its notes take a holder like any record, an
+ * agent
  * sees only the notes it wrote, and with the module gone its records can no longer be read while retirement still
  * releases them.
  */
@@ -77,7 +78,9 @@ final class ModuleAssignmentTest extends TestCase
 
         $this->assertCount(1, $result->changes);
         $this->assertTrue(
-            $set->forRecord($this->note->assignmentIdentity())->get()->holder()->isSameAs(AssigneeIdentity::of($this->writer)),
+            $set->forRecord($this->note->assignmentIdentity())->get()->holder()->isSameAs(
+                AssigneeIdentity::of($this->writer),
+            ),
         );
     }
 
@@ -93,7 +96,10 @@ final class ModuleAssignmentTest extends TestCase
         $this->startRequestAs($this->main->id, TestIds::of(1));
         $hidden = $this->app->make(AssignmentResolver::class)->assignmentsFor([$this->note->assignmentIdentity()]);
         $this->assertThrows(
-            fn () => $this->app->make(AssignmentWriterInTransaction::class)->assign($this->note->assignmentIdentity(), AssigneeIdentity::of($this->main)),
+            fn () => $this->app->make(AssignmentWriterInTransaction::class)->assign(
+                $this->note->assignmentIdentity(),
+                AssigneeIdentity::of($this->main),
+            ),
             RecordUnavailable::class,
         );
 
@@ -114,12 +120,22 @@ final class ModuleAssignmentTest extends TestCase
     {
         $noteId = strtolower((string) Str::ulid());
         AssignmentRecord::query()->insert(
-            ['id' => strtolower((string) Str::ulid()), 'record_type' => Note::LINK_TYPE, 'record_id' => $noteId, 'holder_type' => 'agent', 'holder_id' => $this->writer->id, 'created_at' => now(), 'updated_at' => now()],
+            [
+                'id' => strtolower((string) Str::ulid()),
+                'record_type' => Note::LINK_TYPE,
+                'record_id' => $noteId,
+                'holder_type' => 'agent',
+                'holder_id' => $this->writer->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         );
         $this->startUserRequestAs($this->owner->id);
 
         $this->assertThrows(
-            fn () => $this->app->make(AssignmentResolver::class)->assignmentsFor([new RecordIdentity(Note::LINK_TYPE, $noteId)]),
+            fn () => $this->app->make(AssignmentResolver::class)->assignmentsFor(
+                [new RecordIdentity(Note::LINK_TYPE, $noteId)],
+            ),
             AssignmentTypeUnavailable::class,
         );
 

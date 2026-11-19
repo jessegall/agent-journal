@@ -80,7 +80,10 @@ final class DueWorkOnTickTest extends TestCase
         });
         Event::listen(
             StateTypesRequested::class,
-            fn (StateTypesRequested $event) => $event->registry->register('test.plain', new ClosureStateLoader(fn () => ScriptedState::delegating())),
+            fn (StateTypesRequested $event) => $event->registry->register(
+                'test.plain',
+                new ClosureStateLoader(fn () => ScriptedState::delegating()),
+            ),
         );
         $this->bootModules(QuestionRemindersDomain::class);
         $this->asked = CarbonImmutable::parse('2026-11-18 12:00:00');
@@ -140,7 +143,10 @@ final class DueWorkOnTickTest extends TestCase
         $this->assertNull($question->refresh()->reminded_at);
         $this->assertNotContains(
             $question->id,
-            array_map(fn (FrameRecord $frame) => $frame->id, AgentStackRow::query()->authorizedFor($target)->sole()->frames->all()),
+            array_map(
+                fn (FrameRecord $frame) => $frame->id,
+                AgentStackRow::query()->authorizedFor($target)->sole()->frames->all(),
+            ),
         );
     }
 

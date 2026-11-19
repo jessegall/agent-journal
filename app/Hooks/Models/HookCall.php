@@ -24,7 +24,8 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 
 /**
- * One answered hook call, kept so a retry of the same call gets the same answer. The agent and session are set only through recordFor.
+ * One answered hook call, kept so a retry of the same call gets the same answer. The agent and session are set only
+ * through recordFor.
  *
  * @property string $id
  * @property string $agent_id
@@ -82,7 +83,8 @@ final class HookCall extends Model implements ReadableModel
     }
 
     /**
-     * The administrator's read of hook calls past their retention, across every agent; calls of a held stack are left out.
+     * The administrator's read of hook calls past their retention, across every agent; calls of a held stack are left
+     * out.
      *
      * @param  Builder<self>  $query
      */
@@ -99,7 +101,8 @@ final class HookCall extends Model implements ReadableModel
     }
 
     /**
-     * The explicit read of another agent or session's hook calls, for a caller the user authorized; it lifts the current-agent limit.
+     * The explicit read of another agent or session's hook calls, for a caller the user authorized; it lifts the
+     * current-agent limit.
      *
      * @param  Builder<self>  $query
      */

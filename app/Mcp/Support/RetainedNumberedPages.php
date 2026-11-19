@@ -56,7 +56,11 @@ final readonly class RetainedNumberedPages implements NumberedPages
         return $this->fit(
             $continuation,
             $page,
-            $this->retained->resolve($retainedPageId, $continuation->offset, fn (array $references): array => $page->cards),
+            $this->retained->resolve(
+                $retainedPageId,
+                $continuation->offset,
+                fn (array $references): array => $page->cards,
+            ),
         );
     }
 
@@ -97,7 +101,13 @@ final readonly class RetainedNumberedPages implements NumberedPages
             array_map(strval(...), array_keys($page->cards)),
         );
         $cursor = $this->continuations->issue(
-            new Continuation($continuation->tool, self::SELECTOR, $continuation->filters, $offset, retainedPageId: $retainedPageId),
+            new Continuation(
+                $continuation->tool,
+                self::SELECTOR,
+                $continuation->filters,
+                $offset,
+                retainedPageId: $retainedPageId,
+            ),
         );
 
         return new NextAction($continuation->tool, ['continuation' => $cursor]);

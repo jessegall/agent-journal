@@ -95,7 +95,10 @@ final class RelayTest extends TestCase
         $this->assertSame([1], array_column($lines, 'id'));
         $this->assertSame(
             ['slow'],
-            array_map(fn (array $call): mixed => json_decode((string) $call['body'], true)['method'], $this->serverCalls()),
+            array_map(
+                fn (array $call): mixed => json_decode((string) $call['body'], true)['method'],
+                $this->serverCalls(),
+            ),
         );
     }
 

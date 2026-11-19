@@ -11,7 +11,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 /**
- * Denies a proposed rule by running the DenyRule command, then returns to the page the review came from (303). A missing rule is not
+ * Denies a proposed rule by running the DenyRule command, then returns to the page the review came from (303). A
+ * missing rule is not
  * found and a rule no longer proposed comes back as a review error, by the renderers in RulesServiceProvider.
  */
 final readonly class DenyRuleController

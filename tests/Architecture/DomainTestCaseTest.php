@@ -8,7 +8,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Each domain with feature tests has its own TestCase, Domain\<Name>\Tests\TestCase extending the shared Tests\TestCase,
+ * Each domain with feature tests has its own TestCase, Domain\<Name>\Tests\TestCase extending the shared
+ * Tests\TestCase,
  * and every feature test of the domain extends it; a unit test may stay on PHPUnit's own TestCase.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]

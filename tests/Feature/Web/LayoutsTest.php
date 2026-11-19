@@ -24,7 +24,13 @@ final class LayoutsTest extends TestCase
      * @var array<string, mixed>
      */
     private array $shape = [
-        'grid' => ['type' => 'pane', 'id' => 'pane-chat', 'windows' => ['chat'], 'active' => 'chat', 'limitWidth' => false],
+        'grid' => [
+            'type' => 'pane',
+            'id' => 'pane-chat',
+            'windows' => ['chat'],
+            'active' => 'chat',
+            'limitWidth' => false,
+        ],
         'detached' => [],
     ];
 
@@ -70,7 +76,9 @@ final class LayoutsTest extends TestCase
         $layout = Layout::query()->sole();
         $changed = [
             ...$this->shape,
-            'detached' => [['key' => 'plans', 'left' => 80, 'top' => 80, 'width' => 480, 'height' => 360, 'isMinimised' => false]],
+            'detached' => [
+                ['key' => 'plans', 'left' => 80, 'top' => 80, 'width' => 480, 'height' => 360, 'isMinimised' => false],
+            ],
         ];
 
         $this->actingAs($this->owner)->put(

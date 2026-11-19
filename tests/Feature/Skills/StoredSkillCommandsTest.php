@@ -59,7 +59,10 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertTrue($revised->publicationPending);
         $this->assertSame(
             'First.',
-            SkillRevision::numbered(Skill::query()->whereKey($created->skillId)->firstOrFail(), 1)->sections[0]->content,
+            SkillRevision::numbered(
+                Skill::query()->whereKey($created->skillId)->firstOrFail(),
+                1,
+            )->sections[0]->content,
         );
     }
 
@@ -125,7 +128,16 @@ final class StoredSkillCommandsTest extends TestCase
         );
         $this->assertRefused(
             SkillConditionInvalid::class,
-            new CreateSkill('user-notes', 'create-2', new SkillDraft('Notes', 'Read.', [new SectionDraft('a', 'A', 'Text.')], '{"type":"any","version":1,"children":[]}')),
+            new CreateSkill(
+                'user-notes',
+                'create-2',
+                new SkillDraft(
+                    'Notes',
+                    'Read.',
+                    [new SectionDraft('a', 'A', 'Text.')],
+                    '{"type":"any","version":1,"children":[]}',
+                ),
+            ),
             'condition.children',
         );
         $this->assertRefused(

@@ -170,13 +170,23 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $bus = $this->app->make(CommandBus::class);
 
         $bus->run(
-            new ApproveRule(Rule::proposed('Every phase ends with its tests.', 'Phases ended untested.', null, ActorContext::forAgent(TestIds::of(10)))->id),
+            new ApproveRule(
+                Rule::proposed(
+                    'Every phase ends with its tests.',
+                    'Phases ended untested.',
+                    null,
+                    ActorContext::forAgent(TestIds::of(10)),
+                )->id,
+            ),
         );
         $bus->run(new WriteNote('not a rules command'));
 
         $this->assertSame(
             1,
-            $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count(),
+            $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where(
+                'text',
+                'audit ApproveRule',
+            )->count(),
         );
         $this->assertSame(1, count(array_keys($trail->steps, 'notes audits rules', true)));
     }
@@ -193,7 +203,10 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         } catch (RuleNotProposed) {
             $this->assertSame(
                 0,
-                $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count(),
+                $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where(
+                    'text',
+                    'audit ApproveRule',
+                )->count(),
             );
         }
     }

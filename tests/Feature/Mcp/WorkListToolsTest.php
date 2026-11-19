@@ -81,7 +81,10 @@ final class WorkListToolsTest extends TestCase
         $this->assertSame(2, $result['total']);
         $this->assertEquals(
             $references,
-            array_combine(array_column($result['cards'], 'id'), array_column(array_column($result['cards'], 'holder'), 'reference')),
+            array_combine(
+                array_column($result['cards'], 'id'),
+                array_column(array_column($result['cards'], 'holder'), 'reference'),
+            ),
         );
         $this->assertSame([], $result['next_actions']);
     }

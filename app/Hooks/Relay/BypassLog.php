@@ -24,7 +24,11 @@ final readonly class BypassLog
         $lines = is_file($this->path) ? array_filter(explode(PHP_EOL, (string) file_get_contents($this->path))) : [];
 
         return BypassReport::from(
-            ['bypasses' => array_values(array_map(fn (string $line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR), $lines))],
+            [
+                'bypasses' => array_values(
+                    array_map(fn (string $line) => json_decode($line, true, flags: JSON_THROW_ON_ERROR), $lines),
+                ),
+            ],
         );
     }
 

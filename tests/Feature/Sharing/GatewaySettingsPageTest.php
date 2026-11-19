@@ -63,7 +63,11 @@ final class GatewaySettingsPageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->secretsFolder = sys_get_temp_dir().'/sharing-secrets-'.Str::lower((string) Str::ulid());
         config(
-            ['sharing.secrets_dir' => $this->secretsFolder, 'sharing.tunler.binary' => '/nonexistent/tunler', 'sharing.ngrok.binary' => '/nonexistent/ngrok'],
+            [
+                'sharing.secrets_dir' => $this->secretsFolder,
+                'sharing.tunler.binary' => '/nonexistent/tunler',
+                'sharing.ngrok.binary' => '/nonexistent/ngrok',
+            ],
         );
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
     }
@@ -97,13 +101,18 @@ final class GatewaySettingsPageTest extends TestCase
             ->where('page.data.revisions.0.gatewayKey', 'ngrok')
             ->where('page.data.revisions.1.gatewayKey', 'tunler')
             ->where('page.data.revisions.1.secretReferences', ['tunler-login'])
-            ->where('page.data.revisions.1.readinessProblems.0', 'The tunler program is not installed at its pinned path.'));
+            ->where(
+                'page.data.revisions.1.readinessProblems.0',
+                'The tunler program is not installed at its pinned path.',
+            ));
 
         $this->assertContains('tunler', $page->viewData('page')['props']['page']['data']['gatewayKeys']);
         $this->assertStringNotContainsString(self::SECRET, (string) $page->getContent());
         $this->assertStringNotContainsString(
             self::SECRET,
-            (string) json_encode(ShareGatewayConfiguration::query()->readAll('two revisions')->get()->map->getAttributes()->all()),
+            (string) json_encode(
+                ShareGatewayConfiguration::query()->readAll('two revisions')->get()->map->getAttributes()->all(),
+            ),
         );
         $this->assertSame(self::SECRET, file_get_contents("{$this->secretsFolder}/tunler-login"));
     }
@@ -153,7 +162,11 @@ final class GatewaySettingsPageTest extends TestCase
 
         $this->assertFalse($this->actingAs($other)->get('/sharing/gateways')->isOk());
         $this->assertFalse(
-            $this->actingAs($other)->post('/sharing/gateways', $this->settings('ngrok', 'https://journal.ngrok.test', []), ['Idempotency-Key' => (string) Str::ulid()])->isSuccessful(),
+            $this->actingAs($other)->post(
+                '/sharing/gateways',
+                $this->settings('ngrok', 'https://journal.ngrok.test', []),
+                ['Idempotency-Key' => (string) Str::ulid()],
+            )->isSuccessful(),
         );
         $this->assertSame(0, ShareGatewayConfiguration::query()->count());
     }

@@ -108,7 +108,11 @@ final readonly class PlanRecords implements PlanResolver
     private function focusedPlanId(): Option
     {
         return $this->workStack->current(WorkingOnPlanStateReference::TYPE_KEY)
-            ->flatMap(fn (StateReference $frame) => $frame->subject instanceof SubjectReference ? new Some($frame->subject->id) : None::create());
+            ->flatMap(
+                fn (
+                    StateReference $frame,
+                ) => $frame->subject instanceof SubjectReference ? new Some($frame->subject->id) : None::create(),
+            );
     }
 
     /**

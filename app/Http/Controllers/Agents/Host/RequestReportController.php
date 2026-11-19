@@ -11,7 +11,8 @@ use App\Http\Data\Agents\RequestProgressReportData;
 use Illuminate\Http\Response;
 
 /**
- * Takes the host's report of how a request attempt went. The host's calls run as the journal itself: a host is infrastructure, never an actor.
+ * Takes the host's report of how a request attempt went. The host's calls run as the journal itself: a host is
+ * infrastructure, never an actor.
  */
 final readonly class RequestReportController
 {

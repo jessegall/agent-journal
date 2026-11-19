@@ -21,7 +21,8 @@ use App\Hooks\Lifecycle\LifecycleContext;
  * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and
  * before() may answer any hook first, as a Laravel policy's before does. A state only answers: its hook methods, its
  * lifecycle callbacks and its ticks never perform an external effect themselves. A tick returns commands, which the
- * engine runs with the frame's work as their origin, locked and checked to be live before each command changes anything.
+ * engine runs with the frame's work as their origin, locked and checked to be live before each command changes
+ * anything.
  */
 abstract class AgentState implements HookAnswerer
 {

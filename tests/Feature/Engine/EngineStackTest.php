@@ -72,7 +72,10 @@ final class EngineStackTest extends TestCase
         $other = $this->launch();
 
         $this->assertThrows(
-            fn () => $this->asEngineFor($this->targetOf($granted), fn () => $this->app->make(EngineStack::class)->push($this->targetOf($other), $this->task('B'))),
+            fn () => $this->asEngineFor(
+                $this->targetOf($granted),
+                fn () => $this->app->make(EngineStack::class)->push($this->targetOf($other), $this->task('B')),
+            ),
             EngineAccessRefused::class,
         );
 
@@ -85,7 +88,10 @@ final class EngineStackTest extends TestCase
         $launched->session->endAt(CarbonImmutable::now());
 
         $this->assertThrows(
-            fn () => $this->asEngineFor($this->targetOf($launched), fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A'))),
+            fn () => $this->asEngineFor(
+                $this->targetOf($launched),
+                fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A')),
+            ),
             StackTargetRefused::class,
         );
 
@@ -126,7 +132,9 @@ final class EngineStackTest extends TestCase
         );
 
         return array_map(
-            fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
+            fn (
+                FrameRecord $frame,
+            ) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
             $frames,
         );
     }

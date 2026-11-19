@@ -84,15 +84,21 @@ final class AssigneesTest extends TestCase
         $this->builder->retireAt(CarbonImmutable::now());
 
         $this->assertThrows(
-            fn () => $registry->assigneeProvider(ActorType::User->value)->requireEligible(AssigneeIdentity::of($stranger)),
+            fn () => $registry->assigneeProvider(ActorType::User->value)->requireEligible(
+                AssigneeIdentity::of($stranger),
+            ),
             AssigneeUnavailable::class,
         );
         $this->assertThrows(
-            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(AssigneeIdentity::of($this->builder)),
+            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(
+                AssigneeIdentity::of($this->builder),
+            ),
             AssigneeUnavailable::class,
         );
         $this->assertThrows(
-            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(new AssigneeIdentity(ActorType::Agent->value, TestIds::of(999999))),
+            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(
+                new AssigneeIdentity(ActorType::Agent->value, TestIds::of(999999)),
+            ),
             AssigneeUnavailable::class,
         );
     }

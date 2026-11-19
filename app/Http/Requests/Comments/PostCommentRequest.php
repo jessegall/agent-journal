@@ -100,7 +100,9 @@ final class PostCommentRequest extends RecordTargetRequest
         return new PostTextComment(
             $target,
             $this->body(),
-            $this->range(TextAnchorType::from((string) array_search($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true))),
+            $this->range(
+                TextAnchorType::from((string) array_search($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true)),
+            ),
             $this->submissionKey(),
         );
     }

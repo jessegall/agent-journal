@@ -19,7 +19,17 @@ final readonly class ShareCursors
     public function write(ShareCursor $cursor): string
     {
         $payload = self::encode(
-            json_encode([$cursor->shareId, $cursor->scopeVersion, $cursor->path, $cursor->relation, $cursor->ordering, $cursor->continuation], JSON_THROW_ON_ERROR),
+            json_encode(
+                [
+                    $cursor->shareId,
+                    $cursor->scopeVersion,
+                    $cursor->path,
+                    $cursor->relation,
+                    $cursor->ordering,
+                    $cursor->continuation,
+                ],
+                JSON_THROW_ON_ERROR,
+            ),
         );
 
         return $payload.'.'.$this->signatureOf($payload);

@@ -63,7 +63,7 @@ function isLeftForAPerson(string $line): bool
 {
     $trimmed = ltrim($line);
 
-    return preg_match('/^(if|elseif|} elseif|while|foreach|for|\*|\/\/|\/\*|&&|\|\||->|\?|:)/', $trimmed) === 1;
+    return preg_match('/^(if|elseif|} elseif|while|foreach|for|\*|\/\/|\/\*|&&|\|\||\?|:)/', $trimmed) === 1;
 }
 
 /**

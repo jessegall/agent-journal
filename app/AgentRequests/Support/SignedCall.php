@@ -38,7 +38,8 @@ final readonly class SignedCall
 
     /**
      * The signature over the version-2 envelope, one field per line: protocol, method, request target of the url, call
-     * id, issue time and digest of the body. A field holding a line break could forge another envelope, so it is refused.
+     * id, issue time and digest of the body. A field holding a line break could forge another envelope, so it is
+     * refused.
      *
      * @throws CallFieldInvalid
      */

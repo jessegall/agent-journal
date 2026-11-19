@@ -51,7 +51,11 @@ final readonly class NetworkRules
                 'core.curl.upload',
                 $curl,
                 [],
-                $this->curl()->withOptions(OptionGrammar::valued(OperandType::Text, '-d', '--data')->required(), OptionGrammar::valued(OperandType::Text, '--data-raw'), OptionGrammar::valued(OperandType::Text, '-F', '--form')),
+                $this->curl()->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-d', '--data')->required(),
+                    OptionGrammar::valued(OperandType::Text, '--data-raw'),
+                    OptionGrammar::valued(OperandType::Text, '-F', '--form'),
+                ),
                 CommandClassSet::of(CommandClass::Network, CommandClass::Read, CommandClass::Write),
             ),
             CommandRule::forProgram('core.wget', new ProgramSpellings('wget'), [], ArgumentGrammar::operands(

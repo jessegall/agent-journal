@@ -77,11 +77,15 @@ final class ReadsServiceProvider extends ServiceProvider
         );
         $events->listen(
             CommandStarting::class,
-            static fn (CommandStarting $starting) => $selfMeasured->has($starting->command) ? null : ScopedReadMeter::ofCurrentScope()->begin(),
+            static fn (
+                CommandStarting $starting,
+            ) => $selfMeasured->has($starting->command) ? null : ScopedReadMeter::ofCurrentScope()->begin(),
         );
         $events->listen(
             CommandFinished::class,
-            static fn (CommandFinished $finished) => $selfMeasured->has($finished->command) ? null : self::endEntry("artisan {$finished->command}"),
+            static fn (CommandFinished $finished) => $selfMeasured->has($finished->command) ? null : self::endEntry(
+                "artisan {$finished->command}",
+            ),
         );
         $events->listen(JobProcessing::class, static fn () => ScopedReadMeter::ofCurrentScope()->begin());
         $events->listen(
@@ -94,7 +98,10 @@ final class ReadsServiceProvider extends ServiceProvider
         );
         $events->listen(
             'eloquent.retrieved: *',
-            static fn (string $event, array $models) => ScopedReadMeter::ofCurrentScope()->recordModel($models[0]::class),
+            static fn (
+                string $event,
+                array $models,
+            ) => ScopedReadMeter::ofCurrentScope()->recordModel($models[0]::class),
         );
     }
 
@@ -106,7 +113,15 @@ final class ReadsServiceProvider extends ServiceProvider
     private static function countQueriesOn(Connection $connection): void
     {
         $connection->beforeExecuting(
-            static fn (string $query, array $bindings, Connection $on) => ScopedReadMeter::ofCurrentScope()->recordQuery((string) $on->getName(), ! self::onlyReads($query), $query),
+            static fn (
+                string $query,
+                array $bindings,
+                Connection $on,
+            ) => ScopedReadMeter::ofCurrentScope()->recordQuery(
+                (string) $on->getName(),
+                ! self::onlyReads($query),
+                $query,
+            ),
         );
     }
 

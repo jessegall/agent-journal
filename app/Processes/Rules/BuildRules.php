@@ -32,14 +32,20 @@ final readonly class BuildRules
                 'core.vite.build',
                 new ProgramSpellings('vite'),
                 ['build'],
-                ArgumentGrammar::none()->withOptions(OptionGrammar::valued(OperandType::Name, '--mode'), OptionGrammar::flag('--watch')),
+                ArgumentGrammar::none()->withOptions(
+                    OptionGrammar::valued(OperandType::Name, '--mode'),
+                    OptionGrammar::flag('--watch'),
+                ),
                 $build,
             ),
             $this->build(
                 'core.vp.build',
                 new ProgramSpellings('vp'),
                 ['build'],
-                ArgumentGrammar::none()->withOptions(OptionGrammar::valued(OperandType::Name, '--mode'), OptionGrammar::flag('--watch')),
+                ArgumentGrammar::none()->withOptions(
+                    OptionGrammar::valued(OperandType::Name, '--mode'),
+                    OptionGrammar::flag('--watch'),
+                ),
                 $build,
             ),
             $this->build('core.pnpm.build', new ProgramSpellings('pnpm'), ['build'], ArgumentGrammar::none(), $build),
@@ -69,7 +75,9 @@ final readonly class BuildRules
                 'core.go.build',
                 new ProgramSpellings('go'),
                 ['build'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(OptionGrammar::valued(OperandType::Path, '-o')),
+                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+                    OptionGrammar::valued(OperandType::Path, '-o'),
+                ),
                 $build,
             ),
             $this->build(

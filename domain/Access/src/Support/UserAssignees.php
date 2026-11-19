@@ -76,7 +76,10 @@ final readonly class UserAssignees implements AssigneeProvider
     {
         $this->actors->actor();
         $ids = array_values(
-            array_filter($this->recipients->userIds(), fn (string $id) => $page->afterId === null || $id > $page->afterId),
+            array_filter(
+                $this->recipients->userIds(),
+                fn (string $id) => $page->afterId === null || $id > $page->afterId,
+            ),
         );
         sort($ids);
         $shownIds = array_slice($ids, 0, $page->limit);

@@ -153,7 +153,12 @@ trait CommittedHookStack
     {
         $this->app->instance(
             AgentContext::class,
-            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()), null),
+            new AgentContext(
+                TestIds::of(1),
+                TestIds::of(10),
+                new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()),
+                null,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(1)),

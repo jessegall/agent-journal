@@ -74,7 +74,11 @@ final class StoredOutputReadTest extends TestCase
     {
         $this->assertCount(
             1,
-            $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output/search", ['part' => 1, 'text' => 'error'])->json('offsets'),
+            $this->signed(
+                $this->launch,
+                "/agent/processes/runs/{$this->run->id}/output/search",
+                ['part' => 1, 'text' => 'error'],
+            )->json('offsets'),
         );
         $summary = $this->signed($this->launch, "/agent/processes/runs/{$this->run->id}/output/summary", []);
         $this->assertSame(1, $summary->json('parts.0.code'), (string) $summary->getContent());

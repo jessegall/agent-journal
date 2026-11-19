@@ -31,7 +31,11 @@ final class McpRouteTest extends TestCase
         $result = $this->sendMcp(
             $this->launch,
             'initialize',
-            ['protocolVersion' => '2025-11-25', 'capabilities' => (object) [], 'clientInfo' => ['name' => 'test', 'version' => '1']],
+            [
+                'protocolVersion' => '2025-11-25',
+                'capabilities' => (object) [],
+                'clientInfo' => ['name' => 'test', 'version' => '1'],
+            ],
         )
             ->assertOk()
             ->json('result');
@@ -61,7 +65,18 @@ final class McpRouteTest extends TestCase
     {
         $this->assertSame(
             413,
-            $this->sendMcpBody($this->launch, json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping', 'params' => ['filler' => str_repeat('a', 300 * 1024)]], JSON_THROW_ON_ERROR))->status(),
+            $this->sendMcpBody(
+                $this->launch,
+                json_encode(
+                    [
+                        'jsonrpc' => '2.0',
+                        'id' => 1,
+                        'method' => 'ping',
+                        'params' => ['filler' => str_repeat('a', 300 * 1024)],
+                    ],
+                    JSON_THROW_ON_ERROR,
+                ),
+            )->status(),
         );
     }
 
@@ -71,7 +86,10 @@ final class McpRouteTest extends TestCase
 
         $this->assertSame(
             400,
-            $this->sendMcpBody($this->launch, '{"jsonrpc":"2.0","id":1,"method":"ping","params":{"deep":'.$deep.'}}')->status(),
+            $this->sendMcpBody(
+                $this->launch,
+                '{"jsonrpc":"2.0","id":1,"method":"ping","params":{"deep":'.$deep.'}}',
+            )->status(),
         );
     }
 
@@ -95,7 +113,12 @@ final class McpRouteTest extends TestCase
 
         $this->assertSame(['POST'], $route->methods());
         $this->assertSame(
-            ['journal.agent', 'App\Http\Middleware\Mcp\LimitMcpMessage', 'App\Http\Middleware\Mcp\SetCallDeadline', 'throttle:journal-mcp'],
+            [
+                'journal.agent',
+                'App\Http\Middleware\Mcp\LimitMcpMessage',
+                'App\Http\Middleware\Mcp\SetCallDeadline',
+                'throttle:journal-mcp',
+            ],
             array_slice($route->middleware(), -4),
         );
         $this->assertContains('Laravel\Mcp\Server\Middleware\ValidateOrigin', $route->middleware());
@@ -111,7 +134,11 @@ final class McpRouteTest extends TestCase
     {
         $this->assertSame(
             ['overview_read', 'capabilities_read'],
-            array_slice(array_column($this->sendMcp($this->launch, 'tools/list')->assertOk()->json('result.tools'), 'name'), 0, 2),
+            array_slice(
+                array_column($this->sendMcp($this->launch, 'tools/list')->assertOk()->json('result.tools'), 'name'),
+                0,
+                2,
+            ),
         );
         $this->sendMcp($this->launch, 'resources/list')->assertOk()->assertJsonPath(
             'result.resources.0.uri',

@@ -84,13 +84,17 @@ final class ShareRefreshAndRetryTest extends TestCase
         $this->assertSame(Share::FIRST_SCOPE_VERSION + 1, $refreshed->scope_version);
         $this->assertSame(
             [[TestIds::of(102), Share::FIRST_SCOPE_VERSION + 1]],
-            ShareMember::query()->readAll('one member')->get()->map(fn (ShareMember $member) => [$member->target_id, $member->scope_version])->all(),
+            ShareMember::query()->readAll('one member')->get()->map(
+                fn (ShareMember $member) => [$member->target_id, $member->scope_version],
+            )->all(),
         );
         $this->assertSame($share->token_digest, $refreshed->token_digest);
         $this->assertSame($share->token_ciphertext, $refreshed->token_ciphertext);
         $this->assertEquals($share->expires_at, $refreshed->expires_at);
         $this->assertTrue(
-            ShareAudit::query()->readAll('two audits')->get()->contains(fn (ShareAudit $audit) => $audit->type === ShareAuditType::ScopeRefreshed),
+            ShareAudit::query()->readAll('two audits')->get()->contains(
+                fn (ShareAudit $audit) => $audit->type === ShareAuditType::ScopeRefreshed,
+            ),
         );
     }
 
@@ -100,7 +104,9 @@ final class ShareRefreshAndRetryTest extends TestCase
         $saved = $this->preview(TestActors::record('binders.binder', 2), []);
 
         $this->assertThrows(
-            fn () => $this->runOwner(fn (string $key) => new RefreshShareScope($share->id, $saved->previewId, $saved->checksum, $key)),
+            fn () => $this->runOwner(
+                fn (string $key) => new RefreshShareScope($share->id, $saved->previewId, $saved->checksum, $key),
+            ),
             ShareRefreshRefused::class,
             'another record',
         );
@@ -119,7 +125,9 @@ final class ShareRefreshAndRetryTest extends TestCase
         $this->assertSame(2, ShareGatewayOperation::query()->where('type', GatewayOperationType::Open->value)->count());
         $this->assertEquals($share->expires_at, Share::query()->findOrFail($share->id)->expires_at);
         $this->assertTrue(
-            ShareAudit::query()->readAll('two audits')->get()->contains(fn (ShareAudit $audit) => $audit->type === ShareAuditType::Retried),
+            ShareAudit::query()->readAll('two audits')->get()->contains(
+                fn (ShareAudit $audit) => $audit->type === ShareAuditType::Retried,
+            ),
         );
     }
 
@@ -153,7 +161,12 @@ final class ShareRefreshAndRetryTest extends TestCase
     {
         $saved = $this->preview($this->root, $selectedIds);
         $summary = $this->runOwner(
-            fn (string $key) => new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
+            fn (string $key) => new CreateShare(
+                $saved->previewId,
+                $saved->checksum,
+                ShareDuration::STANDARD_MINUTES,
+                $key,
+            ),
         );
 
         return Share::query()->findOrFail($summary->shareId);

@@ -32,7 +32,16 @@ final class ShareListCommand extends Command
 
         $this->table(
             ['Id', 'Number', 'State', 'Record', 'Expires'],
-            array_map(fn (Share $share) => [$share->id, $share->number, $share->state->value, "{$share->root_type} {$share->root_id}", $share->expires_at->toIso8601String()], $rows),
+            array_map(
+                fn (Share $share) => [
+                    $share->id,
+                    $share->number,
+                    $share->state->value,
+                    "{$share->root_type} {$share->root_id}",
+                    $share->expires_at->toIso8601String(),
+                ],
+                $rows,
+            ),
         );
 
         if (count($found) > self::ROWS && $rows !== []) {

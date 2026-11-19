@@ -50,7 +50,12 @@ final class EngineActorTypeTest extends TestCase
 
         $this->actingAs($owner)->postJson(
             '/assignments/assign',
-            ['recordType' => 'tasks.task', 'recordId' => $task->id, 'recipientType' => 'engine', 'recipientId' => EngineActor::ID],
+            [
+                'recordType' => 'tasks.task',
+                'recordId' => $task->id,
+                'recipientType' => 'engine',
+                'recipientId' => EngineActor::ID,
+            ],
         )
             ->assertUnprocessable();
 

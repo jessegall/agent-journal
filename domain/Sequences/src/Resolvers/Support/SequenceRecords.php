@@ -9,7 +9,8 @@ use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Models\SequenceRun;
 
 /**
- * The named reads of sequence runs the Sequences domain answers for: the calling agent's own, and one the journal started.
+ * The named reads of sequence runs the Sequences domain answers for: the calling agent's own, and one the journal
+ * started.
  */
 final readonly class SequenceRecords
 {

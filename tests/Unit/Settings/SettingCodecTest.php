@@ -44,7 +44,11 @@ final class SettingCodecTest extends TestCase
         foreach (['Reviews', ' spaced ', str_repeat('é', 10)] as $text) {
             $this->assertSame(
                 $text,
-                $this->codec->decode('Reviews', $settings->title, $this->codec->encodeString('Reviews', $settings->title, $text)),
+                $this->codec->decode(
+                    'Reviews',
+                    $settings->title,
+                    $this->codec->encodeString('Reviews', $settings->title, $text),
+                ),
             );
         }
 
@@ -58,7 +62,11 @@ final class SettingCodecTest extends TestCase
         foreach ([3, 0, 10] as $number) {
             $this->assertSame(
                 $number,
-                $this->codec->decode('Reviews', $settings->retryLimit, $this->codec->encodeInteger('Reviews', $settings->retryLimit, $number)),
+                $this->codec->decode(
+                    'Reviews',
+                    $settings->retryLimit,
+                    $this->codec->encodeInteger('Reviews', $settings->retryLimit, $number),
+                ),
             );
         }
 
@@ -75,28 +83,44 @@ final class SettingCodecTest extends TestCase
         foreach (['short', 'long'] as $style) {
             $this->assertSame(
                 $style,
-                $this->codec->decode('Reviews', $settings->summaryStyle, $this->codec->encodeOption('Reviews', $settings->summaryStyle, $style)),
+                $this->codec->decode(
+                    'Reviews',
+                    $settings->summaryStyle,
+                    $this->codec->encodeOption('Reviews', $settings->summaryStyle, $style),
+                ),
             );
         }
 
         foreach ([0, 1] as $priority) {
             $this->assertSame(
                 $priority,
-                $this->codec->decode('Reviews', $settings->priority, $this->codec->encodeOption('Reviews', $settings->priority, $priority)),
+                $this->codec->decode(
+                    'Reviews',
+                    $settings->priority,
+                    $this->codec->encodeOption('Reviews', $settings->priority, $priority),
+                ),
             );
         }
 
         foreach (ReviewMode::cases() as $mode) {
             $this->assertSame(
                 $mode,
-                $this->codec->decode('Reviews', $settings->reviewMode, $this->codec->encodeEnum('Reviews', $settings->reviewMode, $mode)),
+                $this->codec->decode(
+                    'Reviews',
+                    $settings->reviewMode,
+                    $this->codec->encodeEnum('Reviews', $settings->reviewMode, $mode),
+                ),
             );
         }
 
         foreach (ReviewLevel::cases() as $level) {
             $this->assertSame(
                 $level,
-                $this->codec->decode('Reviews', $settings->reviewLevel, $this->codec->encodeEnum('Reviews', $settings->reviewLevel, $level)),
+                $this->codec->decode(
+                    'Reviews',
+                    $settings->reviewLevel,
+                    $this->codec->encodeEnum('Reviews', $settings->reviewLevel, $level),
+                ),
             );
         }
     }
@@ -123,7 +147,9 @@ final class SettingCodecTest extends TestCase
     public function test_an_int_backed_enum_is_stored_as_its_number_and_read_as_its_case(): void
     {
         $this->assertTrue(
-            EncodedValue::of(2)->equals($this->codec->encodeEnum('Reviews', $this->settings->reviewLevel, ReviewLevel::SecondPass)),
+            EncodedValue::of(2)->equals(
+                $this->codec->encodeEnum('Reviews', $this->settings->reviewLevel, ReviewLevel::SecondPass),
+            ),
         );
         $this->assertSame(
             ReviewLevel::SecondPass,
@@ -190,37 +216,85 @@ final class SettingCodecTest extends TestCase
     {
         return [
             'an integer above its maximum' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeInteger('Reviews', $settings->retryLimit, 11),
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeInteger('Reviews', $settings->retryLimit, 11),
                 'retry_limit',
             ],
             'an integer below its minimum' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeInteger('Reviews', $settings->retryLimit, -1),
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeInteger('Reviews', $settings->retryLimit, -1),
                 'retry_limit',
             ],
             'a decimal past its scale' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('0.501')),
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeDecimal(
+                    'Reviews',
+                    $settings->weight,
+                    Decimal::parse('0.501'),
+                ),
                 'weight',
             ],
             'a decimal past its digits' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('1000')),
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeDecimal(
+                    'Reviews',
+                    $settings->weight,
+                    Decimal::parse('1000'),
+                ),
                 'weight',
             ],
             'text shorter than allowed' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeString('Reviews', $settings->title, ''),
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeString(
+                    'Reviews',
+                    $settings->title,
+                    '',
+                ),
                 'title',
             ],
             'a choice not among the options' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, 2),
-                'priority',
-            ],
+                                fn (
+                                    SettingCodec $codec,
+                                    ReviewSettings $settings,
+                                ) => $codec->encodeOption(
+                                    'Reviews',
+                                    $settings->priority,
+                                    2,
+                                ),
+                                'priority',
+                            ],
             'a choice of the other type' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, '1'),
-                'priority',
-            ],
+                                                fn (
+                                                    SettingCodec $codec,
+                                                    ReviewSettings $settings,
+                                                ) => $codec->encodeOption(
+                                                    'Reviews',
+                                                    $settings->priority,
+                                                    '1',
+                                                ),
+                                                'priority',
+                                            ],
             'a case of another enum' => [
-                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeEnum('Reviews', $settings->reviewLevel, ReviewMode::Quick),
-                'review_level',
-            ],
+                                                                fn (
+                                                                    SettingCodec $codec,
+                                                                    ReviewSettings $settings,
+                                                                ) => $codec->encodeEnum(
+                                                                    'Reviews',
+                                                                    $settings->reviewLevel,
+                                                                    ReviewMode::Quick,
+                                                                ),
+                                                                'review_level',
+                                                            ],
         ];
     }
 

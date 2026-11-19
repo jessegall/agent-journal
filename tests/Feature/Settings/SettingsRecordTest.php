@@ -96,7 +96,10 @@ final class SettingsRecordTest extends TestCase
             'entry without value' => ['{"settings":[],"toggles":[{"key":"secret_value"}]}'],
             'entry with an extra field' => ['{"settings":[{"key":"secret_value","value":1,"more":2}],"toggles":[]}'],
             'over 512 KiB' => [
-                '{"settings":[{"key":"secret_value","value":"'.str_repeat('x', SettingsDocument::MOST_BYTES).'"}],"toggles":[]}',
+                '{"settings":[{"key":"secret_value","value":"'.str_repeat(
+                    'x',
+                    SettingsDocument::MOST_BYTES,
+                ).'"}],"toggles":[]}',
             ],
         ];
     }

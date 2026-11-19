@@ -42,7 +42,9 @@ final class DomainStateTypeTest extends TestCase
 
         $this->assertSame(
             $state,
-            $type->statesFor(new StateReferences([new StateReference('reviews.reviewing', NoSubject::None)]))->stateAt(0),
+            $type->statesFor(
+                new StateReferences([new StateReference('reviews.reviewing', NoSubject::None)]),
+            )->stateAt(0),
         );
         $this->assertSame(1, $type->schemaVersion());
         $this->assertTrue($type->isEnabled());

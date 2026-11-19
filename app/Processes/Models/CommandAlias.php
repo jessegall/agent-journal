@@ -52,7 +52,12 @@ final class CommandAlias extends Model implements ReadableModel
             ['project_key' => $projectKey, 'name' => $name, 'revision' => 0],
         );
         $alias->fill(
-            ['line' => $line, 'argument_grammar' => $arguments, 'body_digest' => hash('sha256', $line), 'revision' => $alias->revision + 1],
+            [
+                'line' => $line,
+                'argument_grammar' => $arguments,
+                'body_digest' => hash('sha256', $line),
+                'revision' => $alias->revision + 1,
+            ],
         )->save();
 
         return $alias;

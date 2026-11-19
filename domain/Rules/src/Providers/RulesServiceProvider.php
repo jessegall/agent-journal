@@ -28,7 +28,9 @@ final class RulesServiceProvider extends ServiceProvider
                 fn (RuleMissing $missing) => new NotFoundHttpException(previous: $missing),
             );
             $exceptions->renderable(
-                fn (RuleNotProposed $settled) => $this->app->make(Redirector::class)->back(303)->withErrors(['review' => $settled->getMessage()]),
+                fn (RuleNotProposed $settled) => $this->app->make(Redirector::class)->back(303)->withErrors(
+                    ['review' => $settled->getMessage()],
+                ),
             );
         }
 

@@ -13,7 +13,8 @@ use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 
 /**
- * Pushes states onto the calling agent's own stack, always inside the caller's stack transaction and under the stack's row lock.
+ * Pushes states onto the calling agent's own stack, always inside the caller's stack transaction and under the stack's
+ * row lock.
  */
 final readonly class AgentStacks implements AgentStack
 {

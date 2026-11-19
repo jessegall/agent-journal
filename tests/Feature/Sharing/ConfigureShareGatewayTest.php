@@ -117,7 +117,13 @@ final class ConfigureShareGatewayTest extends TestCase
 
         $this->artisan(
             'share:gateway',
-            ['gateway' => FakeShareGateway::KEY, '--program-version' => '1.0.0', '--host' => 'fake.test', '--origin' => FakeShareGateway::PUBLIC_ORIGIN, '--secret' => ['fake-login']],
+            [
+                'gateway' => FakeShareGateway::KEY,
+                '--program-version' => '1.0.0',
+                '--host' => 'fake.test',
+                '--origin' => FakeShareGateway::PUBLIC_ORIGIN,
+                '--secret' => ['fake-login'],
+            ],
         )
             ->expectsQuestion('Enter the secret fake-login', self::SECRET)
             ->expectsOutputToContain('is at version 1')
@@ -150,7 +156,16 @@ final class ConfigureShareGatewayTest extends TestCase
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(
-            new ConfigureShareGateway($gatewayKey, '1.0.0', 'fake.test', FakeShareGateway::PUBLIC_ORIGIN, 8100, $secretReferences, $makeDefault, $key),
+            new ConfigureShareGateway(
+                $gatewayKey,
+                '1.0.0',
+                'fake.test',
+                FakeShareGateway::PUBLIC_ORIGIN,
+                8100,
+                $secretReferences,
+                $makeDefault,
+                $key,
+            ),
         );
     }
 }

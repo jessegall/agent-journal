@@ -17,7 +17,10 @@ final readonly class CredentialLookup
     public function sessionFor(string $token): AgentSession
     {
         $session = AgentSession::query()->with(['credential', 'agent'])
-            ->whereHas('credential', fn (Builder $credential) => $credential->where('token_hash', LaunchCredentials::hashOf($token)))
+            ->whereHas(
+                'credential',
+                fn (Builder $credential) => $credential->where('token_hash', LaunchCredentials::hashOf($token)),
+            )
             ->first();
 
         if ($session === null) {

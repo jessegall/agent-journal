@@ -28,7 +28,10 @@ final class SectionMissing extends InvalidArgumentException implements CommandRe
     public static function ambiguous(string $heading, array $numbers): self
     {
         return new self(
-            count($numbers)." sections are headed {$heading} (sections ".implode(', ', $numbers).'); name the section by its number.',
+            count($numbers)." sections are headed {$heading} (sections ".implode(
+                ', ',
+                $numbers,
+            ).'); name the section by its number.',
         );
     }
 

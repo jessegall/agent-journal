@@ -56,7 +56,12 @@ final class AssigneesListTool extends JournalReadTool
         $nextActions = $list->nextAfterId === null ? [] : [new NextAction($this->name(), [
             'type' => $type->value,
             'continuation' => $this->continuations->issue(
-                new Continuation($this->name(), $type->value, ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']], 0),
+                new Continuation(
+                    $this->name(),
+                    $type->value,
+                    ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']],
+                    0,
+                ),
             ),
         ])];
 

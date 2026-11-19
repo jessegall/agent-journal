@@ -37,7 +37,12 @@ final class CommentsServiceProvider extends ServiceProvider
         );
         $records->register(Comment::LINK_TYPE, CommentLinkRecords::class);
         $shares->register(
-            new ShareRecordRegistration(Comment::LINK_TYPE, Comment::class, CommentShareProvider::class, [CommentShareProvider::CAPABILITY]),
+            new ShareRecordRegistration(
+                Comment::LINK_TYPE,
+                Comment::class,
+                CommentShareProvider::class,
+                [CommentShareProvider::CAPABILITY],
+            ),
         );
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/comments.php');
 

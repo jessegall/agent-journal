@@ -113,7 +113,11 @@ final class ConversationVisitTest extends TestCase
         );
         $this->assertSame(
             [],
-            $this->app->make(ProgramConversationResolver::class)->conversations($this->agent->id, HookProgram::ClaudeCode, 'helpers.job 2'),
+            $this->app->make(ProgramConversationResolver::class)->conversations(
+                $this->agent->id,
+                HookProgram::ClaudeCode,
+                'helpers.job 2',
+            ),
         );
     }
 

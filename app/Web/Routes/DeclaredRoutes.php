@@ -32,7 +32,11 @@ final readonly class DeclaredRoutes
 
             foreach ($this->declarations->actions() as $action) {
                 $this->requireVisibility(
-                    $router->match([$action->action->method->value], $action->uri, $action->action->controller)->name($action->routeName),
+                    $router->match(
+                        [$action->action->method->value],
+                        $action->uri,
+                        $action->action->controller,
+                    )->name($action->routeName),
                     $action->guard->key,
                 );
             }
@@ -53,7 +57,10 @@ final readonly class DeclaredRoutes
             }
 
             $taken = array_values(
-                array_intersect([explode('/', $route->uri())[0], explode('.', (string) $route->getName())[0]], array_keys($prefixes)),
+                array_intersect(
+                    [explode('/', $route->uri())[0], explode('.', (string) $route->getName())[0]],
+                    array_keys($prefixes),
+                ),
             );
 
             if ($taken !== [] && ! $this->ownedBy($route, $prefixes[$taken[0]])) {

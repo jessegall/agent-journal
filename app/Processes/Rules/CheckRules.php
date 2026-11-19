@@ -85,20 +85,27 @@ final readonly class CheckRules
                 OptionGrammar::flag('--changes'), OptionGrammar::flag('--changed-files'), OptionGrammar::valued(
                     OperandType::Revision,
                     '--branch',
-                ), OptionGrammar::valued(OperandType::Name, '--sin'), OptionGrammar::valued(OperandType::Text, '--repent'),
+                ), OptionGrammar::valued(OperandType::Name, '--sin'), OptionGrammar::valued(
+                    OperandType::Text,
+                    '--repent',
+                ),
             ), $read),
             $this->check(
                 'core.vue-tsc',
                 new ProgramSpellings('vue-tsc'),
                 [],
-                ArgumentGrammar::optionWithOperands('--noEmit')->withOptions(OptionGrammar::valued(OperandType::Path, '-p', '--project')),
+                ArgumentGrammar::optionWithOperands('--noEmit')->withOptions(
+                    OptionGrammar::valued(OperandType::Path, '-p', '--project'),
+                ),
                 $read,
             ),
             $this->check(
                 'core.tsc',
                 new ProgramSpellings('tsc'),
                 [],
-                ArgumentGrammar::optionWithOperands('--noEmit')->withOptions(OptionGrammar::valued(OperandType::Path, '-p', '--project')),
+                ArgumentGrammar::optionWithOperands('--noEmit')->withOptions(
+                    OptionGrammar::valued(OperandType::Path, '-p', '--project'),
+                ),
                 $read,
             ),
             $this->check(
@@ -127,14 +134,22 @@ final readonly class CheckRules
                 'core.go.test',
                 new ProgramSpellings('go'),
                 ['test'],
-                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(OptionGrammar::valued(OperandType::Pattern, '-run'), OptionGrammar::flag('-v'), OptionGrammar::flag('-race'), OptionGrammar::valued(OperandType::Count, '-count')),
+                ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+                    OptionGrammar::valued(OperandType::Pattern, '-run'),
+                    OptionGrammar::flag('-v'),
+                    OptionGrammar::flag('-race'),
+                    OptionGrammar::valued(OperandType::Count, '-count'),
+                ),
                 $read,
             ),
             $this->check(
                 'core.cargo.test',
                 new ProgramSpellings('cargo'),
                 ['test'],
-                ArgumentGrammar::operands(OperandType::Pattern)->withOptions(OptionGrammar::flag('--release'), OptionGrammar::flag('-q')),
+                ArgumentGrammar::operands(OperandType::Pattern)->withOptions(
+                    OptionGrammar::flag('--release'),
+                    OptionGrammar::flag('-q'),
+                ),
                 $read,
             ),
             $this->check('core.yarn.test', new ProgramSpellings('yarn'), ['test'], ArgumentGrammar::none(), $read),
@@ -170,7 +185,10 @@ final readonly class CheckRules
             OptionGrammar::valued(
                 OperandType::Pattern,
                 '--filter',
-            ), OptionGrammar::valued(OperandType::Name, '--testsuite'), OptionGrammar::valued(OperandType::Name, '--group'),
+            ), OptionGrammar::valued(
+                OperandType::Name,
+                '--testsuite',
+            ), OptionGrammar::valued(OperandType::Name, '--group'),
             OptionGrammar::valued(OperandType::Count, '--processes'), OptionGrammar::valued(
                 OperandType::Path,
                 '-c',

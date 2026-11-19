@@ -21,7 +21,12 @@ final readonly class CollectionChildren implements NavigationChildren
         )));
 
         return array_map(
-fn (string $month) => NavigationItem::page("month-{$month}", $month, page: 'collection', route: ['collection' => $month]),
+fn (string $month) => NavigationItem::page(
+"month-{$month}",
+ $month,
+ page: 'collection',
+ route: ['collection' => $month],
+),
  $months,
 );
     }

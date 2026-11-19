@@ -97,7 +97,9 @@ final class AssignmentResolversTest extends TestCase
         $resolver = $this->app->make(AssignmentResolver::class);
 
         $this->assertThrows(
-            fn () => $resolver->assignmentsFor(array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 101))),
+            fn () => $resolver->assignmentsFor(
+                array_map(fn (int $number) => TestActors::record('tasks.task', $number), range(1, 101)),
+            ),
             InvalidAssignmentPage::class,
         );
         $this->assertThrows(

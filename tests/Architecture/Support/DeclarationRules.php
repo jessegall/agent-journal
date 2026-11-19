@@ -55,7 +55,8 @@ final readonly class DeclarationRules
     }
 
     /**
-     * Files of the application folder that lie in no domain, in none of the shared places and not on the starter-kit list.
+     * Files of the application folder that lie in no domain, in none of the shared places and not on the starter-kit
+     * list.
      *
      * @param  list<string>  $files
      * @param  list<string>  $sharedFolders

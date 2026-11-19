@@ -85,7 +85,10 @@ final readonly class ExecutableCheck
     private function resolvedPath(ProgramIdentity $program, ExecutionContext $context): string
     {
         if (str_contains($program->original, '/')) {
-            return str_starts_with($program->original, '/') ? $program->original : rtrim($context->workingFolder, '/').'/'.preg_replace(
+            return str_starts_with($program->original, '/') ? $program->original : rtrim(
+                $context->workingFolder,
+                '/',
+            ).'/'.preg_replace(
                 '#^(\./)+#',
                 '',
                 $program->original,

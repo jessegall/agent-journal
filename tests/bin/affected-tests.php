@@ -139,8 +139,20 @@ function configurationFor(string $root, array $folders): string
     }
 
     $configuration = str_replace(
-        ['"vendor/', '"tests/bootstrap.php"', '<directory>app</directory>', '<directory>domain</directory>', '<directory>tests/'],
-        ["\"{$root}/vendor/", "\"{$root}/tests/bootstrap.php\"", "<directory>{$root}/app</directory>", "<directory>{$root}/domain</directory>", "<directory>{$root}/tests/"],
+        [
+            '"vendor/',
+            '"tests/bootstrap.php"',
+            '<directory>app</directory>',
+            '<directory>domain</directory>',
+            '<directory>tests/',
+        ],
+        [
+            "\"{$root}/vendor/",
+            "\"{$root}/tests/bootstrap.php\"",
+            "<directory>{$root}/app</directory>",
+            "<directory>{$root}/domain</directory>",
+            "<directory>{$root}/tests/",
+        ],
         $configuration,
     );
     $configuration = str_replace('<directory>domain/', "<directory>{$root}/domain/", $configuration);

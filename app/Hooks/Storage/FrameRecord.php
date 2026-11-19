@@ -8,7 +8,8 @@ use App\Hooks\Decisions\StateReference;
 use Carbon\CarbonImmutable;
 
 /**
- * A frame as it is stored: its id, the reference its state is rebuilt from, whether it is the bottom, the version it was
+ * A frame as it is stored: its id, the reference its state is rebuilt from, whether it is the bottom, the version it
+ * was
  * stored in, and the server time it entered the stack.
  */
 final readonly class FrameRecord

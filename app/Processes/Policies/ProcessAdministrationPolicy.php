@@ -9,7 +9,8 @@ use App\Actors\Contracts\Policy;
 use BackedEnum;
 
 /**
- * Who may administer command rules, their requests, approvals and process output: only the owner holds the ability, so the grants decide.
+ * Who may administer command rules, their requests, approvals and process output: only the owner holds the ability, so
+ * the grants decide.
  */
 final readonly class ProcessAdministrationPolicy implements Policy
 {

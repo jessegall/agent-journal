@@ -49,7 +49,9 @@ final class AssignableRecordsTest extends TestCase
 
         $this->assertTrue($resolved->assignmentIdentity()->isSameAs(new RecordIdentity('tasks.task', $task->id)));
         $this->assertThrows(
-            fn () => $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable(TestActors::record('tasks.task', 999999)),
+            fn () => $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable(
+                TestActors::record('tasks.task', 999999),
+            ),
             RecordUnavailable::class,
         );
     }

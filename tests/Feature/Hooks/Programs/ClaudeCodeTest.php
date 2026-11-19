@@ -98,7 +98,11 @@ final class ClaudeCodeTest extends TestCase
         $reply = json_decode($this->render('shell command', Decision::deny('Save it first.'))->stdout, true);
 
         $this->assertSame(
-            ['hookEventName' => 'PreToolUse', 'permissionDecision' => 'deny', 'permissionDecisionReason' => 'Save it first.'],
+            [
+                'hookEventName' => 'PreToolUse',
+                'permissionDecision' => 'deny',
+                'permissionDecisionReason' => 'Save it first.',
+            ],
             $reply['hookSpecificOutput'],
         );
     }

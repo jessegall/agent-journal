@@ -29,7 +29,8 @@ use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestActors;
 
 /**
- * The one ready bottom state: it leaves every shell line to Core's admission, answers every hook, and lets a file change
+ * The one ready bottom state: it leaves every shell line to Core's admission, answers every hook, and lets a file
+ * change
  * only when the agent's profile grants it.
  */
 final class ReadyStateTest extends TestCase

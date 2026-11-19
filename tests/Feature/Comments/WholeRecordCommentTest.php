@@ -97,7 +97,14 @@ final class WholeRecordCommentTest extends TestCase
     public function test_a_signed_in_user_comments_and_reads_the_comments_over_http(): void
     {
         $this->actingAs($this->owner)
-            ->post('/comments/post', ['target' => "note {$this->note->number}", 'body' => 'Over the wire.', 'submission_key' => (string) Str::uuid()])
+            ->post(
+                '/comments/post',
+                [
+                    'target' => "note {$this->note->number}",
+                    'body' => 'Over the wire.',
+                    'submission_key' => (string) Str::uuid(),
+                ],
+            )
             ->assertRedirect();
 
         $this->actingAs($this->owner)
@@ -112,10 +119,33 @@ final class WholeRecordCommentTest extends TestCase
         $note = "note {$this->note->number}";
 
         $this->actingAs($this->owner)
-            ->postJson('/comments/post', ['target' => $note, 'body' => 'Mixed.', 'submission_key' => (string) Str::uuid(), 'version' => '1', 'section' => 3, 'quote' => 'x', 'first_line' => 1, 'last_line' => 1, 'start_offset' => 0, 'end_offset' => 1])
+            ->postJson(
+                '/comments/post',
+                [
+                    'target' => $note,
+                    'body' => 'Mixed.',
+                    'submission_key' => (string) Str::uuid(),
+                    'version' => '1',
+                    'section' => 3,
+                    'quote' => 'x',
+                    'first_line' => 1,
+                    'last_line' => 1,
+                    'start_offset' => 0,
+                    'end_offset' => 1,
+                ],
+            )
             ->assertUnprocessable();
         $this->actingAs($this->owner)
-            ->postJson('/comments/post', ['target' => $note, 'body' => 'No version.', 'submission_key' => (string) Str::uuid(), 'first_line' => 12, 'last_line' => 16])
+            ->postJson(
+                '/comments/post',
+                [
+                    'target' => $note,
+                    'body' => 'No version.',
+                    'submission_key' => (string) Str::uuid(),
+                    'first_line' => 12,
+                    'last_line' => 16,
+                ],
+            )
             ->assertUnprocessable();
 
         $this->assertSame(0, Comment::query()->count());
@@ -124,7 +154,15 @@ final class WholeRecordCommentTest extends TestCase
     public function test_an_author_field_is_refused(): void
     {
         $this->actingAs($this->owner)
-            ->postJson('/comments/post', ['target' => "note {$this->note->number}", 'body' => 'Spoofed.', 'submission_key' => (string) Str::uuid(), 'author_id' => 'someone'])
+            ->postJson(
+                '/comments/post',
+                [
+                    'target' => "note {$this->note->number}",
+                    'body' => 'Spoofed.',
+                    'submission_key' => (string) Str::uuid(),
+                    'author_id' => 'someone',
+                ],
+            )
             ->assertUnprocessable();
 
         $this->assertSame(0, Comment::query()->count());
@@ -142,13 +180,18 @@ final class WholeRecordCommentTest extends TestCase
         $this->actingAs($this->owner)
             ->getJson('/text/version?target='.urlencode("note {$this->note->number}"))
             ->assertForbidden()
-            ->assertJsonPath('message', 'A notes.note has no text to read or point at; a comment on it is about the whole record.');
+            ->assertJsonPath(
+                'message',
+                'A notes.note has no text to read or point at; a comment on it is about the whole record.',
+            );
     }
 
     public function test_comment_cards_come_in_one_batch_and_hide_comments_on_unreadable_records(): void
     {
         $ids = array_map(
-            fn (int $index) => $this->app->make(CommandBus::class)->run(new PostComment($this->target(), "Comment {$index}.", (string) Str::uuid())),
+            fn (int $index) => $this->app->make(CommandBus::class)->run(
+                new PostComment($this->target(), "Comment {$index}.", (string) Str::uuid()),
+            ),
             range(1, 3),
         );
         $wanted = [

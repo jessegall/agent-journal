@@ -124,7 +124,10 @@ final class ShellCorpusTest extends TestCase
     {
         usort(
             $parts,
-            fn (ShellNode $first, ShellNode $second) => [$first->range->start, $first->range->end] <=> [$second->range->start, $second->range->end],
+            fn (ShellNode $first, ShellNode $second) => [$first->range->start, $first->range->end] <=> [
+                $second->range->start,
+                $second->range->end,
+            ],
         );
 
         return $parts;

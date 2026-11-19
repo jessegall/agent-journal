@@ -59,7 +59,10 @@ final class UserStacksTest extends TestCase
         DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
         Event::listen(
             StateTypesRequested::class,
-            fn (StateTypesRequested $event) => $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false))),
+            fn (StateTypesRequested $event) => $event->registry->register(
+                'test.switched_off',
+                new ClosureStateLoader(fn () => new SwitchableState(false)),
+            ),
         );
         $this->target = $this->targetOf($this->launch());
     }

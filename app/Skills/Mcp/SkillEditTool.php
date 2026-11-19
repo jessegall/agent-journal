@@ -56,7 +56,12 @@ final class SkillEditTool extends JournalWriteTool
         );
 
         return ToolResult::ok(
-            $this->authoring->receipt($this->commands->run(new ReviseSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId, $draft)), $requestId),
+            $this->authoring->receipt(
+                $this->commands->run(
+                    new ReviseSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId, $draft),
+                ),
+                $requestId,
+            ),
             [],
         );
     }

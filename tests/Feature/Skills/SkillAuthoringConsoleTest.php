@@ -45,7 +45,12 @@ final class SkillAuthoringConsoleTest extends TestCase
     {
         $this->artisan(
             'skill:make',
-            ['key' => 'user-review-notes', '--description' => 'Review project notes', '--conditions' => self::REVIEWERS, '--body' => "## Notes\n\nRead the notes first."],
+            [
+                'key' => 'user-review-notes',
+                '--description' => 'Review project notes',
+                '--conditions' => self::REVIEWERS,
+                '--body' => "## Notes\n\nRead the notes first.",
+            ],
         )
             ->expectsOutputToContain('Request id: ')
             ->expectsOutputToContain('revision 1 saved; publication pending.')
@@ -96,14 +101,26 @@ final class SkillAuthoringConsoleTest extends TestCase
     {
         $this->artisan(
             'skill:make',
-            ['key' => 'user-mixed', '--description' => 'Mixed', '--body' => 'Text.', '--conditions' => self::REVIEWERS, '--ability' => [self::DISPATCH]],
+            [
+                'key' => 'user-mixed',
+                '--description' => 'Mixed',
+                '--body' => 'Text.',
+                '--conditions' => self::REVIEWERS,
+                '--ability' => [self::DISPATCH],
+            ],
         )
             ->expectsOutputToContain('cannot be mixed with audience flags')
             ->assertFailed();
 
         $this->artisan(
             'skill:make',
-            ['key' => 'user-codex-main', '--description' => 'Codex main', '--body' => 'Text.', '--ability' => [self::DISPATCH], '--program' => ['codex']],
+            [
+                'key' => 'user-codex-main',
+                '--description' => 'Codex main',
+                '--body' => 'Text.',
+                '--ability' => [self::DISPATCH],
+                '--program' => ['codex'],
+            ],
         )->assertSuccessful();
 
         Artisan::call('skill:revision', ['number' => 'user-codex-main', 'revision' => 1]);

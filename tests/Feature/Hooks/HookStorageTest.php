@@ -168,7 +168,12 @@ final class HookStorageTest extends TestCase
 
         $this->app->instance(
             AgentContext::class,
-            new AgentContext(TestIds::of(7), TestIds::of(9), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+            new AgentContext(
+                TestIds::of(7),
+                TestIds::of(9),
+                new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
+                null,
+            ),
         );
     }
 

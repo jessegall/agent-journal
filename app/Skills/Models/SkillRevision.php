@@ -43,7 +43,20 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable $created_at
  */
 #[Fillable(
-    ['skill_id', 'revision', 'name', 'description', 'sections', 'condition', 'condition_version', 'author_type', 'author_id', 'source_key', 'source_digest', 'input_digest'],
+    [
+        'skill_id',
+        'revision',
+        'name',
+        'description',
+        'sections',
+        'condition',
+        'condition_version',
+        'author_type',
+        'author_id',
+        'source_key',
+        'source_digest',
+        'input_digest',
+    ],
 )]
 final class SkillRevision extends Model implements ReadableModel
 {
@@ -162,7 +175,11 @@ final class SkillRevision extends Model implements ReadableModel
             $this->name,
             $this->description,
             array_map(
-                fn (SkillSection $section) => new SectionDraft($section->key, $section->heading, $section->storedText()),
+                fn (SkillSection $section) => new SectionDraft(
+                    $section->key,
+                    $section->heading,
+                    $section->storedText(),
+                ),
                 $this->sections,
             ),
             json_encode($this->condition, JSON_THROW_ON_ERROR),

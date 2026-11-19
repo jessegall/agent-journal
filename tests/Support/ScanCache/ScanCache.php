@@ -9,7 +9,8 @@ use Tests\Architecture\Support\ParsedFile;
 
 /**
  * Keeps each file's findings for each scan on disk, keyed by its path with the hash of the content they were read
- * from, so a run parses only the files that changed since the last one and a changed file replaces its old entry. Parallel workers each write a whole new cache file and rename it into place.
+ * from, so a run parses only the files that changed since the last one and a changed file replaces its old entry.
+ * Parallel workers each write a whole new cache file and rename it into place.
  */
 final class ScanCache
 {

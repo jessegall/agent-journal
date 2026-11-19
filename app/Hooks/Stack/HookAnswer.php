@@ -9,7 +9,8 @@ use App\Hooks\Enums\AnswerType;
 use App\Hooks\Storage\WalkStep;
 
 /**
- * What one walk ends with: the answering decision, the context every visited state added, and the steps taken, with the stack as the walk left it.
+ * What one walk ends with: the answering decision, the context every visited state added, and the steps taken, with the
+ * stack as the walk left it.
  */
 final readonly class HookAnswer
 {
@@ -25,7 +26,8 @@ final readonly class HookAnswer
     ) {}
 
     /**
-     * The same walk answered by another decision on another stack, such as a refused rewrite on the stack from before it.
+     * The same walk answered by another decision on another stack, such as a refused rewrite on the stack from before
+     * it.
      */
     public function replacedBy(Decision $decision, AgentStack $stack): self
     {
@@ -58,7 +60,8 @@ final readonly class HookAnswer
     }
 
     /**
-     * This rewrite, accepted after its replacement was walked: the replacement's stack and the context and steps of both walks.
+     * This rewrite, accepted after its replacement was walked: the replacement's stack and the context and steps of
+     * both walks.
      */
     public function acceptedWith(self $replacement): self
     {

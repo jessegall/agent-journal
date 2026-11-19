@@ -59,7 +59,13 @@ final class ConversationVisit extends Model implements ReadableModel
         $next = (int) self::query()->where('session_id', $session->id)->max('sequence_number') + 1;
 
         return self::query()->create(
-            ['session_id' => $session->id, 'conversation_id' => $conversation->id, 'sequence_number' => $next, 'event_id' => $eventId, 'observed_at' => $observedAt],
+            [
+                'session_id' => $session->id,
+                'conversation_id' => $conversation->id,
+                'sequence_number' => $next,
+                'event_id' => $eventId,
+                'observed_at' => $observedAt,
+            ],
         );
     }
 }

@@ -97,7 +97,10 @@ final readonly class OutputPolicy
     private function isBeforeTheLastCommand(ShellTree $tree, ShellNode $pipeline, ShellNode $command): bool
     {
         $commands = array_values(
-            array_filter($tree->children($pipeline->id), fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true)),
+            array_filter(
+                $tree->children($pipeline->id),
+                fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true),
+            ),
         );
 
         return $commands !== [] && $commands[array_key_last($commands)]->id !== $command->id;

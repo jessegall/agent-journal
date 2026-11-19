@@ -13,7 +13,8 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Records what a host saw a runtime do: its activity and hold in a process generation. Run for an authenticated host by the journal itself (internal, not exported).
+ * Records what a host saw a runtime do: its activity and hold in a process generation. Run for an authenticated host by
+ * the journal itself (internal, not exported).
  *
  * @extends Command<null>
  */

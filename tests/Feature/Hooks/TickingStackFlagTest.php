@@ -120,7 +120,10 @@ final class TickingStackFlagTest extends TestCase
     {
         $this->as(
             $launched,
-            fn () => $this->app->make(AgentStacks::class)->push($this->targetOf($launched), new StateReference($typeKey, new SubjectReference($subject, 1))),
+            fn () => $this->app->make(AgentStacks::class)->push(
+                $this->targetOf($launched),
+                new StateReference($typeKey, new SubjectReference($subject, 1)),
+            ),
         );
     }
 
@@ -132,7 +135,12 @@ final class TickingStackFlagTest extends TestCase
         $this->app->forgetScopedInstances();
         $this->app->instance(
             AgentContext::class,
-            new AgentContext($launched->session->agent_id, $launched->session->id, new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null),
+            new AgentContext(
+                $launched->session->agent_id,
+                $launched->session->id,
+                new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
+                null,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($launched->session->agent_id),

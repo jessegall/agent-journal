@@ -11,7 +11,8 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Records a host's liveness evidence for a runtime as its session's heartbeat. Run for an authenticated host by the journal itself (internal, not exported).
+ * Records a host's liveness evidence for a runtime as its session's heartbeat. Run for an authenticated host by the
+ * journal itself (internal, not exported).
  *
  * @extends Command<void>
  */
