@@ -9,6 +9,7 @@ use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Exceptions\UnreadablePayload;
+use App\Hooks\Inputs\ProgramToolInput;
 use PhpOption\Option;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
@@ -131,11 +132,15 @@ final class HookPayload extends Data
     }
 
     /**
-     * @return array<string, mixed>
+     * @throws UnreadablePayload
      */
-    public function toolArguments(): array
+    public function toolArguments(): ProgramToolInput
     {
-        return $this->toolInput instanceof Optional ? throw UnreadablePayload::missing('tool_input') : $this->toolInput;
+        if ($this->toolInput instanceof Optional) {
+            throw UnreadablePayload::missing('tool_input');
+        }
+
+        return new ProgramToolInput($this->toolInput);
     }
 
     /**
@@ -143,15 +148,7 @@ final class HookPayload extends Data
      */
     public function argument(string ...$names): string
     {
-        $arguments = $this->toolArguments();
-
-        foreach ($names as $name) {
-            if (is_string($arguments[$name] ?? null)) {
-                return $arguments[$name];
-            }
-        }
-
-        throw UnreadablePayload::missing(implode(' or ', $names));
+        return $this->toolArguments()->firstText(...$names);
     }
 
     /**

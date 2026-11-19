@@ -37,6 +37,8 @@ final class SkillRevisionTool extends JournalReadTool
     {
         $skill = $this->authoring->stored($arguments->text('skill'));
 
-        return ToolResult::ok($this->authoring->revisionFields($skill, $arguments->positiveInteger('revision')), []);
+        $view = $this->authoring->revisionView($skill, $arguments->positiveInteger('revision'));
+
+        return ToolResult::ok($view->toArray(), []);
     }
 }

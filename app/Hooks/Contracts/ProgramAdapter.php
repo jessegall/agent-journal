@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Hooks\Contracts;
 
 use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
-use App\Hooks\Programs\ProgramToolInput;
 use App\Hooks\Stack\HookAnswer;
 
 /**

@@ -7,7 +7,7 @@ namespace App\Communication\Support;
 use App\Actors\Support\ActorContext;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Models\ClaimAuthorization;
-use App\Assignments\Storage\AssignmentStore;
+use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\ProvedClaims;
 use App\Communication\Contracts\Inbox;
@@ -30,7 +30,7 @@ final readonly class MessageReading
     public function __construct(
         private InboxResolver $inboxes,
         private ProvedClaims $proved,
-        private AssignmentStore $store,
+        private AssignmentStorage $store,
         private ResponsibilityWriter $responsibilities,
         private Dispatcher $events,
     ) {}

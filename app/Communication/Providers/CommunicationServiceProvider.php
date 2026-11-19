@@ -24,8 +24,8 @@ use App\Communication\Support\PendingInboxWork;
 use App\Communication\Support\RegisteredInboxes;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Links\Support\LinkTypeRegistry;
+use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
-use App\Numbers\Support\NumberedTypeRegistry;
 use App\Records\Contracts\RecordProviderRegistration;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
@@ -47,7 +47,7 @@ final class CommunicationServiceProvider extends ServiceProvider
     public function boot(
         LinkTypeRegistry $links,
         RecordProviderRegistration $records,
-        NumberedTypeRegistry $numbers,
+        NumberedModelRegistration $numbers,
         PolicyCatalogue $policies,
         AssignmentRegistration $assignments,
         PendingWorkSources $pendingWork,

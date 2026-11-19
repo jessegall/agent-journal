@@ -7,6 +7,8 @@ namespace App\Skills\Support;
 use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Bus\Support\ConsoleOwner;
 use App\Skills\Contracts\SkillResolver;
+use App\Skills\Data\SkillRevisionRow;
+use App\Skills\Data\SkillRevisionView;
 use App\Skills\Data\SkillWriteReceipt;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\ShippedSkillReadOnly;
@@ -215,21 +217,13 @@ final readonly class SkillAuthoring
     }
 
     /**
-     * One numbered revision of a stored skill, as the fields a reader shows.
-     *
-     * @return array{
-     *   revision: int,
-     *   name: string,
-     *   description: string,
-     *   condition: mixed,
-     *   sections: list<array{key: string, heading: string, markdown: string}>,
-     * }
+     * One numbered revision of a stored skill, as a reader shows it.
      */
-    public function revisionFields(Skill $skill, int $number): array
+    public function revisionView(Skill $skill, int $number): SkillRevisionView
     {
         $revision = SkillRevision::numbered($skill, $number);
 
-        return [
+        return SkillRevisionView::from([
             'revision' => $revision->revision,
             'name' => $revision->name,
             'description' => $revision->description,
@@ -242,22 +236,22 @@ final readonly class SkillAuthoring
                 ],
                 $revision->sections,
             ),
-        ];
+        ]);
     }
 
     /**
-     * The latest revisions of a stored skill, newest first, as the fields a history shows.
+     * The latest revisions of a stored skill, newest first, as a history shows them.
      *
-     * @return list<array{revision: int, name: string, author: string, copied_from: string|null, saved_at: string}>
+     * @return list<SkillRevisionRow>
      */
-    public function historyFields(Skill $skill, int $rows): array
+    public function historyRows(Skill $skill, int $rows): array
     {
-        return array_map(fn (SkillRevision $revision) => [
-            'revision' => $revision->revision,
-            'name' => $revision->name,
-            'author' => "{$revision->author_type->value}:{$revision->author_id}",
-            'copied_from' => $revision->source_key,
-            'saved_at' => $revision->created_at->toIso8601String(),
-        ], SkillRevision::historyOf($skill, $rows));
+        return array_map(fn (SkillRevision $revision) => new SkillRevisionRow(
+            revision: $revision->revision,
+            name: $revision->name,
+            author: "{$revision->author_type->value}:{$revision->author_id}",
+            copiedFrom: $revision->source_key,
+            savedAt: $revision->created_at->toIso8601String(),
+        ), SkillRevision::historyOf($skill, $rows));
     }
 }

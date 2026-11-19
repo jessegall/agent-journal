@@ -12,6 +12,8 @@ use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellNode;
 use Tests\Fixtures\Processes\NoAliases;
+use Tests\Support\Processes\ShellCorpusCase;
+use Tests\Support\Processes\ShellCorpusManifest;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -33,18 +35,19 @@ final class ShellCorpusTest extends TestCase
     {
         $manifest = $this->manifest();
 
-        $this->assertSame(1, $manifest['schema_version']);
-        foreach ($manifest['fixtures'] as $name => $hash) {
+        $this->assertSame(1, $manifest->schemaVersion);
+        foreach ($manifest->fixtures as $name => $hash) {
             $this->assertSame(
                 $hash,
                 hash_file('sha256', self::CORPUS.'/'.$name),
                 "{$name} does not match the manifest",
             );
         }
-        $this->assertSame($manifest['counts']['cases'], count($this->cases()));
+        $cases = $this->cases();
+        $this->assertSame($manifest->counts->cases, count($cases));
         $this->assertSame(
-            $manifest['counts']['inputs'],
-            array_sum(array_map(fn (array $case) => count($case['origins']), $this->cases())),
+            $manifest->counts->inputs,
+            array_sum(array_map(fn (ShellCorpusCase $case) => count($case->origins), $cases)),
         );
     }
 
@@ -54,9 +57,8 @@ final class ShellCorpusTest extends TestCase
         $differences = [];
 
         foreach ($this->cases() as $case) {
-            $expected = $case['expected'];
-            $this->assertNotSame([], $expected, "{$case['id']} has no frozen expectation");
-            $tree = $syntax->parse($case['source'], ShellDialect::from($case['dialect']));
+            $expected = $case->expected;
+            $tree = $syntax->parse($case->source, $case->dialect);
 
             $actual = ['outcome' => $tree->outcome->value];
             if ($tree->outcome === ParseOutcome::Complete) {
@@ -65,14 +67,14 @@ final class ShellCorpusTest extends TestCase
                     $this->sortedParts($tree->executableParts()),
                 );
             }
-            $wanted = ['outcome' => $expected['outcome']];
-            if ($expected['outcome'] === 'complete') {
-                $wanted['parts'] = $this->sortedSpans($expected['parts']);
+            $wanted = ['outcome' => $expected->outcome];
+            if ($expected->isComplete()) {
+                $wanted['parts'] = $expected->sortedParts();
             }
 
             if ($actual !== $wanted) {
-                $differences[] = $case['id'].' '.json_encode(
-                    $case['source'],
+                $differences[] = $case->id.' '.json_encode(
+                    $case->source,
                 ).' expected '.json_encode($wanted).' read '.json_encode($actual);
             }
         }
@@ -94,17 +96,17 @@ final class ShellCorpusTest extends TestCase
         $differences = [];
 
         foreach ($this->cases() as $case) {
-            if ($case['expected']['outcome'] !== 'complete') {
+            if (! $case->expected->isComplete()) {
                 continue;
             }
             $actual = $classifier->classify(
-                $syntax->parse($case['source'], ShellDialect::from($case['dialect'])),
+                $syntax->parse($case->source, $case->dialect),
                 $context,
             )->summary()->toArray();
 
-            if ($actual !== $case['expected']['classification']) {
-                $differences[] = $case['id'].' expected '.json_encode(
-                    $case['expected']['classification'],
+            if ($actual !== $case->expected->classification) {
+                $differences[] = $case->id.' expected '.json_encode(
+                    $case->expected->classification,
                 ).' classified '.json_encode($actual);
             }
         }
@@ -133,36 +135,18 @@ final class ShellCorpusTest extends TestCase
         return $parts;
     }
 
-    /**
-     * @param  list<array{start: int, end: int}>  $spans
-     * @return list<array{start: int, end: int}>
-     */
-    private function sortedSpans(array $spans): array
+    private function manifest(): ShellCorpusManifest
     {
-        usort(
-            $spans,
-            fn (array $first, array $second) => [$first['start'], $first['end']] <=> [$second['start'], $second['end']],
-        );
-
-        return array_map(fn (array $span) => ['start' => $span['start'], 'end' => $span['end']], $spans);
+        return ShellCorpusManifest::from((string) file_get_contents(self::CORPUS.'/manifest.json'));
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function manifest(): array
-    {
-        return json_decode((string) file_get_contents(self::CORPUS.'/manifest.json'), true, 512, JSON_THROW_ON_ERROR);
-    }
-
-    /**
-     * @return list<array{id: string, source: string, dialect: string, origins: list<array<string, mixed>>, expected:
-     *   array<string, mixed>}>
+     * @return list<ShellCorpusCase>
      */
     private function cases(): array
     {
         return array_map(
-            fn (string $line) => json_decode($line, true, 512, JSON_THROW_ON_ERROR),
+            fn (string $line) => ShellCorpusCase::from($line),
             file(self::CORPUS.'/cases.jsonl', FILE_IGNORE_NEW_LINES) ?: [],
         );
     }

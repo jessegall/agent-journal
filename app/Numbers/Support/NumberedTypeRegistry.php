@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Numbers\Support;
 
 use App\Numbers\Contracts\Numbered;
+use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Exceptions\NumberedModelInvalid;
 use App\Numbers\Exceptions\NumberedModelUndeclared;
 use App\Registries\Support\Registry;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
  * Every numbered model the owners declare. Once every link type is registered, the declarations are checked, and a
  * model that is not numbered, has no link type, or shares one or a table with another stops the boot.
  */
-final class NumberedTypeRegistry
+final class NumberedTypeRegistry implements NumberedModelRegistration
 {
     /**
      * @var list<NumberedModel>

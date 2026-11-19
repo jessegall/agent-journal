@@ -13,7 +13,7 @@ use App\Ui\Exceptions\InvalidPageDeclaration;
 final readonly class ChoiceOption implements PageOption
 {
     /**
-     * @param  array<string, string>  $choices  each choice's value with its label
+     * @param  non-empty-list<PaneChoice>  $choices
      */
     private function __construct(
         public string $key,
@@ -23,7 +23,7 @@ final readonly class ChoiceOption implements PageOption
     ) {}
 
     /**
-     * @param  array<string, string>  $choices  each choice's value with its label
+     * @param  list<PaneChoice>  $choices
      */
     public static function make(string $key, string $label, array $choices, string $startsOn): self
     {
@@ -31,7 +31,9 @@ final readonly class ChoiceOption implements PageOption
             throw InvalidPageDeclaration::optionWithoutChoices($key);
         }
 
-        if (! array_key_exists($startsOn, $choices)) {
+        $values = array_map(fn (PaneChoice $choice) => $choice->value, $choices);
+
+        if (! in_array($startsOn, $values, true)) {
             throw InvalidPageDeclaration::unknownChoice($key, $startsOn);
         }
 
