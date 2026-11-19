@@ -5,6 +5,7 @@ package serving
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -24,6 +25,7 @@ type Journal interface {
 	ReportRequest(ctx context.Context, report client.RequestReport) error
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
+	ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error
 	RaiseNavigation(ctx context.Context, runtimeID string, raise client.NavigationRaise) (client.NavigationAnswer, error)
 	InterruptNavigation(ctx context.Context, navigationID string) error
 }
@@ -258,16 +260,21 @@ func (loop *Loop) startScript(ctx context.Context, runtime *liveRuntime, request
 }
 
 func (loop *Loop) runScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
-	result, err := loop.scriptResult(ctx, runtime, request)
-	if err == nil && result.Hold == contracts.HoldNavigationNeeded {
-		loop.raiseNavigation(ctx, runtime, request, *result.Script.Uncertainty)
-	} else {
-		loop.reportResult(ctx, request, result, err)
-	}
+	loop.settleScript(ctx, runtime, request)
 
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 	loop.activity(ctx, runtime, "idle")
 	loop.advance(ctx, runtime.id)
+}
+
+// settleScript runs the script and ends its request, or asks the journal at an uncertain point.
+func (loop *Loop) settleScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	result, err := loop.scriptResult(ctx, runtime, request)
+	if err == nil && result.Hold == contracts.HoldNavigationNeeded {
+		loop.raiseNavigation(ctx, runtime, request, *result.Script.Uncertainty, nil)
+		return
+	}
+	loop.reportResult(ctx, request, result, err)
 }
 
 // scriptResult runs the script on a driver that runs key scripts, reporting each step it confirms, and reads how it
@@ -309,12 +316,15 @@ func (loop *Loop) raiseNavigation(
 	runtime *liveRuntime,
 	request client.ClaimedRequest,
 	uncertainty keyscripts.Uncertainty,
+	declined []string,
 ) {
 	loop.holdRuntime(runtime)
 	for attempt := 1; ; attempt++ {
-		answer, err := loop.journal.RaiseNavigation(ctx, runtime.id, raiseOf(request, uncertainty))
+		raise := raiseOf(request, uncertainty)
+		raise.DeclinedEntries = declined
+		answer, err := loop.journal.RaiseNavigation(ctx, runtime.id, raise)
 		if err == nil {
-			loop.answerNavigation(ctx, runtime, request, uncertainty, answer)
+			loop.answerNavigation(ctx, runtime, request, uncertainty, answer, declined)
 			return
 		}
 		if errors.Is(err, client.ErrRefused) {
@@ -351,8 +361,11 @@ func (loop *Loop) answerNavigation(
 	request client.ClaimedRequest,
 	uncertainty keyscripts.Uncertainty,
 	answer client.NavigationAnswer,
+	declined []string,
 ) {
 	switch answer.Answer {
+	case client.NavigationEntry:
+		loop.replayEntry(ctx, runtime, request, uncertainty, answer, declined)
 	case client.NavigationOpened:
 		report := client.RequestReport{
 			RequestID: request.RequestID,
@@ -368,6 +381,56 @@ func (loop *Loop) answerNavigation(
 	default:
 		loop.endForNavigation(ctx, runtime, request, uncertainty)
 	}
+}
+
+// entryReplayer is a driver that replays a library entry on the live screen.
+type entryReplayer interface {
+	ReplayEntry(entry keyscripts.Entry) (keyscripts.ReplayResult, error)
+}
+
+// replayEntry replays the library entry the journal answered with: proven, the replay is counted, the runtime goes
+// on and the script ends or resumes after the entry's step; any other end raises again with the entry declined, so
+// the journal asks the main agent instead.
+func (loop *Loop) replayEntry(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+	answer client.NavigationAnswer,
+	declined []string,
+) {
+	var entry keyscripts.Entry
+	replayer, replays := runtime.driver.(entryReplayer)
+	if err := json.Unmarshal(answer.Entry, &entry); err != nil || !replays {
+		loop.endForNavigation(ctx, runtime, request, uncertainty)
+		return
+	}
+	result, err := replayer.ReplayEntry(entry)
+	if err != nil || result.Outcome != keyscripts.Proven {
+		loop.raiseNavigation(ctx, runtime, request, uncertainty, append(declined, entry.ID))
+		return
+	}
+
+	key := fmt.Sprintf("%s:%d:replay:%s", request.RequestID, request.Attempt, entry.ID)
+	if err := loop.journal.ReportReplayed(ctx, entry.ID, runtime.id, key); err != nil {
+		log.Printf("the replay of entry %s could not be reported: %v", entry.ID, err)
+	}
+	loop.releaseRuntime(runtime)
+	if result.ResumeAt != nil {
+		request.ScriptStep = result.ResumeAt
+		loop.settleScript(ctx, runtime, request)
+		return
+	}
+	applied := contracts.OperationResult{Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed}
+	loop.report(ctx, request, applied)
+}
+
+// releaseRuntime ends the runtime's navigation hold, so its queue runs again.
+func (loop *Loop) releaseRuntime(runtime *liveRuntime) {
+	loop.mutex.Lock()
+	runtime.hold = contracts.HoldNone
+	loop.mutex.Unlock()
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.Release() })
 }
 
 // raiseOf is the raise of a stopped script: named by its request, attempt and stalled step, so a repeated send is the
@@ -484,6 +547,8 @@ func roundOf(round client.NavigationRound) keyscripts.Round {
 		Confirm:       text(round.Confirm),
 		TypeParameter: text(round.TypeParameter),
 		Proof:         text(round.Proof),
+		Completes:     text(round.Completes),
+		NextStep:      round.NextStep,
 	}
 }
 
@@ -498,6 +563,14 @@ func navigationReportOf(result keyscripts.RoundResult) *client.NavigationReport 
 		report.Rows = result.ScreenAfter.Rows
 		report.Highlight = result.ScreenAfter.Highlight
 		report.Generation = result.ScreenAfter.Generation
+	}
+	for _, step := range result.Path {
+		report.Steps = append(report.Steps, client.PathStep{
+			Fingerprint: step.Fingerprint,
+			Choose:      step.Choose,
+			Key:         step.Key,
+			Proof:       step.Proof,
+		})
 	}
 	for _, action := range result.Actions {
 		report.Actions = append(report.Actions, client.ActionReport{

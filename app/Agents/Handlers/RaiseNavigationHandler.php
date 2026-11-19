@@ -96,6 +96,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
             ->current()
             ->forProgram($runtime->program)
             ->matching($command->fingerprint, $request->scriptGoal())
+            ->whereNotIn('id', $command->declinedEntries)
             ->recentFirst()
             ->readLimit(20)
             ->get();

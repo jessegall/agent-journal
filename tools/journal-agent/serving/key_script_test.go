@@ -21,6 +21,14 @@ type scriptRuntime struct {
 	receiver    func(keyscripts.Progress)
 	release     chan keyscripts.Result
 	rereadCount int
+	// replay is how a library entry's replay ends on this runtime.
+	replay keyscripts.ReplayResult
+}
+
+func (runtime *scriptRuntime) ReplayEntry(keyscripts.Entry) (keyscripts.ReplayResult, error) {
+	runtime.mutex.Lock()
+	defer runtime.mutex.Unlock()
+	return runtime.replay, nil
 }
 
 func newScriptRuntime() *scriptRuntime {
@@ -258,5 +266,47 @@ func TestAHeldAnswerEndsTheRunEntryUnavailableAndAWaitKeepsTheHold(t *testing.T)
 	waitFor(t, func() bool { return journal.lastHold() == "navigation_needed" })
 	if reports := journal.reportsOf("script"); len(reports) != 3 {
 		t.Fatalf("a wait was reported %+v", reports)
+	}
+}
+
+// entryAnswer is the journal's answer naming a library entry to replay.
+func entryAnswer(guarded bool) raiseReply {
+	entry := `{"id":"entry-1","program":"codex","goal":{"script":"ChangeModel","version":2,"parameters":[]},` +
+		`"steps":[{"fingerprint":"fp1:a","choose":"GPT-6","key":null,"proof":null}],"completes":"goal",` +
+		`"nextStep":null,"proof":"GPT-6"}`
+	answer := client.NavigationAnswer{Answer: client.NavigationEntry, Entry: []byte(entry), Guarded: guarded}
+	return raiseReply{answer: answer}
+}
+
+func TestAProvenEntryReplayIsCountedAndEndsTheScriptWithNoRequest(t *testing.T) {
+	journal := &fakeJournal{answers: []raiseReply{entryAnswer(false)}}
+	runtime := newScriptRuntime()
+	runtime.replay = keyscripts.ReplayResult{Outcome: keyscripts.Proven}
+	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.LabelMissing, Step: 1, Fingerprint: "fp1:a"}
+	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
+
+	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
+	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
+
+	last := journal.reportsOf("script")[3]
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if last.Progress != "applied" || len(journal.replayed) != 1 || journal.replayed[0] != "entry-1" ||
+		len(journal.raises) != 1 {
+		t.Fatalf("the replay ended %+v after %d raises, replayed %v", last, len(journal.raises), journal.replayed)
+	}
+}
+
+func TestAGuardedEntryThatFailsIsDeclinedAndTheJournalAskedAgain(t *testing.T) {
+	// The runtime's replay result is left empty: a replay that does not end proven.
+	journal, _ := navigationLoop(t, entryAnswer(true))
+	waitFor(t, func() bool { return journal.raiseCount() == 2 })
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if declined := journal.raises[1].DeclinedEntries; len(declined) != 1 || declined[0] != "entry-1" ||
+		len(journal.replayed) != 0 {
+		t.Fatalf("the second raise declined %v and the host replayed %v", declined, journal.replayed)
 	}
 }

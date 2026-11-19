@@ -21,6 +21,8 @@ type fakeJournal struct {
 	raises   []client.NavigationRaise
 	// interrupts are the navigation requests the host reported the person took over.
 	interrupts []string
+	// replayed are the library entries the host reported it replayed.
+	replayed []string
 	// answers are the replies to the raises in turn; past the last one a raise is opened.
 	answers []raiseReply
 }
@@ -29,6 +31,13 @@ type fakeJournal struct {
 type raiseReply struct {
 	answer client.NavigationAnswer
 	err    error
+}
+
+func (journal *fakeJournal) ReportReplayed(_ context.Context, entryID, _, _ string) error {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	journal.replayed = append(journal.replayed, entryID)
+	return nil
 }
 
 func (journal *fakeJournal) InterruptNavigation(_ context.Context, navigationID string) error {

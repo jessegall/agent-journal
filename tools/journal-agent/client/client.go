@@ -88,6 +88,17 @@ type NavigationReport struct {
 	ProofSeen  bool           `json:"proof_seen"`
 	Actions    []ActionReport `json:"actions,omitempty"`
 	Refusal    *string        `json:"refusal"`
+	// Steps are the proven path as a library entry keeps it, sent when the round's proof showed.
+	Steps []PathStep `json:"steps,omitempty"`
+}
+
+// PathStep is one step of a proven path: the fingerprint of the screen it expects, and a label to choose or a named
+// key, with the proof the last step carries.
+type PathStep struct {
+	Fingerprint string  `json:"fingerprint"`
+	Choose      *string `json:"choose"`
+	Key         *string `json:"key"`
+	Proof       *string `json:"proof"`
 }
 
 // ActionReport is one action a round carried out: a choose or a key, the label seen before confirming, the
@@ -120,6 +131,8 @@ type NavigationRaise struct {
 	Rows         []string `json:"rows"`
 	Highlight    int      `json:"highlight"`
 	Generation   uint64   `json:"generation"`
+	// DeclinedEntries are library entries whose replay failed here, which the journal must not answer again.
+	DeclinedEntries []string `json:"declined_entries,omitempty"`
 }
 
 // The answers to a raise, as App\Agents\Enums\NavigationRaiseOutcome names them.
@@ -127,6 +140,7 @@ const (
 	NavigationOpened = "opened"
 	NavigationHeld   = "held"
 	NavigationWait   = "wait"
+	NavigationEntry  = "entry"
 )
 
 // NavigationAnswer mirrors App\Agents\Support\NavigationRaiseAnswer: a navigation request is open, the person holds
@@ -135,6 +149,10 @@ type NavigationAnswer struct {
 	Answer            string  `json:"answer"`
 	RequestID         *string `json:"requestId"`
 	RetryAfterSeconds *int    `json:"retryAfterSeconds"`
+	// Entry is the library entry to replay, as keyscripts.Entry reads it; Guarded is set when it was proven on
+	// another build only.
+	Entry   json.RawMessage `json:"entry"`
+	Guarded bool            `json:"guarded"`
 }
 
 // ActivityReport mirrors App\Http\Data\Agents\RuntimeActivityReportData.
@@ -254,6 +272,12 @@ func (client *Client) RaiseNavigation(
 ) (NavigationAnswer, error) {
 	var answer NavigationAnswer
 	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/navigation", raise, &answer)
+}
+
+// ReportReplayed reports that the replay of a library entry worked on the runtime, under the replay's key.
+func (client *Client) ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error {
+	body := map[string]string{"runtime_id": runtimeID, "operation_key": operationKey}
+	return client.call(ctx, "/host/menu-entries/"+entryID+"/replayed", body, nil)
 }
 
 // InterruptNavigation reports that the person took over a runtime whose navigation request was open.

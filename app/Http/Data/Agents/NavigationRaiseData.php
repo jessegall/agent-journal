@@ -18,6 +18,7 @@ final class NavigationRaiseData extends Data
 {
     /**
      * @param  list<string>  $rows
+     * @param  list<string>  $declinedEntries  library entries whose replay failed on this runtime
      */
     public function __construct(
         public readonly string $operationKey,
@@ -29,5 +30,6 @@ final class NavigationRaiseData extends Data
         public readonly array $rows,
         public readonly int $highlight,
         public readonly int $generation,
+        public readonly array $declinedEntries = [],
     ) {}
 }

@@ -178,6 +178,17 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->assertSame('opened', $this->raise($host, $opened, $request)->assertOk()->json('answer'));
     }
 
+    public function test_an_entry_the_host_declined_is_not_answered_again(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        $entry = $this->libraryEntry('2.1.323');
+        [$host, $opened, $request] = $this->stalledScript();
+
+        $answer = $this->raise($host, $opened, $request, declined: [$entry->id])->assertOk();
+
+        $this->assertSame('opened', $answer->json('answer'));
+    }
+
     public function test_the_replayed_report_counts_once_and_lists_the_build(): void
     {
         $entry = $this->libraryEntry('2.1.300');
@@ -227,12 +238,14 @@ final class NavigationRaiseRouteTest extends TestCase
      * The host's raise of the request stalled at its step 2 on the model picker.
      *
      * @param  list<string>  $rows
+     * @param  list<string>  $declined
      */
     private function raise(
         EnrolledHost $host,
         OpenedRuntime $opened,
         DriverRequest $request,
         array $rows = ['Model: GPT-5', '❯ GPT-6'],
+        array $declined = [],
     ): TestResponse {
         return $this->hostCall($host, "/host/runtimes/{$opened->runtimeId}/navigation", [
             'operation_key' => "{$request->id}:{$request->attempt_version}:2",
@@ -244,6 +257,7 @@ final class NavigationRaiseRouteTest extends TestCase
             'rows' => $rows,
             'highlight' => 1,
             'generation' => 7,
+            ...($declined === [] ? [] : ['declined_entries' => $declined]),
         ]);
     }
 

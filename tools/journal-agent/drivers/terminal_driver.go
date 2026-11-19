@@ -68,6 +68,9 @@ type stalledScript struct {
 	uncertainty keyscripts.Uncertainty
 	values      map[string]string
 	epoch       uint64
+	// actions are every round's actions so far, and secret whether any round met a screen kept on the host.
+	actions []keyscripts.ActionRecord
+	secret  bool
 }
 
 // turnEnd is the end of one submitted prompt's turn, watched from the first time someone waits for it.
@@ -213,10 +216,29 @@ func (driver *TerminalDriver) NavigateRound(round keyscripts.Round) keyscripts.R
 
 	result := driver.runtime.Runner.Navigate(round, stalled.epoch, stalled.uncertainty, stalled.values)
 	driver.mutex.Lock()
+	defer driver.mutex.Unlock()
 	stalled.epoch = driver.runtime.Gate.HumanInputs()
-	driver.mutex.Unlock()
+	stalled.actions = append(stalled.actions, result.Actions...)
+	stalled.secret = stalled.secret || result.Refusal == keyscripts.RefusedSecretScreen
+	if round.Proof != "" && result.ProofSeen {
+		path := keyscripts.ProvenPath{
+			Actions:   stalled.actions,
+			Secret:    stalled.secret,
+			Proof:     round.Proof,
+			Completes: round.Completes,
+			NextStep:  round.NextStep,
+		}
+		if entry, err := keyscripts.EntryFromActions(path); err == nil {
+			result.Path = entry.Steps
+		}
+	}
 
 	return result
+}
+
+// ReplayEntry replays a library entry the journal answered with, on the live screen, through the runner.
+func (driver *TerminalDriver) ReplayEntry(entry keyscripts.Entry) (keyscripts.ReplayResult, error) {
+	return driver.runtime.Runner.Replay(entry, driver.runtime.Profile)
 }
 
 // Reread reads a stalled key script's screen afresh, as the host does before it sends a raise again.

@@ -40,6 +40,9 @@ type Round struct {
 	Confirm       string
 	TypeParameter string
 	Proof         string
+	// Completes and NextStep are what a proof round completes: the goal, or the step after which the script goes on.
+	Completes string
+	NextStep  *int
 }
 
 // ActionRecord is one action a round carried out: a choose or a key, the label of the highlighted entry read right
@@ -61,6 +64,8 @@ type RoundResult struct {
 	Refusal     string
 	ProofSeen   bool
 	Paused      bool
+	// Path is the proven path as library entry steps, built from every round's actions once the proof showed.
+	Path []EntryStep
 }
 
 // Navigate carries out one round of the main agent on a stalled screen: never on a secret screen, never on a screen
