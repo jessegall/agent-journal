@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Enums\CommandClass;
-use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
-use App\Processes\Syntax\TreeParser;
-use App\Processes\Values\Classification;
-use App\Processes\Values\ExecutionContext;
+use Tests\Support\Processes\ClassifiesLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -20,6 +16,7 @@ use Tests\TestCase;
  */
 final class JournalRoutesTest extends TestCase
 {
+    use ClassifiesLines;
     use RefreshHookDatabase;
 
     public function test_a_read_route_reads_and_names_its_route(): void
@@ -58,16 +55,6 @@ final class JournalRoutesTest extends TestCase
         $this->assertSame(
             UnresolvedType::UnknownSubcommand,
             $this->classify('journal engine tick')->unresolved()[0]->type,
-        );
-    }
-
-    private function classify(string $line): Classification
-    {
-        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
-
-        return $this->app->make(CommandClassifier::class)->classify(
-            $tree,
-            new ExecutionContext(ShellDialect::Bash, base_path(), base_path()),
         );
     }
 }

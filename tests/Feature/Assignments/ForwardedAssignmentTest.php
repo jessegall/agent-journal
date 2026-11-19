@@ -11,20 +11,16 @@ use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
-use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\RequestKeyConflict;
-use App\Bus\Support\EntryDispatchers;
 use App\Bus\Support\RequestKey;
-use App\Desks\Commands\InstallDesks;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\InstallsDesks;
+use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -34,7 +30,8 @@ use Tests\TestCase;
 final class ForwardedAssignmentTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
+    use InstallsDesks;
+    use StartsOwnerRequest;
 
     private const array TABLES = [
         'users',
@@ -47,17 +44,6 @@ final class ForwardedAssignmentTest extends TestCase
         'assignments',
         'command_receipts',
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
-        $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
-    }
 
     public function test_a_task_given_to_the_actor_at_main_is_held_by_main_and_names_both(): void
     {

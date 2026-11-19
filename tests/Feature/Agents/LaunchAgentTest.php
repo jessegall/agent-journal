@@ -20,15 +20,13 @@ use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -38,7 +36,7 @@ use Tests\TestCase;
 final class LaunchAgentTest extends TestCase
 {
     use RefreshHookDatabase;
-    use StartsAgentRequests;
+    use StartsOwnerRequest;
 
     private Agent $agent;
 
@@ -46,9 +44,6 @@ final class LaunchAgentTest extends TestCase
     {
         parent::setUp();
 
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
         $this->agent = Agent::named('Researcher', 'read-only-helper');
     }
 

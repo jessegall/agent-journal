@@ -7,7 +7,7 @@ namespace Tests\Fixtures\UiDeclarations\Shelf;
 use App\Ui\Contracts\SectionResolver;
 use App\Ui\Declarations\SlotContext;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 
 final class BrokenResolver implements SectionResolver
 {

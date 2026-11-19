@@ -17,8 +17,8 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\FakeMonotonicClock;
-use Tests\Support\SimulatedFailure;
 use Tests\TestCase;
 
 /**

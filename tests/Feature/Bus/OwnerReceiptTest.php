@@ -13,12 +13,12 @@ use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\RequestKey;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\ClearsLaunchRows;
 
 /**
  * A user's keyed write is receipted like an agent's, in the user's own key space: it runs once, a changed payload
@@ -27,6 +27,8 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
  */
 final class OwnerReceiptTest extends CommandBusTestCase
 {
+    use ClearsLaunchRows;
+
     private const string KEY = '01JD8X0G9M3QZ6V4K2OWNERKEY1';
 
     protected function setUp(): void
@@ -35,17 +37,6 @@ final class OwnerReceiptTest extends CommandBusTestCase
 
         $this->installCommandModules();
         $this->startTestUserRequest(1);
-    }
-
-    protected function tearDown(): void
-    {
-        $database = $this->app->make(ConnectionInterface::class);
-
-        foreach (['command_receipts', 'launch_credentials', 'agent_sessions', 'agents'] as $table) {
-            $database->table($table)->delete();
-        }
-
-        parent::tearDown();
     }
 
     public function test_an_owner_call_with_a_key_runs_once_and_its_repeat_returns_the_same_result(): void

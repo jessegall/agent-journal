@@ -18,6 +18,7 @@ use Inertia\Testing\AssertableInertia;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
+use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -35,6 +36,7 @@ use Tests\TestCase;
 final class GatewaySettingsPageTest extends TestCase
 {
     use CommitsHookRows;
+    use UsesSecretsFolder;
 
     private const array TABLES = [
         'command_receipts',
@@ -53,15 +55,12 @@ final class GatewaySettingsPageTest extends TestCase
 
     private User $owner;
 
-    private string $secretsFolder;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->secretsFolder = sys_get_temp_dir().'/sharing-secrets-'.Str::lower((string) Str::ulid());
         config(
             [
                 'sharing.secrets_dir' => $this->secretsFolder,
@@ -70,17 +69,6 @@ final class GatewaySettingsPageTest extends TestCase
             ],
         );
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
-    }
-
-    protected function tearDown(): void
-    {
-        array_map(unlink(...), glob("{$this->secretsFolder}/*") ?: []);
-
-        if (is_dir($this->secretsFolder)) {
-            rmdir($this->secretsFolder);
-        }
-
-        parent::tearDown();
     }
 
     public function test_the_owner_configures_tunler_and_ngrok_and_sees_why_each_is_not_ready(): void

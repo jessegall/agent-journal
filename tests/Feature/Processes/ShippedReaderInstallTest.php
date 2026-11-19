@@ -11,13 +11,11 @@ use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Rules\ShippedReaders;
 use App\Processes\Support\ShippedReaderInstaller;
-use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\Admission;
 use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ToolVersions;
-use Illuminate\Support\Facades\Storage;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -31,19 +29,9 @@ use Tests\TestCase;
 final class ShippedReaderInstallTest extends TestCase
 {
     use RefreshHookDatabase;
+    use RunsDirectLines;
 
     private const string PHPSTAN = 'vendor/bin/phpstan analyse --error-format=json --no-progress';
-
-    private TestLaunch $launch;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Storage::fake(SpoolRecorder::DISK);
-        config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start();
-    }
 
     public function test_a_matching_installed_version_gets_its_shipped_reader_approved_and_the_check_admitted(): void
     {

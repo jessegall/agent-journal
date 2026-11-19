@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Communication;
 
 use App\Communication\Events\MessageSent;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 
 /**
  * A listener whose own store is down, so it fails on every message sent.

@@ -25,6 +25,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
 use Tests\Support\Sharing\UnreadyShareGateway;
+use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -38,31 +39,17 @@ final class ConfigureShareGatewayTest extends TestCase
 {
     use RefreshHookDatabase;
     use StartsAgentRequests;
+    use UsesSecretsFolder;
 
     private const string SECRET = 'hunter2-very-secret-bytes';
-
-    private string $secretsFolder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->secretsFolder = sys_get_temp_dir().'/sharing-secrets-'.Str::lower((string) Str::ulid());
-        config(['sharing.secrets_dir' => $this->secretsFolder]);
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
         $this->app->make(ShareGatewayRegistry::class)->register(UnreadyShareGateway::KEY, UnreadyShareGateway::class);
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-    }
-
-    protected function tearDown(): void
-    {
-        array_map(unlink(...), glob("{$this->secretsFolder}/*") ?: []);
-
-        if (is_dir($this->secretsFolder)) {
-            rmdir($this->secretsFolder);
-        }
-
-        parent::tearDown();
     }
 
     public function test_configuring_twice_makes_versions_one_and_two_and_a_share_keeps_the_first(): void

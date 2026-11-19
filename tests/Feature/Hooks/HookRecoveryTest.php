@@ -6,7 +6,6 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\DatabaseClock;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Actions\LaunchSessions;
@@ -28,12 +27,14 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\Agents\BackdatesSessions;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 final class HookRecoveryTest extends TestCase
 {
+    use BackdatesSessions;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -188,12 +189,5 @@ final class HookRecoveryTest extends TestCase
     private function heartbeats(): LaunchHeartbeats
     {
         return $this->app->make(LaunchHeartbeats::class);
-    }
-
-    private function startedSecondsAgo(LaunchedAgent $launched, int $seconds): void
-    {
-        DB::table('agent_sessions')->where('id', $launched->session->id)->update(
-            ['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)],
-        );
     }
 }

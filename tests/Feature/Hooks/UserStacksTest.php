@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorContext;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
@@ -30,7 +28,6 @@ use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -140,14 +137,6 @@ final class UserStacksTest extends TestCase
     /**
      * Acts as the agent under the profile it launches with, as a real agent call does.
      */
-    private function actAsAgent(string $agentId): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($agentId),
-            TestLaunchAuthority::forAgent($agentId),
-        );
-    }
-
     private function launch(): LaunchedAgent
     {
         $agent = Agent::named('Test agent', 'main-agent');

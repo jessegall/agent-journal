@@ -12,13 +12,12 @@ use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Models\InboxRecord;
 use App\Communication\Models\Message;
 use App\Communication\Models\MessageAttention;
-use Illuminate\Database\Connection;
-use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Communication\TeamInboxAccess;
 use Tests\Fixtures\Communication\TeamInboxProvider;
 use Tests\Fixtures\Communication\TeamRoster;
 use Tests\Support\MessagingTestCase;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\UsesSecondConnection;
 
 /**
  * A second inbox provider, a team with its own roster and guard, goes through the same Core paths as a desk: its
@@ -27,6 +26,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 #[TimeLimit(seconds: 5, reason: 'One case waits for a database lock held on a second connection to time out.')]
 final class InboxProviderContractTest extends MessagingTestCase
 {
+    use UsesSecondConnection;
+
     private InboxRecord $team;
 
     protected function setUp(): void
@@ -80,14 +81,5 @@ final class InboxProviderContractTest extends MessagingTestCase
     private function resolver(): ConversationResolver
     {
         return $this->app->make(ConversationResolver::class);
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $default = $config->get('database.connections.'.$config->get('database.default'));
-        $config->set('database.connections.team_other', $default);
-
-        return DB::connection('team_other');
     }
 }

@@ -33,13 +33,13 @@ use App\Settings\Values\SettingsChange;
 use Closure;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Database\Connection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 use Throwable;
 
@@ -51,6 +51,7 @@ use Throwable;
 final class SettingsStoriesTest extends TestCase
 {
     use CommitsHookRows;
+    use UsesSecondConnection;
 
     /**
      * The bus commits the settings commands for real, so this table is emptied around each test.
@@ -74,15 +75,6 @@ final class SettingsStoriesTest extends TestCase
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
-    }
-
-    protected function tearDown(): void
-    {
-        if ($this->app->make('config')->has('database.connections.settings_other')) {
-            DB::connection('settings_other')->disconnect();
-        }
-
-        parent::tearDown();
     }
 
     /**
@@ -360,16 +352,5 @@ final class SettingsStoriesTest extends TestCase
         SettingsRecord::insertIfAbsent('Reviews');
         $record = SettingsRecord::sharedRuntimeForOwner('Reviews')->get();
         $record->revise($change($record->document));
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $config->set(
-            'database.connections.settings_other',
-            $config->get('database.connections.'.$config->get('database.default')),
-        );
-
-        return DB::connection('settings_other');
     }
 }

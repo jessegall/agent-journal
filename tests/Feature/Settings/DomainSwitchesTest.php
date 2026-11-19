@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainSwitches;
 use App\Settings\Commands\DisableSettingGroup;
@@ -20,9 +17,8 @@ use App\Settings\Support\DisabledSettingsGroup;
 use App\Settings\Support\SettingRegistry;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
-use Domain\Access\Support\AccessSettings;
+use Tests\Support\ActsAsTestOwner;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -31,21 +27,13 @@ use Tests\TestCase;
  */
 final class DomainSwitchesTest extends TestCase
 {
+    use ActsAsTestOwner;
     use CommitsHookRows;
 
     /**
      * The bus commits the settings commands for real, so this table is emptied around each test.
      */
     private const array TABLES = ['settings_records'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $ownerId = TestIds::of(7);
-        $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
-    }
 
     public function test_core_declares_one_empty_switch_on_by_default_for_each_domain_but_access(): void
     {

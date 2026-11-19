@@ -7,8 +7,8 @@ namespace Tests\Unit\Support;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Testing\ParallelTesting;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\Exceptions\HookDatabaseRefused;
 use Tests\Support\HookDatabase;
-use Tests\Support\HookDatabaseRefused;
 use Tests\TestCase;
 
 final class HookDatabaseTest extends TestCase

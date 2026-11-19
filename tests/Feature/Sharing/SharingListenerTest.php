@@ -23,7 +23,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Foundation\Application;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;

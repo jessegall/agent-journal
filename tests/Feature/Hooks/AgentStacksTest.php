@@ -43,12 +43,14 @@ use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 use Throwable;
 
 final class AgentStacksTest extends TestCase
 {
     use RefreshHookDatabase;
+    use UsesSecondConnection;
 
     private StackTarget $target;
 
@@ -56,8 +58,8 @@ final class AgentStacksTest extends TestCase
     {
         parent::setUp();
 
-        DB::table('agent_stacks')->truncate();
-        DB::table('settings_records')->truncate();
+        AgentStackRow::query()->truncate();
+        SettingsRecord::query()->truncate();
         Schema::dropIfExists('domain_writes');
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));
 
@@ -80,12 +82,9 @@ final class AgentStacksTest extends TestCase
 
     protected function tearDown(): void
     {
-        if ($this->app->make('config')->has('database.connections.hooks_other')) {
-            DB::connection('hooks_other')->disconnect();
-        }
         Schema::dropIfExists('domain_writes');
-        DB::table('agent_stacks')->truncate();
-        DB::table('settings_records')->truncate();
+        AgentStackRow::query()->truncate();
+        SettingsRecord::query()->truncate();
 
         parent::tearDown();
     }
@@ -385,17 +384,6 @@ final class AgentStacksTest extends TestCase
             (string) DB::scalar("SELECT current_setting('lock_timeout')"),
             (string) DB::scalar("SELECT current_setting('statement_timeout')"),
         ];
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $config->set(
-            'database.connections.hooks_other',
-            $config->get('database.connections.'.$config->get('database.default')),
-        );
-
-        return DB::connection('hooks_other');
     }
 
     private function insertStackThrough(Connection $connection, string $frameId, string $typeKey): void

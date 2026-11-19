@@ -6,9 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ProcessRun;
-use App\Processes\Support\SpoolRecorder;
-use Illuminate\Support\Facades\Storage;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Support\Processes\RunsDirectLines;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -22,18 +20,8 @@ use Tests\TestCase;
 final class DirectRunTest extends TestCase
 {
     use RefreshHookDatabase;
+    use RunsDirectLines;
     use SendsSignedCalls;
-
-    private TestLaunch $launch;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Storage::fake(SpoolRecorder::DISK);
-        config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start();
-    }
 
     public function test_an_unknown_line_is_refused_with_its_request_and_nothing_starts(): void
     {

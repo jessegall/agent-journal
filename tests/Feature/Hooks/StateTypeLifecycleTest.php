@@ -16,10 +16,13 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use ReflectionClass;
 use ReflectionProperty;
 use Tests\Fixtures\Hooks\Lifecycle\Listeners\RegisterNoteState;
+use Tests\Support\SetsEventCachePath;
 use Tests\TestCase;
 
 final class StateTypeLifecycleTest extends TestCase
 {
+    use SetsEventCachePath;
+
     private mixed $discoveryPathsBefore;
 
     private string $eventCachePath;
@@ -97,20 +100,6 @@ final class StateTypeLifecycleTest extends TestCase
         ]));
 
         $this->assertSame(['ready', 'note-1'], $stack->frameIds());
-    }
-
-    private function useEventCachePath(string|null $path): void
-    {
-        if ($path === null) {
-            unset($_SERVER['APP_EVENTS_CACHE'], $_ENV['APP_EVENTS_CACHE']);
-            putenv('APP_EVENTS_CACHE');
-
-            return;
-        }
-
-        $_SERVER['APP_EVENTS_CACHE'] = $path;
-        $_ENV['APP_EVENTS_CACHE'] = $path;
-        putenv("APP_EVENTS_CACHE={$path}");
     }
 
     private function fixtureListenerFolder(): string

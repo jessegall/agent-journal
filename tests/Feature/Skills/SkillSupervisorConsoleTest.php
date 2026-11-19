@@ -19,8 +19,8 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\TestIds;
-use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -31,17 +31,9 @@ use Tests\TestCase;
 final class SkillSupervisorConsoleTest extends TestCase
 {
     use CommitsHookRows;
-    use UsesTemporaryFolder;
+    use HasSkillTargets;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->makeTemporaryFolder('journal-skills');
-        $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-    }
 
     public function test_refresh_before_migrating_says_the_tables_are_missing_and_changes_nothing(): void
     {

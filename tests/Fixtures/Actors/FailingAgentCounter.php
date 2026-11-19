@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Actors;
 use App\Actors\Contracts\ActiveActorCounter;
 use App\Actors\Enums\ActorType;
 use Carbon\CarbonImmutable;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 
 /**
  * A counter of present agents whose read fails.

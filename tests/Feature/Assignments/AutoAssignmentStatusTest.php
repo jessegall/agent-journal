@@ -18,8 +18,6 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentStatus;
 use App\Assignments\Support\PoolReference;
 use App\Contracts\DomainAvailability;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Api\TaskType;
@@ -27,9 +25,8 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\HasAutoAssignmentWorker;
 use Tests\TestCase;
 
 /**
@@ -40,7 +37,7 @@ use Tests\TestCase;
 final class AutoAssignmentStatusTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
+    use HasAutoAssignmentWorker;
 
     private const array TABLES = [
         'users',
@@ -54,23 +51,6 @@ final class AutoAssignmentStatusTest extends TestCase
         'assignments',
         'auto_assignments',
     ];
-
-    private User $owner;
-
-    private TestLaunch $worker;
-
-    private AutoAssignmentKey $key;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->worker = TestLaunch::start('writing-helper');
-        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::VALUE);
-        $this->startUserRequestAs($this->owner->id);
-    }
 
     public function test_without_a_row_it_is_off(): void
     {

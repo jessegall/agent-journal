@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Commands\ConfigureAutoAssignment;
 use App\Assignments\Commands\DisableAutoAssignment;
 use App\Assignments\Commands\EnableAutoAssignment;
@@ -15,19 +14,14 @@ use App\Assignments\Exceptions\InvalidRecordIds;
 use App\Assignments\Support\AutoAssignmentChange;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentInput;
-use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\PoolReference;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
-use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
-use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\HasAutoAssignmentWorker;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -39,7 +33,7 @@ use Tests\TestCase;
 final class AutoAssignmentCommandsTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
+    use HasAutoAssignmentWorker;
 
     private const array TABLES = [
         'users',
@@ -50,23 +44,6 @@ final class AutoAssignmentCommandsTest extends TestCase
         'auto_assignments',
         'command_receipts',
     ];
-
-    private User $owner;
-
-    private TestLaunch $worker;
-
-    private AutoAssignmentKey $key;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->worker = TestLaunch::start('writing-helper');
-        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::VALUE);
-        $this->startUserRequestAs($this->owner->id);
-    }
 
     public function test_the_owner_enables_a_named_pool_for_an_agent(): void
     {
