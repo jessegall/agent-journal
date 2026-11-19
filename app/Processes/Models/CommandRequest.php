@@ -110,6 +110,14 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
+     * Whether the request waits for a proven reader, the one state a proof may be given in.
+     */
+    public function awaitsProof(): bool
+    {
+        return $this->state === RequestState::AwaitingProof;
+    }
+
+    /**
      * Whether the request's actor read the run's envelope and at least one range of every stream its parts wrote,
      * as a reader must be proven only against evidence its author looked at (story 202).
      */

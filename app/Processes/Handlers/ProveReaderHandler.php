@@ -7,7 +7,6 @@ namespace App\Processes\Handlers;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ProveReader;
-use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\ReaderProofFailed;
 use App\Processes\Exceptions\ReaderProposalRefused;
 use App\Processes\Exceptions\RequestTransitionRefused;
@@ -33,7 +32,7 @@ final readonly class ProveReaderHandler implements CommandHandler
     public function handle(ProveReader $command): string
     {
         $request = CommandRequest::lockedForChange($command->commandRequestId);
-        if ($request->state !== RequestState::AwaitingProof) {
+        if (! $request->awaitsProof()) {
             throw ReaderProofFailed::notAwaiting($request->nextStep()->command);
         }
         $reader = ReaderRevision::query()

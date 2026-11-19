@@ -243,7 +243,7 @@ class ReadBuilder extends Builder
     private function applyReadPolicy(): void
     {
         $query = $this->getQuery();
-        $pageMax = (int) Container::getInstance()->make('config')->get('reads.page_max', 100);
+        $pageMax = Container::getInstance()->make('config')->integer('reads.page_max');
 
         $query->limit = match ($this->mode) {
             ReadMode::Limited => $query->limit === null ? $this->namedLimit : min(
@@ -314,9 +314,6 @@ class ReadBuilder extends Builder
     {
         return $this->model instanceof ReadableModel
             ? $this->model->defaultReadLimit()
-            : (int) Container::getInstance()->make('config')->get(
-                'reads.default_limit',
-                50,
-            );
+            : Container::getInstance()->make('config')->integer('reads.default_limit');
     }
 }

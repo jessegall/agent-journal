@@ -158,6 +158,14 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     /**
      * Starts the plan; true when it changed, false when it was already started. Any other state refuses.
      */
+    /**
+     * Whether the plan is being worked: started, and neither finished nor cancelled.
+     */
+    public function isStarted(): bool
+    {
+        return $this->state === PlanState::Started;
+    }
+
     public function startOnce(): bool
     {
         if ($this->state === PlanState::Started) {

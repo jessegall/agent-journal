@@ -29,7 +29,7 @@ trait BoundedReads
 
     public function defaultReadLimit(): int
     {
-        return (int) Container::getInstance()->make('config')->get('reads.default_limit', 50);
+        return Container::getInstance()->make('config')->integer('reads.default_limit');
     }
 
     public function defaultReadOrder(): ReadOrder

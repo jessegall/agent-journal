@@ -7,7 +7,6 @@ namespace Domain\Plans\Handlers;
 use App\Contracts\CommandHandler;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Commands\FinishPlan;
-use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\PlanHasUnfinishedTasks;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
 use Domain\Plans\Models\Plan;
@@ -30,7 +29,7 @@ final readonly class FinishPlanHandler implements CommandHandler
             throw PlanRevisionChanged::for($plan->number, $command->expectedRevision, $plan->revision);
         }
 
-        if ($plan->state !== PlanState::Started) {
+        if (! $plan->isStarted()) {
             throw PlanHasUnfinishedTasks::notStarted($plan->number, $plan->state->value);
         }
 

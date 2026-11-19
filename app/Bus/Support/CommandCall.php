@@ -105,14 +105,11 @@ final readonly class CommandCall
      */
     public function withDispatcher(ActorContext $dispatcher): self
     {
-        return new self(
-            $this->command->withDispatcher($dispatcher),
-            $this->original,
-            $this->owner,
-            $this->exported,
-            $this->repeatableRead,
-            $dispatcher,
-        );
+        return clone ($this, [
+            'command' => $this->command->withDispatcher($dispatcher),
+            'actor' => $dispatcher,
+            'authorized' => [],
+        ]);
     }
 
     /**

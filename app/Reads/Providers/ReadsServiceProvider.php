@@ -48,8 +48,8 @@ final class ReadsServiceProvider extends ServiceProvider
         Repository $config,
         SelfMeasuredCommands $selfMeasured,
     ): void {
-        $defaultLimit = (int) $config->get('reads.default_limit');
-        $pageMax = (int) $config->get('reads.page_max');
+        $defaultLimit = $config->integer('reads.default_limit');
+        $pageMax = $config->integer('reads.page_max');
 
         if ($defaultLimit < 1 || $defaultLimit > $pageMax) {
             throw ReadLimitInvalid::configured($defaultLimit, $pageMax);
