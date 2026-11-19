@@ -12,9 +12,9 @@ const (
 
 // Cursor is where the terminal's cursor is and whether it shows.
 type Cursor struct {
-	Row     int
-	Column  int
-	Visible bool
+	Row     int  `json:"row"`
+	Column  int  `json:"column"`
+	Visible bool `json:"visible"`
 }
 
 // Snapshot is one read of the screen: every row as text, the cursor, the buffer shown and its size.

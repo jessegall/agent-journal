@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
@@ -72,6 +71,7 @@ use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\SendsHostCalls;
 use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
@@ -84,6 +84,7 @@ final class AgentDriverLedgerTest extends TestCase
 {
     use CommitsHookRows;
     use RunsTrustedCommands;
+    use SendsHostCalls;
 
     private const array TABLES = [
         'agents',
@@ -712,23 +713,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_a_signed_host_poll_returns_its_pending_requests(): void
     {
         [$host, $opened] = $this->openRuntime(firstMessage: 'Over the wire');
-        $target = '/host/claim?limit=5&wait=0';
-        $callId = (string) Str::uuid();
-        $issuedAt = CarbonImmutable::now()->getTimestamp();
-
-        $response = $this->call('POST', $target, server: [
-            'HTTP_AUTHORIZATION' => "Bearer {$host->secret}",
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ID_HEADER)) => $callId,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ISSUED_AT_HEADER)) => (string) $issuedAt,
-            'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::SIGNATURE_HEADER)) => SignedCall::signatureFor(
-                $host->secret,
-                'POST',
-                $target,
-                $callId,
-                $issuedAt,
-                '',
-            ),
-        ]);
+        $response = $this->hostCall($host, '/host/claim?limit=5&wait=0&watched_version=0');
 
         $response->assertOk();
         $this->assertSame($opened->firstRequestId, $response->json('requests.0.requestId'));

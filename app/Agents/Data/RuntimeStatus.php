@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Data;
 
+use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
 use Spatie\LaravelData\Data;
@@ -11,7 +12,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * A runtime as last stored: activity and hold, the model and effort as requested, staged and observed, kept apart,
- * and how old the host's last observation is. Reading it calls no host.
+ * how old the host's last observation is, its driver and how many viewers watch its terminal. Reading it calls no host.
  */
 #[TypeScript]
 final class RuntimeStatus extends Data
@@ -29,5 +30,7 @@ final class RuntimeStatus extends Data
         public readonly bool $isStale,
         public readonly int $processGeneration,
         public readonly bool $canReleaseHold,
+        public readonly DriverType $driverType,
+        public readonly int $watchers,
     ) {}
 }

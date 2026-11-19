@@ -86,11 +86,19 @@ func serve(arguments []string) error {
 	defer listener.Close()
 	journal := client.New(enrollment)
 	loop := serving.NewLoop(journal, processRuntimes(*stateFolder, journal.JournalURL(), *hookCommand))
-	journal.Poll(ctx, func(claimed []client.ClaimedRequest) {
-		for _, request := range claimed {
+	watcher, err := host.NewScreenWatcher(ctx, journal, socket)
+	if err != nil {
+		return err
+	}
+	journal.Poll(ctx, func(claimed client.Claim) {
+		watcher.Set(claimed.Watched)
+		if len(claimed.Requests) == 0 {
+			return
+		}
+		for _, request := range claimed.Requests {
 			log.Printf("claimed %s request %s (sequence %d, attempt %d) of runtime %s", request.Operation, request.RequestID, request.Sequence, request.Attempt, request.RuntimeID)
 		}
-		loop.Take(ctx, claimed)
+		loop.Take(ctx, claimed.Requests)
 	})
 	return nil
 }

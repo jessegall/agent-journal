@@ -5,6 +5,7 @@ import (
 	"hash/fnv"
 	"io"
 	"strings"
+	"sync"
 
 	"github.com/charmbracelet/x/vt"
 
@@ -14,14 +15,19 @@ import (
 // EmulatorReader reads the screen through the charmbracelet vt emulator, which keeps partial escape and UTF-8
 // sequences across feeds and gives wide and combined characters their real cell widths. Each region is found anew
 // after every feed and its text hashed; its generation goes up only when its text changes, so a spinner redrawn
-// beside a menu, or a region drawn a row lower, leaves the region's generation as it was.
+// beside a menu, or a region drawn a row lower, leaves the region's generation as it was. One lock guards the
+// emulator, which has none of its own, so one goroutine may feed while others read.
 type EmulatorReader struct {
+	lock          sync.Mutex
 	terminal      *vt.Emulator
 	limits        Limits
 	cursorVisible bool
 	regions       []contracts.Region
 	hashes        map[string]uint64
 	generations   map[string]uint64
+	version       uint64
+	feedRefused   bool
+	resizeRefused bool
 }
 
 var _ contracts.ScreenReader = (*EmulatorReader)(nil)
@@ -51,30 +57,54 @@ func NewEmulatorReader(columns, rows int, limits Limits, regions []contracts.Reg
 }
 
 func (reader *EmulatorReader) Feed(bytes []byte) error {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
 	if err := reader.limits.checkChunk(len(bytes)); err != nil {
+		reader.feedRefused = true
 		return err
 	}
 
-	if _, err := reader.terminal.Write(bytes); err != nil {
+	written, err := reader.terminal.Write(bytes)
+	if written > 0 {
+		reader.version++
+	}
+	if err != nil {
+		reader.feedRefused = true
 		return err
 	}
+	reader.feedRefused = false
 	reader.countGenerations()
 
 	return nil
 }
 
 func (reader *EmulatorReader) Resize(columns, rows int) error {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
 	if err := reader.limits.checkSize(columns, rows); err != nil {
+		reader.resizeRefused = true
 		return err
 	}
 
+	reader.resizeRefused = false
 	reader.terminal.Resize(columns, rows)
+	reader.version++
 	reader.countGenerations()
 
 	return nil
 }
 
 func (reader *EmulatorReader) Snapshot() contracts.Snapshot {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	return reader.snapshot()
+}
+
+// snapshot reads the screen; the caller holds the lock.
+func (reader *EmulatorReader) snapshot() contracts.Snapshot {
 	columns, height := reader.terminal.Width(), reader.terminal.Height()
 	rows := make([]string, height)
 
@@ -94,22 +124,48 @@ func (reader *EmulatorReader) Snapshot() contracts.Snapshot {
 	}
 
 	cursor := reader.terminal.CursorPosition()
-	buffer := contracts.NormalBuffer
-	if reader.terminal.IsAltScreen() {
-		buffer = contracts.AlternateBuffer
-	}
 
 	return contracts.Snapshot{
 		Rows:    rows,
 		Cursor:  contracts.Cursor{Row: cursor.Y, Column: cursor.X, Visible: reader.cursorVisible},
-		Buffer:  buffer,
+		Buffer:  reader.buffer(),
 		Columns: columns,
 		Height:  height,
 	}
 }
 
+// buffer names the screen buffer shown; the caller holds the lock.
+func (reader *EmulatorReader) buffer() contracts.Buffer {
+	if reader.terminal.IsAltScreen() {
+		return contracts.AlternateBuffer
+	}
+
+	return contracts.NormalBuffer
+}
+
 func (reader *EmulatorReader) Generation(region string) uint64 {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
 	return reader.generations[region]
+}
+
+// Unreadable says whether the screen shown may be wrong: the last feed failed, until a good feed, or the last resize
+// was refused, so the grid keeps a size the program no longer draws at, until a good resize.
+func (reader *EmulatorReader) Unreadable() bool {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	return reader.feedRefused || reader.resizeRefused
+}
+
+// Version goes up with every feed that wrote bytes and every resize, so a watcher can tell cheaply that the screen
+// may have changed since it last read it.
+func (reader *EmulatorReader) Version() uint64 {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	return reader.version
 }
 
 // Follow feeds every chunk the program writes into the reader until the source ends, calling afterChunk once each
@@ -140,7 +196,7 @@ const followChunkBytes = 32 << 10
 // countGenerations raises the generation of each region whose text changed since the last count; a region that is
 // not drawn counts as its own text, so it changes when it appears or goes.
 func (reader *EmulatorReader) countGenerations() {
-	snapshot := reader.Snapshot()
+	snapshot := reader.snapshot()
 
 	for _, region := range reader.regions {
 		hash := fnv.New64a()
