@@ -1,6 +1,7 @@
 import itertools
 import sys
 import threading
+from types import FrameType
 import traceback
 from collections.abc import Callable
 
@@ -14,6 +15,7 @@ SLOW_TURN_SECONDS = 1.0
 HOLDER_CHECK_SECONDS = 1.0
 # a hold this long has its holder's stack logged once, so each slow hold names the code that made it
 SLOW_HOLD_SECONDS = 3.0
+OTHER_THREAD_FRAMES = 6
 
 
 class WriteTurnQueue(WriteTurns):
@@ -73,9 +75,18 @@ class WriteTurnQueue(WriteTurns):
         if holder is None or holder.number == self.shown_holder_number:
             return
         self.shown_holder_number = holder.number
-        frame = sys._current_frames().get(holder.thread.ident or 0)
+        frames = sys._current_frames()
+        frame = frames.get(holder.thread.ident or 0)
         where = "".join(traceback.format_stack(frame)) if frame is not None else "its thread shows no frame"
-        self.slow_turn_log(f"the database write turn is held {current_time - self.turn_started_at:.1f} seconds by {holder.described()} on thread {holder.thread.name}, which stands at:\n{where}")
+        self.slow_turn_log(f"the database write turn is held {current_time - self.turn_started_at:.1f} seconds by {holder.described()} on thread {holder.thread.name}, which stands at:\n{where}"
+                           f"while the other threads stand at:\n{self.other_threads(frames, holder.thread.ident or 0)}")
+
+    # the last frames of every other thread, as a holder that does almost nothing is slow when another thread holds the CPU
+    @staticmethod
+    def other_threads(frames: dict[int, FrameType], holder_ident: int) -> str:
+        names = {thread.ident: thread.name for thread in threading.enumerate()}
+        return "".join(f"[{names.get(ident, ident)}]\n" + "".join(traceback.format_stack(frame)[-OTHER_THREAD_FRAMES:])
+                       for ident, frame in frames.items() if ident != holder_ident)
 
     # the ask that holds the turn, or, between two holders, the earlier ask the turn goes to next
     def holder_text(self) -> str:
