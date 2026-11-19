@@ -30,9 +30,9 @@ use Tests\TestCase;
  */
 final class ConversationVisitTest extends TestCase
 {
+    use HasResearcherAgent;
     use RefreshHookDatabase;
     use StartsOwnerRequest;
-    use HasResearcherAgent;
 
     public function test_a_b_a_in_one_process_gives_three_ordered_visits_on_one_session(): void
     {
