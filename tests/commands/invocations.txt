@@ -304,6 +304,7 @@ agent plugin enable --help
 agent plugin disable --help
 agent plugin remove --help
 agent plugin upgrade --help
+agent plugin queue --help
 agent mcp list
 agent mcp suggested
 agent mcp check --help

@@ -2426,6 +2426,21 @@ options:
   --ref REF   the commit or tag to upgrade to; its newest when left out
   --yes       upgrade it after the preview
 
+$ agent: journal plugin queue --help
+exit 0
+usage: journal plugin queue [-h] --kind KIND --checkout CHECKOUT
+                            name command [command ...]
+
+positional arguments:
+  name
+  command              after --: the command and its arguments
+
+options:
+  -h, --help           show this help message and exit
+  --kind KIND          what the run is, so runs of one kind wait for each
+                       other
+  --checkout CHECKOUT  the folder it runs in
+
 $ agent: journal mcp list
 exit 0
 
