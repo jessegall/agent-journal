@@ -127,6 +127,22 @@ final class TerminalView extends Model implements ReadableModel
     }
 
     /**
+     * One row per runtime of the host with a view not ended, carrying the shortest interval its views ask for.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function watchedOnHost(Builder $query, string $hostId): void
+    {
+        $query->whereNull('closed_at')
+            ->whereHas('runtime', fn (Builder $runtime) => $runtime->where('host_id', $hostId))
+            ->select('agent_runtime_id')
+            ->selectRaw('min(interval_ms) as interval_ms')
+            ->groupBy('agent_runtime_id')
+            ->orderBy('agent_runtime_id');
+    }
+
+    /**
      * Live views whose lease ran out unrenewed.
      *
      * @param  Builder<static>  $query
