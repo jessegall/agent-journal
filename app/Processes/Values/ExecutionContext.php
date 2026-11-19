@@ -51,7 +51,7 @@ final readonly class ExecutionContext
 
     public function withWorkingFolder(string $workingFolder): self
     {
-        return new self($this->dialect, $workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases, $this->pipefail, $this->lastStatus);
+        return clone($this, ['workingFolder' => $workingFolder]);
     }
 
     /**
@@ -59,7 +59,7 @@ final readonly class ExecutionContext
      */
     public function withEnvironment(array $environment): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $environment, $this->programs, $this->positional, $this->aliases, $this->pipefail, $this->lastStatus);
+        return clone($this, ['environment' => $environment]);
     }
 
     /**
@@ -67,7 +67,7 @@ final readonly class ExecutionContext
      */
     public function withPrograms(array $programs): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $programs, $this->positional, $this->aliases, $this->pipefail, $this->lastStatus);
+        return clone($this, ['programs' => $programs]);
     }
 
     /**
@@ -75,7 +75,7 @@ final readonly class ExecutionContext
      */
     public function withPositional(array $positional): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $positional, $this->aliases, $this->pipefail, $this->lastStatus);
+        return clone($this, ['positional' => $positional]);
     }
 
     /**
@@ -85,16 +85,16 @@ final readonly class ExecutionContext
      */
     public function insideAlias(string $aliasId, array $arguments): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $arguments, [...$this->aliases, $aliasId], $this->pipefail, $this->lastStatus);
+        return clone($this, ['positional' => $arguments, 'aliases' => [...$this->aliases, $aliasId]]);
     }
 
     public function withPipefail(bool $pipefail): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases, $pipefail, $this->lastStatus);
+        return clone($this, ['pipefail' => $pipefail]);
     }
 
     public function withLastStatus(int $status): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases, $this->pipefail, $status);
+        return clone($this, ['lastStatus' => $status]);
     }
 }

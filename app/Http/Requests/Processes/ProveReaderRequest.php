@@ -33,7 +33,9 @@ final class ProveReaderRequest extends FormRequest
      */
     public function runIds(): array
     {
-        /** @var list<string> $runs */
+        /**
+         * @var list<string> $runs
+         */
         $runs = $this->validated('runs');
 
         return $runs;

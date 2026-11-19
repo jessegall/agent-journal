@@ -37,13 +37,13 @@ final readonly class RunSnapshotReader
             ->first() ?? throw new NotFoundHttpException();
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
 
-        return new RunSnapshotData(
-            $run->id,
-            $run->update_sequence,
-            $run->mode->value,
-            $run->lifecycle->value,
-            array_values($parts->map(fn (PartRun $part): PartSnapshotData => $this->partOf($part))->all()),
-        );
+        return RunSnapshotData::from([
+            'runId' => $run->id,
+            'sequence' => $run->update_sequence,
+            'mode' => $run->mode->value,
+            'lifecycle' => $run->lifecycle->value,
+            'parts' => array_values($parts->map(fn (PartRun $part) => $this->partOf($part))->all()),
+        ]);
     }
 
     private function partOf(PartRun $part): PartSnapshotData

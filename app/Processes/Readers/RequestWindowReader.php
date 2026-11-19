@@ -44,18 +44,18 @@ final readonly class RequestWindowReader implements PageReader
         $latest = $proposals->first()?->revisions()->orderByDesc('revision')->first()?->payload;
         $active = $this->activeRule($request, $latest);
 
-        return new RequestWindowData(
-            RequestRowData::fromRequest($request),
-            $request->nextStep()->steps,
-            array_values(
-                $proposals->map(fn (RuleProposal $proposal): ProposalData => $this->proposalOf($proposal, $active))->all(),
+        return RequestWindowData::from([
+            'request' => RequestRowData::fromRequest($request),
+            'steps' => $request->nextStep()->steps,
+            'proposals' => array_values(
+                $proposals->map(fn (RuleProposal $proposal) => $this->proposalOf($proposal, $active))->all(),
             ),
-            $this->samplesOf($request),
-            $this->readersOf($request),
-            $this->unsampledOf($request, $latest),
-            $active === null ? 0 : $active->active_revision,
-            $request->source_digest,
-        );
+            'samples' => $this->samplesOf($request),
+            'readers' => $this->readersOf($request),
+            'unsampledStatuses' => $this->unsampledOf($request, $latest),
+            'activeRevision' => $active === null ? 0 : $active->active_revision,
+            'lineDigest' => $request->source_digest,
+        ]);
     }
 
     private function activeRule(CommandRequest $request, CommandRule|null $declared): ClassificationRule|null
@@ -76,15 +76,15 @@ final readonly class RequestWindowReader implements PageReader
         $classes = $active === null ? CommandClassSet::empty() : $active->activeRevision->payload->classes;
         $revisions = $proposal->revisions()->orderByDesc('revision')->readLimit(20)->get();
 
-        return new ProposalData(
-            $proposal->id,
-            $proposal->state->value,
-            $proposal->current_revision,
-            "{$proposal->author_type}:{$proposal->author_id}",
-            array_values($revisions->map(
-                fn (RuleProposalRevision $revision): DeclarationData => DeclarationData::fromRevision($revision, $classes),
+        return ProposalData::from([
+            'id' => $proposal->id,
+            'state' => $proposal->state->value,
+            'currentRevision' => $proposal->current_revision,
+            'author' => "{$proposal->author_type}:{$proposal->author_id}",
+            'revisions' => array_values($revisions->map(
+                fn (RuleProposalRevision $revision) => DeclarationData::fromRevision($revision, $classes),
             )->all()),
-        );
+        ]);
     }
 
     /**
@@ -94,7 +94,7 @@ final readonly class RequestWindowReader implements PageReader
     {
         $permits = EvidencePermit::query()->where('command_request_id', $request->id)->readLimit(20)->get();
 
-        return array_values($permits->map(fn (EvidencePermit $permit): SampleData => new SampleData(
+        return array_values($permits->map(fn (EvidencePermit $permit) => new SampleData(
             $permit->id,
             $permit->source_line,
             $permit->approved_classes,
@@ -123,7 +123,7 @@ final readonly class RequestWindowReader implements PageReader
     {
         $readers = ReaderRevision::query()->where('command_request_id', $request->id)->readLimit(20)->get();
 
-        return array_values($readers->map(fn (ReaderRevision $reader): ReaderProofData => new ReaderProofData(
+        return array_values($readers->map(fn (ReaderRevision $reader) => new ReaderProofData(
             $reader->id,
             $reader->declaration_revision,
             array_values(ReaderProof::query()->where('reader_revision_id', $reader->id)->readLimit(10)->get()->map(

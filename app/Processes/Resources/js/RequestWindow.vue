@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import DataSection from './DataSection.vue';
+
 import type { RequestWindowData } from '@generated/types/processes';
 import { usePage } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
@@ -23,15 +25,7 @@ const refusal = computed(() => page.props.errors.review ?? '');
         <template v-if="refusal !== ''">
             <p role="alert">{{ refusal }}</p>
         </template>
-        <section aria-label="Where the request stands">
-            <p><code>{{ data.request.line }}</code></p>
-            <p>State: {{ data.request.state }} (held because {{ data.request.holdReason }})</p>
-            <template v-if="data.steps.length > 0">
-                <p>Still required: {{ data.steps.join('; ') }}</p>
-            </template>
-            <p>Next: <code>{{ data.request.next }}</code></p>
-            <p>Active revision of this rule: {{ data.activeRevision === 0 ? 'none' : data.activeRevision }}</p>
-        </section>
+        <DataSection :data="data" />
         <template v-for="proposal in data.proposals" :key="proposal.id">
             <section :aria-label="`Proposal ${proposal.id}`">
                 <h2>

@@ -86,26 +86,12 @@ final readonly class ArgumentGrammar
 
     public function withOptions(OptionGrammar ...$options): self
     {
-        return new self(
-            [...$this->options, ...array_values($options)],
-            $this->operands,
-            $this->repeatsLastOperand,
-            $this->endsOptionsAtDoubleDash,
-            $this->acceptsNumericOptions,
-            $this->minimumOperands,
-        );
+        return clone($this, ['options' => [...$this->options, ...array_values($options)]]);
     }
 
     public function withOperands(OperandType ...$operands): self
     {
-        return new self(
-            $this->options,
-            [...$this->operands, ...array_values($operands)],
-            $this->repeatsLastOperand,
-            $this->endsOptionsAtDoubleDash,
-            $this->acceptsNumericOptions,
-            $this->minimumOperands,
-        );
+        return clone($this, ['operands' => [...$this->operands, ...array_values($operands)]]);
     }
 
     /**
@@ -113,26 +99,12 @@ final readonly class ArgumentGrammar
      */
     public function repeating(): self
     {
-        return new self(
-            $this->options,
-            $this->operands,
-            true,
-            $this->endsOptionsAtDoubleDash,
-            $this->acceptsNumericOptions,
-            $this->minimumOperands,
-        );
+        return clone($this, ['repeatsLastOperand' => true]);
     }
 
     public function endingOptionsAtDoubleDash(): self
     {
-        return new self(
-            $this->options,
-            $this->operands,
-            $this->repeatsLastOperand,
-            true,
-            $this->acceptsNumericOptions,
-            $this->minimumOperands,
-        );
+        return clone($this, ['endsOptionsAtDoubleDash' => true]);
     }
 
     /**
@@ -140,14 +112,7 @@ final readonly class ArgumentGrammar
      */
     public function requiringOperands(int $count): self
     {
-        return new self(
-            $this->options,
-            $this->operands,
-            $this->repeatsLastOperand,
-            $this->endsOptionsAtDoubleDash,
-            $this->acceptsNumericOptions,
-            $count,
-        );
+        return clone($this, ['minimumOperands' => $count]);
     }
 
     /**
@@ -155,14 +120,7 @@ final readonly class ArgumentGrammar
      */
     public function acceptingNumericOptions(): self
     {
-        return new self(
-            $this->options,
-            $this->operands,
-            $this->repeatsLastOperand,
-            $this->endsOptionsAtDoubleDash,
-            true,
-            $this->minimumOperands,
-        );
+        return clone($this, ['acceptsNumericOptions' => true]);
     }
 
     /**

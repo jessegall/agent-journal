@@ -28,7 +28,9 @@ final class DeclarationRequest extends FormRequest
      */
     public function declaration(): array
     {
-        /** @var array<string, mixed> $declaration */
+        /**
+         * @var array<string, mixed> $declaration
+         */
         $declaration = $this->validated('declaration');
 
         return $declaration;

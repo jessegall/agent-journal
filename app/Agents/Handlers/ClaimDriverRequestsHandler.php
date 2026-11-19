@@ -27,7 +27,9 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
     public function handle(ClaimDriverRequests $command): ClaimedRequests
     {
-        /** @var Collection<string, AgentRuntime> $runtimes */
+        /**
+         * @var Collection<string, AgentRuntime> $runtimes
+         */
         $runtimes = AgentRuntime::query()
             ->with('session.agent')
             ->where('host_id', $command->hostId)

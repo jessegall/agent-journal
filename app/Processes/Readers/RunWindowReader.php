@@ -37,8 +37,8 @@ final readonly class RunWindowReader implements PageReader
 
         return new RunWindowData(
             $snapshot,
-            $parts->mapWithKeys(fn (PartRun $part): array => [$part->id => $this->outputsOf($part)])->all(),
-            $parts->mapWithKeys(fn (PartRun $part): array => [$part->id => $this->problemsOf($part)])->all(),
+            $parts->mapWithKeys(fn (PartRun $part) => [$part->id => $this->outputsOf($part)])->all(),
+            $parts->mapWithKeys(fn (PartRun $part) => [$part->id => $this->problemsOf($part)])->all(),
             $run->stop_reason,
         );
     }

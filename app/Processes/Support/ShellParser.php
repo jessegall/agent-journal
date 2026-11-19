@@ -43,7 +43,7 @@ final readonly class ShellParser implements ShellCommandParser
         $folder = (string) getcwd();
         $classification = $this->classifier->classify($tree, new ExecutionContext($dialect, $folder, $folder));
         $parts = array_map(
-            fn (PartClassification $part): CommandPart => $this->partOf($tree, $classification, $part),
+            fn (PartClassification $part) => $this->partOf($tree, $classification, $part),
             $classification->parts,
         );
 

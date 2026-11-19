@@ -44,7 +44,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
             $this->checks->check($declaration->proposed->rule, false);
         }
 
-        $open = fn (DeclaredProposal $declaration): ProposalReceipt => ProposalReceipt::of(
+        $open = fn (DeclaredProposal $declaration) => ProposalReceipt::of(
             RuleProposal::open($projectKey, $actor, $declaration->requestId, $declaration->proposed, null),
             $declaration->proposed,
         );

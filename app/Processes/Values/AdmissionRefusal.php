@@ -33,8 +33,7 @@ final readonly class AdmissionRefusal
 
     /**
      * This refusal with the command request that now holds the work and its next allowed step.
-     */
-    /**
+     *
      * The refusal as an agent reads it: what was refused and why, how to correct it, and the request that holds the
      * work with its next step.
      */
@@ -50,7 +49,7 @@ final readonly class AdmissionRefusal
 
     public function heldIn(string $requestId, string $next): self
     {
-        return new self($this->code, $this->node, $this->excerpt, $this->reason, $this->correction, $requestId, $next);
+        return clone($this, ['requestId' => $requestId, 'next' => $next]);
     }
 
     private static function redacted(string $source): string

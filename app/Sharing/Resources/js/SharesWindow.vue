@@ -2,6 +2,7 @@
 import type { ShareFiltersData, ShareListData } from '@generated/types/sharing';
 import { Link, router } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
+import RowsTable from '@kit/RowsTable';
 import { reactive } from 'vue';
 
 /**
@@ -78,38 +79,22 @@ function nextPage(): void {
             </label>
             <button type="submit">Filter</button>
         </form>
-        <template v-if="data.rows.length === 0">
-            <p>No share matches.</p>
-        </template>
-        <template v-else>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Share</th>
-                        <th>State</th>
-                        <th>Record</th>
-                        <th>Gateway</th>
-                        <th>Expires</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template v-for="row in data.rows" :key="row.id">
-                        <tr>
-                            <td>
-                                <Link :href="`/sharing/shares/${row.id}`"
-                                    >{{ row.isProposal ? 'Proposal' : 'Share' }}
-                                    {{ row.number }}</Link
-                                >
-                            </td>
-                            <td>{{ row.state }}</td>
-                            <td>{{ row.rootType }}</td>
-                            <td>{{ row.gatewayKey ?? '' }}</td>
-                            <td>{{ row.expiresAt }}</td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </template>
+        <RowsTable
+            :headings="['Share', 'State', 'Record', 'Gateway', 'Expires']"
+            :rows="data.rows"
+            :row-key="(row) => row.id"
+            empty="No share matches."
+        >
+            <template #row="{ row }">
+                <td>
+                    <Link :href="`/sharing/shares/${row.id}`">{{ row.isProposal ? 'Proposal' : 'Share' }} {{ row.number }}</Link>
+                </td>
+                <td>{{ row.state }}</td>
+                <td>{{ row.rootType }}</td>
+                <td>{{ row.gatewayKey ?? '' }}</td>
+                <td>{{ row.expiresAt }}</td>
+            </template>
+        </RowsTable>
         <template v-if="data.nextAfter">
             <button type="button" @click="nextPage">Older shares</button>
         </template>

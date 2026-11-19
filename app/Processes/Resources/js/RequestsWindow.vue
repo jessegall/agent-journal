@@ -2,6 +2,7 @@
 import type { BundleRowData, RequestListData } from '@generated/types/processes';
 import { Link, router } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
+import RowsTable from '@kit/RowsTable';
 
 /**
  * The project owner's review list: command requests and where each stands, the project's rules, and the module rule
@@ -24,35 +25,22 @@ function approveBundle(bundle: BundleRowData): void {
         <p>Classification does not grant permission.</p>
         <section aria-label="Command requests">
             <h2>Requests</h2>
-            <template v-if="data.requests.length === 0">
-                <p>No command request is waiting.</p>
-            </template>
-            <template v-else>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Request</th>
-                            <th>Line</th>
-                            <th>Why held</th>
-                            <th>State</th>
-                            <th>Next step</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template v-for="request in data.requests" :key="request.id">
-                            <tr>
-                                <td>
-                                    <Link :href="`/processes/requests/${request.id}`">{{ request.operation }}</Link>
-                                </td>
-                                <td><code>{{ request.line }}</code></td>
-                                <td>{{ request.holdReason }}</td>
-                                <td>{{ request.state }}</td>
-                                <td><code>{{ request.next }}</code></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </template>
+            <RowsTable
+                :headings="['Request', 'Line', 'Why held', 'State', 'Next step']"
+                :rows="data.requests"
+                :row-key="(request) => request.id"
+                empty="No command request is waiting."
+            >
+                <template #row="{ row: request }">
+                    <td>
+                        <Link :href="`/processes/requests/${request.id}`">{{ request.operation }}</Link>
+                    </td>
+                    <td><code>{{ request.line }}</code></td>
+                    <td>{{ request.holdReason }}</td>
+                    <td>{{ request.state }}</td>
+                    <td><code>{{ request.next }}</code></td>
+                </template>
+            </RowsTable>
         </section>
         <section aria-label="Rules">
             <h2>Rules</h2>

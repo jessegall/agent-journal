@@ -21,7 +21,7 @@ final readonly class PhaseChecksController
         return new JsonResponse([
             'phase' => $phase->number,
             'title' => $phase->title,
-            'checks' => $checks->map(fn (PhaseCheck $check): array => [
+            'checks' => $checks->map(fn (PhaseCheck $check) => [
                 'operation' => $check->operation,
                 'outcome' => $check->outcome,
                 'receipt' => $check->receipt_id,

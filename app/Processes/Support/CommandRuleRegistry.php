@@ -94,7 +94,7 @@ final readonly class CommandRuleRegistry
         }
 
         return array_values(array_map(
-            fn (array $owned): RuleBundle => new RuleBundle($owned[0]->scope->owner, $owned[0]->scope->version, $owned),
+            fn (array $owned) => new RuleBundle($owned[0]->scope->owner, $owned[0]->scope->version, $owned),
             $rules,
         ));
     }

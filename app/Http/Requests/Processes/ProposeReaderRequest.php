@@ -46,7 +46,9 @@ final class ProposeReaderRequest extends FormRequest
      */
     public function definition(): ReaderDefinition
     {
-        /** @var array<string, mixed> $definition */
+        /**
+         * @var array<string, mixed> $definition
+         */
         $definition = $this->validated('definition');
 
         return ReaderDefinition::fromArray($definition);

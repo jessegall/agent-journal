@@ -127,7 +127,7 @@ final readonly class Classification
     {
         $syntaxFacts = array_filter(
             $this->syntaxFacts,
-            fn (ClassFact $fact): bool => $this->isWithin($fact->node, $part->node),
+            fn (ClassFact $fact) => $this->isWithin($fact->node, $part->node),
         );
 
         return [...$part->facts, ...array_values($syntaxFacts)];

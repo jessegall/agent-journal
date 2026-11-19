@@ -60,7 +60,7 @@ final readonly class CommandPermissions
 
     public function allowing(CommandPattern ...$patterns): self
     {
-        return new self($this->source, $this->allowed, $this->denied, $this->ceiling, $this->allowedPatterns->with(CommandPatternSet::of(...$patterns)), $this->deniedPatterns, $this->revision);
+        return clone($this, ['allowedPatterns' => $this->allowedPatterns->with(CommandPatternSet::of(...$patterns))]);
     }
 
     /**
@@ -68,7 +68,7 @@ final readonly class CommandPermissions
      */
     public function revoking(CommandClassSet $classes, CommandPatternSet $patterns): self
     {
-        return new self($this->source, $this->allowed, $this->denied->union($classes), $this->ceiling, $this->allowedPatterns, $this->deniedPatterns->with($patterns), $this->revision + 1);
+        return clone($this, ['denied' => $this->denied->union($classes), 'deniedPatterns' => $this->deniedPatterns->with($patterns), 'revision' => $this->revision + 1]);
     }
 
     /**

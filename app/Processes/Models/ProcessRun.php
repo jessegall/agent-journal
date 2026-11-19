@@ -120,8 +120,7 @@ final class ProcessRun extends Model implements ReadableModel
 
     /**
      * Whether its result may answer the agent: an evidence run never gets a result receipt.
-     */
-    /**
+     *
      * Whether every part ended on its own and its output was captured complete, as a sample must to be evidence.
      */
     public function hasCompleteEvidence(): bool
@@ -225,8 +224,7 @@ final class ProcessRun extends Model implements ReadableModel
 
     /**
      * Records that the run was stopped and why; a stopped run never ends with a pass.
-     */
-    /**
+     *
      * Nothing more will be heard from the run's supervisor; its unfinished parts were marked lost.
      */
     public function markLost(): void

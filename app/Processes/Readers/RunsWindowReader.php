@@ -27,9 +27,9 @@ final readonly class RunsWindowReader implements PageReader
             ->get()
             ->groupBy('process_run_id');
 
-        return new RunListData(array_values($runs->map(fn (ProcessRun $run): RunRowData => RunRowData::fromRun(
+        return RunListData::from(['runs' => array_values($runs->map(fn (ProcessRun $run) => RunRowData::fromRun(
             $run,
             array_values(array_unique($operations->get($run->id)?->pluck('operation')->all() ?? [])),
-        ))->all()));
+        ))->all())]);
     }
 }

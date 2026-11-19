@@ -39,7 +39,7 @@ final readonly class WordReading
 
     public function placedAs(WordPlace $place): self
     {
-        return new self($this->context, $this->word, $this->command, $this->depth, $this->isBeforeArguments, $place);
+        return clone($this, ['place' => $place]);
     }
 
     public function end(): int

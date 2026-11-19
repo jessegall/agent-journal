@@ -30,7 +30,7 @@ final readonly class ActivityProjection
     {
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
 
-        return array_values($parts->map(fn (PartRun $part): PartActivity => $this->ofPart($part))->all());
+        return array_values($parts->map(fn (PartRun $part) => $this->ofPart($part))->all());
     }
 
     public function ofPart(PartRun $part): PartActivity

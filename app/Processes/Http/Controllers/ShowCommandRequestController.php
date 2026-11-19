@@ -30,12 +30,12 @@ final readonly class ShowCommandRequestController
             'state' => $request->state->value,
             'steps' => $next->steps,
             'next' => $next->command,
-            'proposals' => $proposals->map(fn (RuleProposal $proposal): array => [
+            'proposals' => $proposals->map(fn (RuleProposal $proposal) => [
                 'proposal_id' => $proposal->id,
                 'state' => $proposal->state->value,
                 'revision' => $proposal->current_revision,
             ])->all(),
-            'readers' => $readers->map(fn (ReaderRevision $reader): array => [
+            'readers' => $readers->map(fn (ReaderRevision $reader) => [
                 'reader_revision_id' => $reader->id,
                 'declaration_revision' => $reader->declaration_revision,
                 'proven' => $reader->isProven(),

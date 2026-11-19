@@ -34,7 +34,7 @@ final readonly class ExplainCommandController
             return new JsonResponse($explanation->toArray());
         }
         $held = array_map(
-            fn (HeldPartData $part): HeldPartData => $this->withRequest($part, $request, $commands),
+            fn (HeldPartData $part) => $this->withRequest($part, $request, $commands),
             $explanation->held,
         );
 

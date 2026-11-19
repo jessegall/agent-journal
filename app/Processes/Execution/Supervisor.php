@@ -288,8 +288,7 @@ final readonly class Supervisor
     /**
      * Ends an external part: stopped when a stop was requested, otherwise drained and ended with its own status. It
      * returns the status the next branch decides on.
-     */
-    /**
+     *
      * A part whose admission went stale while the run was going (a rule it needs was retired) is skipped, never run;
      * the answer is why, or nothing while the admission holds.
      */

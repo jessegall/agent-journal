@@ -23,7 +23,7 @@ final readonly class ListProposalsController
             ->readLimit(100)
             ->get();
 
-        return new JsonResponse($proposals->map(fn (RuleProposal $proposal): array => [
+        return new JsonResponse($proposals->map(fn (RuleProposal $proposal) => [
             'proposal_id' => $proposal->id,
             'program' => $proposal->program,
             'operation' => $proposal->operation,

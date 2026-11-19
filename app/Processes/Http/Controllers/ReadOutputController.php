@@ -99,14 +99,14 @@ final readonly class ReadOutputController
     private function summary(ProcessRun $run, CommandBus $commands): JsonResponse
     {
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
-        $envelopes = $parts->map(fn (PartRun $part): EvidenceRange => EvidenceRange::envelope($part->id))->all();
+        $envelopes = $parts->map(fn (PartRun $part) => EvidenceRange::envelope($part->id))->all();
         $commands->run(new RecordEvidenceReads($run->id, array_values($envelopes)));
 
         return new JsonResponse([
             'label' => 'diagnostic output',
             'mode' => $run->mode->value,
             'lifecycle' => $run->lifecycle->value,
-            'parts' => $parts->map(fn (PartRun $part): array => [
+            'parts' => $parts->map(fn (PartRun $part) => [
                 'node' => $part->syntax_node,
                 'attempt' => $part->attempt,
                 'operation' => $part->operation,
