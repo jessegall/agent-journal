@@ -41,6 +41,11 @@ final readonly class StopRequested implements HookInput
         return $state->onStop($this);
     }
 
+    public function leavesAgentIdle(AnswerType $type): bool
+    {
+        return $type === AnswerType::Allow;
+    }
+
     public function contextStart(): Option
     {
         return None::create();
