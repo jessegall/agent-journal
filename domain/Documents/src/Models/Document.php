@@ -102,8 +102,13 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * Adds the next revision and makes it the document's current one.
      */
-    public function addRevision(string $title, string $abstract, string $body, ActorType $authorType, string $authorId): DocumentRevision
-    {
+    public function addRevision(
+        string $title,
+        string $abstract,
+        string $body,
+        ActorType $authorType,
+        string $authorId,
+    ): DocumentRevision {
         $revision = $this->revisions()->create([
             'title' => $title,
             'abstract' => $abstract,
@@ -137,15 +142,26 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
      */
     public function closes(): array
     {
-        return array_values(DocumentClose::query()->where('document_id', $this->id)->orderByDesc('closed_at')->orderByDesc('id')->get()
-            ->map(fn (DocumentClose $close) => $close->card())->all());
+        return array_values(DocumentClose::query()
+            ->where('document_id', $this->id)
+            ->orderByDesc('closed_at')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (DocumentClose $close) => $close->card())
+            ->all());
     }
 
     public function card(): DocumentCard
     {
         $revision = $this->currentRevisionOrFail();
 
-        return DocumentCard::from(['id' => $this->id, 'number' => (string) $this->number, 'title' => $revision->title, 'abstract' => $revision->abstract, 'attention' => $this->attention]);
+        return DocumentCard::from([
+            'id' => $this->id,
+            'number' => (string) $this->number,
+            'title' => $revision->title,
+            'abstract' => $revision->abstract,
+            'attention' => $this->attention,
+        ]);
     }
 
     /**
@@ -191,7 +207,13 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     {
         $revision = $this->currentRevisionOrFail();
 
-        return DockCard::from(['type' => 'doc', 'number' => (string) $this->number, 'title' => $revision->title, 'abstract' => $revision->abstract, 'route' => "/documents/docs/{$this->number}"]);
+        return DockCard::from([
+            'type' => 'doc',
+            'number' => (string) $this->number,
+            'title' => $revision->title,
+            'abstract' => $revision->abstract,
+            'route' => "/documents/docs/{$this->number}",
+        ]);
     }
 
     public function view(): DocumentView
@@ -219,7 +241,8 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
      */
     public static function lockedForEditing(int $number): self
     {
-        return self::query()->with('currentRevision')->where('number', $number)->lockForUpdate()->first() ?? throw DocumentMissing::numbered($number);
+        return self::query()->with('currentRevision')->where('number', $number)->lockForUpdate()->first()
+            ?? throw DocumentMissing::numbered($number);
     }
 
     /**
@@ -293,13 +316,15 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     public function publishedRevision(string|null $version): DocumentRevision
     {
         if ($version === null) {
-            return $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->first() ?? throw TextVersionUnavailable::named('current');
+            return $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->first()
+                ?? throw TextVersionUnavailable::named('current');
         }
 
         if (! ctype_digit($version)) {
             throw TextVersionUnavailable::named($version);
         }
 
-        return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->first() ?? throw TextVersionUnavailable::named($version);
+        return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->first()
+            ?? throw TextVersionUnavailable::named($version);
     }
 }
