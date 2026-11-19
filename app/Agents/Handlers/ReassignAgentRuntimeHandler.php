@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Commands\ReassignAgentRuntime;
@@ -20,7 +19,6 @@ final readonly class ReassignAgentRuntimeHandler implements CommandHandler
     public function __construct(
         private DriverRequests $requests,
         private LaunchCredentials $credentials,
-        private CurrentActor $actors,
         private Dispatcher $events,
     ) {}
 
@@ -49,7 +47,7 @@ final readonly class ReassignAgentRuntimeHandler implements CommandHandler
             $fromHostId,
             $runtime->host_id,
             $runtime->process_generation,
-            ActorIdentity::of($this->actors->actor()),
+            ActorIdentity::of($command->dispatchedBy()),
             $command->proof,
             $command->reason,
         ));

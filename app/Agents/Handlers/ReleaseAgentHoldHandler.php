@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\ReleaseAgentHold;
 use App\Agents\Events\AgentHoldReleased;
@@ -17,7 +16,6 @@ final readonly class ReleaseAgentHoldHandler implements CommandHandler
 {
     public function __construct(
         private DriverRequests $requests,
-        private CurrentActor $actors,
         private Dispatcher $events,
     ) {}
 
@@ -27,7 +25,11 @@ final readonly class ReleaseAgentHoldHandler implements CommandHandler
         $runtime = $this->requests->runtimeOf($target);
 
         if (! $runtime->isHeldFor($command->expectedHold)) {
-            throw DriverRequestRefused::holdChanged($target, $command->expectedHold->value, $runtime->hold_reason->value);
+            throw DriverRequestRefused::holdChanged(
+                $target,
+                $command->expectedHold->value,
+                $runtime->hold_reason->value,
+            );
         }
 
         if (! $runtime->canReleaseHold()) {
@@ -35,7 +37,7 @@ final readonly class ReleaseAgentHoldHandler implements CommandHandler
         }
 
         $runtime->releaseHold();
-        $actor = ActorIdentity::of($this->actors->actor());
+        $actor = ActorIdentity::of($command->dispatchedBy());
         $this->events->dispatch(new AgentHoldReleased($runtime->id, $command->expectedHold, $actor, $command->reason));
     }
 }
