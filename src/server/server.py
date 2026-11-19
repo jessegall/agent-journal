@@ -65,6 +65,7 @@ from server.work.listeners.program_stop_listener_work import ProgramStopListener
 from server.work.listeners.urgent_listener_work import UrgentListenerWork
 from server.tick.ticker import Ticker
 from server.viewer.session_file import SessionFile
+from server.viewer.kept_login_moves import KeptLoginMoves
 from server.enums.closed_service import ClosedService
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_socket_listener import ViewerSocketListener
@@ -104,6 +105,8 @@ CHECK_PERIOD_SECONDS = 60.0
 
 # How often the ticker looks at the code files; a request only reads what it found, and never looks itself.
 CODE_CHECK_SECONDS = 10.0
+# How often the ticker looks for people an upgrade moved, whose kept browser logins must follow them.
+LOGIN_MOVES_SECONDS = 300.0
 
 
 def last_port(home: JournalHome) -> int:
@@ -181,6 +184,8 @@ def main(argv: list[str]) -> int:
     ticker = Ticker(home, Ticker.module_handlers(finder), wakes.wake, containers=partial(KeptRoundContainer, turns=turns), tickets=round_tickets)
     phones = PhoneSessions(home, wakes, turns)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
+    ticker.register(TickHandler(TickInterval(seconds=LOGIN_MOVES_SECONDS), lambda container: KeptLoginMoves(container.get(Database), SessionFile(home.viewer_sessions_file)).moved() and login.reload_sessions(),
+                                "kept login moves", starts_immediately=True))
     reported_findings = ReportedFindings()
     routes = ViewerRoutes(home, wakes, login, reported_findings, hook_database.viewer_tickets, clock, turns)
     inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
