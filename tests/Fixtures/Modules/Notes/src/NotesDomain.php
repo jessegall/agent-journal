@@ -54,6 +54,7 @@ use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
 use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 use Tests\Fixtures\Modules\Notes\Commands\KeepNote;
+use Tests\Fixtures\Modules\Notes\Commands\RetainNote;
 use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
@@ -153,7 +154,7 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function commands(): array
     {
-        return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, SystemNote::class, ClearNotes::class, EngineNote::class, EngineCopyNote::class, KeepNote::class];
+        return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, SystemNote::class, ClearNotes::class, EngineNote::class, EngineCopyNote::class, KeepNote::class, RetainNote::class];
     }
 
     public function skills(): array

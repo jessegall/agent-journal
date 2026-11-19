@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Bus\CommandMiddleware;
 
 use App\Bus\Contracts\CommandMiddleware;
-use App\Bus\Exceptions\RequestKeyConflict;
 use App\Bus\Exceptions\RequestKeyMissing;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\CommandCall;
@@ -36,14 +35,12 @@ final readonly class RecordReceipt implements CommandMiddleware
             return $next($call);
         }
 
-        $caller = $this->callers->of($call->actor());
+        $caller = $this->callers->forCommand($call->name(), $call->actor());
         $receipt = CommandReceipt::lockedFor($caller, $call->name(), $key);
 
-        if ($receipt !== null && ! $receipt->isExpired() && ! $receipt->isFor($call->command())) {
-            throw RequestKeyConflict::for($key);
-        }
-
         if ($receipt !== null) {
+            $receipt->requireFingerprint($call->command());
+
             return $receipt->replay();
         }
 

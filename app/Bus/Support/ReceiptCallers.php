@@ -14,7 +14,11 @@ use App\Actors\Support\ActorContext;
  */
 final readonly class ReceiptCallers
 {
-    public function __construct(private CurrentActor $actors, private WorkStacks $workStacks) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private WorkStacks $workStacks,
+        private CommandRegistry $registry,
+    ) {}
 
     /**
      * The caller of this request.
@@ -33,5 +37,18 @@ final readonly class ReceiptCallers
         $sessions = $this->workStacks->sessionsToAdmit();
 
         return $sessions === [] ? ReceiptCaller::withoutSession($actor) : ReceiptCaller::inSession($actor, $sessions[0]);
+    }
+
+    /**
+     * The receipt identity a command keys its receipts under: the actor alone for a command that keeps its key for
+     * the actor, otherwise the actor in its session.
+     */
+    public function forCommand(string $command, ActorContext $actor): ReceiptCaller
+    {
+        if ($this->registry->hasActorScopedReceipt($command)) {
+            return ReceiptCaller::withoutSession($actor);
+        }
+
+        return $this->of($actor);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Attributes\RequiresRequestKey;
+use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use Carbon\CarbonImmutable;
 
@@ -16,7 +17,7 @@ final readonly class ReceiptRetention
 {
     private const int STANDARD_DAYS = 30;
 
-    private function __construct(public int $retentionDays, public int $tombstoneDays) {}
+    private function __construct(public int $retentionDays, public int|null $tombstoneDays) {}
 
     public static function standard(): self
     {
@@ -35,13 +36,30 @@ final readonly class ReceiptRetention
         return new self($declaration->retentionDays, $declaration->tombstoneDays);
     }
 
+    /**
+     * The retention of a key kept for its actor: it answers for the given days and refuses for good after them.
+     *
+     * @param  class-string  $command
+     */
+    public static function retainedForActor(string $command, RetainedActorRequestKey $declaration): self
+    {
+        if ($declaration->answerDays < 1) {
+            throw CommandDeclarationInvalid::for($command, 'RetainedActorRequestKey answers for at least a day');
+        }
+
+        return new self($declaration->answerDays, null);
+    }
+
     public function answersUntil(CarbonImmutable $taken): CarbonImmutable
     {
         return $taken->addDays($this->retentionDays);
     }
 
-    public function refusesUntil(CarbonImmutable $taken): CarbonImmutable
+    /**
+     * The day the key may be used again; none for a key that stays refused for good.
+     */
+    public function refusesUntil(CarbonImmutable $taken): CarbonImmutable|null
     {
-        return $taken->addDays($this->tombstoneDays);
+        return $this->tombstoneDays === null ? null : $taken->addDays($this->tombstoneDays);
     }
 }

@@ -26,6 +26,7 @@ final readonly class RegisteredCommand
         public bool $repeatableRead,
         public ActorType|null $actor,
         public bool $requiresRequestKey,
+        public bool $actorScopedReceipt,
         public ReceiptRetention $retention,
         public array $middleware,
         public CommandAuthorization|null $authorization = null,

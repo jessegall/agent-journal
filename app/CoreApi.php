@@ -258,6 +258,7 @@ use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
 use App\Bus\Attributes\RequiresRequestKey;
+use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
@@ -1273,6 +1274,7 @@ final class CoreApi
                 RepeatableRead::class,
                 RequiresActor::class,
                 RequiresRequestKey::class,
+                RetainedActorRequestKey::class,
                 ElapsedTime::class,
                 FrameSettlement::class,
                 MiddlewareStage::class,

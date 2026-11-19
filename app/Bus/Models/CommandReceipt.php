@@ -7,6 +7,7 @@ namespace App\Bus\Models;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\RefusalReplayed;
+use App\Bus\Exceptions\RequestKeyConflict;
 use App\Bus\Exceptions\RequestKeyExpired;
 use App\Bus\Support\Operation;
 use App\Bus\Support\PlainValue;
@@ -45,7 +46,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $refusal_code
  * @property string|null $refusal_message
  * @property CarbonImmutable $answers_until
- * @property CarbonImmutable $refuses_until
+ * @property CarbonImmutable|null $refuses_until
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -157,6 +158,18 @@ final class CommandReceipt extends Model implements ReadableModel
         return self::query()->pastRetention($now)->update(['state' => ReceiptState::Expired->value, 'result' => null, 'refusal_code' => null, 'refusal_message' => null]);
     }
 
+    /**
+     * Refuses a different command sent under a key whose answer still stands.
+     *
+     * @throws RequestKeyConflict
+     */
+    public function requireFingerprint(object $command): void
+    {
+        if (! $this->isExpired() && ! $this->isFor($command)) {
+            throw RequestKeyConflict::for($this->request_key);
+        }
+    }
+
     public function isFor(object $command): bool
     {
         return hash_equals($this->fingerprint, PlainValue::fingerprintOf($command));
@@ -221,6 +234,7 @@ final class CommandReceipt extends Model implements ReadableModel
     #[Scope]
     protected function pastTombstone(Builder $query, CarbonImmutable $now): void
     {
-        $query->withoutGlobalScope('caller')->where('refuses_until', '<', $now);
+        // An empty refuses_until keeps the key refused for good, so its tombstone is never pruned.
+        $query->withoutGlobalScope('caller')->whereNotNull('refuses_until')->where('refuses_until', '<', $now);
     }
 }

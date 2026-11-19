@@ -12,6 +12,7 @@ use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
 use App\Bus\Attributes\RequiresRequestKey;
+use App\Bus\Attributes\RetainedActorRequestKey;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\DeclaresClassLevelAbilities;
@@ -90,7 +91,8 @@ final readonly class CommandRegistry
                 exported: $owner->exportsCommand($command),
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
                 actor: self::requiredActorOf($reflection),
-                requiresRequestKey: $reflection->getAttributes(RequiresRequestKey::class) !== [],
+                requiresRequestKey: self::requiresKey($reflection),
+                actorScopedReceipt: $reflection->getAttributes(RetainedActorRequestKey::class) !== [],
                 retention: self::declaredRetentionOf($reflection),
                 middleware: self::orderedFor($command, $owner, $middleware, $owners),
                 authorization: self::authorizationDeclaredBy($reflection),
@@ -189,6 +191,14 @@ final readonly class CommandRegistry
     }
 
     /**
+     * Whether the command keeps its receipts for the actor across sessions, rather than for one session.
+     */
+    public function hasActorScopedReceipt(string $command): bool
+    {
+        return $this->entry($command)->actorScopedReceipt;
+    }
+
+    /**
      * The module middleware a command passes, in order: by stage, then owner order, then declaration order.
      *
      * @return list<RegisteredMiddleware>
@@ -223,8 +233,30 @@ final readonly class CommandRegistry
     private static function declaredRetentionOf(ReflectionClass $command): ReceiptRetention
     {
         $attribute = $command->getAttributes(RequiresRequestKey::class)[0] ?? null;
+        $retained = $command->getAttributes(RetainedActorRequestKey::class)[0] ?? null;
+
+        if ($attribute !== null && $retained !== null) {
+            $both = 'it declares both RequiresRequestKey and RetainedActorRequestKey';
+
+            throw CommandDeclarationInvalid::for($command->getName(), $both);
+        }
+
+        if ($retained !== null) {
+            return ReceiptRetention::retainedForActor($command->getName(), $retained->newInstance());
+        }
 
         return $attribute === null ? ReceiptRetention::standard() : ReceiptRetention::declaredBy($command->getName(), $attribute->newInstance());
+    }
+
+    /**
+     * Whether every call of the command must carry a request key: one that keeps its receipt, or its actor's.
+     *
+     * @param  ReflectionClass<object>  $command
+     */
+    private static function requiresKey(ReflectionClass $command): bool
+    {
+        return $command->getAttributes(RequiresRequestKey::class) !== []
+            || $command->getAttributes(RetainedActorRequestKey::class) !== [];
     }
 
     /**
@@ -257,6 +289,7 @@ final readonly class CommandRegistry
             RepeatableRead::class,
             RequiresActor::class,
             RequiresRequestKey::class,
+            RetainedActorRequestKey::class,
             Authorize::class,
             Entry::class,
         ];

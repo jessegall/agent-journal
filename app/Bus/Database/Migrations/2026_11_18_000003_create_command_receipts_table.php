@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('refusal_code', 32)->nullable();
             $table->text('refusal_message')->nullable();
             $table->timestampTz('answers_until');
-            $table->timestampTz('refuses_until');
+            $table->timestampTz('refuses_until')->nullable();
             $table->timestampsTz();
 
             $table->unique(['author_type', 'author_id', 'session_id', 'command', 'contract_major', 'request_key'])->nullsNotDistinct();
