@@ -105,7 +105,7 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 	}
 	terminal.attach(connection)
 	defer terminal.attach(nil)
-	_ = pty.Setsize(terminal.pty, &pty.Winsize{Rows: request.Rows, Cols: request.Columns})
+	terminal.resize(request.Rows, request.Columns)
 
 	for {
 		kind, payload, err := readFrame(connection)
@@ -119,7 +119,7 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 			}
 		case frameResize:
 			if len(payload) == 4 {
-				_ = pty.Setsize(terminal.pty, &pty.Winsize{Rows: binary.BigEndian.Uint16(payload[:2]), Cols: binary.BigEndian.Uint16(payload[2:])})
+				terminal.resize(binary.BigEndian.Uint16(payload[:2]), binary.BigEndian.Uint16(payload[2:]))
 			}
 		}
 	}
@@ -148,6 +148,13 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	socket.terminals[request.RuntimeID] = terminal
 	go terminal.copyOut()
 	return terminal, nil
+}
+
+// resize gives the program's terminal and the screen read from it the size of the attached window, so the screen
+// keeps the grid the program draws on; a size the reader refuses leaves the reader as it was.
+func (terminal *hostTerminal) resize(rows, columns uint16) {
+	_ = pty.Setsize(terminal.pty, &pty.Winsize{Rows: rows, Cols: columns})
+	_ = terminal.reader.Resize(int(columns), int(rows))
 }
 
 func (terminal *hostTerminal) attach(client io.Writer) {
