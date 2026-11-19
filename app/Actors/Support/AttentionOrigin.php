@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 /**
- * What asks for an actor's attention: one message or seat change, with the bus receipt it was accepted under. The
+ * What asks for an actor's attention: one message, seat change or navigation round, with the bus receipt it was accepted under. The
  * same origin always derives the same wake key for an actor, so a replay wakes nobody twice.
  */
 final readonly class AttentionOrigin
@@ -13,6 +13,8 @@ final readonly class AttentionOrigin
     public const string MESSAGE = 'message';
 
     public const string SEATING = 'seating';
+
+    public const string NAVIGATION = 'navigation';
 
     public function __construct(
         public string $type,
@@ -23,6 +25,14 @@ final readonly class AttentionOrigin
     public static function message(string $messageId, string $receiptId): self
     {
         return new self(self::MESSAGE, $messageId, $receiptId);
+    }
+
+    /**
+     * A navigation request in one of its rounds: each round wakes the answerer once.
+     */
+    public static function navigation(string $requestId, int $round, string $receiptId): self
+    {
+        return new self(self::NAVIGATION, "{$requestId}:{$round}", $receiptId);
     }
 
     public function keyFor(ActorIdentity $actor): string

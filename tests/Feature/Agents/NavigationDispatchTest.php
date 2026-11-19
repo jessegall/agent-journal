@@ -1,0 +1,155 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Agents;
+
+use App\Actors\Contracts\ActorAttention;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\OwnerAuthority;
+use App\Agents\Contracts\MainSeatTakeover;
+use App\Agents\Enums\NavigationAnswerer;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentRuntime;
+use App\Agents\Models\NavigationRequest;
+use App\Agents\Support\NavigationDispatch;
+use App\Agents\Support\PendingWorkSources;
+use App\Assignments\Contracts\AssignmentStorage;
+use App\Assignments\Contracts\AssignmentTransaction;
+use App\Assignments\Support\AssigneeIdentity;
+use App\Desks\Models\DeskRecord;
+use App\Desks\Support\BuiltInDesks;
+use Closure;
+use Tests\Fixtures\Agents\RecordedAttention;
+use Tests\Support\Agents\RaisesNavigationRequests;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsDesks;
+use Tests\Support\RunsTrustedCommands;
+use Tests\TestCase;
+
+/**
+ * A navigation request of a helper's runtime goes to the main desk and wakes its occupant once per round; the main
+ * agent's own runtime keeps its hold for the person; with nobody seated the request waits at the desk.
+ */
+final class NavigationDispatchTest extends TestCase
+{
+    use CommitsHookRows;
+    use InstallsDesks;
+    use RaisesNavigationRequests;
+    use RunsTrustedCommands;
+
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'hosts',
+        'agent_runtimes',
+        'driver_requests',
+        'navigation_requests',
+        'inboxes',
+        'desks',
+        'desk_seats',
+        'desk_preferences',
+        'assignments',
+    ];
+
+    private RecordedAttention $attention;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->attention = new RecordedAttention();
+        $this->app->bind(ActorAttention::class, fn () => $this->attention);
+    }
+
+    public function test_a_helpers_request_goes_to_the_main_desk_and_wakes_its_occupant_once_per_round(): void
+    {
+        $main = $this->seatMain();
+        $navigation = $this->raise($this->stalledScript(), 'raise-1');
+        $dispatch = $this->app->make(NavigationDispatch::class);
+
+        $answerer = $this->inTransaction(fn () => $dispatch->answererFor($this->runtimeOf($navigation)));
+        $this->assertSame(NavigationAnswerer::MainDesk, $answerer);
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1, 'receipt-1'));
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1, 'receipt-1'));
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 2, 'receipt-2'));
+
+        $holder = $this->holderOf($navigation);
+        $mainDesk = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();
+        $this->assertSame([$mainDesk->assigneeIdentity()->type, $mainDesk->id], [$holder->type, $holder->id]);
+        $keys = array_column($this->attention->wakes, 1);
+        $this->assertCount(3, $keys);
+        $this->assertSame($keys[0], $keys[1]);
+        $this->assertNotSame($keys[0], $keys[2]);
+        $this->assertTrue($this->attention->wakes[0][0]->isSameAs(ActorIdentity::of($main)));
+        $pending = $this->app->make(PendingWorkSources::class);
+        $this->assertTrue($this->inTransaction(fn () => $pending->hasWorkFor(ActorIdentity::of($main))));
+    }
+
+    public function test_the_main_agents_own_runtime_is_held_for_the_person(): void
+    {
+        $navigation = $this->raise($this->stalledScript(), 'raise-1');
+        $runtime = $this->runtimeOf($navigation);
+        $this->seat($runtime->session->agent);
+
+        $dispatch = $this->app->make(NavigationDispatch::class);
+        $answerer = $this->inTransaction(fn () => $dispatch->answererFor($runtime));
+
+        $this->assertSame(NavigationAnswerer::Person, $answerer);
+    }
+
+    public function test_with_nobody_seated_the_request_waits_at_the_desk_and_wakes_nobody(): void
+    {
+        $navigation = $this->raise($this->stalledScript(), 'raise-1');
+
+        $dispatch = $this->app->make(NavigationDispatch::class);
+        $this->inTransaction(fn () => $dispatch->deliver($navigation, 1, 'receipt-1'));
+
+        $this->assertSame([], $this->attention->wakes);
+        $mainDesk = DeskRecord::query()->named(BuiltInDesks::MAIN)->sole();
+        $this->assertSame($mainDesk->id, $this->holderOf($navigation)->id);
+    }
+
+    private function seatMain(): Agent
+    {
+        $main = Agent::named('Main', 'main-agent');
+        $this->seat($main);
+
+        return $main;
+    }
+
+    private function seat(Agent $agent): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
+        $this->inTransaction(fn () => $this->app->make(MainSeatTakeover::class)->takeOver($agent));
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    private function inTransaction(Closure $work): mixed
+    {
+        return $this->app->make(AssignmentTransaction::class)->run($work);
+    }
+
+    private function runtimeOf(NavigationRequest $navigation): AgentRuntime
+    {
+        return AgentRuntime::query()->with('session.agent')->findOrFail($navigation->agent_runtime_id);
+    }
+
+    private function holderOf(NavigationRequest $navigation): AssigneeIdentity
+    {
+        $storage = $this->app->make(AssignmentStorage::class);
+
+        return $this->inTransaction(fn () => $storage->lockCurrent($navigation->assignmentIdentity())->get()->holder());
+    }
+}
+
