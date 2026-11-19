@@ -15,7 +15,6 @@ use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
-use RuntimeException;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
@@ -74,14 +73,14 @@ final class PageChangeTest extends TestCase
             ['title' => 'Build the release page', 'type' => PlanType::Build],
         )->addPhase('Read')->addTasks([$task->id]);
 
-        try {
-            $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {
+        $this->assertThrows(
+            fn () => $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {
                 $this->app->make('events')->dispatch(new TaskFinished($task->id));
 
                 throw SimulatedFailure::of('The change fails.');
-            });
-        } catch (RuntimeException) {
-        }
+            }),
+            SimulatedFailure::class,
+        );
 
         Event::assertNotDispatched(PageChanged::class);
     }

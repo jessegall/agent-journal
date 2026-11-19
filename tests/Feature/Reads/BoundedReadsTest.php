@@ -90,13 +90,9 @@ final class BoundedReadsTest extends TestCase
         $this->assertSame(60, $page->total());
         $this->assertCount(50, $page->items());
 
-        $counts = $this->readCounts(function (): void {
-            try {
-                Task::query()->paginate(1_000_000);
-                $this->fail('A page of a million rows was not refused.');
-            } catch (ValidationException) {
-            }
-        });
+        $counts = $this->readCounts(
+            fn () => $this->assertThrows(fn () => Task::query()->paginate(1_000_000), ValidationException::class),
+        );
         $this->assertSame(0, $counts->queriesRun);
     }
 

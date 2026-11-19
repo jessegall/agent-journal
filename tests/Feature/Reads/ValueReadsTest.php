@@ -27,13 +27,9 @@ final class ValueReadsTest extends TestCase
         $launch = TestLaunch::start();
         $session = AgentSession::query()->findOrFail($launch->session->id);
 
-        $counts = $this->readCounts(function () use ($session): void {
-            try {
-                $session->agent;
-                $this->fail('The lazy load was not refused.');
-            } catch (LazyLoadRefused) {
-            }
-        });
+        $counts = $this->readCounts(
+            fn () => $this->assertThrows(fn () => $session->agent, LazyLoadRefused::class),
+        );
 
         $this->assertSame(0, $counts->queriesRun);
         $this->assertSame(
