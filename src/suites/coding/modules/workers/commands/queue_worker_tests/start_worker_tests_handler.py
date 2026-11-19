@@ -52,6 +52,6 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         if first_answer.state is not AffectedTestState.QUEUED:
             return
         worktree = self.rows.required(Worktree, first_answer.worktree_id)
-        start = WorkerTestStart.started(worktree.session_agent_id, first_answer.picker_command, picker_run.folder)
+        start = WorkerTestStart.started(worktree.session_agent_id, picker_run.command, picker_run.folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=first_answer.task_id), context)
         self.repository.update(first_answer, context, state=AffectedTestState.PICKING, process_id=process.id)

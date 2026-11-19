@@ -12,10 +12,12 @@ class ProofRun:
 
 @dataclass(frozen=True)
 class PickerRun:
-    """The first answer of a worktree whose picker runs in the checkout made for it."""
+    """The first answer of a worktree whose picker runs in the checkout made for it, over the files the worktree's
+    commits changed."""
 
     affected_test_id: int
     folder: str
+    command: str
 
 
 @dataclass(frozen=True)

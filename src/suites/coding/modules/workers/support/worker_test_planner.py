@@ -2,6 +2,7 @@ import shlex
 
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.plans.support.task_plans import TaskPlans
+from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -43,9 +44,13 @@ class WorkerTestPlanner:
         waiting = [first_answer for first_answer in first_answers
                    if first_answer.worktree_id in worktrees and first_answer.worktree_id not in busy and not any(proof.worktree_id == first_answer.worktree_id for proof in proofs)]
         short = {first_answer.id for first_answer in waiting if self.proofs.has_short_proof(first_answer.worktree_id)}
-        picker_runs = tuple(PickerRun(first_answer.id, self.libraries.worker_checkout(worktrees[first_answer.worktree_id], self.git.merged_checkout(worktrees[first_answer.worktree_id])))
-                            for first_answer in waiting if first_answer.id not in short)
+        picker_runs = tuple(self.picker_run(first_answer, worktrees[first_answer.worktree_id]) for first_answer in waiting if first_answer.id not in short)
         return WorkerTestPlan(proof_runs, picker_runs, tuple(sorted(short)))
+
+    # the picker runs on the worktree's commits merged into its base, over the files those commits changed
+    def picker_run(self, first_answer: AffectedTest, worktree: Worktree) -> PickerRun:
+        folder = self.libraries.worker_checkout(worktree, self.git.merged_checkout(worktree))
+        return PickerRun(first_answer.id, folder, shlex.join([*shlex.split(first_answer.picker_command), *self.git.committed_files(worktree)]))
 
     # Whether the queued proofs of a worktree can start: a test checkout that still runs tests at an older commit is
     # never reused for a newer one, so they wait queued until it is free and is brought to their commit.

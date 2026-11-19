@@ -20,8 +20,6 @@ from suites.coding.modules.workers.agent_messages.proof_waits_message import Pro
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-import shlex
 
 WORKTREE_PROOFS_REASON = "a commit hands in every proof of the worktree"
 
@@ -36,10 +34,10 @@ class WorkerProofQueue:
     proofs are committed and their tests wait for a checkpoint of the plan. A proof committed in a plan that
     is started no more, as when the plan is blocked, is queued with the others at the next hand-in."""
 
-    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries, plans: TaskPlans) -> None:
+    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, queries: Queries, plans: TaskPlans) -> None:
         self.plans = plans
         self.proofs, self.repository, self.main_agent_line, self.queries = proofs, repository, main_agent_line, queries
-        self.settings, self.git = settings, git
+        self.settings = settings
 
     def tests_pending(self, worktree: Worktree) -> bool:
         affected_pending = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).matching(Among("state", PENDING_AFFECTED_STATES)).exists()
@@ -73,8 +71,8 @@ class WorkerProofQueue:
         test = self.settings.text(PROJECT_TEST_COMMAND).strip()
         if not picker or not test:
             return 0
-        line = shlex.join([*shlex.split(picker), *self.git.committed_files(worktree)])
-        self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=task_id, picker_command=line, test_command=test), context)
+        # the committed files are named when the picker starts, read by git outside this write
+        self.repository.save(AffectedTest(worktree_id=worktree.id, task_id=task_id, picker_command=picker, test_command=test), context)
         return 1
 
     def send_waiting_line(self, worktree: Worktree, proofs: Sequence[Proof], context: Context) -> None:
