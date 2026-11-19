@@ -7556,3 +7556,45 @@ def test_a_worker_cut_from_a_base_keeps_it_when_a_later_instruction_replaces_its
     assert not (root / "platform" / "totals.php").exists() and not (root / "platform" / "payroll.php").exists(), "main gets neither"
     tree = git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout
     assert "totals.php" in tree and "main-only.php" not in tree, "the work lands on feature/payroll-v2 and main is not poured in"
+
+
+def fake_docker(tmp: Path, monkeypatch, stacks: list[tuple[str, Path]]) -> Path:
+    """A docker on the search path that lists the stacks given, each with the folder it was started from, and takes one down
+    by removing it from the list it reads."""
+    bin_dir, listing = tmp / "fake-bin", tmp / "fake-stacks.txt"
+    bin_dir.mkdir(exist_ok=True)
+    listing.write_text("".join(f"{name}\t{folder}\n" for name, folder in stacks))
+    script = bin_dir / "docker"
+    script.write_text(f"""#!/bin/sh
+if [ "$1" = ps ]; then cat {listing}; exit 0; fi
+if [ "$1" = compose ] && [ "$4" = down ]; then grep -v "^$3	" {listing} > {listing}.new; mv {listing}.new {listing}; exit 0; fi
+exit 1
+""")
+    script.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    return listing
+
+
+def test_a_worker_whose_test_stack_still_runs_is_refused_its_clock_out_until_it_takes_it_down(app: App, monkeypatch, tmp_path):
+    """On 19 Nov the hosted journal's Docker held 19 test stacks and 146 volumes of workers long gone."""
+    workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    listing = fake_docker(tmp_path, monkeypatch, [("transportklok-platform-testing-abc123", folder / "platform"), ("someone-else", tmp_path)])
+    committed(folder / "platform", "totals.php", "<?php\n")
+    refused = proved_and_out(app, caller, "platform/totals.php:1")
+    assert refused.code != 0 and "transportklok-platform-testing-abc123" in refused.error and "down -v" in refused.error, refused.error
+    assert "someone-else" not in refused.error, "a stack started elsewhere is not the worker's"
+    listing.write_text(f"someone-else\t{tmp_path}\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+
+
+def test_with_no_docker_to_ask_a_clock_out_is_not_held(app: App, monkeypatch, tmp_path):
+    workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    bin_dir = tmp_path / "no-docker"
+    bin_dir.mkdir()
+    (bin_dir / "docker").write_text("#!/bin/sh\nexit 1\n")
+    (bin_dir / "docker").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
