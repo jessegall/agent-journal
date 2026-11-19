@@ -9,9 +9,9 @@ use App\Ui\Declarations\RegisteredPage;
 use App\Ui\Declarations\RegisteredSection;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Support\UiDeclarations;
-use App\Web\Support\ReaderRequests;
-use App\Web\Support\UiOwnerAvailability;
-use App\Web\Support\WindowResults;
+use App\Web\Contracts\ChecksUiOwnerAvailability;
+use App\Web\Contracts\ListsReaderRequests;
+use App\Web\Contracts\ReadsWindowResults;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Inertia\ResponseFactory;
@@ -26,11 +26,11 @@ final readonly class PageProps
 {
     public function __construct(
         private UiDeclarations $declarations,
-        private WindowResults $results,
-        private ReaderRequests $readers,
+        private ReadsWindowResults $results,
+        private ListsReaderRequests $readers,
         private SlotContexts $contexts,
         private ResponseFactory $inertia,
-        private UiOwnerAvailability $owners,
+        private ChecksUiOwnerAvailability $owners,
     ) {}
 
     /**

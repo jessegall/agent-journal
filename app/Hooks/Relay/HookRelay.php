@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Hooks\Relay;
 
+use App\AgentRequests\Contracts\SendsAgentRequests;
 use App\AgentRequests\Exceptions\CallDeadlinePassed;
 use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
-use App\AgentRequests\Support\AgentRequestClient;
 use App\Agents\Support\LoggedBypass;
 use App\Hooks\Enums\CallFailure;
 use App\Hooks\Exceptions\ProgramReplyMalformed;
@@ -35,7 +35,7 @@ final readonly class HookRelay
     private const int ATTEMPTS = 2;
 
     public function __construct(
-        private AgentRequestClient $client,
+        private SendsAgentRequests $client,
         private Filesystem $files,
     ) {}
 

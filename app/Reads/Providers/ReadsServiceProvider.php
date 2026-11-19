@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reads\Providers;
 
+use App\Reads\Contracts\LogsReads;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Exceptions\ReadLimitInvalid;
@@ -35,6 +36,7 @@ final class ReadsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(LogsReads::class, ReadLog::class);
         $this->app->scoped(ScopedReadMeter::class);
         $this->app->alias(ScopedReadMeter::class, ReadMeter::class);
         $this->app->singleton(SelfMeasuredCommands::class);

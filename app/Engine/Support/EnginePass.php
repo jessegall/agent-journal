@@ -10,7 +10,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\CommandEntrance;
 use App\Bus\Support\OperationDeadline;
 use App\Engine\Contracts\MonotonicClock;
-use App\Reads\Support\ReadLog;
+use App\Reads\Contracts\LogsReads;
 use App\Reads\Support\ScopedReadMeter;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
@@ -29,7 +29,7 @@ final readonly class EnginePass
         private DatabaseManager $databases,
         private MonotonicClock $clock,
         private EngineSettings $settings,
-        private ReadLog $reads,
+        private LogsReads $reads,
     ) {}
 
     /**

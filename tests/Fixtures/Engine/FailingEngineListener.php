@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Engine;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
 use App\Engine\Support\EngineAccess;
-use RuntimeException;
+use Tests\Support\SimulatedFailure;
 
 /**
  * An engine listener that records which scopes it was granted, then fails.
@@ -30,6 +30,6 @@ final class FailingEngineListener implements EngineListener
     {
         $this->allowed = SeenScopes::of($this->access, ['fixtures.first', 'fixtures.second']);
 
-        throw new RuntimeException('The first listener failed.');
+        throw SimulatedFailure::of('The first listener failed.');
     }
 }

@@ -9,6 +9,7 @@ use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Declarations\RegisteredNavigation;
 use App\Ui\Exceptions\UiKeyRepeated;
 use App\Ui\Support\UiDeclarations;
+use App\Web\Contracts\RecordsNavigation;
 use App\Web\Data\NavigationCountsData;
 use App\Web\Data\NavigationData;
 use App\Web\Data\NavigationItemData;
@@ -24,7 +25,7 @@ use Throwable;
  * left out with everything under it, before its children or its count are read; records come as children from their
  * reader once per parent; a key met twice on the way down is refused, so a reader cannot loop.
  */
-final readonly class NavigationRecords
+final readonly class NavigationRecords implements RecordsNavigation
 {
     public function __construct(
         private UiDeclarations $declarations,

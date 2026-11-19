@@ -18,10 +18,10 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\DriverRequests;
 use App\Agents\Support\StackTarget;
+use App\Assignments\Contracts\AssignmentStorage;
+use App\Assignments\Contracts\PublishesAssignmentFacts;
 use App\Assignments\Enums\AssignmentReason;
-use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssigneeIdentity;
-use App\Assignments\Support\AssignmentFacts;
 use App\Assignments\Support\AssignmentResult;
 use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
@@ -37,8 +37,8 @@ final readonly class RetireAgentHandler implements CommandHandler
         private AgentLifecycle $lifecycle,
         private AgentSessions $sessions,
         private LaunchCredentials $credentials,
-        private AssignmentStore $store,
-        private AssignmentFacts $facts,
+        private AssignmentStorage $store,
+        private PublishesAssignmentFacts $facts,
         private DriverRequests $requests,
     ) {}
 
