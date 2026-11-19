@@ -26,7 +26,11 @@ use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Skills\MemorySkill;
 
-final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills
+final class MemoryDomain extends Domain implements
+    ProvidesCommands,
+    ProvidesNumberedModels,
+    ProvidesPolicies,
+    ProvidesSkills
 {
     use HasNumberedModels;
 

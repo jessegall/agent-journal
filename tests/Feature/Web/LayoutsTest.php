@@ -96,9 +96,7 @@ final class LayoutsTest extends TestCase
 
     public function test_another_users_layout_is_neither_listed_nor_reached(): void
     {
-        $theirs = Layout::query()->create(
-            ['user_id' => User::factory()->create()->id, 'name' => 'Theirs', 'shape' => $this->shape],
-        );
+        $theirs = Layout::saveFor(User::factory()->create()->id, 'Theirs', $this->shape);
 
         $this->actingAs($this->owner)->get('/')->assertInertia(
             fn (AssertableInertia $page) => $page->where('page.data.layouts', []),

@@ -37,7 +37,6 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
-use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestStartAuthority;
@@ -107,7 +106,7 @@ final class HookStartTest extends TestCase
             $this->fail('A start with an unknown profile went through.');
         } catch (ProfileMissing) {
             $this->assertSame(0, AgentSession::query()->count());
-            $this->assertSame(0, DB::table('agent_stacks')->count());
+            $this->assertSame(0, AgentStackRow::query()->acrossEveryAgent()->count());
         }
     }
 

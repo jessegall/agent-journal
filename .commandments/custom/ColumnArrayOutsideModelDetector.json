@@ -67,6 +67,18 @@
             },
             {
                 "file": "tests/Fixtures/Models/Shop/Calls/**"
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "name": "assertThrows"
+                        }
+                    ]
+                }
             }
         ]
     },

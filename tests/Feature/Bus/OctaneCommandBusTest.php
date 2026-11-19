@@ -23,10 +23,7 @@ final class OctaneCommandBusTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $first = $this->app->make(CommandBus::class);
 
-        try {
-            $first->run(new RefuseNote('first request fails'));
-        } catch (CommandRefused) {
-        }
+        $this->assertThrows(fn () => $first->run(new RefuseNote('first request fails')), CommandRefused::class);
 
         $this->app->forgetScopedInstances();
         $this->startTestAgentRequest(9, 90);

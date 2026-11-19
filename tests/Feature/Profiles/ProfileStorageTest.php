@@ -85,11 +85,10 @@ final class ProfileStorageTest extends TestCase
         $this->assertSame(1, $this->app->make(CommandBus::class)->run($revoke));
         $this->assertFalse($resolver->has(ProfileKey::from('journal-reviewer')));
 
-        try {
-            $resolver->snapshotFor(ProfileKey::from('journal-reviewer'));
-            $this->fail('A retired profile was read.');
-        } catch (ProfileRetired) {
-        }
+        $this->assertThrows(
+            fn () => $resolver->snapshotFor(ProfileKey::from('journal-reviewer')),
+            ProfileRetired::class,
+        );
 
         $this->activate($this->reviewer('Back again.', null));
         $this->assertTrue($resolver->has(ProfileKey::from('journal-reviewer')));

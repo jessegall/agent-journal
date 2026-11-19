@@ -110,7 +110,7 @@ final class ShareManagementPagesTest extends TestCase
             ->where('page.data.nextAfter', null));
         $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) $list->getContent());
 
-        $this->activate($share);
+        $share->activate();
         $detail = $this->actingAs($this->owner)->get(
             "/sharing/shares/{$share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
@@ -271,12 +271,6 @@ final class ShareManagementPagesTest extends TestCase
     private function write(string $method, string $path, array $body = []): TestResponse
     {
         return $this->actingAs($this->owner)->{$method}($path, $body, ['Idempotency-Key' => (string) Str::ulid()]);
-    }
-
-    private function activate(Share $share): void
-    {
-        $share->state = ShareState::Active;
-        $share->save();
     }
 
     private function rootPath(): string

@@ -34,8 +34,13 @@ final class SkillMakeTool extends JournalWriteTool
             'key' => $schema->string()->max(64)->required(),
             'name' => $schema->string()->max(255),
             'description' => $schema->string()->max(1024)->required(),
-            'body' => $schema->string()->max(262144)->description('The Markdown body; one section per top-level heading.')->required(),
-            'conditions' => $schema->string()->max(32768)->description('The condition as JSON, such as {"type":"profile-bases","version":1,"keys":["main-agent"]}.'),
+            'body' => $schema->string()
+                ->max(262144)
+                ->description('The Markdown body; one section per top-level heading.')
+                ->required(),
+            'conditions' => $schema->string()
+                ->max(32768)
+                ->description('The condition as JSON, such as {"type":"profile-bases","version":1,"keys":["main-agent"]}.'),
             'request_id' => $schema->string()->max(64),
         ];
     }

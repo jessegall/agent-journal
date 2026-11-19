@@ -248,7 +248,7 @@ final class AgentRetirementTest extends TestCase
     {
         DB::reconnect();
         DB::transaction(function () use ($taskId, $parent): void {
-            DB::select('SELECT id FROM agents WHERE id = ? FOR SHARE', [$this->helper->id]);
+            Agent::query()->whereKey($this->helper->id)->sharedLock()->sole();
             DB::table('assignments')->insert(
                 [
                     'id' => strtolower((string) Str::ulid()),

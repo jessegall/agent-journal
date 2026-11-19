@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Syntax;
 
 use App\Processes\Enums\AnalysisLimit;
+use App\Processes\Exceptions\ProcessorTimeUnreadable;
 
 /**
  * The time one analysis may take, counted from when the budget is made in the processor time this process spends,
@@ -26,10 +27,12 @@ final readonly class TimeBudget
 
     /**
      * The processor time this process has spent so far, in user and system mode, in milliseconds.
+     *
+     * @throws ProcessorTimeUnreadable
      */
     private static function processorMilliseconds(): float
     {
-        $usage = getrusage();
+        $usage = getrusage() ?: throw ProcessorTimeUnreadable::now();
 
         return ($usage['ru_utime.tv_sec'] + $usage['ru_stime.tv_sec']) * 1_000
             + ($usage['ru_utime.tv_usec'] + $usage['ru_stime.tv_usec']) / 1_000;

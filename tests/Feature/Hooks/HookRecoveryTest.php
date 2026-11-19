@@ -20,12 +20,12 @@ use App\Agents\Support\StartedAgent;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Models\HookCall;
 use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
-use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\Agents\BackdatesSessions;
 use Tests\Support\CommitsHookRows;
@@ -110,7 +110,7 @@ final class HookRecoveryTest extends TestCase
             array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($started)->frames->all()),
         );
         $this->assertSame(TaskState::Started, $task->fresh()?->state);
-        $this->assertSame(0, DB::table('hook_calls')->count());
+        $this->assertSame(0, HookCall::query()->acrossEveryAgent()->count());
     }
 
     public function test_the_host_reporting_an_exit_ends_the_session_at_once(): void

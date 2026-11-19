@@ -16,6 +16,42 @@
             },
             {
                 "withinLoop": true
+            },
+            {
+                "any": [
+                    {
+                        "resolvesLike": "Illuminate\\Database\\*",
+                        "of": "child:var"
+                    },
+                    {
+                        "resolvesLike": "App\\*\\Models\\*",
+                        "of": "child:var"
+                    },
+                    {
+                        "resolvesLike": "Domain\\*\\Models\\*",
+                        "of": "child:var"
+                    },
+                    {
+                        "resolvesLike": "App\\*\\Models\\*",
+                        "of": "child:class"
+                    },
+                    {
+                        "resolvesLike": "Domain\\*\\Models\\*",
+                        "of": "child:class"
+                    },
+                    {
+                        "descendant": {
+                            "all": [
+                                {
+                                    "is": "call"
+                                },
+                                {
+                                    "name": "query"
+                                }
+                            ]
+                        }
+                    }
+                ]
             }
         ],
         "reject": [

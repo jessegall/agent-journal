@@ -310,6 +310,6 @@ final class SettingsCommandsTest extends TestCase
 
     private function storedText(): string
     {
-        return (string) DB::table('settings_records')->where('owner', 'Reviews')->value('document');
+        return (string) SettingsRecord::query()->where('owner', 'Reviews')->sole()->getRawOriginal('document');
     }
 }

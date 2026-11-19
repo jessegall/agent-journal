@@ -221,6 +221,17 @@ final class AgentStackRow extends Model implements ReadableModel
     }
 
     /**
+     * The administrator's read across every agent and session, which lifts the current-agent limit.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function acrossEveryAgent(Builder $query): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class);
+    }
+
+    /**
      * The administrator's read of closed stacks past their retention, across every agent; held stacks are left out.
      *
      * @param  Builder<self>  $query
@@ -228,7 +239,7 @@ final class AgentStackRow extends Model implements ReadableModel
     #[Scope]
     protected function prunableBefore(Builder $query, CarbonImmutable $cutoff): void
     {
-        $query->withoutGlobalScope(AgentSessionScope::class)
+        $query->acrossEveryAgent()
             ->where('status', StackStatus::Closed->value)
             ->where('closed_at', '<', $cutoff)
             ->whereNull('held_at');
