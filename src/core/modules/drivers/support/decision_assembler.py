@@ -19,6 +19,7 @@ from engine.enums.decision_class import DecisionClass
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.assembled_answer import AssembledAnswer
 from core.modules.drivers.support.assembled_step import AssembledStep
+from core.modules.drivers.support.effect_commands import EffectCommands
 from core.modules.drivers.support.machine_assembly import MachineAssembly
 
 MACHINE_SOURCE = "drivers.machine"
@@ -28,14 +29,18 @@ class DecisionAssembler:
     """Builds the one answer of a hook from the agent machine's step: its decision, lines and effects, with the
     lines held back by their intervals and turns."""
 
-    def __init__(self, reader: AgentViewReader, assembly: MachineAssembly, bus: Bus, agent_messages: MessageLog, clock: Clock) -> None:
+    def __init__(self, reader: AgentViewReader, assembly: MachineAssembly, bus: Bus, agent_messages: MessageLog, clock: Clock, effect_commands: EffectCommands) -> None:
         self.reader, self.assembly, self.bus, self.agent_messages, self.clock = reader, assembly, bus, agent_messages, clock
+        self.effect_commands = effect_commands
 
     def assembled(self, event: HookEvent, agent: Agent, actor: Actor) -> AssembledAnswer:
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
             question = Question.posed(event)
             view = self.assembly.with_states(self.reader.read(agent.id, question), question)
             step = self.assembly.machine(agent.role).step(view, question)
+            # the commands of the step's effects are worked out here, before the hook's write, which reads them back
+            for effect in step.record.effects():
+                self.effect_commands.commands(effect, view, step.record)
         answers = self.answers(step.record)
         answers = replace(answers, skipped_lines=self.agent_messages.skipped_lines(agent.id, answers, self.clock.timestamp()))
         return AssembledAnswer(answers, AssembledStep(view, step))
