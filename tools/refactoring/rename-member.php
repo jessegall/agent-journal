@@ -34,9 +34,6 @@ use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 
 /**
- * Marks each method, property and constant declaration with the full name of the type it is declared in.
- */
-/**
  * A rename this tool refuses, with the reason it prints.
  */
 final class RenameRefused extends RuntimeException
@@ -74,6 +71,10 @@ final class RenameRefused extends RuntimeException
         return new self(sprintf('%s already declares a %s %s', $type, $what, $new));
     }
 }
+
+/**
+ * Marks each method, property and constant declaration with the full name of the type it is declared in.
+ */
 
 final class DeclaringTypeMarker extends NodeVisitorAbstract
 {
