@@ -87,8 +87,8 @@ $task->finishRun($command->note);
 $this->events->dispatch(new TaskFinished($command->taskId));
 ```
 
-`FinishTaskHandler`, `BlockTaskHandler`, `CancelTaskHandler`, `AnswerMessageHandler` and `DismissMessageHandler`
-follow it. A message asked again opens a new answer round, so its old frame stays finished.
+`FinishTaskHandler`, `BlockTaskHandler`, `CancelTaskHandler`, `ReplyToMessageHandler` and `DismissMessageHandler`
+follow it. An answering frame is named by the exact claim, so a new claim on the same message is a new frame.
 
 ## Current work is read from the stack
 

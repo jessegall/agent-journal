@@ -18,6 +18,8 @@ final readonly class PreferredDeskInboxes implements ActorInboxResolver
 {
     public function preferredFor(Actor $actor): Inbox
     {
-        return DeskRecord::preferredBy(ActorIdentity::of($actor))->getOrThrow(InboxUnavailable::forActor($actor->actorId()));
+        $preferred = DeskRecord::preferredBy(ActorIdentity::of($actor));
+
+        return $preferred->getOrThrow(InboxUnavailable::forActor($actor->actorId()));
     }
 }

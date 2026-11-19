@@ -304,7 +304,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     /**
      * @throws AnswerImpossible
      */
-    public function requireReplyable(): void
+    public function requireOpenForReplies(): void
     {
         if ($this->state === MessageState::Dismissed) {
             throw AnswerImpossible::forMessage($this->id);

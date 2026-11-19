@@ -51,7 +51,9 @@ final readonly class DeskInboxAccess implements InboxAccess
     {
         $seats = $this->seatAssignments($inbox)->limit(InboxMembers::LIMIT)->orderBy('id')->get();
 
-        return new InboxMembers(array_values($seats->map(fn (AssignmentRecord $seat) => $this->membershipOf($seat))->all()));
+        $memberships = $seats->map(fn (AssignmentRecord $seat) => $this->membershipOf($seat))->all();
+
+        return new InboxMembers(array_values($memberships));
     }
 
     /**

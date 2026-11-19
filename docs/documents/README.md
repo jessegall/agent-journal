@@ -82,12 +82,10 @@ the `App\Records\Support\ProvidesModelRecords` trait and supply four things:
 - whether the actor may change it;
 - the word people name it by, such as `task`.
 
-## Dock cards
+## Dock suggestions
 
-A document or report can be docked as a card in an agent session's chat. A record an agent creates is docked in its
-own running session. A user docks a record into any running session from its page; an agent only into its own.
-Docking again shows the same card, and hiding a card leaves the record and its links alone. A settled record leaves
-the dock until a changed revision makes it active.
+Documents keeps no dock of its own. Its `chat.dock` section suggests the newest documents and reports that still ask
+for attention; docking one is the person's own action in Chat (`DockRecord`).
 
 ## Limits
 

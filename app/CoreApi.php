@@ -345,7 +345,6 @@ use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Contracts\MessageAddressResolver;
 use App\Communication\Data\InboxCounts;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
@@ -375,7 +374,6 @@ use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Exceptions\MessageToSelf;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\InboxMembership;
-use App\Communication\Support\MessageAddress;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
@@ -1016,7 +1014,6 @@ final class CoreApi
                 ActiveActorRegistration::class,
                 ActiveActorCounter::class,
                 UserPresences::class,
-                MessageAddressResolver::class,
                 ConversationResolver::class,
                 CommentResolver::class,
                 ShellCommandParser::class,
@@ -1196,7 +1193,6 @@ final class CoreApi
                 TextAnchorType::class,
                 WholeRecord::class,
                 CommentType::class,
-                MessageAddress::class,
                 MessageView::class,
                 MessagePage::class,
                 MessageReader::class,

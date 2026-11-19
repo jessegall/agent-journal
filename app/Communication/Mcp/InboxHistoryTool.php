@@ -14,7 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('inbox_history')]
-#[Description('Page back through the history of an inbox you sit at, oldest first within a page, with a cursor to older ones.')]
+#[Description('Page back through the history of an inbox you sit at, with a cursor to older pages.')]
 final class InboxHistoryTool extends JournalReadTool
 {
     public function __construct(private readonly ConversationResolver $conversations) {}

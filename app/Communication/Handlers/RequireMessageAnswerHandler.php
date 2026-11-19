@@ -71,7 +71,10 @@ final readonly class RequireMessageAnswerHandler implements CommandHandler
         $seatId = $message->read_participation_assignment_id;
         $seatHolder = $seatId === null ? null : (AssignmentRecord::holdersOf([$seatId])[$seatId] ?? null);
 
-        if ($reader === null || $seatHolder === null || ! $seatHolder->isSameAs(AssigneeIdentity::ofActorIdentity($reader))) {
+        $readerStillSeated = $reader !== null
+            && $seatHolder?->isSameAs(AssigneeIdentity::ofActorIdentity($reader)) === true;
+
+        if (! $readerStillSeated) {
             return;
         }
 

@@ -64,9 +64,10 @@ Generated files are build output and ignored by git: `resources/js/types/generat
 - **Development**: the Vite container regenerates Wayfinder routes itself. After changing a page's PHP Data, run `npm run types:generate` (or `composer types:generate`); it is the one writer of the PHP types, so nothing races. Vite in the container polls for changes (`usePolling` when `LARAVEL_SAIL` is set), because a macOS-mounted folder sends no file events; without it the dev server and its SSR served stale code.
 - **Stale uses** of a renamed property or route fail `vue-tsc` after regenerating.
 
-## Sending a message (task 110)
+## Sending a message
 
-Messaging is Core (`app/Communication`, plan 16): the `SendMessage` command creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`); `RequireMessageAnswer` asks an agent session to answer it and pushes the `communication.answering` state, so a guessed, ended or foreign session is refused and leaves no message. `MessageSent`, `MessageAnswered` and `MessageDismissed` fire after the commit. `ConversationReader::conversationWith(StackTarget)` reads the conversation with a session; its id is `"<agent>-<session>"`. Chat is the conversation product on top: its window, composer and chosen agent call these Core commands and readers.
+Messaging is Core; see `docs/communication/README.md`. Chat's composer sends `AskMessage` from the person's inbox
+to the chosen agent's inbox and returns to Home on the same session.
 
 ## Rule approval (task 112)
 
@@ -74,9 +75,11 @@ Rules use doc 4's states: Proposed, Active, Denied, Removed. Existing rules stay
 
 ## Home (task 111)
 
-`GET /` (`home`) renders `Home` with `HomePage`: a hidden `HomeFiltersData` seed (the plans filters and the chosen `session` as a decimal string) and two computed slots, `chat` from `ChatView` and `plans` from the same `PlansView` and `PlanListData` the plans page uses. `HomeRequest` and `PlansRequest` share the plans query rules through the `ReadsPlanFilters` trait. `ChatView` lists the running sessions with their agent names and, for the chosen one, reads the conversation through Chat's `MessageRecords::conversationWith`; an unknown or ended session simply opens no conversation. Fortify's home after signing in is now `/`, and the sidebar lists Home first. Web requires Chat (question 13).
+`GET /` (`home`) renders `Home` with `HomePage`: a hidden `HomeFiltersData` seed (the plans filters and the chosen `session` as a decimal string) and two computed slots, `chat` from `ChatView` and `plans` from the same `PlansView` and `PlanListData` the plans page uses. `HomeRequest` and `PlansRequest` share the plans query rules through the `ReadsPlanFilters` trait. `ChatView` lists the running sessions with their agent names and, for the chosen one, reads the conversation between the two inboxes through Core's `ConversationResolver::between`; an unknown or ended session simply opens no conversation. Fortify's home after signing in is now `/`, and the sidebar lists Home first. Web requires Chat (question 13).
 
-`POST /messages` (`messages.send`) takes `MessageInput` (a body with at least one non-space character and a session id), finds the session (a missing one is a `session` form error) and calls `SendMessage::send`; `StackTargetRefused` is rendered as a `session` form error (303 back). A sent message answers 303 to Home on that session. The `body` field is left out of `TrimStrings` in `bootstrap/app.php`, so a message keeps its leading and trailing spaces and newlines; every other field is still trimmed.
+`POST /chat/messages` (`chat.send`) takes `MessageInput` (a body with at least one non-space character, the
+conversation's source and destination inbox ids, and the session the window returns to). The `body` field is left out
+of `TrimStrings` in `bootstrap/app.php`, so a message keeps its leading and trailing spaces and newlines.
 
 In the browser the plans slice is the shared `PlansView` component, given a `urlForFilters` function so its links stay on Home and keep the chosen session (`planUrls.ts` holds the shared query shape). The composer keeps a draft per viewer and conversation (`ViewerData` now carries the viewer id) in the tab's session storage, read after mounting so the server render matches; switching conversations keeps each draft apart, a reload keeps it, and a send captures its target and body when it starts and on success clears that draft only if it still holds the sent text. Enter sends, Shift+Enter adds a line. The dock has a slot above the composer and no cards yet; attaching and dumping files are shown as not available.
 

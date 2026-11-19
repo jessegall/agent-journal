@@ -77,7 +77,7 @@ and the names of the required domains that are not available. A stored switch th
 | Memory `LowerMemoryWeights` | That compaction neither lowers memory weights nor adds memory reminders. | Weights stay as they were for missed compactions; later compactions resume without catching up. |
 | Documents `CloseEndedSessionDraft` | A draft may stay held after its session ends. Its data is kept, never published. | After switching on, an authorized user recovers the abandoned draft through `RecoverDocument` (`DraftClosing::recover`). |
 
-Chat's `PushMessageState` now lives in Core (`app/Communication/Listeners`), so it is never gated.
+Messaging, its facts and the answering frames live in Core (`app/Communication`), so they are never gated.
 
 ## Switching back on
 

@@ -44,7 +44,7 @@ final readonly class ReplyToMessageHandler implements CommandHandler
         [, $membership] = $this->reading->admit((string) $destinationId);
         $original = Message::lockedById($command->messageId);
         $original->requireStateVersion($command->expectedStateVersion);
-        $original->requireReplyable();
+        $original->requireOpenForReplies();
         $now = CarbonImmutable::now();
         $original->acknowledge($membership, $now);
         $reply = $this->sending->reply($original, $command->body);

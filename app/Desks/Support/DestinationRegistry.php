@@ -36,7 +36,8 @@ final class DestinationRegistry
      */
     public function destinationsFor(AssigneeIdentity $requested): Destinations
     {
-        $providerClass = $this->providers[$requested->type] ?? throw AssignmentTypeUnavailable::forType($requested->type);
+        $providerClass = $this->providers[$requested->type]
+            ?? throw AssignmentTypeUnavailable::forType($requested->type);
 
         return $this->container->make($providerClass)->destinationsFor($requested);
     }
