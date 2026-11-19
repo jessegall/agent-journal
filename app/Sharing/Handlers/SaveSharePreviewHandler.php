@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sharing\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Contracts\CommandHandler;
 use App\Reads\Contracts\ReadMeter;
 use App\Records\Support\RecordIdentity;
@@ -19,7 +18,6 @@ use App\Sharing\Support\ShareScope;
 final readonly class SaveSharePreviewHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private SharePolicy $policy,
         private ShareScope $scope,
         private ReadMeter $meter,
@@ -27,14 +25,15 @@ final readonly class SaveSharePreviewHandler implements CommandHandler
 
     public function handle(SaveSharePreview $command): SavedSharePreview
     {
-        $owner = $this->actors->actor();
+        $owner = $command->dispatchedBy();
         $this->policy->requireManager($owner);
         $root = new RecordIdentity($command->rootType, $command->rootId);
         $configuration = $command->gatewayConfigurationId === null
             ? ShareGatewayConfiguration::usableDefault()
             : ShareGatewayConfiguration::usable($command->gatewayConfigurationId);
         $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
-        $preview = SharePreview::createFor($owner->actorId(), $root, $candidates->selection($command->selectedIds), $configuration);
+        $selection = $candidates->selection($command->selectedIds);
+        $preview = SharePreview::createFor($owner->actorId(), $root, $selection, $configuration);
 
         return new SavedSharePreview($preview->id, $preview->checksum, $candidates);
     }

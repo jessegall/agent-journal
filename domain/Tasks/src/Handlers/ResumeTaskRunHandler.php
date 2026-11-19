@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Desks\Contracts\RunClaims;
@@ -17,7 +16,6 @@ use Domain\Tasks\Models\TaskRun;
 final readonly class ResumeTaskRunHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private RunClaims $claims,
     ) {}
 
@@ -31,7 +29,11 @@ final readonly class ResumeTaskRunHandler implements CommandHandler
     {
         $run = TaskRun::lockedById($command->runId);
         $run->requireUnfinished();
-        $this->claims->take($run->assignmentIdentity(), $task->assignmentIdentity(), ActorIdentity::of($this->actors->actor()));
+        $this->claims->take(
+            $run->assignmentIdentity(),
+            $task->assignmentIdentity(),
+            ActorIdentity::of($command->dispatchedBy()),
+        );
 
         return $run->run_number;
     }

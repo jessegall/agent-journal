@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sharing\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Sharing\Actions\ShareEndings;
@@ -29,7 +28,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class DisableShareGatewayHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private SharePolicy $policy,
         private ShareEndings $endings,
         private Dispatcher $events,
@@ -37,7 +35,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
 
     public function handle(DisableShareGateway $command): GatewayConfiguration
     {
-        $owner = $this->actors->actor();
+        $owner = $command->dispatchedBy();
         $this->policy->requireManager($owner);
         ShareInstallation::lockForAdmission();
         $configuration = ShareGatewayConfiguration::lockById($command->configurationId);

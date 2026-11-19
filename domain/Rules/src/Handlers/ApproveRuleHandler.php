@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use Domain\Rules\Api\Events\RuleApproved;
@@ -18,14 +17,13 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class ApproveRuleHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private Dispatcher $events,
     ) {}
 
     public function handle(ApproveRule $command): void
     {
         $rule = Rule::lockedById($command->ruleId);
-        $rule->approveBy(ActorIdentity::of($this->actors->actor()));
+        $rule->approveBy(ActorIdentity::of($command->dispatchedBy()));
         $this->events->dispatch(new RuleApproved($command->ruleId));
     }
 }

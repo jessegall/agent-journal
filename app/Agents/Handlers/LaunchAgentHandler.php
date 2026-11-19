@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\LaunchAgent;
@@ -42,7 +41,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class LaunchAgentHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private LaunchSessions $launches,
         private HostLaunchMaterial $material,
         private Dispatcher $events,
@@ -60,7 +58,7 @@ final readonly class LaunchAgentHandler implements CommandHandler
     public function handle(LaunchAgent $command): LaunchReceipt
     {
         $request = $command->request;
-        $record = LaunchRecord::accept($request, ActorIdentity::of($this->actors->actor()));
+        $record = LaunchRecord::accept($request, ActorIdentity::of($command->dispatchedBy()));
 
         if ($record->session_id !== null) {
             return self::receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
@@ -74,8 +72,15 @@ final readonly class LaunchAgentHandler implements CommandHandler
             $this->admitContainer($request);
         }
 
-        $parent = $request->parentSessionId === null ? null : AgentSession::query()->findOrFail($request->parentSessionId);
-        $launched = $this->launches->launchInTransaction(Agent::query()->findOrFail($request->agentId), $request->selection, $request->requestId, $parent);
+        $parent = $request->parentSessionId === null
+            ? null
+            : AgentSession::query()->findOrFail($request->parentSessionId);
+        $launched = $this->launches->launchInTransaction(
+            Agent::query()->findOrFail($request->agentId),
+            $request->selection,
+            $request->requestId,
+            $parent,
+        );
         $record->launchedAs($launched->session);
         $this->material->keep($request->requestId, $launched);
         $this->events->dispatch(new LaunchAccepted($request->requestId, $request->agentId, $launched->session->id));
@@ -111,7 +116,13 @@ final readonly class LaunchAgentHandler implements CommandHandler
     private function admitContainer(LaunchRequest $request): void
     {
         foreach ([HostCapabilityType::ContainerRuntime, HostCapabilityType::AccountTransport] as $capability) {
-            $this->capabilities->capability(new HostCapabilityQuery($capability, $request->selection->program, AccountModeType::Subscription, ExecutionModeType::RequiredContainer))->requireSupported();
+            $query = new HostCapabilityQuery(
+                $capability,
+                $request->selection->program,
+                AccountModeType::Subscription,
+                ExecutionModeType::RequiredContainer,
+            );
+            $this->capabilities->capability($query)->requireSupported();
         }
 
         if (! $this->images->isVerified((string) $request->execution->imageReference)) {
