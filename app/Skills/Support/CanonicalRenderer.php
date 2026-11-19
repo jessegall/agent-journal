@@ -33,7 +33,7 @@ final readonly class CanonicalRenderer implements SkillRenderer
     public function render(Skill $skill, SkillOwner $owner): RenderedSkill
     {
         $key = SkillKey::from($skill->key());
-        $sections = $skill->sections();
+        $sections = $skill->sections()->resolve($this->parts, $owner, $skill->name());
         $this->checkSections($key, $sections);
         $this->checkDescription($key, $skill->description());
 

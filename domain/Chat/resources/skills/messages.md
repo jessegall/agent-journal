@@ -1,5 +1,7 @@
 # Messages
 
+Messages are how users and agents talk in the journal.
+
 ## Where messages come from
 
 Users write to an agent in the chat window. Each message belongs to one conversation and reaches the agent of that session.

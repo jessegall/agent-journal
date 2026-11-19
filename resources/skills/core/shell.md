@@ -1,5 +1,7 @@
 # Shell
 
+Commands run through the journal, which keeps their output.
+
 ## Running commands
 
 `process:run` runs an admitted command line under the supervisor and prints the start of its output. A run starts from its admission, or once from an evidence permit for its exact command line with `--permit` and `--request-id`; starting the same admission again runs nothing.

@@ -9,6 +9,7 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * A shipped fixture skill whose Markdown part names a heading that is not there.
@@ -35,8 +36,8 @@ final class BrokenGuideSkill implements Skill
         return Conditions::everyone();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [SkillSection::markdown('missing', 'Missing', MarkdownPart::heading('guide.md', ['Guide', 'Nowhere']))];
+        return SkillSections::listed(SkillSection::markdown('missing', 'Missing', MarkdownPart::heading('guide.md', ['Guide', 'Nowhere'])));
     }
 }

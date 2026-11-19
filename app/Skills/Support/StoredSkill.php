@@ -7,7 +7,7 @@ namespace App\Skills\Support;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Models\SkillRevision;
-use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * A skill a user stored, read from one revision: its sections are the literal Markdown that was saved, never an
@@ -41,12 +41,9 @@ final readonly class StoredSkill implements Skill
         return $this->condition;
     }
 
-    /**
-     * @return list<SkillSection>
-     */
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return $this->revision->sections;
+        return SkillSections::listed(...$this->revision->sections);
     }
 
     public function revisionNumber(): int

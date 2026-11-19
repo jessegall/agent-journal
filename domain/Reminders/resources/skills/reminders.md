@@ -1,5 +1,7 @@
 # Reminders
 
+Reminders are things to do at a time or on an interval.
+
 ## What a reminder is
 
 A reminder is something to do at a given time or on an interval.

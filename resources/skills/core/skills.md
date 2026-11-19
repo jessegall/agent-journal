@@ -17,7 +17,7 @@ The digest changes exactly when the delivered text changes, so two equal digests
 
 ## When the catalogue cannot be built
 
-When two skills declare one key, or a skill names Markdown that is missing or outside its owner's folder, `skill:list` prints that reason instead of a partial list. The owner named in the reason fixes its declaration.
+When two skills declare one key, or a skill names Markdown that is missing or outside its owner's folder, `skill:list` prints that reason instead of a partial list. The same holds for a skill file whose headings are broken: no `#` title, a second `#` title, a title that differs from the skill's name, a `##` heading that gives no key, or two headings that give the same key. The owner named in the reason fixes its declaration or its file.
 
 ## What a skill does not do
 

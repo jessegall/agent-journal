@@ -8,6 +8,7 @@ use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\SkillSection;
+use App\Skills\Values\SkillSections;
 
 /**
  * The Notes module's one skill: how an agent keeps its notes.
@@ -34,10 +35,10 @@ final class NotesSkill implements Skill
         return Conditions::everyone();
     }
 
-    public function sections(): array
+    public function sections(): SkillSections
     {
-        return [
+        return SkillSections::listed(
             SkillSection::text('purpose', 'Notes', 'A note keeps what an agent learned while it works.'),
-        ];
+        );
     }
 }
