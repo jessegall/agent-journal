@@ -2,10 +2,14 @@ from tests.stories.builder.story_agent import StoryAgent
 import json
 import re
 import shlex
+import threading
 
 from journal.engine.clock import Clock
 from journal.features.workers.jobs.auto_dispatch import AutoDispatch
+from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_runner import WorkerRunner
+from journal.models.test_turn import TestTurn
+from journal.repositories.test_turns import TestTurns
 from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
 from journal.support.actor import Actor
@@ -17,7 +21,7 @@ from tests.stories.builder.step_result import StepResult
 
 
 class WorkerSteps:
-    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, a command it only tries, which may be refused, and the journal's own dispatch of the next tasks."""
+    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, a command it only tries, which may be refused, a test turn it already holds and its end, and the journal's own dispatch of the next tasks."""
 
     def agent_dispatches_worker(self, agent: StoryAgent, name: str, task: int) -> int:
         self.agent_runs(agent, f"worker dispatch '{name}' --task {task} --changes 'the files of its task' --profile journal-medior --model sonnet --tests 'Scoped tests'")
@@ -67,6 +71,28 @@ class WorkerSteps:
             output.write_text(printed)
             runner.finish(worker, 0, Actor.system())
         return self.observed(f"the {agent.role}'s run ends", None, None)
+
+    def worker_has_a_test_turn_running(self, agent: StoryAgent, ids: str) -> StepResult:
+        with self.app.container.get(Scope).environment(1):
+            worker = self.app.container.get(Workers).find(agent.number)
+            folder = str(self.app.container.get(WorkerBranch).place(worker))
+            turn = TestTurn(environment_id=1, worker=worker.id, ids=ids, command=f"./run_tests.sh {ids}", folder=folder).started(0.0)
+            self.app.container.get(TestTurns).save(turn, Actor.worker(worker.id))
+        return self.observed(f"the {agent.role} has a test turn running {ids}", None, None)
+
+    def worker_test_run_ends_after(self, agent: StoryAgent, seconds: float) -> StepResult:
+        threading.Timer(seconds, self.ended_turns, (agent,)).start()
+        return self.observed(f"the {agent.role}'s test run ends after {seconds:g} seconds", None, None)
+
+    def worker_test_run_ends(self, agent: StoryAgent) -> StepResult:
+        self.ended_turns(agent)
+        return self.observed(f"the {agent.role}'s test run ends", None, None)
+
+    def ended_turns(self, agent: StoryAgent) -> None:
+        with self.app.container.get(Scope).environment(1):
+            rows = self.app.container.get(TestTurns)
+            for turn in [turn for turn in rows.running() if turn.worker == agent.number]:
+                rows.save(turn.ended(), Actor.system())
 
     def agent_runs_cleanly(self, agent: StoryAgent, line: str) -> StepResult:
         result = self.agent_runs(agent, line)

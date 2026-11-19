@@ -60,6 +60,11 @@ class StoryChecks:
             open_turns = [*turns.waiting(), *turns.running()]
         assert not open_turns, f"test turns {[turn.id for turn in open_turns]} are still open"
 
+    def expect_test_turn_running_for(self, agent: StoryAgent) -> None:
+        with self.app.container.get(Scope).environment(1):
+            holders = [turn.worker for turn in self.app.container.get(TurnRows).running()]
+        assert agent.number in holders, f"the {agent.role} holds no running test turn: {holders} do"
+
     def expect_output_count(self, count: int) -> None:
         assert self.output_count() == count, f"{self.output_count()} outputs are kept, not {count}"
 
