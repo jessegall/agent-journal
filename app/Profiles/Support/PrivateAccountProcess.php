@@ -64,6 +64,21 @@ final class PrivateAccountProcess
         return $this->buffer;
     }
 
+    /**
+     * Waits for a short check to end and answers what it printed.
+     */
+    public function finish(): string
+    {
+        while ($this->isRunning()) {
+            usleep(20_000);
+        }
+
+        $output = $this->output();
+        $this->stop();
+
+        return $output;
+    }
+
     public function isRunning(): bool
     {
         return proc_get_status($this->process)['running'];
@@ -71,7 +86,7 @@ final class PrivateAccountProcess
 
     public function stop(): void
     {
-        if ($this->isRunning()) {
+        if (proc_get_status($this->process)['running']) {
             proc_terminate($this->process);
         }
 

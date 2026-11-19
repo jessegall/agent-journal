@@ -37,6 +37,7 @@ use App\Profiles\Resolvers\ActiveAccountRecords;
 use App\Profiles\Resolvers\ProfilePrograms;
 use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\BuiltInProfilePins;
+use App\Profiles\Support\ClaudeSignIn;
 use App\Profiles\Support\ConfiguredOperations;
 use App\Profiles\Support\ProfileAuthorizerProvider;
 use App\Profiles\Support\ProfileFileEditPermission;
@@ -65,6 +66,10 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(BuiltInLaunchProfiles::class, BuiltInProfilePins::class);
         $this->app->bind(ActiveAccountReader::class, ActiveAccountRecords::class);
         $this->app->singleton(SignInProtocols::class);
+        $this->callAfterResolving(
+            SignInProtocols::class,
+            fn (SignInProtocols $protocols) => $protocols->register('claude-code', ClaudeSignIn::class),
+        );
     }
 
     public function boot(
