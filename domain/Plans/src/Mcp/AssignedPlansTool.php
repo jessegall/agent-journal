@@ -23,9 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * plans_assigned: one numbered page of the plans the caller holds, with Plans' own state and progress.
  */
 #[Name('plans_assigned')]
-#[Description('The plans you hold, with their state, progress and the assignment reference. Filter by search and '
-    .'states, page through with page and per_page (1 to 100, 20 unless given), or send only the continuation a '
-    .'result gave.')]
+#[Description('The plans you hold, with their state, progress and the assignment reference. Filter by search and states, page through with page and per_page (1 to 100, 20 unless given), or send only the continuation a result gave.')]
 #[IsReadOnly]
 final class AssignedPlansTool extends JournalReadTool
 {

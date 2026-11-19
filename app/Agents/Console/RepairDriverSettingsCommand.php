@@ -15,9 +15,7 @@ use Illuminate\Console\Command;
  */
 final class RepairDriverSettingsCommand extends Command
 {
-    protected $signature = 'agents:settings-repair {request : The driver request}'
-        .' {--row-version= : The row version you read} {--reason= : Why}'
-        .' {--value= : The model or effort to ask for instead}';
+    protected $signature = 'agents:settings-repair {request : The driver request} {--row-version= : The row version you read} {--reason= : Why} {--value= : The model or effort to ask for instead}';
 
     protected $description = 'Give a failed setting change a new value in place';
 

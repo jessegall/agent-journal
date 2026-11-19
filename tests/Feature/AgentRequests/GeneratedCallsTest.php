@@ -43,9 +43,9 @@ final class GeneratedCallsTest extends TestCase
         $original = (string) file_get_contents($path);
         file_put_contents($path, $original.<<<'TEXT'
 
-            // changed by hand
+        // changed by hand
 
-            TEXT);
+        TEXT);
 
         try {
             $this->artisan('journal:calls', ['--check' => true])

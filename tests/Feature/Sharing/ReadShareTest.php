@@ -80,10 +80,10 @@ final class ReadShareTest extends TestCase
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
-            # Goal
-            Ship it.
+        # Goal
+        Ship it.
 
-            TEXT));
+        TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
@@ -102,10 +102,10 @@ final class ReadShareTest extends TestCase
         $this->assertTrue($page->allowed);
         $this->assertSame(
             ['Design', '1', <<<'TEXT'
-                # Goal
-                Ship it.
+            # Goal
+            Ship it.
 
-                TEXT],
+            TEXT],
             [$page->title, $page->publicationVersion, $page->body],
         );
         $this->assertSame([ShareAuditType::ReadAllowed], $this->auditTypes());
@@ -180,10 +180,10 @@ final class ReadShareTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Notes', 'What we learned', <<<'TEXT'
-            # Notes
-            Keep it.
+        # Notes
+        Keep it.
 
-            TEXT));
+        TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();
         $this->plan->linkTo($sibling);

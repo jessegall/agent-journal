@@ -78,10 +78,10 @@ final class SharingListenerTest extends TestCase
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
-            # Goal
-            Ship it.
+        # Goal
+        Ship it.
 
-            TEXT));
+        TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::configure(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
@@ -163,10 +163,10 @@ final class SharingListenerTest extends TestCase
                 'Tricks',
                 'Inert',
                 <<<'TEXT'
-                    <script>alert(1)</script>
+                <script>alert(1)</script>
 
-                    [run](javascript:alert(1)) [site](https://example.com) 
-                    TEXT
+                [run](javascript:alert(1)) [site](https://example.com) 
+                TEXT
                     ."[other](/s/elsewhere)\n",
             ),
         );

@@ -27,8 +27,12 @@ final class InvalidNavigationDeclaration extends UiDeclarationError
     public static function routeValuesMismatch(string $item, string $page, string $path): self
     {
         return new self(
-            "Navigation item {$item} must give a route value for exactly each parameter of the path '{$path}' of "
-                ."page {$page}.",
+            sprintf(
+                "Navigation item %s must give a route value for exactly each parameter of the path '%s' of page %s.",
+                $item,
+                $path,
+                $page,
+            ),
         );
     }
 

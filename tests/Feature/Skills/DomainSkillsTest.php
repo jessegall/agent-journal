@@ -54,15 +54,15 @@ final class DomainSkillsTest extends TestCase
         );
         $this->assertStringContainsString(<<<'TEXT'
 
-            ## Purpose
+        ## Purpose
 
 
-            TEXT, $shown);
+        TEXT, $shown);
         $this->assertStringContainsString(<<<TEXT
 
-            {$heading}
+        {$heading}
 
 
-            TEXT, $shown);
+        TEXT, $shown);
     }
 }

@@ -15,8 +15,7 @@ use Illuminate\Console\Command;
  */
 final class ResumeKeyScriptCommand extends Command
 {
-    protected $signature = 'agents:key-script-resume {request : The driver request}'
-        .' {--row-version= : The row version you read} {--reason= : Why}';
+    protected $signature = 'agents:key-script-resume {request : The driver request} {--row-version= : The row version you read} {--reason= : Why}';
 
     protected $description = 'Let a stopped key script go on from its step';
 

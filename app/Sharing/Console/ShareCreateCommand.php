@@ -17,8 +17,7 @@ use Illuminate\Console\Command;
  */
 final class ShareCreateCommand extends Command
 {
-    protected $signature = 'share:create {preview : The id of the saved preview} {--minutes= : How long the share '
-        .'lasts; seven days when left out} {--request-key= : Send again under the key a failed attempt printed}';
+    protected $signature = 'share:create {preview : The id of the saved preview} {--minutes= : How long the share lasts; seven days when left out} {--request-key= : Send again under the key a failed attempt printed}';
 
     protected $description = 'Share a record from a saved preview';
 

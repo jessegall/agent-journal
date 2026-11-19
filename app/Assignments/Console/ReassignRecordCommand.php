@@ -22,9 +22,7 @@ final class ReassignRecordCommand extends Command
     use ReadsAssignmentArguments;
     use RunsCallPipelines;
 
-    protected $signature = 'assignment:reassign {type} {id} {--assignment= : The assignment row id it has now}'
-        .' {--holder= : Its holder now as type:id} {--to= : The new holder as type:id} {--request-key= : Send'
-        .' again under the key a failed attempt printed} {--json}';
+    protected $signature = 'assignment:reassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--to= : The new holder as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Move one record from the holder it has now to another';
 

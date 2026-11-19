@@ -18,9 +18,7 @@ final class SkillRestoreCommand extends Command
 {
     use PrintsSkillRefusals;
 
-    protected $signature = 'skill:restore {number : The skill number or key} {--revision= : The revision to restore} '
-        .'{--expected-revision= : The revision you read} {--request-id= : Send again under the id a failed attempt '
-        .'printed}';
+    protected $signature = 'skill:restore {number : The skill number or key} {--revision= : The revision to restore} {--expected-revision= : The revision you read} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Restore an earlier revision of a stored skill';
 

@@ -23,8 +23,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * tasks_assigned: one numbered page of the tasks the caller holds, each with its assignment reference.
  */
 #[Name('tasks_assigned')]
-#[Description('The tasks you hold, with the assignment reference each holds. Filter by search and states, page '
-    .'through with page and per_page (1 to 100, 20 unless given), or send only the continuation a result gave.')]
+#[Description('The tasks you hold, with the assignment reference each holds. Filter by search and states, page through with page and per_page (1 to 100, 20 unless given), or send only the continuation a result gave.')]
 #[IsReadOnly]
 final class AssignedTasksTool extends JournalReadTool
 {

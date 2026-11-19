@@ -12,8 +12,11 @@ final class UiPathInvalid extends UiDeclarationError
     public static function notNormalised(string $declaration, string $path): self
     {
         return new self(
-            "{$declaration} declares the path '{$path}'; write lower-case segments or {name} parameters joined by "
-                .'single slashes, with no slash at either end.',
+            sprintf(
+                "%s declares the path '%s'; write lower-case segments or {name} parameters joined by single slashes, with no slash at either end.",
+                $declaration,
+                $path,
+            ),
         );
     }
 

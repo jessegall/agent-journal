@@ -21,8 +21,12 @@ final class PlanRevisionChanged extends RuntimeException implements CodedRefusal
     public static function for(int $number, int $expected, int $current): self
     {
         return new self(
-            "Plan {$number} is at revision {$current}, not {$expected}; read it again with plans_read and change "
-                .'that revision.',
+            sprintf(
+                'Plan %s is at revision %s, not %s; read it again with plans_read and change that revision.',
+                $number,
+                $current,
+                $expected,
+            ),
         );
     }
 

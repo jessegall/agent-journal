@@ -15,7 +15,6 @@ final class StackTransactionRequired extends LogicException
 
     public static function withoutLimits(): self
     {
-        return new self('This transaction has no lock time limit; open it through StackTransaction so a stack '
-            .'operation cannot wait forever.');
+        return new self('This transaction has no lock time limit; open it through StackTransaction so a stack operation cannot wait forever.');
     }
 }

@@ -97,15 +97,10 @@ final class BindingRulesTest extends TestCase
         $violations = new BindingRules($owners, DomainFiles::in([$fixtures]))->violations();
 
         $this->assertSame([
-            'PlanResolver.php:10 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanResolver, but '
-                .'Tests\Fixtures\Bindings\Plans\PlanNotes does not implement it',
-            'PlansServiceProvider.php:17 binds Tests\Fixtures\Bindings\Tasks\Contracts\TaskResolver, but Tasks owns '
-                .'it; only Core\'s public contracts are filled by another owner',
-            'PlansServiceProvider.php:18 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanCounter, but the target '
-                .'Tests\Fixtures\Bindings\Tasks\TaskList belongs to Tasks',
-            'PlanCounts.php:11 binds Tests\Fixtures\Bindings\Plans\PlanCounts, but the singleton '
-                .'Tests\Fixtures\Bindings\Plans\PlanCounts keeps the per-request App\Actors\Contracts\CurrentActor '
-                .'beyond its request',
+            'PlanResolver.php:10 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanResolver, but Tests\\Fixtures\\Bindings\\Plans\\PlanNotes does not implement it',
+            "PlansServiceProvider.php:17 binds Tests\\Fixtures\\Bindings\\Tasks\\Contracts\\TaskResolver, but Tasks owns it; only Core's public contracts are filled by another owner",
+            'PlansServiceProvider.php:18 binds Tests\\Fixtures\\Bindings\\Plans\\Contracts\\PlanCounter, but the target Tests\\Fixtures\\Bindings\\Tasks\\TaskList belongs to Tasks',
+            'PlanCounts.php:11 binds Tests\\Fixtures\\Bindings\\Plans\\PlanCounts, but the singleton Tests\\Fixtures\\Bindings\\Plans\\PlanCounts keeps the per-request App\\Actors\\Contracts\\CurrentActor beyond its request',
         ], array_map(
             fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}",
             $violations,

@@ -18,9 +18,7 @@ final class ProcessCleanCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'process:clean {run* : The ended runs}'
-        .' {--preview : Only list what would be removed}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'process:clean {run* : The ended runs} {--preview : Only list what would be removed} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Remove the stored output of ended runs';
 

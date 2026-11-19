@@ -15,9 +15,7 @@ use Illuminate\Console\Command;
  */
 final class ReassignAgentRuntimeCommand extends Command
 {
-    protected $signature = 'agents:runtime-reassign {agent : The agent} {session : Its session}'
-        .' {--generation= : The process generation you read} {--host= : The host to move it to, its own by default}'
-        .' {--proof= : How you know the old process stopped} {--reason= : Why}';
+    protected $signature = 'agents:runtime-reassign {agent : The agent} {session : Its session} {--generation= : The process generation you read} {--host= : The host to move it to, its own by default} {--proof= : How you know the old process stopped} {--reason= : Why}';
 
     protected $description = 'Move a lost agent runtime to a new process once the old one is proven stopped';
 

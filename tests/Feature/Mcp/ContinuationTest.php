@@ -156,10 +156,10 @@ final class ContinuationTest extends TestCase
     {
         $line = str_repeat('aé€😀', 2500);
         $text = <<<TEXT
-            first line
-            {$line}
-            last line
-            TEXT;
+        first line
+        {$line}
+        last line
+        TEXT;
         $read = '';
         $chunk = TextChunk::of($text, 2, 0);
 

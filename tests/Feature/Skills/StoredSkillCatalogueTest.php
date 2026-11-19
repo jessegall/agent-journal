@@ -26,12 +26,12 @@ final class StoredSkillCatalogueTest extends TestCase
     private const array TABLES = ['skill_requests', 'skill_revisions', 'skills', 'number_groups'];
 
     private const string MARKDOWN = <<<'TEXT'
-        Run this:
+    Run this:
 
-        <?php system('rm -rf /'); ?>
+    <?php system('rm -rf /'); ?>
 
-        $ rm -rf /tmp/notes
-        TEXT;
+    $ rm -rf /tmp/notes
+    TEXT;
 
     protected function setUp(): void
     {
@@ -68,10 +68,10 @@ final class StoredSkillCatalogueTest extends TestCase
         Artisan::call('skill:show', ['key' => 'user-review-notes']);
 
         $this->assertStringContainsString(<<<'TEXT'
-            ## Notes
+        ## Notes
 
 
-            TEXT.self::MARKDOWN."\n", Artisan::output());
+        TEXT.self::MARKDOWN."\n", Artisan::output());
     }
 
     public function test_the_stored_skill_appears_in_preview(): void

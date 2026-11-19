@@ -124,12 +124,12 @@ final class HomePageTest extends TestCase
     public function test_a_sent_message_keeps_its_indentation_and_returns_to_the_conversation(): void
     {
         $body = <<<'TEXT'
-              Please check:
-                - the indented line
+          Please check:
+            - the indented line
 
-            then answer.  
+        then answer.  
 
-            TEXT;
+        TEXT;
 
         $home = route(
             'home',

@@ -14,8 +14,7 @@ use Illuminate\Console\Command;
  */
 final class ProfileShowCommand extends Command
 {
-    protected $signature = 'profile:show {key : The stable key of the profile} {--revision= : An earlier revision '
-        .'number}';
+    protected $signature = 'profile:show {key : The stable key of the profile} {--revision= : An earlier revision number}';
 
     protected $description = 'Show a profile revision';
 

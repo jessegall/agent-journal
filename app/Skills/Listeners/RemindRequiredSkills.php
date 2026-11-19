@@ -43,8 +43,11 @@ final readonly class RemindRequiredSkills implements Listener
             }
 
             $event->reminders->add(
-                "Read the required skill {$key} whole before work it covers: php artisan skill:show {$key}, or the "
-                .'skills_show tool.',
+                sprintf(
+                    'Read the required skill %s whole before work it covers: php artisan skill:show %s, or the skills_show tool.',
+                    $key,
+                    $key,
+                ),
                 true,
             );
         }

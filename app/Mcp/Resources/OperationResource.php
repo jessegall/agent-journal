@@ -18,8 +18,7 @@ use Laravel\Mcp\Support\UriTemplate;
  * next outcomes.
  */
 #[Name('operation')]
-#[Description('What became of your write sent with this request_key, and its outcomes; add ?continuation= for the '
-    .'next ones.')]
+#[Description('What became of your write sent with this request_key, and its outcomes; add ?continuation= for the next ones.')]
 #[MimeType('application/json')]
 final class OperationResource extends JournalResource implements HasUriTemplate
 {

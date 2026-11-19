@@ -18,9 +18,7 @@ final class CommandTypeRestoreCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:restore {rule : The classification rule id}'
-        .' {--from-revision= : The earlier revision} {--expected-revision= : The active revision read}'
-        .' {--request-key= : The key that makes a retry the same proposal} {--json}';
+    protected $signature = 'command-type:restore {rule : The classification rule id} {--from-revision= : The earlier revision} {--expected-revision= : The active revision read} {--request-key= : The key that makes a retry the same proposal} {--json}';
 
     protected $description = 'Restore an earlier revision of a rule';
 

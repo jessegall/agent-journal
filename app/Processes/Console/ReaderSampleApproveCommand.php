@@ -18,10 +18,7 @@ final class ReaderSampleApproveCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'reader:sample-approve {request : The command request id}'
-        .' {--expected-revision= : The declaration revision reviewed}'
-        .' {--command-digest= : The digest of the exact line}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'reader:sample-approve {request : The command request id} {--expected-revision= : The declaration revision reviewed} {--command-digest= : The digest of the exact line} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Approve one evidence sample of a command request';
 

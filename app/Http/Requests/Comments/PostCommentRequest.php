@@ -70,8 +70,7 @@ final class PostCommentRequest extends RecordTargetRequest
                 && ! in_array($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true)) {
                 $validator->errors()->add(
                     'version',
-                    'Point at the whole record (no place), or at one section, one span of lines, or one quote with '
-                        .'its version.',
+                    'Point at the whole record (no place), or at one section, one span of lines, or one quote with its version.',
                 );
             }
         }];

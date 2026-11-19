@@ -34,8 +34,11 @@ final class TypedClassConstantRule implements Rule
 
         return array_map(
             fn (Node\Const_ $constant) => RuleErrorBuilder::message(
-                "Class constant {$constant->name->toString()} has no type; write it as const <type> "
-                    ."{$constant->name->toString()}.",
+                sprintf(
+                    'Class constant %s has no type; write it as const <type> %s.',
+                    $constant->name->toString(),
+                    $constant->name->toString(),
+                ),
             )
                 ->identifier('classConstant.untyped')
                 ->line($node->getStartLine())

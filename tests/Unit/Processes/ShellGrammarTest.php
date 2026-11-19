@@ -69,10 +69,10 @@ final class ShellGrammarTest extends TestCase
     public function test_an_unquoted_here_document_exposes_its_substitution(): void
     {
         $tree = $this->parse(<<<'TEXT'
-            cat <<EOF
-            hi $(rm a)
-            EOF
-            TEXT);
+        cat <<EOF
+        hi $(rm a)
+        EOF
+        TEXT);
 
         $this->assertSame(['rm a'], array_slice($this->texts($tree, $tree->executableParts()), 1));
     }

@@ -24,9 +24,7 @@ final class ReaderSampleRunCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'reader:sample-run {request : The command request id}'
-        .' {--permit= : The evidence permit the owner issued}'
-        .' {--request-key= : The key this use of the permit goes under} {--json}';
+    protected $signature = 'reader:sample-run {request : The command request id} {--permit= : The evidence permit the owner issued} {--request-key= : The key this use of the permit goes under} {--json}';
 
     protected $description = 'Run the approved evidence sample of a command request once';
 

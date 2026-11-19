@@ -14,8 +14,12 @@ final class ReadLimitTooLarge extends RuntimeException
     public static function rows(int $rows, int $pageMax): self
     {
         return new self(
-            "A plain read may take at most {$pageMax} rows, not {$rows}; use readLimit({$rows}) for a known larger "
-                .'set, readInChunks for a scan, or paginate.',
+            sprintf(
+                'A plain read may take at most %s rows, not %s; use readLimit(%s) for a known larger set, readInChunks for a scan, or paginate.',
+                $pageMax,
+                $rows,
+                $rows,
+            ),
         );
     }
 }

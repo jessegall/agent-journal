@@ -49,8 +49,7 @@ final class ChatDomain extends Domain implements
 {
     public function description(): string
     {
-        return 'The conversation product: the chat window, composer, chosen agent and docked records, built on Core '
-            .'messaging.';
+        return 'The conversation product: the chat window, composer, chosen agent and docked records, built on Core messaging.';
     }
 
     /**

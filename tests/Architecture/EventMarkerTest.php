@@ -71,8 +71,11 @@ final class EventMarkerTest extends TestCase
     {
         $source = (string) file_get_contents($file);
 
-        if (preg_match('/^namespace ([^;]+);/m', $source, $namespace) !== 1 || preg_match('/^(?:final |abstract '
-            .')?(?:readonly )?(?:class|interface|enum) (\w+)/m', $source, $name) !== 1) {
+        if (preg_match('/^namespace ([^;]+);/m', $source, $namespace) !== 1 || preg_match(
+            '/^(?:final |abstract )?(?:readonly )?(?:class|interface|enum) (\\w+)/m',
+            $source,
+            $name,
+        ) !== 1) {
             return null;
         }
 

@@ -14,8 +14,10 @@ final class UnknownResourceArea extends InvalidArgumentException
     public static function forKey(string $key): self
     {
         return new self(
-            "{$key} is not a resource area; use workspace, scratch, journal.content, journal.work, journal.control, "
-                .'provider.connection or protected.',
+            sprintf(
+                '%s is not a resource area; use workspace, scratch, journal.content, journal.work, journal.control, provider.connection or protected.',
+                $key,
+            ),
         );
     }
 }

@@ -21,8 +21,12 @@ final class PhaseRevisionChanged extends RuntimeException implements CodedRefusa
     public static function for(int $number, int $expected, int $current): self
     {
         return new self(
-            "Phase {$number} is at revision {$current}, not {$expected}; read it again with phases_read and change "
-                .'that revision.',
+            sprintf(
+                'Phase %s is at revision %s, not %s; read it again with phases_read and change that revision.',
+                $number,
+                $current,
+                $expected,
+            ),
         );
     }
 

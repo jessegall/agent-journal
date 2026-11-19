@@ -146,8 +146,10 @@ final class PlanWorkCommandsTest extends TestCase
             ['type' => Plan::LINK_TYPE, 'id' => $this->plan->id, '--to' => "agent:{$this->helper->agent->id}"],
         )
             ->expectsOutputToContain(
-                "Cascade over plans.plan {$this->plan->id} and its unfinished work: 3 changed, 0 unchanged, 2 "
-                    .'skipped as finished.',
+                sprintf(
+                    'Cascade over plans.plan %s and its unfinished work: 3 changed, 0 unchanged, 2 skipped as finished.',
+                    $this->plan->id,
+                ),
             )
             ->assertExitCode(0);
         $this->artisan(

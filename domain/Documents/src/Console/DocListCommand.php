@@ -19,9 +19,7 @@ final class DocListCommand extends Command
     use ReportsRecordCards;
     use RunsCallPipelines;
 
-    protected $signature = 'doc:list {--state=active : active, settled or all} {--page=1} {--query= : Only'
-        .' those whose text holds these words} {--revisions : Search past revisions too} {--after= : Continue'
-        .' after this cursor}';
+    protected $signature = 'doc:list {--state=active : active, settled or all} {--page=1} {--query= : Only those whose text holds these words} {--revisions : Search past revisions too} {--after= : Continue after this cursor}';
 
     protected $description = 'List the documents of this journal, newest first';
 

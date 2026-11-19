@@ -15,13 +15,11 @@ final class CommentLocationCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'comment:location {target : Such as "doc 12"} {comment : The comment id} {--lines=}'
-        .' {--json}';
+    protected $signature = 'comment:location {target : Such as "doc 12"} {comment : The comment id} {--lines=} {--json}';
 
     protected $description = 'Show where a comment points: its record, or the lines of the revision it was left on';
 
-    protected $help = 'Example: comment:location "doc 12" <comment id>; --lines 20-40 reads other lines of that'
-        .' revision, refused for a comment on the whole record';
+    protected $help = 'Example: comment:location "doc 12" <comment id>; --lines 20-40 reads other lines of that revision, refused for a comment on the whole record';
 
     public function handle(): int
     {

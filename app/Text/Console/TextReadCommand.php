@@ -17,8 +17,7 @@ final class TextReadCommand extends Command
 
     protected $signature = 'text:read {target : Such as "doc 12"} {--at-revision=} {--lines=} {--section=} {--json}';
 
-    protected $description = 'Read a bounded part of one version of the text of a record; nextLine is where the'
-        .' next --lines starts';
+    protected $description = 'Read a bounded part of one version of the text of a record; nextLine is where the next --lines starts';
 
     protected $help = 'Example: text:read "doc 12" --at-revision 4 --lines 12-30, or --section 3';
 

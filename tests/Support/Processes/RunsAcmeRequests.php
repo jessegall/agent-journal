@@ -48,16 +48,16 @@ trait RunsAcmeRequests
     use RunsCommandsAsLaunch;
 
     private const string PASSED_OUTPUT = <<<'TEXT'
-        {"test":"a","status":"ok"}
-        {"passed":1,"failed":0}
+    {"test":"a","status":"ok"}
+    {"passed":1,"failed":0}
 
-        TEXT;
+    TEXT;
 
     private const string FINDINGS_OUTPUT = <<<'TEXT'
-        {"test":"a","status":"fail"}
-        {"passed":0,"failed":1}
+    {"test":"a","status":"fail"}
+    {"passed":0,"failed":1}
 
-        TEXT;
+    TEXT;
 
     private TestLaunch $launch;
 

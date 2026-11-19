@@ -163,10 +163,10 @@ final class ReaderProposalTest extends TestCase
         $recorder = $this->app->make(SpoolRecorder::class);
         $now = CarbonImmutable::now();
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, <<<'TEXT'
-            ok first
-            done 1 0
+        ok first
+        done 1 0
 
-            TEXT, $now));
+        TEXT, $now));
         $recorder->append(new CapturedChunk($part, OutputStream::Stderr, "warning\n", $now));
         $part->finishProcess(PartEnd::exited(0));
         $part->finishDraining();

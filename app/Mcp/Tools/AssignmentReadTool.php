@@ -20,8 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * assignments_read: who holds one record, with the assignment reference a deliberate change must name.
  */
 #[Name('assignments_read')]
-#[Description('Who holds one record, such as tasks.task with its id, and the assignment reference a reassign or '
-    .'unassign must name; holder is null when nobody holds it.')]
+#[Description('Who holds one record, such as tasks.task with its id, and the assignment reference a reassign or unassign must name; holder is null when nobody holds it.')]
 #[IsReadOnly]
 final class AssignmentReadTool extends JournalReadTool
 {
@@ -33,8 +32,7 @@ final class AssignmentReadTool extends JournalReadTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'record_type' => $schema->string()->max(100)->description('A registered record type such as tasks.task, '
-                .'plans.plan or plans.phase.')->required(),
+            'record_type' => $schema->string()->max(100)->description('A registered record type such as tasks.task, plans.plan or plans.phase.')->required(),
             'record_id' => $schema->string()->max(26)->required(),
         ];
     }

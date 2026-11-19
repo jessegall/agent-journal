@@ -18,8 +18,7 @@ final class CommandTypeWithdrawCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:withdraw {proposal : The proposal id}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'command-type:withdraw {proposal : The proposal id} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Withdraw a proposal';
 

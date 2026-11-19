@@ -18,8 +18,7 @@ final class ShareListCommand extends Command
 {
     private const int ROWS = 50;
 
-    protected $signature = 'share:list {--state= : Only shares in this state} {--after= : The id the page starts '
-        .'after}';
+    protected $signature = 'share:list {--state= : Only shares in this state} {--after= : The id the page starts after}';
 
     protected $description = 'List shares and proposals, newest first';
 

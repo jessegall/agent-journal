@@ -48,8 +48,7 @@ final class RelayTest extends TestCase
         $this->startServer();
 
         $lines = $this->relay([
-            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},'
-                .'"clientInfo":{"name":"test","version":"1"}}}',
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}',
             '{"jsonrpc":"2.0","method":"notifications/initialized"}',
             '{"jsonrpc":"2.0","id":2,"method":"tools/list"}',
             '{"jsonrpc":"2.0","id":"call-3","method":"tools/call","params":{"name":"overview_read","arguments":{}}}',

@@ -43,10 +43,10 @@ final class ActivityProjectionTest extends TestCase
         $this->part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
         $this->part->start(1, 'host');
         $bytes = <<<TEXT
-            first
-            \x1b[31mlatest line
+        first
+        \x1b[31mlatest line
 
-            TEXT;
+        TEXT;
         $chunk = new CapturedChunk($this->part, OutputStream::Stdout, $bytes, CarbonImmutable::now());
         $this->app->make(SpoolRecorder::class)->append($chunk);
     }

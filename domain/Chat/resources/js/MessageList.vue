@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MessageView } from '@generated/types/core';
+import type { MessageView } from '@kit/CoreTypes';
 
 /**
  * The messages between two inboxes, oldest first: the person's own on the right, the other inbox's on the left with

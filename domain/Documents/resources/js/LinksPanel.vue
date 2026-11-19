@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { add as addLinkRoute, remove as removeLinkRoute } from '@/routes/links';
 import { router, useForm } from '@inertiajs/vue3';
 import type { RecordCard } from '@kit/CoreTypes';
 import Button from '@kit/Button';
@@ -15,11 +14,11 @@ const props = defineProps<{ source: string; links: RecordCard[] }>();
 const form = useForm({ source: props.source, target: '' });
 
 function add(): void {
-    form.post(addLinkRoute.url(), { preserveScroll: true, onSuccess: () => form.reset('target'), ...formSendingHooks() });
+    form.post('/links/add', { preserveScroll: true, onSuccess: () => form.reset('target'), ...formSendingHooks() });
 }
 
 function remove(link: RecordCard): void {
-    router.post(removeLinkRoute.url(), { source: props.source, target: link.label }, { preserveScroll: true, ...formSendingHooks() });
+    router.post('/links/remove', { source: props.source, target: link.label }, { preserveScroll: true, ...formSendingHooks() });
 }
 </script>
 

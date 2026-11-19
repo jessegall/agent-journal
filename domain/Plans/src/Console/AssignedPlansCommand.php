@@ -21,8 +21,7 @@ final class AssignedPlansCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'plan:assigned {--search= : Words in the title} {--state=* : Only these states}'
-        .' {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
+    protected $signature = 'plan:assigned {--search= : Words in the title} {--state=* : Only these states} {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
 
     protected $description = 'List the plans the calling agent holds';
 

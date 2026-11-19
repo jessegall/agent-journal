@@ -18,9 +18,7 @@ final class CommandTypeRetireCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:retire {rule : The classification rule id}'
-        .' {--expected-revision= : The active revision read} {--reason= : Why it is retired}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'command-type:retire {rule : The classification rule id} {--expected-revision= : The active revision read} {--reason= : Why it is retired} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Retire a rule';
 

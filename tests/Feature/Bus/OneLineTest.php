@@ -26,15 +26,15 @@ final class OneLineTest extends TestCase
     {
         $title = $this->titled(<<<TEXT
 
-              Release notes \r
-             
-            TEXT);
+          Release notes \r
+         
+        TEXT);
 
         $this->assertSame(<<<TEXT
 
-              Release notes \r
-             
-            TEXT, $title->title);
+          Release notes \r
+         
+        TEXT, $title->title);
     }
 
     public function test_a_line_break_between_two_words_fails(): void

@@ -15,8 +15,7 @@ use Illuminate\Console\Command;
  */
 final class CancelDriverRequestCommand extends Command
 {
-    protected $signature = 'agents:request-cancel {request : The driver request}'
-        .' {--row-version= : The row version you read} {--reason= : Why}';
+    protected $signature = 'agents:request-cancel {request : The driver request} {--row-version= : The row version you read} {--reason= : Why}';
 
     protected $description = 'Cancel a driver request that has not started';
 

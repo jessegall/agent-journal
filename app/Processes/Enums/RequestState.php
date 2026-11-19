@@ -93,8 +93,11 @@ enum RequestState: string
     private function nextCommand(string $requestId, string $operation): string
     {
         return match ($this) {
-            self::CollectingDeclaration => "journal command-type propose --request {$requestId}"
-                ." --operation '{$operation}'",
+            self::CollectingDeclaration => sprintf(
+                "journal command-type propose --request %s --operation '%s'",
+                $requestId,
+                $operation,
+            ),
             self::AwaitingSampleApproval => "waiting for the owner: journal reader sample-approve {$requestId}",
             self::ReadyForSample => "journal reader sample-run {$requestId}",
             self::CapturingSample => "waiting for the sample run: journal command-request show {$requestId}",

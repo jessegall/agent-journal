@@ -11,8 +11,10 @@ final class MiddlewareSkippedCommand extends RuntimeException
     public static function by(string $middleware): self
     {
         return new self(
-            "The middleware {$middleware} returned without running the command; refuse it with CommandRefused or "
-                .'call the next step.',
+            sprintf(
+                'The middleware %s returned without running the command; refuse it with CommandRefused or call the next step.',
+                $middleware,
+            ),
         );
     }
 }

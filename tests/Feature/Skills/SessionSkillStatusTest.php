@@ -66,11 +66,11 @@ final class SessionSkillStatusTest extends TestCase
             'key' => 'user-guide',
             '--description' => 'The guide',
             '--body' => <<<'TEXT'
-                # Guide
+            # Guide
 
-                First text.
+            First text.
 
-                TEXT,
+            TEXT,
         ])->assertSuccessful();
         $this->app->make(SkillPublishing::class)->refresh();
     }
@@ -96,11 +96,11 @@ final class SessionSkillStatusTest extends TestCase
             'number' => 'user-guide',
             '--expected-revision' => 1,
             '--body' => <<<'TEXT'
-                # Guide
+            # Guide
 
-                Second text.
+            Second text.
 
-                TEXT,
+            TEXT,
         ])->assertSuccessful();
         $this->boundary($session);
 

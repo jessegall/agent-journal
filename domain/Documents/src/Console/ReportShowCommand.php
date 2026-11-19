@@ -18,9 +18,7 @@ final class ReportShowCommand extends Command
     use PrintsRecordText;
     use RunsCallPipelines;
 
-    protected $signature = 'report:show {number} {--section= : A section by number or exact heading} {--lines='
-        .' : A line range, a-b} {--bullets : Only the bullet lines} {--grep= : Only the lines holding these'
-        .' words} {--all : The whole text, past the usual bound}';
+    protected $signature = 'report:show {number} {--section= : A section by number or exact heading} {--lines= : A line range, a-b} {--bullets : Only the bullet lines} {--grep= : Only the lines holding these words} {--all : The whole text, past the usual bound}';
 
     protected $description = 'Show one report: its outline, or the part of its text you ask for';
 

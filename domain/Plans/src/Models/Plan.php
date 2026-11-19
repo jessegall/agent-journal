@@ -336,11 +336,11 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     public function shareSummary(): string
     {
         return <<<TEXT
-            # {$this->title}
+        # {$this->title}
 
-            This plan is {$this->state->value}.
+        This plan is {$this->state->value}.
 
-            TEXT;
+        TEXT;
     }
 
     /**

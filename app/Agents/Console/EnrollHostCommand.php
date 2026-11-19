@@ -14,8 +14,7 @@ use Illuminate\Console\Command;
  */
 final class EnrollHostCommand extends Command
 {
-    protected $signature = 'agents:host-enroll {name : The installation name of the host} {--root=* : A folder the '
-        .'host may launch agents in}';
+    protected $signature = 'agents:host-enroll {name : The installation name of the host} {--root=* : A folder the host may launch agents in}';
 
     protected $description = 'Enroll a host that runs agent programs and print its secret once';
 

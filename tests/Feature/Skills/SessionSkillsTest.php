@@ -77,11 +77,11 @@ final class SessionSkillsTest extends TestCase
                 'key' => 'user-probe',
                 '--description' => 'A probe skill',
                 '--body' => <<<'TEXT'
-                    # Probe
+                # Probe
 
-                    Probe text.
+                Probe text.
 
-                    TEXT,
+                TEXT,
                 '--ability' => [AssignmentPolicy::class.':dispatch'],
             ],
         )
@@ -110,11 +110,11 @@ final class SessionSkillsTest extends TestCase
         $this->artisan(
             'skill:make',
             ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => <<<'TEXT'
-                # Probe
+            # Probe
 
-                Probe text.
+            Probe text.
 
-                TEXT],
+            TEXT],
         )->assertSuccessful();
         $this->boundary($session);
 

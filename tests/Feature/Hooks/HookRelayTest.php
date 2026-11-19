@@ -48,8 +48,7 @@ final class HookRelayTest extends TestCase
 
     private const string STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
 
-    private const string SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash",'
-        .'"tool_input":{"command":"git status"}}';
+    private const string SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status"}}';
 
     private TestLaunch $launch;
 

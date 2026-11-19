@@ -21,8 +21,7 @@ final class CallKeyExpired extends CallRefused
     {
         return [
             $this->getMessage(),
-            'The outcome of the first send is no longer kept. Check the record before you start a new write on '
-                .'purpose.',
+            'The outcome of the first send is no longer kept. Check the record before you start a new write on purpose.',
         ];
     }
 }

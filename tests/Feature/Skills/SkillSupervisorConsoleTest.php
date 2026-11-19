@@ -71,11 +71,11 @@ final class SkillSupervisorConsoleTest extends TestCase
 
         $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
         $this->assertSame(<<<'TEXT'
-            # Journal
+        # Journal
 
-            First text.
+        First text.
 
-            TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
+        TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
     }
 
     public function test_retry_of_an_unknown_publication_is_refused(): void
@@ -115,11 +115,11 @@ final class SkillSupervisorConsoleTest extends TestCase
         $this->assertDirectoryExists($this->stagingFolder($previous));
         $this->assertDirectoryExists($this->stagingFolder($current));
         $this->assertSame(<<<'TEXT'
-            # Journal
+        # Journal
 
-            Fourth text.
+        Fourth text.
 
-            TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
+        TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
         $this->assertSame(PublicationState::Superseded, $oldest->refresh()->state);
 
         $this->travel(31)->days();
@@ -149,11 +149,11 @@ final class SkillSupervisorConsoleTest extends TestCase
     private function intend(string $text): SkillPublication
     {
         $markdown = <<<TEXT
-            # Journal
+        # Journal
 
-            {$text}
+        {$text}
 
-            TEXT;
+        TEXT;
         $generation = SkillGeneration::ready(hash('sha256', $text), str_repeat('e', 64), [[
             'key' => 'journal',
             'owner' => 'Core',

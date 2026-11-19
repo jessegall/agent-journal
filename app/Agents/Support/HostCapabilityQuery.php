@@ -23,7 +23,12 @@ final readonly class HostCapabilityQuery
 
     public function describe(): string
     {
-        return "{$this->capability->value} for {$this->program->value} with a {$this->accountMode->value} account in "
-            ."{$this->executionMode->value} mode";
+        return sprintf(
+            '%s for %s with a %s account in %s mode',
+            $this->capability->value,
+            $this->program->value,
+            $this->accountMode->value,
+            $this->executionMode->value,
+        );
     }
 }

@@ -93,8 +93,12 @@ final class PublicContractRulesTest extends TestCase
     private static function describe(Violation $violation): string
     {
         return match ($violation->type) {
-            ViolationType::PrivateTypeInSignature => "{$violation->detail} shows {$violation->used}, private to "
-                ."{$violation->owner}",
+            ViolationType::PrivateTypeInSignature => sprintf(
+                '%s shows %s, private to %s',
+                $violation->detail,
+                $violation->used,
+                $violation->owner,
+            ),
             default => "{$violation->used} is {$violation->detail}",
         };
     }

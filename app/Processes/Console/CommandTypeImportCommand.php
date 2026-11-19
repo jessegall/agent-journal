@@ -18,8 +18,7 @@ final class CommandTypeImportCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'command-type:import {file : The declaration file}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'command-type:import {file : The declaration file} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Import a declaration file as proposals';
 

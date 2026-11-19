@@ -41,9 +41,9 @@ final class AwaitingSkillsState extends AgentState
 
     private function reason(): string
     {
-        return "Your journal skill set is {$this->publication->value}, not delivered yet, so file changes wait. "
-            .'Reading '
-            .'still works: php artisan skill:status shows where it stands and php artisan skill:show <key> prints a '
-                .'skill.';
+        return sprintf(
+            'Your journal skill set is %s, not delivered yet, so file changes wait. Reading still works: php artisan skill:status shows where it stands and php artisan skill:show <key> prints a skill.',
+            $this->publication->value,
+        );
     }
 }

@@ -126,11 +126,11 @@ final class SkillStatusTest extends TestCase
     private function publish(AgentSession $session, string $text): SkillPublication
     {
         $markdown = <<<TEXT
-            # Journal
+        # Journal
 
-            {$text}
+        {$text}
 
-            TEXT;
+        TEXT;
         $generation = SkillGeneration::ready(hash('sha256', $text), str_repeat('e', 64), [[
             'key' => 'journal',
             'owner' => 'Core',

@@ -22,8 +22,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * assignees_list: the actors of one type work may be given to, in id order, after an id and at most 100 at a time.
  */
 #[Name('assignees_list')]
-#[Description('The agents or users work may be given to, in id order: give type, and after_id and limit (1 to 100, 20 '
-    .'unless given), or type and the continuation a result gave. There is no page number.')]
+#[Description('The agents or users work may be given to, in id order: give type, and after_id and limit (1 to 100, 20 unless given), or type and the continuation a result gave. There is no page number.')]
 #[IsReadOnly]
 final class AssigneesListTool extends JournalReadTool
 {

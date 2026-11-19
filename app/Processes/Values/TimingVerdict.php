@@ -37,7 +37,11 @@ final readonly class TimingVerdict
     {
         $tasks = implode(', ', array_map(fn (int $task): string => "task {$task}", $this->unfinishedTasks));
 
-        return "phase-timing: plan {$this->plan} phase {$this->phase} still has {$tasks}; tests and checks run at the"
-            .' end of the phase.';
+        return sprintf(
+            'phase-timing: plan %s phase %s still has %s; tests and checks run at the end of the phase.',
+            $this->plan,
+            $this->phase,
+            $tasks,
+        );
     }
 }

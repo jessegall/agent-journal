@@ -12,8 +12,11 @@ final class UiComponentMissing extends UiDeclarationError
     public static function outsideOwner(string $declaration, string $component): self
     {
         return new self(
-            "{$declaration} names the component '{$component}'; name a .vue file by its path in the domain's own "
-                .'script folder (resources/js).',
+            sprintf(
+                "%s names the component '%s'; name a .vue file by its path in the domain's own script folder (resources/js).",
+                $declaration,
+                $component,
+            ),
         );
     }
 

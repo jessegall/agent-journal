@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getJson } from '@/composables/jsonRequests';
+import { getJson } from '@kit/jsonRequests';
 import { ref, watch } from 'vue';
 import type { CommentList, RecordCommentView, TextCommentView } from '@/generated/types/core';
 import { list } from '@/routes/comments';

@@ -98,15 +98,21 @@ final readonly class PropertyRules
         $name = $type instanceof ReflectionNamedType ? $type->getName() : '';
 
         if (enum_exists($name)) {
-            $problem = "{$property->getName()} is the enum {$name}, whose cases already limit it; take its validation"
-                .' attributes off';
+            $problem = sprintf(
+                '%s is the enum %s, whose cases already limit it; take its validation attributes off',
+                $property->getName(),
+                $name,
+            );
 
             throw CommandDeclarationInvalid::for($command->getName(), $problem);
         }
 
         if (! isset(self::TYPE_RULES[$name])) {
-            $problem = "{$property->getName()} holds the value {$name}, which checks itself in its factory; take its"
-                .' validation attributes off';
+            $problem = sprintf(
+                '%s holds the value %s, which checks itself in its factory; take its validation attributes off',
+                $property->getName(),
+                $name,
+            );
 
             throw CommandDeclarationInvalid::for($command->getName(), $problem);
         }
@@ -142,8 +148,7 @@ final readonly class PropertyRules
             return;
         }
 
-        $problem = "{$property->getName()} uses ".class_basename($attribute).', which reads the database, a file,'
-            .' the request or the network; look it up in the handler instead';
+        $problem = "{$property->getName()} uses ".class_basename($attribute).', which reads the database, a file, the request or the network; look it up in the handler instead';
 
         throw CommandDeclarationInvalid::for($command->getName(), $problem);
     }
@@ -219,8 +224,13 @@ final readonly class PropertyRules
 
         foreach (new ReflectionClass($name)->getProperties() as $inside) {
             if ($inside->getAttributes(ValidationRule::class, ReflectionAttribute::IS_INSTANCEOF) !== []) {
-                $problem = "{$property->getName()} holds {$name}, whose property {$inside->getName()} has a validation"
-                    ." attribute that is never read; check it in {$name}'s factory";
+                $problem = sprintf(
+                    "%s holds %s, whose property %s has a validation attribute that is never read; check it in %s's factory",
+                    $property->getName(),
+                    $name,
+                    $inside->getName(),
+                    $name,
+                );
 
                 throw CommandDeclarationInvalid::for($command->getName(), $problem);
             }

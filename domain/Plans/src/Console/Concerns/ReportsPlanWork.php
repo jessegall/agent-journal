@@ -23,7 +23,8 @@ trait ReportsPlanWork
         $counts = "{$work->changed} changed, {$work->unchanged} unchanged, {$work->skipped} skipped as finished";
 
         return CommandReport::ending(self::SUCCESS)
-            ->line("Cascade over {$work->root->recordType} {$work->root->recordId} and its unfinished work: "
-                ."{$counts}.");
+            ->line(
+                sprintf('Cascade over %s %s and its unfinished work: %s.', $work->root->recordType, $work->root->recordId, $counts),
+            );
     }
 }

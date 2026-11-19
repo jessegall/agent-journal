@@ -18,9 +18,7 @@ final class ReaderProposeCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'reader:propose {request : The command request id}'
-        .' {--declaration-revision= : The declaration revision the reader reads}'
-        .' {--definition= : The reader definition as JSON} {--json}';
+    protected $signature = 'reader:propose {request : The command request id} {--declaration-revision= : The declaration revision the reader reads} {--definition= : The reader definition as JSON} {--json}';
 
     protected $description = 'Propose a draft reader for a command request';
 

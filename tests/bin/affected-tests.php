@@ -51,8 +51,10 @@ if ($files === []) {
         if ($status !== 0) {
             fwrite(
                 STDERR,
-                'git is not available here: name the changed files, for example composer test:affected -- $(git diff '
-                    ."--name-only HEAD).\n",
+                <<<'TEXT'
+                git is not available here: name the changed files, for example composer test:affected -- $(git diff --name-only HEAD).
+
+                TEXT,
             );
             exit(2);
         }
@@ -134,8 +136,12 @@ function configurationFor(string $root, array $folders): string
         );
         $configuration = (string) preg_replace(
             '#<testsuites>.*</testsuites>#s',
-            "<testsuites>\n        <testsuite name=\"Affected\">\n{$directories}        </testsuite>\n    "
-                .'</testsuites>',
+            <<<TEXT
+            <testsuites>
+                    <testsuite name="Affected">
+            {$directories}        </testsuite>
+                </testsuites>
+            TEXT,
             $configuration,
         );
     }

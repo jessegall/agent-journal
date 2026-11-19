@@ -41,8 +41,7 @@ use Tests\TestCase;
  */
 #[TimeLimit(
     seconds: 10,
-    reason: 'It commits a document through the bus, runs console commands and empties nineteen tables around each '
-        .'test.',
+    reason: 'It commits a document through the bus, runs console commands and empties nineteen tables around each test.',
 )]
 final class ShareEntriesTest extends TestCase
 {
@@ -89,10 +88,10 @@ final class ShareEntriesTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
-            # Goal
-            Ship it.
+        # Goal
+        Ship it.
 
-            TEXT));
+        TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());

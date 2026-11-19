@@ -24,8 +24,11 @@ final class HookDatabaseRefused extends LogicException
     public static function baseDatabaseInWorker(string $selected, string $expected): self
     {
         return new self(
-            "The hook tests selected the database {$selected}, not {$expected}: this parallel worker kept the shared "
-                .'database, so run the tests through "php artisan test --parallel", which gives each worker its own.',
+            sprintf(
+                'The hook tests selected the database %s, not %s: this parallel worker kept the shared database, so run the tests through "php artisan test --parallel", which gives each worker its own.',
+                $selected,
+                $expected,
+            ),
         );
     }
 

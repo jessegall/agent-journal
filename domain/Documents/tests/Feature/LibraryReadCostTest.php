@@ -58,11 +58,11 @@ final class LibraryReadCostTest extends TestCase
                     "Design {$number}",
                     "What design {$number} says",
                     <<<TEXT
-                        # Design {$number}
+                    # Design {$number}
 
-                        {$phrase}
+                    {$phrase}
 
-                        TEXT,
+                    TEXT,
                 ),
             );
         }
@@ -73,11 +73,11 @@ final class LibraryReadCostTest extends TestCase
                     "Check {$number}",
                     "What check {$number} found",
                     <<<TEXT
-                        # Check {$number}
+                    # Check {$number}
 
-                        The retention window held.
+                    The retention window held.
 
-                        TEXT,
+                    TEXT,
                 ),
             );
         }

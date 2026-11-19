@@ -30,8 +30,7 @@ final readonly class ReceiptRetention
     public static function declaredBy(string $command, RequiresRequestKey $declaration): self
     {
         if ($declaration->retentionDays < 1 || $declaration->tombstoneDays < $declaration->retentionDays) {
-            throw CommandDeclarationInvalid::for($command, 'RequiresRequestKey keeps a receipt at least a day and its '
-                .'tombstone no shorter than the receipt');
+            throw CommandDeclarationInvalid::for($command, 'RequiresRequestKey keeps a receipt at least a day and its tombstone no shorter than the receipt');
         }
 
         return new self($declaration->retentionDays, $declaration->tombstoneDays);

@@ -13,8 +13,10 @@ final class SkillKeyInvalid extends InvalidArgumentException implements CodedRef
     public static function for(string $text): self
     {
         return new self(
-            'A skill key is 1 to 64 lowercase letters and digits in words joined by single hyphens, such as '
-                ."journal-plans; \"{$text}\" is not.",
+            sprintf(
+                'A skill key is 1 to 64 lowercase letters and digits in words joined by single hyphens, such as journal-plans; "%s" is not.',
+                $text,
+            ),
         );
     }
 

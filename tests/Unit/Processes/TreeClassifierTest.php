@@ -69,15 +69,15 @@ final class TreeClassifierTest extends TestCase
     public function test_a_quoted_here_document_runs_nothing_and_an_unquoted_one_runs_its_substitution(): void
     {
         $quoted = $this->classify(<<<'TEXT'
-            cat <<'EOF'
-            $(rm a)
-            EOF
-            TEXT);
+        cat <<'EOF'
+        $(rm a)
+        EOF
+        TEXT);
         $unquoted = $this->classify(<<<'TEXT'
-            cat <<EOF
-            $(rm a)
-            EOF
-            TEXT);
+        cat <<EOF
+        $(rm a)
+        EOF
+        TEXT);
 
         $this->assertFalse($quoted->requiredClasses()->contains(CommandClass::Delete));
         $this->assertTrue($unquoted->requiredClasses()->contains(CommandClass::Delete));
@@ -99,10 +99,10 @@ final class TreeClassifierTest extends TestCase
         $this->assertSame(UnresolvedType::UnresolvedExecutable, $this->firstUnresolved('PATH=/tmp cat a')->type);
         $this->assertTrue($this->classify('LANG=C cat a')->isKnown());
         $this->assertSame(UnresolvedType::InterpretedSource, $this->firstUnresolved(<<<'TEXT2'
-            sh <<'TEXT'
-            rm a
-            TEXT
-            TEXT2)->type);
+        sh <<'TEXT'
+        rm a
+        TEXT
+        TEXT2)->type);
         $this->assertSame(UnresolvedType::UnsupportedSyntax, $this->firstUnresolved('cat "open')->type);
         $this->assertSame(
             UnresolvedType::UnsupportedSyntax,

@@ -19,8 +19,7 @@ final class MemorySaveCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'memory:save {text : What to do and when} {--weight=5 : 1 to 10} {--request-key= :'
-        .' Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'memory:save {text : What to do and when} {--weight=5 : 1 to 10} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Keep a memory of the calling agent';
 

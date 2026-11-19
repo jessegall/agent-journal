@@ -19,14 +19,11 @@ final class ReportMakeCommand extends Command
     use ReadsRecordBody;
     use RunsCallPipelines;
 
-    protected $signature = 'report:make {title} {--abstract= : One line saying what it is} {--body= : The text,'
-        .' or - to read it from standard input} {--file= : A local file holding the text} {--about=* : A'
-        .' record it is about, such as "task 12"; up to 50}';
+    protected $signature = 'report:make {title} {--abstract= : One line saying what it is} {--body= : The text, or - to read it from standard input} {--file= : A local file holding the text} {--about=* : A record it is about, such as "task 12"; up to 50}';
 
     protected $description = 'File a new report; it is shared with every agent and user of this journal';
 
-    protected $help = 'Example: php artisan report:make "Check of the launcher" --abstract "What the check'
-        .' found" --file report.md --about "plan 3"';
+    protected $help = 'Example: php artisan report:make "Check of the launcher" --abstract "What the check found" --file report.md --about "plan 3"';
 
     public function handle(DocumentCalls $documents): int
     {
@@ -47,8 +44,10 @@ final class ReportMakeCommand extends Command
             );
 
             return CommandReport::ending(self::SUCCESS)->line(
-                "Filed as {$filed->label}. Reports are shared with every agent and user of this journal;"
-                .' linked private records stay private.',
+                sprintf(
+                    'Filed as %s. Reports are shared with every agent and user of this journal; linked private records stay private.',
+                    $filed->label,
+                ),
             );
         });
 

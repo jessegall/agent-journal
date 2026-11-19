@@ -24,8 +24,11 @@ final class CommandDeclarationInvalid extends RuntimeException
     public static function exportedButNotRegistered(string $owner, string $command): self
     {
         return new self(
-            "{$owner} exports the command {$command} but does not register it; register it in its commands, or stop"
-            .' exporting it.',
+            sprintf(
+                '%s exports the command %s but does not register it; register it in its commands, or stop exporting it.',
+                $owner,
+                $command,
+            ),
         );
     }
 }

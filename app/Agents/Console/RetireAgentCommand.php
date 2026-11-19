@@ -18,8 +18,7 @@ final class RetireAgentCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'agent:retire {agent : The id of the agent to retire} {--request-key= : Send again'
-        .' under the key a failed attempt printed} {--json}';
+    protected $signature = 'agent:retire {agent : The id of the agent to retire} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Retire an agent for good, releasing everything it held';
 

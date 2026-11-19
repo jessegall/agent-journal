@@ -21,8 +21,7 @@ final class OutputReadCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'output:read {run : The run id} {--part=0 : The syntax node of the part}'
-        .' {--stream=stdout} {--summary} {--search=} {--tail=20} {--json}';
+    protected $signature = 'output:read {run : The run id} {--part=0 : The syntax node of the part} {--stream=stdout} {--summary} {--search=} {--tail=20} {--json}';
 
     protected $description = 'Read a run\'s stored output without running anything again';
 

@@ -15,8 +15,7 @@ final class ModelRequired extends InvalidArgumentException implements CommandRef
 {
     public static function forLaunch(): self
     {
-        return new self('Name a model: use --model <model> or --model default with a configured profile default. '
-            .'Nothing was launched.');
+        return new self('Name a model: use --model <model> or --model default with a configured profile default. Nothing was launched.');
     }
 
     public function reason(): LaunchRefusalType

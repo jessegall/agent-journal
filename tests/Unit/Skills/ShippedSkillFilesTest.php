@@ -114,10 +114,10 @@ final class ShippedSkillFilesTest extends TestCase
 
         $this->assertSame($purpose === '' ? $written[1] : ['Purpose', ...$written[1]], $published[1]);
         $this->assertStringContainsString($purpose === '' ? "\n# " : <<<TEXT
-            ## Purpose
+        ## Purpose
 
-            {$purpose}
+        {$purpose}
 
-            TEXT, $rendered);
+        TEXT, $rendered);
     }
 }

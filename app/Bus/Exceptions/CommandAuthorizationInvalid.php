@@ -13,20 +13,23 @@ final class CommandAuthorizationInvalid extends LogicException
 {
     public static function subjectMissing(string $command): self
     {
-        return new self("{$command} declares Authorize but names no subject: it must implement"
-            .' HasAuthorizationSubject.');
+        return new self(
+            sprintf('%s declares Authorize but names no subject: it must implement HasAuthorizationSubject.', $command),
+        );
     }
 
     public static function policyInvalid(string $command, string $policy): self
     {
-        return new self("{$command} is authorized by {$policy}, which is no Policy with a"
-            .' public authorize(Actor, subject, ability).');
+        return new self(
+            sprintf('%s is authorized by %s, which is no Policy with a public authorize(Actor, subject, ability).', $command, $policy),
+        );
     }
 
     public static function subjectMismatched(string $command, string $subject, string $expected): self
     {
-        return new self("{$command} names a subject of type {$subject}, which its policy's"
-            ." authorize does not take ({$expected}).");
+        return new self(
+            sprintf("%s names a subject of type %s, which its policy's authorize does not take (%s).", $command, $subject, $expected),
+        );
     }
 
     public static function abilityMismatched(string $command, string $ability, string $expected): self
@@ -41,7 +44,8 @@ final class CommandAuthorizationInvalid extends LogicException
 
     public static function handlerShape(string $command, string $handler, string $subject): self
     {
-        return new self("{$handler} handles {$command}, which declares Authorize, so handle"
-            ." takes exactly ({$command}, {$subject}).");
+        return new self(
+            sprintf('%s handles %s, which declares Authorize, so handle takes exactly (%s, %s).', $handler, $command, $command, $subject),
+        );
     }
 }

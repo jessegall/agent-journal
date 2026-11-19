@@ -19,8 +19,7 @@ final class ReportUnchangeable extends RuntimeException implements CodedRefusal
     public static function snapshot(): self
     {
         return new self(
-            'A report is a snapshot of one moment and never changes. To correct it, file a new report that links to '
-            .'this one.',
+            'A report is a snapshot of one moment and never changes. To correct it, file a new report that links to this one.',
         );
     }
 

@@ -11,8 +11,11 @@ final class RepeatedCommandRewrite extends LogicException
     public static function for(string $firstLine, string $secondLine): self
     {
         return new self(
-            "A rewritten command was rewritten again, from {$firstLine} to {$secondLine}; a command is rewritten at "
-                .'most once.',
+            sprintf(
+                'A rewritten command was rewritten again, from %s to %s; a command is rewritten at most once.',
+                $firstLine,
+                $secondLine,
+            ),
         );
     }
 }

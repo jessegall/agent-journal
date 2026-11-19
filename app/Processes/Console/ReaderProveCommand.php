@@ -18,10 +18,7 @@ final class ReaderProveCommand extends Command
 {
     use RunsCallPipelines;
 
-    protected $signature = 'reader:prove {request : The command request id}'
-        .' {--reader-revision= : The draft reader revision}'
-        .' {--output=* : A sample run to replay the reader over}'
-        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
+    protected $signature = 'reader:prove {request : The command request id} {--reader-revision= : The draft reader revision} {--output=* : A sample run to replay the reader over} {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Prove a draft reader against real sample runs';
 

@@ -88,10 +88,10 @@ final readonly class UiManifest
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
             )."\n",
             'bootstrap/cache/ui-components.php' => <<<'TEXT'
-                <?php
+            <?php
 
-                return 
-                TEXT.var_export($components, true).";\n",
+            return 
+            TEXT.var_export($components, true).";\n",
         ];
 
         foreach ($artifacts as $path => $content) {
