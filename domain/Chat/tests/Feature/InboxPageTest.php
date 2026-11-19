@@ -6,8 +6,6 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Models\Message;
 use App\Desks\Commands\CreateDesk;
@@ -16,9 +14,9 @@ use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;
-use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
@@ -29,6 +27,7 @@ use Tests\Support\WritesInboxMessages;
 final class InboxPageTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
     use WritesInboxMessages;
 
@@ -65,12 +64,5 @@ final class InboxPageTest extends TestCase
         $this->actingAs($owner)->post('/chat/inbox/take-next', ['inboxId' => $team->inboxId()])->assertRedirect();
 
         $this->assertNotNull(Message::query()->withoutGlobalScopes()->findOrFail($questionId)->read_at);
-    }
-
-    private function runOnBus(object $command): mixed
-    {
-        $this->app->make(RequestKey::class)->set((string) Str::ulid());
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

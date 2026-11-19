@@ -7,7 +7,6 @@ namespace Domain\Documents\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Support\AgentContext;
@@ -39,6 +38,7 @@ use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
@@ -49,6 +49,7 @@ use Tests\Support\TestLaunchAuthority;
  */
 final class SettleAndRecoverTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -257,14 +258,6 @@ final class SettleAndRecoverTest extends TestCase
     private function target(DraftReference $draft): DraftTarget
     {
         return new DraftTarget($draft->documentNumber, $draft->token, $draft->version);
-    }
-
-    private function actAsUser(int $user): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of($user)),
-            new OwnerAuthority('test'),
-        );
     }
 
     private function actAsAgent(int $agent, int $session): void

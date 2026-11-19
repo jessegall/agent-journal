@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Records\Support\RecordIdentity;
@@ -21,6 +18,7 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
+use Tests\Support\ActsAsFirstUser;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -30,22 +28,13 @@ use Tests\Support\TestIds;
  */
 final class DocumentsTest extends TestCase
 {
+    use ActsAsFirstUser;
     use CommitsHookRows;
 
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
     private const array TABLES = ['reports', 'document_revisions', 'documents', 'number_groups'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
-    }
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
     {

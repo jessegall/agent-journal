@@ -6,8 +6,6 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
-use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\AskMessage;
@@ -18,8 +16,8 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\LaunchesMainAgents;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
@@ -30,6 +28,7 @@ use Tests\Support\WritesInboxMessages;
 final class HistoryPageTest extends TestCase
 {
     use CommitsHookRows;
+    use LaunchesMainAgents;
     use StartsAgentRequests;
     use WritesInboxMessages;
 
@@ -55,8 +54,8 @@ final class HistoryPageTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $builder = $this->launch('Builder');
-        $reviewer = $this->launch('Reviewer');
+        $builder = $this->launchMainAgent('Builder');
+        $reviewer = $this->launchMainAgent('Reviewer');
         $builderInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $builder[0]))->inboxId();
         $reviewerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $reviewer[0]))->inboxId();
         $this->startRequestAs($reviewer[0], $reviewer[1]);
@@ -77,19 +76,6 @@ final class HistoryPageTest extends TestCase
 
         $this->assertSame(DismissalType::Cancelled, $this->stored($questionId)->dismissal_type);
         $this->assertSame('Nobody works on this.', $this->stored($questionId)->dismissal_reason);
-    }
-
-    /**
-     * @return array{string, string} the agent id and its session id
-     */
-    private function launch(string $name): array
-    {
-        $agent = Agent::named($name, 'main-agent');
-        $session = $this->app->make(LaunchSessions::class)
-            ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
-
-        return [$agent->id, $session->id];
     }
 
     private function stored(string $messageId): Message

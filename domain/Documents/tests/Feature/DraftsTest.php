@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Text\Exceptions\SectionMissing;
@@ -27,6 +24,7 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -36,6 +34,7 @@ use Tests\Support\TestIds;
  */
 final class DraftsTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -208,14 +207,6 @@ final class DraftsTest extends TestCase
     private function target(DraftReference $draft): DraftTarget
     {
         return new DraftTarget($draft->documentNumber, $draft->token, $draft->version);
-    }
-
-    private function actAsUser(int $user): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of($user)),
-            new OwnerAuthority('test'),
-        );
     }
 
     private function documents(): DocumentResolver

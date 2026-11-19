@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Numbers\Support\RecordReference;
 use App\Reads\Values\PageSize;
@@ -20,8 +17,8 @@ use App\Text\Support\TextSelection;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Tests\TestCase;
+use Tests\Support\ActsAsFirstUser;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 
 /**
  * Core's TextResolver reads a document's or report's text through the record: one version, its sections a page at a
@@ -29,6 +26,7 @@ use Tests\Support\TestIds;
  */
 final class TextResolverTest extends TestCase
 {
+    use ActsAsFirstUser;
     use CommitsHookRows;
 
     /**
@@ -43,16 +41,6 @@ final class TextResolverTest extends TestCase
         'documents',
         'number_groups',
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(1)),
-            new OwnerAuthority('test'),
-        );
-    }
 
     public function test_the_current_version_names_its_id_label_and_line_count(): void
     {

@@ -6,16 +6,14 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
 use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Chat\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\LaunchesMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -25,6 +23,7 @@ use Tests\Support\WritesInboxMessages;
 final class ChatHostTest extends TestCase
 {
     use CommitsHookRows;
+    use LaunchesMainAgents;
     use WritesInboxMessages;
 
     private const array TABLES = [
@@ -49,7 +48,7 @@ final class ChatHostTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $session = $this->launch();
+        $session = $this->launchedMainAgentSession();
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId();
         $window = ['window' => ['chat.conversation' => ['session' => $session->id]], 'session' => $session->id];
@@ -70,14 +69,5 @@ final class ChatHostTest extends TestCase
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
                 ->where('window_chat_conversation.data.conversation.id', "{$ownInboxId}-{$agentInboxId}")
                 ->where('window_chat_conversation.data.conversation.messages.0.body', 'Is the build green?')));
-    }
-
-    private function launch(): AgentSession
-    {
-        $agent = Agent::named('Builder', 'main-agent');
-
-        return $this->app->make(LaunchSessions::class)
-            ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
     }
 }

@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature\Http;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Web\Events\PageChanged;
 use App\Web\Support\UserChannel;
-use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Commands\RemoveRule;
@@ -19,6 +16,7 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\WatchesPageChanges;
 
 /**
  * A RulesPageTest command that changes what the owner sees tells the owner's page once, through the bus that commits
@@ -27,26 +25,12 @@ use Tests\Support\TestIds;
 final class RulePageChangeTest extends TestCase
 {
     use CommitsHookRows;
+    use WatchesPageChanges;
 
     /**
      * The bus commits the RulesPageTest commands for real, so these tables are emptied around each test.
      */
     private const array TABLES = ['rules', 'users'];
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser($this->owner->id),
-            new OwnerAuthority('test'),
-        );
-        Event::fake([PageChanged::class]);
-    }
 
     public function test_an_approved_rule_tells_the_owner_once_on_their_private_channel(): void
     {

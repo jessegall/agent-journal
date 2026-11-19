@@ -27,6 +27,11 @@ trait ActsAsActors
         return $this->app->make(CommandBus::class)->run($command);
     }
 
+    private function actAsUser(int $userNumber): void
+    {
+        $this->actAs(ActorContext::forUser(TestIds::of($userNumber)));
+    }
+
     private function actAsAgent(string $agentId): void
     {
         $this->app->make(CurrentActorSetter::class)->set(

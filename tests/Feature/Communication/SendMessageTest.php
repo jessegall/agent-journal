@@ -6,9 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
-use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
-use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageSent;
@@ -19,6 +17,7 @@ use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsKeyedCommands;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -30,6 +29,7 @@ use Tests\TestCase;
 final class SendMessageTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
     use WritesInboxMessages;
 
@@ -111,12 +111,5 @@ final class SendMessageTest extends TestCase
             'body: The body field is required.',
         );
         $this->assertSame(0, Message::query()->withoutGlobalScopes()->count());
-    }
-
-    private function runOnBus(object $command, string|null $key = null): mixed
-    {
-        $this->app->make(RequestKey::class)->set($key ?? (string) Str::ulid());
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

@@ -6,9 +6,6 @@ namespace Domain\Chat\Tests\Feature;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
@@ -19,8 +16,8 @@ use Domain\Chat\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\LaunchesMainAgents;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\WritesInboxMessages;
 
@@ -31,6 +28,7 @@ use Tests\Support\WritesInboxMessages;
 final class DockSectionTest extends TestCase
 {
     use CommitsHookRows;
+    use LaunchesMainAgents;
     use StartsAgentRequests;
     use WritesInboxMessages;
 
@@ -58,7 +56,7 @@ final class DockSectionTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $session = $this->launch();
+        $session = $this->launchedMainAgentSession();
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
         $agentInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $session->agent_id))->inboxId();
         $task = Task::factory()->create(['title' => 'Ship the dock']);
@@ -97,14 +95,5 @@ final class DockSectionTest extends TestCase
         );
 
         return $titles;
-    }
-
-    private function launch(): AgentSession
-    {
-        $agent = Agent::named('Builder', 'main-agent');
-
-        return $this->app->make(LaunchSessions::class)
-            ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
-            ->session;
     }
 }

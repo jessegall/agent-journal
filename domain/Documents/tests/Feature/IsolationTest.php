@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Text\Exceptions\ContentMissing;
 use Domain\Documents\Api\Events\DocumentCreated;
@@ -19,6 +16,7 @@ use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use ReflectionClass;
+use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -28,6 +26,7 @@ use Tests\Support\TestIds;
  */
 final class IsolationTest extends TestCase
 {
+    use ActsAsActors;
     use CommitsHookRows;
 
     /**
@@ -93,14 +92,6 @@ final class IsolationTest extends TestCase
         } catch (ContentMissing) {
             $this->assertSame([0, 0, []], [Document::query()->count(), DocumentRevision::query()->count(), $announced]);
         }
-    }
-
-    private function actAsUser(int $user): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of($user)),
-            new OwnerAuthority('test'),
-        );
     }
 
     private function bus(): CommandBus

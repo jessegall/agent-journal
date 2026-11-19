@@ -12,14 +12,11 @@ use App\Agents\Models\AgentSession;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\ProvedClaims;
-use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Models\Message;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\TestCase;
 
@@ -31,6 +28,7 @@ abstract class MessagingTestCase extends TestCase
 {
     use CommitsHookRows;
     use OpensDriverRuntimes;
+    use RunsKeyedCommands;
     use StartsAgentRequests;
     use WritesInboxMessages;
 
@@ -126,16 +124,6 @@ abstract class MessagingTestCase extends TestCase
     protected function claimsOn(string $messageId): array
     {
         return $this->app->make(ProvedClaims::class)->validClaimsOn(Message::LINK_TYPE, [$messageId]);
-    }
-
-    /**
-     * Runs the command under a fresh request key, or the given one to send the same request again.
-     */
-    protected function runOnBus(object $command, string|null $key = null): mixed
-    {
-        $this->app->make(RequestKey::class)->set($key ?? (string) Str::ulid());
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 
     private function launch(string $name): AgentSession

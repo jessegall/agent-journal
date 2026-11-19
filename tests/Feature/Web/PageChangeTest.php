@@ -4,13 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Web\Events\PageChanged;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
@@ -24,6 +19,7 @@ use RuntimeException;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
+use Tests\Support\WatchesPageChanges;
 use Tests\TestCase;
 
 /**
@@ -32,26 +28,12 @@ use Tests\TestCase;
 final class PageChangeTest extends TestCase
 {
     use CommitsHookRows;
+    use WatchesPageChanges;
 
     /**
      * The changes commit for real, so a rolled back one is judged by the real transaction manager.
      */
     private const array TABLES = ['users', 'tasks', 'plans', 'phases', 'phase_tasks', 'links', 'assignments'];
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser($this->owner->id),
-            new OwnerAuthority('test'),
-        );
-        Event::fake([PageChanged::class]);
-    }
 
     public function test_a_page_fact_no_owner_exports_changes_no_page(): void
     {
