@@ -5,6 +5,7 @@ from suites.coding.modules.checks.declarations.checks_subcommands import CHECKS_
 from suites.coding.modules.checks.declarations.checks_bindings import CHECKS_BINDINGS
 from suites.coding.modules.checks.lines.broken_task_wait_lines import BrokenTaskWaitLines
 from suites.coding.modules.checks.lines.failed_check_lines import FailedCheckLines
+from suites.coding.modules.checks.wake_causes.check_failed_wake import CheckFailedWake
 from suites.coding.modules.checks.effects.failed_check_effect import FailedCheckEffect
 from suites.coding.modules.checks.models.declarations.check_model_declaration import CheckModelDeclaration
 from suites.coding.modules.checks.skills.declarations.checks_skills import CHECKS_SKILLS
@@ -30,6 +31,7 @@ class ChecksModule(Module):
     name = "journal.suites.coding.checks"
     effects = [FailedCheckEffect]
     lines = [BrokenTaskWaitLines, FailedCheckLines]
+    wake_causes = [CheckFailedWake]
     window_extensions = [ShellChecksExtension]
     agent_messages = CHECK_AGENT_MESSAGES
     requires_engine = ">=7,<8"
