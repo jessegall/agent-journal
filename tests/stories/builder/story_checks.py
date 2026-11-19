@@ -10,6 +10,8 @@ from journal.support.typed_lines import JOURNAL_PREFIX
 from journal.events.moments.plugin_update_available import PluginUpdateAvailable
 from journal.repositories.entries import Entries
 from journal.repositories.scope import Scope
+from journal.features.shell.support.restart_queue import RestartQueue
+from journal.repositories.test_turns import TestTurns as TurnRows
 from journal.support.time_source import TimeSource
 from tests.full_project import MAIN
 from tests.in_process import get_answer
@@ -47,6 +49,16 @@ class StoryChecks:
 
     def expect_new_output(self) -> None:
         assert self.shell_outputs, "the command kept no output"
+
+    def expect_restart_waiting_on(self, *outputs: int) -> None:
+        waiting = (self.app.container.get(RestartQueue).waiting_folder() / "1").read_text().split()
+        assert waiting == [str(output) for output in outputs], f"the restart waits on outputs {waiting}, not {list(outputs)}"
+
+    def expect_no_test_turn_open(self) -> None:
+        with self.app.container.get(Scope).environment(1):
+            turns = self.app.container.get(TurnRows)
+            open_turns = [*turns.waiting(), *turns.running()]
+        assert not open_turns, f"test turns {[turn.id for turn in open_turns]} are still open"
 
     def expect_output_count(self, count: int) -> None:
         assert self.output_count() == count, f"{self.output_count()} outputs are kept, not {count}"

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.support.output_mask import OutputMask
+from journal.features.secrets.support.client_variables import ClientVariables
 from journal.features.secrets.support.github_token import GithubToken
 from journal.features.secrets.support.programs import Programs
 from journal.models.secret import Secret
@@ -38,12 +39,18 @@ class SecretRun:
             raise Rejection(f"secret {secret.id} has no value for {', '.join(missing)} here: ask with `journal secret request`")
         name_index = {f.name: values[f.variable] for f in fields}
         value = PLACEHOLDER.sub(lambda rows: name_index.get(rows[1], rows[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
-        given = self.program_variables(command[0])
-        mask = OutputMask({**{token: name for name, token in given.items()}, **{values[f.variable]: f.variable for f in fields if f.hidden}})
+        client = ClientVariables(command[0], {f.name.lower(): values[f.variable] for f in fields})
+        tokens = self.program_variables(command[0])
+        given = {**tokens, **(client.environment() if client.applies() else {})}
+        mask = OutputMask({**{token: name for name, token in tokens.items()}, **{values[f.variable]: f.variable for f in fields if f.hidden}})
         runs = self.values.path.parent / "runs"
         runs.mkdir(mode=0o700, exist_ok=True)
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
+            defaults = client.defaults_file() if client.applies() else None
+            if defaults:
+                Path(home, ".my.cnf").write_text(defaults)
+                Path(home, ".my.cnf").chmod(0o600)
             environ = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(TEMPORARY_HOME_VARIABLES, home), **given, **({f.variable: values[f.variable] for f in fields} if as_variables else {})}
             finished = subprocess.run([program, *command[1:]], input=f"{value}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environ, cwd=self.config.root, timeout=LONGEST_SECONDS)
             return finished.returncode, mask.masked(finished.stdout)

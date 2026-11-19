@@ -56,6 +56,28 @@ def test_two_run_lines_under_one_card_title_are_told_once_naming_both(story):
     story.expect_stack(story.agents.subject, Ready)
 
 
+
+@story(WorkingAgent, mode=BUILDER_MODE, subject=AgentRole.MAIN)
+def test_two_run_lines_under_one_card_title_that_have_both_failed_are_never_told_to_share_a_title(story):
+    first = story.agent_has_a_background_run_printing(story.agents.subject, "./done/gotestsum -q")
+    second = story.agent_has_a_background_run_printing(story.agents.subject, "./done/gotestsum -x")
+    story.background_run_ends(story.agents.subject, first, status=1)
+    story.background_run_ends(story.agents.subject, second, status=1)
+    result = story.agent_is_quiet_past(story.agents.subject, 1)
+    result.expect_agent_not_told(story.agents.subject, ShellNudges.SHARED_TITLE)
+    story.expect_stack(story.agents.subject, Ready)
+
+
+@story(WorkingAgent, mode=BUILDER_MODE, subject=AgentRole.MAIN)
+def test_a_run_sharing_its_title_with_a_finished_one_is_the_run_told_to_take_a_title(story):
+    first = story.agent_has_a_background_run_printing(story.agents.subject, "./later/gotestsum -q")
+    story.background_run_ends(story.agents.subject, first)
+    second = story.agent_has_a_background_run_printing(story.agents.subject, "./later/gotestsum -x")
+    result = story.agent_is_quiet_past(story.agents.subject, 1)
+    result.expect_agent_told(story.agents.subject, ShellNudges.SHARED_TITLE, n=second, first_line="./later/gotestsum -q", second_line="./later/gotestsum -x")
+    story.background_run_ends(story.agents.subject, second)
+    story.expect_stack(story.agents.subject, Ready)
+
 @story(WorkingAgent, mode=BUILDER_MODE, subject=AgentRole.MAIN)
 def test_two_run_lines_under_one_card_title_that_have_both_failed_are_never_told_to_share_a_title(story):
     first = story.agent_has_a_background_run_printing(story.agents.subject, "./done/gotestsum -q")
