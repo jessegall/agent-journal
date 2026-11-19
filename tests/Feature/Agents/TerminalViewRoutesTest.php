@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -114,7 +114,7 @@ final class TerminalViewRoutesTest extends TestCase
         $view = TerminalView::open($viewer, $runtime, 500, CarbonImmutable::now());
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($viewer->id),
-            TestLaunchAuthority::forAgent($viewer->id),
+            TestStartAuthority::forAgent($viewer->id),
         );
         $frames = $this->app->make(TerminalFrames::class);
 
@@ -149,7 +149,7 @@ final class TerminalViewRoutesTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
         $agentId = $runtime->session->agent_id;
         $this->actingAs($this->owner)->postJson("/agents/{$agentId}/terminal")->assertOk();
-        $runtime->reassignTo('host-2', 'launch-token-2');
+        $runtime->reassignTo('host-2', 'start-token-2');
         $this->storeFrame($runtime, 'epoch-2', 1);
 
         $this->actingAs($this->owner)->getJson("/agents/{$agentId}/terminal")

@@ -34,7 +34,7 @@ use Illuminate\Support\ServiceProvider;
 /**
  * The engine's settings, read once from config/engine.php, its one lock for the life of the process, and what it may
  * address in the current operation; areas add their engine listeners to EngineListenerSet, and the engine adds the
- * launch silence sweep.
+ * start silence sweep.
  */
 final class EngineServiceProvider extends ServiceProvider
 {

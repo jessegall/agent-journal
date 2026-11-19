@@ -1,9 +1,9 @@
 # Skill delivery per program
 
-How the journal's published skill set reaches each pinned program, under the isolated launch the journal uses
-(tools/journal-agent/profiles). The journal runs in a container the host's programs cannot read, so the launch grant
+How the journal's published skill set reaches each pinned program, under the isolated start the journal uses
+(tools/journal-agent/profiles). The journal runs in a container the host's programs cannot read, so the start grant
 carries the delivered files and the host writes them into the runtime's own settings folder before it spawns the
-program (host.WriteLaunchFolders). Evidence: report 171 (discovery) and report 174 (live delivery).
+program (host.WriteStartFolders). Evidence: report 171 (discovery) and report 174 (live delivery).
 
 ## Versions
 
@@ -34,10 +34,10 @@ program (host.WriteLaunchFolders). Evidence: report 171 (discovery) and report 1
 
 ## Codex 0.165.0
 
-- Mechanism: `$CODEX_HOME/skills` of `<key>/SKILL.md`; the launch's settings folder is its isolated `CODEX_HOME`.
+- Mechanism: `$CODEX_HOME/skills` of `<key>/SKILL.md`; the start's settings folder is its isolated `CODEX_HOME`.
 - `.agents/skills` in the work folder and the user's `$HOME/.agents/skills` are discovered as well, whatever
   `CODEX_HOME` is; the feature `skip_host_skill_discovery` (under development) does not change that. The Codex profile
-  switches off each `SKILL.md` found there at launch with
+  switches off each `SKILL.md` found there at start with
   `-c skills.config=[{path="<absolute SKILL.md>", enabled=false}, ...]`, logs its path, and leaves it unchanged.
 - Two agents sharing one login (`auth.json` linked into each CODEX_HOME) keep separate sets (report 174).
 - Instruction for a skill: the absolute `SKILL.md` path to read.

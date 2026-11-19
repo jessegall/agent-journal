@@ -12,7 +12,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
@@ -28,13 +28,13 @@ final class SingleRecordCommandsTest extends TestCase
     use CommitsHookRows;
     use SendsSignedCalls;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'tasks', 'assignments'];
+    private const array TABLES = ['users', 'agents', 'agent_sessions', 'start_tokens', 'tasks', 'assignments'];
 
     private User $owner;
 
-    private TestLaunch $main;
+    private TestStart $main;
 
-    private TestLaunch $helper;
+    private TestStart $helper;
 
     private Task $task;
 
@@ -44,8 +44,8 @@ final class SingleRecordCommandsTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = TestLaunch::start('main-agent');
-        $this->helper = TestLaunch::start('read-only-helper');
+        $this->main = TestStart::start('main-agent');
+        $this->helper = TestStart::start('read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Write the commands']);
     }
 
@@ -221,10 +221,10 @@ final class SingleRecordCommandsTest extends TestCase
     /**
      * @param  array<string, mixed>  $body
      */
-    private function callAs(TestLaunch $launch, string $command, array $body): TestResponse
+    private function callAs(TestStart $start, string $command, array $body): TestResponse
     {
         $key = $command === 'show' ? [] : ['request_key' => (string) Str::ulid()];
 
-        return $this->signed($launch, "/agent/assignments/{$command}", [...$body, ...$key]);
+        return $this->signed($start, "/agent/assignments/{$command}", [...$body, ...$key]);
     }
 }

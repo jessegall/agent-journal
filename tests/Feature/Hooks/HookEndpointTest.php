@@ -11,7 +11,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
-use App\Hooks\Actions\LaunchStacks;
+use App\Hooks\Actions\StartStacks;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use App\Processes\Values\AdmissionRefusal;
@@ -20,9 +20,9 @@ use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -31,13 +31,13 @@ final class HookEndpointTest extends TestCase
     use CommitsHookRows;
 
     /**
-     * The tables these tests commit to, the runtime its launch opens included, emptied around each test.
+     * The tables these tests commit to, the runtime its start opens included, emptied around each test.
      */
     private const array TABLES = [
         'agents',
         'agent_sessions',
         'agent_runtimes',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'tasks',
@@ -50,17 +50,17 @@ final class HookEndpointTest extends TestCase
         'command_requests',
     ];
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start('main-agent');
-        $this->launch->openRuntime($this->app);
-        $this->asLaunchedAgent(fn () => $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(LaunchStacks::class)->open($this->target()),
+        $this->start = TestStart::start('main-agent');
+        $this->start->openRuntime($this->app);
+        $this->asStartedAgent(fn () => $this->app->make(StackTransaction::class)->run(
+            fn () => $this->app->make(StartStacks::class)->open($this->target()),
         ));
     }
 
@@ -75,7 +75,7 @@ final class HookEndpointTest extends TestCase
     public function test_a_started_task_holds_the_stop_through_the_endpoint(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->asLaunchedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
+        $this->asStartedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
 
         $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');
 
@@ -137,11 +137,11 @@ final class HookEndpointTest extends TestCase
 
     public function test_an_unauthenticated_call_is_refused(): void
     {
-        $headers = $this->launch->serverHeaders($this->stopBody(), target: '/hooks/claude-code');
+        $headers = $this->start->serverHeaders($this->stopBody(), target: '/hooks/claude-code');
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/hooks/claude-code', server: $headers, content: $this->stopBody())->assertUnauthorized();
-        $headers = $this->launch->serverHeaders('{"other":"body"}', target: '/hooks/claude-code');
+        $headers = $this->start->serverHeaders('{"other":"body"}', target: '/hooks/claude-code');
         $this->call('POST', '/hooks/claude-code', server: $headers, content: $this->stopBody())->assertUnauthorized();
     }
 
@@ -162,7 +162,7 @@ final class HookEndpointTest extends TestCase
         $this->hook('claude-code', $clear, 'call-2')->assertOk();
 
         $this->assertSame(1, AgentSession::query()->count());
-        $conversation = $this->launch->session->fresh(['currentConversation'])?->currentConversation;
+        $conversation = $this->start->session->fresh(['currentConversation'])?->currentConversation;
         $this->assertSame('program-session-2', $conversation?->native_id);
         $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
     }
@@ -179,7 +179,7 @@ final class HookEndpointTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        $headers = $this->launch->serverHeaders($body, $callId, target: "/hooks/{$program}");
+        $headers = $this->start->serverHeaders($body, $callId, target: "/hooks/{$program}");
 
         return $this->call('POST', "/hooks/{$program}", server: $headers, content: $body);
     }
@@ -194,17 +194,17 @@ final class HookEndpointTest extends TestCase
         return (array) json_decode((string) $this->hook($program, $body, $callId)->assertOk()->json('stdout'), true);
     }
 
-    private function asLaunchedAgent(\Closure $work): void
+    private function asStartedAgent(\Closure $work): void
     {
         $this->app->instance(AgentContext::class, new AgentContext(
-            $this->launch->agent->id,
-            $this->launch->session->id,
+            $this->start->agent->id,
+            $this->start->session->id,
             new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
             null,
         ));
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($this->launch->agent->id),
-            TestLaunchAuthority::forAgent($this->launch->agent->id),
+            ActorContext::forAgent($this->start->agent->id),
+            TestStartAuthority::forAgent($this->start->agent->id),
         );
         $work();
         $this->app->forgetScopedInstances();
@@ -212,7 +212,7 @@ final class HookEndpointTest extends TestCase
 
     private function target(): StackTarget
     {
-        return new StackTarget($this->launch->agent->id, $this->launch->session->id);
+        return new StackTarget($this->start->agent->id, $this->start->session->id);
     }
 
     private function stopBody(): string

@@ -19,7 +19,7 @@ final readonly class OpenHostMainRuntimeHandler implements CommandHandler
 
     /**
      * The same opening as OpenAgentRuntime for a top-level runtime, then the seat at main: the host's folders and the
-     * launch rules apply, and a different former main is fenced.
+     * start rules apply, and a different former main is fenced.
      */
     public function handle(OpenHostMainRuntime $command): OpenedRuntime
     {

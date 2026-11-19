@@ -11,7 +11,7 @@ use RuntimeException;
  */
 final class ProcessorTimeUnreadable extends RuntimeException
 {
-    public static function now(): self
+    public static function forThisProcess(): self
     {
         return new self('The processor time of this process could not be read, so a shell line cannot be analysed.');
     }

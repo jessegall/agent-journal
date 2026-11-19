@@ -25,7 +25,7 @@ use App\Processes\Values\CommandRule;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ProgramSpellings;
 use App\Processes\Values\RuleScope;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Fixtures\Processes\CollectedOutput;
 use Tests\Fixtures\Processes\StaleAfterFirstEnd;
@@ -49,15 +49,15 @@ final class StaleAdmissionTest extends TestCase
     public function test_retiring_a_rule_makes_a_queued_admission_refuse_on_start(): void
     {
         config(['processes.runner' => true]);
-        $launch = TestLaunch::start();
-        $queued = $this->admit(new ActorIdentity(ActorType::Agent, $launch->agent->id), 'printf queued');
+        $start = TestStart::start();
+        $queued = $this->admit(new ActorIdentity(ActorType::Agent, $start->agent->id), 'printf queued');
         $this->asUser(new SaveCommandRule('save-1', AcmeDeclarations::proposed($this->tidyRule()), 0, 'reviewed'));
 
         $this->asUser(new RetireCommandRule(ClassificationRule::query()->sole()->id, 1, 'not needed'));
 
         $this->assertStringStartsWith('rule-revision-changed', $queued->refresh()->stale_reason);
         $reply = $this->signed(
-            $launch,
+            $start,
             "/agent/processes/admissions/{$queued->id}",
             ['request_key' => 'stale-1'],
         )->assertStatus(409);

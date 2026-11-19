@@ -7,7 +7,7 @@ namespace App\Agents\Values;
 use App\Agents\Exceptions\StopConditionsInvalid;
 
 /**
- * The ordered stop conditions of one launch, checked before it starts: at most 16, each within 60 seconds and 64 KiB,
+ * The ordered stop conditions of one start, checked before it starts: at most 16, each within 60 seconds and 64 KiB,
  * all together within the attempt's time, and a writing helper's always holding clean-worktree.
  */
 final readonly class StopConditions

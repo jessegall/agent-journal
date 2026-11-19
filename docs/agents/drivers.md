@@ -9,7 +9,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 | --- | --- | --- |
 | Driver ledger | `app/Agents/Models/DriverRequest.php`, `app/Agents/Support/DriverRequests.php` | Every operation asked of a runtime is a request with a sequence, an attempt and a progress; nothing reaches a program any other way |
 | Owner commands | `app/Agents/Commands` (`DeliverAgent`, `WakeAgent`, `ChangeAgentModel`, `ChangeAgentEffort`, `InterruptAgent`, `StopAgent`) | Append a request; the recovery commands (`RetryDriverRequest`, `CancelDriverRequest`, `ResolveDriverDelivery`, `RepairDriverSettings`, `ReleaseAgentHold`, `ResumeKeyScript`, `CancelKeyScript`, `ReassignAgentRuntime`) need the owner-only ability `AgentAbility::Recover` |
-| Host routes | `app/Agents/Routes/host.php` | Claim, launch grant, and reports of request progress, turns, activity, heartbeats, exit and screens |
+| Host routes | `app/Agents/Routes/host.php` | Claim, start grant, and reports of request progress, turns, activity, heartbeats, exit and screens |
 | Host | `tools/journal-agent` | `serve` claims requests (`client/poll.go`) and hands them to the loop in `serving/loop.go` |
 | Scheduler | `tools/journal-agent/host/scheduler.go` | Per runtime: control first, settings staged in front of content, a batch of deliveries or a wake as one turn, nothing while held |
 | Drivers | `tools/journal-agent/drivers` | `AgentDriver` (`drivers/contracts/agent_driver.go`): Deliver, Wake, ChangeModel, ChangeEffort, Interrupt, Stop. `ProcessDriver` runs one child per turn; `TerminalDriver` types into one persistent program |
@@ -20,7 +20,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 
 1. An owner command appends a request; Core refuses it when the session has ended or the runtime is stopping.
 2. The host's poll claims waiting requests; stops, interrupts and recordings come first, past a full batch of work.
-3. The first request of a runtime takes its launch grant once: the credential, the profile pin and `RuntimeLaunch`
+3. The first request of a runtime takes its start grant once: the credential, the profile pin and `RuntimeStart`
    (driver type, program, build, folder, generation, model, effort). The host refuses a build its profile does not pin.
 4. The loop runs each admission on the driver and reports every result with its attempt; a report of an older
    attempt is refused.

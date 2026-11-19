@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchCredentials;
+use App\Agents\Actions\StartTokens;
 use App\Agents\Commands\ReassignAgentRuntime;
 use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Exceptions\DriverRequestRefused;
@@ -18,7 +18,7 @@ final readonly class ReassignAgentRuntimeHandler implements CommandHandler
 {
     public function __construct(
         private DriverRequests $requests,
-        private LaunchCredentials $credentials,
+        private StartTokens $credentials,
         private Dispatcher $events,
     ) {}
 

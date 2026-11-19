@@ -113,7 +113,6 @@ use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
-use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\OpenTerminalView;
@@ -134,6 +133,7 @@ use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
+use App\Agents\Commands\StartAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentResolver;
@@ -141,14 +141,14 @@ use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Contracts\LaunchExecutor;
-use App\Agents\Contracts\LaunchReadiness;
-use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\NativeTurnRecords;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionResolver;
+use App\Agents\Contracts\StartExecutor;
+use App\Agents\Contracts\StartReadiness;
+use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
@@ -162,9 +162,6 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\HostCapabilityType;
-use App\Agents\Enums\LaunchDisposition;
-use App\Agents\Enums\LaunchOriginType;
-use App\Agents\Enums\LaunchRefusalType;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Enums\ProgramSourceType;
@@ -173,11 +170,14 @@ use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Enums\StartDisposition;
+use App\Agents\Enums\StartOriginType;
+use App\Agents\Enums\StartRefusalType;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Events\DriverRequestRecovered;
-use App\Agents\Events\LaunchAccepted;
-use App\Agents\Events\LaunchEnded;
+use App\Agents\Events\SessionClosed;
+use App\Agents\Events\StartAccepted;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentBusy;
@@ -192,8 +192,6 @@ use App\Agents\Exceptions\ExecutionBudgetInvalid;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
 use App\Agents\Exceptions\ImageUnverified;
-use App\Agents\Exceptions\LaunchRecordMissing;
-use App\Agents\Exceptions\LaunchRequestConflict;
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
@@ -202,6 +200,8 @@ use App\Agents\Exceptions\ProgramConflict;
 use App\Agents\Exceptions\ProgramRequired;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Exceptions\StartRecordMissing;
+use App\Agents\Exceptions\StartRequestConflict;
 use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
@@ -217,20 +217,20 @@ use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
-use App\Agents\Support\LaunchPolicy;
-use App\Agents\Support\LaunchReceipt;
-use App\Agents\Support\LaunchRecordDetails;
-use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
-use App\Agents\Support\PreparedLaunch;
+use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartPolicy;
+use App\Agents\Support\StartReceipt;
+use App\Agents\Support\StartRecordDetails;
+use App\Agents\Support\StartRequest;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ClassGrant;
@@ -653,8 +653,8 @@ use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\StartProfileMain;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AuthorizationType;
@@ -679,16 +679,16 @@ use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\AbilityGrant;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\FieldOrigin;
-use App\Profiles\Values\LaunchProfileAuthority;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
-use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileProvenance;
 use App\Profiles\Values\ProfileSelection;
 use App\Profiles\Values\ProfileSnapshot;
+use App\Profiles\Values\ProfileStartPolicy;
+use App\Profiles\Values\StartProfileAuthority;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
 use App\Programs\Exceptions\ProviderKeyInvalid;
@@ -899,7 +899,6 @@ use App\Skills\Exceptions\SkillRevisionConflict;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Support\MarkdownParts;
 use App\Skills\Values\ConditionResult;
-use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\RenderedSkill;
 use App\Skills\Values\SectionDraft;
@@ -912,6 +911,7 @@ use App\Skills\Values\SkillOwner;
 use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
+use App\Skills\Values\StartProfile;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -988,12 +988,12 @@ final class CoreApi
                 ContextStarted::class,
                 StateTypesRequested::class,
                 AssignmentsChanged::class,
-                LaunchEnded::class,
+                SessionClosed::class,
                 DriverRequestRecovered::class,
                 AgentHoldReleased::class,
                 AgentRuntimeReassigned::class,
                 ProfileRevisionRevoked::class,
-                LaunchAccepted::class,
+                StartAccepted::class,
                 EngineTicked::class,
                 SettingsChanged::class,
                 ShareRequested::class,
@@ -1025,10 +1025,10 @@ final class CoreApi
                 CurrentActorSetter::class,
                 AgentResolver::class,
                 SessionResolver::class,
-                LaunchReadiness::class,
-                LaunchExecutor::class,
+                StartReadiness::class,
+                StartExecutor::class,
                 HostCapabilities::class,
-                LaunchRecordResolver::class,
+                StartRecordResolver::class,
                 ProgramConversationResolver::class,
                 HelperImages::class,
                 RecordVisibility::class,
@@ -1206,7 +1206,7 @@ final class CoreApi
                 OverviewSection::class,
                 ListedPage::class,
                 HookProgram::class,
-                PreparedLaunch::class,
+                PreparedStart::class,
                 ExecutionReceipt::class,
                 ExecutionReference::class,
                 ExitReceipt::class,
@@ -1222,18 +1222,18 @@ final class CoreApi
                 ProfileDefaults::class,
                 ModelSelectionType::class,
                 ProgramSourceType::class,
-                LaunchRefusalType::class,
-                LaunchRequest::class,
-                LaunchReceipt::class,
-                LaunchRecordDetails::class,
+                StartRefusalType::class,
+                StartRequest::class,
+                StartReceipt::class,
+                StartRecordDetails::class,
                 ProgramConversationSummary::class,
                 ContainerManifest::class,
                 ManifestMount::class,
                 HostCapacity::class,
                 ReservationState::class,
-                LaunchOriginType::class,
+                StartOriginType::class,
                 ConversationModeType::class,
-                LaunchDisposition::class,
+                StartDisposition::class,
                 AccessType::class,
                 ResourceAreaType::class,
                 AccessRuleType::class,
@@ -1249,7 +1249,7 @@ final class CoreApi
                 StopConditions::class,
                 ExecutionBudgets::class,
                 ExecutionPolicy::class,
-                LaunchPolicy::class,
+                StartPolicy::class,
                 ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,
@@ -1406,7 +1406,7 @@ final class CoreApi
                 InboxMembers::class,
                 ActorLabelSet::class,
                 AllowsEverything::class,
-                LaunchProfileAuthority::class,
+                StartProfileAuthority::class,
                 OwnerAuthority::class,
                 TrustedEntryAuthority::class,
                 RecordIdentity::class,
@@ -1565,7 +1565,7 @@ final class CoreApi
                 ProfileBase::class,
                 OfflineReplyMode::class,
                 ProfileSnapshot::class,
-                ProfileLaunchPolicy::class,
+                ProfileStartPolicy::class,
                 ProfileAuthorization::class,
                 AbilityGrant::class,
                 AuthorizationType::class,
@@ -1603,7 +1603,7 @@ final class CoreApi
                 SkillSections::class,
                 MarkdownPart::class,
                 SkillContext::class,
-                LaunchProfile::class,
+                StartProfile::class,
                 ConditionResult::class,
                 ConditionOutcome::class,
                 SkillConditionRegistration::class,
@@ -1618,7 +1618,7 @@ final class CoreApi
             ->commands(
                 ActivateProfiles::class,
                 RevokeProfiles::class,
-                LaunchProfileMain::class,
+                StartProfileMain::class,
                 CreateSkill::class,
                 ReviseSkill::class,
                 RestoreSkill::class,
@@ -1636,7 +1636,7 @@ final class CoreApi
 
                 DismissMessage::class,
                 RetireAgent::class,
-                LaunchAgent::class,
+                StartAgent::class,
                 CreateAgent::class,
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,
@@ -1883,9 +1883,9 @@ final class CoreApi
                 ProgramRequired::class,
                 ProgramConflict::class,
                 ProgramUnsupported::class,
-                LaunchRequestConflict::class,
+                StartRequestConflict::class,
                 AgentBusy::class,
-                LaunchRecordMissing::class,
+                StartRecordMissing::class,
                 ConversationIncompatible::class,
                 ManifestRefused::class,
                 ContainerUnavailable::class,

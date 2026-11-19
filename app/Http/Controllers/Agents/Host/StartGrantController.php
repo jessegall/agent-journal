@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Agents\Host;
+
+use App\Agents\Commands\ClaimStartGrant;
+use App\Agents\Support\HostContext;
+use App\Bus\Contracts\CommandBus;
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Hands the host a Starting runtime's start token and the folders it writes before spawning, once; a second
+ * claim gets a 410. The host's calls run as the journal itself: a host is infrastructure, never an actor.
+ */
+final readonly class StartGrantController
+{
+    public function __invoke(string $runtime, HostContext $host, CommandBus $commands): JsonResponse
+    {
+        $grant = $commands->run(new ClaimStartGrant($host->hostId, $runtime));
+
+        return $grant === null
+            ? new JsonResponse(['message' => 'This start was already granted.'], Response::HTTP_GONE)
+            : new JsonResponse($grant->toArray());
+    }
+}

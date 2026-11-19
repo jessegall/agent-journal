@@ -14,7 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('installation_name');
             $table->char('credential_hash', 64)->unique();
-            $table->jsonb('launch_roots');
+            $table->jsonb('start_roots');
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampsTz();
         });

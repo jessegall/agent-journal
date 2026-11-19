@@ -15,7 +15,7 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Str;
 
 /**
- * Posts calls from a launched program to the journal, signed with the launch token: a call id, the time it was issued
+ * Posts calls from a started program to the journal, signed with the start token: a call id, the time it was issued
  * and the signature over the body's digest. A prepared call is sent again unchanged on a retry. Redirects are refused
  * and certificates verified.
  */

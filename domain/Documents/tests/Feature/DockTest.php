@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 
 /**
  * Creating a document or report docks nothing; Documents only suggests its newest records for Chat's dock.
@@ -34,7 +34,7 @@ final class DockTest extends TestCase
     use CommitsHookRows;
 
     /**
-     * The bus and the launches commit for real, so these tables are emptied around each test.
+     * The bus and the starts commit for real, so these tables are emptied around each test.
      */
     private const array TABLES = [
         'record_settlements',
@@ -47,7 +47,7 @@ final class DockTest extends TestCase
         'links',
         'hook_calls',
         'agent_stacks',
-        'launch_credentials',
+        'start_tokens',
         'agent_sessions',
         'agents',
     ];
@@ -60,13 +60,13 @@ final class DockTest extends TestCase
     {
         parent::setUp();
 
-        $launch = $this->app->make(LaunchSessions::class);
-        $this->builderSession = $launch->launch(
+        $start = $this->app->make(StartSessions::class);
+        $this->builderSession = $start->start(
             Agent::named('Builder', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $this->reviewerSession = $launch->launch(
+        $this->reviewerSession = $start->start(
             Agent::named('Reviewer', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -107,7 +107,7 @@ final class DockTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($session->agent_id),
-            TestLaunchAuthority::forAgent($session->agent_id),
+            TestStartAuthority::forAgent($session->agent_id),
         );
         $this->app->instance(
             AgentContext::class,

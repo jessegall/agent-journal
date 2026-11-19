@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Enums;
 
 /**
- * Where a launched session stands: active while it sends heartbeats, silent when they stop for a while (it still
+ * Where a started session stands: active while it sends heartbeats, silent when they stop for a while (it still
  * counts as running, only absent), and ended when its program ended or its agent retired.
  */
 enum SessionStatus: string

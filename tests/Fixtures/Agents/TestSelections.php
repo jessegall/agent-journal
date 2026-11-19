@@ -13,7 +13,7 @@ use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Str;
 
 /**
- * The program and model a test launch names, and a fresh launch request id for it.
+ * The program and model a test start names, and a fresh start request id for it.
  */
 final class TestSelections
 {
@@ -44,12 +44,12 @@ final class TestSelections
             'program_source' => 'explicit',
             'profile_key' => 'main-agent',
             'profile_revision' => 1,
-            'launch_request_id' => self::requestId(),
+            'start_request_id' => self::requestId(),
         ];
     }
 
     /**
-     * A launch on the protected host, as a main agent runs.
+     * A start on the protected host, as a main agent runs.
      */
     public static function onHost(): ExecutionPolicy
     {

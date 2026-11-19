@@ -12,7 +12,7 @@ use Illuminate\Console\Command;
 
 /**
  * Change the text or weight of a memory of the calling agent, asked of the journal over a signed call with the
- * launch's token: the launch decides whose memory it is, never an option.
+ * start's token: the start decides whose memory it is, never an option.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class MemoryEditCommand extends Command

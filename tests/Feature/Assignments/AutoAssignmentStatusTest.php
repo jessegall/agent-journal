@@ -43,7 +43,7 @@ final class AutoAssignmentStatusTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'plans',
         'phases',

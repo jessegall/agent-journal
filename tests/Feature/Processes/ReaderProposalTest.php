@@ -24,9 +24,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Processes\AcmeDeclarations;
-use Tests\Support\LaunchesTestAgent;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
+use Tests\Support\StartsTestAgent;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
 
@@ -36,9 +36,9 @@ use Tests\TestCase;
  */
 final class ReaderProposalTest extends TestCase
 {
-    use LaunchesTestAgent;
     use RefreshHookDatabase;
     use SendsSignedCalls;
+    use StartsTestAgent;
 
     private CommandRequest $request;
 
@@ -80,7 +80,7 @@ final class ReaderProposalTest extends TestCase
 
     public function test_a_reader_for_a_missing_declaration_revision_is_refused(): void
     {
-        $this->signed($this->launch, "/agent/processes/requests/{$this->request->id}/readers", [
+        $this->signed($this->start, "/agent/processes/requests/{$this->request->id}/readers", [
             'declaration_revision' => 2,
             'definition' => $this->definition(withSummary: true),
         ])->assertStatus(409);
@@ -114,7 +114,7 @@ final class ReaderProposalTest extends TestCase
      */
     private function proposeReader(array $definition): TestResponse
     {
-        return $this->signed($this->launch, "/agent/processes/requests/{$this->request->id}/readers", [
+        return $this->signed($this->start, "/agent/processes/requests/{$this->request->id}/readers", [
             'declaration_revision' => 1,
             'definition' => $definition,
         ]);
@@ -125,7 +125,7 @@ final class ReaderProposalTest extends TestCase
      */
     private function readOutput(ProcessRun $run, string $read, array $body): void
     {
-        $this->signed($this->launch, "/agent/processes/runs/{$run->id}/output/{$read}", $body)->assertOk();
+        $this->signed($this->start, "/agent/processes/runs/{$run->id}/output/{$read}", $body)->assertOk();
     }
 
     /**
@@ -151,7 +151,7 @@ final class ReaderProposalTest extends TestCase
     private function sampleRun(): ProcessRun
     {
         $run = ProcessRun::admit(
-            new ActorIdentity(ActorType::Agent, $this->launch->agent->id),
+            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             TestRunAdmissions::of(
                 admissionId: 'sample',
                 mode: RunMode::Evidence,

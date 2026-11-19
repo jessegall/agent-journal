@@ -22,7 +22,7 @@ use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -99,7 +99,7 @@ final class TerminalViewCommandsTest extends TestCase
         $agentId = TestActors::agentIdentity(9)->id;
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agentId),
-            TestLaunchAuthority::forAgent($agentId),
+            TestStartAuthority::forAgent($agentId),
         );
 
         $this->expectException(ActorNotAllowed::class);

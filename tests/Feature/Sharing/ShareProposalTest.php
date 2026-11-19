@@ -36,7 +36,7 @@ use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Str;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\StartsAgentRequests;
@@ -76,7 +76,7 @@ final class ShareProposalTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
-        'launch_credentials',
+        'start_tokens',
         'agent_sessions',
         'agents',
     ];
@@ -89,7 +89,7 @@ final class ShareProposalTest extends TestCase
 
     private ShareGatewayConfiguration $configuration;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
@@ -109,7 +109,7 @@ final class ShareProposalTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->launch = TestLaunch::start();
+        $this->start = TestStart::start();
     }
 
     public function test_an_agent_request_creates_a_proposal_and_returns_its_number_and_state_only(): void
@@ -122,7 +122,7 @@ final class ShareProposalTest extends TestCase
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
         $this->assertSame(
-            [ActorType::Agent, $this->launch->agent->id],
+            [ActorType::Agent, $this->start->agent->id],
             [$proposal->requester_type, $proposal->requester_id],
         );
         $this->assertSame(0, ShareGatewayOperation::query()->count());
@@ -141,7 +141,7 @@ final class ShareProposalTest extends TestCase
 
     public function test_create_share_from_an_agent_is_refused_before_its_handler(): void
     {
-        $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
+        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2PROPOSE2');
 
         $this->assertThrows(
@@ -197,7 +197,7 @@ final class ShareProposalTest extends TestCase
             ),
         );
 
-        $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
+        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->assertEquals(
             [new ShareProposalStatus($granted->number, ShareState::Pending)],
             $this->app->make(ProposalStatusResolver::class)->ownProposals(),
@@ -207,7 +207,7 @@ final class ShareProposalTest extends TestCase
     public function test_an_agent_never_sees_another_agents_proposal(): void
     {
         $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1');
-        $other = TestLaunch::start();
+        $other = TestStart::start();
 
         $this->startRequestAs($other->agent->id, $other->session->id);
 
@@ -230,7 +230,7 @@ final class ShareProposalTest extends TestCase
     private function request(string $key): ShareProposalStatus
     {
         $this->app->forgetScopedInstances();
-        $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
+        $this->startRequestAs($this->start->agent->id, $this->start->session->id);
         $this->app->make(RequestKey::class)->set($key);
 
         return $this->app->make(CommandBus::class)->run(new RequestShare($this->root->type, $this->root->id, $key));
@@ -251,7 +251,7 @@ final class ShareProposalTest extends TestCase
     {
         $first = Share::propose(
             $this->root,
-            new ActorIdentity(ActorType::Agent, $this->launch->agent->id),
+            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
         );
         $now = CarbonImmutable::now();
@@ -266,7 +266,7 @@ final class ShareProposalTest extends TestCase
                 'root_type' => $this->root->type,
                 'root_id' => $this->root->id,
                 'requester_type' => ActorType::Agent->value,
-                'requester_id' => $this->launch->agent->id,
+                'requester_id' => $this->start->agent->id,
                 'scope_version' => 0,
                 'expires_at' => $now->addDays(Share::PROPOSAL_DAYS),
                 'created_at' => $now,

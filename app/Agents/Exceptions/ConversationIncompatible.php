@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
@@ -23,8 +23,8 @@ final class ConversationIncompatible extends RuntimeException implements Command
         );
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::ContextFailed;
+        return StartRefusalType::ContextFailed;
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
@@ -36,7 +36,7 @@ final class SettleFrameTimesTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'engine_frame_times',
@@ -50,7 +50,7 @@ final class SettleFrameTimesTest extends TestCase
     {
         parent::setUp();
 
-        $session = $this->app->make(LaunchSessions::class)->launch(
+        $session = $this->app->make(StartSessions::class)->start(
             Agent::named('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),

@@ -13,7 +13,7 @@ use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSelection;
 
 /**
- * Selects the program and model of a launch from the profile's current revision through Core's SelectedProgram,
+ * Selects the program and model of a start from the profile's current revision through Core's SelectedProgram,
  * which records the profile key and revision as the selection's source.
  */
 final readonly class ProfilePrograms implements ProfileSelections
@@ -27,20 +27,20 @@ final readonly class ProfilePrograms implements ProfileSelections
         string|null $parentProgram,
     ): ProfileSelection {
         $snapshot = $this->profiles->snapshotFor($profile);
-        $launch = $snapshot->launch;
+        $start = $snapshot->start;
         $defaults = new ProfileDefaults(
             $profile->key,
             $snapshot->revision,
-            $launch->program,
-            $launch->programPinned,
+            $start->program,
+            $start->programPinned,
             $snapshot->model,
-            $launch->allowedModels,
+            $start->allowedModels,
         );
 
         return new ProfileSelection(
             SelectedProgram::resolve($programKey, $requested, $defaults, $parentProgram),
             $snapshot->base,
-            $launch,
+            $start,
         );
     }
 }

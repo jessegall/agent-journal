@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Exceptions\StackTargetRefused;
@@ -20,7 +20,7 @@ use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -34,7 +34,7 @@ final class AgentResolversTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'links',
@@ -56,19 +56,19 @@ final class AgentResolversTest extends TestCase
 
         $this->builder = Agent::named('Builder', 'main-agent');
         $this->reviewer = Agent::named('Reviewer', 'main-agent');
-        $launch = $this->app->make(LaunchSessions::class);
-        $this->running = $launch->launch(
+        $start = $this->app->make(StartSessions::class);
+        $this->running = $start->start(
             $this->builder,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
-        $this->ended = $launch->launch(
+        $this->ended = $start->start(
             $this->builder,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
         $this->ended->endAt(CarbonImmutable::now());
-        $this->reviewing = $launch->launch(
+        $this->reviewing = $start->start(
             $this->reviewer,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -138,7 +138,7 @@ final class AgentResolversTest extends TestCase
 
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($this->reviewer->id),
-            TestLaunchAuthority::forAgent($this->reviewer->id),
+            TestStartAuthority::forAgent($this->reviewer->id),
         );
         $this->assertSame(
             [$this->reviewer->id],
@@ -154,7 +154,7 @@ final class AgentResolversTest extends TestCase
     }
 
     /**
-     * Acts as the agent under the profile it launches with, as a real agent call does.
+     * Acts as the agent under the profile it starts with, as a real agent call does.
      */
     private function sessions(): SessionResolver
     {

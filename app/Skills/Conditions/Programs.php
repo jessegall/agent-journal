@@ -10,7 +10,7 @@ use App\Skills\Values\ConditionResult;
 use App\Skills\Values\SkillContext;
 
 /**
- * Matches a session launched with one of these programs; a launch with no known program is unavailable.
+ * Matches a session started with one of these programs; a start with no known program is unavailable.
  */
 final readonly class Programs implements SkillCondition
 {

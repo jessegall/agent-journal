@@ -16,7 +16,7 @@ use App\Agents\Support\RuntimeIntent;
 use App\Agents\Support\StackTarget;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Actions\AgentStacks;
-use App\Hooks\Actions\LaunchStacks;
+use App\Hooks\Actions\StartStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
@@ -47,7 +47,7 @@ use Tests\Fixtures\Hooks\ScriptedState;
 
 /**
  * Hook tests that commit real rows on the hook database: no wrapping transaction, every committed table emptied before
- * and after each test, the test state types, and a launched stack for agent 1, session 10.
+ * and after each test, the test state types, and a started stack for agent 1, session 10.
  */
 trait CommittedHookStack
 {
@@ -69,7 +69,7 @@ trait CommittedHookStack
     {
         $this->emptyTables(...self::committedTables());
         config(['processes.runner' => true]);
-        $this->target = $this->launchedTarget();
+        $this->target = $this->startedTarget();
         $this->openRuntime();
         $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
@@ -86,7 +86,7 @@ trait CommittedHookStack
         });
         $this->callAs('call-1');
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(LaunchStacks::class)->open($this->target),
+            fn () => $this->app->make(StartStacks::class)->open($this->target),
         );
     }
 
@@ -94,7 +94,7 @@ trait CommittedHookStack
      * Agent 1 with its active session 10, as rows, so a command that resolves the session finds it; a row a test left
      * behind is reused.
      */
-    private function launchedTarget(): StackTarget
+    private function startedTarget(): StackTarget
     {
         $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(
             ['name' => 'Hook agent', 'profile_key' => 'main-agent'],
@@ -110,7 +110,7 @@ trait CommittedHookStack
     }
 
     /**
-     * The launched session's runtime, working in the project folder, so an admitted line has a runner to run in.
+     * The started session's runtime, working in the project folder, so an admitted line has a runner to run in.
      */
     private function openRuntime(): void
     {
@@ -126,7 +126,7 @@ trait CommittedHookStack
             null,
             null,
         );
-        $this->app->make(AgentRuntimes::class)->open($session, $intent, 'launch-token');
+        $this->app->make(AgentRuntimes::class)->open($session, $intent, 'start-token');
     }
 
     protected function tearDownCommittedHookStack(): void
@@ -135,7 +135,7 @@ trait CommittedHookStack
     }
 
     /**
-     * The answer the machine gives a stop from the launched agent under this call id.
+     * The answer the machine gives a stop from the started agent under this call id.
      */
     protected function answerStop(string $callId): string
     {
@@ -162,7 +162,7 @@ trait CommittedHookStack
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(1)),
-            TestLaunchAuthority::forAgent(TestIds::of(1)),
+            TestStartAuthority::forAgent(TestIds::of(1)),
         );
     }
 
@@ -239,8 +239,8 @@ trait CommittedHookStack
             'users',
             'agents',
             'agent_sessions',
-            'launch_credentials',
-            'launch_bypasses',
+            'start_tokens',
+            'start_bypasses',
             'command_aliases',
             'program_conversations',
             'conversation_visits',

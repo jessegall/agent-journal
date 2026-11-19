@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Contracts\LaunchReadiness;
+use App\Agents\Contracts\StartReadiness;
 use App\Agents\Support\AgentContext;
 use App\Domains\Support\DomainRegistry;
 use App\Mcp\Exceptions\McpClassInvalid;
@@ -45,7 +45,7 @@ final class McpCatalogueTest extends TestCase
         $catalogue = new McpCatalogue();
         DomainRegistry::from([LedgerDomain::class])->registerMcpToolsIn($catalogue);
         $this->app->instance(McpCatalogue::class, $catalogue);
-        $this->mock(LaunchReadiness::class)->shouldReceive('recordDiscovery')->once();
+        $this->mock(StartReadiness::class)->shouldReceive('recordDiscovery')->once();
 
         JournalServer::tools()->assertRegistered(LedgerReadTool::class);
     }

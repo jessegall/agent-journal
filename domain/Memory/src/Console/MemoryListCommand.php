@@ -11,8 +11,8 @@ use Domain\Memory\Calls\ListMemoriesCall;
 use Illuminate\Console\Command;
 
 /**
- * List the memories of the calling agent, asked of the journal over a signed call with the launch's token: the
- * launch decides whose memory it is, never an option.
+ * List the memories of the calling agent, asked of the journal over a signed call with the start's token: the
+ * start decides whose memory it is, never an option.
  */
 #[JournalRoute(JournalRouteType::Read)]
 final class MemoryListCommand extends Command

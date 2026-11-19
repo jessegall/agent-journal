@@ -10,7 +10,7 @@ use App\AgentRequests\Exceptions\CallTooLarge;
 use App\AgentRequests\Exceptions\JournalUnavailable;
 use App\AgentRequests\Exceptions\StateBlocked;
 use App\AgentRequests\Support\AgentClientSettings;
-use App\AgentRequests\Support\LaunchProfilePin;
+use App\AgentRequests\Support\StartProfilePin;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
@@ -32,7 +32,7 @@ final class SendSignedCallsTest extends TestCase
         Sleep::fake();
         $this->app->instance(
             AgentClientSettings::class,
-            new AgentClientSettings('http://journal.test', 'launch-token', new LaunchProfilePin('main-agent', 1)),
+            new AgentClientSettings('http://journal.test', 'start-token', new StartProfilePin('main-agent', 1)),
         );
     }
 

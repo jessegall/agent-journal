@@ -7,7 +7,7 @@ namespace Tests\Feature\Agents;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use Carbon\CarbonImmutable;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -72,9 +72,9 @@ final class TerminalViewTest extends TestCase
 
     private function runtime(): AgentRuntime
     {
-        $launch = TestLaunch::start();
-        $launch->openRuntime($this->app);
+        $start = TestStart::start();
+        $start->openRuntime($this->app);
 
-        return AgentRuntime::query()->where('agent_session_id', $launch->session->id)->sole();
+        return AgentRuntime::query()->where('agent_session_id', $start->session->id)->sole();
     }
 }

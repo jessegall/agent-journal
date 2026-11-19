@@ -11,7 +11,7 @@ use App\Hooks\Events\ContextStarted;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Runs the domains' reactions to a context start (a launch, clear, resume or compaction) and collects their
+ * Runs the domains' reactions to a context start (a start, clear, resume or compaction) and collects their
  * reminders within the budget. It runs in the hook transaction after the replay check, so a replay runs none.
  */
 final readonly class ContextCollection

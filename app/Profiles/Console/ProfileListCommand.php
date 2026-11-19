@@ -8,7 +8,7 @@ use App\Profiles\Models\Profile;
 use Illuminate\Console\Command;
 
 /**
- * Lists the installation's profiles by key: label, current revision and whether new launches may still choose it.
+ * Lists the installation's profiles by key: label, current revision and whether new starts may still choose it.
  */
 final class ProfileListCommand extends Command
 {

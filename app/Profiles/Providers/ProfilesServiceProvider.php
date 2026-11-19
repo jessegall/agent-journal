@@ -8,8 +8,8 @@ use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Values\PolicyRegistration;
-use App\Agents\Contracts\BuiltInLaunchProfiles;
-use App\Agents\Contracts\LaunchProfileAdmission;
+use App\Agents\Contracts\BuiltInStartProfiles;
+use App\Agents\Contracts\StartProfileAdmission;
 use App\Hooks\Contracts\FileEditPermission;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Profiles\Console\ProfileActivateCommand;
@@ -26,12 +26,12 @@ use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ProfileAuthorizerProvider;
 use App\Profiles\Support\ProfileFileEditPermission;
-use App\Profiles\Support\ProfileLaunchAdmission;
 use App\Profiles\Support\ProfilePermissionReader;
+use App\Profiles\Support\ProfileStartAdmission;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Binds Core's profile reader and launch selection to the stored profile revisions, loads the main launch route and
+ * Binds Core's profile reader and start selection to the stored profile revisions, loads the main start route and
  * registers the profile console commands.
  */
 final class ProfilesServiceProvider extends ServiceProvider
@@ -42,8 +42,8 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->scoped(FileEditPermission::class, ProfileFileEditPermission::class);
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
-        $this->app->bind(LaunchProfileAdmission::class, ProfileLaunchAdmission::class);
-        $this->app->bind(BuiltInLaunchProfiles::class, BuiltInProfilePins::class);
+        $this->app->bind(StartProfileAdmission::class, ProfileStartAdmission::class);
+        $this->app->bind(BuiltInStartProfiles::class, BuiltInProfilePins::class);
     }
 
     public function boot(AuthorizerProviderRegistration $authorizers, PolicyCatalogue $policies): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Console;
 
-use App\AgentRequests\Contracts\LaunchCredentialSource;
+use App\AgentRequests\Contracts\StartTokenSource;
 use App\Agents\Support\OfflineReplySeal;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
@@ -12,7 +12,7 @@ use App\Programs\Enums\HookProgram;
 use Illuminate\Console\Command;
 
 /**
- * The command a launched program's isolated settings run for every hook: it reads the payload on standard input.
+ * The command a started program's isolated settings run for every hook: it reads the payload on standard input.
  */
 final class RelayHookCommand extends Command
 {
@@ -20,10 +20,10 @@ final class RelayHookCommand extends Command
 
     protected $description = 'Pass one native hook call to the journal and print its reply';
 
-    public function handle(HookRelay $relay, LaunchCredentialSource $credentials, OfflineReplySeal $seal): int
+    public function handle(HookRelay $relay, StartTokenSource $credentials, OfflineReplySeal $seal): int
     {
         $environment = array_filter(getenv(), 'is_string');
-        $settings = RelaySettings::forLaunch($credentials->forThisLaunch(), $environment, $seal);
+        $settings = RelaySettings::forStart($credentials->forThisStart(), $environment, $seal);
         $program = HookProgram::from((string) $this->argument('program'));
         $reply = $relay->relay($program, (string) stream_get_contents(STDIN), $settings);
 

@@ -9,7 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\AgentRuntimes;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Enums\DriverType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
 
 /**
- * A launched agent whose runtime runs on a host under the driver asked for, and commands run as the journal's owner,
+ * A started agent whose runtime runs on a host under the driver asked for, and commands run as the journal's owner,
  * for the terminal view tests.
  */
 trait OpensTerminalRuntimes
@@ -28,13 +28,13 @@ trait OpensTerminalRuntimes
     private function runtimeOn(string $hostId, DriverType $driver = DriverType::Terminal): AgentRuntime
     {
         $agent = Agent::named('Watched agent '.Str::random(6), 'main-agent');
-        $launched = $this->app->make(LaunchSessions::class)->launch(
+        $started = $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );
         $intent = new RuntimeIntent($hostId, base_path(), 'claude', '1.0.0', 'default', $driver, null, null, null);
-        [$runtime] = $this->app->make(AgentRuntimes::class)->open($launched->session, $intent, 'launch-token');
+        [$runtime] = $this->app->make(AgentRuntimes::class)->open($started->session, $intent, 'start-token');
         $runtime->load('session');
 
         return $runtime;

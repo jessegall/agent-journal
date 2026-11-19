@@ -80,7 +80,7 @@ final class ShippedReaderInstallTest extends TestCase
     private function refusalOf(string $line): AdmissionRefusalCode|null
     {
         $this->app->forgetScopedInstances();
-        $this->launch->startRequest($this->app);
+        $this->start->startRequest($this->app);
         $admission = $this->app->make(ShellAdmission::class)->admit(
             $line,
             ShellDialect::Bash,

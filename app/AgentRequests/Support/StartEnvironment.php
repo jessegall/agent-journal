@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\AgentRequests\Support;
+
+use App\AgentRequests\Exceptions\StartSettingMissing;
+
+/**
+ * The environment the journal's start gave a program, read one required setting at a time.
+ */
+final readonly class StartEnvironment
+{
+    /**
+     * @param  array<string, string>  $variables
+     */
+    public function __construct(private array $variables) {}
+
+    /**
+     * @throws StartSettingMissing
+     */
+    public function value(string $name): string
+    {
+        if (! array_key_exists($name, $this->variables)) {
+            throw StartSettingMissing::forName($name);
+        }
+
+        return $this->variables[$name];
+    }
+}

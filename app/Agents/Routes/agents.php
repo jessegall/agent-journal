@@ -5,10 +5,10 @@ declare(strict_types=1);
 use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Http\Controllers\Calls;
 use App\Http\Controllers\Agents\CloseTerminalViewController;
-use App\Http\Controllers\Agents\LaunchAgentController;
 use App\Http\Controllers\Agents\OpenTerminalViewController;
 use App\Http\Controllers\Agents\RenewTerminalViewController;
 use App\Http\Controllers\Agents\RetireAgentController;
+use App\Http\Controllers\Agents\StartAgentController;
 use App\Http\Controllers\Agents\TerminalFrameController;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
@@ -17,9 +17,9 @@ Route::post('/agents/retire', RetireAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->name('agents.retire');
 
-Route::post('/agents/{agent}/launch', LaunchAgentController::class)
+Route::post('/agents/{agent}/start', StartAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
-    ->name('agents.launch');
+    ->name('agents.start');
 
 Route::middleware(['web', 'auth', 'journal.user'])
     ->prefix('/agents/{agent}/terminal')

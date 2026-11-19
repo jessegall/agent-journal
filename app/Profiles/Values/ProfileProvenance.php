@@ -8,7 +8,7 @@ use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Exceptions\ProfileFieldUnknown;
 
 /**
- * Where a revision's effective launch policy came from: the hash of the activated configuration it was compiled from,
+ * Where a revision's effective start policy came from: the hash of the activated configuration it was compiled from,
  * and the origin of each effective field.
  */
 final readonly class ProfileProvenance

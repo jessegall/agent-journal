@@ -15,7 +15,7 @@ use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\TimingVerdict;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -27,14 +27,14 @@ final class LineAdmissionTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start();
+        $this->start = TestStart::start();
     }
 
     public function test_a_known_line_is_admitted_once_as_a_queued_run_and_the_same_key_returns_it(): void
@@ -84,7 +84,7 @@ final class LineAdmissionTest extends TestCase
 
     public function test_a_read_only_helper_writing_a_file_is_refused_by_its_ceiling(): void
     {
-        $this->launch = TestLaunch::start('read-only-helper');
+        $this->start = TestStart::start('read-only-helper');
 
         $refusal = $this->refusalOf($this->admit('cat composer.json > copy.json', 'key-1'));
 
@@ -115,7 +115,7 @@ final class LineAdmissionTest extends TestCase
 
     private function admit(string $line, string $key): Admission
     {
-        $this->launch->startRequest($this->app);
+        $this->start->startRequest($this->app);
 
         return $this->app->make(ShellAdmission::class)
             ->admit($line, ShellDialect::Bash, ExecutionContext::inFolder(base_path()), $key);

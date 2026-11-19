@@ -8,7 +8,7 @@ use App\Agents\Support\ProgramConversationSummary;
 use App\Programs\Enums\HookProgram;
 
 /**
- * The native conversations an agent's launches entered for one program and context, newest visit first, at most 20.
+ * The native conversations an agent's starts entered for one program and context, newest visit first, at most 20.
  */
 interface ProgramConversationResolver
 {

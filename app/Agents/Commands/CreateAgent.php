@@ -15,7 +15,7 @@ use App\Bus\Support\Command;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Creates an agent with a name and the profile it launches with, and answers its id; its owner, such as Helpers,
+ * Creates an agent with a name and the profile it starts with, and answers its id; its owner, such as Helpers,
  * decides who it serves.
  *
  * @extends Command<string>

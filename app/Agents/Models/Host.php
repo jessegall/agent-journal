@@ -19,10 +19,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $id
  * @property string $installation_name
  * @property string $credential_hash
- * @property list<string> $launch_roots
+ * @property list<string> $start_roots
  * @property CarbonImmutable|null $revoked_at
  */
-#[Fillable(['installation_name', 'credential_hash', 'launch_roots'])]
+#[Fillable(['installation_name', 'credential_hash', 'start_roots'])]
 final class Host extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -35,22 +35,22 @@ final class Host extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
-            'launch_roots' => 'array',
+            'start_roots' => 'array',
             'revoked_at' => 'immutable_datetime',
         ];
     }
 
     /**
-     * A host enrolled under its installation name, holding only the hash of its secret and its launch roots.
+     * A host enrolled under its installation name, holding only the hash of its secret and its start roots.
      *
-     * @param  list<string>  $launchRoots
+     * @param  list<string>  $startRoots
      */
-    public static function enroll(string $installationName, string $secret, array $launchRoots): self
+    public static function enroll(string $installationName, string $secret, array $startRoots): self
     {
         return self::query()->create([
             'installation_name' => $installationName,
             'credential_hash' => self::hashOf($secret),
-            'launch_roots' => $launchRoots,
+            'start_roots' => $startRoots,
         ]);
     }
 
@@ -78,11 +78,11 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
-     * Whether a folder lies inside one of the roots this host may launch in.
+     * Whether a folder lies inside one of the roots this host may start in.
      */
     public function permitsFolder(string $folder): bool
     {
-        foreach ($this->launch_roots as $root) {
+        foreach ($this->start_roots as $root) {
             $root = rtrim($root, '/');
             if ($folder === $root || str_starts_with($folder, $root.'/')) {
                 return true;

@@ -25,7 +25,7 @@ use Tests\Fixtures\Hooks\FixedSession;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 
 final class PlanRecordsTest extends TestCase
 {
@@ -82,7 +82,7 @@ final class PlanRecordsTest extends TestCase
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),
-            TestLaunchAuthority::forAgent($agent->id),
+            TestStartAuthority::forAgent($agent->id),
         );
         $this->app->make(AssignmentWriterInTransaction::class)->assign(
             $this->build->assignmentIdentity(),

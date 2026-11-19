@@ -13,7 +13,7 @@ use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
-use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
@@ -56,10 +56,10 @@ use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
-use App\Agents\Support\LaunchGrant;
 use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PendingWorkSources;
+use App\Agents\Support\StartGrant;
 use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Bus\Contracts\Command;
@@ -72,7 +72,7 @@ use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -89,7 +89,7 @@ final class AgentDriverLedgerTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',
@@ -309,26 +309,26 @@ final class AgentDriverLedgerTest extends TestCase
         );
     }
 
-    public function test_the_launch_grant_is_handed_out_once(): void
+    public function test_the_start_grant_is_handed_out_once(): void
     {
         [$host, $opened] = $this->openRuntime();
 
-        $first = $this->asSystem(new ClaimLaunchGrant($host->hostId, $opened->runtimeId));
-        $second = $this->asSystem(new ClaimLaunchGrant($host->hostId, $opened->runtimeId));
+        $first = $this->asSystem(new ClaimStartGrant($host->hostId, $opened->runtimeId));
+        $second = $this->asSystem(new ClaimStartGrant($host->hostId, $opened->runtimeId));
 
-        $this->assertInstanceOf(LaunchGrant::class, $first);
+        $this->assertInstanceOf(StartGrant::class, $first);
         $this->assertNotSame('', $first->token);
         $this->assertNull($second);
     }
 
-    public function test_another_host_cannot_take_a_runtimes_launch_grant(): void
+    public function test_another_host_cannot_take_a_runtimes_start_grant(): void
     {
         [, $opened] = $this->openRuntime();
         $other = $this->enrollHost();
 
         $this->expectException(HostReportRefused::class);
 
-        $this->asSystem(new ClaimLaunchGrant($other->hostId, $opened->runtimeId));
+        $this->asSystem(new ClaimStartGrant($other->hostId, $opened->runtimeId));
     }
 
     public function test_a_report_of_an_older_generation_is_refused_and_leaves_newer_facts(): void
@@ -428,10 +428,10 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->reportExit($host, $opened);
 
-        $session = AgentSession::query()->with('credential')->findOrFail($opened->sessionId);
+        $session = AgentSession::query()->with('startToken')->findOrFail($opened->sessionId);
         $requests = DriverRequest::query()->where('agent_runtime_id', $opened->runtimeId)->get();
         $this->assertSame(SessionStatus::Ended, $session->status);
-        $this->assertTrue($session->credential?->isRevoked());
+        $this->assertTrue($session->startToken?->isRevoked());
         $this->assertSame(RuntimeActivity::Stopped, AgentRuntime::query()->findOrFail($opened->runtimeId)->activity);
         $this->assertTrue($requests->every(fn (DriverRequest $request) => $request->progress->isFinal()));
         $progress = $requests->mapWithKeys(
@@ -753,7 +753,7 @@ final class AgentDriverLedgerTest extends TestCase
         [, $opened] = $this->openRuntime();
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($this->agentIdOf($opened)),
-            TestLaunchAuthority::forAgent($this->agentIdOf($opened)),
+            TestStartAuthority::forAgent($this->agentIdOf($opened)),
         );
 
         $this->expectException(ActorNotAllowed::class);

@@ -11,14 +11,14 @@ use App\Profiles\Values\ProfileKey;
 use Illuminate\Console\Command;
 
 /**
- * The local owner revokes profiles: new launches can no longer choose them, and the sessions launched from their
+ * The local owner revokes profiles: new starts can no longer choose them, and the sessions started from their
  * current revisions are fenced.
  */
 final class ProfileRevokeCommand extends Command
 {
     protected $signature = 'profile:revoke {keys* : The stable keys of the profiles}';
 
-    protected $description = 'Revoke profiles and fence the sessions launched from them';
+    protected $description = 'Revoke profiles and fence the sessions started from them';
 
     public function handle(ConsoleOwner $owner, CommandBus $commands): int
     {

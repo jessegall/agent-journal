@@ -27,7 +27,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
 use Illuminate\Database\ConnectionInterface;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\Sharing\FakeShareGateway;
@@ -66,7 +66,7 @@ final class ShareEntriesTest extends TestCase
         'document_revisions',
         'documents',
         'number_groups',
-        'launch_credentials',
+        'start_tokens',
         'agent_sessions',
         'agents',
     ];
@@ -99,10 +99,10 @@ final class ShareEntriesTest extends TestCase
 
     public function test_an_agent_requests_a_share_and_reads_its_status_without_an_address(): void
     {
-        $launch = TestLaunch::start();
+        $start = TestStart::start();
 
         $request = $this->signed(
-            $launch,
+            $start,
             '/agent/sharing/request',
             ['alias' => 'doc', 'number' => '1', 'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001'],
         )->assertOk();
@@ -113,15 +113,15 @@ final class ShareEntriesTest extends TestCase
         $proposal->state = ShareState::Active;
         $proposal->save();
 
-        $status = $this->signed($launch, '/agent/sharing/status', [])->assertOk();
+        $status = $this->signed($start, '/agent/sharing/status', [])->assertOk();
         $this->assertSame([['number' => $proposal->number, 'state' => 'active']], $status->json('proposals'));
         $this->assertStringNotContainsString('http', (string) $status->getContent());
     }
 
     public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void
     {
-        $launch = TestLaunch::start();
-        $this->runCommandsAs($launch);
+        $start = TestStart::start();
+        $this->runCommandsAs($start);
 
         $this->artisan('share:request', ['alias' => 'doc', 'number' => '1', '--json' => true])
             ->expectsOutputToContain('"state":"proposed"')

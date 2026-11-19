@@ -13,9 +13,9 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Policies\AgentPolicy;
-use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartReceipt;
 use App\Reads\Support\ReadBuilder;
 
 /**
@@ -95,7 +95,7 @@ final readonly class SessionRecords implements SessionResolver
             $session->agent->name,
             new StackTarget($session->agent_id, $session->id),
             $session->selection(),
-            LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED,
+            StartReceipt::ACTUAL_MODEL_NOT_REPORTED,
             $session->currentConversation?->native_id,
             (int) $session->getAttribute('visits_count'),
         );

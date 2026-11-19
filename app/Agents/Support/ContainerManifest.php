@@ -12,7 +12,7 @@ use App\Operations\Enums\ResourceAreaType;
 /**
  * What the protected host starts a helper container with (doc 14, section 63): the image by digest, an unprivileged
  * user, a read-only root without capabilities, exactly one workspace mount, bounded tmpfs folders, rotated logs and
- * the launch's budgets. It is validated when built; anything else is refused by name.
+ * the start's budgets. It is validated when built; anything else is refused by name.
  */
 final readonly class ContainerManifest
 {
@@ -70,19 +70,19 @@ final readonly class ContainerManifest
     ) {}
 
     /**
-     * The manifest of one prepared launch: its workspace mounted at /workspace, writable only when the launch's access
+     * The manifest of one prepared start: its workspace mounted at /workspace, writable only when the start's access
      * declaration grants changing workspace files, whatever the profile is called.
      *
      * @throws ManifestRefused
      */
     public static function compile(
-        PreparedLaunch $launch,
+        PreparedStart $start,
         AccessPolicy $access,
         ExecutionPolicy $policy,
         string $network,
     ): self {
         $writable = $access->grants(AccessType::Edit, ResourceAreaType::Workspace);
-        $mount = new ManifestMount($launch->workspace, self::WORKDIR, $writable);
+        $mount = new ManifestMount($start->workspace, self::WORKDIR, $writable);
 
         return self::make(
             (string) $policy->imageReference,
@@ -124,7 +124,7 @@ final readonly class ContainerManifest
         }
 
         if (in_array($network, ['host', 'none', ''], true)) {
-            throw ManifestRefused::because("the network {$network} is not a dedicated launch network");
+            throw ManifestRefused::because("the network {$network} is not a dedicated start network");
         }
 
         if ($publishedPorts !== []) {

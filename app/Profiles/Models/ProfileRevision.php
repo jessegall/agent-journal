@@ -9,15 +9,15 @@ use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Profiles\Casts\ProfileAuthorizationCast;
 use App\Profiles\Casts\ProfileBaseCast;
-use App\Profiles\Casts\ProfileLaunchPolicyCast;
+use App\Profiles\Casts\ProfileStartPolicyCast;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
-use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileSnapshot;
+use App\Profiles\Values\ProfileStartPolicy;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -29,9 +29,9 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * One numbered, immutable revision of a profile: the built-in profile it starts from, its instructions, default model,
- * skill lists, launch policy
- * and who wrote it. A null skill allowlist means every applicable skill; an empty one means none. The launch policy
- * is kept in its own columns and read back through ProfileLaunchPolicyCast.
+ * skill lists, start policy
+ * and who wrote it. A null skill allowlist means every applicable skill; an empty one means none. The start policy
+ * is kept in its own columns and read back through ProfileStartPolicyCast.
  *
  * @property string $id
  * @property string $profile_id
@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $model
  * @property list<string>|null $skill_allowlist
  * @property list<string> $required_skills
- * @property ProfileLaunchPolicy $launch_policy
+ * @property ProfileStartPolicy $start_policy
  * @property ProfileAuthorization $authorization
  * @property ActorType $author_type
  * @property string $author_id
@@ -55,7 +55,7 @@ use Illuminate\Database\Eloquent\Model;
     'model',
     'skill_allowlist',
     'required_skills',
-    'launch_policy',
+    'start_policy',
     'authorization',
     'author_type',
     'author_id',
@@ -78,7 +78,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'base' => ProfileBaseCast::class,
             'skill_allowlist' => 'array',
             'required_skills' => 'array',
-            'launch_policy' => ProfileLaunchPolicyCast::class,
+            'start_policy' => ProfileStartPolicyCast::class,
             'authorization' => ProfileAuthorizationCast::class,
             'author_type' => ActorType::class,
             'created_at' => 'immutable_datetime',
@@ -106,7 +106,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'model' => $definition->model,
             'skill_allowlist' => $definition->skillAllowlist,
             'required_skills' => $definition->requiredSkills,
-            'launch_policy' => $definition->launch,
+            'start_policy' => $definition->start,
             'authorization' => $definition->authorization,
             'author_type' => $author->type,
             'author_id' => $author->id,
@@ -142,7 +142,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'model' => $this->model,
             'skillAllowlist' => $this->skill_allowlist,
             'requiredSkills' => $this->required_skills,
-            'launch' => $this->launch_policy,
+            'start' => $this->start_policy,
             'authorization' => $this->authorization,
         ]);
     }
