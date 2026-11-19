@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 /**
  * What a parent keeps a helper of one profile for: one record, or free work. A parent has at most one purpose per
@@ -42,9 +43,47 @@ final class HelperPurpose extends Model implements ReadableModel
         return ['purpose_type' => PurposeType::class];
     }
 
-    public static function forSubject(ActorIdentity $parent, string $profileKey, RecordIdentity $subject, string $label): self
-    {
+    public static function forSubject(
+        ActorIdentity $parent,
+        string $profileKey,
+        RecordIdentity $subject,
+        string $label,
+    ): self {
         return self::start($parent, $profileKey, PurposeType::Subject, $subject, $label);
+    }
+
+    /**
+     * The one purpose of the parent and profile for the record, made by the first of any concurrent starts; a later
+     * start reads the one that won. Its label is the record's alias and id, never a fetched title.
+     */
+    public static function forSubjectOnce(ActorIdentity $parent, string $profileKey, RecordIdentity $subject): self
+    {
+        self::query()->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'actor_type' => $parent->type->value,
+            'actor_id' => $parent->id,
+            'profile_key' => $profileKey,
+            'purpose_type' => PurposeType::Subject->value,
+            'subject_type' => $subject->type,
+            'subject_id' => $subject->id,
+            'label' => "{$subject->type}:{$subject->id}",
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return self::query()->ownedBy($parent)
+            ->where('profile_key', $profileKey)
+            ->where('subject_type', $subject->type)
+            ->where('subject_id', $subject->id)
+            ->sole();
+    }
+
+    /**
+     * The parent's own purpose with that id for the profile; none when it belongs to another parent or profile.
+     */
+    public static function ofParent(ActorIdentity $parent, string $profileKey, string $purposeId): self|null
+    {
+        return self::query()->ownedBy($parent)->where('profile_key', $profileKey)->whereKey($purposeId)->first();
     }
 
     public static function free(ActorIdentity $parent, string $profileKey, string $label): self
