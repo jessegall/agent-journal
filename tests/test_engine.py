@@ -439,7 +439,7 @@ def test_the_lifecycle_hooks_run_in_order_say_their_lines_refuse_a_push_and_catc
 
 
 def test_a_worker_sent_back_ended_or_stopped_is_told_to_its_dispatcher_in_one_short_line():
-    from journal.features.workers.workers_conduct import WorkersConduct
+    from journal.features.workers.workers_conduct import STALLED_START_CAUSE, WorkersConduct
     from pathlib import Path
     from journal.events.feature_data import FeatureData
     from journal.features.workers.support.workers_data import WorkersData
@@ -465,6 +465,8 @@ def test_a_worker_sent_back_ended_or_stopped_is_told_to_its_dispatcher_in_one_sh
     assert said(ended(2), 3) == [WorkersNudges.RUN_UNFINISHED.create(n=3, cause="").rendered()], "but the second time"
     assert said(ended(1)) == [WorkersNudges.RUN_UNFINISHED.create(n=3, cause="").rendered()], "or at once when there is no session or conversation to ask in"
     assert said(ended(2, True), 3) == [WorkersNudges.RUN_UNFINISHED.create(n=3, cause=": run limit").rendered()], "and it says when the run limit was the cause"
+    stalled = WorkerUnfinished(environment_id=1, time=1.0, worker=worker, ref="workers:3", outcome="worker 3, ended", is_stalled_start=True).reaching("s1")
+    assert said(stalled, 3) == [WorkersNudges.RUN_UNFINISHED.create(n=3, cause=STALLED_START_CAUSE).rendered()], "a worker whose agent never started twice is told at once, with the cause, though its session could be asked"
     stopped = lambda limit: WorkerStopped(environment_id=1, time=1.0, worker=worker, ref="workers:3", outcome="worker 3, stopped", is_run_limit=limit).reaching("s1")
     assert said(stopped(False)) == [WorkersNudges.WORKER_STOPPED_UNREPORTED.create(n=3, cause="").rendered()] and said(stopped(True)) == [WorkersNudges.WORKER_STOPPED_UNREPORTED.create(n=3, cause=": run limit").rendered()]
 
@@ -495,6 +497,7 @@ def test_a_run_that_ended_without_clocking_out_is_asked_by_the_journal_itself_to
     ask.handle(ended(1))
     ask.handle(ended(2))
     ask.handle(ended(1, 4))
+    ask.handle(replace(ended(1), is_stalled_start=True))
     assert actions.sent == [(3, CLOCK_OUT_REQUEST, Actor.system())] and "journal clock-out" in CLOCK_OUT_REQUEST, "the journal asks the worker to clock out, in its own words, the first time only, and only a worker that can go on in its session"
 
 
