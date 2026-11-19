@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Actors\Support\ActorIdentity;
-use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Events\RuleActivated;
 use App\Processes\Exceptions\ApprovalRefused;
 use App\Processes\Exceptions\ClassificationRuleRefused;
@@ -35,7 +34,7 @@ final readonly class RuleApprovals
 {
     public function __construct(
         private CommandRuleRegistry $rules,
-        private CommandRuleResolver $projectRules,
+        private ProjectRules $projectRules,
         private Dispatcher $events,
     ) {}
 

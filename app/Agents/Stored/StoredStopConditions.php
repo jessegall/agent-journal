@@ -30,7 +30,7 @@ final class StoredStopConditions extends Data
     {
         return self::from([
             'attempt_seconds' => $conditions->attemptSeconds,
-            'conditions' => array_map(StoredStopCondition::fromStopCondition(...), $conditions->conditions),
+            'conditions' => $conditions->conditions,
         ]);
     }
 

@@ -7,7 +7,6 @@ namespace Domain\Documents\Support;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
-use Domain\Documents\Contracts\EditorContext;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
@@ -19,7 +18,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class DraftEditing
 {
-    public function __construct(private EditorContext $editors, private Dispatcher $events) {}
+    public function __construct(private RequestEditor $editors, private Dispatcher $events) {}
 
     /**
      * @param  callable(DraftText): DraftText  $newText  the draft's text after the edit

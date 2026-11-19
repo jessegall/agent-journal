@@ -14,9 +14,9 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Desks\Contracts\RunClaims;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Exceptions\RunClaimRefused;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -77,7 +77,7 @@ final class ResumeTaskRunTest extends TestCase
         AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat(
+            fn () => $this->app->make(DeskSeating::class)->seat(
                 $desk->id,
                 ActorIdentity::of($leaving->agent()->firstOrFail()),
             ),
@@ -85,7 +85,7 @@ final class ResumeTaskRunTest extends TestCase
         $this->runAs($leaving, new StartTask($task->id));
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
             new SeatChange(
                 $desk->id,
                 $seat->seatId,

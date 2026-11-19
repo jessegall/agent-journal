@@ -8,7 +8,6 @@ use App\Actors\Contracts\ForwardsToDesk;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
-use App\Agents\Contracts\RunsRuntimes;
 use App\Agents\Support\RunningRuntime;
 use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\Assignee;
@@ -39,7 +38,7 @@ use PhpOption\Some;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'profile_key'])]
-final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableModel, ReceivesMessages, RunsRuntimes, SendsMessages
+final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableModel, ReceivesMessages, SendsMessages
 {
     use BoundedReads;
     use HasUlids, Linkable;
@@ -100,6 +99,8 @@ final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableMod
 
     /**
      * The runtime of the current session, when that session runs under a driver that can be woken.
+     *
+     * @return Option<RunningRuntime>
      */
     public function currentRuntime(): Option
     {

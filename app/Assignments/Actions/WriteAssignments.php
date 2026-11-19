@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\Support\AssignmentBatch;
-use App\Assignments\Contracts\AssignmentAdmission;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
@@ -46,7 +45,7 @@ final readonly class WriteAssignments implements AssignmentWriter
         private AssignmentStore $store,
         private AssignmentFacts $facts,
         private AssignmentBatch $batch,
-        private AssignmentAdmission $admission,
+        private AdmitPublicAssignments $admission,
     ) {}
 
     public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult

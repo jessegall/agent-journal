@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
-use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\ResultReceipt;
 use App\Processes\Values\VerifiedOutput;
@@ -13,7 +12,7 @@ use App\Processes\Values\VerifiedOutput;
  * Writes a result receipt only after reading the stored assessment and its run again through the validator, and
  * supersedes the part's earlier receipt.
  */
-final readonly class ReceiptPublisher implements ResultPublisher
+final readonly class ReceiptPublisher
 {
     public function __construct(private EvidenceValidator $validator) {}
 

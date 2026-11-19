@@ -9,7 +9,6 @@ use App\Processes\Commands\ApproveRuleBundle;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\SaveCommandRule;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\ApprovalRefused;
@@ -17,6 +16,7 @@ use App\Processes\Exceptions\ClassificationUnavailable;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Support\ActiveRules;
 use App\Processes\Support\CommandRuleRegistry;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandRule;
@@ -129,7 +129,7 @@ final class ActiveRulesTest extends TestCase
     private function isKnown(string $line): bool
     {
         $this->app->forgetScopedInstances();
-        $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
+        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
 
         $classifier = $this->app->make(CommandClassifier::class);
 

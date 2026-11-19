@@ -14,8 +14,8 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Desks\Contracts\RunClaims;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -119,7 +119,7 @@ final class TaskRunTest extends TestCase
         AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat(
+            fn () => $this->app->make(DeskSeating::class)->seat(
                 $desk->id,
                 ActorIdentity::of($leaving->agent()->firstOrFail()),
             ),
@@ -128,7 +128,7 @@ final class TaskRunTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->replace(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
             new SeatChange(
                 $desk->id,
                 $seat->seatId,

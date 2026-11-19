@@ -6,7 +6,6 @@ namespace App\Numbers\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Console\InstallNumbersCommand;
-use App\Numbers\Contracts\NumberAllocator;
 use App\Numbers\Models\GlobalGroup;
 use App\Numbers\Models\NumberGroup;
 use App\Numbers\Support\LockingNumberAllocator;
@@ -23,7 +22,7 @@ final class NumbersServiceProvider extends ServiceProvider
     {
         $this->app->singleton(NumberedTypeRegistry::class);
         $this->app->singleton(NumberingOutsideCommands::class);
-        $this->app->scoped(NumberAllocator::class, LockingNumberAllocator::class);
+        $this->app->scoped(LockingNumberAllocator::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

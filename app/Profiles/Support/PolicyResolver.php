@@ -14,7 +14,6 @@ use App\Agents\Values\OperationGrant;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Operations\Enums\ResourceAreaType;
-use App\Profiles\Contracts\KnownOperations;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Values\FieldOrigin;
@@ -30,7 +29,7 @@ use App\Profiles\Values\ProfileProvenance;
  */
 final readonly class PolicyResolver
 {
-    public function __construct(private KnownOperations $operations, private PolicyCatalogue $policies) {}
+    public function __construct(private ConfiguredOperations $operations, private PolicyCatalogue $policies) {}
 
     /**
      * @throws ProfilePolicyRefused

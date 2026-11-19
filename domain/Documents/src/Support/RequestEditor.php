@@ -6,14 +6,13 @@ namespace Domain\Documents\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use Domain\Documents\Contracts\EditorContext;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
  * The editor of this request: its actor, and for an agent the session of its signed call; a user has no session.
  */
 #[Scoped]
-final readonly class RequestEditor implements EditorContext
+final readonly class RequestEditor
 {
     public function __construct(private CurrentActor $actors) {}
 

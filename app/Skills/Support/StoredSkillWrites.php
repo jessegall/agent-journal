@@ -7,7 +7,6 @@ namespace App\Skills\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Skills\Contracts\SkillCondition;
-use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Events\SkillsChanged;
 use App\Skills\Exceptions\SkillRequestReused;
 use App\Skills\Models\Skill;
@@ -30,7 +29,7 @@ final readonly class StoredSkillWrites
     public function __construct(
         private CurrentActor $actors,
         private ConditionTree $conditions,
-        private SkillRenderer $renderer,
+        private CanonicalRenderer $renderer,
         private Dispatcher $events,
     ) {}
 

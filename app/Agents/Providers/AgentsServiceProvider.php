@@ -34,7 +34,6 @@ use App\Agents\Console\ResumeKeyScriptCommand;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Console\RetryDriverRequestCommand;
 use App\Agents\Console\RunKeyScriptCommand;
-use App\Agents\Contracts\ActorRuntimeResolver;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchRecordResolver;
@@ -47,8 +46,8 @@ use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
-use App\Agents\Resolvers\CurrentAgentRuntimes;
-use App\Agents\Resolvers\HostLaunchMaterial;
+use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
+use App\Agents\Resolvers\Support\HostLaunchMaterial;
 use App\Agents\Resolvers\LaunchRecords;
 use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
@@ -76,7 +75,7 @@ use Illuminate\Support\ServiceProvider;
  * Gives each request its own agent context, which only the agent middleware fills; without it, asking for one fails.
  * A launch runs in a plain transaction until another domain supplies a bounded one. Agents are registered as holders
  * of
- * assigned work, and their present sessions are counted for ActiveActors.
+ * assigned work, and their present sessions are counted for ActiveActorsResolver.
  */
 final class AgentsServiceProvider extends ServiceProvider
 {
@@ -84,7 +83,7 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->app->bind(SendsAgentRequests::class, AgentRequestClient::class);
         $this->app->bind(RecordsLaunchHeartbeats::class, LaunchHeartbeats::class);
-        $this->app->scoped(ActorRuntimeResolver::class, CurrentAgentRuntimes::class);
+        $this->app->scoped(CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);

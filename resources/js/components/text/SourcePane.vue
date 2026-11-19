@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getJson } from '@/composables/jsonRequests';
 import { computed, onMounted, ref } from 'vue';
 import type { TextPart } from '@/generated/types/core';
 import { read } from '@/routes/text';
@@ -23,12 +24,16 @@ const typedLast = ref(props.lastLine);
 const hasMarkdown = computed(() => chosen.value?.type === 'quote' && /[*_`[\]]/.test(chosen.value.quote));
 
 onMounted(async () => {
-    const reply = await fetch(read.url({ query: { target: props.target, version: props.version, first_line: props.firstLine, last_line: props.lastLine } }), { headers: { Accept: 'application/json' } });
+    const reply = await getJson<TextPart>(
+        read.url({
+            query: { target: props.target, version: props.version, first_line: props.firstLine, last_line: props.lastLine },
+        }),
+    );
 
     if (reply.ok) {
-        part.value = (await reply.json()) as TextPart;
+        part.value = reply.value;
     } else {
-        failure.value = ((await reply.json()) as { message: string }).message;
+        failure.value = reply.message;
     }
 });
 

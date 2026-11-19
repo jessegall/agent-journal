@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getJson } from '@/composables/jsonRequests';
 import { ref, watch } from 'vue';
 import type { CommentList, RecordCommentView, TextCommentView } from '@/generated/types/core';
 import { list } from '@/routes/comments';
@@ -27,17 +28,17 @@ watch(
 );
 
 async function readMore(): Promise<void> {
-    const reply = await fetch(list.url({ query: { target: props.target, after: nextAfter.value ?? '' } }), { headers: { Accept: 'application/json' } });
+    const reply = await getJson<CommentList>(list.url({ query: { target: props.target, after: nextAfter.value ?? '' } }));
 
     if (!reply.ok) {
         items.value = [];
         nextAfter.value = null;
-        failure.value = ((await reply.json()) as { message: string }).message;
+        failure.value = reply.message;
 
         return;
     }
 
-    const page = (await reply.json()) as CommentList;
+    const page = reply.value;
     items.value = [...items.value, ...page.items];
     nextAfter.value = page.nextAfter;
 }

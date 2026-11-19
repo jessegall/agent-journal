@@ -6,7 +6,7 @@ namespace App\Assignments\Handlers;
 
 use App\Assignments\Actions\AutoAssignmentAdmission;
 use App\Assignments\Commands\EnableAutoAssignment;
-use App\Assignments\Contracts\AutoAssignmentWriter;
+use App\Assignments\Storage\DatabaseAutoAssignments;
 use App\Assignments\Support\AutoAssignmentChange;
 use App\Contracts\CommandHandler;
 
@@ -17,7 +17,7 @@ final readonly class EnableAutoAssignmentHandler implements CommandHandler
 {
     public function __construct(
         private AutoAssignmentAdmission $admission,
-        private AutoAssignmentWriter $writer,
+        private DatabaseAutoAssignments $writer,
     ) {}
 
     public function handle(EnableAutoAssignment $command): AutoAssignmentChange

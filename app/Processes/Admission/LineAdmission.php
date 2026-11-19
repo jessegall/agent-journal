@@ -11,7 +11,6 @@ use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\OutputRequirement;
@@ -30,6 +29,7 @@ use App\Processes\Support\ExecutionPlanner;
 use App\Processes\Support\OutputDiskCapacity;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\RunnerCapability;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\Admission;
 use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\AdmittedRun;
@@ -56,7 +56,7 @@ final readonly class LineAdmission implements ShellAdmission
     private const string EXPLAIN = 'Explain the line and propose its declaration.';
 
     public function __construct(
-        private ShellSyntax $syntax,
+        private TreeParser $syntax,
         private Container $container,
         private OutputPolicy $outputs,
         private CommandPermissionResolver $permissions,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
-use App\Processes\Contracts\OutputReader;
 use App\Processes\Enums\ClaimedOutcome;
 use App\Processes\Enums\FramingType;
 use App\Processes\Enums\OutputEncoding;
@@ -30,7 +29,7 @@ use App\Processes\Values\ReadProgress;
  * split across chunks is never cut and stdout and stderr are never joined. Every substantive line must be accounted
  * for by a rule; any other line, encoding fault or limit becomes a problem, and all problems are kept together.
  */
-final readonly class DeclarativeReader implements OutputReader
+final readonly class DeclarativeReader
 {
     public function __construct(
         private ReaderDefinition $definition,

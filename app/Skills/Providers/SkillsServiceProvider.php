@@ -24,9 +24,7 @@ use App\Skills\Console\SkillRevisionsCommand;
 use App\Skills\Console\SkillShowCommand;
 use App\Skills\Console\SkillStatusCommand;
 use App\Skills\Contracts\SkillPublisher;
-use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Contracts\SkillSource;
 use App\Skills\Enums\SkillAbility;
 use App\Skills\Models\Skill;
 use App\Skills\Policies\SkillAuthoringPolicy;
@@ -63,8 +61,6 @@ final class SkillsServiceProvider extends ServiceProvider
             SkillContext::class,
             fn (Application $app) => $app->make(SkillContextResolver::class)->current(),
         );
-        $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
-        $this->app->bind(SkillSource::class, StoredSkillSource::class);
         $this->app->singleton(SkillTargets::class, fn () => new SkillTargets(storage_path('app/skills')));
         $this->app->bind(SkillPublisher::class, HostSkillPublisher::class);
         $this->app->bind(SkillTables::class, fn (Application $app) => new SkillTables(
@@ -75,9 +71,9 @@ final class SkillsServiceProvider extends ServiceProvider
             fn () => SkillCatalogue::build(
                 $app->make(SkillRegistry::class),
                 $app,
-                $app->make(SkillRenderer::class),
+                $app->make(CanonicalRenderer::class),
                 $app->make(ConditionTree::class),
-                $app->make(SkillSource::class),
+                $app->make(StoredSkillSource::class),
             ),
         ));
     }

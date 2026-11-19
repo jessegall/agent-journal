@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Contracts\ActiveActors;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use App\Actors\Exceptions\ActiveActorsUnavailable;
 use App\Actors\Support\ActiveActorCounterRegistry;
+use App\Actors\Support\ActiveActorsResolver;
 use Tests\Fixtures\Actors\FailingAgentCounter;
 use Tests\Fixtures\Actors\FakeAgentCounter;
 use Tests\Fixtures\Actors\FakeUserCounter;
@@ -43,7 +43,7 @@ final class ActiveActorsTest extends TestCase
         $this->counters->register(FakeAgentCounter::class);
         $this->counters->register(FakeUserCounter::class);
 
-        $snapshot = $this->app->make(ActiveActors::class)->snapshot();
+        $snapshot = $this->app->make(ActiveActorsResolver::class)->snapshot();
 
         $this->assertSame(2, $snapshot->agentSessions);
         $this->assertSame(1, $snapshot->users);
@@ -56,7 +56,7 @@ final class ActiveActorsTest extends TestCase
     {
         $this->counters->register(FakeUserCounter::class);
 
-        $snapshot = $this->app->make(ActiveActors::class)->snapshot();
+        $snapshot = $this->app->make(ActiveActorsResolver::class)->snapshot();
 
         $this->assertSame(0, $snapshot->agentSessions);
         $this->assertSame(1, $snapshot->total());
@@ -68,7 +68,7 @@ final class ActiveActorsTest extends TestCase
         $this->counters->register(FakeUserCounter::class);
 
         try {
-            $this->app->make(ActiveActors::class)->snapshot();
+            $this->app->make(ActiveActorsResolver::class)->snapshot();
             $this->fail('The snapshot did not fail.');
         } catch (ActiveActorsUnavailable $unavailable) {
             $this->assertSame('The session table is gone.', $unavailable->getPrevious()?->getMessage());
