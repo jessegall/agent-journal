@@ -606,6 +606,30 @@ def test_wispr_flow_is_among_the_suggested_mcp_services():
     assert suggested["wispr-flow"].url == "https://api.wisprflow.ai/connect/mcp" and suggested["wispr-flow"].auth == "oauth"
 
 
+def test_a_sign_in_takes_only_the_address_on_this_machine_its_program_waits_on():
+    from journal.features.mcp.support.callback_address import CallbackAddress
+    from journal.support.rejection import Rejection
+    waiting = CallbackAddress.of("https://mcp.sentry.dev/oauth/authorize?state=s&redirect_uri=http%3A%2F%2Flocalhost%3A56271%2Fcallback")
+    assert waiting == CallbackAddress(56271, "/callback")
+    assert waiting.target(" http://localhost:56271/callback?code=c1&state=s&iss=https%3A%2F%2Fmcp.sentry.dev ") == "/callback?code=c1&state=s&iss=https%3A%2F%2Fmcp.sentry.dev"
+    assert waiting.target("http://127.0.0.1:56271/callback?code=c1") == "/callback?code=c1", "the programs listen on 127.0.0.1 whichever name the address uses"
+    refused = ["https://localhost:56271/callback?code=c1", "http://sign-in.test:56271/callback?code=c1", "http://169.254.169.254:56271/callback?code=c1", "http://user:pw@localhost:56271/callback?code=c1",
+               "http://localhost:6443/callback?code=c1", "http://localhost/callback?code=c1", "http://localhost:56271/admin?code=c1", "http://localhost:56271/callback", "http://localhost:56271/callback?code=c1\r\nHost: x", "http://localhost:99999/callback?code=c1", ""]
+    for pasted in refused:
+        with pytest.raises(Rejection) as refusal:
+            waiting.target(pasted)
+        assert "c1" not in str(refusal.value), "a refusal never repeats the pasted address"
+    with pytest.raises(Rejection):
+        CallbackAddress.of("https://mcp.sentry.dev/oauth/authorize?redirect_uri=https%3A%2F%2Fsign-in.test%2Fcallback")
+
+
+def test_a_server_the_agent_program_set_up_itself_offers_sign_in_when_it_needs_one():
+    from journal.http.controllers.mcp import McpController
+    from journal.features.mcp.support.server_catalogue import ServerCatalogue
+    assert McpController.known_row(ServerCatalogue("sentry", "https://mcp.sentry.dev/mcp", "needs_auth", "Needs authentication")).auth == "oauth"
+    assert McpController.known_row(ServerCatalogue("playwright", "npx @playwright/mcp", "connected", "")).auth == "none"
+
+
 def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_path):
     import json as j
     from journal.providers.codex import Codex
@@ -866,10 +890,6 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
     assert {s["name"]: s["installed"] for s in page["suggested"] if s["name"] in ("github", "playwright", "slack")} == {"github": True, "playwright": True, "slack": False}
     assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
     assert app.console().run(["mcp", "list"], USER).text.startswith("linear")
-    post("/journal/mcp/install", {"name": "linear"})
-    transmitted.clear()
-    assert post("/journal/mcp/linear/sign-in", {})["asked"] == "linear"
-    assert transmitted[-1]["verb"] == "type" and "mcp__linear__authenticate" in transmitted[-1]["line"], "the agent is asked to sign in through the server's own tool"
 
 
 def test_commands_run_at_the_same_moment_keep_their_own_output(app: App):
@@ -1933,41 +1953,44 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App, tmp_
     assert any(t.startswith("Mr. Brunel reports: ") for t in texts) and not workers.find(dropped.id).is_running(), "a worker whose process ended while the journal was down is not left out"
 
 
-def test_a_worker_whose_run_a_restart_stopped_is_sent_on_in_its_own_session_and_worktree_with_its_task(app: App, monkeypatch):
-    from journal.features.workers.jobs.worker_watch import WorkerWatch
+def test_a_worker_the_restart_cut_off_is_started_again_in_its_session(app: App, monkeypatch):
+    import json as j
+    import subprocess
+    import time as timing
+    from journal.features.workers.jobs.worker_watch import REVIVE_BRIEF, WorkerWatch
     from journal.features.workers.seeds.workers_seed import WorkersSeed
-    from journal.features.workers.support.worker_actions import RESTART_JOB
+    from journal.features.workers.support.worker_actions import WorkerActions
     from journal.features.workers.support.worker_runner import WorkerRunner
-    from journal.models.support.ref import Ref
-    from journal.models.worker import ENDED_UNFINISHED, RESTART_MOVE
-    from journal.repositories.tasks import Tasks
+    from journal.models.worker import Worker
+    from journal.repositories.scope import Scope
     from journal.repositories.workers import Workers
-    started = []
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: started.append(worker.id))
-    kept_conversation(app, monkeypatch)
-    console = app.console()
-    hook(app, "SessionStart")
-    console.run(["task", "create", "the parser", "--brief", "the parser is written"], AGENT)
-    console.run(["task", "create", "the lexer", "--brief", "the lexer is written"], AGENT)
-    for name, task in (("Lady Lovelace", "1"), ("Mr. Babbage", "2")):
-        console.run(["worker", "dispatch", name, "--task", task, "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    gone = 2 ** 22 + 7
-    with app.container.get(Scope).environment(MAIN):
-        workers = app.container.get(Workers)
-        workers.save(workers.find(1).with_(token_hash="h", resume="lovelace-session", pid=gone, began=timing.time()).ready(timing.time()), Actor.system())
-        workers.save(workers.find(2).with_(resume="babbage-session", pid=gone, began=timing.time()), Actor.system())
-    started.clear()
+    workers, runner, scope = app.container.get(Workers), app.container.get(WorkerRunner), app.container.get(Scope)
+    relaunched = []
+    monkeypatch.setattr(WorkerActions, "relaunch", lambda self, worker, brief, dispatcher, actor, move, *rest, **named: relaunched.append((worker.id, brief)) or worker)
+    from journal.models.worker_state import WorkerState
+    with scope.environment(1):
+        cut = workers.save(Worker(name="Ms. Hopper", brief="the compiler", model="sonnet"), Actor.system())
+        clocked_in = workers.save(Worker(name="Mr. Babbage", brief="the engine", model="sonnet"), Actor.system())
+        ended = workers.save(Worker(name="Mr. Turing", brief="the machine", model="sonnet"), Actor.system())
+        workers.save(Worker(name="Ms. Lovelace", brief="the notes", model="sonnet"), Actor.system())
+    gone = subprocess.Popen(["true"])
+    gone.wait()
+    for worker, events in ((cut, [{"type": "assistant"}]), (clocked_in, [{"type": "assistant"}]), (ended, [{"type": "assistant"}, {"type": "result", "subtype": "success", "result": "the machine runs"}])):
+        output, _ = runner.outputs(worker)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("\n".join(j.dumps(event) for event in events) + "\n")
+        workers.save(worker.running_as(gone.pid, timing.time()), Actor.system())
+    workers.save(workers.find(clocked_in.id).with_(state=WorkerState.READY), Actor.system())
+    with scope.environment(1):
+        stale = workers.save(Worker(name="Mr. Brunel", brief="the tags", model="sonnet"), Actor.system())
+    stale_output, _ = runner.outputs(stale)
+    stale_output.write_text(j.dumps({"type": "assistant"}) + "\n")
+    os.utime(stale_output, (timing.time() - 5 * 3600, timing.time() - 5 * 3600))
+    workers.save(workers.find(stale.id).running_as(gone.pid, timing.time()).with_(state=WorkerState.READY), Actor.system())
     app.container.get(WorkersSeed).run()
     app.container.get(WorkerWatch).tick(timing.time())
-    app.runtime().deferred.drain()
-    with app.container.get(Scope).environment(MAIN):
-        workers, tasks = app.container.get(Workers), app.container.get(Tasks)
-        for n, session in ((1, "lovelace-session"), (2, "babbage-session")):
-            sent = workers.find(n)
-            assert sent.state == WorkerState.DISPATCHED and sent.brief == RESTART_JOB and sent.resume == session and not sent.token_hash, "a worker out when the journal stopped, clocked in or not, is sent on in its own session, to clock in again"
-            assert tasks.holder_task_ids(Ref("workers", n)) == (n,) and RESTART_MOVE in [word for word, _ in sent.moves.steps], "it keeps its task, and its moves say a restart stopped it"
-            assert ENDED_UNFINISHED not in [word for word, _ in sent.moves.steps], "a run a restart stopped is no run that ended without clocking out"
-    assert sorted(started) == [1, 2], "each is started again by the journal itself, without the agent re-sending it"
+    assert sorted(relaunched) == sorted([(cut.id, REVIVE_BRIEF), (clocked_in.id, REVIVE_BRIEF)]), "a run the restart cut off is started again in its own session, sent its job or clocked in on it; one that ended on its own, never ran, or whose process had been gone for hours, is not"
+    assert not workers.find(ended.id).is_running(), "a run that ended on its own has its end recorded as before"
 
 
 def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app: App):
@@ -5018,49 +5041,9 @@ def test_a_worker_sent_back_whose_runs_end_twice_without_clocking_out_is_named_t
     assert first.state == "dispatched" and CLOCK_OUT_REQUEST in first.brief and "Go on with your task" not in first.brief, "a run sent back that ends without moving on in its queue is no turn of the queue: the journal asks it once to clock out"
     second = ended()
     assert second.state == WorkerState.UNFINISHED and CLOCK_OUT_REQUEST in second.brief, "its second run ended the same way, so it is not sent again"
-    assert second.parked == second.run_end, "it is parked with the end of its run as the cause"
     with app.container.get(Scope).environment(MAIN):
-        told = [entry.data["values"]["n"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.worker_parked"]
-    assert told == ["1"], "the agent that dispatched it is told once that it is parked, naming it"
-
-
-def test_a_worker_that_ends_twice_without_clocking_out_is_parked_with_its_cause_and_sent_again_only_once_it_is_fixed(app: App, monkeypatch):
-    from journal.features.workers.support.worker_runner import WorkerRunner
-    from journal.repositories.entries import Entries
-    from journal.repositories.workers import Workers
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
-    kept_conversation(app, monkeypatch)
-    console = app.console()
-    hook(app, "SessionStart")
-    console.run(["task", "create", "the parser", "--brief", "the parser is written"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    runner = app.container.get(WorkerRunner)
-
-    def ended(printed: str):
-        with app.container.get(Scope).environment(MAIN):
-            workers = app.container.get(Workers)
-            worker = workers.save(workers.find(1).with_(token_hash="h", resume="lovelace-session"), Actor.system())
-            output, _ = runner.outputs(worker)
-            output.parent.mkdir(parents=True, exist_ok=True)
-            output.write_text(printed)
-            runner.finish(worker, 0, Actor.system())
-        app.runtime().deferred.drain()
-        return worker_row(app)
-
-    first = ended("npm ci failed: package-lock.json is out of sync")
-    assert first.state == WorkerState.DISPATCHED and not first.parked, "the first end without clocking out is asked once to clock out, not parked"
-    second = ended("npm ci failed: package-lock.json is out of sync")
-    assert second.state == WorkerState.UNFINISHED and "package-lock.json" in second.parked, "the second end parks it with the cause it ended on"
-    with app.container.get(Scope).environment(MAIN):
-        told = [entry.data["line"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.worker_parked"]
-    assert len(told) == 1 and "package-lock.json" in told[0] and "--fixed" in told[0], "the agent that dispatched it is told it is parked, with the cause and how to send it again"
-    refused = console.run(["worker", "send", "1", "go on with the parser"], AGENT)
-    assert refused.code != 0 and "parked" in refused.error and "package-lock.json" in refused.error, "a parked worker is not sent into the same fault again"
-    assert worker_row(app).state == WorkerState.UNFINISHED
-    fixed = console.run(["worker", "send", "1", "go on with the parser", "--fixed", "the lock file is regenerated on main"], AGENT)
-    assert fixed.code == 0, fixed.error
-    sent = worker_row(app)
-    assert sent.state == WorkerState.DISPATCHED and not sent.parked and "the lock file is regenerated on main" in sent.brief, "once its cause is fixed it is sent on, told what was fixed"
+        told = [entry.data["values"]["n"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.run_unfinished"]
+    assert told == ["1"], "the agent that dispatched it is told once, naming it"
 
 
 def test_npm_exec_is_labelled_by_the_program_it_runs_and_one_title_given_to_different_work_raises_a_report(app: App, tmp_path):
@@ -7467,3 +7450,211 @@ def test_a_resting_docked_card_older_than_its_chats_first_page_is_taken_down_and
     ScrolledDocksUndock().apply(connection)
     docked = [row["id"] for row in connection.all("SELECT id FROM messages WHERE json_extract(data, '$.docked') = 1 ORDER BY id")]
     assert docked == [2, 3, SHOWN_MESSAGE_COUNT + 4], "the old resting card goes; the running one, the leaving one and the card on the first page stay"
+
+
+def test_a_brief_naming_the_branch_of_its_work_cuts_the_inner_worktree_from_it_and_merges_into_it_never_into_main(app: App, monkeypatch):
+    root = workspace_made(app, ("platform", "mobile"))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2. Payroll totals")
+    assert (folder / "platform" / "payroll.php").is_file(), "the worker's platform is cut from feature/payroll-v2"
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert git_run(root / "platform", "rev-parse", "--abbrev-ref", "HEAD").stdout.strip() == "main", "the project's checkout stays on main"
+    assert not (root / "platform" / "totals.php").exists() and not (root / "platform" / "payroll.php").exists(), "main gets neither the work nor payroll v2"
+    assert "totals.php" in git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout, "the work is merged into feature/payroll-v2"
+    base = app.config.home / "bases" / "platform" / "feature--payroll-v2"
+    assert (base / "totals.php").is_file(), "the journal's checkout of feature/payroll-v2 holds the merged work"
+
+
+def test_a_brief_branch_only_origin_holds_is_fetched_and_checked_out_and_a_repository_without_it_stays_on_its_own(app: App, monkeypatch):
+    root = workspace_made(app, ("platform", "mobile"))
+    origin = app.config.root.parent / "platform-origin.git"
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    git_run(app.config.root.parent, "clone", "-q", "--bare", str(root / "platform"), str(origin))
+    git_run(root / "platform", "branch", "-D", "feature/payroll-v2")
+    git_run(root / "platform", "remote", "add", "origin", str(origin))
+    _, folder, _ = worktree_worker(app, monkeypatch, "Repositories: platform, mobile, on feature/payroll-v2")
+    assert (folder / "platform" / "payroll.php").is_file(), "fetched from origin and cut from it"
+    assert (folder / "mobile" / "app.php").is_file() and git_run(root / "mobile", "rev-parse", "--verify", "-q", "refs/heads/feature/payroll-v2").returncode != 0, "mobile, without the branch, is cut from its own checkout"
+
+
+def test_a_branch_a_brief_only_mentions_is_no_base(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    _, folder, _ = worktree_worker(app, monkeypatch, "platform: port the fix that feature/payroll-v2 made to main")
+    assert not (folder / "platform" / "payroll.php").exists(), "named in passing, the branch is not the base"
+
+
+def test_a_worker_cut_from_main_before_its_brief_named_a_branch_keeps_merging_into_main_and_never_pours_main_into_the_branch(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "main-only.php", "<?php\n")
+    git_run(root / "platform", "branch", "worker/1-Worker-1", "main")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2. Payroll totals")
+    assert not (folder / "platform" / "payroll.php").exists(), "the worker's branch was there already, cut from main"
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert (root / "platform" / "totals.php").is_file(), "its work is merged into main, where it was cut"
+    assert "main-only.php" not in git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout, "main is not poured into feature/payroll-v2"
+
+
+def test_a_worker_that_cut_its_own_branch_from_a_base_in_its_worktree_is_rebased_and_merged_onto_that_base_not_main(app: App, monkeypatch):
+    """On the hosted journal (19 Nov) workers made their own branches from feature/payroll-framework-v2 in their worktrees, and
+    every clock-out rebased them onto main: all of v2 replayed one clash at a time, and the workers ended stuck."""
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "main-only.php", "<?php\n")
+    base = app.config.home / "bases" / "platform" / "feature--payroll-v2"
+    base.parent.mkdir(parents=True, exist_ok=True)
+    git_run(root / "platform", "worktree", "add", "-q", str(base), "feature/payroll-v2")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform. Payroll totals")
+    git_run(folder / "platform", "checkout", "-qb", "feature/v2-totals", "feature/payroll-v2")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert not (root / "platform" / "payroll.php").exists() and not (root / "platform" / "totals.php").exists(), "main gets neither v2 nor the work"
+    assert (base / "totals.php").is_file() and not (base / "main-only.php").exists(), "the work lands on feature/payroll-v2, and main is not poured into it"
+
+
+def test_a_rebase_stopped_onto_main_for_a_worker_cut_from_a_base_is_given_up_and_redone_onto_the_base(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "payroll.php", "<?php\n// main\n")
+    base = app.config.home / "bases" / "platform" / "feature--payroll-v2"
+    base.parent.mkdir(parents=True, exist_ok=True)
+    git_run(root / "platform", "worktree", "add", "-q", str(base), "feature/payroll-v2")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform. Payroll totals")
+    git_run(folder / "platform", "checkout", "-qb", "feature/v2-totals", "feature/payroll-v2")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert git_run(folder / "platform", "rebase", "main").returncode != 0, "replaying v2 onto main clashes in payroll.php"
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert (base / "totals.php").is_file() and "v2" in (base / "payroll.php").read_text(), "the rebase onto main was given up and the work merged into v2"
+
+
+def test_a_brief_branch_is_checked_out_from_a_checkout_cloned_with_main_only(app: App, monkeypatch):
+    """The hosted journal's checkouts fetch main only: git refused to track a branch fetched by hand ("is not a branch") and no base was made (19 Nov)."""
+    root = workspace_made(app, ("platform",))
+    origin = app.config.root.parent / "platform-origin.git"
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    git_run(app.config.root.parent, "clone", "-q", "--bare", str(root / "platform"), str(origin))
+    git_run(root / "platform", "branch", "-D", "feature/payroll-v2")
+    git_run(root / "platform", "remote", "add", "-t", "main", "origin", str(origin))
+    _, folder, _ = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2.")
+    assert (folder / "platform" / "payroll.php").is_file(), "the base is made from the fetched ref and the worker cut from it"
+
+
+def test_a_release_line_a_brief_tells_about_is_no_base(app: App, monkeypatch):
+    """Task briefs tell where things stand ("merged on release/0.5", "fails on release/0.6"): the first build after the base
+    branches took every "on <branch>" as one and made a base of release/0.5 (19 Nov)."""
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "release/0.5")
+    committed(root / "platform", "release.php", "<?php\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    _, folder, _ = worktree_worker(app, monkeypatch, "platform: built and merged on release/0.5 through task 3762; check 2174 fails on release/0.5. Base the carry on main.")
+    assert not (folder / "platform" / "release.php").exists(), "told about, release/0.5 is no base"
+    assert not (app.config.home / "bases").exists()
+
+
+def test_a_worker_cut_from_a_base_keeps_it_when_a_later_instruction_replaces_its_brief(app: App, monkeypatch):
+    """A worker's brief is replaced by every later instruction; on 19 Nov a payroll worker told 'The journal restarted while you
+    were at work' was rebased onto main at its clock-out, which would have put the whole v2 branch on main."""
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "main-only.php", "<?php\n")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2. Payroll totals")
+    assert (folder / "platform" / "payroll.php").is_file()
+    from journal.repositories.workers import Workers
+    workers = app.container.get(Workers)
+    workers.save(workers.find(worker_row(app).row_id).with_(brief="The journal restarted while you were at work; carry on."), Actor.system())
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert not (root / "platform" / "totals.php").exists() and not (root / "platform" / "payroll.php").exists(), "main gets neither"
+    tree = git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout
+    assert "totals.php" in tree and "main-only.php" not in tree, "the work lands on feature/payroll-v2 and main is not poured in"
+
+
+def fake_docker(tmp: Path, monkeypatch, stacks: list[tuple[str, Path]]) -> Path:
+    """A docker on the search path that lists the stacks given, each with the folder it was started from, and takes one down
+    by removing it from the list it reads."""
+    bin_dir, listing = tmp / "fake-bin", tmp / "fake-stacks.txt"
+    bin_dir.mkdir(exist_ok=True)
+    listing.write_text("".join(f"{name}\t{folder}\n" for name, folder in stacks))
+    script = bin_dir / "docker"
+    script.write_text(f"""#!/bin/sh
+if [ "$1" = ps ]; then cat {listing}; exit 0; fi
+if [ "$1" = compose ] && [ "$4" = down ]; then grep -v "^$3	" {listing} > {listing}.new; mv {listing}.new {listing}; exit 0; fi
+exit 1
+""")
+    script.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    return listing
+
+
+def test_a_worker_whose_test_stack_still_runs_is_refused_its_clock_out_until_it_takes_it_down(app: App, monkeypatch, tmp_path):
+    """On 19 Nov the hosted journal's Docker held 19 test stacks and 146 volumes of workers long gone."""
+    workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    listing = fake_docker(tmp_path, monkeypatch, [("transportklok-platform-testing-abc123", folder / "platform"), ("someone-else", tmp_path)])
+    committed(folder / "platform", "totals.php", "<?php\n")
+    refused = proved_and_out(app, caller, "platform/totals.php:1")
+    assert refused.code != 0 and "transportklok-platform-testing-abc123" in refused.error and "down -v" in refused.error, refused.error
+    assert "someone-else" not in refused.error, "a stack started elsewhere is not the worker's"
+    listing.write_text(f"someone-else\t{tmp_path}\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+
+
+def test_with_no_docker_to_ask_a_clock_out_is_not_held(app: App, monkeypatch, tmp_path):
+    workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    bin_dir = tmp_path / "no-docker"
+    bin_dir.mkdir()
+    (bin_dir / "docker").write_text("#!/bin/sh\nexit 1\n")
+    (bin_dir / "docker").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+
+
+def test_a_released_worker_with_unmerged_commits_loses_its_worktree_after_the_set_hours_and_keeps_its_last_commit(app: App, monkeypatch):
+    from journal.features.workers.jobs.worktree_cleanup import WorktreeCleanup
+    from journal.repositories.workers import Workers
+    from journal.support.worktree_refs import TIPS_REF
+    root = workspace_made(app, ("platform",))
+    worker, folder, _ = worktree_worker(app, monkeypatch, "platform totals")
+    tip = committed(folder / "platform", "totals.php", "<?php\n")
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        given_up = workers.find(worker.id)
+        workers.save(given_up.with_(state=WorkerState.RELEASED, moves=given_up.moves.added("released", timing.time())), Actor.system())
+    cleanup = app.container.get(WorktreeCleanup)
+    cleanup.tick(timing.time() + 3 * 3600)
+    assert folder.is_dir(), "a released worker keeps its worktree within the set hours"
+    cleanup.tick(timing.time() + 5 * 3600)
+    assert not folder.is_dir(), "past them its worktree goes, though its commit was never merged"
+    kept = git_run(root / "platform", "for-each-ref", "--format=%(objectname)", f"{TIPS_REF}/").stdout
+    assert tip[:7] in kept or git_run(root / "platform", "cat-file", "-e", f"{tip}^{{commit}}").returncode == 0, "its last commit stays"

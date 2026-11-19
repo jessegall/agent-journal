@@ -1,5 +1,6 @@
 from journal.support.actor import Actor
 from collections.abc import Callable
+from datetime import datetime, timezone
 from journal.db.connection import Connection
 from journal.db.query import Query
 from journal.events.bus import Bus
@@ -66,11 +67,17 @@ class Workers(ScopedRepository[Worker]):
     def unfinished_accepted(self, dispatcher: str, accepts: Callable[[Worker], bool]) -> list[Worker]:
         return [worker for worker in self.matching(state=WorkerState.UNFINISHED, dispatcher=dispatcher) if accepts(worker)]
 
+    def unreviewed_deliveries(self) -> list[Worker]:
+        return self.selected(self.query().filter(state=WorkerState.DELIVERED, review_pending=False).order("id"))
+
     def queued_reviews(self) -> list[Worker]:
         return self.selected(self.query().filter(state=WorkerState.DELIVERED, review_pending=True).filter_greater("review_queued_at", 0).order("review_queued_at"))
 
     def limit_passed(self, time: float) -> list[Worker]:
         return self.selected_globally(self.query().filter(state=WorkerState.LIMITED).filter_less_equal("resumes_at", time).order("id"))
+
+    def changed_since(self, time: float) -> list[Worker]:
+        return self.selected(self.query().filter_greater_equal("updated_at", datetime.fromtimestamp(time, timezone.utc)).order("id"))
 
     def recently_merged(self, time: float) -> list[Worker]:
         return self.selected(self.query().filter_greater("merged_at", time).order("merged_at"))

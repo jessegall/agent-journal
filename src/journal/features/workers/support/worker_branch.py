@@ -29,6 +29,11 @@ AUTOSTASH = "autostash"
 REBASE_STEPS = "fix only the files that clash, keeping both sides' changes and removing every conflict marker; never run git, since the journal adds them and goes on with the rebase when you clock out"
 CONFLICT_MARKER = re.compile(r"^(<{7}|>{7}) ", re.MULTILINE)
 REBUILD_SUBJECT = "Build the built files again on the project's branch"
+# a brief that names the branch its work is on, in its repositories sentence ("Repositories: platform, on feature/payroll-v2")
+# or after "base:" / "base branch:", gives each inner repository holding that branch a checkout of it, which the worker's branch
+# is cut from and its commits are merged into; a branch a brief only tells about ("merged on release/0.5") is none
+BRIEF_BRANCH = re.compile(r"(?:\brepositories:[^.\n]*?\bon|\bbase(?:\s+branch)?:)\s+`?((?:feature|fix|hotfix|bugfix|release|stage|chore)/[\w.\-/]*[\w-])`?", re.IGNORECASE)
+BASES = "bases"
 
 
 class WorkerBranch:
@@ -37,6 +42,8 @@ class WorkerBranch:
     def __init__(self, config: Config, deferred: ListenerQueue, account: TeamAccount, environments: Environments, settings: SettingRows, carry: CarryBranch) -> None:
         self.config, self.deferred, self.account, self.environments, self.settings, self.carry = config, deferred, account, environments, settings, carry
         self.removed_root = config.home / "removed-worktrees"
+        # (checkout, branch) pairs found to hold no such branch, so a brief naming one is not fetched for again and again
+        self.missing_bases: set[tuple[Path, str]] = set()
 
     def name(self, worker: Worker) -> str:
         return f"worker/{worker.id}-{worker.name}".replace(" ", "-")
@@ -73,12 +80,75 @@ class WorkerBranch:
     def inner_folders(self) -> tuple[str, ...]:
         return InnerRepositories(self.config.root).names()
 
+    def inner_checkout(self, worker: Worker, name: str) -> Path:
+        """The checkout of the inner repository name that the worker's branch is cut from and merged into: the project's own, or a checkout of another branch the journal keeps under its home (bases/<name>/<branch>). A worker whose branch is there already keeps the base it was cut from, whatever its brief says now: a brief is replaced by every later instruction ("The journal restarted while you were at work"), and on 19 Nov such a worker was rebased onto main. A worker not started yet takes the branch its brief names, when this repository holds it and the project's checkout is not on it, made once from the local branch or from origin's; a branch git has out elsewhere already is used where it is."""
+        checkout = self.config.root / name
+        own = f"refs/heads/{self.name(worker)}"
+        if self.git("rev-parse", "--verify", "-q", own, cwd=checkout).returncode == 0:
+            bases = self.config.home / BASES / name
+            held = sorted(path for path in bases.iterdir() if (path / ".git").exists()) if bases.is_dir() else []
+            tips = (own, *self.worktree_tips(self.folder(worker) / name))
+            return next((base for base in held if any(self.is_cut_from(tip, base, checkout) for tip in tips)), checkout)
+        for branch in dict.fromkeys(BRIEF_BRANCH.findall(worker.brief or "")):
+            base = self.base_checkout(checkout, name, branch)
+            if base is not None:
+                return base
+        return checkout
+
+    def worktree_tips(self, worktree: Path) -> tuple[str, ...]:
+        """What the worker's worktree holds, which the worker may have moved off the journal's branch: on 19 Nov workers cut
+        their own branches from feature/payroll-framework-v2 there, and every clock-out rebased them onto main, replaying all
+        of v2 one clash at a time. A rebase stopped halfway holds the tip it started from."""
+        if not (worktree / ".git").exists():
+            return ()
+        started = worktree / self.git("rev-parse", "--git-path", "rebase-merge/orig-head", cwd=worktree).stdout.strip()
+        if started.is_file():
+            return (started.read_text().strip(),)
+        head = self.git("rev-parse", "-q", "--verify", "HEAD", cwd=worktree).stdout.strip()
+        return (head,) if head else ()
+
+    def is_cut_from(self, own: str, base: Path, checkout: Path) -> bool:
+        """Whether the worker's branch was cut from the base checkout's branch: where the two meet lies beyond the project's checkout. A worker cut from the project's checkout before its brief named a branch meets the base inside it, so it keeps merging there and never pours the project's branch into the base."""
+        fork = self.git("merge-base", own, "HEAD", cwd=base).stdout.strip()
+        return bool(fork) and self.git("merge-base", "--is-ancestor", fork, "HEAD", cwd=checkout).returncode != 0
+
+    def base_checkout(self, checkout: Path, name: str, branch: str) -> Path | None:
+        path = self.config.home / BASES / name / branch.replace("/", "--")
+        if (path / ".git").exists():
+            return path
+        if (checkout, branch) in self.missing_bases or not (checkout / ".git").exists():
+            return None
+        held = self.git("worktree", "list", "--porcelain", cwd=checkout).stdout.split("\n\n")
+        out = next((Path(entry.splitlines()[0].removeprefix("worktree ")) for entry in held if f"branch refs/heads/{branch}" in entry.splitlines()), None)
+        if out is not None:
+            return out
+        if self.git("rev-parse", "--verify", "-q", f"refs/heads/{branch}", cwd=checkout).returncode == 0:
+            argv: tuple[str, ...] = (str(path), branch)
+        else:
+            remote = f"refs/remotes/origin/{branch}"
+            if self.git("rev-parse", "--verify", "-q", remote, cwd=checkout).returncode != 0:
+                try:
+                    self.checkout_git("fetch", "-q", "origin", f"+refs/heads/{branch}:{remote}", cwd=checkout)
+                except subprocess.TimeoutExpired:
+                    pass
+            if self.git("rev-parse", "--verify", "-q", remote, cwd=checkout).returncode != 0:
+                self.missing_bases.add((checkout, branch))
+                return None
+            # no --track: a checkout cloned with one branch fetches only it, and git sets no tracking on a ref it fetched by hand
+            argv = ("--no-track", "-b", branch, str(path), remote)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        added = self.checkout_git("worktree", "add", "-q", *argv, cwd=checkout)
+        if added.returncode != 0:
+            self.missing_bases.add((checkout, branch))
+            return None
+        return path
+
     def brief_folders(self, brief: str) -> tuple[str, ...]:
         return tuple(name for name in self.inner_folders() if re.search(rf"(?<![\w-]){re.escape(name)}(?![\w-])", brief, re.IGNORECASE))
 
     def repositories(self, worker: Worker) -> list[WorkerRepository]:
         folder = self.folder(worker)
-        inner = [WorkerRepository(self.config.root / name, folder / name, Path(name)) for name in worker.repositories]
+        inner = [WorkerRepository(self.inner_checkout(worker, name), folder / name, Path(name)) for name in worker.repositories]
         return [WorkerRepository(self.checkout(worker), folder, PROJECT_FOLDER), *inner]
 
     def tip(self, repository: WorkerRepository, worker: Worker) -> str:
@@ -254,6 +324,8 @@ class WorkerBranch:
         return ""
 
     def rebased(self, repository: WorkerRepository, worker: Worker) -> str:
+        if self.has_stopped_rebase(repository) and not self.is_rebasing_onto(repository):
+            self.git("rebase", "--abort", cwd=repository.worktree)
         unresolved = self.continue_rebase(repository) if self.has_stopped_rebase(repository) else ""
         if unresolved:
             return unresolved
@@ -303,6 +375,15 @@ class WorkerBranch:
     def stopped_rebase(self, worker: Worker) -> str:
         stopped = [repository for repository in self.repositories(worker) if self.has_stopped_rebase(repository)]
         return ", ".join(repository.path(path) for repository in stopped for path in self.conflicts(repository.worktree).split(", ") if path) or ", ".join(repository.label() for repository in stopped)
+
+    def is_rebasing_onto(self, repository: WorkerRepository) -> bool:
+        """Whether the stopped rebase goes onto the branch the worker merges into: one stopped onto main while the worker was cut
+        from another base is given up, not carried on."""
+        onto = repository.worktree / self.git("rev-parse", "--git-path", "rebase-merge/onto", cwd=repository.worktree).stdout.strip()
+        if not onto.is_file():
+            return True
+        head = self.git("rev-parse", self.into(repository), cwd=repository.checkout).stdout.strip()
+        return self.git("merge-base", "--is-ancestor", onto.read_text().strip(), head, cwd=repository.checkout).returncode == 0
 
     def has_stopped_rebase(self, repository: WorkerRepository) -> bool:
         return repository.is_present and self.is_rebasing(repository.worktree)
@@ -427,7 +508,7 @@ class WorkerBranch:
         folder = self.folder(worker)
         if folder.is_dir():
             shutil.rmtree(folder)
-        self.pruned(self.name(worker), [self.config.root / name for name in names] + [self.checkout(worker)])
+        self.pruned(self.name(worker), [self.inner_checkout(worker, name) for name in names] + [self.checkout(worker)])
 
     def summary(self, worker: Worker) -> str:
         if not worker.worktree:

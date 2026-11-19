@@ -33,6 +33,7 @@ from journal.events.rows.worker_notified import WorkerNotified
 from journal.events.rows.worker_retired import WorkerRetired
 from journal.events.rows.worker_reused import WorkerReused
 from journal.events.rows.worker_revived import WorkerRevived
+from journal.events.rows.worker_auto_dispatched import WorkerAutoDispatched
 from journal.events.rows.worker_queue_drained import WorkerQueueDrained
 from journal.models.helper import Helper
 from journal.models.reviewer import Reviewer
@@ -47,7 +48,6 @@ QUEUE_TURN_END = "ended mid-queue"
 # how a run that went past the time limit says it was stopped
 RUN_LIMIT_END = "stopped after"
 LIMITED_MOVE = "stopped at the usage limit"
-RESTART_MOVE = "stopped by a restart of the journal"
 RUN_LIMIT_REASON = "run limit"
 # the move that hands a worker a point back, the one that takes its work in, and its clock-out
 REJECTION_MOVE, MERGED, DELIVERY_MOVE = "sent back", "merged", "clocked out"
@@ -95,7 +95,6 @@ class Worker(Helper):
     clashes: int = 0
     rebase_due: bool = False
     edit_lock: bool = False
-    parked: str = ""
 
     def conversation(self) -> str:
         return self.resume or self.session or self.recovered_session
@@ -105,6 +104,9 @@ class Worker(Helper):
 
     def dispatched(self, time: float) -> "Worker":
         return self.contacted(time).moved("dispatched", time).with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
+
+    def auto_dispatched(self, time: float) -> "Worker":
+        return self.contacted(time).moved("dispatched", time).with_(state=WorkerState.DISPATCHED).with_event(WorkerAutoDispatched(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), label=self.mention().label(), awaiter=None, brief=self.brief))
 
     def pending(self, type_name: type[WorkerDispatched], time: float) -> WorkerDispatched:
         return type_name(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), label=self.mention().label(), awaiter=self.dispatcher, brief=self.brief)
@@ -182,11 +184,7 @@ class Worker(Helper):
 
     def unfinished(self, time: float, text: str) -> "Worker":
         attempts = sum(1 for word, _ in self.moves.steps if word == ENDED_UNFINISHED) + 1
-        parked = text if attempts > 1 else ""
-        return self.moved(ENDED_UNFINISHED, time).with_(state=WorkerState.UNFINISHED, pid=0, token_hash="", run_end=text, parked=parked).with_event(WorkerUnfinished(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, ended without clocking out", times=attempts, is_run_limit=text.startswith(RUN_LIMIT_END), parked=parked))
-
-    def interrupted(self, time: float) -> "Worker":
-        return self.moved(RESTART_MOVE, time).with_(state=WorkerState.UNFINISHED, pid=0, token_hash="")
+        return self.moved(ENDED_UNFINISHED, time).with_(state=WorkerState.UNFINISHED, pid=0, token_hash="", run_end=text).with_event(WorkerUnfinished(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, ended without clocking out", times=attempts, is_run_limit=text.startswith(RUN_LIMIT_END)))
 
     def limited(self, time: float, resumes_at: float, text: str) -> "Worker":
         return self.moved(LIMITED_MOVE, time).with_(state=WorkerState.LIMITED, pid=0, token_hash="", run_end=text, resumes_at=resumes_at).with_event(WorkerLimited(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, waiting for the usage limit", resumes_at=resumes_at))
@@ -211,7 +209,7 @@ class Worker(Helper):
         return self.resumed(brief, time, type_name, move).with_(pid=self.pid, began=self.began)
 
     def instructed(self, brief: str, time: float) -> "Worker":
-        return self.contacted(time).with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0, review_pending=False, review_queued_at=0.0, parked="")
+        return self.contacted(time).with_(brief=brief, state=WorkerState.DISPATCHED, adopted=False, pid=0, began=0.0, review_pending=False, review_queued_at=0.0)
 
     def moved(self, move: str, time: float) -> "Worker":
         return self.with_(moves=self.moves.added(move, time))

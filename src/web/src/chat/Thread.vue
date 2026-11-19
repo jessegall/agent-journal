@@ -35,12 +35,11 @@ import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import OutputDialog from "./OutputDialog.vue";
 import {useOpenInPlace} from "../composables/openInPlace.js";
-import ChatDock from "./ChatDock.vue";
 import DockGroup from "./DockGroup.vue";
 import RunMenu from "./RunMenu.vue";
 import DumpDock from "./DumpDock.vue";
 import {withDayLines} from "../domain/dayLines.js";
-import {dockedDump, dockedRows, isRun, keptRuns, streamRows} from "../domain/docks.js";
+import {dockedDump, dockedRef, dockedRows, isRun, keptRuns, streamRows} from "../domain/docks.js";
 import {useDockedCards} from "../composables/dockedCards.js";
 import {useRunGroup} from "../composables/runGroup.js";
 import {DOCK_MOTION_MS} from "../kit/dockMotion.js";
@@ -135,6 +134,12 @@ const rowDocks = computed(() => dockedRows(dockCards.value, dockNow.value));
 const runDocks = computed(() => keptRuns(rowDocks.value.filter(isRun)));
 const grouped = useRunGroup(runDocks);
 const aloneDocks = computed(() => rowDocks.value.filter((m) => !isRun(m)));
+// the rows docked from their inspectors, such as reports, fold into one compact row as the runs do, so many never fill the chat
+const rowGrouped = useRunGroup(aloneDocks);
+const rowNoun = computed(() => {
+    const tables = new Set(aloneDocks.value.map((m) => dockedRef(m).table));
+    return tables.size === 1 ? [...tables][0] : "docked";
+});
 const dockCount = computed(() => aloneDocks.value.length + runDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
 const helping = computed(() =>
     subagentsOf(owner.value)
@@ -609,11 +614,7 @@ watch(
                 <template v-if="rendering">
                     <div :class="['chat-foot', {hidden: feeding || !ready}]" data-figure-chat-foot>
                         <div ref="docks" class="chat-docks" :data-figure-docked-bars="dockCount ? '' : null">
-                            <TransitionGroup name="dock" :duration="DOCK_MOTION_MS">
-                                <template v-for="docked in aloneDocks" :key="docked.id">
-                                    <ChatDock :message="docked" :folded="short || !planOpen" />
-                                </template>
-                            </TransitionGroup>
+                            <DockGroup :runs="aloneDocks" :grouped="rowGrouped" :folded="short || !planOpen" :noun="rowNoun" />
                             <DockGroup :runs="runDocks" :grouped="grouped" :folded="short || !planOpen" />
                             <Transition name="dock" :duration="DOCK_MOTION_MS">
                                 <DumpDock v-if="dumpDock" :key="dumpDock.id" :dump="dumpDock" :folded="short || !planOpen" />

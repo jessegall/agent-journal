@@ -14,6 +14,16 @@ JOURNAL_SKILL_PREFIX = "journal"
 PLUGIN_STAMP = "\nplugin: "
 
 
+def ready_folder(folder: Path) -> None:
+    """Makes a skill folder, first taking away a link in its place that leads to no folder: a dead link, or one to itself.
+
+    On the hosted journal (19 Nov) a tool had left skills/<name> -> /data/project/.claude/skills/<name> with .claude/skills a
+    link to ../skills, so the link pointed at itself; mkdir then failed and `journal setup` stopped every start."""
+    if folder.is_symlink() and not folder.is_dir():
+        folder.unlink()
+    folder.mkdir(parents=True, exist_ok=True)
+
+
 class SkillFiles:
     """Writes every feature's skill into the agents' skill folders, knows the skills the plugins published there beside them, and each file's hash so a changed skill counts as not loaded."""
 
@@ -26,7 +36,7 @@ class SkillFiles:
         for skill in self.registry.skills():
             for home in HOMES:
                 path = self.path(skill, home)
-                path.parent.mkdir(parents=True, exist_ok=True)
+                ready_folder(path.parent)
                 if not path.is_file() or path.read_text() != skill.text():
                     path.write_text(skill.text())
                 saved.append(path)

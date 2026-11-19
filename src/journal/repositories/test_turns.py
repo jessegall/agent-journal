@@ -24,6 +24,3 @@ class TestTurns(ScopedRepository[TestTurn]):
 
     def output_turns(self, output: int) -> list[TestTurn]:
         return self.selected_globally(self.query().filter(output=output).order("id").limit(1))
-
-    def worker_ended(self, worker: int) -> list[TestTurn]:
-        return self.selected_globally(self.query().filter(worker=worker, state=TestTurnState.ENDED).order("id"))

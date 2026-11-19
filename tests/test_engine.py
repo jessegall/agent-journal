@@ -447,7 +447,7 @@ def test_a_worker_sent_back_ended_or_stopped_is_told_to_its_dispatcher_in_one_sh
     from journal.events.rows.worker_mention import WorkerMention
     from journal.events.rows.worker_stopped import WorkerStopped
     from journal.events.rows.worker_unfinished import WorkerUnfinished
-    settings = SettingsValue({WorkersOptions.MODE.key: "builder"})
+    settings = SettingsValue({WorkersOptions.MODE.key: "builder", WorkersOptions.DIGEST_SECONDS.key: 0})
     workers = lambda *resumable: FeatureData({"workers": WorkersData(dispatched_workers=(), idle_workers=(), active_subagents=0, subagents=(), worktrees_root=Path("."), worktrees=(), resumable=resumable)})
     said = lambda event, *resumable: [n.rendered() for n in Ready().respond(event.with_data(workers(*resumable)), settings, (WorkersConduct,)).nudges]
     short = ProofShort(environment_id=1, time=1.0, task_id=5, worker_id=3, point=2, shortfall="the tests", dispatcher="s1")
@@ -968,7 +968,7 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     from journal.events.agent.session_started import SessionStarted
     from journal.events.rows.secret_allowed import SecretAllowed
     from journal.events.rows.worker_reported import WorkerReported
-    settings = SettingsValue({MessagesOptions.TOOL_BLOCK_LIMIT.key: 10, MessagesOptions.ANSWER_REQUEST_LIMIT.key: 3, MessagesOptions.EDIT_BLOCK_LIMIT.key: 5, ShellOptions.SHOWN.key: 100, WorkersOptions.SUBAGENT_LIMIT.key: 2, WorkersOptions.MODE.key: "builder", WorkersOptions.BUILDER_SUBAGENTS_ALLOWED.key: True, WorkersOptions.BUILDER_DISPATCH_ALLOWED.key: True, WorkersOptions.BUILDER_QUEUE_ALLOWED.key: True, "workers.fitness_warnings": True, "tasks.auto": False, "reviewing.reviewer": False, ShellOptions.READER_SUGGESTIONS.key: 3, ShellOptions.READER_SUGGESTION_RUNS.key: 50})
+    settings = SettingsValue({MessagesOptions.TOOL_BLOCK_LIMIT.key: 10, MessagesOptions.ANSWER_REQUEST_LIMIT.key: 3, MessagesOptions.EDIT_BLOCK_LIMIT.key: 5, ShellOptions.SHOWN.key: 100, WorkersOptions.SUBAGENT_LIMIT.key: 2, WorkersOptions.MODE.key: "builder", WorkersOptions.DIGEST_SECONDS.key: 0, WorkersOptions.BUILDER_SUBAGENTS_ALLOWED.key: True, WorkersOptions.BUILDER_DISPATCH_ALLOWED.key: True, WorkersOptions.BUILDER_QUEUE_ALLOWED.key: True, "workers.fitness_warnings": True, "tasks.auto": False, "reviewing.reviewer": False, ShellOptions.READER_SUGGESTIONS.key: 3, ShellOptions.READER_SUGGESTION_RUNS.key: 50})
     private = tmp_path / "private"
     parts = {
         "plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", next_open=None, last_commands=()),
@@ -1675,7 +1675,7 @@ def test_the_orchestrator_hears_a_workers_failed_run_in_one_short_line_and_once_
     from journal.features.workers.support.test_run_result import TestRunResult
     from journal.features.workers.workers_conduct import WorkersConduct
     from journal.features.workers.workers_options import WorkersOptions
-    budget = SettingsValue({WorkersOptions.FAILING_RUNS.key: 3, WorkersOptions.TEST_RUN_LINES.key: True})
+    budget = SettingsValue({WorkersOptions.FAILING_RUNS.key: 3, WorkersOptions.TEST_RUN_LINES.key: True, WorkersOptions.DIGEST_SECONDS.key: 0})
     worker = Worker(id=3, environment_id=1, name="Lady Lovelace, keeper of the parser", dispatcher="s1")
 
     # a run as the turn hands it back, ended with the runner's exit line, kept on the worker; what the orchestrator, session s1, hears of it
@@ -1703,7 +1703,7 @@ def test_the_orchestrator_hears_a_workers_failed_run_in_one_short_line_and_once_
     for _ in range(2):
         ran("1 failed", 1)
     assert has_nudge(ran("1 failed", 1)[1], WorkersNudges.WORKER_KEEPS_FAILING, n=3, runs=3), "and the notice comes again after the reset"
-    quiet = SettingsValue({WorkersOptions.FAILING_RUNS.key: 3, WorkersOptions.TEST_RUN_LINES.key: False})
+    quiet = SettingsValue({WorkersOptions.FAILING_RUNS.key: 3, WorkersOptions.TEST_RUN_LINES.key: False, WorkersOptions.DIGEST_SECONDS.key: 0})
     assert ran("12 passed", 0, quiet) == [] and ran("1 failed", 1, quiet) == [], "with the line off a failed run is not told"
     assert ran("1 failed", 1, quiet) == []
     notice = ran("1 failed", 1, quiet)
@@ -1935,9 +1935,10 @@ def test_the_review_queue_gets_its_first_reviewer_itself_and_the_orchestrator_ad
     from journal.support.rejection import Rejection
     added = []
     dispatch = SimpleNamespace(added=lambda environment_id: added.append(environment_id) or SimpleNamespace(id=len(added)))
-    queue = lambda waiting, idle, out: ReviewQueue(SimpleNamespace(queued_reviews=lambda: list(range(waiting))), SimpleNamespace(idle=lambda: list(idle), active=lambda: list(out)), None, None, None, dispatch, None, TimeSource())
+    queue = lambda waiting, idle, out, journal_dispatches=False: ReviewQueue(SimpleNamespace(queued_reviews=lambda: list(range(waiting))), SimpleNamespace(idle=lambda: list(idle), active=lambda: list(out)), None, None, None, dispatch, None, SimpleNamespace(option=lambda option: journal_dispatches, integer=lambda option: 3), TimeSource())
     assert len(queue(3, [], []).free_reviewers(1)) == 1, "a queue with no reviewer gets its first"
     assert queue(3, [], ["a"]).free_reviewers(1) == [], "and never a second by itself"
+    assert len(queue(3, [], ["a"], journal_dispatches=True).free_reviewers(1)) == 2, "with the journal dispatching, one more for each review past the idle reviewers, up to the most"
     command = lambda out: ReviewerCommand(SimpleNamespace(active=lambda: list(out)), SimpleNamespace(queued_reviews=lambda: []), dispatch, SimpleNamespace(assigned=lambda environment_id: None), SimpleNamespace(is_enabled=lambda: True), SimpleNamespace(id=1), SimpleNamespace(integer=lambda option: 2))
     assert command(["a"]).add(None, None) == 0, "the orchestrator adds a second"
     try:

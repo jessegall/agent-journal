@@ -312,7 +312,7 @@ class Routes:
         router.post(f"{API}/mcp/install", mcp.install)
         router.post(f"{API}/mcp/add", mcp.add)
         router.post(f"{API}/mcp/check", mcp.check)
-        for act, handler in (("key", mcp.key), ("remove", mcp.remove), ("sign-in", mcp.login)):
+        for act, handler in (("key", mcp.key), ("remove", mcp.remove), ("sign-in", mcp.login), ("callback", mcp.callback)):
             router.post(f"{API}/mcp/{{name}}/{act}", handler)
 
     @staticmethod

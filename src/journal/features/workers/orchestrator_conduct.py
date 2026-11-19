@@ -1,3 +1,4 @@
+from dataclasses import replace
 
 from journal.events.feature_data import FeatureData
 from journal.engine.base_state import BaseState
@@ -25,9 +26,10 @@ from journal.features.tasks.tasks_part import TasksPart
 from journal.features.workers.workers_nudges import WorkersNudges
 from journal.features.workers.workers_options import WorkersOptions
 from journal.features.workers.workers_part import WorkersPart
+from journal.features.workers.support.worker_news import WorkerNews
 
 class OrchestratorConduct(Conduct):
-    """The orchestrator's conduct, brought by its mode state to every state above it: a stop is refused while work this agent sent out waits clocked out, naming each worker, but for one it awaits, the worker itself or a run in its worktree, and once, with journal worker wait, while its workers are only still out; a stop carries the status of every started plan, names a started plan that has not moved while another moves, and a run of the whole suite that failed after merges; the tick asks for the priorities at a phase start and every so many minutes, names the blocked tasks standing still and a started plan with many open tasks and no order; a release is refused unless the orchestrator may release, a full set of places names the oldest work to check, a wait written in words is named; a queued task that unblocks others is named, and a single task dispatched or sent while others of its plan wait to be handed out is named once with the queue that takes them; and a merged worker whose model did not fit its work, or that spent much on work of a settled shape, is named."""
+    """The orchestrator's conduct, brought by its mode state to every state above it: a stop is refused while work this agent sent out waits clocked out, naming each worker, but for one it awaits, the worker itself or a run in its worktree, and once, with journal worker wait, while its workers are only still out, unless the worker news gathers their lines; a stop carries the status of every started plan, names a started plan that has not moved while another moves, and a run of the whole suite that failed after merges; the tick asks for the priorities at a phase start and every so many minutes, gives the workers' news in one line once each span when there is any, names the blocked tasks standing still and a started plan with many open tasks and no order; a release is refused unless the orchestrator may release, a full set of places names the oldest work to check, unless only running workers take a place or the worker news gathers it, a wait written in words is named; a queued task that unblocks others is named, and a single task dispatched or sent while others of its plan wait to be handed out is named once with the queue that takes them; and a merged worker whose model did not fit its work, or that spent much on work of a settled shape, is named."""
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return Transition.merged(self, [check(self, event, settings) for check in (release_check, open_work_check, text_wait_check, queue_check)])
@@ -36,7 +38,7 @@ class OrchestratorConduct(Conduct):
         return Transition.merged(self, [crew_stop(self, event, settings), self.none(*plan_lines(event.data, event.time, settings), *suite_lines(event.data, settings))])
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
-        return self.none(*priorities_lines(event, settings), *unmoved_task_lines(event, settings), *unordered_lines(event, settings))
+        return self.none(*priorities_lines(event, settings), *unmoved_task_lines(event, settings), *unordered_lines(event, settings), *news_lines(event, settings), *finished_work_lines(event))
 
     def on_turn_displayed(self, event: TurnDisplayed, settings: Settings) -> Transition:
         return self.none(*text_wait_lines(event.content, settings)) if event.final else self.none()
@@ -71,7 +73,7 @@ def crew_stop(state: BaseState, event: Stop, settings: Settings) -> Transition:
     if delivered:
         return state.refuse(WorkersNudges.DELIVERED_WAITING.create(workers=worker_list(delivered)))
     active_workers = [worker for worker in workers.dispatched_workers if not worker.mention().is_other_dispatcher(event.session) and worker.mention().ref() not in wait_refs]
-    if active_workers and not event.prior_refusal:
+    if active_workers and not event.prior_refusal and not WorkerNews.is_gathered(settings):
         return state.refuse(WorkersNudges.ACTIVE_WORKERS.create(workers=worker_list(active_workers), numbers=" ".join(str(worker.id) for worker in active_workers)))
     return state.none()
 
@@ -149,12 +151,40 @@ def release_check(state: BaseState, event: ToolStarting, settings: Settings) -> 
 
 
 def open_work_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    if settings.value(WorkersOptions.NEXT_AT_CLOCK_OUT) or WorkerNews.is_gathered(settings):
+        return state.none()
     workers = event.data.part(WorkersPart)
     if is_full((*workers.dispatched_workers, *workers.ready_work), settings.integer(WorkersOptions.WORKER_LIMIT)):
         if not workers.ready_work:
             return state.none()
         return state.none(WorkersNudges.PLACES_FULL.create(n=min(workers.ready_work, key=lambda work: work.delivered_at).worker))
     return state.none()
+
+
+# finished work that waits this long on the orchestrator is named while it works, not only when it stops
+FINISHED_WAIT_SECONDS = 600
+
+
+def finished_work_lines(event: Ticked) -> tuple[Nudge, ...]:
+    """Workers clocked out ten minutes or more ago that wait on this orchestrator, named on its tick every ten minutes: it is
+    told so at a stop, but an orchestrator busy for hours never stops, and on the hosted journal 12 to 15 finished workers
+    waited on it up to 15 hours while their tasks held the work behind them (19 Nov)."""
+    workers = event.data.part(WorkersPart)
+    waiting = [worker for worker in workers.delivered_workers if not worker.mention().is_other_dispatcher(event.session)
+               and event.time - worker.delivery_time() >= FINISHED_WAIT_SECONDS]
+    if not waiting:
+        return ()
+    return (WorkersNudges.FINISHED_WORK_WAITS.create(count=len(waiting), numbers=" ".join(str(worker.id) for worker in waiting)),)
+
+
+def news_lines(event: Ticked, settings: Settings) -> tuple[Nudge, ...]:
+    if not WorkerNews.is_gathered(settings):
+        return ()
+    news, seconds = event.data.part(WorkersPart).news, settings.integer(WorkersOptions.DIGEST_SECONDS)
+    if not news.has_news():
+        return ()
+    span = f"{seconds // 60} min" if seconds >= 60 else f"{seconds} s"
+    return (replace(WorkersNudges.WORKER_NEWS, repeat=Timeout.seconds(seconds)).create(span=span, counts=news.counts(), needs=news.needs_line()),)
 
 
 def is_full(dispatched: tuple, limit: int) -> bool:

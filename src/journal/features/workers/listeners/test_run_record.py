@@ -8,13 +8,12 @@ from journal.features.workers.support.test_run_result import TestRunResult
 from journal.features.workers.support.test_turns import TestTurns
 from journal.models.command_output import CommandOutput
 from journal.models.support.ref import Ref
-from journal.models.test_outcome import TestOutcome
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.test_turns import TestTurns as TurnRows
 
 
 class TestRunRecord(Listener[RowResolved]):
-    """A worker's test run moved to the background is kept on its worker once its output ends, as a run that ends in the foreground is by its turn; a run stopped before it ended counts neither way, and one its turn already recorded is not recorded again."""
+    """A worker's test run moved to the background is kept on its worker once its output ends, as a run that ends in the foreground is by its turn; a run stopped before it ended counts neither way."""
 
     __test__ = False
 
@@ -27,7 +26,7 @@ class TestRunRecord(Listener[RowResolved]):
             return
         turns = self.rows.output_turns(ref.id)
         output = self.outputs.find(ref.id)
-        if not turns or turns[0].outcome != TestOutcome.UNKNOWN or output.is_interrupted:
+        if not turns or output.is_interrupted:
             return
         files = OutputFiles(Path(output.folder))
         lines = files.lines() if files.is_stored() else []

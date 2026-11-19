@@ -53,8 +53,6 @@ REBASE_NOTE = f"The journal rebased your worktree onto the project's branch, at 
 MOVED_NOTE = "The journal rebased your worktree onto the project's branch, at {heads}, so files may have changed since your last job. "
 SESSION_BUSY_REFUSAL = "worker {n}'s last session still runs, and {provider} takes no message while it runs: wait for it to end, then send the job"
 REDO_MOVE = REJECTION_MOVE
-RESTART_JOB = "The journal restarted and your run stopped with it: go on with your task where you stopped, in this same worktree, and clock out when it is done."
-PARKED_REFUSAL = "worker {n}, {name}, is parked: it ended twice without clocking out, the last time on: {cause}. Fix that cause, then send it with --fixed \"<what you fixed>\", or let it go with journal worker release {n}"
 
 class WorkerActions:
     """What is done to a worker after its dispatch, by its command and from the viewer alike, each under the worker's lock: its next job sent, a new task handed to it before its session is started or told, or a point sent back, into the session it still runs in when its process lives on, so it never runs in two sessions and keeps its token, else in a new run of its last session; a word informed while it runs, a stop, a retire. A check names the task the worker is on, or one of its queue it finished, which waits for the same merge; every point found short is saved at once, the last one's save sending the worker back with the others' reasons too, since that send-back ends its clock-out; one unchecked point of any task the merge would close refuses the whole merge, naming the task."""
@@ -74,12 +72,6 @@ class WorkerActions:
         with self.runner.lock(n):
             return self.relaunch(self.workers.find(n), brief, dispatcher, actor, JOB_MOVE)
 
-    def restarted(self, n: int, actor: Actor) -> Worker:
-        with self.runner.lock(n):
-            worker = self.workers.find(n)
-            self.runner.session_ended(worker)
-            return self.relaunch(worker.interrupted(self.time_source.seconds()), RESTART_JOB if worker.pid else worker.brief, None, actor, JOB_MOVE)
-
     def queue_resumed(self, n: int, brief: str, actor: Actor) -> None:
         with self.runner.lock(n):
             worker = self.workers.find(n)
@@ -88,31 +80,18 @@ class WorkerActions:
 
     def resend(self, n: int, brief: str, model: str, profile: str | None, dispatcher: str | None, actor: Actor, task: Task | None = None) -> Worker:
         with self.runner.lock(n):
-            return self.staffed(self.unparked(self.workers.find(n)), brief, model, profile, dispatcher, actor, task)
-
-    def fixed_resend(self, n: int, brief: str, fix: str, model: str, profile: str | None, dispatcher: str | None, actor: Actor, task: Task | None = None) -> Worker:
-        with self.runner.lock(n):
-            return self.staffed(self.workers.find(n), f"The cause you ended on is fixed: {fix}. {brief}", model, profile, dispatcher, actor, task)
-
-    def staffed(self, worker: Worker, brief: str, model: str, profile: str | None, dispatcher: str | None, actor: Actor, task: Task | None) -> Worker:
-        return self.relaunch(worker.with_(model=model, profile=profile), brief, dispatcher, actor, JOB_MOVE, task=task)
+            return self.relaunch(self.workers.find(n).with_(model=model, profile=profile), brief, dispatcher, actor, JOB_MOVE, task=task)
 
     def redo(self, n: int, brief: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            return self.relaunch(self.unparked(self.workers.find(n)), brief, None, actor, REDO_MOVE)
-
-    @staticmethod
-    def unparked(worker: Worker) -> Worker:
-        if worker.parked:
-            raise Rejection(PARKED_REFUSAL.format(n=worker.id, name=worker.name, cause=worker.parked[:300]))
-        return worker
+            return self.relaunch(self.workers.find(n), brief, None, actor, REDO_MOVE)
 
     def peer_send(self, n: int, brief: str, sender: int, actor: Actor) -> Worker:
         with self.runner.lock(n):
             worker = self.peer(n, sender)
             if worker.is_running():
                 raise Rejection(f"worker {worker.id}, {worker.name}, is out on a job: `journal worker notify {worker.id} \"<text>\"`")
-            return self.relaunch(self.unparked(worker), brief, None, actor, JOB_MOVE)
+            return self.relaunch(worker, brief, None, actor, JOB_MOVE)
 
     def peer_notify(self, n: int, text: str, sender: int, actor: Actor) -> Worker:
         with self.runner.lock(n):

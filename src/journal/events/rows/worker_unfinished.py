@@ -13,4 +13,3 @@ class WorkerUnfinished(RowResolved):
     worker: WorkerMention
     times: int = 1
     is_run_limit: bool = False
-    parked: str = ""

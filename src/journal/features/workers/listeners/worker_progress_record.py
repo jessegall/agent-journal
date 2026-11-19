@@ -22,4 +22,4 @@ class WorkerProgressRecord(Listener[Created]):
         if not isinstance(event.model, PROGRESS_ROWS):
             return
         for worker in self.workers.numbered(event.actor.number()):
-            self.workers.rewritten(worker, Actor.system(), lambda current: current.contacted(self.time_source.seconds()))
+            self.workers.save(worker.contacted(self.time_source.seconds()), Actor.system())

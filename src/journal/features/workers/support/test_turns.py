@@ -11,7 +11,6 @@ from journal.features.shell.support.shell_request import ShellRequest
 from journal.features.shell.support.restart_queue import RestartQueue
 from journal.features.shell.support.shell_runner import EXIT, RESTART_HOLD, ShellRunner
 from journal.features.workers.support.test_run_result import TestRunResult
-from journal.features.workers.support.test_selection import TestSelection
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.workers_options import WorkersOptions
 from journal.models.test_turn import TestTurn
@@ -48,10 +47,7 @@ class TestTurns:
 
     def run_batches(self, worker: Worker, ids: str, caller: Caller) -> str:
         folder, runs = str(self.branch.place(worker)), []
-        selection = TestSelection.parsed(ids)
-        project = shlex.join(selection.project(Path(folder)))
-        for batch in self.batches(shlex.join(selection.tests(Path(folder)))):
-            batch = f"{project} {batch}".strip()
+        for batch in self.batches(ids):
             turn = self.open_turn(worker, batch, f"{self.command(folder)} {batch}", folder)
             if not self.waited(turn):
                 return "your turn was taken back: nothing ran"
@@ -90,9 +86,9 @@ class TestTurns:
         limit.start()
         try:
             output, text = self.whole_run(turn.command, turn.folder, caller, worker.environment_id)
-            self.recorded(turn, TestRunResult.printed(text, self.readers.reading(turn.command)))
             if output is not None:
                 self.turns.save(self.turns.find(turn.id).with_(output=output.row_id), Actor.system())
+            self.recorded(turn, TestRunResult.printed(text, self.readers.reading(turn.command)))
         finally:
             limit.cancel()
             self.turns.save(self.turns.find(turn.id).ended().with_run_event(self.time_source.seconds()), Actor.system())
@@ -183,7 +179,8 @@ class TestTurns:
     def recorded(self, turn: TestTurn, summary: TestRunResult) -> None:
         later = self.turns.find(turn.id)
         self.turns.save(later.passed_run() if summary.is_passed() else later.failed_run(summary.failed), Actor.system())
-        self.workers.rewritten(self.workers.find(turn.worker), Actor.system(), lambda current: current.passed_run() if summary.is_passed() else current.failed_run(summary.failed, self.time_source.seconds()))
+        worker = self.workers.find(turn.worker)
+        self.workers.save(worker.passed_run() if summary.is_passed() else worker.failed_run(summary.failed, self.time_source.seconds()), Actor.system())
 
     def run_output(self, turn: TestTurn, started: float):
         return next((row for row in self.outputs.folder_runs(turn.folder) if row.creation_time.timestamp() >= started), None)

@@ -6,7 +6,7 @@ from journal.config import Config
 from journal.features.plugins.support.manifest_reader import ManifestReader
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.skills.support.requirements import Requirements
-from journal.features.skills.support.skill_files import HOMES
+from journal.features.skills.support.skill_files import HOMES, ready_folder
 from journal.models.plugin import Plugin
 from journal.models.support.plugin_manifest import PluginManifest
 from journal.repositories.plugins import Plugins
@@ -42,8 +42,7 @@ class PluginSkills:
             text = self.stamped((folder / manifest.skills / name / "SKILL.md").read_text(), plugin.name)
             for home in HOMES:
                 published = self.config.root / home / name
-                self.clear_link(published)
-                published.mkdir(parents=True, exist_ok=True)
+                ready_folder(published)
                 (published / "SKILL.md").write_text(text)
                 (published / ".gitignore").write_text("*\n")
 

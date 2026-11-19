@@ -22,8 +22,7 @@ class OrchestratorTaskAssigner:
     def next_task(self, agent: Agent, event: AgentEvent | RowEvent, quantity: int = 1) -> Assignment:
         if not agent.is_main() or not self.is_moment(agent, event):
             return Assignment()
-        self.start.opened()
-        tasks = self.delegable_tasks()[:max(quantity, 1)]
+        tasks = self.offers()[:max(quantity, 1)]
         if not tasks:
             return Assignment()
         return Assignment(tasks[0].row_id, tasks[0].title, "the next task to hand a worker, plan by plan in turn", tuple(task.row_id for task in tasks[1:]))
@@ -32,5 +31,9 @@ class OrchestratorTaskAssigner:
     def is_moment(agent: Agent, event: AgentEvent | RowEvent) -> bool:
         return isinstance(event, TaskClosed) or (isinstance(event, (Stop, NextTasksRequest)) and event.session == agent.session)
 
+    def offers(self) -> list[Task]:
+        self.start.opened()
+        return self.delegable_tasks()
+
     def delegable_tasks(self) -> list[Task]:
-        return self.round_robin.offers() if self.settings.option(TasksOptions.AUTO) else self.round_robin.planned_offers(self.plans.running_plans())
+        return self.round_robin.offers() if self.settings.option(TasksOptions.AUTO) else self.round_robin.planned_offers(self.plans.offering_plans())

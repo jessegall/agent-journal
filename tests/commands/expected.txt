@@ -80,6 +80,14 @@ $ agent: journal task unblock 2
 exit 0
 task 2 open again
 
+$ agent: journal task manual 2
+exit 0
+task 2 is kept for you to hand out: the journal's own dispatch passes it over
+
+$ agent: journal task manual 2 --off
+exit 0
+task 2 is left to the journal's own dispatch again
+
 $ agent: journal task dock 1
 exit 0
 Task 1: Write the footer docked above the chat
@@ -1369,6 +1377,12 @@ workers.affected_tests_command = ''
 workers.test_command_proof = ''
 workers.test_run_lines = True
 workers.most_out = 3
+workers.auto_dispatch = False  (the user sets it)
+workers.auto_dispatch_most = 0
+workers.auto_dispatch_grace_seconds = 0
+workers.auto_dispatch_unqueue = False
+workers.next_at_clock_out = False  (the user sets it)
+workers.digest_seconds = 0
 workers.most_subagents = 5
 workers.idle_kept = 8
 workers.worktree_step = True
@@ -1649,7 +1663,7 @@ dumps.dump_still_open_carry_on  [dumps]  dump {{n}} is not filed; what is left: 
 dumps.the_user_answered_on_the_dump  [dumps]  dump {{n}}: to "{{question|cap=600}}" the user answered {{answer|cap=600}}. act on it and log it on the dump
 dumps.the_user_chose_a_step  [dumps]  the user chose {{label}} for dump {{n}}. do that step and log it on the dump
 engine.guard_failed  [engine]  a guard failed and let this through: {{text|cap=22}}. the journal recorded it; tell the user if it happens again
-engine.helper_has_no_job  [engine]  you have no job yet. wait for the journal to give you one, or run the journal command it gave you
+engine.helper_has_no_job  [engine]  you have no job yet. run `journal clock-in`, or the journal command you were given, alone in its line: a line joining it to anything else is refused whole
 engine.journal_answers_again  [engine]  your journal was down for {{seconds}} seconds and is back. tools wait a few seconds until it is steady; try again then
 engine.stop_held_in_a_loop  [engine]  stop held five times; the next goes through. fix the state with `journal panic <state>`, then `journal panic report`
 engine.worker_ends_after_the_grace  [engine]  your journal was down {{seconds}} seconds, past a worker's {{grace}}-second limit. stop now; you will be sent again
@@ -1671,7 +1685,6 @@ laws.bind_the_job  [laws]  the dispatch has no concrete job. give it a descripti
 laws.cap_the_output  [laws]  that result was {{lines}} lines. cap output with grep, head or tail
 laws.name_a_profile  [laws]  the dispatch has no profile of this project: {{asked}}. use one of: {{profiles|cap=200}}
 laws.name_the_model  [laws]  name a model in the dispatch: the least expensive one that reliably fits the work
-mcp.sign_in_to_the_server  [mcp]  sign in to {{server}}: `mcp__{{name|cap=23}}__authenticate`, then `complete_authentication`; tell the user
 memory.check_stale_memory  [memory]  memories {{stale|cap=25}} are {{stale_after}}+ days old. remove what is no longer true: `journal memory remove <numbers>`
 memory.decide_at_the_mark  [memory]  writes wait at {{percent}}%: keep, raise or correct {{count}} memories, never lower one; or `journal memory skip "<why>"`
 memory.does_the_rule_apply_project_wide  [memory]  if rule {{n}} does not apply to the whole project, delete it and record a fact or a reminder instead
@@ -1854,6 +1867,7 @@ workers.clocked_out_work_waits  [workers]  {{workers|cap=16}} clocked out. check
 workers.could_it_be_reused  [workers]  if worker {{n}} can do this, run `journal worker send {{n}} "<job>"`; if not, repeat the command with `--why "<why>"`
 workers.delegate_the_task  [workers]  you orchestrate but do {{name|cap=38}} yourself. give it to a worker with journal worker dispatch
 workers.file_is_the_workers  [workers]  that file is in worker {{n}}'s worktree. `journal worker send {{n}} "<job>"`, or wait for its report and merge
+workers.finished_work_waits  [workers]  {{count}} finished workers wait on you: {{numbers|cap=60}}. decide each now through checker subagents: merge, send back or release
 workers.make_the_wait_a_block  [workers]  block instead of waiting: `journal task block <n> --on task:<m>` or `journal task block <n> --until '<command>'`
 workers.mode_may_not  [workers]  in {{mode}} mode you may not {{act}}; the user turned it off
 workers.model_too_strong  [workers]  worker {{n}} ran on {{model}}; a cheaper model would do. choose a cheaper one for work like this
@@ -1899,7 +1913,7 @@ workers.worker_costly_on_shaped_work  [workers]  {{model}} cost ${{dollars}} on 
 workers.worker_has_no_work_left  [workers]  worker {{n}} idle: queue it tasks or `journal worker complete {{n}} --why "<why>"`
 workers.worker_keeps_failing  [workers]  worker {{n}} failed {{runs}} test runs in a row
 workers.worker_log_due  [workers]  you logged nothing for {{minutes}} min. log where you stand: `journal todo add "<step>"` or `journal proof <point> "<proof>"`
-workers.worker_parked  [workers]  worker {{n}} ended twice without clocking out and is parked; it last ended on: {{cause|cap=160}}. fix that cause, then `journal worker send {{n}} "<job>" --fixed "<what you fixed>"`, or `journal worker release {{n}}`
+workers.worker_news  [workers]  last {{span}}: {{counts}}; needs you: {{needs|cap=48}}. `journal worker open`
 workers.worker_quiet  [workers]  worker {{n}} silent {{minutes}} min; last: {{last|cap=20}}. notify it or stop it
 workers.worker_reported  [workers]  worker {{n}} reported
 workers.worker_runs_no_git  [workers]  never run git; the journal commits at clock-out. on a clash, fix the files, then `journal clock-out "<report>"`
@@ -1986,7 +2000,7 @@ options:
 $ agent: journal worker send --help
 exit 0
 usage: journal worker send [-h] [--task TASK] [--model MODEL]
-                           [--profile PROFILE] [--fixed FIXED]
+                           [--profile PROFILE]
                            n brief
 
 positional arguments:
@@ -2001,8 +2015,6 @@ options:
                      session and worktree
   --profile PROFILE  the worker profile it works by from now, and its model
                      unless --model sets one
-  --fixed FIXED      for a parked worker, which ended twice without clocking
-                     out: what you fixed of the cause it ended on
 
 $ agent: journal worker queue --help
 exit 0
