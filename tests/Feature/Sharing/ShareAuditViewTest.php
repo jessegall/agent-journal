@@ -71,15 +71,15 @@ final class ShareAuditViewTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->has('page.data.audit.entries', 3)
-                    ->where('page.data.audit.entries.0.type', 'read_denied')
-                    ->where('page.data.audit.entries.0.actor', 'visitor')
-                    ->where('page.data.audit.entries.0.isRead', true)
-                    ->where('page.data.audit.entries.0.reasonCode', 'rate_limited')
-                    ->where('page.data.audit.entries.2.type', 'created')
-                    ->where('page.data.audit.entries.2.actor', 'owner')
-                    ->where('page.data.audit.entries.2.isRead', false)
-                    ->where('page.data.audit.nextAfter', null));
+            ->has('page.data.audit.entries', 3)
+            ->where('page.data.audit.entries.0.type', 'read_denied')
+            ->where('page.data.audit.entries.0.actor', 'visitor')
+            ->where('page.data.audit.entries.0.isRead', true)
+            ->where('page.data.audit.entries.0.reasonCode', 'rate_limited')
+            ->where('page.data.audit.entries.2.type', 'created')
+            ->where('page.data.audit.entries.2.actor', 'owner')
+            ->where('page.data.audit.entries.2.isRead', false)
+            ->where('page.data.audit.nextAfter', null));
     }
 
     public function test_the_audit_pages_on_and_carries_the_pruned_totals(): void
@@ -108,8 +108,8 @@ final class ShareAuditViewTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->where('page.data.runtime.isOffline', true)
-                    ->where('page.data.runtime.endpointVersion', null));
+            ->where('page.data.runtime.isOffline', true)
+            ->where('page.data.runtime.endpointVersion', null));
 
         ShareInstallation::lockForAdmission()->holdFor(self::RUN);
         $endpoint = ShareGatewayEndpoint::openFor($this->configuration, 1, self::RUN);
@@ -119,15 +119,15 @@ final class ShareAuditViewTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->where('page.data.runtime.isOffline', false)
-                    ->where('page.data.runtime.endpointVersion', 1)
-                    ->where('page.data.runtime.isHealthy', true));
+            ->where('page.data.runtime.isOffline', false)
+            ->where('page.data.runtime.endpointVersion', 1)
+            ->where('page.data.runtime.isHealthy', true));
 
         $this->travel(46)->seconds();
 
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->where('page.data.runtime.isHealthy', false));
+            ->where('page.data.runtime.isHealthy', false));
     }
 }

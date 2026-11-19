@@ -93,7 +93,7 @@ final class CommandRefusalRenderingTest extends TestCase
     {
         $validator = Validator::make(
             ['title' => "Secret\nnotes", 'expectedRevision' => 0],
-            ['title' => ['string', new OneLineRule], 'expectedRevision' => ['integer', 'min:1']],
+            ['title' => ['string', new OneLineRule()], 'expectedRevision' => ['integer', 'min:1']],
         );
         $validator->passes();
 

@@ -17,6 +17,6 @@ final class OneLine extends CustomValidationAttribute
 {
     public function getRules(ValidationPath $path): object
     {
-        return new OneLineRule;
+        return new OneLineRule();
     }
 }

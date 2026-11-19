@@ -12,6 +12,8 @@ use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\CancelPlanHandler;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Cancels a plan with its reason; its tasks and assignments stay.
@@ -25,7 +27,7 @@ final readonly class CancelPlan extends Command implements HasAuthorizationSubje
     public function __construct(
         public string $planId,
         public int $expectedRevision,
-        public string $reason,
+        #[Required, Max(Plan::NOTE_CHARACTERS)] public string $reason,
     ) {}
 
     /**

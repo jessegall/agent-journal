@@ -55,52 +55,52 @@ return [
         ],
 
         'ses' => [
-                        'transport' => 'ses',
-                    ],
+            'transport' => 'ses',
+        ],
 
         'postmark' => [
-                        'transport' => 'postmark',
-                        // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
-                        // 'client' => [
-                        //     'timeout' => 5,
-                        // ],
-                    ],
+            'transport' => 'postmark',
+            // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),
+            // 'client' => [
+            //     'timeout' => 5,
+            // ],
+        ],
 
         'resend' => [
-                        'transport' => 'resend',
-                    ],
+            'transport' => 'resend',
+        ],
 
         'sendmail' => [
-                        'transport' => 'sendmail',
-                        'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
-                    ],
+            'transport' => 'sendmail',
+            'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
+        ],
 
         'log' => [
-                        'transport' => 'log',
-                        'channel' => env('MAIL_LOG_CHANNEL'),
-                    ],
+            'transport' => 'log',
+            'channel' => env('MAIL_LOG_CHANNEL'),
+        ],
 
         'array' => [
-                        'transport' => 'array',
-                    ],
+            'transport' => 'array',
+        ],
 
         'failover' => [
-                        'transport' => 'failover',
-                        'mailers' => [
-                            'smtp',
-                            'log',
-                        ],
-                        'retry_after' => 60,
-                    ],
+            'transport' => 'failover',
+            'mailers' => [
+                'smtp',
+                'log',
+            ],
+            'retry_after' => 60,
+        ],
 
         'roundrobin' => [
-                        'transport' => 'roundrobin',
-                        'mailers' => [
-                            'ses',
-                            'postmark',
-                        ],
-                        'retry_after' => 60,
-                    ],
+            'transport' => 'roundrobin',
+            'mailers' => [
+                'ses',
+                'postmark',
+            ],
+            'retry_after' => 60,
+        ],
 
     ],
 
@@ -116,8 +116,8 @@ return [
                 */
 
     'from' => [
-                    'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-                    'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
-                ],
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+    ],
 
 ];

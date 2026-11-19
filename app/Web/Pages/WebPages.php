@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Web\Pages;
 
 use App\Ui\Contracts\ProvidesPages;
-use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\ActionRoute;
+use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
