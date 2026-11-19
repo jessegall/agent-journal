@@ -5,9 +5,8 @@ from engine.command.command import Command
 
 @dataclass(frozen=True)
 class ReadNextMerge(Command[str]):
-    """The merger reads the next worker waiting, with its tasks, proofs and log lines."""
-
-    lock = True
+    """The merger reads the next worker waiting, with its tasks, proofs and log lines. It takes no lock, as the text
+    reads git."""
 
     process_id: int | None = None
     json_output: bool = False
