@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Comments\Calls;
 
 use App\Comments\Exceptions\CommentPlaceUnclear;
+use App\Text\Enums\TextAnchorType;
 use App\Text\Values\TextRange;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -17,15 +18,6 @@ use Spatie\LaravelData\Data;
 final class CommentPlace extends Data
 {
     private const array FIELDS = ['version', 'section', 'firstLine', 'lastLine', 'quote', 'startOffset', 'endOffset'];
-
-    /**
-     * The exact fields each kind of place is given with.
-     */
-    private const array FIELDS_OF_TYPE = [
-        'section' => ['version', 'section'],
-        'lines' => ['version', 'firstLine', 'lastLine'],
-        'quote' => ['version', 'firstLine', 'lastLine', 'quote', 'startOffset', 'endOffset'],
-    ];
 
     public function __construct(
         #[Max(64)]
@@ -50,10 +42,10 @@ final class CommentPlace extends Data
      */
     public function range(): TextRange
     {
-        return match (array_search($this->givenFields(), self::FIELDS_OF_TYPE, true)) {
-            'section' => TextRange::section($this->version, (int) $this->section),
-            'lines' => TextRange::lines($this->version, (int) $this->firstLine, (int) $this->lastLine),
-            'quote' => TextRange::quote(
+        return match (TextAnchorType::filling($this->givenFields())) {
+            TextAnchorType::Section => TextRange::section($this->version, (int) $this->section),
+            TextAnchorType::Lines => TextRange::lines($this->version, (int) $this->firstLine, (int) $this->lastLine),
+            TextAnchorType::Quote => TextRange::quote(
                 $this->version,
                 (int) $this->firstLine,
                 (int) $this->lastLine,
@@ -61,7 +53,7 @@ final class CommentPlace extends Data
                 (int) $this->startOffset,
                 (int) $this->endOffset,
             ),
-            default => throw CommentPlaceUnclear::given(),
+            null => throw CommentPlaceUnclear::given(),
         };
     }
 

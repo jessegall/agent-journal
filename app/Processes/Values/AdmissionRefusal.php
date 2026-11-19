@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
-use App\Processes\Enums\RefusalCode;
+use App\Processes\Enums\AdmissionRefusalCode;
 
 /**
  * Why a line was refused, at which node and source text, how to correct it, and the command request that holds the
@@ -17,7 +17,7 @@ final readonly class AdmissionRefusal
     private const int EXCERPT_LENGTH = 200;
 
     private function __construct(
-        public RefusalCode $code,
+        public AdmissionRefusalCode $code,
         public int $node,
         public string $excerpt,
         public string $reason,
@@ -26,7 +26,7 @@ final readonly class AdmissionRefusal
         public string $next,
     ) {}
 
-    public static function of(RefusalCode $code, int $node, string $source, string $reason, string $correction): self
+    public static function of(AdmissionRefusalCode $code, int $node, string $source, string $reason, string $correction): self
     {
         return new self($code, $node, self::redacted($source), $reason, $correction, '', '');
     }

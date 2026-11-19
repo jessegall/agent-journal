@@ -17,13 +17,13 @@ final class RequestListData extends Data
 {
     /**
      * @param  list<RequestRowData>  $requests
-     * @param  list<RuleRowData>  $rules
+     * @param  list<ClassificationRuleRowData>  $rules
      * @param  list<BundleRowData>  $bundles
      */
     public function __construct(
         #[DataCollectionOf(RequestRowData::class)]
         public readonly array $requests,
-        #[DataCollectionOf(RuleRowData::class)]
+        #[DataCollectionOf(ClassificationRuleRowData::class)]
         public readonly array $rules,
         #[DataCollectionOf(BundleRowData::class)]
         public readonly array $bundles,

@@ -27,40 +27,46 @@ function run(action: string, question: string, extra: Record<string, unknown> = 
             </template>
         </td>
         <td class="flex gap-2">
-            <button v-if="request.canRetry" type="button" @click="run('retry', 'Why send this request again?')">
-                Retry
-            </button>
-            <button v-if="request.canCancel" type="button" @click="run('cancel', 'Why cancel this request?')">
-                Cancel
-            </button>
-            <button
-                v-if="request.canResolve"
-                type="button"
-                @click="run('resolve', 'What evidence shows the delivery arrived?', { applied: true })"
-            >
-                Resolve as arrived
-            </button>
-            <button
-                v-if="request.canResolve"
-                type="button"
-                @click="run('resolve', 'What evidence shows the delivery never arrived?', { applied: false })"
-            >
-                Resolve as not arrived
-            </button>
-            <button
-                v-if="request.canResumeScript"
-                type="button"
-                @click="run('resume-script', 'Why resume this key script?')"
-            >
-                Resume
-            </button>
-            <button
-                v-if="request.canCancelScript"
-                type="button"
-                @click="run('cancel-script', 'Why cancel this key script?')"
-            >
-                Cancel script
-            </button>
+            <template v-if="request.canRetry">
+                <button type="button" @click="run('retry', 'Why send this request again?')">
+                    Retry
+                </button>
+            </template>
+            <template v-if="request.canCancel">
+                <button type="button" @click="run('cancel', 'Why cancel this request?')">
+                    Cancel
+                </button>
+            </template>
+            <template v-if="request.canResolve">
+                <button
+                    type="button"
+                    @click="run('resolve', 'What evidence shows the delivery arrived?', { applied: true })"
+                >
+                    Resolve as arrived
+                </button>
+                <button
+                    type="button"
+                    @click="run('resolve', 'What evidence shows the delivery never arrived?', { applied: false })"
+                >
+                    Resolve as not arrived
+                </button>
+            </template>
+            <template v-if="request.canResumeScript">
+                <button
+                    type="button"
+                    @click="run('resume-script', 'Why resume this key script?')"
+                >
+                    Resume
+                </button>
+            </template>
+            <template v-if="request.canCancelScript">
+                <button
+                    type="button"
+                    @click="run('cancel-script', 'Why cancel this key script?')"
+                >
+                    Cancel script
+                </button>
+            </template>
         </td>
     </tr>
 </template>

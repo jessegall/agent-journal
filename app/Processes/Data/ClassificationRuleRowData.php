@@ -12,7 +12,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * One classification rule of the project in the review list, active or retired, at its active revision.
  */
 #[TypeScript]
-final class RuleRowData extends Data
+final class ClassificationRuleRowData extends Data
 {
     public function __construct(
         public readonly string $id,

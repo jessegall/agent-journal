@@ -11,7 +11,7 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Support\StackAccess;
 use App\Processes\Contracts\ShellAdmission;
-use App\Processes\Enums\RefusalCode;
+use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\ExecutionContext;
 
@@ -79,6 +79,6 @@ final readonly class HookShellAdmission
 
     private function runnerUnavailable(string $limit): Decision
     {
-        return Decision::deny(RefusalCode::RunnerUnavailable->value.': '.self::RUNNER_UNAVAILABLE.' '.$limit);
+        return Decision::deny(AdmissionRefusalCode::RunnerUnavailable->value.': '.self::RUNNER_UNAVAILABLE.' '.$limit);
     }
 }

@@ -6,7 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\VerificationTiming;
-use App\Processes\Enums\RefusalCode;
+use App\Processes\Enums\AdmissionRefusalCode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ProcessRun;
@@ -45,14 +45,14 @@ final class LineAdmissionTest extends TestCase
         $this->assertSame(1, ProcessRun::query()->withoutGlobalScopes()->count());
         $this->assertSame($first->runId, $this->admit('cat composer.json', 'key-1')->runId);
         $reused = $this->refusalOf($this->admit('cat README.md', 'key-1'));
-        $this->assertSame(RefusalCode::RuleRevisionChanged, $reused->code);
+        $this->assertSame(AdmissionRefusalCode::RuleRevisionChanged, $reused->code);
     }
 
     public function test_an_unknown_command_is_refused_and_held_in_its_request(): void
     {
         $refusal = $this->refusalOf($this->admit('acme verify --all', 'key-1'));
 
-        $this->assertSame(RefusalCode::CommandUnknown, $refusal->code);
+        $this->assertSame(AdmissionRefusalCode::CommandUnknown, $refusal->code);
         $this->assertSame(CommandRequest::query()->sole()->id, $refusal->requestId);
         $this->assertStringStartsWith('journal command-type propose', $refusal->next);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
@@ -62,7 +62,7 @@ final class LineAdmissionTest extends TestCase
     {
         $refusal = $this->refusalOf($this->admit('vendor/bin/phpstan analyse', 'key-1'));
 
-        $this->assertSame(RefusalCode::ReaderRequired, $refusal->code);
+        $this->assertSame(AdmissionRefusalCode::ReaderRequired, $refusal->code);
         $this->assertNotSame('', $refusal->requestId);
     }
 
@@ -78,7 +78,7 @@ final class LineAdmissionTest extends TestCase
 
         $refusal = $this->refusalOf($this->admit('vendor/bin/phpstan analyse', 'key-1'));
 
-        $this->assertSame(RefusalCode::PhaseTiming, $refusal->code);
+        $this->assertSame(AdmissionRefusalCode::PhaseTiming, $refusal->code);
         $this->assertStringContainsString('task 447, task 448', $refusal->reason);
     }
 
@@ -88,7 +88,7 @@ final class LineAdmissionTest extends TestCase
 
         $refusal = $this->refusalOf($this->admit('cat composer.json > copy.json', 'key-1'));
 
-        $this->assertSame(RefusalCode::ClassDenied, $refusal->code);
+        $this->assertSame(AdmissionRefusalCode::ClassDenied, $refusal->code);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
@@ -96,13 +96,13 @@ final class LineAdmissionTest extends TestCase
     {
         config(['processes.runner' => false]);
         $switchedOff = $this->refusalOf($this->admit('cat composer.json', 'key-1'));
-        $this->assertSame(RefusalCode::RunnerUnavailable, $switchedOff->code);
+        $this->assertSame(AdmissionRefusalCode::RunnerUnavailable, $switchedOff->code);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
 
         Schema::drop('module_rule_bundles');
         $broken = $this->refusalOf($this->admit('cat composer.json', 'key-2'));
 
-        $this->assertSame(RefusalCode::ClassificationUnavailable, $broken->code);
+        $this->assertSame(AdmissionRefusalCode::ClassificationUnavailable, $broken->code);
     }
 
     public function test_a_secret_in_an_assignment_never_shows_in_the_refusal(): void

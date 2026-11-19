@@ -28,7 +28,9 @@ function age(seconds: number | null): string {
             <span class="font-mono">{{ status.program }}</span>
             <span>{{ status.activity }}</span>
             <span class="text-text-3">hold: {{ status.hold }}</span>
-            <button v-if="status.canReleaseHold" type="button" @click="releaseHold">Release hold</button>
+            <template v-if="status.canReleaseHold">
+                <button type="button" @click="releaseHold">Release hold</button>
+            </template>
             <span :class="status.isStale ? 'text-warn' : 'text-text-3'">
                 observed {{ age(status.observationAgeSeconds) }}{{ status.isStale ? ', stale' : '' }}
             </span>

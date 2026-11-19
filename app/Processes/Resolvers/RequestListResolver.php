@@ -6,9 +6,9 @@ namespace App\Processes\Resolvers;
 
 use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Data\BundleRowData;
+use App\Processes\Data\ClassificationRuleRowData;
 use App\Processes\Data\RequestListData;
 use App\Processes\Data\RequestRowData;
-use App\Processes\Data\RuleRowData;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ModuleRuleBundle;
@@ -45,7 +45,7 @@ final readonly class RequestListResolver implements PageResolver
 
         return RequestListData::from([
             'requests' => array_values($requests->map(RequestRowData::fromRequest(...))->all()),
-            'rules' => array_values($rules->map(RuleRowData::fromRule(...))->all()),
+            'rules' => array_values($rules->map(ClassificationRuleRowData::fromRule(...))->all()),
             'bundles' => array_values(array_map(BundleRowData::fromBundle(...), $waiting)),
         ]);
     }
