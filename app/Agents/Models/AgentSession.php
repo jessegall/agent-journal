@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Actors\Support\PresenceWindow;
+use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\SessionSelectionFixed;
+use App\Agents\Support\AccountUse;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Links\Support\Linkable;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
+use App\Records\Support\RecordIdentity;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -51,7 +54,7 @@ use Illuminate\Support\Carbon;
  * @property CarbonImmutable|null $silent_since
  * @property string|null $end_evidence
  * @property CarbonImmutable|null $discovered_at
- * @property Carbon|null $created_at
+ * @property Carbon $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $agent
  * @property-read LaunchCredential|null $credential
@@ -207,12 +210,28 @@ final class AgentSession extends Model implements ReadableModel
     public static function runningForMaintenance(int $limit): array
     {
         $running = self::query()
-            ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+            ->running()
             ->orderBy('created_at')
             ->readLimit($limit)
             ->get();
 
         return array_values($running->all());
+    }
+
+    /**
+     * This session as a use of the account it ran with; it runs until it ends.
+     */
+    public function useOf(RecordIdentity $account): AccountUse
+    {
+        return new AccountUse(
+            $account,
+            $this->id,
+            $this->agent_id,
+            $this->selection()->program->value,
+            AccountProcessRole::Execution,
+            CarbonImmutable::instance($this->created_at),
+            $this->ended_at,
+        );
     }
 
     public static function lockedForUpdate(string $sessionId): self
@@ -360,8 +379,18 @@ final class AgentSession extends Model implements ReadableModel
     #[Scope]
     protected function runningFor(Builder $query, string $agentId): void
     {
-        $query->where('agent_id', $agentId)
-            ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()));
+        $query->where('agent_id', $agentId)->running();
+    }
+
+    /**
+     * The sessions that may still act.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function running(Builder $query): void
+    {
+        $query->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()));
     }
 
     /**

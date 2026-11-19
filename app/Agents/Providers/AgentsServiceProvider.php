@@ -37,6 +37,8 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
@@ -49,6 +51,8 @@ use App\Agents\Resolvers\HostLaunchMaterial;
 use App\Agents\Resolvers\LaunchRecords;
 use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
+use App\Agents\Resolvers\LinkedAccountUses;
+use App\Agents\Resolvers\UnconfiguredAccounts;
 use App\Agents\Resolvers\VerifiedHelperImages;
 use App\Agents\Support\AgentActivity;
 use App\Agents\Support\AgentActors;
@@ -110,6 +114,8 @@ final class AgentsServiceProvider extends ServiceProvider
             fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')),
         );
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
+        $this->app->bindIf(ActiveAccountReader::class, UnconfiguredAccounts::class);
+        $this->app->bind(AccountUses::class, LinkedAccountUses::class);
         $this->app->bind(
             LaunchCredentialSource::class,
             fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))),
@@ -132,7 +138,14 @@ final class AgentsServiceProvider extends ServiceProvider
             Agent::class,
             AgentPolicy::class,
             AgentAbility::class,
-            ownerOnly: [AgentAbility::RunKeyScript, AgentAbility::Inspect, AgentAbility::Steer, AgentAbility::Recover],
+            ownerOnly: [
+                AgentAbility::RunKeyScript,
+                AgentAbility::Inspect,
+                AgentAbility::Steer,
+                AgentAbility::Recover,
+                AgentAbility::ReadAccountUses,
+                AgentAbility::MaintainAccountUses,
+            ],
             coordinatorOnly: [AgentAbility::RetireOthers],
         ));
         $actors->register(ActorType::Agent, AgentActors::class);

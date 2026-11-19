@@ -37,6 +37,16 @@ final class LinkTypeRegistry
     }
 
     /**
+     * Refuses a link name no owner registered, for a link written without loading its record.
+     *
+     * @throws UnknownLinkType
+     */
+    public function requireRegistered(string $alias): void
+    {
+        $this->modelFor($alias);
+    }
+
+    /**
      * The model a registered link name stands for.
      *
      * @return class-string<Model>

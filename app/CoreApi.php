@@ -102,6 +102,7 @@ use App\AgentRequests\Values\CallAnswer;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
 use App\AgentRequests\Values\ReportLine;
+use App\Agents\Commands\CancelAccountUses;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
@@ -110,6 +111,7 @@ use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\HoldAccountUses;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
@@ -129,8 +131,11 @@ use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
+use App\Agents\Commands\SettleAccountUses;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
@@ -149,6 +154,7 @@ use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
+use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
@@ -160,21 +166,29 @@ use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\LaunchDisposition;
 use App\Agents\Enums\LaunchOriginType;
 use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\LaunchUnavailableReason;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\OfflineReplyMode;
+use App\Agents\Enums\ProgramFailure;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RecoveryAction;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Events\DriverRequestRecovered;
 use App\Agents\Events\LaunchAccepted;
 use App\Agents\Events\LaunchEnded;
+use App\Agents\Events\LaunchUnavailable;
+use App\Agents\Events\ProgramFailed;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\AccountUnavailable;
+use App\Agents\Exceptions\AccountUseMissing;
+use App\Agents\Exceptions\AccountUsesRemain;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
@@ -198,6 +212,8 @@ use App\Agents\Exceptions\ProgramRequired;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Exceptions\StopConditionsInvalid;
+use App\Agents\Support\AccountUse;
+use App\Agents\Support\AccountUseCounts;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
@@ -222,6 +238,7 @@ use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PreparedLaunch;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
+use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
@@ -714,6 +731,7 @@ use App\Reads\Values\ReadOrder;
 use App\Reads\Values\RelationRead;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
+use App\Records\Contracts\IdentityLinks;
 use App\Records\Contracts\RecordLinker;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordResolver;
@@ -988,6 +1006,9 @@ final class CoreApi
                 AgentRuntimeReassigned::class,
                 ProfileRevisionRevoked::class,
                 LaunchAccepted::class,
+                LaunchUnavailable::class,
+                ProgramFailed::class,
+                AccountUseChanged::class,
                 EngineTicked::class,
                 SettingsChanged::class,
                 ShareRequested::class,
@@ -1001,6 +1022,9 @@ final class CoreApi
             )
             ->contracts(
                 SessionPolicyReader::class,
+                ActiveAccountReader::class,
+                AccountUses::class,
+                IdentityLinks::class,
                 JournalCall::class,
                 RegistersCalls::class,
                 CallSender::class,
@@ -1210,6 +1234,12 @@ final class CoreApi
                 AccountModeType::class,
                 HostCapabilityType::class,
                 SelectedProgram::class,
+                SelectedAccount::class,
+                AccountUse::class,
+                AccountUseCounts::class,
+                AccountProcessRole::class,
+                LaunchUnavailableReason::class,
+                ProgramFailure::class,
                 ModelSelection::class,
                 SelectionSource::class,
                 ProfileDefaults::class,
@@ -1612,6 +1642,9 @@ final class CoreApi
                 ActivateProfiles::class,
                 RevokeProfiles::class,
                 LaunchProfileMain::class,
+                HoldAccountUses::class,
+                CancelAccountUses::class,
+                SettleAccountUses::class,
                 CreateSkill::class,
                 ReviseSkill::class,
                 RestoreSkill::class,
@@ -1811,6 +1844,9 @@ final class CoreApi
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,
                 InvalidRecordIdentity::class,
+                AccountUnavailable::class,
+                AccountUseMissing::class,
+                AccountUsesRemain::class,
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 InvalidRecordIds::class,

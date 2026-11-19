@@ -7,7 +7,8 @@ namespace App\Agents\Enums;
 use App\Bus\Contracts\DeclaresClassLevelAbilities;
 
 /**
- * What an actor may do with the journal's agents: run a key script on an agent's terminal, or retire another agent.
+ * What an actor may do with the journal's agents: run a key script on an agent's terminal, retire another agent, or
+ * read and maintain the launches that use an account.
  */
 enum AgentAbility: string implements DeclaresClassLevelAbilities
 {
@@ -17,6 +18,8 @@ enum AgentAbility: string implements DeclaresClassLevelAbilities
     case Inspect = 'inspect';
     case Steer = 'steer';
     case Recover = 'recover';
+    case ReadAccountUses = 'read-account-uses';
+    case MaintainAccountUses = 'maintain-account-uses';
 
     /**
      * Each is decided on the model class alone, before the handler loads a record.

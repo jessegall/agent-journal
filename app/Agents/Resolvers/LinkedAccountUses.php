@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Resolvers;
+
+use App\Actors\Contracts\CurrentAuthorizer;
+use App\Agents\Contracts\AccountUses;
+use App\Agents\Enums\AgentAbility;
+use App\Agents\Exceptions\AccountUseMissing;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
+use App\Agents\Policies\AgentPolicy;
+use App\Agents\Support\AccountSessions;
+use App\Agents\Support\AccountUseCounts;
+use App\Records\Contracts\IdentityLinks;
+use App\Records\Support\RecordIdentity;
+
+/**
+ * Reads the uses of accounts from the links each launch's session keeps to the account it ran with.
+ */
+final readonly class LinkedAccountUses implements AccountUses
+{
+    public function __construct(
+        private AccountSessions $sessions,
+        private IdentityLinks $links,
+        private CurrentAuthorizer $authorizer,
+    ) {}
+
+    public function counts(array $accounts): AccountUseCounts
+    {
+        $this->authorizeRead();
+        $counts = new AccountUseCounts();
+
+        foreach ($accounts as $account) {
+            $counts = $counts->with($account, $this->sessions->running($account)->count());
+        }
+
+        return $counts;
+    }
+
+    public function history(RecordIdentity $account, int $limit): array
+    {
+        $this->authorizeRead();
+        $sessions = $this->sessions->all($account)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($sessions->map(fn (AgentSession $session) => $session->useOf($account))->all());
+    }
+
+    public function accountOf(string $sessionId, string $accountType): RecordIdentity
+    {
+        $this->authorizeRead();
+        $accounts = $this->links->linkedOfType(AgentSession::byId($sessionId), $accountType);
+
+        if (count($accounts) !== 1) {
+            throw AccountUseMissing::forSession($sessionId, $accountType, count($accounts));
+        }
+
+        return $accounts[0];
+    }
+
+    private function authorizeRead(): void
+    {
+        $this->authorizer->authorize(AgentPolicy::class, Agent::class, AgentAbility::ReadAccountUses);
+    }
+}
