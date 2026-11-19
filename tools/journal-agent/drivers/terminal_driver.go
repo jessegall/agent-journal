@@ -58,6 +58,16 @@ type TerminalDriver struct {
 	turns       int
 	interrupted bool
 	turnEnd     *turnEnd
+	// stalled is the key script run stopped for the main agent, which its rounds answer; nil while none is.
+	stalled *stalledScript
+}
+
+// stalledScript is a key script run stopped on a screen it could not be certain of: that screen, the run's values,
+// and the count of the person's inputs the main agent's next round must find unchanged.
+type stalledScript struct {
+	uncertainty keyscripts.Uncertainty
+	values      map[string]string
+	epoch       uint64
 }
 
 // turnEnd is the end of one submitted prompt's turn, watched from the first time someone waits for it.
@@ -178,8 +188,35 @@ func (driver *TerminalDriver) RunKeyScript(
 	}
 
 	result, err := driver.run(script, request)
+	if result.Outcome == keyscripts.NavigationNeeded && result.Uncertainty != nil {
+		driver.mutex.Lock()
+		driver.stalled = &stalledScript{
+			uncertainty: *result.Uncertainty,
+			values:      request.Parameters,
+			epoch:       result.Uncertainty.Epoch,
+		}
+		driver.mutex.Unlock()
+	}
 
 	return contracts.OperationResult{Request: request.Request, Progress: contracts.ProgressApplying, Script: &result}, err
+}
+
+// NavigateRound carries out a round of the main agent on the stalled key script's screen. With no stalled script, as
+// after a restart, there is no live screen to answer and the round ends paused, for the person.
+func (driver *TerminalDriver) NavigateRound(round keyscripts.Round) keyscripts.RoundResult {
+	driver.mutex.Lock()
+	stalled := driver.stalled
+	driver.mutex.Unlock()
+	if stalled == nil {
+		return keyscripts.RoundResult{Paused: true}
+	}
+
+	result := driver.runtime.Runner.Navigate(round, stalled.epoch, stalled.uncertainty, stalled.values)
+	driver.mutex.Lock()
+	stalled.epoch = driver.runtime.Gate.HumanInputs()
+	driver.mutex.Unlock()
+
+	return result
 }
 
 // Reread reads a stalled key script's screen afresh, as the host does before it sends a raise again.

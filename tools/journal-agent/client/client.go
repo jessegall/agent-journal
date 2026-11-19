@@ -38,6 +38,25 @@ type ClaimedRequest struct {
 	ScriptVersion    *int              `json:"scriptVersion"`
 	ScriptParameters []ScriptParameter `json:"scriptParameters"`
 	ScriptStep       *int              `json:"scriptStep"`
+	// NavigationRequestID and NavigationRound are the main agent's round a navigate request carries.
+	NavigationRequestID *string          `json:"navigationRequestId"`
+	NavigationRound     *NavigationRound `json:"navigationRound"`
+}
+
+// NavigationRound mirrors App\Agents\Values\NavigationRound: the row version and screen generation a round of the
+// main agent answers, and exactly one of keys, a label to choose, a seen label to confirm, a goal parameter to type,
+// or a proof with what it completes.
+type NavigationRound struct {
+	NavigationRequestID string   `json:"navigationRequestId"`
+	RowVersion          int      `json:"rowVersion"`
+	Generation          uint64   `json:"generation"`
+	Keys                []string `json:"keys"`
+	Choose              *string  `json:"choose"`
+	Confirm             *string  `json:"confirm"`
+	Proof               *string  `json:"proof"`
+	Completes           *string  `json:"completes"`
+	NextStep            *int     `json:"nextStep"`
+	TypeParameter       *string  `json:"typeParameter"`
 }
 
 // ScriptParameter mirrors App\Agents\Values\ScriptParameter: one named value a key script request gives its script.
@@ -56,6 +75,28 @@ type RequestReport struct {
 	Script        *ScriptReport `json:"script,omitempty"`
 	// OperationKey names one raise or report call, so the journal takes a repeated call once; empty for the others.
 	OperationKey string `json:"operation_key,omitempty"`
+	// Navigation is what the host saw after a round of the main agent; nil for any other request.
+	Navigation *NavigationReport `json:"navigation,omitempty"`
+}
+
+// NavigationReport mirrors App\Http\Data\Agents\NavigationRoundReportData: the screen after a round, its rows
+// redacted, whether the round's proof showed, the actions carried out and the refusal that stopped it.
+type NavigationReport struct {
+	Rows       []string       `json:"rows"`
+	Highlight  int            `json:"highlight"`
+	Generation uint64         `json:"generation"`
+	ProofSeen  bool           `json:"proof_seen"`
+	Actions    []ActionReport `json:"actions,omitempty"`
+	Refusal    *string        `json:"refusal"`
+}
+
+// ActionReport is one action a round carried out: a choose or a key, the label seen before confirming, the
+// fingerprint of the screen before it and the key's name.
+type ActionReport struct {
+	Kind        string `json:"kind"`
+	Label       string `json:"label,omitempty"`
+	Fingerprint string `json:"fingerprint"`
+	Key         string `json:"key,omitempty"`
 }
 
 // ScriptReport mirrors App\Http\Data\Agents\ScriptProgressData: the step a key script confirmed, the screen
@@ -213,6 +254,11 @@ func (client *Client) RaiseNavigation(
 ) (NavigationAnswer, error) {
 	var answer NavigationAnswer
 	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/navigation", raise, &answer)
+}
+
+// InterruptNavigation reports that the person took over a runtime whose navigation request was open.
+func (client *Client) InterruptNavigation(ctx context.Context, navigationID string) error {
+	return client.call(ctx, "/host/navigation/"+navigationID+"/interrupt", nil, nil)
 }
 
 // ReportRequest, ReportActivity, ReportTurn, ReportHeartbeat and ReportExit send one typed report each.

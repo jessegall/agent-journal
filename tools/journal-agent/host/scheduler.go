@@ -17,6 +17,7 @@ const (
 	operationStartRecord  = "start_recording"
 	operationStopRecord   = "stop_recording"
 	operationKeyScript    = "key_script"
+	operationNavigate     = "navigate"
 )
 
 // maxBatch is the fixed cut-off of consecutive deliveries one turn takes.
@@ -32,12 +33,15 @@ type Admission struct {
 	Deliveries []client.ClaimedRequest
 	Wakes      []client.ClaimedRequest
 	Script     *client.ClaimedRequest
+	// Navigation is a round of the main agent on the runtime's stalled screen: admitted while the runtime is held
+	// for it, and alone.
+	Navigation *client.ClaimedRequest
 }
 
 // IsEmpty says whether the admission asks for nothing.
 func (admission Admission) IsEmpty() bool {
 	return admission.Control == nil && len(admission.Staged) == 0 && len(admission.Deliveries) == 0 &&
-		len(admission.Wakes) == 0 && admission.Script == nil
+		len(admission.Wakes) == 0 && admission.Script == nil && admission.Navigation == nil
 }
 
 // StartsTurn says whether the admission starts a turn of the program.
@@ -89,7 +93,7 @@ func (queue *RuntimeQueue) Next() Admission {
 		return Admission{Control: &control}
 	}
 	if queue.held {
-		return Admission{}
+		return queue.takeNavigation()
 	}
 
 	admission := queue.takeLeadingSettings()
@@ -114,6 +118,21 @@ func (queue *RuntimeQueue) Next() Admission {
 		queue.pending = queue.pending[1:]
 	}
 	return admission
+}
+
+// takeNavigation admits the first round of the main agent waiting, while the runtime is held and not busy; nothing
+// else passes the hold.
+func (queue *RuntimeQueue) takeNavigation() Admission {
+	if queue.busy {
+		return Admission{}
+	}
+	for at, request := range queue.pending {
+		if request.Operation == operationNavigate {
+			queue.pending = append(queue.pending[:at], queue.pending[at+1:]...)
+			return Admission{Navigation: &request}
+		}
+	}
+	return Admission{}
 }
 
 func (queue *RuntimeQueue) takeControl() (client.ClaimedRequest, bool) {

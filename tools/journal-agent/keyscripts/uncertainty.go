@@ -35,6 +35,9 @@ type Uncertainty struct {
 	Generation  uint64
 	Epoch       uint64
 	StaleEntry  string
+	// HostRows are the screen's rows as drawn, kept on the host to refuse a proof the stalled screen already showed;
+	// they are never sent anywhere.
+	HostRows []string
 }
 
 // Program is the program build a runner drives, as an uncertainty names it: its name and the layout it draws with.

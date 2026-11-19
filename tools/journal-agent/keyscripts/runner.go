@@ -239,6 +239,7 @@ func (runner *Runner) uncertainty(
 		StepName:    step.Name,
 		Fingerprint: screen.Fingerprint(layout, runner.program.Name, snapshot, seen.Menu),
 		Rows:        rows,
+		HostRows:    snapshot.Rows,
 		Highlight:   highlight,
 		Generation:  seen.Generation,
 		Epoch:       runner.gate.HumanInputs(),

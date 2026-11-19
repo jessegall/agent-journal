@@ -25,6 +25,7 @@ type Journal interface {
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
 	RaiseNavigation(ctx context.Context, runtimeID string, raise client.NavigationRaise) (client.NavigationAnswer, error)
+	InterruptNavigation(ctx context.Context, navigationID string) error
 }
 
 // raiseAttempts is how many times a raise is sent, its screen read afresh before each later one, while its answer is
@@ -122,6 +123,11 @@ func (loop *Loop) run(ctx context.Context, runtime *liveRuntime, admission host.
 	}
 	if admission.Script != nil {
 		loop.startScript(ctx, runtime, *admission.Script)
+
+		return false
+	}
+	if admission.Navigation != nil {
+		loop.startNavigation(ctx, runtime, *admission.Navigation)
 
 		return false
 	}
@@ -417,6 +423,92 @@ func (loop *Loop) endForNavigation(
 		log.Printf("the stop of request %s for navigation could not be reported: %v", request.RequestID, err)
 	}
 	loop.holdRuntime(runtime)
+}
+
+// roundNavigator is a driver that carries out the main agent's rounds on a stalled key script's screen.
+type roundNavigator interface {
+	NavigateRound(round keyscripts.Round) keyscripts.RoundResult
+}
+
+// startNavigation runs a round of the main agent like a turn, in its own goroutine, while the runtime stays held for
+// its navigation; the loop takes stops and other runtimes' work meanwhile.
+func (loop *Loop) startNavigation(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
+	go loop.runNavigation(ctx, runtime, request)
+}
+
+func (loop *Loop) runNavigation(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	navigator, navigates := runtime.driver.(roundNavigator)
+	switch {
+	case !navigates || request.NavigationRound == nil:
+		loop.report(ctx, request, contracts.OperationResult{
+			Progress: contracts.ProgressUnavailable,
+			Outcome:  contracts.OutcomeTerminalRequired,
+		})
+	default:
+		loop.reportRound(ctx, request, navigator.NavigateRound(roundOf(*request.NavigationRound)))
+	}
+
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
+	loop.advance(ctx, runtime.id)
+}
+
+// reportRound reports what a round left: the person's keys end it paused and the navigation request interrupted;
+// otherwise the screen after it, its actions, its refusal and whether its proof showed.
+func (loop *Loop) reportRound(ctx context.Context, request client.ClaimedRequest, result keyscripts.RoundResult) {
+	if result.Paused {
+		if err := loop.journal.InterruptNavigation(ctx, text(request.NavigationRequestID)); err != nil {
+			log.Printf("the interrupt of navigation %s could not be reported: %v", text(request.NavigationRequestID), err)
+		}
+		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressFailed})
+		return
+	}
+
+	report := client.RequestReport{
+		RequestID:  request.RequestID,
+		Attempt:    request.Attempt,
+		Progress:   string(contracts.ProgressApplied),
+		Navigation: navigationReportOf(result),
+	}
+	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+		log.Printf("round %s could not be reported: %v", request.RequestID, err)
+	}
+}
+
+// roundOf is a round as the journal sent it, as the host carries it out.
+func roundOf(round client.NavigationRound) keyscripts.Round {
+	return keyscripts.Round{
+		Generation:    round.Generation,
+		Keys:          round.Keys,
+		Choose:        text(round.Choose),
+		Confirm:       text(round.Confirm),
+		TypeParameter: text(round.TypeParameter),
+		Proof:         text(round.Proof),
+	}
+}
+
+// navigationReportOf is a round's result as the journal reads it; a secret screen sends no rows.
+func navigationReportOf(result keyscripts.RoundResult) *client.NavigationReport {
+	report := &client.NavigationReport{Rows: []string{}, Highlight: -1, ProofSeen: result.ProofSeen}
+	if result.Refusal != "" {
+		refusal := result.Refusal
+		report.Refusal = &refusal
+	}
+	if result.ScreenAfter != nil {
+		report.Rows = result.ScreenAfter.Rows
+		report.Highlight = result.ScreenAfter.Highlight
+		report.Generation = result.ScreenAfter.Generation
+	}
+	for _, action := range result.Actions {
+		report.Actions = append(report.Actions, client.ActionReport{
+			Kind:        action.Kind,
+			Label:       action.Label,
+			Fingerprint: action.Fingerprint,
+			Key:         action.Key,
+		})
+	}
+
+	return report
 }
 
 // stepReporter is a driver whose key scripts report each step they confirm.
