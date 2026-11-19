@@ -4,6 +4,8 @@ import EmptyState from '@kit/EmptyState';
 import PageHeader from '@kit/PageHeader';
 import { computed, ref, watch } from 'vue';
 import AccountRow from './AccountRow.vue';
+import SignInForm from './SignInForm.vue';
+import { attemptToRejoin } from './signIn';
 import { isChosen, newestSelections } from './accountSelections';
 import { programName } from './accountLooks';
 
@@ -22,7 +24,10 @@ watch(
 );
 
 const programs = computed(() => {
-    const byProgram = new Map<string, AccountRowData[]>();
+    const byProgram = new Map<string, AccountRowData[]>([
+        ['claude-code', []],
+        ['codex', []],
+    ]);
 
     for (const row of props.data.rows) {
         byProgram.set(row.program, [...(byProgram.get(row.program) ?? []), row]);
@@ -39,13 +44,18 @@ const programs = computed(() => {
             v-if="data.rows.length === 0"
             icon="accounts"
             title="No saved accounts yet"
-            text="Sign in to a Claude Code or Codex account to let agents launch with it."
+            text="Sign in to a Claude Code or Codex account below to let agents launch with it."
         />
         <template v-for="[program, rows] in programs" :key="program">
             <section :aria-label="programName(program)">
                 <h2 class="px-4 pt-4 pb-1 text-small text-text-3">
                     {{ programName(program) }}
                 </h2>
+                <SignInForm
+                    :program="program"
+                    :account-id="null"
+                    :running="attemptToRejoin(data.attempts, program, null)"
+                />
                 <ul>
                     <template v-for="row in rows" :key="row.id">
                         <AccountRow
