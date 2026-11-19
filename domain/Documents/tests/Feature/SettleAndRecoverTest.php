@@ -38,9 +38,9 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 
@@ -228,17 +228,16 @@ final class SettleAndRecoverTest extends TestCase
         $draft = $this->bus()->run(new OpenDocument(1));
         $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Shipped.'));
 
-        try {
-            DB::transaction(function (): void {
+        $this->assertThrows(
+            fn () => DB::transaction(function (): void {
                 $this->endSession(9, 90);
 
-                throw new RuntimeException('The ending failed.');
-            });
-            $this->fail('The ending did not fail.');
-        } catch (RuntimeException) {
-            $this->assertSame(1, DocumentDraft::query()->count());
-            $this->assertSame(0, DocumentClose::query()->count());
-        }
+                throw SimulatedFailure::of('The ending failed.');
+            }),
+            SimulatedFailure::class,
+        );
+        $this->assertSame(1, DocumentDraft::query()->count());
+        $this->assertSame(0, DocumentClose::query()->count());
     }
 
     public function test_the_documents_listener_hears_a_session_ending_behind_its_domain_gate(): void
