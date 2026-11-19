@@ -49,7 +49,14 @@ final readonly class TextChunk
                 $part = mb_strcut($rest, 0, $room, self::ENCODING);
                 $parts[] = $part;
 
-                return new self(implode("\n", $parts), $lineStart, $characterStart, $line, $character + mb_strlen($part, self::ENCODING), true);
+                return new self(
+                    implode("\n", $parts),
+                    $lineStart,
+                    $characterStart,
+                    $line,
+                    $character + mb_strlen($part, self::ENCODING),
+                    true,
+                );
             }
 
             $parts[] = $rest;

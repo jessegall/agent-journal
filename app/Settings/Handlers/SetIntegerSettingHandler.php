@@ -18,12 +18,20 @@ use App\Settings\Values\SettingsChange;
  */
 final readonly class SetIntegerSettingHandler implements CommandHandler
 {
-    public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
+    public function __construct(
+        private SettingTargets $targets,
+        private SettingCodec $codec,
+        private SettingsWriter $writer,
+    ) {}
 
     public function handle(SetIntegerSetting $command): SettingsChange
     {
         $setting = $this->targets->setting($command->setting, IntegerSetting::class, SettingType::Integer);
 
-        return $this->writer->setValue($setting, $this->codec->encodeInteger($command->setting->owner, $setting, $command->value), $command->expectedRevision);
+        return $this->writer->setValue(
+            $setting,
+            $this->codec->encodeInteger($command->setting->owner, $setting, $command->value),
+            $command->expectedRevision,
+        );
     }
 }

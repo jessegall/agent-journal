@@ -45,7 +45,11 @@ final class CommandFolderTest extends TestCase
         $registry = $this->app->make(CommandRegistry::class);
         $unlisted = array_filter($this->classesIn('Commands'), fn (string $class) => ! $registry->has($class));
 
-        $this->assertSame([], array_values($unlisted), 'These classes sit in a Commands folder but no owner lists them in commands().');
+        $this->assertSame(
+            [],
+            array_values($unlisted),
+            'These classes sit in a Commands folder but no owner lists them in commands().',
+        );
     }
 
     public function test_the_command_attributes_sit_only_on_registered_commands(): void
@@ -75,7 +79,11 @@ final class CommandFolderTest extends TestCase
                 && $registry->entryOf($command) === CommandEntry::Application,
         );
 
-        $this->assertSame([], array_values($undeclared), 'These commands declare neither Authorize nor a trusted entry.');
+        $this->assertSame(
+            [],
+            array_values($undeclared),
+            'These commands declare neither Authorize nor a trusted entry.',
+        );
     }
 
     public function test_no_handler_or_command_middleware_keeps_static_state(): void
@@ -90,7 +98,11 @@ final class CommandFolderTest extends TestCase
             }
         }
 
-        $this->assertSame([], $static, 'A handler or middleware is built for each command and keeps nothing between requests.');
+        $this->assertSame(
+            [],
+            $static,
+            'A handler or middleware is built for each command and keeps nothing between requests.',
+        );
     }
 
     public function test_every_registered_handler_and_middleware_can_be_built(): void
@@ -100,7 +112,10 @@ final class CommandFolderTest extends TestCase
         $unbuildable = [];
 
         foreach (array_keys($registry->handlerMap()) as $command) {
-            array_push($classes, ...array_map(fn (RegisteredMiddleware $entry) => $entry->declaration->middleware, $registry->middlewareFor($command)));
+            array_push(
+                $classes,
+                ...array_map(fn (RegisteredMiddleware $entry) => $entry->declaration->middleware, $registry->middlewareFor($command)),
+            );
         }
 
         foreach (array_unique($classes) as $class) {
@@ -121,7 +136,9 @@ final class CommandFolderTest extends TestCase
      */
     private function classesIn(string $folder): array
     {
-        return array_values(array_filter($this->allClasses(), fn (string $class) => str_contains($class, "\\{$folder}\\")));
+        return array_values(
+            array_filter($this->allClasses(), fn (string $class) => str_contains($class, "\\{$folder}\\")),
+        );
     }
 
     /**

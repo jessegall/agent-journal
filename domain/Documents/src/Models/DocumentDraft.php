@@ -42,7 +42,9 @@ use Illuminate\Support\Str;
  * @property string $body
  * @property Carbon|null $updated_at
  */
-#[Fillable(['document_id', 'token', 'author_type', 'author_id', 'base_revision_number', 'title', 'abstract', 'body', 'opened_at'])]
+#[Fillable(
+    ['document_id', 'token', 'author_type', 'author_id', 'base_revision_number', 'title', 'abstract', 'body', 'opened_at'],
+)]
 final class DocumentDraft extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -161,17 +163,35 @@ final class DocumentDraft extends Model implements ReadableModel
 
     public function reference(Document $document): DraftReference
     {
-        return new DraftReference($document->id, $document->number, $this->token, $this->version, $this->base_revision_number, MarkdownText::body($this->body)->outline());
+        return new DraftReference(
+            $document->id,
+            $document->number,
+            $this->token,
+            $this->version,
+            $this->base_revision_number,
+            MarkdownText::body($this->body)->outline(),
+        );
     }
 
     /**
      * Closes the draft inside the caller's transaction, under the document's lock: a revision with the next number
      * when the text changed, a close record either way, and the draft gone.
      */
-    public function closeInto(Document $document, DocumentRevision $base, CloseCause $cause, Actor|null $closer, string|null $reason): DocumentClose
-    {
+    public function closeInto(
+        Document $document,
+        DocumentRevision $base,
+        CloseCause $cause,
+        Actor|null $closer,
+        string|null $reason,
+    ): DocumentClose {
         $published = $this->hasChangesFrom($base);
-        $resultNumber = $published ? $document->addRevision($this->title, $this->abstract, $this->body, $this->author_type, $this->author_id)->number : $base->number;
+        $resultNumber = $published ? $document->addRevision(
+            $this->title,
+            $this->abstract,
+            $this->body,
+            $this->author_type,
+            $this->author_id,
+        )->number : $base->number;
         $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
 
         if ($published) {

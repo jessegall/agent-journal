@@ -44,7 +44,10 @@ final class ToolResult extends Data
         return [
             'status' => $this->status,
             ...$this->payload,
-            'next_actions' => array_map(fn (NextAction $action): array => $action->structuredContent(), $this->nextActions),
+            'next_actions' => array_map(
+                fn (NextAction $action): array => $action->structuredContent(),
+                $this->nextActions,
+            ),
         ];
     }
 }

@@ -40,15 +40,23 @@ final readonly class PlanShareProvider implements ShareRecordProvider
 
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
     {
-        $ids = array_values(array_map(fn (RecordIdentity $target) => $target->id, array_filter($read->targets, fn (RecordIdentity $target) => $target->type === Plan::LINK_TYPE)));
-        $cards = array_values(Plan::query()->whereKey($ids)->readLimit(count($ids))->get(self::SUMMARY_COLUMNS)->map(fn (Plan $plan) => $plan->shareCard())->all());
+        $ids = array_values(
+            array_map(fn (RecordIdentity $target) => $target->id, array_filter($read->targets, fn (RecordIdentity $target) => $target->type === Plan::LINK_TYPE)),
+        );
+        $cards = array_values(
+            Plan::query()->whereKey($ids)->readLimit(count($ids))->get(self::SUMMARY_COLUMNS)->map(fn (Plan $plan) => $plan->shareCard())->all(),
+        );
         $found = array_map(fn (ShareRecordCard $card) => $card->record->id, $cards);
 
         foreach ($cards as $card) {
             $budget->chargeMetadata(strlen($card->title));
         }
 
-        return new ShareRecords($cards, array_values(array_filter($read->targets, fn (RecordIdentity $target) => ! in_array($target->id, $found, true))), null);
+        return new ShareRecords(
+            $cards,
+            array_values(array_filter($read->targets, fn (RecordIdentity $target) => ! in_array($target->id, $found, true))),
+            null,
+        );
     }
 
     public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
@@ -77,7 +85,9 @@ final readonly class PlanShareProvider implements ShareRecordProvider
             throw RecordUnavailable::forActor($record);
         }
 
-        $plan = Plan::query()->whereKey($record->id)->first(self::SUMMARY_COLUMNS) ?? throw RecordUnavailable::forActor($record);
+        $plan = Plan::query()->whereKey($record->id)->first(
+            self::SUMMARY_COLUMNS,
+        ) ?? throw RecordUnavailable::forActor($record);
         $budget->chargeMetadata(strlen($plan->title));
 
         return $plan;

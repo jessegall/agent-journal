@@ -34,7 +34,9 @@ use Illuminate\Support\Collection;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['permission_source', 'revoked_classes', 'revoked_patterns', 'revoked_by_type', 'revoked_by_id', 'revoked_at'])]
+#[Fillable(
+    ['permission_source', 'revoked_classes', 'revoked_patterns', 'revoked_by_type', 'revoked_by_id', 'revoked_at'],
+)]
 final class PermissionRevocation extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -48,8 +50,12 @@ final class PermissionRevocation extends Model implements ReadableModel
         return ['revoked_classes' => 'array', 'revoked_patterns' => 'array', 'revoked_at' => 'immutable_datetime'];
     }
 
-    public static function revoke(string $source, CommandClassSet $classes, CommandPatternSet $patterns, ActorIdentity $by): self
-    {
+    public static function revoke(
+        string $source,
+        CommandClassSet $classes,
+        CommandPatternSet $patterns,
+        ActorIdentity $by,
+    ): self {
         return self::query()->create([
             'permission_source' => $source,
             'revoked_classes' => array_map(fn (CommandClass $class) => $class->value, $classes->classes),
@@ -65,7 +71,10 @@ final class PermissionRevocation extends Model implements ReadableModel
      */
     public static function narrow(CommandPermissions $permissions): CommandPermissions
     {
-        self::query()->where('permission_source', $permissions->source)->orderBy('id')->readInChunks(200, function (Collection $revocations) use (&$permissions): void {
+        self::query()->where(
+            'permission_source',
+            $permissions->source,
+        )->orderBy('id')->readInChunks(200, function (Collection $revocations) use (&$permissions): void {
             foreach ($revocations as $revocation) {
                 $permissions = $permissions->revoking(
                     CommandClassSet::of(...array_map(CommandClass::from(...), $revocation->revoked_classes)),

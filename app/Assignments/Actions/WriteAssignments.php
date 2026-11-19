@@ -79,7 +79,12 @@ final readonly class WriteAssignments implements AssignmentWriter
 
         $after = $this->store->replace($current, $admitted->resolved);
 
-        return $this->changed(AssignmentReason::Reassigned, $record, $current, $after)->forRequest($admitted->request());
+        return $this->changed(
+            AssignmentReason::Reassigned,
+            $record,
+            $current,
+            $after,
+        )->forRequest($admitted->request());
     }
 
     public function unassign(RecordIdentity $record, AssignmentReference $expected): AssignmentResult
@@ -141,7 +146,10 @@ final readonly class WriteAssignments implements AssignmentWriter
         [$group, $finished] = $this->checkedGroup($records);
         $this->store->lockExpected($group->root, $expectedRoot);
 
-        return $this->published(AssignmentReason::Unassigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->clear($record)));
+        return $this->published(
+            AssignmentReason::Unassigned,
+            $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->clear($record)),
+        );
     }
 
     /**
@@ -170,7 +178,9 @@ final readonly class WriteAssignments implements AssignmentWriter
     private function each(AssignmentGroup $group, array $finished, Closure $change): AssignmentResult
     {
         return AssignmentResult::combined(array_map(
-            fn (RecordIdentity $record) => $this->batch->isFinished($record, $finished) ? $this->batch->skip($record) : $change($record),
+            fn (
+                RecordIdentity $record,
+            ) => $this->batch->isFinished($record, $finished) ? $this->batch->skip($record) : $change($record),
             $group->records,
         ));
     }
@@ -201,11 +211,18 @@ final readonly class WriteAssignments implements AssignmentWriter
 
     private function unchanged(Assignment $current): AssignmentResult
     {
-        return new AssignmentResult([new AssignmentOutcome($current->record, $current, AssignmentOutcomeType::Unchanged)], []);
+        return new AssignmentResult(
+            [new AssignmentOutcome($current->record, $current, AssignmentOutcomeType::Unchanged)],
+            [],
+        );
     }
 
-    private function changed(AssignmentReason $reason, RecordIdentity $record, Assignment|null $before, Assignment|null $after): AssignmentResult
-    {
+    private function changed(
+        AssignmentReason $reason,
+        RecordIdentity $record,
+        Assignment|null $before,
+        Assignment|null $after,
+    ): AssignmentResult {
         $result = new AssignmentResult(
             [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],
             [new AssignmentChange($record, $before, $after)],

@@ -25,7 +25,9 @@ final readonly class ProfileLaunchAdmission implements LaunchProfileAdmission
     public function admit(string $profileKey, int $profileRevision): AuthoritySource
     {
         try {
-            return new LaunchProfileAuthority($this->profiles->admittedPin(ProfileKey::from($profileKey), $profileRevision));
+            return new LaunchProfileAuthority(
+                $this->profiles->admittedPin(ProfileKey::from($profileKey), $profileRevision),
+            );
         } catch (ProfileRetired|ProfileMissing|ModelNotFoundException) {
             throw CredentialRejected::profileMismatched();
         }

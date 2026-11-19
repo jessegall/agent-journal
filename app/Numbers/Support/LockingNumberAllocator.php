@@ -18,7 +18,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 final readonly class LockingNumberAllocator implements NumberAllocator
 {
-    public function __construct(private CommandTransaction $transaction, private NumberedTypeRegistry $types, private NumberingOutsideCommands $outsideCommands) {}
+    public function __construct(
+        private CommandTransaction $transaction,
+        private NumberedTypeRegistry $types,
+        private NumberingOutsideCommands $outsideCommands,
+    ) {}
 
     public function allocate(Model&Numbered $record): void
     {

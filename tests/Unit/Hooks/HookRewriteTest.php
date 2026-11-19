@@ -37,7 +37,10 @@ final class HookRewriteTest extends TestCase
 
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame('journal run tests', $answer->decision->replacementLine());
-        $this->assertSame(['rewriter rewrite keep', 'rewriter delegate keep', 'ready allow keep'], $this->stepsOf($answer));
+        $this->assertSame(
+            ['rewriter rewrite keep', 'rewriter delegate keep', 'ready allow keep'],
+            $this->stepsOf($answer),
+        );
         $this->assertSame(2, $rewriter->askedCount);
     }
 
@@ -71,7 +74,10 @@ final class HookRewriteTest extends TestCase
 
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame(['ready', 'rewriter', 'pushed-1'], $answer->stack->frameIds());
-        $this->assertSame(['rewriter rewrite push', 'pushed-1 delegate keep', 'rewriter delegate keep', 'ready allow keep'], $this->stepsOf($answer));
+        $this->assertSame(
+            ['rewriter rewrite push', 'pushed-1 delegate keep', 'rewriter delegate keep', 'ready allow keep'],
+            $this->stepsOf($answer),
+        );
     }
 
     public function test_a_second_rewrite_is_an_error(): void

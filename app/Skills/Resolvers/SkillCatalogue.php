@@ -38,8 +38,13 @@ final readonly class SkillCatalogue implements SkillResolver
      * @throws SkillConflict when two owners declare one key
      * @throws SkillDeclarationInvalid when a shipped skill's condition, sections or text are invalid, naming its owner and key
      */
-    public static function build(SkillRegistry $registry, Container $container, SkillRenderer $renderer, ConditionTree $conditions, SkillSource $stored): self
-    {
+    public static function build(
+        SkillRegistry $registry,
+        Container $container,
+        SkillRenderer $renderer,
+        ConditionTree $conditions,
+        SkillSource $stored,
+    ): self {
         $entries = [];
 
         foreach ($registry->owners() as $owner) {
@@ -56,7 +61,16 @@ final readonly class SkillCatalogue implements SkillResolver
                 }
 
                 try {
-                    $entries[$key->key] = new SkillEntry($key, $skill->name(), $owner->name, SkillOrigin::Shipped, $skill->description(), $conditions->check($skill->condition()), null, $renderer->render($skill, $owner));
+                    $entries[$key->key] = new SkillEntry(
+                        $key,
+                        $skill->name(),
+                        $owner->name,
+                        SkillOrigin::Shipped,
+                        $skill->description(),
+                        $conditions->check($skill->condition()),
+                        null,
+                        $renderer->render($skill, $owner),
+                    );
                 } catch (SkillSourceInvalid|SkillConditionInvalid|SkillDeclarationInvalid $invalid) {
                     throw SkillDeclarationInvalid::inSkill($owner->name, $key->key, $invalid->getMessage());
                 }
@@ -72,7 +86,16 @@ final readonly class SkillCatalogue implements SkillResolver
                 throw SkillConflict::between($key->key, $entries[$key->key]->owner, $storedOwner->name);
             }
 
-            $entries[$key->key] = new SkillEntry($key, $skill->name(), $storedOwner->name, SkillOrigin::Stored, $skill->description(), $skill->condition(), $skill->revisionNumber(), $renderer->render($skill, $storedOwner));
+            $entries[$key->key] = new SkillEntry(
+                $key,
+                $skill->name(),
+                $storedOwner->name,
+                SkillOrigin::Stored,
+                $skill->description(),
+                $skill->condition(),
+                $skill->revisionNumber(),
+                $renderer->render($skill, $storedOwner),
+            );
         }
 
         return new self($entries);

@@ -27,6 +27,9 @@ final class ListCommentsRequest extends RecordTargetRequest
 
     public function page(): Page
     {
-        return new Page($this->filled('after') ? $this->string('after')->toString() : null, PageSize::from($this->filled('per_page') ? $this->integer('per_page') : null)->rows);
+        return new Page(
+            $this->filled('after') ? $this->string('after')->toString() : null,
+            PageSize::from($this->filled('per_page') ? $this->integer('per_page') : null)->rows,
+        );
     }
 }

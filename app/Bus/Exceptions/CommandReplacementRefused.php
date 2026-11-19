@@ -10,6 +10,8 @@ final class CommandReplacementRefused extends RuntimeException
 {
     public static function for(string $middleware, string $command): self
     {
-        return new self("The middleware {$middleware} may not replace {$command}; it is neither its owner's nor exported to it.");
+        return new self(
+            "The middleware {$middleware} may not replace {$command}; it is neither its owner's nor exported to it.",
+        );
     }
 }

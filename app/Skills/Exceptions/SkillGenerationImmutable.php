@@ -10,6 +10,8 @@ final class SkillGenerationImmutable extends LogicException
 {
     public static function for(string $generationId): self
     {
-        return new self("Skill generation {$generationId} is complete and its entries never change; refresh to make a new one.");
+        return new self(
+            "Skill generation {$generationId} is complete and its entries never change; refresh to make a new one.",
+        );
     }
 }

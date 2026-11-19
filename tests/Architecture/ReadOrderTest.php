@@ -32,7 +32,10 @@ final class ReadOrderTest extends TestCase
             $last = end($columns);
 
             foreach ($columns as $column) {
-                [$table, $name] = str_contains($column['column'], '.') ? explode('.', $column['column'], 2) : [$model->getTable(), $column['column']];
+                [$table, $name] = str_contains($column['column'], '.') ? explode('.', $column['column'], 2) : [
+                    $model->getTable(),
+                    $column['column'],
+                ];
 
                 if (! Schema::hasColumn($table, $name)) {
                     $faults[] = "{$class} orders by {$column['column']}, which {$table} does not have";

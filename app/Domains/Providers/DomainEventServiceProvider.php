@@ -71,7 +71,11 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
     private function policy(): ListenerPolicy
     {
-        return new ListenerPolicy($this->app->make(DomainRegistry::class), CoreApi::exports(), $this->coreListenerFolders());
+        return new ListenerPolicy(
+            $this->app->make(DomainRegistry::class),
+            CoreApi::exports(),
+            $this->coreListenerFolders(),
+        );
     }
 
     /**

@@ -80,8 +80,20 @@ final class StateTypeLifecycleTest extends TestCase
         $this->assertTrue($registry->has('notes.reading'));
 
         $stack = $this->app->make(StackRestorer::class)->restore(new FrameRecords([
-            new FrameRecord('ready', new StateReference('hooks.ready', NoSubject::None), true, 1, CarbonImmutable::now()),
-            new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now()),
+            new FrameRecord(
+                'ready',
+                new StateReference('hooks.ready', NoSubject::None),
+                true,
+                1,
+                CarbonImmutable::now(),
+            ),
+            new FrameRecord(
+                'note-1',
+                new StateReference('notes.reading', NoSubject::None),
+                false,
+                1,
+                CarbonImmutable::now(),
+            ),
         ]));
 
         $this->assertSame(['ready', 'note-1'], $stack->frameIds());

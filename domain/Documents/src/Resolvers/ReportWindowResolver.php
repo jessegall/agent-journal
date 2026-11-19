@@ -20,13 +20,25 @@ use Domain\Documents\Http\Requests\RecordPageRequest;
  */
 final readonly class ReportWindowResolver implements PageResolver
 {
-    public function __construct(private RecordPageRequest $request, private ReportResolver $reports, private CommentResolver $comments, private RecordResolver $records, private ShareStatusResolver $shares) {}
+    public function __construct(
+        private RecordPageRequest $request,
+        private ReportResolver $reports,
+        private CommentResolver $comments,
+        private RecordResolver $records,
+        private ShareStatusResolver $shares,
+    ) {}
 
     public function read(): RecordPageData
     {
         $number = $this->request->reportNumber();
         $identity = $this->records->identify(RecordReference::of('report', $number));
 
-        return RecordPageData::fromReportView($this->reports->show($number), $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)), $this->reports->inspect($number)->settlements, $this->reports->links($number), $this->shares->isPubliclyShared($identity));
+        return RecordPageData::fromReportView(
+            $this->reports->show($number),
+            $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)),
+            $this->reports->inspect($number)->settlements,
+            $this->reports->links($number),
+            $this->shares->isPubliclyShared($identity),
+        );
     }
 }

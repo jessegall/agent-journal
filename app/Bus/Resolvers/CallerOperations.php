@@ -16,7 +16,10 @@ final readonly class CallerOperations implements OperationResolver
 {
     public function operation(string $requestKey): Operation
     {
-        $receipt = CommandReceipt::query()->where('contract_major', CommandReceipt::CONTRACT_MAJOR)->where('request_key', $requestKey)->latest()->first()
+        $receipt = CommandReceipt::query()->where(
+            'contract_major',
+            CommandReceipt::CONTRACT_MAJOR,
+        )->where('request_key', $requestKey)->latest()->first()
             ?? throw OperationUnavailable::for($requestKey);
 
         return $receipt->toOperation();

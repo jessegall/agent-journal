@@ -53,6 +53,12 @@ final class StoredFrame extends Data
     {
         $subject = $this->subject?->toReference() ?? NoSubject::None;
 
-        return new FrameRecord($this->id, new StateReference($this->typeKey, $subject), $this->isBottom, $this->schemaVersion, $this->enteredAt);
+        return new FrameRecord(
+            $this->id,
+            new StateReference($this->typeKey, $subject),
+            $this->isBottom,
+            $this->schemaVersion,
+            $this->enteredAt,
+        );
     }
 }

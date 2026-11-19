@@ -17,6 +17,8 @@ final class CommandAuthorizationMissing extends LogicException
      */
     public static function for(string $command): self
     {
-        return new self("{$command} declares no Authorize: name the policy and ability that decide it, or its trusted entry.");
+        return new self(
+            "{$command} declares no Authorize: name the policy and ability that decide it, or its trusted entry.",
+        );
     }
 }

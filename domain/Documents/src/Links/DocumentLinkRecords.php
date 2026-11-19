@@ -43,7 +43,9 @@ final readonly class DocumentLinkRecords implements RecordProvider
     {
         $this->actors->actor();
 
-        return Document::query()->sharedPublished()->with(['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()]);
+        return Document::query()->sharedPublished()->with(
+            ['currentRevision' => fn (BelongsTo $revision) => $revision->forCards()],
+        );
     }
 
     protected function cardOf(Model $record): RecordCard

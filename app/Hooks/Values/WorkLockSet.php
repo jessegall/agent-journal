@@ -24,7 +24,10 @@ final readonly class WorkLockSet
             $declared,
             fn (WorkOccurrence $subject): bool => ! $subject->isSameWorkAs($origin),
         ));
-        usort($others, fn (WorkOccurrence $first, WorkOccurrence $second): int => $first->lockKey() <=> $second->lockKey());
+        usort(
+            $others,
+            fn (WorkOccurrence $first, WorkOccurrence $second): int => $first->lockKey() <=> $second->lockKey(),
+        );
 
         return new self($origin, $others);
     }

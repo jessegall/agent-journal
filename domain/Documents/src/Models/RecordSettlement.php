@@ -45,8 +45,13 @@ final class RecordSettlement extends Model implements ReadableModel
         ];
     }
 
-    public static function record(string $parentType, string $parentId, Actor $actor, string $reason, int|null $revisionNumber): self
-    {
+    public static function record(
+        string $parentType,
+        string $parentId,
+        Actor $actor,
+        string $reason,
+        int|null $revisionNumber,
+    ): self {
         return self::query()->create([
             'parent_type' => $parentType,
             'parent_id' => $parentId,

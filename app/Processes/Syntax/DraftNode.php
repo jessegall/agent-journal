@@ -40,6 +40,15 @@ final class DraftNode
 
     public function finished(int $id): ShellNode
     {
-        return new ShellNode($id, $this->type, $this->range, $this->isRoot, $this->parent, $this->children, $this->words, $this->redirects);
+        return new ShellNode(
+            $id,
+            $this->type,
+            $this->range,
+            $this->isRoot,
+            $this->parent,
+            $this->children,
+            $this->words,
+            $this->redirects,
+        );
     }
 }

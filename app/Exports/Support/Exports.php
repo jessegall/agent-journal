@@ -43,7 +43,14 @@ final readonly class Exports
      */
     public static function of(ExportBuilder $builder): self
     {
-        $lists = ['events' => $builder->events, 'contracts' => $builder->contracts, 'values' => $builder->values, 'commands' => $builder->commands, 'exceptions' => $builder->exceptions, 'support' => $builder->support];
+        $lists = [
+            'events' => $builder->events,
+            'contracts' => $builder->contracts,
+            'values' => $builder->values,
+            'commands' => $builder->commands,
+            'exceptions' => $builder->exceptions,
+            'support' => $builder->support,
+        ];
         $seenIn = [];
 
         foreach ($lists as $list => $names) {
@@ -62,7 +69,14 @@ final readonly class Exports
             }
         }
 
-        return new self($builder->events, $builder->contracts, $builder->values, $builder->commands, $builder->exceptions, $builder->support);
+        return new self(
+            $builder->events,
+            $builder->contracts,
+            $builder->values,
+            $builder->commands,
+            $builder->exceptions,
+            $builder->support,
+        );
     }
 
     /**
@@ -72,7 +86,14 @@ final readonly class Exports
      */
     public function all(): array
     {
-        return [...$this->events, ...$this->contracts, ...$this->values, ...$this->commands, ...$this->exceptions, ...$this->support];
+        return [
+            ...$this->events,
+            ...$this->contracts,
+            ...$this->values,
+            ...$this->commands,
+            ...$this->exceptions,
+            ...$this->support,
+        ];
     }
 
     public function has(string $name): bool

@@ -24,7 +24,10 @@ final readonly class ManifestCheck
         $disk = $this->disks->disk(SpoolRecorder::DISK);
         $next = [];
         $state = CaptureState::Complete;
-        OutputChunk::query()->where('part_run_id', $part->id)->orderBy('stream')->orderBy('offset')->readInChunks(500, function (Collection $chunks) use ($disk, &$next, &$state): void {
+        OutputChunk::query()->where(
+            'part_run_id',
+            $part->id,
+        )->orderBy('stream')->orderBy('offset')->readInChunks(500, function (Collection $chunks) use ($disk, &$next, &$state): void {
             foreach ($chunks as $chunk) {
                 $stream = $chunk->stream->value;
                 $path = $disk->path($chunk->storage_path);

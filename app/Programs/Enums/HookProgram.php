@@ -38,7 +38,14 @@ enum HookProgram: string
     {
         return match ($this) {
             self::ClaudeCode => ['Agent', 'Task', 'Workflow', 'SendMessage', 'ListAgents', 'RemoteTrigger', 'Skill'],
-            self::Codex => ['collaboration.spawn_agent', 'collaboration.wait_agent', 'collaboration.send_message', 'collaboration.followup_task', 'collaboration.interrupt_agent', 'collaboration.list_agents'],
+            self::Codex => [
+                'collaboration.spawn_agent',
+                'collaboration.wait_agent',
+                'collaboration.send_message',
+                'collaboration.followup_task',
+                'collaboration.interrupt_agent',
+                'collaboration.list_agents',
+            ],
         };
     }
 

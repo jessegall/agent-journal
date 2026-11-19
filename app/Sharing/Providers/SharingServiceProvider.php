@@ -61,7 +61,9 @@ final class SharingServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/sharing.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([RequestShareCommand::class, ShareStatusCommand::class, ShareListCommand::class, ShareCreateCommand::class, ShareRevokeCommand::class, ShareUrlCommand::class, ConfigureShareGatewayCommand::class, SuperviseSharingCommand::class, SharingHealthCommand::class]);
+            $this->commands(
+                [RequestShareCommand::class, ShareStatusCommand::class, ShareListCommand::class, ShareCreateCommand::class, ShareRevokeCommand::class, ShareUrlCommand::class, ConfigureShareGatewayCommand::class, SuperviseSharingCommand::class, SharingHealthCommand::class],
+            );
         }
     }
 }

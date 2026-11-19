@@ -68,8 +68,14 @@ final class CodexTest extends TestCase
         $this->assertInstanceOf(FileEditRequested::class, $update);
         $this->assertInstanceOf(FileEditRequested::class, $add);
         $this->assertSame(['notes.txt'], $update->changes->paths());
-        $this->assertSame([FileOperation::Edit], array_map(fn ($change) => $change->operation, $update->changes->changes));
-        $this->assertSame([FileOperation::Create], array_map(fn ($change) => $change->operation, $add->changes->changes));
+        $this->assertSame(
+            [FileOperation::Edit],
+            array_map(fn ($change) => $change->operation, $update->changes->changes),
+        );
+        $this->assertSame(
+            [FileOperation::Create],
+            array_map(fn ($change) => $change->operation, $add->changes->changes),
+        );
     }
 
     public function test_a_stop_that_already_continued_says_so(): void
@@ -82,7 +88,10 @@ final class CodexTest extends TestCase
 
     public function test_a_journal_allow_is_neutral_and_names_no_permission(): void
     {
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $this->render('shell command', Decision::allow())->stdout);
+        $this->assertSame(
+            '{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}',
+            $this->render('shell command', Decision::allow())->stdout,
+        );
     }
 
     public function test_a_denial_carries_its_reason(): void
@@ -95,14 +104,20 @@ final class CodexTest extends TestCase
 
     public function test_one_stop_blocker_gives_one_reason(): void
     {
-        $this->assertSame('{"decision":"block","reason":"Task 42 still needs work."}', $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout);
+        $this->assertSame(
+            '{"decision":"block","reason":"Task 42 still needs work."}',
+            $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout,
+        );
     }
 
     public function test_a_rewrite_is_refused_with_the_journal_command_and_its_child_is_dropped(): void
     {
         $capabilities = $this->adapter()->capabilities();
         $stackBefore = new AgentStack([], new InMemoryStateFactory());
-        $stackAfter = new AgentStack([new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating(), CarbonImmutable::now())], new InMemoryStateFactory());
+        $stackAfter = new AgentStack(
+            [new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating(), CarbonImmutable::now())],
+            new InMemoryStateFactory(),
+        );
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);
 
         $settled = $capabilities->rewrites->finalAnswer($rewrite, $stackBefore);
@@ -131,7 +146,10 @@ final class CodexTest extends TestCase
 
     private function render(string $name, Decision $decision): ProgramReply
     {
-        return $this->renderAnswer($name, new HookAnswer($decision, [], [], new AgentStack([], new InMemoryStateFactory())));
+        return $this->renderAnswer(
+            $name,
+            new HookAnswer($decision, [], [], new AgentStack([], new InMemoryStateFactory())),
+        );
     }
 
     private function renderAnswer(string $name, HookAnswer $answer): ProgramReply

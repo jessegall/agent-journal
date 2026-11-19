@@ -40,7 +40,10 @@ final class DomainStateTypeTest extends TestCase
         };
         $type = new DomainStateType('Reviews', new ClosureStateLoader(fn () => $state), fn () => $availability);
 
-        $this->assertSame($state, $type->statesFor(new StateReferences([new StateReference('reviews.reviewing', NoSubject::None)]))->stateAt(0));
+        $this->assertSame(
+            $state,
+            $type->statesFor(new StateReferences([new StateReference('reviews.reviewing', NoSubject::None)]))->stateAt(0),
+        );
         $this->assertSame(1, $type->schemaVersion());
         $this->assertTrue($type->isEnabled());
 

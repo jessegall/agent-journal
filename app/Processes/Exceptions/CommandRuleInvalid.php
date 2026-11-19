@@ -18,7 +18,9 @@ final class CommandRuleInvalid extends LogicException
 
     public static function contractMissing(string $id): self
     {
-        return new self("The command rule {$id} is a test, check or build, so it is declared with forCheck and its contract.");
+        return new self(
+            "The command rule {$id} is a test, check or build, so it is declared with forCheck and its contract.",
+        );
     }
 
     public static function contractWithoutCheck(string $id): self

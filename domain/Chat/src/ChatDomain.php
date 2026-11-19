@@ -109,7 +109,9 @@ final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavig
 
     public function sections(): array
     {
-        return [Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
+        return [
+            Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue'),
+        ];
     }
 
     public function skills(): array

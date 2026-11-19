@@ -36,7 +36,11 @@ final class SystemActorBoundaryTest extends TestCase
 
     public function test_the_setup_script_refreshes_skills_right_after_migrating(): void
     {
-        $setup = json_decode((string) file_get_contents(base_path('composer.json')), true, flags: JSON_THROW_ON_ERROR)['scripts']['setup'];
+        $setup = json_decode(
+            (string) file_get_contents(base_path('composer.json')),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        )['scripts']['setup'];
         $migrate = array_search('@php artisan migrate --force', $setup, true);
 
         $this->assertIsInt($migrate);

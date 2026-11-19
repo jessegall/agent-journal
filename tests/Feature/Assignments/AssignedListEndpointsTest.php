@@ -28,7 +28,15 @@ final class AssignedListEndpointsTest extends TestCase
     use CommitsHookRows;
     use StartsAgentRequests;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'tasks', 'plans', 'assignments'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'tasks',
+        'plans',
+        'assignments',
+    ];
 
     private TestLaunch $caller;
 
@@ -70,7 +78,9 @@ final class AssignedListEndpointsTest extends TestCase
 
     public function test_an_agent_holding_nothing_gets_an_empty_success(): void
     {
-        $this->listAs($this->caller, '/agent/tasks/assigned', [])->assertOk()->assertExactJson(['cards' => [], 'page' => 1, 'perPage' => 20, 'total' => 0]);
+        $this->listAs($this->caller, '/agent/tasks/assigned', [])->assertOk()->assertExactJson(
+            ['cards' => [], 'page' => 1, 'perPage' => 20, 'total' => 0],
+        );
     }
 
     public function test_a_missing_credential_a_body_naming_someone_else_or_a_bad_page_is_refused(): void
@@ -80,8 +90,16 @@ final class AssignedListEndpointsTest extends TestCase
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/agent/tasks/assigned', server: $headers, content: $body)->assertUnauthorized();
-        $this->listAs($this->caller, '/agent/tasks/assigned', ['agent' => $this->other->agent->id])->assertUnprocessable();
-        $this->listAs($this->caller, '/agent/plans/assigned', ['session_id' => $this->other->session->id])->assertUnprocessable();
+        $this->listAs(
+            $this->caller,
+            '/agent/tasks/assigned',
+            ['agent' => $this->other->agent->id],
+        )->assertUnprocessable();
+        $this->listAs(
+            $this->caller,
+            '/agent/plans/assigned',
+            ['session_id' => $this->other->session->id],
+        )->assertUnprocessable();
         $this->listAs($this->caller, '/agent/tasks/assigned', ['per_page' => 101])->assertUnprocessable();
         $this->listAs($this->caller, '/agent/plans/assigned', ['page' => 0])->assertUnprocessable();
     }
@@ -94,6 +112,11 @@ final class AssignedListEndpointsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
         $body = json_encode((object) $query) ?: '{}';
 
-        return $this->call('POST', $path, server: $launch->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), target: $path), content: $body);
+        return $this->call(
+            'POST',
+            $path,
+            server: $launch->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), target: $path),
+            content: $body,
+        );
     }
 }

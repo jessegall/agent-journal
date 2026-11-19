@@ -45,8 +45,13 @@ enum FolderType: string
     {
         $fits = match ($this) {
             self::States => $class->getName() === AgentState::class || $class->isSubclassOf(AgentState::class),
-            self::Resolvers => ! $class->isInterface() && array_any($class->getInterfaceNames(), fn (string $name) => str_contains($name, '\\Contracts\\')),
-            self::Actions => $class->isFinal() && ! $class->isEnum() && ! $class->isSubclassOf(Throwable::class) && ! $class->isSubclassOf(Model::class),
+            self::Resolvers => ! $class->isInterface() && array_any(
+                $class->getInterfaceNames(),
+                fn (string $name) => str_contains($name, '\\Contracts\\'),
+            ),
+            self::Actions => $class->isFinal() && ! $class->isEnum() && ! $class->isSubclassOf(
+                Throwable::class,
+            ) && ! $class->isSubclassOf(Model::class),
             self::Enums => $class->isEnum(),
             self::Models => $class->isSubclassOf(Model::class),
             self::Contracts => $class->isInterface(),

@@ -69,7 +69,10 @@ final class CommandReceiptTest extends CommandBusTestCase
 
         $this->assertSame($first, $repeat);
         $this->assertSame(1, $this->rowCount());
-        $this->assertSame(ReceiptState::Completed, $this->app->make(OperationResolver::class)->operation(self::KEY)->state);
+        $this->assertSame(
+            ReceiptState::Completed,
+            $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
+        );
     }
 
     public function test_a_changed_body_under_the_same_key_is_a_request_key_conflict(): void
@@ -93,7 +96,10 @@ final class CommandReceiptTest extends CommandBusTestCase
         }
 
         $this->assertThrows(fn () => $bus->run(new RefuseNote('refused')), RefusalReplayed::class, $message);
-        $this->assertSame(ReceiptState::Refused, $this->app->make(OperationResolver::class)->operation(self::KEY)->state);
+        $this->assertSame(
+            ReceiptState::Refused,
+            $this->app->make(OperationResolver::class)->operation(self::KEY)->state,
+        );
         $this->assertSame(0, $this->rowCount());
     }
 
@@ -101,9 +107,15 @@ final class CommandReceiptTest extends CommandBusTestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run(new IgnoreFailedNote('rolled back')), NestedCommandFailureIgnored::class);
+        $this->assertThrows(
+            fn () => $bus->run(new IgnoreFailedNote('rolled back')),
+            NestedCommandFailureIgnored::class,
+        );
 
-        $this->assertThrows(fn () => $this->app->make(OperationResolver::class)->operation(self::KEY), OperationUnavailable::class);
+        $this->assertThrows(
+            fn () => $this->app->make(OperationResolver::class)->operation(self::KEY),
+            OperationUnavailable::class,
+        );
         $id = $bus->run(new WriteNote('retried'));
         $this->assertSame('retried', $this->rowText($id));
     }

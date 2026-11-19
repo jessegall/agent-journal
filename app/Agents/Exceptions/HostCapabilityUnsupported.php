@@ -17,7 +17,9 @@ final class HostCapabilityUnsupported extends RuntimeException implements Comman
 {
     public static function for(HostCapability $capability): self
     {
-        return new self("The journal cannot guarantee {$capability->query->describe()}: {$capability->reason} Nothing was launched.");
+        return new self(
+            "The journal cannot guarantee {$capability->query->describe()}: {$capability->reason} Nothing was launched.",
+        );
     }
 
     public function reason(): LaunchRefusalType

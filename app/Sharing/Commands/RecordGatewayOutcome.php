@@ -35,6 +35,12 @@ final readonly class RecordGatewayOutcome extends Command
      */
     public static function of(GatewayOperation $operation, GatewayOutcome $outcome): self
     {
-        return new self($operation->runId, $operation->operationId, $operation->endpointVersion, $operation->leaseToken, $outcome);
+        return new self(
+            $operation->runId,
+            $operation->operationId,
+            $operation->endpointVersion,
+            $operation->leaseToken,
+            $outcome,
+        );
     }
 }

@@ -51,14 +51,25 @@ final class TickDeclarationsTest extends TestCase
 
     public function test_the_tick_context_has_exactly_four_public_fields(): void
     {
-        $context = new TickContext(CarbonImmutable::now(), ElapsedTime::zero(true), CarbonImmutable::now(), new StackTarget('a', 's'));
-        $fields = array_map(fn (ReflectionProperty $property) => $property->getName(), new ReflectionClass($context)->getProperties(ReflectionProperty::IS_PUBLIC));
+        $context = new TickContext(
+            CarbonImmutable::now(),
+            ElapsedTime::zero(true),
+            CarbonImmutable::now(),
+            new StackTarget('a', 's'),
+        );
+        $fields = array_map(
+            fn (ReflectionProperty $property) => $property->getName(),
+            new ReflectionClass($context)->getProperties(ReflectionProperty::IS_PUBLIC),
+        );
 
         $this->assertSame(['now', 'delta', 'enteredAt', 'target'], $fields);
     }
 
     private function command(int $number): UnlinkRecords
     {
-        return new UnlinkRecords(TestActors::record('tasks.task', $number), TestActors::record('tasks.task', $number + 100));
+        return new UnlinkRecords(
+            TestActors::record('tasks.task', $number),
+            TestActors::record('tasks.task', $number + 100),
+        );
     }
 }

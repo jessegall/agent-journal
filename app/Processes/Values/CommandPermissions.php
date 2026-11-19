@@ -47,7 +47,11 @@ final readonly class CommandPermissions
      */
     public function revoking(CommandClassSet $classes, CommandPatternSet $patterns): self
     {
-        return clone ($this, ['denied' => $this->denied->union($classes), 'deniedPatterns' => $this->deniedPatterns->with($patterns), 'revision' => $this->revision + 1]);
+        return clone ($this, [
+            'denied' => $this->denied->union($classes),
+            'deniedPatterns' => $this->deniedPatterns->with($patterns),
+            'revision' => $this->revision + 1,
+        ]);
     }
 
     /**

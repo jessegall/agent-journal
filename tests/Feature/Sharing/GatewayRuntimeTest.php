@@ -62,7 +62,11 @@ final class GatewayRuntimeTest extends TestCase
         $this->assertSame(GatewayOperationType::Open, $claim->type);
         $this->assertSame(1, $claim->operation->endpointVersion);
         $this->assertSame(64, strlen($claim->operation->leaseToken));
-        $this->assertEqualsWithDelta(CarbonImmutable::now()->addSeconds(90)->getTimestamp(), $claim->operation->leaseEndsAt, 2);
+        $this->assertEqualsWithDelta(
+            CarbonImmutable::now()->addSeconds(90)->getTimestamp(),
+            $claim->operation->leaseEndsAt,
+            2,
+        );
         $this->assertSame($this->configuration->id, $claim->operation->configuration->configurationId);
         $this->assertNull($this->claim(self::FIRST_RUN), 'A held operation is not claimed again.');
     }
@@ -72,7 +76,10 @@ final class GatewayRuntimeTest extends TestCase
         $claim = $this->claim(self::FIRST_RUN);
         $this->travel(91)->seconds();
 
-        $this->assertThrows(fn () => $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded), GatewayLeaseRefused::class);
+        $this->assertThrows(
+            fn () => $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded),
+            GatewayLeaseRefused::class,
+        );
         $this->assertSame(ShareState::Pending, $this->share->fresh()?->state);
     }
 
@@ -81,11 +88,20 @@ final class GatewayRuntimeTest extends TestCase
         $claim = $this->claim(self::FIRST_RUN);
         $taken = $this->claim(self::SECOND_RUN);
 
-        $this->assertThrows(fn () => $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded), GatewayRunStale::class);
+        $this->assertThrows(
+            fn () => $this->outcome(self::FIRST_RUN, $claim, GatewayOutcome::Succeeded),
+            GatewayRunStale::class,
+        );
         $this->assertThrows(fn () => $this->health(self::FIRST_RUN, 1), GatewayRunStale::class);
         $this->assertThrows(fn () => $this->claim(self::FIRST_RUN), GatewayRunStale::class);
-        $this->assertSame([2, GatewayEndpointState::Opening], [$taken?->operation->endpointVersion, ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->state]);
-        $this->assertSame(GatewayEndpointState::Closed, ShareGatewayEndpoint::query()->where('endpoint_version', 1)->sole()->state);
+        $this->assertSame(
+            [2, GatewayEndpointState::Opening],
+            [$taken?->operation->endpointVersion, ShareGatewayEndpoint::query()->where('endpoint_version', 2)->sole()->state],
+        );
+        $this->assertSame(
+            GatewayEndpointState::Closed,
+            ShareGatewayEndpoint::query()->where('endpoint_version', 1)->sole()->state,
+        );
         $this->assertSame(ShareState::Pending, $this->share->fresh()?->state);
     }
 
@@ -148,7 +164,9 @@ final class GatewayRuntimeTest extends TestCase
     private function outcome(string $runId, ClaimedGatewayOperation|null $claim, GatewayOutcome $outcome): void
     {
         $this->assertNotNull($claim);
-        $this->asSystem(new RecordGatewayOutcome($runId, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, $outcome));
+        $this->asSystem(
+            new RecordGatewayOutcome($runId, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, $outcome),
+        );
     }
 
     private function health(string $runId, int $endpointVersion): void
@@ -161,6 +179,8 @@ final class GatewayRuntimeTest extends TestCase
      */
     private function auditTypes(): array
     {
-        return array_values(ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(fn (ShareAudit $audit) => $audit->type)->all());
+        return array_values(
+            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(fn (ShareAudit $audit) => $audit->type)->all(),
+        );
     }
 }

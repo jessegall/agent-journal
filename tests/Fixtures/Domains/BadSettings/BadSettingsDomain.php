@@ -31,6 +31,8 @@ final class BadSettingsDomain extends Domain implements ProvidesSettings
 
     public function settings(): SettingsDefinition
     {
-        return new SettingsList([SettingGroup::make('desk', 'Desk', [StringSetting::make('Greeting', 'Greeting', 'Welcome')])]);
+        return new SettingsList(
+[SettingGroup::make('desk', 'Desk', [StringSetting::make('Greeting', 'Greeting', 'Welcome')])],
+);
     }
 }

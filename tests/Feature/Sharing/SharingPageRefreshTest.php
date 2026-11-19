@@ -45,7 +45,17 @@ final class SharingPageRefreshTest extends TestCase
     use CommitsHookRows;
     use RunsTrustedCommands;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations', 'number_groups'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_gateway_endpoints',
+        'share_gateway_configurations',
+        'share_installations',
+        'number_groups',
+    ];
 
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
 
@@ -54,7 +64,11 @@ final class SharingPageRefreshTest extends TestCase
         $map = new DomainEventServiceProvider($this->app)->discoverEvents();
 
         foreach ([ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class] as $event) {
-            $this->assertContains(BroadcastPageChange::class.'@handle', $map[$event] ?? [], "{$event} does not reread the owner's pages.");
+            $this->assertContains(
+                BroadcastPageChange::class.'@handle',
+                $map[$event] ?? [],
+                "{$event} does not reread the owner's pages.",
+            );
         }
 
         $this->assertNotContains(BroadcastPageChange::class.'@handle', $map[ShareRequested::class] ?? []);
@@ -70,8 +84,13 @@ final class SharingPageRefreshTest extends TestCase
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
         Event::fake([PageChanged::class]);
 
-        $this->asSystem(new RecordGatewayOutcome(self::RUN, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, GatewayOutcome::Succeeded));
+        $this->asSystem(
+            new RecordGatewayOutcome(self::RUN, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, GatewayOutcome::Succeeded),
+        );
 
-        Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->userIds === [TestIds::of(9)] && $change->broadcastWith() === []);
+        Event::assertDispatched(
+            PageChanged::class,
+            fn (PageChanged $change) => $change->userIds === [TestIds::of(9)] && $change->broadcastWith() === [],
+        );
     }
 }

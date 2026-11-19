@@ -64,7 +64,10 @@ final class SkillSelectionTest extends TestCase
 
     public function test_a_required_unavailable_skill_refuses_and_an_optional_one_is_left_out(): void
     {
-        $skills = [...$this->skills(), $this->entry('journal-openai', Conditions::providers(ProviderKey::from('openai')))];
+        $skills = [
+            ...$this->skills(),
+            $this->entry('journal-openai', Conditions::providers(ProviderKey::from('openai'))),
+        ];
         $selection = new SkillSelection()->select($skills, $this->helper(null, []));
 
         $this->assertNotContains('journal-openai', $selection->selectedKeys());
@@ -98,7 +101,16 @@ final class SkillSelectionTest extends TestCase
 
     private function entry(string $key, SkillCondition $condition): SkillEntry
     {
-        return new SkillEntry(SkillKey::from($key), $key, 'Core', SkillOrigin::Shipped, 'A skill.', $condition, null, new RenderedSkill(SkillKey::from($key), "# {$key}\n", hash('sha256', "# {$key}\n")));
+        return new SkillEntry(
+            SkillKey::from($key),
+            $key,
+            'Core',
+            SkillOrigin::Shipped,
+            'A skill.',
+            $condition,
+            null,
+            new RenderedSkill(SkillKey::from($key), "# {$key}\n", hash('sha256', "# {$key}\n")),
+        );
     }
 
     /**
@@ -119,6 +131,13 @@ final class SkillSelectionTest extends TestCase
             'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
-        return new SkillContext(TestActors::agentIdentity(2), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);
+        return new SkillContext(
+            TestActors::agentIdentity(2),
+            TestIds::of(3),
+            'main',
+            LaunchProfile::of($snapshot),
+            ProgramKey::from('gemini-cli'),
+            null,
+        );
     }
 }

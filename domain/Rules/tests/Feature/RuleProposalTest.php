@@ -41,10 +41,15 @@ final class RuleProposalTest extends TestCase
         $old = Rule::holding('Old rule.');
         $this->startRequestAs($launch->agent->id, $launch->session->id);
 
-        $id = $this->app->make(CommandBus::class)->run(new ProposeRule('New rule.', 'The old one is too vague.', $old->id));
+        $id = $this->app->make(CommandBus::class)->run(
+            new ProposeRule('New rule.', 'The old one is too vague.', $old->id),
+        );
 
         $details = $this->app->make(RuleDetailsResolver::class)->rule($id);
-        $this->assertSame([RuleState::Proposed, 'The old one is too vague.', ActorType::Agent, $launch->agent->id, $old->number], [$details->state, $details->reason, $details->proposerType, $details->proposerId, $details->replacesRuleNumber]);
+        $this->assertSame(
+            [RuleState::Proposed, 'The old one is too vague.', ActorType::Agent, $launch->agent->id, $old->number],
+            [$details->state, $details->reason, $details->proposerType, $details->proposerId, $details->replacesRuleNumber],
+        );
         $this->assertSame(["Rule {$old->id}: Old rule."], $this->app->make(ActiveRules::class)->reminders());
         $this->assertSame(1, $this->app->make(RuleDetailsResolver::class)->activeCount());
     }
@@ -61,13 +66,19 @@ final class RuleProposalTest extends TestCase
         $this->assertThrows(fn () => $bus->run(new ApproveRule($proposed->id)), ActorNotAllowed::class);
         $this->assertThrows(fn () => $bus->run(new DenyRule($proposed->id)), ActorNotAllowed::class);
 
-        $this->assertSame([RuleState::Active, RuleState::Proposed], [$active->fresh()?->state, $proposed->fresh()?->state]);
+        $this->assertSame(
+            [RuleState::Active, RuleState::Proposed],
+            [$active->fresh()?->state, $proposed->fresh()?->state],
+        );
     }
 
     public function test_the_user_removes_a_rule(): void
     {
         $active = Rule::holding('Held rule.');
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($active->id));
 

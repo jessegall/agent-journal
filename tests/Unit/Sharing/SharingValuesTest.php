@@ -64,7 +64,10 @@ final class SharingValuesTest extends TestCase
         $this->assertEquals([$comments], ShareRelationSet::owned('comments', 'share-comment')->relations);
         $this->assertEquals([$records], ShareRelationSet::linked('records', 'share-linked-record')->relations);
         $this->assertSame([], ShareRelationSet::none()->relations);
-        $this->assertEquals([$comments, $records], ShareRelationSet::owned('comments', 'share-comment')->with(ShareRelationSet::linked('records', 'share-linked-record'))->relations);
+        $this->assertEquals(
+            [$comments, $records],
+            ShareRelationSet::owned('comments', 'share-comment')->with(ShareRelationSet::linked('records', 'share-linked-record'))->relations,
+        );
     }
 
     public function test_a_page_of_records_has_more_only_with_a_continuation_and_problems_mean_not_ready(): void
@@ -98,7 +101,9 @@ final class SharingValuesTest extends TestCase
     #[DataProvider('values')]
     public function test_every_sharing_value_fits_the_bus_grammar(string $class): void
     {
-        $grammar = new CommandGrammar(static fn (string $name): bool => str_starts_with($name, 'App\\Sharing\\') || $name === RecordIdentity::class);
+        $grammar = new CommandGrammar(
+            static fn (string $name): bool => str_starts_with($name, 'App\\Sharing\\') || $name === RecordIdentity::class,
+        );
 
         $this->assertNull($grammar->problemWithProperties($class));
     }

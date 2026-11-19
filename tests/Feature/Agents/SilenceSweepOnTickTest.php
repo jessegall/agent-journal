@@ -55,8 +55,14 @@ final class SilenceSweepOnTickTest extends TestCase
 
         $this->assertSame(SessionStatus::Silent, $stale->session->refresh()->status);
         $this->assertSame(SessionStatus::Active, $fresh->session->refresh()->status);
-        $this->assertSame($stale->session->id, $this->app->make(CredentialLookup::class)->sessionFor($stale->token)->id);
-        $this->assertSame(StackStatus::Active, AgentStackRow::query()->authorizedFor(new StackTarget($stale->session->agent_id, $stale->session->id))->sole()->status);
+        $this->assertSame(
+            $stale->session->id,
+            $this->app->make(CredentialLookup::class)->sessionFor($stale->token)->id,
+        );
+        $this->assertSame(
+            StackStatus::Active,
+            AgentStackRow::query()->authorizedFor(new StackTarget($stale->session->agent_id, $stale->session->id))->sole()->status,
+        );
     }
 
     public function test_the_sweep_refuses_the_engine_without_its_grant(): void
@@ -64,7 +70,10 @@ final class SilenceSweepOnTickTest extends TestCase
         $stale = $this->launch();
         $this->startedSecondsAgo($stale, 121);
 
-        $this->assertThrows(fn () => $this->pass(fn () => $this->app->make(CommandBus::class)->run(new MarkSilentSessions())), EngineAccessRefused::class);
+        $this->assertThrows(
+            fn () => $this->pass(fn () => $this->app->make(CommandBus::class)->run(new MarkSilentSessions())),
+            EngineAccessRefused::class,
+        );
 
         $this->assertSame(SessionStatus::Active, $stale->session->refresh()->status);
     }
@@ -76,11 +85,17 @@ final class SilenceSweepOnTickTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(
+            Agent::named('Test agent', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
     }
 
     private function startedSecondsAgo(LaunchedAgent $launched, int $seconds): void
     {
-        DB::table('agent_sessions')->where('id', $launched->session->id)->update(['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)]);
+        DB::table('agent_sessions')->where('id', $launched->session->id)->update(
+            ['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)],
+        );
     }
 }

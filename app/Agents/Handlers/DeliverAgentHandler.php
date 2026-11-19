@@ -23,6 +23,11 @@ final readonly class DeliverAgentHandler implements CommandHandler
             throw DriverRequestRefused::messageTooLarge(strlen($command->message), $this->budgets->deliverMaxBytes);
         }
 
-        return $this->requests->append($command->target(), DriverOperation::Deliver, $command->idempotencyKey, DriverRequestPayload::message($command->message))->receipt();
+        return $this->requests->append(
+            $command->target(),
+            DriverOperation::Deliver,
+            $command->idempotencyKey,
+            DriverRequestPayload::message($command->message),
+        )->receipt();
     }
 }

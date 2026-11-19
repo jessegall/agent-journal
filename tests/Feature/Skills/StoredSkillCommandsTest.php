@@ -39,7 +39,15 @@ final class StoredSkillCommandsTest extends TestCase
     use ActsAsTestUser;
     use CommitsHookRows;
 
-    private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
+    private const array TABLES = [
+        'skill_publications',
+        'skill_generations',
+        'skill_requests',
+        'skill_revisions',
+        'skills',
+        'number_groups',
+        'command_receipts',
+    ];
 
     public function test_create_gives_revision_1_and_revise_gives_2_keeping_1_readable(): void
     {
@@ -49,7 +57,10 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertSame(1, $created->revision);
         $this->assertSame(2, $revised->revision);
         $this->assertTrue($revised->publicationPending);
-        $this->assertSame('First.', SkillRevision::numbered(Skill::query()->whereKey($created->skillId)->firstOrFail(), 1)->sections[0]->content);
+        $this->assertSame(
+            'First.',
+            SkillRevision::numbered(Skill::query()->whereKey($created->skillId)->firstOrFail(), 1)->sections[0]->content,
+        );
     }
 
     public function test_a_revise_against_an_old_revision_is_refused_naming_the_latest(): void
@@ -57,7 +68,11 @@ final class StoredSkillCommandsTest extends TestCase
         $created = $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
         $this->runCommand(new ReviseSkill($created->skillId, 1, 'revise-1', $this->draft('Second.')));
 
-        $this->assertRefused(SkillRevisionConflict::class, new ReviseSkill($created->skillId, 1, 'revise-2', $this->draft('Third.')), 'is at revision 2 now');
+        $this->assertRefused(
+            SkillRevisionConflict::class,
+            new ReviseSkill($created->skillId, 1, 'revise-2', $this->draft('Third.')),
+            'is at revision 2 now',
+        );
     }
 
     public function test_a_repeated_request_id_returns_the_same_result_and_other_content_under_it_is_refused(): void
@@ -68,7 +83,11 @@ final class StoredSkillCommandsTest extends TestCase
         $this->assertEquals($first, $again);
         $this->assertSame(1, Skill::query()->count());
         $this->assertSame(1, SkillRevision::query()->count());
-        $this->assertRefused(SkillRequestReused::class, new CreateSkill('user-review-notes', 'create-1', $this->draft('Other.')), 'already used for other content');
+        $this->assertRefused(
+            SkillRequestReused::class,
+            new CreateSkill('user-review-notes', 'create-1', $this->draft('Other.')),
+            'already used for other content',
+        );
     }
 
     public function test_restore_appends_the_old_content_as_a_new_revision(): void
@@ -85,17 +104,35 @@ final class StoredSkillCommandsTest extends TestCase
 
     public function test_an_agent_is_refused_before_any_row_changes(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(3)),
+            TestLaunchAuthority::forAgent(TestIds::of(3)),
+        );
 
-        $this->assertRefused(ActorNotAllowed::class, new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $this->assertRefused(
+            ActorNotAllowed::class,
+            new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')),
+        );
         $this->assertSame(0, Skill::query()->count());
     }
 
     public function test_invalid_keys_conditions_and_limits_save_nothing(): void
     {
-        $this->assertRefused(SkillDeclarationInvalid::class, new CreateSkill('journal-mine', 'create-1', $this->draft('First.')), 'whose prefix it does not own');
-        $this->assertRefused(SkillConditionInvalid::class, new CreateSkill('user-notes', 'create-2', new SkillDraft('Notes', 'Read.', [new SectionDraft('a', 'A', 'Text.')], '{"type":"any","version":1,"children":[]}')), 'condition.children');
-        $this->assertRefused(SkillDeclarationInvalid::class, new CreateSkill('user-notes', 'create-3', new SkillDraft('Notes', 'Read.', [], '')), 'has 0 sections');
+        $this->assertRefused(
+            SkillDeclarationInvalid::class,
+            new CreateSkill('journal-mine', 'create-1', $this->draft('First.')),
+            'whose prefix it does not own',
+        );
+        $this->assertRefused(
+            SkillConditionInvalid::class,
+            new CreateSkill('user-notes', 'create-2', new SkillDraft('Notes', 'Read.', [new SectionDraft('a', 'A', 'Text.')], '{"type":"any","version":1,"children":[]}')),
+            'condition.children',
+        );
+        $this->assertRefused(
+            SkillDeclarationInvalid::class,
+            new CreateSkill('user-notes', 'create-3', new SkillDraft('Notes', 'Read.', [], '')),
+            'has 0 sections',
+        );
         $this->assertSame(0, Skill::query()->count());
     }
 
@@ -111,7 +148,12 @@ final class StoredSkillCommandsTest extends TestCase
 
     private function draft(string $text): SkillDraft
     {
-        return new SkillDraft('Review notes', 'Read before reviewing.', [new SectionDraft('notes', 'Notes', $text)], '');
+        return new SkillDraft(
+            'Review notes',
+            'Read before reviewing.',
+            [new SectionDraft('notes', 'Notes', $text)],
+            '',
+        );
     }
 
     /**

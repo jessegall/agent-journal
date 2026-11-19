@@ -45,7 +45,10 @@ final class EngineLoopTest extends TestCase
         parent::setUp();
 
         $this->databases = $this->app->make(DatabaseManager::class);
-        $this->app->make('config')->set('database.connections.engine.database', $this->databases->connection()->getDatabaseName());
+        $this->app->make('config')->set(
+            'database.connections.engine.database',
+            $this->databases->connection()->getDatabaseName(),
+        );
         $this->clock = new FakeMonotonicClock(5 * self::SECOND);
         $this->watchdog = new FakeWatchdog();
         $this->app->instance(MonotonicClock::class, $this->clock);
@@ -71,8 +74,12 @@ final class EngineLoopTest extends TestCase
         $this->assertSame(EngineLoop::STOPPED, $exitCode);
         $this->assertCount(1, $listener->heard);
         $this->assertSame(10_000, $listener->heard[0]->sincePrevious->milliseconds());
-        $log->shouldHaveReceived('warning')->withArgs(fn (string $line, array $context) => $context === ['missed_intervals' => 9])->once();
-        $log->shouldHaveReceived('info')->withArgs(fn (string $line, array $context) => $line === 'Engine pass' && $context['pass_lateness_ms'] === 0)->once();
+        $log->shouldHaveReceived('warning')->withArgs(
+            fn (string $line, array $context) => $context === ['missed_intervals' => 9],
+        )->once();
+        $log->shouldHaveReceived('info')->withArgs(
+            fn (string $line, array $context) => $line === 'Engine pass' && $context['pass_lateness_ms'] === 0,
+        )->once();
     }
 
     public function test_passes_run_once_a_second_under_the_watchdog_and_a_stop_ends_after_the_current_pass(): void
@@ -83,7 +90,10 @@ final class EngineLoopTest extends TestCase
         $exitCode = $this->app->make(EngineLoop::class)->run();
 
         $this->assertSame(EngineLoop::STOPPED, $exitCode);
-        $this->assertSame([1000, 1000, 1000], array_map(fn ($event) => $event->sincePrevious->milliseconds(), $listener->heard));
+        $this->assertSame(
+            [1000, 1000, 1000],
+            array_map(fn ($event) => $event->sincePrevious->milliseconds(), $listener->heard),
+        );
         $this->assertSame(3, $this->watchdog->armings);
         $this->assertFalse($this->watchdog->armed);
         $this->assertFalse($this->app->make(EngineLock::class)->isHeld());
@@ -91,7 +101,10 @@ final class EngineLoopTest extends TestCase
 
     public function test_a_lost_lock_ends_the_engine_with_a_failing_exit_code_before_the_next_pass(): void
     {
-        $this->app->instance(Sleeper::class, new TerminatingSleeper($this->clock, $this->databases, $this->app->make(EngineSettings::class)->connection));
+        $this->app->instance(
+            Sleeper::class,
+            new TerminatingSleeper($this->clock, $this->databases, $this->app->make(EngineSettings::class)->connection),
+        );
         $listener = $this->stopAfter(5);
 
         $exitCode = $this->app->make(EngineLoop::class)->run();

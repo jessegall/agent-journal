@@ -27,7 +27,10 @@ final readonly class IsolatedSettingsFile implements JsonSerializable
     public static function of(array $hookCommands, array $deniedTools): self
     {
         return new self(
-            array_map(fn (string $command) => [['hooks' => [['type' => 'command', 'command' => $command]]]], $hookCommands),
+            array_map(
+                fn (string $command) => [['hooks' => [['type' => 'command', 'command' => $command]]]],
+                $hookCommands,
+            ),
             $deniedTools,
         );
     }

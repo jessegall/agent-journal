@@ -40,7 +40,11 @@ final class DomainActorColumnsTest extends TestCase
         $expected = array_keys(self::BEING_REMOVED);
         sort($expected);
 
-        $this->assertSame($expected, $columns, 'A domain table names an agent or an agent session; name an actor (actor_type, actor_id) or use a frame on the stack.');
+        $this->assertSame(
+            $expected,
+            $columns,
+            'A domain table names an agent or an agent session; name an actor (actor_type, actor_id) or use a frame on the stack.',
+        );
     }
 
     public function test_no_domain_model_takes_or_returns_a_stack_target_or_agent_context(): void
@@ -51,15 +55,25 @@ final class DomainActorColumnsTest extends TestCase
             array_push($methods, ...AgentReferences::modelMethodsIn($entry->folder.'/Models'));
         }
 
-        $this->assertSame(array_keys(self::METHODS_BEING_REMOVED), $methods, 'A domain model names an agent stack or request; it should name an actor or a state instead.');
+        $this->assertSame(
+            array_keys(self::METHODS_BEING_REMOVED),
+            $methods,
+            'A domain model names an agent stack or request; it should name an actor or a state instead.',
+        );
     }
 
     public function test_a_planted_agent_column_and_model_method_are_found(): void
     {
         $folder = base_path('tests/Fixtures/Boundary/AgentColumns');
 
-        $this->assertSame(['planted_jobs.agent_id', 'planted_jobs.origin_session_id'], AgentReferences::columnsIn($folder.'/database/migrations'));
-        $this->assertSame(['PlantedJob::startFor()', 'PlantedJob::worker()'], AgentReferences::modelMethodsIn($folder.'/Models'));
+        $this->assertSame(
+            ['planted_jobs.agent_id', 'planted_jobs.origin_session_id'],
+            AgentReferences::columnsIn($folder.'/database/migrations'),
+        );
+        $this->assertSame(
+            ['PlantedJob::startFor()', 'PlantedJob::worker()'],
+            AgentReferences::modelMethodsIn($folder.'/Models'),
+        );
     }
 
     private static function migrationsOf(DomainEntry $entry): string

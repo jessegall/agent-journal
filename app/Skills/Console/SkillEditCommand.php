@@ -37,11 +37,18 @@ final class SkillEditCommand extends Command
             $draft = new SkillDraft(
                 (string) ($this->option('name') ?? $current->name),
                 (string) ($this->option('description') ?? $current->description),
-                $this->option('body') === null ? $current->sections : $console->sectionsOf($console->bodyOf((string) $this->option('body'))),
-                $this->hasAudienceOptions() ? $console->conditionOf($this->conditionsOption(), $this->audience()) : $current->condition,
+                $this->option('body') === null ? $current->sections : $console->sectionsOf(
+                    $console->bodyOf((string) $this->option('body')),
+                ),
+                $this->hasAudienceOptions() ? $console->conditionOf(
+                    $this->conditionsOption(),
+                    $this->audience(),
+                ) : $current->condition,
             );
 
-            return $console->savedLines($commands->run(new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft)));
+            return $console->savedLines(
+                $commands->run(new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft)),
+            );
         });
     }
 }

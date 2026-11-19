@@ -13,6 +13,8 @@ final class ProgramEventName
     {
         $decoded = json_decode($payload, true);
 
-        return is_array($decoded) && is_string($decoded['hook_event_name'] ?? null) ? $decoded['hook_event_name'] : 'unknown';
+        return is_array($decoded) && is_string(
+            $decoded['hook_event_name'] ?? null,
+        ) ? $decoded['hook_event_name'] : 'unknown';
     }
 }

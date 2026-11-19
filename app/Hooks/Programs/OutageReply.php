@@ -22,7 +22,10 @@ final class OutageReply
             return self::neutral($nativeEvent);
         }
 
-        return self::refusal($nativeEvent, $failure->isOutage() ? self::OUTAGE_REASON : "The journal refused this call ({$failure->value}).");
+        return self::refusal(
+            $nativeEvent,
+            $failure->isOutage() ? self::OUTAGE_REASON : "The journal refused this call ({$failure->value}).",
+        );
     }
 
     private static function neutral(string $nativeEvent): ProgramReply
@@ -34,7 +37,9 @@ final class OutageReply
     {
         return match ($nativeEvent) {
             'PreToolUse' => ProgramReplies::denyTool($reason, []),
-            'UserPromptSubmit' => ProgramReply::json(BlockBody::from(['decision' => ProgramStopDecision::Block, 'reason' => $reason])),
+            'UserPromptSubmit' => ProgramReply::json(
+                BlockBody::from(['decision' => ProgramStopDecision::Block, 'reason' => $reason]),
+            ),
             default => ProgramReply::emptyObject(),
         };
     }

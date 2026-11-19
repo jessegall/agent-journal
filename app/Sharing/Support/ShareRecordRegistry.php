@@ -64,7 +64,9 @@ final class ShareRecordRegistry
      */
     public function checkRelations(): void
     {
-        $capabilities = array_merge(...array_map(fn (ShareRecordRegistration $registration) => $registration->capabilities, array_values($this->registrations)));
+        $capabilities = array_merge(
+            ...array_map(fn (ShareRecordRegistration $registration) => $registration->capabilities, array_values($this->registrations)),
+        );
 
         foreach ($this->registrations as $alias => $registration) {
             $relations = $registration->modelClass::shareRelations();

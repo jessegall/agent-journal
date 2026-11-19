@@ -41,7 +41,10 @@ final readonly class LaravelCommandBus implements CommandBus
             throw CommandNotRegistered::for($command::class);
         }
 
-        return $this->dispatcher->dispatchSync($command, new DeferredCommandHandler($this->container, $this->registry->handlerOf($command::class)));
+        return $this->dispatcher->dispatchSync(
+            $command,
+            new DeferredCommandHandler($this->container, $this->registry->handlerOf($command::class)),
+        );
     }
 
     /**

@@ -57,14 +57,20 @@ final readonly class BoundaryChecker
 
         if (! $this->isDomainName($use->name)) {
             if ($user !== null && $this->isPrivateCoreName($use->name)) {
-                return [new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::PrivateCoreType)];
+                return [
+                    new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::PrivateCoreType),
+                ];
             }
 
             if ($user !== null && $this->isCoreEvent($use->name) && ! ($user->holdsListenerFile($use->file) && $use->type->canNameAnEventToHearIt())) {
-                return [new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::EventOutsideListener)];
+                return [
+                    new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::EventOutsideListener),
+                ];
             }
 
-            return $this->isFreeToUse($use->name) ? [] : [new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationType::OutsideEveryDomain)];
+            return $this->isFreeToUse($use->name) ? [] : [
+                new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationType::OutsideEveryDomain),
+            ];
         }
 
         $owner = $this->domainOwning($use->name);
@@ -80,10 +86,16 @@ final readonly class BoundaryChecker
                 ? $owner->exportsEvent($use->name)
                 : $owner->exportsName($use->name) || self::isRequirementInDescriptor($use, $user, $owner);
 
-            return $isPublic ? $violations : [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationType::PrivateType)];
+            return $isPublic ? $violations : [
+                ...$violations,
+                new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationType::PrivateType),
+            ];
         }
 
-        return [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationType::UndeclaredDomain)];
+        return [
+            ...$violations,
+            new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationType::UndeclaredDomain),
+        ];
     }
 
     /**
@@ -110,7 +122,14 @@ final readonly class BoundaryChecker
             }
 
             $owner = $this->isDomainName($name) ? $this->domainOwning($name)->name : 'Core';
-            $violations[] = new Violation($use->file, $use->line, $name, self::SHARED_PLACE, $owner, ViolationType::CompositionMisuse);
+            $violations[] = new Violation(
+                $use->file,
+                $use->line,
+                $name,
+                self::SHARED_PLACE,
+                $owner,
+                ViolationType::CompositionMisuse,
+            );
         }
 
         return $violations;
@@ -129,23 +148,58 @@ final readonly class BoundaryChecker
         foreach ($calls as $call) {
             $userName = $this->domainHolding($call->file)->name ?? self::SHARED_PLACE;
             if ($call->isEventNamedByString()) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationType::StringEventName);
+                $violations[] = new Violation(
+                    $call->file,
+                    $call->line,
+                    $call->event,
+                    $userName,
+                    $userName,
+                    ViolationType::StringEventName,
+                );
             }
 
             if ($call->raisesReceivedEvent()) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationType::ReRaisedReceivedEvent);
+                $violations[] = new Violation(
+                    $call->file,
+                    $call->line,
+                    $call->event,
+                    $userName,
+                    $userName,
+                    ViolationType::ReRaisedReceivedEvent,
+                );
             }
 
             if ($this->raisesAnotherDomainsEvent($call, $userName)) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $this->domainOwning($call->event)->name, ViolationType::ReRaisedEvent);
+                $violations[] = new Violation(
+                    $call->file,
+                    $call->line,
+                    $call->event,
+                    $userName,
+                    $this->domainOwning($call->event)->name,
+                    ViolationType::ReRaisedEvent,
+                );
             }
 
             if ($call->registersListenerByHand($this->roots) && ! self::isCheckedRegistrationSite($call->file)) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationType::ListenerRegisteredByHand);
+                $violations[] = new Violation(
+                    $call->file,
+                    $call->line,
+                    $call->event,
+                    $userName,
+                    $userName,
+                    ViolationType::ListenerRegisteredByHand,
+                );
             }
 
             if ($userName !== self::SHARED_PLACE && $call->raisesClassEvent() && $this->isCoreEvent($call->event)) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, 'Core', ViolationType::ReRaisedEvent);
+                $violations[] = new Violation(
+                    $call->file,
+                    $call->line,
+                    $call->event,
+                    $userName,
+                    'Core',
+                    ViolationType::ReRaisedEvent,
+                );
             }
         }
 
@@ -167,7 +221,9 @@ final readonly class BoundaryChecker
             return [];
         }
 
-        return [new Violation($use->file, $use->line, $use->name, $user->name ?? self::SHARED_PLACE, $owner->name, ViolationType::EventOutsideListener)];
+        return [
+            new Violation($use->file, $use->line, $use->name, $user->name ?? self::SHARED_PLACE, $owner->name, ViolationType::EventOutsideListener),
+        ];
     }
 
     /**
@@ -188,7 +244,10 @@ final readonly class BoundaryChecker
      */
     private function domainOwning(string $name): DomainEntry
     {
-        return array_find($this->entries, fn (DomainEntry $entry) => $entry->ownsName($name)) ?? throw NameOutsideEveryDomain::for($name);
+        return array_find(
+            $this->entries,
+            fn (DomainEntry $entry) => $entry->ownsName($name),
+        ) ?? throw NameOutsideEveryDomain::for($name);
     }
 
     /**
@@ -218,7 +277,10 @@ final readonly class BoundaryChecker
      */
     private static function isRequirementInDescriptor(NameUse $use, DomainEntry $user, DomainEntry $owner): bool
     {
-        return basename($use->file) === "{$user->name}Domain.php" && strcasecmp(ltrim($use->name, '\\'), $owner->className()) === 0;
+        return basename($use->file) === "{$user->name}Domain.php" && strcasecmp(
+            ltrim($use->name, '\\'),
+            $owner->className(),
+        ) === 0;
     }
 
     /**
@@ -228,7 +290,10 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && stripos($name, 'App\\Domains\\') !== 0 && self::isDeclared($name) && ! $this->coreExports->has($name);
+        return stripos($name, 'App\\') === 0 && stripos(
+            $name,
+            'App\\Domains\\',
+        ) !== 0 && self::isDeclared($name) && ! $this->coreExports->has($name);
     }
 
     /**
@@ -247,7 +312,10 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && stripos($name, 'App\\Domains\\') !== 0 && is_subclass_of($name, Event::class);
+        return stripos($name, 'App\\') === 0 && stripos(
+            $name,
+            'App\\Domains\\',
+        ) !== 0 && is_subclass_of($name, Event::class);
     }
 
     /**

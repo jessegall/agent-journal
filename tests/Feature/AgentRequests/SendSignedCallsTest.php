@@ -69,7 +69,10 @@ final class SendSignedCallsTest extends TestCase
     {
         Http::fake(['*' => Http::response($body, $status)]);
 
-        $this->assertThrows(fn () => $this->sender()->send(new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1'))), $class);
+        $this->assertThrows(
+            fn () => $this->sender()->send(new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1'))),
+            $class,
+        );
     }
 
     public function test_a_busy_answer_is_sent_again_with_the_same_call_and_answers_on_the_second_attempt(): void
@@ -95,7 +98,10 @@ final class SendSignedCallsTest extends TestCase
     {
         Http::fake(['*' => Http::response(['code' => 'state_blocked', 'message' => 'Blocked.'], 409)]);
 
-        $this->assertThrows(fn () => $this->sender()->send(new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1'))), StateBlocked::class);
+        $this->assertThrows(
+            fn () => $this->sender()->send(new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1'))),
+            StateBlocked::class,
+        );
         Http::assertSentCount(1);
     }
 

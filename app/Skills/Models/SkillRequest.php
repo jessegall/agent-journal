@@ -53,8 +53,12 @@ final class SkillRequest extends Model implements ReadableModel
         return self::query()->byActor($actor)->where('request_id', $requestId)->first();
     }
 
-    public static function record(ActorIdentity $actor, string $requestId, string $inputDigest, SkillRevision $revision): self
-    {
+    public static function record(
+        ActorIdentity $actor,
+        string $requestId,
+        string $inputDigest,
+        SkillRevision $revision,
+    ): self {
         return self::query()->create([
             'actor_type' => $actor->type,
             'actor_id' => $actor->id,

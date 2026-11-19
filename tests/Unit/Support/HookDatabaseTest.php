@@ -61,15 +61,26 @@ final class HookDatabaseTest extends TestCase
             'the shared database in a worker' => ['journal_hooks_test', '3', 'journal_hooks_test_test_3'],
             'a worker database in a serial run' => ['journal_hooks_test_test_1', false, 'journal_hooks_test'],
             'the application database' => ['journal', false, 'journal_hooks_test'],
-            'another worker of the checkpoint database' => ['journal_hooks_test_checkpoint_test_2', '3', 'journal_hooks_test_checkpoint_test_3'],
-            'the checkpoint database in a worker' => ['journal_hooks_test_checkpoint', '3', 'journal_hooks_test_checkpoint_test_3'],
+            'another worker of the checkpoint database' => [
+                'journal_hooks_test_checkpoint_test_2',
+                '3',
+                'journal_hooks_test_checkpoint_test_3',
+            ],
+            'the checkpoint database in a worker' => [
+                'journal_hooks_test_checkpoint',
+                '3',
+                'journal_hooks_test_checkpoint_test_3',
+            ],
             'a name only close to a test database' => ['journal_hooks_test_extra', false, 'journal_hooks_test'],
         ];
     }
 
     #[DataProvider('refusedDatabases')]
-    public function test_a_database_other_than_the_expected_one_is_refused(string $selected, string|false $token, string $expected): void
-    {
+    public function test_a_database_other_than_the_expected_one_is_refused(
+        string $selected,
+        string|false $token,
+        string $expected,
+    ): void {
         $this->runAs($selected, $token);
 
         $refusal = $this->refusalOf(fn () => HookDatabase::select($this->app));
@@ -83,7 +94,10 @@ final class HookDatabaseTest extends TestCase
     {
         $this->runAs('journal_hooks_test', '3');
 
-        $this->assertStringContainsString('php artisan test --parallel', $this->refusalOf(fn () => HookDatabase::select($this->app))->getMessage());
+        $this->assertStringContainsString(
+            'php artisan test --parallel',
+            $this->refusalOf(fn () => HookDatabase::select($this->app))->getMessage(),
+        );
     }
 
     public function test_any_database_is_refused_outside_the_testing_environment(): void
@@ -91,7 +105,10 @@ final class HookDatabaseTest extends TestCase
         $this->runAs('journal_hooks_test', false);
         $this->app['env'] = 'local';
 
-        $this->assertSame(HookDatabaseRefused::outsideTesting()->getMessage(), $this->refusalOf(fn () => HookDatabase::select($this->app))->getMessage());
+        $this->assertSame(
+            HookDatabaseRefused::outsideTesting()->getMessage(),
+            $this->refusalOf(fn () => HookDatabase::select($this->app))->getMessage(),
+        );
         $this->assertNothingWasTouched();
     }
 
@@ -99,7 +116,10 @@ final class HookDatabaseTest extends TestCase
     {
         $this->runAs('journal', false);
 
-        $this->assertSame(HookDatabaseRefused::otherDatabase('journal', 'journal_hooks_test')->getMessage(), $this->refusalOf(fn () => HookDatabase::checkBase($this->app))->getMessage());
+        $this->assertSame(
+            HookDatabaseRefused::otherDatabase('journal', 'journal_hooks_test')->getMessage(),
+            $this->refusalOf(fn () => HookDatabase::checkBase($this->app))->getMessage(),
+        );
 
         $this->assertNothingWasTouched();
     }

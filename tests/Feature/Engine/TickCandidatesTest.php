@@ -67,7 +67,10 @@ final class TickCandidatesTest extends TestCase
         $visited = [];
 
         foreach (range(1, 3) as $pass) {
-            $visited = [...$visited, ...array_map(fn (TickCandidate $candidate) => $candidate->frameId, $this->nextBatch(100)->candidates)];
+            $visited = [
+                ...$visited,
+                ...array_map(fn (TickCandidate $candidate) => $candidate->frameId, $this->nextBatch(100)->candidates),
+            ];
         }
 
         $this->assertSame($this->inStackOrder($expected), $visited);
@@ -82,8 +85,14 @@ final class TickCandidatesTest extends TestCase
 
         $batch = $this->nextBatch(100);
 
-        $this->assertSame(['a-1', 'a-3'], array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates));
-        $this->assertContains('a-2', array_map(fn (FrameRecord $record) => $record->id, AgentStackRow::query()->tickingOpen()->readLimit(1)->sole()->frames->all()));
+        $this->assertSame(
+            ['a-1', 'a-3'],
+            array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates),
+        );
+        $this->assertContains(
+            'a-2',
+            array_map(fn (FrameRecord $record) => $record->id, AgentStackRow::query()->tickingOpen()->readLimit(1)->sole()->frames->all()),
+        );
     }
 
     public function test_a_switched_off_domains_ticking_frame_is_skipped_unread_and_stays_stored_until_it_is_on(): void
@@ -92,11 +101,17 @@ final class TickCandidatesTest extends TestCase
 
         $this->assertSame([], $this->nextBatch(100)->candidates);
         $this->assertSame([], $this->switchable->batchSizes);
-        $this->assertContains('b-1', array_map(fn (FrameRecord $record) => $record->id, $row->refresh()->frames->all()));
+        $this->assertContains(
+            'b-1',
+            array_map(fn (FrameRecord $record) => $record->id, $row->refresh()->frames->all()),
+        );
 
         $this->switchedOn = true;
 
-        $this->assertSame(['b-1'], array_map(fn (TickCandidate $candidate) => $candidate->frameId, $this->nextBatch(100)->candidates));
+        $this->assertSame(
+            ['b-1'],
+            array_map(fn (TickCandidate $candidate) => $candidate->frameId, $this->nextBatch(100)->candidates),
+        );
     }
 
     public function test_a_frame_an_earlier_command_removed_is_not_ticked(): void
@@ -104,7 +119,10 @@ final class TickCandidatesTest extends TestCase
         $this->stackWith(2, 'a');
         [$first, $second] = $this->nextBatch(100)->candidates;
         $row = AgentStackRow::query()->authorizedFor($first->target)->sole();
-        $row->saveFrames(new FrameRecords(array_values(array_filter($row->frames->all(), fn (FrameRecord $record) => $record->id !== 'a-2'))), $this->app->make(StateTypes::class)->ticking());
+        $row->saveFrames(
+            new FrameRecords(array_values(array_filter($row->frames->all(), fn (FrameRecord $record) => $record->id !== 'a-2'))),
+            $this->app->make(StateTypes::class)->ticking(),
+        );
 
         $candidates = $this->app->make(TickCandidates::class);
 

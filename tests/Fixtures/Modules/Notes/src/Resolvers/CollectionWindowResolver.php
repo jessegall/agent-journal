@@ -22,7 +22,9 @@ final readonly class CollectionWindowResolver implements PageResolver
 
         return CollectionPageData::from([
             'collection' => $collection,
-            'texts' => array_values(Note::query()->forActor()->where('created_at', 'like', "{$collection}-%")->pluck('text')->all()),
+            'texts' => array_values(
+Note::query()->forActor()->where('created_at', 'like', "{$collection}-%")->pluck('text')->all(),
+),
         ]);
     }
 }

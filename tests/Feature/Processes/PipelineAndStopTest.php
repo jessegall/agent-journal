@@ -100,7 +100,12 @@ final class PipelineAndStopTest extends TestCase
     #[TimeLimit(10, 'The child ignores SIGTERM, so the stop waits its five-second grace before forcing it.')]
     public function test_a_child_that_ignores_sigterm_is_forced_after_the_grace_period(): void
     {
-        $process = SpawnedProcess::start(['sh', '-c', 'trap "" TERM; sleep 30'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $this->folder, ['PATH' => (string) getenv('PATH')]);
+        $process = SpawnedProcess::start(
+            ['sh', '-c', 'trap "" TERM; sleep 30'],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $this->folder,
+            ['PATH' => (string) getenv('PATH')],
+        );
         $this->assertInstanceOf(SpawnedProcess::class, $process);
         usleep(200_000);
         $started = microtime(true);
@@ -113,12 +118,25 @@ final class PipelineAndStopTest extends TestCase
 
     private function supervise(string $line, StopSignal $stop = new NoStop()): StepOutcome
     {
-        $context = new ExecutionContext(ShellDialect::Bash, $this->folder, $this->folder, ['PATH' => (string) getenv('PATH')]);
+        $context = new ExecutionContext(
+            ShellDialect::Bash,
+            $this->folder,
+            $this->folder,
+            ['PATH' => (string) getenv('PATH')],
+        );
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
-        $plan = $this->app->make(ExecutionPlanner::class)->plan($tree, $this->app->make(CommandClassifier::class)->classify($tree, $context));
+        $plan = $this->app->make(ExecutionPlanner::class)->plan(
+            $tree,
+            $this->app->make(CommandClassifier::class)->classify($tree, $context),
+        );
         $this->processRun = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of(line: $line, plan: $plan));
 
-        return $this->app->make(Supervisor::class)->run(new RecordedRunEvents($this->processRun, $this->output), $plan, $context, $stop);
+        return $this->app->make(Supervisor::class)->run(
+            new RecordedRunEvents($this->processRun, $this->output),
+            $plan,
+            $context,
+            $stop,
+        );
     }
 
     /**

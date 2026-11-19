@@ -21,7 +21,12 @@ final readonly class UiManifest
     /**
      * The TypeScript files outside the domains, kept in the generated include list.
      */
-    private const array SHARED_INCLUDES = ['resources/js/**/*.ts', 'resources/js/**/*.d.ts', 'resources/js/**/*.tsx', 'resources/js/**/*.vue'];
+    private const array SHARED_INCLUDES = [
+        'resources/js/**/*.ts',
+        'resources/js/**/*.d.ts',
+        'resources/js/**/*.tsx',
+        'resources/js/**/*.vue',
+    ];
 
     public function __construct(
         private UiDeclarations $declarations,
@@ -42,26 +47,37 @@ final readonly class UiManifest
             'resources/js/generated/ui-manifest.ts' => $this->render('ui-manifest.ts', [
                 'hash' => $hash,
                 'components' => array_map(fn (string $path) => '../../../'.$path, $components),
-                'declaredPages' => array_map(fn (RegisteredPage $page) => $page->componentName(), $this->declarations->pages()),
+                'declaredPages' => array_map(
+                    fn (RegisteredPage $page) => $page->componentName(),
+                    $this->declarations->pages(),
+                ),
             ]),
             'tsconfig.domains.json' => $this->typeScriptConfig($hash, $folders),
             'vite.domains.ts' => $this->render('vite.domains.ts', [
-                'hash' => $hash,
-                'aliases' => $this->aliases($folders),
-                'vendorRoots' => array_values(array_filter($folders, fn (string $path) => str_starts_with($path, 'vendor/'))),
-            ]),
+                                'hash' => $hash,
+                                'aliases' => $this->aliases($folders),
+                                'vendorRoots' => array_values(
+                                    array_filter($folders, fn (string $path) => str_starts_with($path, 'vendor/')),
+                                ),
+                            ]),
             'resources/css/generated/domain-sources.css' => $this->render('domain-sources.css', [
-                'hash' => $hash,
-                'sources' => array_map(fn (string $path) => '../../../'.$path, array_values($folders)),
-            ]),
+                                                'hash' => $hash,
+                                                'sources' => array_map(fn (string $path) => '../../../'.$path, array_values($folders)),
+                                            ]),
             'resources/js/generated/types/page-props.ts' => $this->render('page-props.ts', [
-                'hash' => $hash,
-                'imports' => $this->propTypes->imports(),
-                'pages' => $this->propTypes->pageProps(),
-                'windows' => $this->propTypes->windowProps(),
-            ]),
-            'resources/js/generated/ui-prop-checks.ts' => $this->render('ui-prop-checks.ts', ['hash' => $hash, 'checks' => $this->propChecks($root), 'dataTypes' => array_values(array_unique(array_map($this->propTypes->dataTypeOf(...), $this->declarations->pages())))]),
-            'resources/js/generated/domain-roots.json' => json_encode(['hash' => $hash, 'owners' => $folders], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n",
+                                                'hash' => $hash,
+                                                'imports' => $this->propTypes->imports(),
+                                                'pages' => $this->propTypes->pageProps(),
+                                                'windows' => $this->propTypes->windowProps(),
+                                            ]),
+            'resources/js/generated/ui-prop-checks.ts' => $this->render(
+                'ui-prop-checks.ts',
+                ['hash' => $hash, 'checks' => $this->propChecks($root), 'dataTypes' => array_values(array_unique(array_map($this->propTypes->dataTypeOf(...), $this->declarations->pages())))],
+            ),
+            'resources/js/generated/domain-roots.json' => json_encode(
+                ['hash' => $hash, 'owners' => $folders],
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+            )."\n",
             'bootstrap/cache/ui-components.php' => "<?php\n\nreturn ".var_export($components, true).";\n",
         ];
 
@@ -113,7 +129,10 @@ final readonly class UiManifest
         $checks = [];
 
         foreach ($this->declarations->pages() as $page) {
-            $checks['accepts_'.str_replace(['.', '-'], '_', $page->key)] = ['type' => '{ data: '.$this->propTypes->dataTypeOf($page).' }', 'path' => '../../../'.$this->fromRoot($root, $page->componentFile)];
+            $checks['accepts_'.str_replace(['.', '-'], '_', $page->key)] = [
+                'type' => '{ data: '.$this->propTypes->dataTypeOf($page).' }',
+                'path' => '../../../'.$this->fromRoot($root, $page->componentFile),
+            ];
         }
 
         ksort($checks);
@@ -147,7 +166,11 @@ final readonly class UiManifest
      */
     private function aliases(array $folders): array
     {
-        $aliases = ['@kit' => 'resources/js/kit', '@generated/types' => 'resources/js/generated/types', '@generated/routes' => 'resources/js/routes'];
+        $aliases = [
+            '@kit' => 'resources/js/kit',
+            '@generated/types' => 'resources/js/generated/types',
+            '@generated/routes' => 'resources/js/routes',
+        ];
 
         foreach ($folders as $key => $path) {
             $aliases["@domain/{$key}"] = $path;
@@ -161,7 +184,12 @@ final readonly class UiManifest
      */
     private function typeScriptConfig(string $hash, array $folders): string
     {
-        $paths = ['@/*' => ['./resources/js/*'], '@kit/*' => ['./resources/js/kit/*'], '@generated/types/*' => ['./resources/js/generated/types/*'], '@generated/routes/*' => ['./resources/js/routes/*']];
+        $paths = [
+            '@/*' => ['./resources/js/*'],
+            '@kit/*' => ['./resources/js/kit/*'],
+            '@generated/types/*' => ['./resources/js/generated/types/*'],
+            '@generated/routes/*' => ['./resources/js/routes/*'],
+        ];
         $include = self::SHARED_INCLUDES;
 
         foreach ($folders as $key => $path) {
@@ -169,7 +197,11 @@ final readonly class UiManifest
             array_push($include, "{$path}/**/*.ts", "{$path}/**/*.vue");
         }
 
-        $config = ['//' => "Generated by php artisan journal:ui-manifest from the installed domains ({$hash}); do not edit.", 'compilerOptions' => ['paths' => $paths], 'include' => $include];
+        $config = [
+            '//' => "Generated by php artisan journal:ui-manifest from the installed domains ({$hash}); do not edit.",
+            'compilerOptions' => ['paths' => $paths],
+            'include' => $include,
+        ];
 
         return json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n";
     }

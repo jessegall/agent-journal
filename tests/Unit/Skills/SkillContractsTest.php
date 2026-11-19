@@ -68,12 +68,22 @@ final class SkillContractsTest extends TestCase
     {
         $part = MarkdownPart::heading('plans.md', ['Failure', 'Retry']);
         $section = SkillSection::markdown('phases', 'Working a phase', $part);
-        $context = new SkillContext(TestActors::agentIdentity(3), TestIds::of(4), 'main', LaunchProfile::profileFree(), ProgramKey::from('codex'), ProviderKey::from('openai'));
+        $context = new SkillContext(
+            TestActors::agentIdentity(3),
+            TestIds::of(4),
+            'main',
+            LaunchProfile::profileFree(),
+            ProgramKey::from('codex'),
+            ProviderKey::from('openai'),
+        );
 
         $this->assertSame('plans.md > Failure > Retry', $part->selector());
         $this->assertTrue(MarkdownPart::body('plans.md')->isWholeBody());
         $this->assertSame($part, $section->content);
-        $this->assertSame('A plan orders the work.', SkillSection::text('purpose', 'Plans', 'A plan orders the work.')->content);
+        $this->assertSame(
+            'A plan orders the work.',
+            SkillSection::text('purpose', 'Plans', 'A plan orders the work.')->content,
+        );
         $this->assertSame(ConditionOutcome::Match, Conditions::everyone()->evaluate($context)->outcome);
         $this->assertTrue($context->profile->isProfileFree());
     }

@@ -45,7 +45,10 @@ final class DomainStateTypesTest extends TestCase
 
         $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertSame('Tasks', $working->owner);
-        $this->assertSame(new WorkingOnTaskStateFactory($this->app->make(TaskRecords::class))->schemaVersion(), $working->schemaVersion());
+        $this->assertSame(
+            new WorkingOnTaskStateFactory($this->app->make(TaskRecords::class))->schemaVersion(),
+            $working->schemaVersion(),
+        );
         $this->assertNotInstanceOf(ConditionalStateType::class, $types->get('hooks.ready'));
     }
 
@@ -54,7 +57,10 @@ final class DomainStateTypesTest extends TestCase
         $this->bootModules(QuestionRemindersDomain::class);
         $types = $this->app->make(StateTypes::class);
 
-        $this->assertInstanceOf(DomainTickableStateType::class, $types->registry()->get(AwaitingAnswerLoader::TYPE_KEY));
+        $this->assertInstanceOf(
+            DomainTickableStateType::class,
+            $types->registry()->get(AwaitingAnswerLoader::TYPE_KEY),
+        );
         $this->assertTrue($types->ticking()->contains(AwaitingAnswerLoader::TYPE_KEY));
         $this->assertFalse($types->ticking()->contains('tasks.working'));
     }
@@ -68,7 +74,9 @@ final class DomainStateTypesTest extends TestCase
         $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertTrue($working->isEnabled());
 
-        $this->app->make(CommandBus::class)->run(new DisableSettingGroup(new GroupReference('Core', 'domain_tasks'), 0));
+        $this->app->make(CommandBus::class)->run(
+            new DisableSettingGroup(new GroupReference('Core', 'domain_tasks'), 0),
+        );
         $this->app->forgetScopedInstances();
 
         $this->assertFalse($working->isEnabled());

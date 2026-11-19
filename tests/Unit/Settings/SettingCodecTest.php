@@ -42,52 +42,93 @@ final class SettingCodecTest extends TestCase
         $settings = $this->settings;
 
         foreach (['Reviews', ' spaced ', str_repeat('é', 10)] as $text) {
-            $this->assertSame($text, $this->codec->decode('Reviews', $settings->title, $this->codec->encodeString('Reviews', $settings->title, $text)));
+            $this->assertSame(
+                $text,
+                $this->codec->decode('Reviews', $settings->title, $this->codec->encodeString('Reviews', $settings->title, $text)),
+            );
         }
 
         foreach ([true, false] as $flag) {
-            $this->assertSame($flag, $this->codec->decode('Reviews', $settings->notifyOwner, $this->codec->encodeBoolean($flag)));
+            $this->assertSame(
+                $flag,
+                $this->codec->decode('Reviews', $settings->notifyOwner, $this->codec->encodeBoolean($flag)),
+            );
         }
 
         foreach ([3, 0, 10] as $number) {
-            $this->assertSame($number, $this->codec->decode('Reviews', $settings->retryLimit, $this->codec->encodeInteger('Reviews', $settings->retryLimit, $number)));
+            $this->assertSame(
+                $number,
+                $this->codec->decode('Reviews', $settings->retryLimit, $this->codec->encodeInteger('Reviews', $settings->retryLimit, $number)),
+            );
         }
 
         foreach (['0.50', '999.99', '1'] as $text) {
-            $decoded = $this->codec->decode('Reviews', $settings->weight, $this->codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse($text)));
+            $decoded = $this->codec->decode(
+                'Reviews',
+                $settings->weight,
+                $this->codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse($text)),
+            );
             $this->assertInstanceOf(Decimal::class, $decoded);
             $this->assertSame(Decimal::parse($text)->toScale(2)->text, $decoded->text);
         }
 
         foreach (['short', 'long'] as $style) {
-            $this->assertSame($style, $this->codec->decode('Reviews', $settings->summaryStyle, $this->codec->encodeOption('Reviews', $settings->summaryStyle, $style)));
+            $this->assertSame(
+                $style,
+                $this->codec->decode('Reviews', $settings->summaryStyle, $this->codec->encodeOption('Reviews', $settings->summaryStyle, $style)),
+            );
         }
 
         foreach ([0, 1] as $priority) {
-            $this->assertSame($priority, $this->codec->decode('Reviews', $settings->priority, $this->codec->encodeOption('Reviews', $settings->priority, $priority)));
+            $this->assertSame(
+                $priority,
+                $this->codec->decode('Reviews', $settings->priority, $this->codec->encodeOption('Reviews', $settings->priority, $priority)),
+            );
         }
 
         foreach (ReviewMode::cases() as $mode) {
-            $this->assertSame($mode, $this->codec->decode('Reviews', $settings->reviewMode, $this->codec->encodeEnum('Reviews', $settings->reviewMode, $mode)));
+            $this->assertSame(
+                $mode,
+                $this->codec->decode('Reviews', $settings->reviewMode, $this->codec->encodeEnum('Reviews', $settings->reviewMode, $mode)),
+            );
         }
 
         foreach (ReviewLevel::cases() as $level) {
-            $this->assertSame($level, $this->codec->decode('Reviews', $settings->reviewLevel, $this->codec->encodeEnum('Reviews', $settings->reviewLevel, $level)));
+            $this->assertSame(
+                $level,
+                $this->codec->decode('Reviews', $settings->reviewLevel, $this->codec->encodeEnum('Reviews', $settings->reviewLevel, $level)),
+            );
         }
     }
 
     public function test_text_choices_keep_their_exact_text(): void
     {
-        $setting = ChoiceSetting::make('code', 'Code', '01', [Choice::make('01', 'Zero one'), Choice::make('1', 'One')]);
+        $setting = ChoiceSetting::make(
+            'code',
+            'Code',
+            '01',
+            [Choice::make('01', 'Zero one'), Choice::make('1', 'One')],
+        );
 
-        $this->assertSame('01', $this->codec->decode('Reviews', $setting, $this->codec->encodeOption('Reviews', $setting, '01')));
-        $this->assertSame('1', $this->codec->decode('Reviews', $setting, $this->codec->encodeOption('Reviews', $setting, '1')));
+        $this->assertSame(
+            '01',
+            $this->codec->decode('Reviews', $setting, $this->codec->encodeOption('Reviews', $setting, '01')),
+        );
+        $this->assertSame(
+            '1',
+            $this->codec->decode('Reviews', $setting, $this->codec->encodeOption('Reviews', $setting, '1')),
+        );
     }
 
     public function test_an_int_backed_enum_is_stored_as_its_number_and_read_as_its_case(): void
     {
-        $this->assertTrue(EncodedValue::of(2)->equals($this->codec->encodeEnum('Reviews', $this->settings->reviewLevel, ReviewLevel::SecondPass)));
-        $this->assertSame(ReviewLevel::SecondPass, $this->codec->decode('Reviews', $this->settings->reviewLevel, EncodedValue::of(2)));
+        $this->assertTrue(
+            EncodedValue::of(2)->equals($this->codec->encodeEnum('Reviews', $this->settings->reviewLevel, ReviewLevel::SecondPass)),
+        );
+        $this->assertSame(
+            ReviewLevel::SecondPass,
+            $this->codec->decode('Reviews', $this->settings->reviewLevel, EncodedValue::of(2)),
+        );
     }
 
     /**
@@ -117,13 +158,17 @@ final class SettingCodecTest extends TestCase
     }
 
     #[DataProvider('storedValuesOfTheWrongKind')]
-    public function test_a_stored_value_its_setting_does_not_accept_is_refused_naming_only_the_setting(string $property, mixed $stored): void
-    {
+    public function test_a_stored_value_its_setting_does_not_accept_is_refused_naming_only_the_setting(
+        string $property,
+        mixed $stored,
+    ): void {
         /** @var Setting $setting */
         $setting = $this->settings->{$property};
 
         $this->expectException(SettingStorageInvalid::class);
-        $this->expectExceptionMessage("The stored value of the setting {$setting->key()} of Reviews is not one it accepts");
+        $this->expectExceptionMessage(
+            "The stored value of the setting {$setting->key()} of Reviews is not one it accepts",
+        );
 
         $this->codec->decode('Reviews', $setting, EncodedValue::of($stored));
     }
@@ -144,14 +189,38 @@ final class SettingCodecTest extends TestCase
     public static function valuesOneStepPastABound(): array
     {
         return [
-            'an integer above its maximum' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeInteger('Reviews', $settings->retryLimit, 11), 'retry_limit'],
-            'an integer below its minimum' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeInteger('Reviews', $settings->retryLimit, -1), 'retry_limit'],
-            'a decimal past its scale' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('0.501')), 'weight'],
-            'a decimal past its digits' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('1000')), 'weight'],
-            'text shorter than allowed' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeString('Reviews', $settings->title, ''), 'title'],
-            'a choice not among the options' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, 2), 'priority'],
-            'a choice of the other type' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, '1'), 'priority'],
-            'a case of another enum' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeEnum('Reviews', $settings->reviewLevel, ReviewMode::Quick), 'review_level'],
+            'an integer above its maximum' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeInteger('Reviews', $settings->retryLimit, 11),
+                'retry_limit',
+            ],
+            'an integer below its minimum' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeInteger('Reviews', $settings->retryLimit, -1),
+                'retry_limit',
+            ],
+            'a decimal past its scale' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('0.501')),
+                'weight',
+            ],
+            'a decimal past its digits' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('1000')),
+                'weight',
+            ],
+            'text shorter than allowed' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeString('Reviews', $settings->title, ''),
+                'title',
+            ],
+            'a choice not among the options' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, 2),
+                'priority',
+            ],
+            'a choice of the other type' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, '1'),
+                'priority',
+            ],
+            'a case of another enum' => [
+                fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeEnum('Reviews', $settings->reviewLevel, ReviewMode::Quick),
+                'review_level',
+            ],
         ];
     }
 
@@ -159,8 +228,10 @@ final class SettingCodecTest extends TestCase
      * @param  Closure(SettingCodec, ReviewSettings): EncodedValue  $encode
      */
     #[DataProvider('valuesOneStepPastABound')]
-    public function test_a_value_the_setting_does_not_accept_is_refused_naming_the_key_never_the_value(Closure $encode, string $key): void
-    {
+    public function test_a_value_the_setting_does_not_accept_is_refused_naming_the_key_never_the_value(
+        Closure $encode,
+        string $key,
+    ): void {
         $this->expectException(SettingValueInvalid::class);
         $this->expectExceptionMessage("The value for the setting {$key} of Reviews is not a");
 

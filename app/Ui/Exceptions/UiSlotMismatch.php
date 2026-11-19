@@ -11,11 +11,15 @@ final class UiSlotMismatch extends UiDeclarationError
 {
     public static function takes(string $section, string $slot, string $slotTakes, string $sectionTakes): self
     {
-        return new self("Section {$section} takes {$sectionTakes}, but its slot {$slot} hands its sections {$slotTakes}.");
+        return new self(
+            "Section {$section} takes {$sectionTakes}, but its slot {$slot} hands its sections {$slotTakes}.",
+        );
     }
 
     public static function parameterMissing(string $page, string $slot, string $parameter): self
     {
-        return new self("Page {$page} offers the record slot {$slot} on the route parameter {$parameter}, which its path does not have.");
+        return new self(
+            "Page {$page} offers the record slot {$slot} on the route parameter {$parameter}, which its path does not have.",
+        );
     }
 }

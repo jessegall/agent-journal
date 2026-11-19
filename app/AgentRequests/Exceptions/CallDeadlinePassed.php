@@ -14,7 +14,9 @@ final class CallDeadlinePassed extends CallFailed implements CodedRefusal
 {
     public static function for(string $callId): self
     {
-        return new self("The deadline of call {$callId} passed before it was sent; send it again with the same request_key.");
+        return new self(
+            "The deadline of call {$callId} passed before it was sent; send it again with the same request_key.",
+        );
     }
 
     public function refusalCode(): RefusalCode

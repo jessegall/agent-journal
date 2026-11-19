@@ -44,7 +44,11 @@ final class TableModelTest extends TestCase
             }
         }
 
-        $this->assertSame([], $notPivots, 'Make the model of each of these pivot tables extend Pivot or MorphPivot (rule 33).');
+        $this->assertSame(
+            [],
+            $notPivots,
+            'Make the model of each of these pivot tables extend Pivot or MorphPivot (rule 33).',
+        );
     }
 
     /**
@@ -71,7 +75,10 @@ final class TableModelTest extends TestCase
         $columns = array_values(array_diff(Schema::getColumnListing($table), self::PIVOT_BOOKKEEPING_COLUMNS));
         $references = array_filter($columns, fn (string $column) => str_ends_with($column, '_id'));
         $types = array_filter($columns, fn (string $column) => str_ends_with($column, '_type'));
-        $matchedTypes = array_filter($types, fn (string $type) => in_array(substr($type, 0, -5).'_id', $references, true));
+        $matchedTypes = array_filter(
+            $types,
+            fn (string $type) => in_array(substr($type, 0, -5).'_id', $references, true),
+        );
 
         return count($references) === 2 && count($matchedTypes) === count($types) && count($references) + count($types) === count($columns);
     }

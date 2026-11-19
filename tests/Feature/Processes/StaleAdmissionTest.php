@@ -56,7 +56,11 @@ final class StaleAdmissionTest extends TestCase
         $this->asUser(new RetireCommandRule(ClassificationRule::query()->sole()->id, 1, 'not needed'));
 
         $this->assertStringStartsWith('rule-revision-changed', $queued->refresh()->stale_reason);
-        $reply = $this->signed($launch, "/agent/processes/admissions/{$queued->id}", ['request_key' => 'stale-1'])->assertStatus(409);
+        $reply = $this->signed(
+            $launch,
+            "/agent/processes/admissions/{$queued->id}",
+            ['request_key' => 'stale-1'],
+        )->assertStatus(409);
         $this->assertStringContainsString('explain the line again', (string) $reply->json('message'));
     }
 
@@ -85,7 +89,10 @@ final class StaleAdmissionTest extends TestCase
 
     private function admit(ActorIdentity $actor, string $line): ProcessRun
     {
-        return ProcessRun::admit($actor, TestRunAdmissions::of(projectKey: (string) config('processes.project_key'), line: $line));
+        return ProcessRun::admit(
+            $actor,
+            TestRunAdmissions::of(projectKey: (string) config('processes.project_key'), line: $line),
+        );
     }
 
     private function tidyRule(): CommandRule

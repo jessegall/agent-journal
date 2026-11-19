@@ -80,15 +80,21 @@ final readonly class BindingRules
         $concreteOwner = $this->ownerNameOfClass($registration->concrete);
 
         if (! self::exists($registration->concrete) || ! is_a($registration->concrete, $registration->abstract, true)) {
-            return [$registration->violation($userOwner, $abstractOwner, "{$registration->concrete} does not implement it")];
+            return [
+                $registration->violation($userOwner, $abstractOwner, "{$registration->concrete} does not implement it"),
+            ];
         }
 
         if ($concreteOwner !== $userOwner) {
-            return [$registration->violation($userOwner, $concreteOwner, "the target {$registration->concrete} belongs to {$concreteOwner}")];
+            return [
+                $registration->violation($userOwner, $concreteOwner, "the target {$registration->concrete} belongs to {$concreteOwner}"),
+            ];
         }
 
         if ($abstractOwner !== $userOwner && ! ($abstractOwner === 'Core' && $this->isCoreExport($registration->abstract))) {
-            return [$registration->violation($userOwner, $abstractOwner, "{$abstractOwner} owns it; only Core's public contracts are filled by another owner")];
+            return [
+                $registration->violation($userOwner, $abstractOwner, "{$abstractOwner} owns it; only Core's public contracts are filled by another owner"),
+            ];
         }
 
         return [];
@@ -104,7 +110,10 @@ final readonly class BindingRules
     {
         $scoped = [
             ...self::PER_REQUEST_VALUES,
-            ...array_map(fn (BindingRegistration $registration) => $registration->abstract, array_values(array_filter($registrations, fn (BindingRegistration $registration) => $registration->isScoped))),
+            ...array_map(
+                fn (BindingRegistration $registration) => $registration->abstract,
+                array_values(array_filter($registrations, fn (BindingRegistration $registration) => $registration->isScoped)),
+            ),
         ];
         $class = $singleton->concrete ?? $singleton->abstract;
         $captured = $this->firstScopedDependency($class, $scoped, []);
@@ -113,7 +122,9 @@ final readonly class BindingRules
             return [];
         }
 
-        return [$singleton->violation($this->ownerNameOf($singleton->file), $this->ownerNameOfClass($captured), "the singleton {$class} keeps the per-request {$captured} beyond its request")];
+        return [
+            $singleton->violation($this->ownerNameOf($singleton->file), $this->ownerNameOfClass($captured), "the singleton {$class} keeps the per-request {$captured} beyond its request"),
+        ];
     }
 
     /**
@@ -197,7 +208,14 @@ final readonly class BindingRules
             $target = self::bindTargetOf($name);
 
             if ($target !== null || $isScoped || $isSingleton) {
-                $registrations[] = new BindingRegistration($file->path, $line, $name, $target, $isScoped || self::isScopedClass($target), $isSingleton);
+                $registrations[] = new BindingRegistration(
+                    $file->path,
+                    $line,
+                    $name,
+                    $target,
+                    $isScoped || self::isScopedClass($target),
+                    $isSingleton,
+                );
             }
         }
 
@@ -224,7 +242,14 @@ final readonly class BindingRules
             }
 
             $concrete = self::classStringOf($call->getArgs()[1]->value ?? null);
-            $registrations[] = new BindingRegistration($file->path, $call->getStartLine(), $abstract, $concrete, in_array($method, self::SCOPED_METHODS, true), in_array($method, self::SINGLETON_METHODS, true));
+            $registrations[] = new BindingRegistration(
+                $file->path,
+                $call->getStartLine(),
+                $abstract,
+                $concrete,
+                in_array($method, self::SCOPED_METHODS, true),
+                in_array($method, self::SINGLETON_METHODS, true),
+            );
         }
 
         return $registrations;

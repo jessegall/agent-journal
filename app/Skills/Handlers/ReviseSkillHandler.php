@@ -20,11 +20,18 @@ final readonly class ReviseSkillHandler implements CommandHandler
     public function handle(ReviseSkill $command): SkillRevisionResult
     {
 
-        return $this->writes->once($command->requestId, hash('sha256', "{$command->skillId}|{$command->expectedRevision}|".$command->draft->digest()), function () use ($command) {
+        return $this->writes->once($command->requestId, hash(
+            'sha256',
+            "{$command->skillId}|{$command->expectedRevision}|".$command->draft->digest(),
+        ), function () use ($command) {
             $skill = Skill::lockVisible($command->skillId, SkillContextResolver::ENVIRONMENT);
             $skill->checkWritableAt($command->expectedRevision);
 
-            return $skill->appendRevision($command->draft, $this->writes->checkedCondition($skill->key, $command->draft), $this->writes->author());
+            return $skill->appendRevision(
+                $command->draft,
+                $this->writes->checkedCondition($skill->key, $command->draft),
+                $this->writes->author(),
+            );
         });
     }
 }

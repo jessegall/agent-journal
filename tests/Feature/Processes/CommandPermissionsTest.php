@@ -28,24 +28,35 @@ final class CommandPermissionsTest extends TestCase
     {
         $helper = CommandPermissions::granted('role:read-only', ProcessGrants::readingOnly());
 
-        $this->assertTrue($helper->admits(CommandClassSet::of(CommandClass::Read, CommandClass::VersionControl), ['git', 'status']));
+        $this->assertTrue(
+            $helper->admits(CommandClassSet::of(CommandClass::Read, CommandClass::VersionControl), ['git', 'status']),
+        );
         $this->assertFalse($helper->admits(CommandClassSet::of(CommandClass::Write), ['touch', 'a']));
-        $this->assertFalse($helper->admits(CommandClassSet::of(CommandClass::Read, CommandClass::Verification), ['phpstan', 'analyse']));
+        $this->assertFalse(
+            $helper->admits(CommandClassSet::of(CommandClass::Read, CommandClass::Verification), ['phpstan', 'analyse']),
+        );
     }
 
     public function test_an_exact_allow_admits_only_that_invocation(): void
     {
-        $helper = CommandPermissions::granted('role:read-only', ProcessGrants::readingOnly())->allowing(CommandPattern::exact('curl', '--head', 'https://example.org/'));
+        $helper = CommandPermissions::granted('role:read-only', ProcessGrants::readingOnly())->allowing(
+            CommandPattern::exact('curl', '--head', 'https://example.org/'),
+        );
         $network = CommandClassSet::of(CommandClass::Network);
 
         $this->assertTrue($helper->admits($network, ['curl', '--head', 'https://example.org/']));
         $this->assertFalse($helper->admits($network, ['curl', '--head', 'https://example.com/']));
-        $this->assertFalse($helper->admits(CommandClassSet::of(CommandClass::Network, CommandClass::Write), ['curl', '-o', 'page', 'https://example.org/']));
+        $this->assertFalse(
+            $helper->admits(CommandClassSet::of(CommandClass::Network, CommandClass::Write), ['curl', '-o', 'page', 'https://example.org/']),
+        );
     }
 
     public function test_an_allow_never_lifts_the_read_only_ceiling(): void
     {
-        $helper = CommandPermissions::granted('role:read-only', ProcessGrants::readingOnly())->allowing(CommandPattern::exact('touch', 'notes.txt'));
+        $helper = CommandPermissions::granted(
+            'role:read-only',
+            ProcessGrants::readingOnly(),
+        )->allowing(CommandPattern::exact('touch', 'notes.txt'));
 
         $this->assertFalse($helper->admits(CommandClassSet::of(CommandClass::Write), ['touch', 'notes.txt']));
     }
@@ -53,7 +64,12 @@ final class CommandPermissionsTest extends TestCase
     public function test_a_deny_beats_a_class_allow_and_a_revocation_narrows_the_next_admission(): void
     {
         $main = CommandPermissions::granted('role:main', ProcessGrants::everything());
-        PermissionRevocation::revoke($main->source, CommandClassSet::of(CommandClass::Delete), CommandPatternSet::of(), new ActorIdentity(ActorType::User, 'owner'));
+        PermissionRevocation::revoke(
+            $main->source,
+            CommandClassSet::of(CommandClass::Delete),
+            CommandPatternSet::of(),
+            new ActorIdentity(ActorType::User, 'owner'),
+        );
 
         $narrowed = PermissionRevocation::narrow($main);
 

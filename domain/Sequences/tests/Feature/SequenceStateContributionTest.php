@@ -33,7 +33,10 @@ final class SequenceStateContributionTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
 
-        $this->assertSame([SequenceRunState::Running, 1, 'agent', TestIds::of(1)], [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->actor_type, $run->fresh()?->actor_id]);
+        $this->assertSame(
+            [SequenceRunState::Running, 1, 'agent', TestIds::of(1)],
+            [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->actor_type, $run->fresh()?->actor_id],
+        );
         $this->assertSame(['hooks.ready', 'sequences.following'], $this->storedTypeKeys());
     }
 
@@ -60,7 +63,10 @@ final class SequenceStateContributionTest extends TestCase
         $onSecondStep = $this->answerStop('call-2');
 
         $this->assertStringContainsString("Sequence run {$run->number} is on step 1: Read the brief.", $onFirstStep);
-        $this->assertStringContainsString("Sequence run {$run->number} is on step 2: Run the phase tests.", $onSecondStep);
+        $this->assertStringContainsString(
+            "Sequence run {$run->number} is on step 2: Run the phase tests.",
+            $onSecondStep,
+        );
     }
 
     public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
@@ -103,10 +109,23 @@ final class SequenceStateContributionTest extends TestCase
     private function answerCompaction(string $callId): string
     {
         $this->callAs($callId);
-        $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
-        $compaction = new ContextCompacted(new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, self::inputDigest()), new CompactionDetails('compaction-1'));
+        $capabilities = new ProgramCapabilities(
+            'Test program',
+            'compaction context',
+            ['onCompaction'],
+            RewriteSupport::WithoutApproval,
+        );
+        $compaction = new ContextCompacted(
+            new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, self::inputDigest()),
+            new CompactionDetails('compaction-1'),
+        );
 
-        $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply(json_encode($answer->context) ?: '[]', '', 0));
+        $reply = $this->machine()->answer(
+            $compaction,
+            $capabilities,
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => new ProgramReply(json_encode($answer->context) ?: '[]', '', 0),
+        );
 
         return $reply->stdout;
     }

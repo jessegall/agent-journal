@@ -59,7 +59,10 @@ final class DomainAvailabilityTest extends TestCase
 
         $this->switchOff('domain_tasks');
         $plans = $this->domainStatus('Plans');
-        $this->assertSame([true, false, ['Tasks']], [$plans->switchedOn, $plans->available, $plans->unavailableRequirements]);
+        $this->assertSame(
+            [true, false, ['Tasks']],
+            [$plans->switchedOn, $plans->available, $plans->unavailableRequirements],
+        );
 
         $this->switchOn('domain_tasks');
         $this->assertTrue($this->availability()->isEnabled('Plans'));
@@ -111,12 +114,16 @@ final class DomainAvailabilityTest extends TestCase
 
     private function switchOff(string $key): void
     {
-        $this->app->make(CommandBus::class)->run(new DisableSettingGroup(new GroupReference('Core', $key), $this->revision++));
+        $this->app->make(CommandBus::class)->run(
+            new DisableSettingGroup(new GroupReference('Core', $key), $this->revision++),
+        );
     }
 
     private function switchOn(string $key): void
     {
-        $this->app->make(CommandBus::class)->run(new EnableSettingGroup(new GroupReference('Core', $key), $this->revision++));
+        $this->app->make(CommandBus::class)->run(
+            new EnableSettingGroup(new GroupReference('Core', $key), $this->revision++),
+        );
     }
 
     /**

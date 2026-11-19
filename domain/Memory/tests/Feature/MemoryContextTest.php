@@ -37,7 +37,11 @@ final class MemoryContextTest extends TestCase
     {
         parent::setUp();
 
-        $this->memory = Memory::keep(new ActorIdentity(ActorType::Agent, TestIds::of(1)), 'Run migrate:fresh after a create-migration edit.', 6);
+        $this->memory = Memory::keep(
+            new ActorIdentity(ActorType::Agent, TestIds::of(1)),
+            'Run migrate:fresh after a create-migration edit.',
+            6,
+        );
     }
 
     public function test_no_memory_compactions_table_is_built(): void
@@ -47,7 +51,11 @@ final class MemoryContextTest extends TestCase
 
     public function test_a_claude_code_compaction_delivers_the_memory_and_keeps_its_weight(): void
     {
-        $context = $this->answer('call-1', new ContextCompacted($this->identity('call-1'), new CompactionDetails('call-1')), 'onCompaction');
+        $context = $this->answer(
+            'call-1',
+            new ContextCompacted($this->identity('call-1'), new CompactionDetails('call-1')),
+            'onCompaction',
+        );
 
         $this->assertStringContainsString('Memory: Run migrate:fresh after a create-migration edit.', $context);
         $this->assertSame(6, $this->memory->refresh()->weight);
@@ -55,9 +63,17 @@ final class MemoryContextTest extends TestCase
 
     public function test_a_start_on_the_other_program_delivers_the_same_memory_and_keeps_its_weight(): void
     {
-        $this->answer('call-1', new ContextCompacted($this->identity('call-1'), new CompactionDetails('call-1')), 'onCompaction');
+        $this->answer(
+            'call-1',
+            new ContextCompacted($this->identity('call-1'), new CompactionDetails('call-1')),
+            'onCompaction',
+        );
 
-        $context = $this->answer('call-2', new SessionStarted($this->identity('call-2'), new SessionStartDetails('codex-thread-1', SessionStartSource::Startup)), 'onSessionStart');
+        $context = $this->answer(
+            'call-2',
+            new SessionStarted($this->identity('call-2'), new SessionStartDetails('codex-thread-1', SessionStartSource::Startup)),
+            'onSessionStart',
+        );
 
         $this->assertStringContainsString('Memory: Run migrate:fresh after a create-migration edit.', $context);
         $this->assertSame(6, $this->memory->refresh()->weight);
@@ -71,8 +87,18 @@ final class MemoryContextTest extends TestCase
     private function answer(string $callId, HookInput $input, string $method): string
     {
         $this->callAs($callId, hash('sha256', $callId));
-        $capabilities = new ProgramCapabilities('Test program', 'context starts', [$method], RewriteSupport::WithoutApproval);
+        $capabilities = new ProgramCapabilities(
+            'Test program',
+            'context starts',
+            [$method],
+            RewriteSupport::WithoutApproval,
+        );
 
-        return $this->machine()->answer($input, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer))->stdout;
+        return $this->machine()->answer(
+            $input,
+            $capabilities,
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
+        )->stdout;
     }
 }

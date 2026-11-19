@@ -43,7 +43,10 @@ final readonly class PageProps
         $props = ['page' => fn () => $this->pageResult($page, $request, $request->plainQuery())];
 
         foreach ($this->sectionsOf($page) as $section) {
-            $props[$section->propName] = $this->inertia->defer(fn () => $this->sectionResult($section, $request), $section->propName);
+            $props[$section->propName] = $this->inertia->defer(
+                fn () => $this->sectionResult($section, $request),
+                $section->propName,
+            );
         }
 
         $props['inspector'] = $this->inertia->optional(fn () => $this->inspectorResult($request));
@@ -63,7 +66,9 @@ final readonly class PageProps
 
         foreach ($this->declarations->pages() as $page) {
             if ($page->page->opensIn === PageDestination::Page && $this->owners->isAvailable($page->owner)) {
-                $props[$page->propName] = $this->inertia->optional(fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)));
+                $props[$page->propName] = $this->inertia->optional(
+                    fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)),
+                );
             }
         }
 
@@ -73,9 +78,18 @@ final readonly class PageProps
     /**
      * @param  array<string, mixed>  $query
      */
-    private function pageResult(RegisteredPage $page, DeclaredPageRequest $request, array $query, Route|null $route = null): Data
-    {
-        return $this->results->result($page->key, $page->visibilityChecks(), $page->resolver, fn (): Data => $this->readers->pageReader($page->key, $page->resolver, $request, $query, $route)->read());
+    private function pageResult(
+        RegisteredPage $page,
+        DeclaredPageRequest $request,
+        array $query,
+        Route|null $route = null,
+    ): Data {
+        return $this->results->result(
+            $page->key,
+            $page->visibilityChecks(),
+            $page->resolver,
+            fn (): Data => $this->readers->pageReader($page->key, $page->resolver, $request, $query, $route)->read(),
+        );
     }
 
     /**
@@ -85,7 +99,9 @@ final readonly class PageProps
      */
     private function inspectorResult(DeclaredPageRequest $request): Data|null
     {
-        $page = $this->declarations->pageOrNone($request->inspectedPage())->filter(fn (RegisteredPage $found) => $found->page->opensIn === PageDestination::Inspector && $this->owners->isAvailable($found->owner));
+        $page = $this->declarations->pageOrNone($request->inspectedPage())->filter(
+            fn (RegisteredPage $found) => $found->page->opensIn === PageDestination::Inspector && $this->owners->isAvailable($found->owner),
+        );
 
         if ($page->isEmpty()) {
             return null;
@@ -94,7 +110,9 @@ final readonly class PageProps
         $record = $page->get();
         $values = array_map($request->parameter(...), $record->path->parameters);
         $route = new Route(['GET'], $record->uri, []);
-        $route->bind(Request::create('/'.strtr($record->uri, array_combine(array_map(fn (string $name) => '{'.$name.'}', $record->path->parameters), $values))));
+        $route->bind(
+            Request::create('/'.strtr($record->uri, array_combine(array_map(fn (string $name) => '{'.$name.'}', $record->path->parameters), $values))),
+        );
 
         return $this->pageResult($record, $request, [], $route);
     }
@@ -107,7 +125,12 @@ final readonly class PageProps
             return null;
         }
 
-        return $this->results->result($section->key, $section->visibilityChecks(), $section->resolver, fn (): Data => $this->readers->sectionReader($section->key, $section->resolver, $request)->read($context->get()));
+        return $this->results->result(
+            $section->key,
+            $section->visibilityChecks(),
+            $section->resolver,
+            fn (): Data => $this->readers->sectionReader($section->key, $section->resolver, $request)->read($context->get()),
+        );
     }
 
     /**
@@ -115,6 +138,8 @@ final readonly class PageProps
      */
     private function sectionsOf(RegisteredPage $page): array
     {
-        return array_values(array_filter($this->declarations->sections(), fn (RegisteredSection $section) => $section->host->key === $page->key && $this->owners->isAvailable($section->owner)));
+        return array_values(
+            array_filter($this->declarations->sections(), fn (RegisteredSection $section) => $section->host->key === $page->key && $this->owners->isAvailable($section->owner)),
+        );
     }
 }

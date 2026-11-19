@@ -103,7 +103,9 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public static function cancelOpensOf(ShareGatewayConfiguration $configuration): void
     {
-        self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->update(['outcome_code' => GatewayOutcome::Failed->value]);
+        self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->update(
+            ['outcome_code' => GatewayOutcome::Failed->value],
+        );
     }
 
     /**
@@ -111,7 +113,9 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public static function hasUnfinishedOpenFor(ShareGatewayConfiguration $configuration): bool
     {
-        return self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->exists();
+        return self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(
+            GatewayOperationType::Open,
+        )->exists();
     }
 
     /**
@@ -144,8 +148,11 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      * The run claims the operation for the endpoint under a new random lease token for 90 seconds, and gets what it
      * carries the operation out under.
      */
-    public function claimFor(string $runId, ShareGatewayEndpoint $endpoint, GatewayConfiguration $configuration): GatewayOperation
-    {
+    public function claimFor(
+        string $runId,
+        ShareGatewayEndpoint $endpoint,
+        GatewayConfiguration $configuration,
+    ): GatewayOperation {
         $leaseToken = bin2hex(random_bytes(self::LEASE_TOKEN_BYTES));
         $leaseEndsAt = CarbonImmutable::now()->addSeconds(self::LEASE_SECONDS);
         $this->run_id = $runId;
@@ -155,7 +162,14 @@ final class ShareGatewayOperation extends Model implements ReadableModel
         $this->lease_ends_at = $leaseEndsAt;
         $this->save();
 
-        return new GatewayOperation($this->id, $runId, $endpoint->endpoint_version, $leaseToken, $leaseEndsAt->getTimestamp(), $configuration);
+        return new GatewayOperation(
+            $this->id,
+            $runId,
+            $endpoint->endpoint_version,
+            $leaseToken,
+            $leaseEndsAt->getTimestamp(),
+            $configuration,
+        );
     }
 
     /**
@@ -191,7 +205,9 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     #[Scope]
     protected function claimable(Builder $query): void
     {
-        $query->unfinished()->where(fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere('lease_ends_at', '<=', CarbonImmutable::now()));
+        $query->unfinished()->where(
+            fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere('lease_ends_at', '<=', CarbonImmutable::now()),
+        );
     }
 
     /**

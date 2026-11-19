@@ -24,6 +24,9 @@ final class BottomStateDelegated extends LogicException
      */
     public static function for(string $stateType, string $hookMethod, array $visitedFrames): self
     {
-        return new self("The bottom state {$stateType} delegated {$hookMethod} after visiting ".implode(', ', $visitedFrames).'.', $visitedFrames);
+        return new self(
+            "The bottom state {$stateType} delegated {$hookMethod} after visiting ".implode(', ', $visitedFrames).'.',
+            $visitedFrames,
+        );
     }
 }

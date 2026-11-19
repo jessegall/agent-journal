@@ -35,7 +35,13 @@ final readonly class MarkdownText
     /**
      * The blocks a rendered body marks with their source lines.
      */
-    private const array MARKED_BLOCKS = [Heading::class, Paragraph::class, ListItem::class, FencedCode::class, IndentedCode::class];
+    private const array MARKED_BLOCKS = [
+        Heading::class,
+        Paragraph::class,
+        ListItem::class,
+        FencedCode::class,
+        IndentedCode::class,
+    ];
 
     /**
      * @param  list<Section>  $sections
@@ -99,7 +105,9 @@ final readonly class MarkdownText
      */
     public function sectionsNamed(string $heading): array
     {
-        return array_values(array_filter($this->sections, fn (Section $section) => strcasecmp($section->heading, trim($heading)) === 0));
+        return array_values(
+            array_filter($this->sections, fn (Section $section) => strcasecmp($section->heading, trim($heading)) === 0),
+        );
     }
 
     /**
@@ -145,7 +153,10 @@ final readonly class MarkdownText
         return match (count($named)) {
             0 => throw SectionMissing::named($heading),
             1 => $named[0],
-            default => throw SectionMissing::ambiguous($heading, array_map(fn (Section $section) => $section->number, $named)),
+            default => throw SectionMissing::ambiguous(
+                $heading,
+                array_map(fn (Section $section) => $section->number, $named),
+            ),
         };
     }
 
@@ -166,7 +177,10 @@ final readonly class MarkdownText
      */
     public function outlineWithLines(): array
     {
-        return array_map(fn (Section $section) => "{$section->number} {$section->heading} (lines {$section->firstLine}-{$section->lastLine})", $this->sections);
+        return array_map(
+            fn (Section $section) => "{$section->number} {$section->heading} (lines {$section->firstLine}-{$section->lastLine})",
+            $this->sections,
+        );
     }
 
     /**
@@ -229,7 +243,9 @@ final readonly class MarkdownText
      */
     public function sectionBy(string $numberOrHeading): Section
     {
-        return ctype_digit($numberOrHeading) ? $this->section((int) $numberOrHeading) : $this->sectionNamed($numberOrHeading);
+        return ctype_digit($numberOrHeading) ? $this->section(
+            (int) $numberOrHeading,
+        ) : $this->sectionNamed($numberOrHeading);
     }
 
     /**
@@ -255,7 +271,12 @@ final readonly class MarkdownText
 
         $replaced = array_slice($lines, $section->firstLine - 1, $section->lastLine - $section->firstLine + 1);
         $blankLinesAfter = count($replaced) - count(self::withoutTrailingBlankLines($replaced));
-        array_splice($lines, $section->firstLine - 1, count($replaced), [...$replacement, ...array_fill(0, $blankLinesAfter, '')]);
+        array_splice(
+            $lines,
+            $section->firstLine - 1,
+            count($replaced),
+            [...$replacement, ...array_fill(0, $blankLinesAfter, '')],
+        );
 
         return self::body(implode("\n", $lines));
     }
@@ -334,11 +355,18 @@ final readonly class MarkdownText
         $environment->addExtension(new CommonMarkCoreExtension());
 
         if ($firstLine !== null) {
-            $environment->addEventListener(DocumentParsedEvent::class, fn (DocumentParsedEvent $event) => self::markSourceLines($event->getDocument(), $firstLine));
+            $environment->addEventListener(
+                DocumentParsedEvent::class,
+                fn (DocumentParsedEvent $event) => self::markSourceLines($event->getDocument(), $firstLine),
+            );
         }
 
         $html = (string) new MarkdownConverter($environment)->convert($text);
-        $html = (string) preg_replace('/<img src="([^"]*)" alt="([^"]*)"[^>]*>/', '<a href="$1" rel="noopener noreferrer">$2</a>', $html);
+        $html = (string) preg_replace(
+            '/<img src="([^"]*)" alt="([^"]*)"[^>]*>/',
+            '<a href="$1" rel="noopener noreferrer">$2</a>',
+            $html,
+        );
 
         return (string) preg_replace('/<a href="/', '<a rel="noopener noreferrer" href="', $html);
     }
@@ -407,12 +435,20 @@ final readonly class MarkdownText
             $level = self::headingLevel($line);
 
             if ($level > 0) {
-                $headings[] = [$index + 1, $level, trim((string) preg_replace('/^ {0,3}#{1,6}\s*|\s*#*\s*$/', '', $line))];
+                $headings[] = [
+                    $index + 1,
+                    $level,
+                    trim((string) preg_replace('/^ {0,3}#{1,6}\s*|\s*#*\s*$/', '', $line)),
+                ];
 
                 continue;
             }
 
-            $setext = preg_match('/^ {0,3}(=+|-+)\s*$/', $line, $underline) === 1 && $index > 0 && trim($lines[$index - 1]) !== '';
+            $setext = preg_match(
+                '/^ {0,3}(=+|-+)\s*$/',
+                $line,
+                $underline,
+            ) === 1 && $index > 0 && trim($lines[$index - 1]) !== '';
 
             if ($setext) {
                 $headings[] = [$index, $underline[1][0] === '=' ? 1 : 2, trim($lines[$index - 1])];

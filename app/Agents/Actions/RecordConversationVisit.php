@@ -33,7 +33,11 @@ final readonly class RecordConversationVisit implements ConversationVisits
     {
         $session = AgentSession::lockedForUpdate($sessionId);
         $context = LaunchRecord::query()->where('request_id', $session->launch_request_id)->value('context_reference');
-        $conversation = ProgramConversation::query()->native((string) $session->program, self::HOST_SETTINGS, $nativeId)->first()
+        $conversation = ProgramConversation::query()->native(
+            (string) $session->program,
+            self::HOST_SETTINGS,
+            $nativeId,
+        )->first()
             ?? ProgramConversation::begin($session, self::HOST_SETTINGS, $nativeId, $context);
 
         if (! $conversation->admits($session->agent_id, $context)) {
@@ -50,7 +54,9 @@ final readonly class RecordConversationVisit implements ConversationVisits
     public function compacted(string $sessionId, string $eventId, CarbonImmutable $observedAt): void
     {
         $session = AgentSession::lockedForUpdate($sessionId);
-        $conversation = $session->current_conversation_id === null ? null : ProgramConversation::query()->find($session->current_conversation_id);
+        $conversation = $session->current_conversation_id === null ? null : ProgramConversation::query()->find(
+            $session->current_conversation_id,
+        );
 
         if ($conversation !== null) {
             ConversationVisit::appendOnce($session, $conversation, $eventId, $observedAt);

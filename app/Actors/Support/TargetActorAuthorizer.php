@@ -40,8 +40,12 @@ final readonly class TargetActorAuthorizer implements TargetAuthorizer
      * @param  list<TAbility>  $abilities
      * @return list<TAbility>
      */
-    public function filterActions(ActorIdentity $target, string $policy, object|string $subject, array $abilities): array
-    {
+    public function filterActions(
+        ActorIdentity $target,
+        string $policy,
+        object|string $subject,
+        array $abilities,
+    ): array {
         $actor = $this->actors->get($target);
         $authorizer = $this->authorizers->forTarget($actor);
 

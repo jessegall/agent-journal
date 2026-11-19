@@ -17,7 +17,9 @@ final readonly class ActivityReportController
 {
     public function __invoke(RuntimeActivityReportData $report, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportRuntimeActivity($host->hostId, $report->runtimeId, $report->activity, $report->hold, $report->processGeneration));
+        $commands->run(
+            new ReportRuntimeActivity($host->hostId, $report->runtimeId, $report->activity, $report->hold, $report->processGeneration),
+        );
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

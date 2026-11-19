@@ -20,7 +20,9 @@ final class PhaseRevisionChanged extends RuntimeException implements CodedRefusa
 
     public static function for(int $number, int $expected, int $current): self
     {
-        return new self("Phase {$number} is at revision {$current}, not {$expected}; read it again with phases_read and change that revision.");
+        return new self(
+            "Phase {$number} is at revision {$current}, not {$expected}; read it again with phases_read and change that revision.",
+        );
     }
 
     public function refusalCode(): RefusalCode

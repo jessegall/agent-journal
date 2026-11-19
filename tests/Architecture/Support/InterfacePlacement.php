@@ -20,7 +20,9 @@ final class InterfacePlacement
      */
     public static function misplacedIn(array $folders): array
     {
-        $paths = array_values(array_filter(DomainFiles::in($folders), fn (string $path) => basename(dirname($path)) !== 'Contracts'));
+        $paths = array_values(
+            array_filter(DomainFiles::in($folders), fn (string $path) => basename(dirname($path)) !== 'Contracts'),
+        );
         $misplaced = ScanCache::findings(new InterfacesDeclared(), $paths);
         sort($misplaced);
 

@@ -78,7 +78,11 @@ final class AutoAssignmentActivityTest extends TestCase
 
     private function runningSession(Agent $agent): AgentSession
     {
-        $session = $this->app->make(AgentSessions::class)->start($agent, TestSelections::of(), TestSelections::requestId());
+        $session = $this->app->make(AgentSessions::class)->start(
+            $agent,
+            TestSelections::of(),
+            TestSelections::requestId(),
+        );
 
         return $session;
     }

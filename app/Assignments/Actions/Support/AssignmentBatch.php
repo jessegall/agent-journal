@@ -73,16 +73,25 @@ final readonly class AssignmentBatch
         if ($current->isEmpty()) {
             $after = $this->store->assignIfUnheld($record, $recipient);
 
-            return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, null, $after)]);
+            return new AssignmentResult(
+                [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],
+                [new AssignmentChange($record, null, $after)],
+            );
         }
 
         if ($current->get()->holder()->isSameAs($recipient)) {
-            return new AssignmentResult([new AssignmentOutcome($record, $current->get(), AssignmentOutcomeType::Unchanged)], []);
+            return new AssignmentResult(
+                [new AssignmentOutcome($record, $current->get(), AssignmentOutcomeType::Unchanged)],
+                [],
+            );
         }
 
         $after = $this->store->replace($current->get(), $recipient);
 
-        return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, $current->get(), $after)]);
+        return new AssignmentResult(
+            [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],
+            [new AssignmentChange($record, $current->get(), $after)],
+        );
     }
 
     public function clear(RecordIdentity $record): AssignmentResult
@@ -95,11 +104,17 @@ final readonly class AssignmentBatch
 
         $this->store->remove($current->get());
 
-        return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, $current->get(), null)]);
+        return new AssignmentResult(
+            [new AssignmentOutcome($record, null, AssignmentOutcomeType::Changed)],
+            [new AssignmentChange($record, $current->get(), null)],
+        );
     }
 
     public function skip(RecordIdentity $record): AssignmentResult
     {
-        return new AssignmentResult([new AssignmentOutcome($record, $this->store->lockCurrent($record)->getOrElse(null), AssignmentOutcomeType::SkippedFinished)], []);
+        return new AssignmentResult(
+            [new AssignmentOutcome($record, $this->store->lockCurrent($record)->getOrElse(null), AssignmentOutcomeType::SkippedFinished)],
+            [],
+        );
     }
 }

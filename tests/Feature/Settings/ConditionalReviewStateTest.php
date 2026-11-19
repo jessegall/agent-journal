@@ -72,7 +72,10 @@ final class ConditionalReviewStateTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
         $this->target = TestActors::stack(1, 10);
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+        );
         $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
     }
 
@@ -93,7 +96,11 @@ final class ConditionalReviewStateTest extends TestCase
 
         $this->switchReview(off: false, expectedRevision: 1);
 
-        $this->assertSame(['hooks.ready'], $this->storedTypeKeys(), 'Switching the group on again brings back no removed frame.');
+        $this->assertSame(
+            ['hooks.ready'],
+            $this->storedTypeKeys(),
+            'Switching the group on again brings back no removed frame.',
+        );
     }
 
     public function test_a_retained_factory_reads_the_settings_of_each_request(): void
@@ -138,13 +145,18 @@ final class ConditionalReviewStateTest extends TestCase
 
     private function pushReview(): void
     {
-        $this->transaction()->run(fn () => $this->app->make(AgentStacks::class)->push($this->target, new StateReference(ReviewStateType::TYPE_KEY, NoSubject::None)));
+        $this->transaction()->run(
+            fn () => $this->app->make(AgentStacks::class)->push($this->target, new StateReference(ReviewStateType::TYPE_KEY, NoSubject::None)),
+        );
     }
 
     private function switchReview(bool $off, int $expectedRevision): void
     {
         $commands = new RegisteredSettingCommands($this->app->make(SettingRegistry::class));
-        $command = $off ? $commands->disable($this->reviews->review, $expectedRevision) : $commands->enable($this->reviews->review, $expectedRevision);
+        $command = $off ? $commands->disable(
+            $this->reviews->review,
+            $expectedRevision,
+        ) : $commands->enable($this->reviews->review, $expectedRevision);
 
         $this->app->make(CommandBus::class)->run($command);
     }
@@ -159,6 +171,9 @@ final class ConditionalReviewStateTest extends TestCase
      */
     private function storedTypeKeys(): array
     {
-        return array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, AgentStackRow::query()->forTarget($this->target)->sole()->frames->all());
+        return array_map(
+            fn (FrameRecord $frame) => $frame->reference->typeKey,
+            AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(),
+        );
     }
 }

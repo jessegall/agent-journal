@@ -20,7 +20,9 @@ final class ShareRetryRefused extends RuntimeException implements CodedRefusal, 
 
     public static function for(string $shareId, ShareState $state): self
     {
-        return new self("Share {$shareId} is {$state->value}; only a pending or failed share before its deadline opens again.");
+        return new self(
+            "Share {$shareId} is {$state->value}; only a pending or failed share before its deadline opens again.",
+        );
     }
 
     protected function status(): int

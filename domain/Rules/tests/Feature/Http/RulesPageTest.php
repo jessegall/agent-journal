@@ -39,7 +39,12 @@ final class RulesPageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->active = Rule::holding('Write all code in plain English.');
-        $this->proposed = Rule::proposed("Every phase ends with its tests.\n  - run them once", 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
+        $this->proposed = Rule::proposed(
+            "Every phase ends with its tests.\n  - run them once",
+            'Agents keep forgetting it.',
+            null,
+            ActorContext::forUser(TestIds::of(7)),
+        );
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void
@@ -49,25 +54,29 @@ final class RulesPageTest extends TestCase
 
     public function test_the_list_and_the_selected_rule_share_one_page(): void
     {
-        $this->actingAs($this->owner)->get("/rules?q=phase&rule={$this->proposed->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('rules/RulesWindow')
-            ->where('page.state', 'ready')
-            ->where('page.data.pagination.total', 1)
-            ->where('page.data.rows.0.id', (string) $this->proposed->id)
-            ->where('page.data.rows.0.state', 'proposed')
-            ->where('page.data.filters.q', 'phase')
-            ->where('page.data.selected.text', "Every phase ends with its tests.\n  - run them once")
-            ->where('page.data.selected.canReview', true)
-            ->where('page.data.selectionMissing', false)
-            ->missing('page.filters')
-            ->missing('page.view'));
+        $this->actingAs($this->owner)->get(
+            "/rules?q=phase&rule={$this->proposed->id}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->component('rules/RulesWindow')
+                    ->where('page.state', 'ready')
+                    ->where('page.data.pagination.total', 1)
+                    ->where('page.data.rows.0.id', (string) $this->proposed->id)
+                    ->where('page.data.rows.0.state', 'proposed')
+                    ->where('page.data.filters.q', 'phase')
+                    ->where('page.data.selected.text', "Every phase ends with its tests.\n  - run them once")
+                    ->where('page.data.selected.canReview', true)
+                    ->where('page.data.selectionMissing', false)
+                    ->missing('page.filters')
+                    ->missing('page.view'));
     }
 
     public function test_an_unknown_rule_is_missing_without_text(): void
     {
-        $this->actingAs($this->owner)->get('/rules?rule='.TestIds::of(999999))->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.selectionMissing', true)
-            ->missing('page.data.selected'));
+        $this->actingAs($this->owner)->get(
+            '/rules?rule='.TestIds::of(999999),
+        )->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('page.data.selectionMissing', true)
+                    ->missing('page.data.selected'));
     }
 
     public function test_approving_returns_to_the_page_it_came_from(): void
@@ -92,7 +101,9 @@ final class RulesPageTest extends TestCase
 
     public function test_denying_settles_the_rule(): void
     {
-        $this->actingAs($this->owner)->from('/rules')->patch("/rules/{$this->proposed->number}/deny")->assertRedirect('/rules');
+        $this->actingAs($this->owner)->from('/rules')->patch(
+            "/rules/{$this->proposed->number}/deny",
+        )->assertRedirect('/rules');
 
         $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);
     }

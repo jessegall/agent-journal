@@ -135,7 +135,10 @@ final class RecordDockTest extends TestCase
      */
     private function docked(bool $hidden): array
     {
-        return $this->app->make(DockedRecordRecords::class)->docked(new ConversationPair($this->ownInboxId, $this->desk->inboxId()), $hidden);
+        return $this->app->make(DockedRecordRecords::class)->docked(
+            new ConversationPair($this->ownInboxId, $this->desk->inboxId()),
+            $hidden,
+        );
     }
 
     private function record(): RecordIdentity

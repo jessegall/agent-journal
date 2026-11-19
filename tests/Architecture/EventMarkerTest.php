@@ -35,8 +35,10 @@ final class EventMarkerTest extends TestCase
      * @param  class-string  $marker
      */
     #[DataProvider('markedFolders')]
-    public function test_every_class_of_a_marked_folder_implements_its_marker_and_only_there(string $folder, string $marker): void
-    {
+    public function test_every_class_of_a_marked_folder_implements_its_marker_and_only_there(
+        string $folder,
+        string $marker,
+    ): void {
         $unmarked = [];
         $misplaced = [];
 

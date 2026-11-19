@@ -49,7 +49,14 @@ final class DueWorkOnTickTest extends TestCase
     use InstallsCommandModules;
     use SendsSignedCalls;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'engine_frame_times'];
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'engine_frame_times',
+    ];
 
     private const int SECOND = 1_000_000_000;
 
@@ -71,7 +78,10 @@ final class DueWorkOnTickTest extends TestCase
             $table->timestampTz('reminded_at', 6)->nullable();
             $table->timestampsTz();
         });
-        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.plain', new ClosureStateLoader(fn () => ScriptedState::delegating())));
+        Event::listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register('test.plain', new ClosureStateLoader(fn () => ScriptedState::delegating())),
+        );
         $this->bootModules(QuestionRemindersDomain::class);
         $this->asked = CarbonImmutable::parse('2026-11-18 12:00:00');
         $this->clock = new FakeMonotonicClock();
@@ -121,12 +131,17 @@ final class DueWorkOnTickTest extends TestCase
 
         $this->app->make(EnginePass::class)->run(function () use ($target, $question): void {
             $this->app->make(EngineAccess::class)->grantFrame($target, $question->id);
-            $remind = fn (): mixed => $this->app->make(CommandBus::class)->run(new SendQuestionReminder($target, $question->id));
+            $remind = fn (): mixed => $this->app->make(CommandBus::class)->run(
+                new SendQuestionReminder($target, $question->id),
+            );
             $this->app->make(CommandEntrance::class)->through(CommandEntry::Application, $remind);
         });
 
         $this->assertNull($question->refresh()->reminded_at);
-        $this->assertNotContains($question->id, array_map(fn (FrameRecord $frame) => $frame->id, AgentStackRow::query()->authorizedFor($target)->sole()->frames->all()));
+        $this->assertNotContains(
+            $question->id,
+            array_map(fn (FrameRecord $frame) => $frame->id, AgentStackRow::query()->authorizedFor($target)->sole()->frames->all()),
+        );
     }
 
     public function test_a_quiet_agent_beating_through_the_heartbeat_source_stays_present(): void
@@ -135,7 +150,11 @@ final class DueWorkOnTickTest extends TestCase
         $this->app->forgetInstance(MonotonicClock::class);
         $launch = TestLaunch::start();
         $source = new RouteHeartbeatSource(
-            fn (string $path) => $this->signed($launch, $path, ['request_key' => bin2hex(random_bytes(8))])->getStatusCode(),
+            fn (string $path) => $this->signed(
+                $launch,
+                $path,
+                ['request_key' => bin2hex(random_bytes(8))],
+            )->getStatusCode(),
         );
 
         $this->assertSame(0, $this->app->make(ActiveActors::class)->snapshot()->agentSessions);

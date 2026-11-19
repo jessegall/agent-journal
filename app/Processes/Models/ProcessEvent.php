@@ -49,14 +49,18 @@ final class ProcessEvent extends Model implements ReadableModel
     {
         $existing = self::query()->ofRun($run)->where('sequence', $sequence)->first();
         if ($existing === null) {
-            return self::query()->create(['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $payload]);
+            return self::query()->create(
+                ['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $payload],
+            );
         }
         if ($existing->type === $type && $existing->payload === $payload) {
             return $existing;
         }
         $next = (int) self::query()->ofRun($run)->max('sequence') + 1;
 
-        return self::query()->create(['process_run_id' => $run->id, 'sequence' => $next, 'type' => self::OPERATIONAL_ERROR, 'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $payload]]);
+        return self::query()->create(
+            ['process_run_id' => $run->id, 'sequence' => $next, 'type' => self::OPERATIONAL_ERROR, 'payload' => ['conflicts_with' => $sequence, 'type' => $type, 'payload' => $payload]],
+        );
     }
 
     /**

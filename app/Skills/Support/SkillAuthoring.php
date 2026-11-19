@@ -54,7 +54,9 @@ final readonly class SkillAuthoring
         if (ctype_digit($numberOrKey)) {
             $id = Skill::idOfNumber((int) $numberOrKey);
 
-            return $id === null ? throw SkillMissing::forNumber((int) $numberOrKey) : Skill::query()->whereKey($id)->firstOrFail();
+            return $id === null ? throw SkillMissing::forNumber(
+                (int) $numberOrKey,
+            ) : Skill::query()->whereKey($id)->firstOrFail();
         }
 
         $key = SkillKey::from($numberOrKey);
@@ -64,7 +66,9 @@ final readonly class SkillAuthoring
             return $stored;
         }
 
-        return $this->container->make(SkillResolver::class)->find($key)->origin === SkillOrigin::Shipped ? throw ShippedSkillReadOnly::for($key->key) : throw SkillMissing::for($key);
+        return $this->container->make(
+            SkillResolver::class,
+        )->find($key)->origin === SkillOrigin::Shipped ? throw ShippedSkillReadOnly::for($key->key) : throw SkillMissing::for($key);
     }
 
     /**
@@ -92,7 +96,11 @@ final readonly class SkillAuthoring
         $top = min(array_map(fn ($section) => $section->level, $headings));
 
         return array_values(array_map(
-            fn ($section) => new SectionDraft(Str::slug($section->heading), $section->heading, trim($section->lastLine > $section->firstLine ? $text->lines($section->firstLine + 1, $section->lastLine) : '', "\n")),
+            fn ($section) => new SectionDraft(
+                Str::slug($section->heading),
+                $section->heading,
+                trim($section->lastLine > $section->firstLine ? $text->lines($section->firstLine + 1, $section->lastLine) : '', "\n"),
+            ),
             array_filter($headings, fn ($section) => $section->level === $top),
         ));
     }
@@ -110,7 +118,10 @@ final readonly class SkillAuthoring
         $named = array_filter($audience, fn (array $values) => $values !== []);
 
         if ($conditions !== null && $named !== []) {
-            throw SkillConditionInvalid::field('--conditions', 'cannot be mixed with audience flags; use one or the other');
+            throw SkillConditionInvalid::field(
+                '--conditions',
+                'cannot be mixed with audience flags; use one or the other',
+            );
         }
 
         foreach ($audience as $type => $values) {
@@ -129,7 +140,10 @@ final readonly class SkillAuthoring
             $children[] = ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($values))];
         }
 
-        return $children === [] ? '' : json_encode(['type' => 'all', 'version' => 1, 'children' => $children], JSON_THROW_ON_ERROR);
+        return $children === [] ? '' : json_encode(
+            ['type' => 'all', 'version' => 1, 'children' => $children],
+            JSON_THROW_ON_ERROR,
+        );
     }
 
     /**
@@ -207,7 +221,11 @@ final readonly class SkillAuthoring
             'description' => $revision->description,
             'condition' => $revision->condition,
             'sections' => array_map(
-                fn (SkillSection $section) => ['key' => $section->key, 'heading' => $section->heading, 'markdown' => $section->storedText()],
+                fn (SkillSection $section) => [
+                    'key' => $section->key,
+                    'heading' => $section->heading,
+                    'markdown' => $section->storedText(),
+                ],
                 $revision->sections,
             ),
         ];

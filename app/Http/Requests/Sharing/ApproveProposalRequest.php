@@ -24,12 +24,22 @@ final class ApproveProposalRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [...$this->confirmedPreviewRules(), ...$this->idempotencyKeyRules(), 'minutes' => ['nullable', 'integer']];
+        return [
+            ...$this->confirmedPreviewRules(),
+            ...$this->idempotencyKeyRules(),
+            'minutes' => ['nullable', 'integer'],
+        ];
     }
 
     public function command(): ApproveShareRequest
     {
-        return new ApproveShareRequest($this->shareId(), $this->previewId(), $this->previewChecksum(), $this->minutesUntilExpiry(), $this->requestKey());
+        return new ApproveShareRequest(
+            $this->shareId(),
+            $this->previewId(),
+            $this->previewChecksum(),
+            $this->minutesUntilExpiry(),
+            $this->requestKey(),
+        );
     }
 
     private function minutesUntilExpiry(): int

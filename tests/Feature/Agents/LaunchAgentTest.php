@@ -56,7 +56,9 @@ final class LaunchAgentTest extends TestCase
     {
         $this->expectException(QueryException::class);
 
-        DB::table('agent_sessions')->insert(['id' => (string) Str::ulid(), 'agent_id' => $this->agent->id, 'program' => 'claude-code', 'status' => 'active', 'profile_key' => 'main-agent', 'profile_revision' => 1]);
+        DB::table('agent_sessions')->insert(
+            ['id' => (string) Str::ulid(), 'agent_id' => $this->agent->id, 'program' => 'claude-code', 'status' => 'active', 'profile_key' => 'main-agent', 'profile_revision' => 1],
+        );
     }
 
     public function test_repeating_a_request_id_returns_the_same_session(): void
@@ -66,9 +68,15 @@ final class LaunchAgentTest extends TestCase
         $first = $this->launch($request);
         $again = $this->launch($request);
 
-        $this->assertSame([$first->sessionId, true, false], [$again->sessionId, $first->newSession, $again->newSession]);
+        $this->assertSame(
+            [$first->sessionId, true, false],
+            [$again->sessionId, $first->newSession, $again->newSession],
+        );
         $this->assertSame(1, AgentSession::query()->where('agent_id', $this->agent->id)->count());
-        $this->assertSame(LaunchDisposition::Launched, LaunchRecord::query()->where('request_id', $request->requestId)->sole()->disposition);
+        $this->assertSame(
+            LaunchDisposition::Launched,
+            LaunchRecord::query()->where('request_id', $request->requestId)->sole()->disposition,
+        );
         $this->assertSame(['--model', TestSelections::MODEL], $first->programArguments);
         $this->assertSame(LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED, $first->actualModel);
     }
@@ -95,21 +103,47 @@ final class LaunchAgentTest extends TestCase
         $this->assertSame($receipt->sessionId, $material->sessionId);
         $this->assertStringNotContainsString($material->token, serialize($receipt));
         $this->assertStringNotContainsString($material->token, json_encode($receipt, JSON_THROW_ON_ERROR));
-        Event::assertDispatched(LaunchAccepted::class, fn (LaunchAccepted $accepted): bool => $accepted->sessionId === $receipt->sessionId);
+        Event::assertDispatched(
+            LaunchAccepted::class,
+            fn (LaunchAccepted $accepted): bool => $accepted->sessionId === $receipt->sessionId,
+        );
     }
 
     public function test_a_codex_launch_receipt_carries_its_model_flag_and_no_actual_model(): void
     {
-        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of('codex'), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
+        $request = new LaunchRequest(
+            TestSelections::requestId(),
+            $this->agent->id,
+            TestSelections::of('codex'),
+            LaunchOriginType::MainLaunch,
+            null,
+            null,
+            ConversationModeType::New,
+            null,
+            LaunchPolicy::withoutProfile(TestSelections::onHost()),
+        );
 
         $receipt = $this->launch($request);
 
-        $this->assertSame([['--model', TestSelections::MODEL], LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED], [$receipt->programArguments, $receipt->actualModel]);
+        $this->assertSame(
+            [['--model', TestSelections::MODEL], LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED],
+            [$receipt->programArguments, $receipt->actualModel],
+        );
     }
 
     private function request(): LaunchRequest
     {
-        return new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
+        return new LaunchRequest(
+            TestSelections::requestId(),
+            $this->agent->id,
+            TestSelections::of(),
+            LaunchOriginType::MainLaunch,
+            null,
+            null,
+            ConversationModeType::New,
+            null,
+            LaunchPolicy::withoutProfile(TestSelections::onHost()),
+        );
     }
 
     private function launch(LaunchRequest $request): LaunchReceipt

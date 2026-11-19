@@ -74,7 +74,10 @@ final class McpToolRulesTest extends TestCase
     public function test_a_tool_that_queries_a_model_is_named_with_its_class_and_line(): void
     {
         $this->assertSame(
-            ['tests/Fixtures/Mcp/Leaky/LeakyReadTool.php:8 uses App\Mcp\Models\RetainedPage', 'tests/Fixtures/Mcp/Leaky/LeakyReadTool.php:21 uses App\Mcp\Models\RetainedPage'],
+            [
+                'tests/Fixtures/Mcp/Leaky/LeakyReadTool.php:8 uses App\Mcp\Models\RetainedPage',
+                'tests/Fixtures/Mcp/Leaky/LeakyReadTool.php:21 uses App\Mcp\Models\RetainedPage',
+            ],
             $this->forbiddenUsesIn(DomainFiles::in([base_path('tests/Fixtures/Mcp/Leaky')])),
         );
     }
@@ -86,7 +89,12 @@ final class McpToolRulesTest extends TestCase
      */
     private function mcpFiles(): array
     {
-        $folders = [...(glob(app_path('*/Mcp'), GLOB_ONLYDIR) ?: []), ...(glob(base_path('domain/*/src/Mcp'), GLOB_ONLYDIR) ?: []), app_path('Mcp/Tools'), app_path('Mcp/Resources')];
+        $folders = [
+            ...(glob(app_path('*/Mcp'), GLOB_ONLYDIR) ?: []),
+            ...(glob(base_path('domain/*/src/Mcp'), GLOB_ONLYDIR) ?: []),
+            app_path('Mcp/Tools'),
+            app_path('Mcp/Resources'),
+        ];
 
         return DomainFiles::in($folders);
     }
@@ -150,7 +158,10 @@ final class McpToolRulesTest extends TestCase
             return [];
         }
 
-        $violations = array_any(self::TOOL_BASES, fn (string $base): bool => class_exists($base) && $type->isSubclassOf($base)) ? [] : ["{$class} extends no journal tool base"];
+        $violations = array_any(
+            self::TOOL_BASES,
+            fn (string $base): bool => class_exists($base) && $type->isSubclassOf($base),
+        ) ? [] : ["{$class} extends no journal tool base"];
         $names = $type->getAttributes(Name::class);
         $name = $names === [] ? '' : $names[0]->newInstance()->value;
 

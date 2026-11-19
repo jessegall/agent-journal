@@ -39,17 +39,38 @@ final readonly class MiddlewareRunner
         try {
             $name = $command::class;
             $owner = $this->registry->ownerOf($name);
-            $call = CommandCall::of($command, $owner, $this->registry->isExported($name), $this->registry->needsRepeatableRead($name), $this->actors->hasActor() ? $this->actors->actor() : null);
-            $inside = fn (CommandCall $current, Closure $handler) => $this->through([...$this->core(CommandFrame::INSIDE), ...$this->module($name, MiddlewareStage::InsideTransaction)], $current, $handler);
+            $call = CommandCall::of(
+                $command,
+                $owner,
+                $this->registry->isExported($name),
+                $this->registry->needsRepeatableRead($name),
+                $this->actors->hasActor() ? $this->actors->actor() : null,
+            );
+            $inside = fn (CommandCall $current, Closure $handler) => $this->through(
+                [...$this->core(CommandFrame::INSIDE), ...$this->module($name, MiddlewareStage::InsideTransaction)],
+                $current,
+                $handler,
+            );
             $steps = [
                 ...$this->core(CommandFrame::FIRST),
-                fn (CommandCall $current, Closure $next) => $this->isAvailable($owner) ? $next($current) : throw DomainDisabled::for($owner, $name),
-                fn (CommandCall $current, Closure $next) => $this->through($this->module($name, MiddlewareStage::BeforeTransaction), $current, $next),
+                fn (
+                    CommandCall $current,
+                    Closure $next,
+                ) => $this->isAvailable($owner) ? $next($current) : throw DomainDisabled::for($owner, $name),
+                fn (CommandCall $current, Closure $next) => $this->through(
+                    $this->module($name, MiddlewareStage::BeforeTransaction),
+                    $current,
+                    $next,
+                ),
                 $this->container->make(CommandFrame::TRANSACTION),
                 $inside,
             ];
 
-            return $this->through($steps, $call, fn (CommandCall $current) => $this->subjects->handOver($current, $next));
+            return $this->through(
+                $steps,
+                $call,
+                fn (CommandCall $current) => $this->subjects->handOver($current, $next),
+            );
         } finally {
             $this->nesting->leave();
         }
@@ -73,7 +94,10 @@ final readonly class MiddlewareRunner
     {
         $chain = array_reduce(
             array_reverse($steps),
-            fn (Closure $next, CommandMiddleware|MiddlewareStep|Closure $step) => fn (CommandCall $current) => $step instanceof Closure ? $step($current, $next) : $step->handle($current, $next),
+            fn (
+                Closure $next,
+                CommandMiddleware|MiddlewareStep|Closure $step,
+            ) => fn (CommandCall $current) => $step instanceof Closure ? $step($current, $next) : $step->handle($current, $next),
             $last,
         );
 
@@ -96,8 +120,13 @@ final readonly class MiddlewareRunner
      */
     private function module(string $command, MiddlewareStage $stage): array
     {
-        $entries = array_filter($this->registry->middlewareFor($command), fn (RegisteredMiddleware $entry) => $entry->runsIn($stage) && $this->isAvailable($entry->owner));
+        $entries = array_filter(
+            $this->registry->middlewareFor($command),
+            fn (RegisteredMiddleware $entry) => $entry->runsIn($stage) && $this->isAvailable($entry->owner),
+        );
 
-        return array_values(array_map(fn (RegisteredMiddleware $entry) => new MiddlewareStep($this->container->make($entry->middlewareClass()), $entry), $entries));
+        return array_values(
+            array_map(fn (RegisteredMiddleware $entry) => new MiddlewareStep($this->container->make($entry->middlewareClass()), $entry), $entries),
+        );
     }
 }

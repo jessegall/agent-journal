@@ -29,11 +29,19 @@ final class StackInspectionTest extends TestCase
         $this->answerStop('call-1');
         $stdout = $this->answerStop('call-2');
 
-        $inspection = $this->actingAs(User::factory()->create())->getJson('/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10))->assertOk()->json();
+        $inspection = $this->actingAs(User::factory()->create())->getJson(
+            '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
+        )->assertOk()->json();
 
-        $this->assertSame([TestIds::of(1), TestIds::of(10), 'active'], [$inspection['agentId'], $inspection['sessionId'], $inspection['status']]);
+        $this->assertSame(
+            [TestIds::of(1), TestIds::of(10), 'active'],
+            [$inspection['agentId'], $inspection['sessionId'], $inspection['status']],
+        );
         $this->assertSame(['hooks.ready', 'test.tasks', 'guide'], array_column($inspection['frames'], 'typeKey'));
-        $this->assertSame([null, ['id' => '42', 'runNumber' => 1], null], array_column($inspection['frames'], 'subject'));
+        $this->assertSame(
+            [null, ['id' => '42', 'runNumber' => 1], null],
+            array_column($inspection['frames'], 'subject'),
+        );
         $this->assertSame([true, false, false], array_column($inspection['frames'], 'isBottom'));
         $this->assertSame('call-2', $inspection['lastCall']['hookId']);
         $this->assertSame('deny', $inspection['lastCall']['answer']);
@@ -44,7 +52,9 @@ final class StackInspectionTest extends TestCase
     {
         $this->answerStop('call-1');
 
-        $steps = $this->actingAs(User::factory()->create())->getJson('/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10))->json('lastCall.steps');
+        $steps = $this->actingAs(User::factory()->create())->getJson(
+            '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
+        )->json('lastCall.steps');
 
         $this->assertSame([['guide', 'delegate', 'keep'], ['test.tasks', 'deny', 'keep']], array_map(
             fn (array $step) => [$step['stateType'], $step['answer'], $step['change']],
@@ -54,7 +64,9 @@ final class StackInspectionTest extends TestCase
 
     public function test_a_stack_without_answered_calls_shows_no_last_call(): void
     {
-        $inspection = $this->actingAs(User::factory()->create())->getJson('/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10))->assertOk()->json();
+        $inspection = $this->actingAs(User::factory()->create())->getJson(
+            '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
+        )->assertOk()->json();
 
         $this->assertArrayNotHasKey('lastCall', $inspection);
     }
@@ -73,6 +85,10 @@ final class StackInspectionTest extends TestCase
     {
         $agent = TestLaunch::start();
 
-        $this->call('GET', '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10), server: $agent->serverHeaders('', method: 'GET', target: '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10)))->assertUnauthorized();
+        $this->call(
+            'GET',
+            '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
+            server: $agent->serverHeaders('', method: 'GET', target: '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10)),
+        )->assertUnauthorized();
     }
 }

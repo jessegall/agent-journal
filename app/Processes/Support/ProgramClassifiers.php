@@ -24,6 +24,8 @@ final readonly class ProgramClassifiers
      */
     public function for(ProgramIdentity $program): array
     {
-        return array_values(array_filter($this->classifiers, fn (ProgramClassifier $classifier): bool => $classifier->classifies($program)));
+        return array_values(
+            array_filter($this->classifiers, fn (ProgramClassifier $classifier): bool => $classifier->classifies($program)),
+        );
     }
 }

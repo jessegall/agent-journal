@@ -226,10 +226,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     protected function heldOrShared(Builder $query, AssigneeIdentity $holder, array $shared): void
     {
         $query->where(function (Builder $holders) use ($holder, $shared): void {
-            $holders->where(fn (Builder $own) => $own->where('holder_type', $holder->type)->where('holder_id', $holder->id));
+            $holders->where(
+                fn (Builder $own) => $own->where('holder_type', $holder->type)->where('holder_id', $holder->id),
+            );
 
             foreach ($shared as $type => $ids) {
-                $holders->orWhere(fn (Builder $group) => $group->where('holder_type', $type)->whereIn('holder_id', $ids));
+                $holders->orWhere(
+                    fn (Builder $group) => $group->where('holder_type', $type)->whereIn('holder_id', $ids),
+                );
             }
         });
     }

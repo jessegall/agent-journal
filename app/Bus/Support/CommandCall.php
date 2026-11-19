@@ -33,8 +33,13 @@ final readonly class CommandCall
     /**
      * @param  Command<mixed>  $command
      */
-    public static function of(Command $command, string $owner, bool $exported, bool $repeatableRead, ActorContext|null $actor): self
-    {
+    public static function of(
+        Command $command,
+        string $owner,
+        bool $exported,
+        bool $repeatableRead,
+        ActorContext|null $actor,
+    ): self {
         return new self($command, $command, $owner, $exported, $repeatableRead, $actor);
     }
 
@@ -139,7 +144,15 @@ final readonly class CommandCall
 
         $repeatableRead = $this->repeatableRead;
 
-        return new self($this->command, $this->original, $this->owner, $this->exported, $repeatableRead, $this->actor, [$authorized]);
+        return new self(
+            $this->command,
+            $this->original,
+            $this->owner,
+            $this->exported,
+            $repeatableRead,
+            $this->actor,
+            [$authorized],
+        );
     }
 
     /**

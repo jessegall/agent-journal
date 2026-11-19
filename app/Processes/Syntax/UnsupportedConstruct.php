@@ -51,7 +51,11 @@ final class UnsupportedConstruct
     {
         $literal = $token->literal();
         $wasAtCommandStart = $this->atCommandStart;
-        $this->atCommandStart = $token->type->isFollowedByCommand() || in_array($literal, self::COMMAND_STARTING_WORDS, true);
+        $this->atCommandStart = $token->type->isFollowedByCommand() || in_array(
+            $literal,
+            self::COMMAND_STARTING_WORDS,
+            true,
+        );
         if ($token->type->isGroupOpener()) {
             $this->parentheses++;
 

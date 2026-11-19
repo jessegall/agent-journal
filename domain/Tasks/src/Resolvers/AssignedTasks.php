@@ -50,11 +50,15 @@ final readonly class AssignedTasks implements AssignedTaskResolver
             $matching = Task::query()->amongIds($heldIds)->matching($filters->search)->inStates($filters->states);
             $total = $matching->clone()->count();
             $tasks = $matching->orderBy('id')->forPage($filters->page->number, $filters->page->size)->get();
-            $holders = $this->assignees->holdersOfRecords(array_values($tasks->map(fn (Task $task) => $task->assignmentIdentity())->all()));
+            $holders = $this->assignees->holdersOfRecords(
+                array_values($tasks->map(fn (Task $task) => $task->assignmentIdentity())->all()),
+            );
             $executions = $this->executions->of($tasks);
 
             return new TaskList(
-                array_values($tasks->map(fn (Task $task) => new TaskCard($task->id, $task->title, $task->state, $holders->forRecord($task->assignmentIdentity()), $executions[$task->id]))->all()),
+                array_values(
+                    $tasks->map(fn (Task $task) => new TaskCard($task->id, $task->title, $task->state, $holders->forRecord($task->assignmentIdentity()), $executions[$task->id]))->all(),
+                ),
                 $filters->page,
                 $total,
             );

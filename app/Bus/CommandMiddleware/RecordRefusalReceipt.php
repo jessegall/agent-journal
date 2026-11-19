@@ -30,7 +30,11 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
      */
     private const array UNCODED_REFUSALS = [ActorNotAllowed::class => RefusalCode::Forbidden];
 
-    public function __construct(private RequestKey $key, private ReceiptCallers $callers, private CommandRegistry $registry) {}
+    public function __construct(
+        private RequestKey $key,
+        private ReceiptCallers $callers,
+        private CommandRegistry $registry,
+    ) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
     {
@@ -43,7 +47,14 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
                 if ($key !== null && $this->isFirstRefusal($failure)) {
                     $code = self::codeOf($failure);
                     $caller = $this->callers->of($call->actor());
-                    CommandReceipt::recordRefusal($caller, $key, $call->command(), $this->registry->retentionOf($call->name()), $code, $failure->getMessage());
+                    CommandReceipt::recordRefusal(
+                        $caller,
+                        $key,
+                        $call->command(),
+                        $this->registry->retentionOf($call->name()),
+                        $code,
+                        $failure->getMessage(),
+                    );
                 }
 
                 throw $failure;

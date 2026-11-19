@@ -26,7 +26,12 @@ final readonly class AddItem extends Command implements HasAuthorizationSubject
     /**
      * @param  list<string>  $tags
      */
-    public function __construct(public int $itemId, public ItemSize $size, public array $tags, public string|null $note = null) {}
+    public function __construct(
+public int $itemId,
+ public ItemSize $size,
+ public array $tags,
+ public string|null $note = null,
+) {}
 
     /**
      * @return class-string

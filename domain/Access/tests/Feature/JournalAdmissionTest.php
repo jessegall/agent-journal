@@ -24,7 +24,10 @@ final class JournalAdmissionTest extends TestCase
     {
         parent::setUp();
 
-        Route::middleware(['web', 'auth', 'journal.user'])->get('/access-test/actor', fn (ActorContext $actor) => "{$actor->type->value} {$actor->id}");
+        Route::middleware(['web', 'auth', 'journal.user'])->get(
+            '/access-test/actor',
+            fn (ActorContext $actor) => "{$actor->type->value} {$actor->id}",
+        );
     }
 
     public function test_the_moved_user_and_its_factory_find_each_other_both_ways(): void

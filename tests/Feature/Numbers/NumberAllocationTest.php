@@ -68,7 +68,10 @@ final class NumberAllocationTest extends TestCase
         $first = $this->commands->run(new OpenLedger('first'));
         $second = $this->commands->run(new OpenLedger('second'));
 
-        $this->assertSame([1, 2], [Ledger::query()->findOrFail($first)->number, Ledger::query()->findOrFail($second)->number]);
+        $this->assertSame(
+            [1, 2],
+            [Ledger::query()->findOrFail($first)->number, Ledger::query()->findOrFail($second)->number],
+        );
         $this->assertSame(1, $this->commands->run(new WriteEntry($first, 'a')));
         $this->assertSame(2, $this->commands->run(new WriteEntry($first, 'b')));
         $this->assertSame(1, $this->commands->run(new WriteEntry($second, 'c')));
@@ -132,7 +135,9 @@ final class NumberAllocationTest extends TestCase
     {
         $ledger = $this->commands->run(new OpenLedger('ledger'));
         $this->commands->run(new WriteEntry($ledger, 'first'));
-        DB::table('number_groups')->where('holder_id', $ledger)->update(['last_number' => NumberGroup::LAST_NUMBER_LIMIT]);
+        DB::table('number_groups')->where('holder_id', $ledger)->update(
+            ['last_number' => NumberGroup::LAST_NUMBER_LIMIT],
+        );
 
         $this->expectException(NumberLimitReached::class);
 

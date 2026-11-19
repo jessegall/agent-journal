@@ -23,7 +23,10 @@ final class EntryMeasurementTest extends TestCase
 
         $this->get('/up')->assertOk();
 
-        Log::shouldHaveReceived('debug')->with('reads', Mockery::on(fn (array $context): bool => $context['label'] === 'GET /up' && $context['queries_run'] >= 0))->once();
+        Log::shouldHaveReceived('debug')->with(
+            'reads',
+            Mockery::on(fn (array $context): bool => $context['label'] === 'GET /up' && $context['queries_run'] >= 0),
+        )->once();
     }
 
     public function test_an_artisan_command_logs_its_own_counts(): void
@@ -35,6 +38,9 @@ final class EntryMeasurementTest extends TestCase
         event(new CommandStarting('notes:list', $input, $output));
         event(new CommandFinished('notes:list', $input, $output, 0));
 
-        Log::shouldHaveReceived('debug')->with('reads', Mockery::on(fn (array $context): bool => $context['label'] === 'artisan notes:list'))->once();
+        Log::shouldHaveReceived('debug')->with(
+            'reads',
+            Mockery::on(fn (array $context): bool => $context['label'] === 'artisan notes:list'),
+        )->once();
     }
 }

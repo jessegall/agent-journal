@@ -19,7 +19,26 @@ final class CommandBypassTest extends TestCase
     /**
      * The folders judged: Core's handlers and bus, every domain and the test modules.
      */
-    public const array CHECKED = ['app/Agents/Handlers', 'app/Assignments/Handlers', 'app/Bus', 'app/Records', 'app/Sharing', 'domain/Access/src', 'domain/Chat/src', 'domain/Documents/src', 'domain/Memory/src', 'domain/Plans/src', 'app/Processes', 'app/Profiles', 'app/Skills', 'domain/Reminders/src', 'domain/Rules/src', 'domain/Sequences/src', 'domain/Tasks/src', 'tests/Fixtures/Modules'];
+    public const array CHECKED = [
+        'app/Agents/Handlers',
+        'app/Assignments/Handlers',
+        'app/Bus',
+        'app/Records',
+        'app/Sharing',
+        'domain/Access/src',
+        'domain/Chat/src',
+        'domain/Documents/src',
+        'domain/Memory/src',
+        'domain/Plans/src',
+        'app/Processes',
+        'app/Profiles',
+        'app/Skills',
+        'domain/Reminders/src',
+        'domain/Rules/src',
+        'domain/Sequences/src',
+        'domain/Tasks/src',
+        'tests/Fixtures/Modules',
+    ];
 
     /**
      * Calls that reach Laravel's shared bus around the CommandBus.
@@ -38,7 +57,10 @@ final class CommandBypassTest extends TestCase
 
     public function test_a_direct_dispatch_in_a_checked_folder_is_named(): void
     {
-        $this->assertSame(['tests/Fixtures/Bus/Bypass/DispatchesDirectly.php:14 calls Bus::dispatchSync'], $this->bypassesIn(['tests/Fixtures/Bus/Bypass']));
+        $this->assertSame(
+            ['tests/Fixtures/Bus/Bypass/DispatchesDirectly.php:14 calls Bus::dispatchSync'],
+            $this->bypassesIn(['tests/Fixtures/Bus/Bypass']),
+        );
     }
 
     /**
@@ -61,7 +83,9 @@ final class CommandBypassTest extends TestCase
 
                 // map is also a collection method, so only the Bus facade's map counts.
                 if (in_array($call['method'], self::BYPASSES, true) && ($viaFacade || ($call['class'] === null && $call['method'] !== 'map'))) {
-                    $found[] = "{$file}:{$call['line']} calls ".($call['class'] === null ? '' : class_basename($call['class']).'::').$call['method'];
+                    $found[] = "{$file}:{$call['line']} calls ".($call['class'] === null ? '' : class_basename(
+                        $call['class'],
+                    ).'::').$call['method'];
                 }
             }
         }

@@ -82,7 +82,10 @@ final readonly class AuthenticateHost
             throw HostCredentialRejected::replayed($callId);
         }
 
-        return new HostContext($host->id, new SignedCall($callId, CarbonImmutable::createFromTimestamp($issuedAt), SignedCall::digestOf($request->getContent())));
+        return new HostContext(
+            $host->id,
+            new SignedCall($callId, CarbonImmutable::createFromTimestamp($issuedAt), SignedCall::digestOf($request->getContent())),
+        );
     }
 
     private function header(Request $request, string $name): string

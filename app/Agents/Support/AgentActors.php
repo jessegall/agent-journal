@@ -17,6 +17,8 @@ final readonly class AgentActors implements ActorProvider
 {
     public function actor(ActorIdentity $identity): Actor
     {
-        return Agent::query()->whereKey($identity->id)->whereNull('retired_at')->first() ?? throw ActorUnavailable::forIdentity($identity);
+        return Agent::query()->whereKey(
+            $identity->id,
+        )->whereNull('retired_at')->first() ?? throw ActorUnavailable::forIdentity($identity);
     }
 }

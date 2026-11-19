@@ -34,7 +34,10 @@ final class ReviewBatchesTest extends TestCase
         $this->assertCount(50, array_merge(...$batches->batches));
         foreach ($batches->batches as $batch) {
             $this->assertLessThanOrEqual(ReviewLimit::BatchShapes->value, count($batch));
-            $this->assertLessThanOrEqual(ReviewLimit::BatchCharacters->value, array_sum(array_map(fn (CommandShape $shape): int => $shape->length(), $batch)));
+            $this->assertLessThanOrEqual(
+                ReviewLimit::BatchCharacters->value,
+                array_sum(array_map(fn (CommandShape $shape): int => $shape->length(), $batch)),
+            );
         }
     }
 

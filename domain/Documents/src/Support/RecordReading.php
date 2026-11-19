@@ -24,7 +24,13 @@ final class RecordReading
     {
         $revision = $record instanceof DocumentRevision ? $record->number : 1;
         $body = MarkdownText::body($record->body);
-        $fields = ['label' => $label, 'revision' => (string) $revision, 'title' => $record->title, 'abstract' => $record->abstract, 'outline' => $body->outlineWithLines()];
+        $fields = [
+            'label' => $label,
+            'revision' => (string) $revision,
+            'title' => $record->title,
+            'abstract' => $record->abstract,
+            'outline' => $body->outlineWithLines(),
+        ];
 
         if ($selection->isOutlineOnly()) {
             return RecordText::from($fields);

@@ -66,8 +66,12 @@ final class AssigneesTest extends TestCase
         $sameId = $this->owner->id;
         Agent::query()->whereKey($this->builder->id)->update(['id' => $sameId]);
 
-        $user = $registry->assigneeProvider(ActorType::User->value)->requireEligible(new AssigneeIdentity(ActorType::User->value, $sameId));
-        $agent = $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(new AssigneeIdentity(ActorType::Agent->value, $sameId));
+        $user = $registry->assigneeProvider(ActorType::User->value)->requireEligible(
+            new AssigneeIdentity(ActorType::User->value, $sameId),
+        );
+        $agent = $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(
+            new AssigneeIdentity(ActorType::Agent->value, $sameId),
+        );
 
         $this->assertInstanceOf(User::class, $user);
         $this->assertInstanceOf(Agent::class, $agent);
@@ -79,9 +83,18 @@ final class AssigneesTest extends TestCase
         $stranger = User::factory()->create();
         $this->builder->retireAt(CarbonImmutable::now());
 
-        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::User->value)->requireEligible(AssigneeIdentity::of($stranger)), AssigneeUnavailable::class);
-        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(AssigneeIdentity::of($this->builder)), AssigneeUnavailable::class);
-        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(new AssigneeIdentity(ActorType::Agent->value, TestIds::of(999999))), AssigneeUnavailable::class);
+        $this->assertThrows(
+            fn () => $registry->assigneeProvider(ActorType::User->value)->requireEligible(AssigneeIdentity::of($stranger)),
+            AssigneeUnavailable::class,
+        );
+        $this->assertThrows(
+            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(AssigneeIdentity::of($this->builder)),
+            AssigneeUnavailable::class,
+        );
+        $this->assertThrows(
+            fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(new AssigneeIdentity(ActorType::Agent->value, TestIds::of(999999))),
+            AssigneeUnavailable::class,
+        );
     }
 
     public function test_eligible_lists_page_by_id_and_names_keep_a_retired_agent_and_show_no_email(): void
@@ -92,8 +105,12 @@ final class AssigneesTest extends TestCase
         $retired->retireAt(CarbonImmutable::now());
 
         $firstPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new Page(null, 1));
-        $secondPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new Page($firstPage->nextAfterId, 1));
-        $names = $registry->assigneeProvider(ActorType::Agent->value)->names([AssigneeIdentity::of($retired), AssigneeIdentity::of($this->builder)]);
+        $secondPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(
+            new Page($firstPage->nextAfterId, 1),
+        );
+        $names = $registry->assigneeProvider(ActorType::Agent->value)->names(
+            [AssigneeIdentity::of($retired), AssigneeIdentity::of($this->builder)],
+        );
         $users = $registry->assigneeProvider(ActorType::User->value)->eligible(new Page());
 
         $this->assertSame(['Builder'], array_map(fn ($name) => $name->name, $firstPage->assignees));
@@ -117,7 +134,10 @@ final class AssigneesTest extends TestCase
             );
         });
 
-        $this->assertCount(1, $other->select('SELECT id FROM agents WHERE id = ? FOR UPDATE NOWAIT', [$this->builder->id]));
+        $this->assertCount(
+            1,
+            $other->select('SELECT id FROM agents WHERE id = ? FOR UPDATE NOWAIT', [$this->builder->id]),
+        );
     }
 
     public function test_the_exclusive_lifecycle_lock_holds_off_new_work_and_a_retired_agent_is_refused(): void
@@ -135,13 +155,19 @@ final class AssigneesTest extends TestCase
 
         $this->builder->retireAt(CarbonImmutable::now());
 
-        $this->assertThrows(fn () => $this->app->make(AgentLifecycle::class)->lockShared($this->builder->id), AgentNotAvailable::class);
+        $this->assertThrows(
+            fn () => $this->app->make(AgentLifecycle::class)->lockShared($this->builder->id),
+            AgentNotAvailable::class,
+        );
     }
 
     private function otherConnection(): Connection
     {
         $config = $this->app->make('config');
-        $config->set('database.connections.assignees_other', $config->get('database.connections.'.$config->get('database.default')));
+        $config->set(
+            'database.connections.assignees_other',
+            $config->get('database.connections.'.$config->get('database.default')),
+        );
 
         $other = DB::connection('assignees_other');
         $other->statement("SET lock_timeout = '1s'");

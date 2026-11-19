@@ -32,11 +32,20 @@ final readonly class ReaderRequests implements ListsReaderRequests
     /**
      * @param  array<string, mixed>  $query
      */
-    public function pageReader(string $key, ResolverDefinition $resolver, Request $current, array $query, Route|null $route = null): PageResolver
-    {
+    public function pageReader(
+        string $key,
+        ResolverDefinition $resolver,
+        Request $current,
+        array $query,
+        Route|null $route = null,
+    ): PageResolver {
         $built = $this->build($resolver, $current, $query, $route);
 
-        return $built instanceof PageResolver ? $built : throw UiResolverInvalid::notA($key, $resolver->resolver, PageResolver::class);
+        return $built instanceof PageResolver ? $built : throw UiResolverInvalid::notA(
+            $key,
+            $resolver->resolver,
+            PageResolver::class,
+        );
     }
 
     /**
@@ -46,7 +55,11 @@ final readonly class ReaderRequests implements ListsReaderRequests
     {
         $built = $this->build($resolver, $current, $current->query->all(), null);
 
-        return $built instanceof SectionResolver ? $built : throw UiResolverInvalid::notA($key, $resolver->resolver, SectionResolver::class);
+        return $built instanceof SectionResolver ? $built : throw UiResolverInvalid::notA(
+            $key,
+            $resolver->resolver,
+            SectionResolver::class,
+        );
     }
 
     /**
@@ -69,7 +82,10 @@ final readonly class ReaderRequests implements ListsReaderRequests
         $request->setContainer($this->container)->setRedirector($this->redirector);
         $request->validateResolved();
 
-        return $this->container->makeWith($resolver->resolver, [$this->parameterFor($resolver->resolver, $request) => $request]);
+        return $this->container->makeWith(
+            $resolver->resolver,
+            [$this->parameterFor($resolver->resolver, $request) => $request],
+        );
     }
 
     /**

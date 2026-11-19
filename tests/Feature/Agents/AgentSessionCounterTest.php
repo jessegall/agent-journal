@@ -58,7 +58,11 @@ final class AgentSessionCounterTest extends TestCase
 
     public function test_a_session_that_never_beat_is_absent(): void
     {
-        $this->app->make(LaunchSessions::class)->launch($this->agent, TestSelections::of('claude-code'), TestSelections::requestId());
+        $this->app->make(LaunchSessions::class)->launch(
+            $this->agent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
 
         $this->assertSame(0, $this->countAt('2026-11-18 12:01:00'));
     }
@@ -102,12 +106,19 @@ final class AgentSessionCounterTest extends TestCase
     public function test_the_agents_counter_is_registered_for_active_actors(): void
     {
         $this->assertGreaterThanOrEqual(0, $this->app->make(ActiveActors::class)->snapshot()->agentSessions);
-        $this->assertSame(AgentSessionCounter::class, $this->app->make(ActiveActorCounterRegistry::class)->get(AgentSessionCounter::type())::class);
+        $this->assertSame(
+            AgentSessionCounter::class,
+            $this->app->make(ActiveActorCounterRegistry::class)->get(AgentSessionCounter::type())::class,
+        );
     }
 
     private function beatingSession(): AgentSession
     {
-        $session = $this->app->make(LaunchSessions::class)->launch($this->agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(
+            $this->agent,
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
         $session->recordHeartbeatAt($this->beat);
 
         return $session;

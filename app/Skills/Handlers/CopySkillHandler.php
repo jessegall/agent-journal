@@ -27,7 +27,10 @@ final readonly class CopySkillHandler implements CommandHandler
     {
         $key = SkillKey::from($command->key);
 
-        return $this->writes->once($command->requestId, hash('sha256', "copy|{$command->sourceKey}|{$key->key}"), function () use ($key, $command) {
+        return $this->writes->once($command->requestId, hash(
+            'sha256',
+            "copy|{$command->sourceKey}|{$key->key}",
+        ), function () use ($key, $command) {
             if (! $key->isUserAuthored()) {
                 throw SkillDeclarationInvalid::reservedKey(SkillOwner::STORED, $key->key);
             }
@@ -40,7 +43,13 @@ final readonly class CopySkillHandler implements CommandHandler
             $draft = $source->copyDraft();
             $author = $this->writes->author();
 
-            return Skill::start($key, $author, SkillContextResolver::ENVIRONMENT)->appendRevision($draft, $this->writes->checkedCondition($key->key, $draft), $author, $source->key->key, $source->rendered->digest);
+            return Skill::start($key, $author, SkillContextResolver::ENVIRONMENT)->appendRevision(
+                $draft,
+                $this->writes->checkedCondition($key->key, $draft),
+                $author,
+                $source->key->key,
+                $source->rendered->digest,
+            );
         });
     }
 }

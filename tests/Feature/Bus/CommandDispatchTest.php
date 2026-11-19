@@ -45,7 +45,10 @@ final class CommandDispatchTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run(new WriteNote('counted'));
 
-        Log::shouldHaveReceived('info')->with('Command WriteNote done', Mockery::on(fn (array $context): bool => $context['queries_run'] > 0 && isset($context['models_loaded']) && ! isset($context['milliseconds'])))->once();
+        Log::shouldHaveReceived('info')->with(
+            'Command WriteNote done',
+            Mockery::on(fn (array $context): bool => $context['queries_run'] > 0 && isset($context['models_loaded']) && ! isset($context['milliseconds'])),
+        )->once();
     }
 
     public function test_an_unregistered_command_is_refused_before_anything_runs(): void

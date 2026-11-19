@@ -18,6 +18,8 @@ final readonly class RetireAgentController
 {
     public function __invoke(RetireAgentRequest $request, CommandBus $commands): JsonResponse
     {
-        return new JsonResponse(AssignmentResultData::of($commands->run(new RetireAgent($request->agentId())), new AssignmentHolders([])));
+        return new JsonResponse(
+            AssignmentResultData::of($commands->run(new RetireAgent($request->agentId())), new AssignmentHolders([])),
+        );
     }
 }

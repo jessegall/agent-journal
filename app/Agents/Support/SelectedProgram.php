@@ -44,8 +44,12 @@ final readonly class SelectedProgram
      * @throws DefaultUnavailable
      * @throws ModelUnavailable
      */
-    public static function resolve(string|null $programKey, ModelSelection $requested, ProfileDefaults|null $profile, string|null $parentProgram): self
-    {
+    public static function resolve(
+        string|null $programKey,
+        ModelSelection $requested,
+        ProfileDefaults|null $profile,
+        string|null $parentProgram,
+    ): self {
         [$program, $programSource] = self::program($programKey, $profile, $parentProgram);
         $source = new SelectionSource($programSource, $profile?->key, $profile?->revision);
 
@@ -59,8 +63,11 @@ final readonly class SelectedProgram
      * @throws ProgramConflict
      * @throws ProgramUnsupported
      */
-    private static function program(string|null $programKey, ProfileDefaults|null $profile, string|null $parentProgram): array
-    {
+    private static function program(
+        string|null $programKey,
+        ProfileDefaults|null $profile,
+        string|null $parentProgram,
+    ): array {
         if ($programKey !== null) {
             $program = self::supported($programKey);
 
@@ -86,8 +93,11 @@ final readonly class SelectedProgram
      * @throws DefaultUnavailable
      * @throws ModelUnavailable
      */
-    private static function model(ModelSelection $requested, ProfileDefaults|null $profile, HookProgram $program): string
-    {
+    private static function model(
+        ModelSelection $requested,
+        ProfileDefaults|null $profile,
+        HookProgram $program,
+    ): string {
         $model = $requested->model;
 
         if ($model === null) {

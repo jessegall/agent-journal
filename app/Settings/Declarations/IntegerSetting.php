@@ -25,13 +25,24 @@ final readonly class IntegerSetting implements Setting
 
     public const int SMALLEST = -9007199254740991;
 
-    private function __construct(public string $key, public string $label, public int $default, public int $minimum, public int $maximum) {}
+    private function __construct(
+        public string $key,
+        public string $label,
+        public int $default,
+        public int $minimum,
+        public int $maximum,
+    ) {}
 
     /**
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, int $default, int $minimum = self::SMALLEST, int $maximum = self::LARGEST): self
-    {
+    public static function make(
+        string $key,
+        string $label,
+        int $default,
+        int $minimum = self::SMALLEST,
+        int $maximum = self::LARGEST,
+    ): self {
         SettingKey::require($key, $label);
 
         if ($minimum < self::SMALLEST || $maximum > self::LARGEST || $minimum > $maximum) {

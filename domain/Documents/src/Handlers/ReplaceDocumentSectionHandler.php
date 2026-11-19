@@ -16,6 +16,9 @@ final readonly class ReplaceDocumentSectionHandler implements CommandHandler
 
     public function handle(ReplaceDocumentSection $command): DraftReference
     {
-        return $this->drafts->saveEdit($command->draft, fn (DraftText $text) => $text->withSectionReplaced($command->section, $command->body));
+        return $this->drafts->saveEdit(
+            $command->draft,
+            fn (DraftText $text) => $text->withSectionReplaced($command->section, $command->body),
+        );
     }
 }

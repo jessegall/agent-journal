@@ -52,7 +52,9 @@ final class MessageRefreshTest extends MessagingTestCase
         $seat = DeskSeat::query()->ofDesk($desk)->sole();
         $this->app->make(AssignmentTransaction::class)->run(function () use ($desk, $seat, $seating): void {
             $current = $this->app->make(AssignmentStore::class)->lockCurrent($seat->assignmentIdentity())->get();
-            $seating->replace(new SeatChange($desk->id, $seat->id, $current->reference, $this->actorOf($this->reviewer)));
+            $seating->replace(
+                new SeatChange($desk->id, $seat->id, $current->reference, $this->actorOf($this->reviewer)),
+            );
         });
 
         $this->asAgent($this->builder);

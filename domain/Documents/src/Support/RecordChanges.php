@@ -25,7 +25,11 @@ final readonly class RecordChanges
     public function requireChangeOf(Model $record): void
     {
         if (! $this->createdByActor($record)) {
-            $this->authorizer->authorize(DocumentAdministrationPolicy::class, Document::class, DocumentAbility::ChangeOthersRecords);
+            $this->authorizer->authorize(
+                DocumentAdministrationPolicy::class,
+                Document::class,
+                DocumentAbility::ChangeOthersRecords,
+            );
         }
     }
 

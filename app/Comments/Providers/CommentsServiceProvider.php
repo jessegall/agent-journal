@@ -31,9 +31,14 @@ final class CommentsServiceProvider extends ServiceProvider
         ShareRecordRegistry $shares,
         PolicyCatalogue $policies,
     ): void {
-        $policies->register('Core', new PolicyRegistration(Comment::class, CommentPolicy::class, CommentAbility::class));
+        $policies->register(
+            'Core',
+            new PolicyRegistration(Comment::class, CommentPolicy::class, CommentAbility::class),
+        );
         $records->register(Comment::LINK_TYPE, CommentLinkRecords::class);
-        $shares->register(new ShareRecordRegistration(Comment::LINK_TYPE, Comment::class, CommentShareProvider::class, [CommentShareProvider::CAPABILITY]));
+        $shares->register(
+            new ShareRecordRegistration(Comment::LINK_TYPE, Comment::class, CommentShareProvider::class, [CommentShareProvider::CAPABILITY]),
+        );
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/comments.php');
 
         if ($this->app->runningInConsole()) {

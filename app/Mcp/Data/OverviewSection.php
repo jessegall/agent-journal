@@ -25,6 +25,10 @@ final class OverviewSection extends Data
      */
     public function structuredContent(): array
     {
-        return ['title' => $this->title, 'counts' => $this->counts, 'next_action' => $this->nextAction->structuredContent()];
+        return [
+            'title' => $this->title,
+            'counts' => $this->counts,
+            'next_action' => $this->nextAction->structuredContent(),
+        ];
     }
 }

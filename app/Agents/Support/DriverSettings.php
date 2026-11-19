@@ -38,10 +38,20 @@ final readonly class DriverSettings
 
         $accepted = [];
         if ($model !== null) {
-            $accepted[] = $this->requests->append($target, DriverOperation::ChangeModel, $idempotencyKey.':model', DriverRequestPayload::model($model));
+            $accepted[] = $this->requests->append(
+                $target,
+                DriverOperation::ChangeModel,
+                $idempotencyKey.':model',
+                DriverRequestPayload::model($model),
+            );
         }
         if ($effort !== null) {
-            $accepted[] = $this->requests->append($target, DriverOperation::ChangeEffort, $idempotencyKey.':effort', DriverRequestPayload::effort($effort));
+            $accepted[] = $this->requests->append(
+                $target,
+                DriverOperation::ChangeEffort,
+                $idempotencyKey.':effort',
+                DriverRequestPayload::effort($effort),
+            );
         }
 
         foreach ($accepted as $request) {

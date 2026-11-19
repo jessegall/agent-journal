@@ -27,7 +27,11 @@ interface ResponsibilityWriter
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentConflict
      */
-    public function replace(RecordIdentity $record, AssignmentReference $expected, AssigneeIdentity $holder): Assignment;
+    public function replace(
+        RecordIdentity $record,
+        AssignmentReference $expected,
+        AssigneeIdentity $holder,
+    ): Assignment;
 
     /**
      * @throws AssignmentTypeUnavailable

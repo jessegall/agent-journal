@@ -20,6 +20,9 @@ final readonly class CollectionChildren implements NavigationChildren
             array_map(strval(...), Note::query()->forActor()->orderByDesc('created_at')->pluck('created_at')->all()),
         )));
 
-        return array_map(fn (string $month) => NavigationItem::page("month-{$month}", $month, page: 'collection', route: ['collection' => $month]), $months);
+        return array_map(
+fn (string $month) => NavigationItem::page("month-{$month}", $month, page: 'collection', route: ['collection' => $month]),
+ $months,
+);
     }
 }

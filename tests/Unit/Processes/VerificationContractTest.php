@@ -34,7 +34,15 @@ final class VerificationContractTest extends TestCase
             'acme verify',
             ToolType::Other,
             ExecutableBinding::builtin('acme', ['/opt/tools']),
-            new OutputContract(OutputEncoding::Utf8, FramingType::JsonLines, '1', StreamUse::Separate, SummaryRule::RequiredTerminalRecord, EmptyRunPolicy::invalid(), EmptySelection::ConfigurationProblem),
+            new OutputContract(
+                OutputEncoding::Utf8,
+                FramingType::JsonLines,
+                '1',
+                StreamUse::Separate,
+                SummaryRule::RequiredTerminalRecord,
+                EmptyRunPolicy::invalid(),
+                EmptySelection::ConfigurationProblem,
+            ),
             ExitPolicy::of(
                 ExitBranch::of(0, Outcome::Passed, 'summary.failed == 0'),
                 ExitBranch::of(1, Outcome::Findings, 'summary.failed > 0'),
@@ -51,7 +59,11 @@ final class VerificationContractTest extends TestCase
 
     public function test_an_unproven_contract_requires_a_reader_and_treats_every_exit_as_an_execution_error(): void
     {
-        $contract = VerificationContract::unproven('phpstan analyse', ToolType::Phpstan, ExecutableBinding::builtin('phpstan', ['/usr/bin']));
+        $contract = VerificationContract::unproven(
+            'phpstan analyse',
+            ToolType::Phpstan,
+            ExecutableBinding::builtin('phpstan', ['/usr/bin']),
+        );
 
         $this->assertSame(Outcome::ExecutionError, $contract->exits->outcomeOf(0));
         $this->assertContains('reader required', $contract->description());
@@ -59,7 +71,9 @@ final class VerificationContractTest extends TestCase
 
     public function test_a_negative_status_is_named(): void
     {
-        $this->expectExceptionObject(VerificationContractInvalid::field('exits.-1', 'an exit status is a number from 0 to 255'));
+        $this->expectExceptionObject(
+            VerificationContractInvalid::field('exits.-1', 'an exit status is a number from 0 to 255'),
+        );
 
         ExitBranch::of(-1, Outcome::Passed, 'summary');
     }

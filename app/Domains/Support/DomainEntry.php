@@ -114,7 +114,10 @@ final readonly class DomainEntry
             settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition(),
             switchable: $domain->canDisable(),
             skills: $domain instanceof ProvidesSkills ? self::checkedSkills($name, $namespace, $domain->skills()) : [],
-            skillConditions: $domain instanceof ProvidesSkillConditions ? self::checkedSkillConditions($name, $domain->skillConditions()) : [],
+            skillConditions: $domain instanceof ProvidesSkillConditions ? self::checkedSkillConditions(
+                $name,
+                $domain->skillConditions(),
+            ) : [],
         );
     }
 
@@ -235,7 +238,9 @@ final readonly class DomainEntry
     {
         // A domain package keeps Laravel's own layout beside its src (domain/<Name>/database/migrations); a flat test
         // module keeps them in its class folder.
-        return $this->isPackage() ? dirname($this->folder).'/database/migrations' : $this->folder.'/Database/Migrations';
+        return $this->isPackage() ? dirname(
+            $this->folder,
+        ).'/database/migrations' : $this->folder.'/Database/Migrations';
     }
 
     /**
@@ -305,10 +310,19 @@ final readonly class DomainEntry
         foreach ($registrations as $registration) {
             $key = $registration->key;
             $reason = match (true) {
-                ! str_starts_with($key, $prefix) || preg_match('/^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+(-[a-z0-9]+)*$/D', $key) !== 1 => "its key does not start with {$prefix}",
+                ! str_starts_with($key, $prefix) || preg_match(
+                    '/^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+(-[a-z0-9]+)*$/D',
+                    $key,
+                ) !== 1 => "its key does not start with {$prefix}",
                 in_array($key, $seen, true) => 'it registers that key twice',
-                ! is_subclass_of($registration->parameters, Data::class) => 'its parameters class is no Spatie Data class',
-                ! is_subclass_of($registration->evaluator, SkillConditionEvaluator::class) => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
+                ! is_subclass_of(
+                    $registration->parameters,
+                    Data::class,
+                ) => 'its parameters class is no Spatie Data class',
+                ! is_subclass_of(
+                    $registration->evaluator,
+                    SkillConditionEvaluator::class,
+                ) => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
                 $registration->version < 1 => 'its version is below 1',
                 default => null,
             };
@@ -352,7 +366,12 @@ final readonly class DomainEntry
     {
         $sourceRoot = $this->isPackage() ? dirname($this->folder) : $this->folder;
 
-        return new SkillOwner($this->name, $sourceRoot, $this->skills, str_starts_with($sourceRoot, base_path('domain').DIRECTORY_SEPARATOR));
+        return new SkillOwner(
+            $this->name,
+            $sourceRoot,
+            $this->skills,
+            str_starts_with($sourceRoot, base_path('domain').DIRECTORY_SEPARATOR),
+        );
     }
 
     /**
@@ -372,7 +391,14 @@ final readonly class DomainEntry
      */
     public function declaring(array $pages = [], array $navigation = [], array $sections = []): DomainUi
     {
-        return DomainUi::declaring($this->name, $this->namespace, $this->scriptFolder(), $pages, $navigation, $sections);
+        return DomainUi::declaring(
+            $this->name,
+            $this->namespace,
+            $this->scriptFolder(),
+            $pages,
+            $navigation,
+            $sections,
+        );
     }
 
     /**
@@ -558,7 +584,10 @@ final readonly class DomainEntry
         }
         $scope = RuleScope::module($this->name, '');
 
-        return array_map(fn (CommandRule $rule): CommandRule => $rule->ownedBy($scope, $rule->revision), $this->domain->commandRules());
+        return array_map(
+            fn (CommandRule $rule): CommandRule => $rule->ownedBy($scope, $rule->revision),
+            $this->domain->commandRules(),
+        );
     }
 
     /**

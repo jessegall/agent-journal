@@ -36,7 +36,9 @@ final class SkillDeclarationsTest extends TestCase
     public function test_a_registered_module_contributes_its_skill_under_its_own_name(): void
     {
         $domainClasses = DomainRegistry::installedClasses(base_path());
-        $owners = DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner());
+        $owners = DomainRegistry::from(
+            [...$domainClasses, CardsDomain::class, NotesDomain::class],
+        )->skillDeclarations(CoreSkills::owner());
         $notes = array_values(array_filter($owners, fn (SkillOwner $owner) => $owner->name === 'Notes'))[0];
 
         $this->assertSame([NotesSkill::class], $notes->skills);
@@ -54,7 +56,9 @@ final class SkillDeclarationsTest extends TestCase
     public function test_a_class_that_is_no_skill_stops_registration_naming_domain_and_class(): void
     {
         $this->expectException(SkillDeclarationRefused::class);
-        $this->expectExceptionMessage('FalseSkills declares the skill '.FalseSkillsDomain::class.', but it does not implement');
+        $this->expectExceptionMessage(
+            'FalseSkills declares the skill '.FalseSkillsDomain::class.', but it does not implement',
+        );
 
         DomainRegistry::from([FalseSkillsDomain::class]);
     }

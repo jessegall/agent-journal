@@ -17,7 +17,10 @@ final class ExceptionPlacementTest extends TestCase
 {
     public function test_an_exception_outside_an_exceptions_folder_is_named_and_one_inside_passes(): void
     {
-        $this->assertSame(['Tests\Fixtures\Exceptions\Loose\OrderRefused'], ExceptionPlacement::misplacedIn([base_path('tests/Fixtures/Exceptions')]));
+        $this->assertSame(
+            ['Tests\Fixtures\Exceptions\Loose\OrderRefused'],
+            ExceptionPlacement::misplacedIn([base_path('tests/Fixtures/Exceptions')]),
+        );
     }
 
     public function test_every_exception_of_the_domains_and_the_core_lies_in_an_exceptions_folder(): void

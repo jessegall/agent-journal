@@ -13,6 +13,8 @@ final class SupervisorInsideTransaction extends RuntimeException
 {
     public static function atLevel(int $level): self
     {
-        return new self("A gateway's program runs outside every transaction, but {$level} were open; the supervisor stops.");
+        return new self(
+            "A gateway's program runs outside every transaction, but {$level} were open; the supervisor stops.",
+        );
     }
 }

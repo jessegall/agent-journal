@@ -156,7 +156,10 @@ final class SampleWorkflowTest extends TestCase
 
     private function part(string $runId): PartRun
     {
-        return PartRun::queue(ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId), new PartKey(1, 1, 'acme verify'));
+        return PartRun::queue(
+            ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId),
+            new PartKey(1, 1, 'acme verify'),
+        );
     }
 
     private function request(): CommandRequest

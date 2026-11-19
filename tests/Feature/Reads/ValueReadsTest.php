@@ -36,7 +36,10 @@ final class ValueReadsTest extends TestCase
         });
 
         $this->assertSame(0, $counts->queriesRun);
-        $this->assertSame($launch->agent->id, AgentSession::query()->with('agent')->findOrFail($launch->session->id)->agent->id);
+        $this->assertSame(
+            $launch->agent->id,
+            AgentSession::query()->with('agent')->findOrFail($launch->session->id)->agent->id,
+        );
     }
 
     public function test_a_query_inside_a_value_read_is_refused_and_a_pure_one_works(): void

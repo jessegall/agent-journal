@@ -47,7 +47,11 @@ final readonly class BuiltInProfilePins implements BuiltInLaunchProfiles
     private function snapshotOf(ProfileKey $key): ProfileSnapshot
     {
         if (! $this->profiles->has($key)) {
-            $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'built-in profiles', new InstallBuiltInProfiles());
+            $this->dispatchers->runAsJournal(
+                CommandEntry::HostControl,
+                'built-in profiles',
+                new InstallBuiltInProfiles(),
+            );
         }
 
         return $this->profiles->snapshotFor($key);

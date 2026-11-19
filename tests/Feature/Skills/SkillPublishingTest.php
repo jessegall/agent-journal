@@ -80,14 +80,20 @@ final class SkillPublishingTest extends TestCase
 
         $this->assertSame(PublicationState::Failed, $this->publishing()->publish($publication->id, 'worker-1'));
         $this->assertSame('My own skill.', File::get($this->target().'/mine/SKILL.md'));
-        $this->assertStringContainsString('holds files the journal did not create', (string) $publication->refresh()->error);
+        $this->assertStringContainsString(
+            'holds files the journal did not create',
+            (string) $publication->refresh()->error,
+        );
     }
 
     public function test_a_worker_with_an_older_fence_is_stopped(): void
     {
         $publication = $this->intend('First text.');
         $first = $this->asSystem(new PublishSkills($publication->id, 'worker-1'));
-        SkillPublication::query()->whereKey($publication->id)->firstOrFail()->claim('worker-2', CarbonImmutable::now()->addMinute());
+        SkillPublication::query()->whereKey($publication->id)->firstOrFail()->claim(
+            'worker-2',
+            CarbonImmutable::now()->addMinute(),
+        );
 
         $this->expectException(SkillPublicationStale::class);
 
@@ -97,9 +103,20 @@ final class SkillPublishingTest extends TestCase
     private function intend(string $text): SkillPublication
     {
         $markdown = "# Journal\n\n{$text}\n";
-        $generation = SkillGeneration::ready(hash('sha256', $text), str_repeat('e', 64), [['key' => 'journal', 'owner' => 'Core', 'revision' => null, 'markdown' => $markdown, 'digest' => hash('sha256', $markdown)]]);
+        $generation = SkillGeneration::ready(
+            hash('sha256', $text),
+            str_repeat('e', 64),
+            [['key' => 'journal', 'owner' => 'Core', 'revision' => null, 'markdown' => $markdown, 'digest' => hash('sha256', $markdown)]],
+        );
 
-        return SkillPublication::intend(TestIds::of(1), 'claude-code', $this->target(), $generation, hash('sha256', $text), ['journal']);
+        return SkillPublication::intend(
+            TestIds::of(1),
+            'claude-code',
+            $this->target(),
+            $generation,
+            hash('sha256', $text),
+            ['journal'],
+        );
     }
 
     private function target(): string

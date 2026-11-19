@@ -26,7 +26,10 @@ final class JournalToolTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', new SignedCall(self::CALL_ID, CarbonImmutable::now(), 'digest'), null));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext('agent-1', 'session-1', new SignedCall(self::CALL_ID, CarbonImmutable::now(), 'digest'), null),
+        );
     }
 
     public function test_a_record_answers_with_status_payload_and_next_actions(): void
@@ -81,7 +84,9 @@ final class JournalToolTest extends TestCase
             ->assertDontSee('secret detail')
             ->assertStructuredContentPath('code', 'unavailable');
 
-        Exceptions::assertReported(fn (CallFailedUnexpectedly $failure): bool => str_contains($failure->getMessage(), self::CALL_ID));
+        Exceptions::assertReported(
+            fn (CallFailedUnexpectedly $failure): bool => str_contains($failure->getMessage(), self::CALL_ID),
+        );
     }
 
     public function test_a_20_kib_result_is_refused_by_the_budget_with_a_safe_error(): void
@@ -93,6 +98,8 @@ final class JournalToolTest extends TestCase
             ->assertDontSee('aaaa')
             ->assertStructuredContentPath('code', 'unavailable');
 
-        Exceptions::assertReported(fn (CallFailedUnexpectedly $failure): bool => $failure->getPrevious() instanceof ResultTooLarge);
+        Exceptions::assertReported(
+            fn (CallFailedUnexpectedly $failure): bool => $failure->getPrevious() instanceof ResultTooLarge,
+        );
     }
 }

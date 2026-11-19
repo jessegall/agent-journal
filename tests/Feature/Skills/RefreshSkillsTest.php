@@ -42,7 +42,17 @@ final class RefreshSkillsTest extends TestCase
     use InstallsBuiltInProfiles;
     use RunsTrustedCommands;
 
-    private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts', 'agent_sessions', 'agents'];
+    private const array TABLES = [
+        'skill_publications',
+        'skill_generations',
+        'skill_requests',
+        'skill_revisions',
+        'skills',
+        'number_groups',
+        'command_receipts',
+        'agent_sessions',
+        'agents',
+    ];
 
     public function test_two_refreshes_without_changes_leave_one_generation_and_no_new_publications(): void
     {
@@ -62,13 +72,18 @@ final class RefreshSkillsTest extends TestCase
     public function test_a_broken_shipped_skill_fails_the_generation_naming_owner_and_key_and_the_previous_stays_ready(): void
     {
         $ready = $this->refresh();
-        $this->useOwners(...[...$this->installedOwners(), new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [BrokenGuideSkill::class], true)]);
+        $this->useOwners(
+            ...[...$this->installedOwners(), new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [BrokenGuideSkill::class], true)],
+        );
 
         $failed = $this->refresh();
 
         $this->assertTrue($failed->failed);
         $this->assertStringContainsString("Guide's skill journal-guide is invalid", $failed->reason);
-        $this->assertSame(GenerationState::Failed, SkillGeneration::query()->whereKey($failed->generationId)->firstOrFail()->state);
+        $this->assertSame(
+            GenerationState::Failed,
+            SkillGeneration::query()->whereKey($failed->generationId)->firstOrFail()->state,
+        );
         $this->assertSame($ready->generationId, SkillGeneration::latestReady()?->id);
     }
 
@@ -79,9 +94,14 @@ final class RefreshSkillsTest extends TestCase
         SkillPublication::query()->where('session_id', $session->id)->firstOrFail()->supersede();
 
         $this->actAs(TestActors::user(7));
-        $this->app->make(CommandBus::class)->run(new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')));
+        $this->app->make(CommandBus::class)->run(
+            new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')),
+        );
 
-        $pending = SkillPublication::query()->where('session_id', $session->id)->where('state', PublicationState::Pending->value)->firstOrFail();
+        $pending = SkillPublication::query()->where('session_id', $session->id)->where(
+            'state',
+            PublicationState::Pending->value,
+        )->firstOrFail();
         $this->assertSame(2, SkillGeneration::query()->count());
         $this->assertSame(SkillGeneration::latestReady()?->id, $pending->generation_id);
         $this->assertStringEndsWith("/targets/{$session->id}/claude-code", $pending->target);

@@ -169,7 +169,9 @@ final class Link extends MorphPivot implements ReadableModel
      */
     private static function removeAll(ReadBuilder $query): array
     {
-        $ids = array_values(array_map(strval(...), $query->readAll('every removed link is announced by id')->pluck('id')->all()));
+        $ids = array_values(
+            array_map(strval(...), $query->readAll('every removed link is announced by id')->pluck('id')->all()),
+        );
         self::query()->whereKey($ids)->delete();
 
         return $ids;

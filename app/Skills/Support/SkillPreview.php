@@ -65,7 +65,11 @@ final readonly class SkillPreview
     public function forAgent(SkillEntry $skill, array $skills, Agent $agent): SkillAgentSelection
     {
         $selected = $this->selection->select($skills, $this->contexts->forAgent($agent));
-        $excluded = array_column(array_map(fn (ExcludedSkill $excluded) => ['key' => $excluded->key->key, 'reason' => $excluded->reason], $selected->excluded), 'reason', 'key');
+        $excluded = array_column(
+            array_map(fn (ExcludedSkill $excluded) => ['key' => $excluded->key->key, 'reason' => $excluded->reason], $selected->excluded),
+            'reason',
+            'key',
+        );
 
         return SkillAgentSelection::from([
             'key' => $skill->key->key,
@@ -87,9 +91,19 @@ final readonly class SkillPreview
         try {
             $result = $skill->condition->evaluate($this->contexts->forAgent($agent));
         } catch (SkillContextUnavailable $unavailable) {
-            return ['agent' => $agent->id, 'name' => $agent->name, 'outcome' => 'unavailable', 'reason' => $unavailable->getMessage()];
+            return [
+                'agent' => $agent->id,
+                'name' => $agent->name,
+                'outcome' => 'unavailable',
+                'reason' => $unavailable->getMessage(),
+            ];
         }
 
-        return ['agent' => $agent->id, 'name' => $agent->name, 'outcome' => $result->outcome->value, 'reason' => $result->reason];
+        return [
+            'agent' => $agent->id,
+            'name' => $agent->name,
+            'outcome' => $result->outcome->value,
+            'reason' => $result->reason,
+        ];
     }
 }

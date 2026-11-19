@@ -10,6 +10,8 @@ final class HandlerInOtherOwner extends RuntimeException
 {
     public static function for(string $command, string $handler): self
     {
-        return new self("The handler {$handler} of {$command} belongs to another owner; a handler lives with its command.");
+        return new self(
+            "The handler {$handler} of {$command} belongs to another owner; a handler lives with its command.",
+        );
     }
 }

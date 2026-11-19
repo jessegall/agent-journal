@@ -115,6 +115,11 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
 
     public function work(): SequenceWork
     {
-        return new SequenceWork($this->number, $this->current_step, $this->steps[$this->current_step - 1], $this->state);
+        return new SequenceWork(
+            $this->number,
+            $this->current_step,
+            $this->steps[$this->current_step - 1],
+            $this->state,
+        );
     }
 }

@@ -31,7 +31,11 @@ final readonly class Programs implements SkillCondition
             return ConditionResult::unavailable('program-unavailable');
         }
 
-        return in_array($context->program->key, $this->keyTexts(), true) ? ConditionResult::match('program-listed') : ConditionResult::noMatch('program-not-listed');
+        return in_array(
+            $context->program->key,
+            $this->keyTexts(),
+            true,
+        ) ? ConditionResult::match('program-listed') : ConditionResult::noMatch('program-not-listed');
     }
 
     public function toArray(): array

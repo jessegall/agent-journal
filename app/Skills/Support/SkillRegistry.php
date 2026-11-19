@@ -47,6 +47,9 @@ final readonly class SkillRegistry
      */
     public function digest(): string
     {
-        return hash('sha256', (string) json_encode(array_map(fn (SkillOwner $owner) => [$owner->name, $owner->skills], $this->owners()), JSON_THROW_ON_ERROR));
+        return hash(
+            'sha256',
+            (string) json_encode(array_map(fn (SkillOwner $owner) => [$owner->name, $owner->skills], $this->owners()), JSON_THROW_ON_ERROR),
+        );
     }
 }

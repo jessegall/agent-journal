@@ -113,7 +113,9 @@ final readonly class SettingCodec
      */
     public function decodeString(string $owner, StringSetting $setting, EncodedValue $value): string
     {
-        return $value->string()->filter($setting->accepts(...))->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
+        return $value->string()->filter($setting->accepts(...))->getOrThrow(
+            SettingStorageInvalid::for($owner, $setting->key),
+        );
     }
 
     /**
@@ -129,7 +131,9 @@ final readonly class SettingCodec
      */
     public function decodeInteger(string $owner, IntegerSetting $setting, EncodedValue $value): int
     {
-        return $value->integer()->filter($setting->accepts(...))->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
+        return $value->integer()->filter($setting->accepts(...))->getOrThrow(
+            SettingStorageInvalid::for($owner, $setting->key),
+        );
     }
 
     /**
@@ -164,7 +168,9 @@ final readonly class SettingCodec
         /**
          * @var TValue $option one of the setting's own options, which accepts() just checked by exact type
          */
-        $option = $this->choiceValue($value)->filter($setting->accepts(...))->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
+        $option = $this->choiceValue($value)->filter($setting->accepts(...))->getOrThrow(
+            SettingStorageInvalid::for($owner, $setting->key),
+        );
 
         return $option;
     }

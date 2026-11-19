@@ -26,7 +26,10 @@ final class TaskReadsTest extends TestCase
 
     public function test_every_named_task_must_exist_or_the_whole_check_fails(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(3)),
+            TestLaunchAuthority::forAgent(TestIds::of(3)),
+        );
         $first = Task::factory()->create(['title' => 'Write the walk']);
         $second = Task::factory()->create(['title' => 'Test the walk']);
 
@@ -38,12 +41,17 @@ final class TaskReadsTest extends TestCase
 
     public function test_progress_counts_finished_tasks_and_leaves_out_missing_ids(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
         $done = Task::factory()->create(['title' => 'Write the walk']);
         $done->finish();
         $open = Task::factory()->create(['title' => 'Test the walk']);
 
-        $progress = $this->app->make(TaskProgressCounter::class)->progressByGroup(['phase' => [$done->id, $open->id, TestIds::of(999999)], 'empty' => []]);
+        $progress = $this->app->make(TaskProgressCounter::class)->progressByGroup(
+            ['phase' => [$done->id, $open->id, TestIds::of(999999)], 'empty' => []],
+        );
 
         $this->assertSame([1, 2], [$progress['phase']->done, $progress['phase']->total]);
         $this->assertSame(0, $progress['empty']->total);

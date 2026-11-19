@@ -58,7 +58,10 @@ final class CommandActorTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run(new WriteNote('private text'));
 
-        $log->shouldHaveReceived('info')->withArgs(fn (string $line, array $context) => $line === 'Command WriteNote done'
+        $log->shouldHaveReceived('info')->withArgs(fn (
+            string $line,
+            array $context,
+        ) => $line === 'Command WriteNote done'
             && $context['owner'] === 'Notes' && $context['actor'] === 'user:'.TestIds::of(1) && ! str_contains((string) json_encode($context), 'private text'));
     }
 
@@ -102,6 +105,9 @@ final class CommandActorTest extends CommandBusTestCase
 
     private function actAsEngine(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()), new TrustedEntryAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::of(new EngineActor()),
+            new TrustedEntryAuthority('test'),
+        );
     }
 }

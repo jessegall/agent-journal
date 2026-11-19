@@ -54,7 +54,10 @@ final readonly class WindowResults implements ReadsWindowResults
         } catch (AuthenticationException|TokenMismatchException|ValidationException|HttpResponseException|HttpExceptionInterface $control) {
             throw $control;
         } catch (Throwable $failure) {
-            $this->log->error("The window {$key} failed: {$failure->getMessage()}", ['key' => $key, 'exception' => $failure]);
+            $this->log->error(
+                "The window {$key} failed: {$failure->getMessage()}",
+                ['key' => $key, 'exception' => $failure],
+            );
 
             return FailedWindow::make();
         }

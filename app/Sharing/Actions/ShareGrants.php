@@ -49,7 +49,13 @@ final readonly class ShareGrants
     {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
         $this->requireLiveSlot();
-        $share = Share::grant($consumed->root, $owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
+        $share = Share::grant(
+            $consumed->root,
+            $owner->actorId(),
+            $consumed->configuration,
+            ShareToken::generate(),
+            $duration->deadlineFrom(CarbonImmutable::now()),
+        );
         ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $share, $consumed, ShareAuditType::Created);
@@ -61,8 +67,13 @@ final readonly class ShareGrants
     /**
      * @throws ShareProposalUnavailable when the proposal is not open or the preview shows another root
      */
-    public function approve(Actor $owner, string $proposalId, string $previewId, string $previewChecksum, ShareDuration $duration): Share
-    {
+    public function approve(
+        Actor $owner,
+        string $proposalId,
+        string $previewId,
+        string $previewChecksum,
+        ShareDuration $duration,
+    ): Share {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
         $this->requireLiveSlot();
         $proposal = Share::lockProposal($proposalId);
@@ -71,7 +82,12 @@ final readonly class ShareGrants
             throw ShareProposalUnavailable::forOtherRoot($proposalId);
         }
 
-        $proposal->approveAs($owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
+        $proposal->approveAs(
+            $owner->actorId(),
+            $consumed->configuration,
+            ShareToken::generate(),
+            $duration->deadlineFrom(CarbonImmutable::now()),
+        );
         ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);

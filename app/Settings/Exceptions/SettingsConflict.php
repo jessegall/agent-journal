@@ -13,6 +13,8 @@ final class SettingsConflict extends RuntimeException
 {
     public static function for(string $owner, string $key, int $expectedRevision, int $currentRevision): self
     {
-        return new self("The settings of {$owner} changed since revision {$expectedRevision}; they are at revision {$currentRevision} now, so {$key} was not changed.");
+        return new self(
+            "The settings of {$owner} changed since revision {$expectedRevision}; they are at revision {$currentRevision} now, so {$key} was not changed.",
+        );
     }
 }

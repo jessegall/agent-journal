@@ -38,7 +38,12 @@ interface DocumentResolver
      *
      * @throws DocumentMissing|StaleRead|SectionMissing
      */
-    public function read(int $number, TextSelection $selection, int|null $revision = null, int|null $expectedRevision = null): RecordText;
+    public function read(
+        int $number,
+        TextSelection $selection,
+        int|null $revision = null,
+        int|null $expectedRevision = null,
+    ): RecordText;
 
     /**
      * The revisions of a document in number order, a page of 50 at a time.

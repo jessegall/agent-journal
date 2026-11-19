@@ -40,8 +40,16 @@ final class ReviewRuleTest extends TestCase
         parent::setUp();
 
         Event::fake([RuleApproved::class, RuleDenied::class]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
-        $this->proposed = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forAgent(TestIds::of(70)));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
+        $this->proposed = Rule::proposed(
+            'No phase waits on the user.',
+            'Agents keep forgetting it.',
+            null,
+            ActorContext::forAgent(TestIds::of(70)),
+        );
     }
 
     public function test_a_proposed_rule_does_not_hold_until_approved_once(): void
@@ -50,8 +58,14 @@ final class ReviewRuleTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new ApproveRule($this->proposed->id));
 
-        $this->assertSame(["Rule {$this->proposed->id}: No phase waits on the user."], $this->app->make(ActiveRules::class)->reminders());
-        Event::assertDispatched(RuleApproved::class, fn (RuleApproved $event) => $event->ruleId === $this->proposed->id);
+        $this->assertSame(
+            ["Rule {$this->proposed->id}: No phase waits on the user."],
+            $this->app->make(ActiveRules::class)->reminders(),
+        );
+        Event::assertDispatched(
+            RuleApproved::class,
+            fn (RuleApproved $event) => $event->ruleId === $this->proposed->id,
+        );
     }
 
     public function test_a_second_review_is_refused_and_changes_nothing(): void

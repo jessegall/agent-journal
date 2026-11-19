@@ -24,7 +24,10 @@ final class DomainBootstrapperOrderTest extends TestCase
         foreach ($this->domainClasses() as $class) {
             $methods = array_values(array_map(
                 fn (ReflectionMethod $method) => $method->getName(),
-                array_filter(new ReflectionClass($class)->getMethods(), fn (ReflectionMethod $method) => $method->getDeclaringClass()->getName() === $class),
+                array_filter(
+                    new ReflectionClass($class)->getMethods(),
+                    fn (ReflectionMethod $method) => $method->getDeclaringClass()->getName() === $class,
+                ),
             ));
             $afterDescription = $methods[array_search('description', $methods, true) + 1] ?? null;
 
@@ -41,7 +44,10 @@ final class DomainBootstrapperOrderTest extends TestCase
      */
     private function domainClasses(): array
     {
-        $files = [...(glob(base_path('domain/*/src/*Domain.php')) ?: []), ...(glob(base_path('tests/Fixtures/Modules/*/src/*Domain.php')) ?: [])];
+        $files = [
+            ...(glob(base_path('domain/*/src/*Domain.php')) ?: []),
+            ...(glob(base_path('tests/Fixtures/Modules/*/src/*Domain.php')) ?: []),
+        ];
         $classes = [];
 
         foreach ($files as $file) {

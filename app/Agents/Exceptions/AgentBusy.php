@@ -14,6 +14,8 @@ final class AgentBusy extends RuntimeException implements CommandRefusal
 {
     public static function forAgent(string $agentId): self
     {
-        return new self("Agent {$agentId} is already running a session. End it, or continue its work, before launching it again.");
+        return new self(
+            "Agent {$agentId} is already running a session. End it, or continue its work, before launching it again.",
+        );
     }
 }

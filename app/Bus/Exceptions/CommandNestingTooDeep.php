@@ -10,6 +10,8 @@ final class CommandNestingTooDeep extends RuntimeException
 {
     public static function at(int $depth): self
     {
-        return new self("Commands dispatched from handlers nest {$depth} deep; dispatch fewer commands from inside one.");
+        return new self(
+            "Commands dispatched from handlers nest {$depth} deep; dispatch fewer commands from inside one.",
+        );
     }
 }

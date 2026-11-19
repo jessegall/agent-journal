@@ -39,7 +39,12 @@ final readonly class AgentReferences
 
         foreach (glob($migrationsFolder.'/*.php') ?: [] as $migration) {
             $text = (string) file_get_contents($migration);
-            preg_match_all("/Schema::(?:create|table)\\('([a-z_]+)'(.*?)\\n        \\}\\);/s", $text, $tables, PREG_SET_ORDER);
+            preg_match_all(
+                "/Schema::(?:create|table)\\('([a-z_]+)'(.*?)\\n        \\}\\);/s",
+                $text,
+                $tables,
+                PREG_SET_ORDER,
+            );
 
             foreach ($tables as [, $table, $body]) {
                 preg_match_all("/\\\$table->\\w+\\('([a-z_]+)'/", $body, $columns);
@@ -80,9 +85,15 @@ final readonly class AgentReferences
 
     private static function namesAnAgent(ReflectionMethod $method): bool
     {
-        $types = [$method->getReturnType(), ...array_map(fn ($parameter) => $parameter->getType(), $method->getParameters())];
+        $types = [
+            $method->getReturnType(),
+            ...array_map(fn ($parameter) => $parameter->getType(), $method->getParameters()),
+        ];
 
-        return array_filter($types, fn (ReflectionType|null $type) => array_intersect(self::typeNames($type), self::AGENT_TYPES) !== []) !== [];
+        return array_filter(
+            $types,
+            fn (ReflectionType|null $type) => array_intersect(self::typeNames($type), self::AGENT_TYPES) !== [],
+        ) !== [];
     }
 
     /**
@@ -92,7 +103,9 @@ final readonly class AgentReferences
     {
         return match (true) {
             $type instanceof ReflectionNamedType => [$type->getName()],
-            $type instanceof ReflectionUnionType => array_values(array_map(fn (ReflectionType $part) => $part instanceof ReflectionNamedType ? $part->getName() : '', $type->getTypes())),
+            $type instanceof ReflectionUnionType => array_values(
+                array_map(fn (ReflectionType $part) => $part instanceof ReflectionNamedType ? $part->getName() : '', $type->getTypes()),
+            ),
             default => [],
         };
     }
@@ -103,8 +116,16 @@ final readonly class AgentReferences
     private static function classIn(string $file): string
     {
         $text = (string) file_get_contents($file);
-        $namespace = preg_match('/^namespace ([^;]+);/m', $text, $namespaceMatch) === 1 ? $namespaceMatch[1] : throw new \LogicException("{$file} declares no namespace.");
-        $class = preg_match('/^(?:final |abstract )*class (\w+)/m', $text, $classMatch) === 1 ? $classMatch[1] : throw new \LogicException("{$file} declares no class.");
+        $namespace = preg_match(
+            '/^namespace ([^;]+);/m',
+            $text,
+            $namespaceMatch,
+        ) === 1 ? $namespaceMatch[1] : throw new \LogicException("{$file} declares no namespace.");
+        $class = preg_match(
+            '/^(?:final |abstract )*class (\w+)/m',
+            $text,
+            $classMatch,
+        ) === 1 ? $classMatch[1] : throw new \LogicException("{$file} declares no class.");
 
         /** @var class-string */
         return $namespace.'\\'.$class;

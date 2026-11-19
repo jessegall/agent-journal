@@ -149,7 +149,9 @@ final readonly class AgentStack
     {
         $held = array_flip($other->frameIds());
 
-        return array_values(array_filter($this->frames, fn (Frame $frame) => ! $frame->isBottom() && ! isset($held[$frame->id])));
+        return array_values(
+            array_filter($this->frames, fn (Frame $frame) => ! $frame->isBottom() && ! isset($held[$frame->id])),
+        );
     }
 
     /**
@@ -199,7 +201,13 @@ final readonly class AgentStack
     public function records(): FrameRecords
     {
         return new FrameRecords(array_map(
-            fn (Frame $frame) => new FrameRecord($frame->id, $frame->reference, $frame->isBottom(), $frame->schemaVersion, $frame->enteredAt),
+            fn (Frame $frame) => new FrameRecord(
+                $frame->id,
+                $frame->reference,
+                $frame->isBottom(),
+                $frame->schemaVersion,
+                $frame->enteredAt,
+            ),
             $this->frames,
         ));
     }

@@ -56,15 +56,23 @@ final class ReadyStateTest extends TestCase
             yield "{$role}, a test run" => [$ready, self::line([self::part(CommandType::Verification)])];
             yield "{$role}, a build" => [$ready, self::line([self::part(CommandType::Build)])];
             yield "{$role}, an unnamed program" => [$ready, self::line([self::part(CommandType::Unknown)])];
-            yield "{$role}, a write" => [$ready, self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)])];
-            yield "{$role}, a dynamic expansion" => [$ready, self::line([self::part(CommandType::Ordinary)], ParseOutcome::DynamicExpansion)];
+            yield "{$role}, a write" => [
+                $ready,
+                self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)]),
+            ];
+            yield "{$role}, a dynamic expansion" => [
+                $ready,
+                self::line([self::part(CommandType::Ordinary)], ParseOutcome::DynamicExpansion),
+            ];
             yield "{$role}, an unparsed line" => [$ready, self::line([], ParseOutcome::Unparsed)];
         }
     }
 
     #[DataProvider('rolesAndLines')]
-    public function test_each_role_leaves_every_shell_line_to_cores_admission(ReadyState $ready, ShellCommand $command): void
-    {
+    public function test_each_role_leaves_every_shell_line_to_cores_admission(
+        ReadyState $ready,
+        ShellCommand $command,
+    ): void {
         $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($command))->answerType());
     }
 
@@ -72,15 +80,23 @@ final class ReadyStateTest extends TestCase
     {
         $edit = $this->edit(['app/Domains/Contracts/Domain.php']);
 
-        $this->assertSame(AnswerType::Allow, new ReadyState(new FixedFileEditPermission(true))->onFileEdit($edit)->answerType());
+        $this->assertSame(
+            AnswerType::Allow,
+            new ReadyState(new FixedFileEditPermission(true))->onFileEdit($edit)->answerType(),
+        );
     }
 
     public function test_a_profile_without_file_changes_refuses_an_edit_and_names_every_path(): void
     {
-        $decision = new ReadyState(new FixedFileEditPermission(false))->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']));
+        $decision = new ReadyState(new FixedFileEditPermission(false))->onFileEdit(
+            $this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']),
+        );
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('app/Domains/Contracts/Domain.php, docs/hooks/dependencies.md', $decision->refusalReason());
+        $this->assertStringContainsString(
+            'app/Domains/Contracts/Domain.php, docs/hooks/dependencies.md',
+            $decision->refusalReason(),
+        );
     }
 
     #[DataProvider('roles')]

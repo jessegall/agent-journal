@@ -51,7 +51,17 @@ final class MeteredShareBudget implements ShareBudget
      */
     public static function forPreview(ReadMeter $meter): self
     {
-        return new self(200, 2_000, 4 * self::MEBIBYTE, 4 * self::MEBIBYTE, 1_000, 2_000, 4, $meter, CarbonImmutable::now());
+        return new self(
+            200,
+            2_000,
+            4 * self::MEBIBYTE,
+            4 * self::MEBIBYTE,
+            1_000,
+            2_000,
+            4,
+            $meter,
+            CarbonImmutable::now(),
+        );
     }
 
     /**
@@ -60,7 +70,17 @@ final class MeteredShareBudget implements ShareBudget
      */
     public static function forRead(ReadMeter $meter): self
     {
-        return new self(32, 2_000, 4 * self::MEBIBYTE, 2 * self::MEBIBYTE, 1_000, 2_000, 4, $meter, CarbonImmutable::now());
+        return new self(
+            32,
+            2_000,
+            4 * self::MEBIBYTE,
+            2 * self::MEBIBYTE,
+            1_000,
+            2_000,
+            4,
+            $meter,
+            CarbonImmutable::now(),
+        );
     }
 
     /**

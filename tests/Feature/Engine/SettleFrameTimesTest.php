@@ -32,7 +32,14 @@ final class SettleFrameTimesTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'engine_frame_times'];
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'engine_frame_times',
+    ];
 
     private StackTarget $target;
 
@@ -42,7 +49,11 @@ final class SettleFrameTimesTest extends TestCase
     {
         parent::setUp();
 
-        $session = $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(
+            Agent::named('Test agent', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
         $this->stack = AgentStackRow::query()->authorizedFor($this->target)->sole();
     }
@@ -75,8 +86,15 @@ final class SettleFrameTimesTest extends TestCase
         });
         $this->assertCount(3, EngineFrameTime::settledAtFor(['frame-1', 'frame-2', 'frame-3']));
 
-        $this->assertThrows(fn () => $this->pass(fn () => $this->app->make(CommandBus::class)->run(new SettleFrameTimes([
-            FrameSettlement::at(new StackTarget($this->target->agentId, 'another-session'), $this->stack->id, 'frame-4', CarbonImmutable::now()),
+        $this->assertThrows(fn () => $this->pass(fn () => $this->app->make(
+            CommandBus::class,
+        )->run(new SettleFrameTimes([
+            FrameSettlement::at(
+                new StackTarget($this->target->agentId, 'another-session'),
+                $this->stack->id,
+                'frame-4',
+                CarbonImmutable::now(),
+            ),
         ]))), EngineAccessRefused::class);
         $this->assertSame([], EngineFrameTime::settledAtFor(['frame-4']));
     }
@@ -104,7 +122,10 @@ final class SettleFrameTimesTest extends TestCase
      */
     private function settlements(CarbonImmutable $settledAt): array
     {
-        return array_map(fn (string $frameId) => FrameSettlement::at($this->target, $this->stack->id, $frameId, $settledAt), ['frame-1', 'frame-2', 'frame-3']);
+        return array_map(
+            fn (string $frameId) => FrameSettlement::at($this->target, $this->stack->id, $frameId, $settledAt),
+            ['frame-1', 'frame-2', 'frame-3'],
+        );
     }
 
     /**
