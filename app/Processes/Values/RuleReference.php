@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Processes\Contracts\StoredValue;
+use App\Processes\Stored\StoredRuleReference;
 
 /**
  * Names one exact rule revision of one owner, as a project replacement must.
@@ -14,11 +15,11 @@ final readonly class RuleReference implements StoredValue
     public function __construct(public RuleScope $scope, public string $id, public int $revision) {}
 
     /**
-     * @return array{scope: array{type: string, owner: string, version: string}, id: string, revision: int}
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return ['scope' => $this->scope->toArray(), 'id' => $this->id, 'revision' => $this->revision];
+        return StoredRuleReference::fromReference($this)->toArray();
     }
 
     /**
@@ -26,7 +27,7 @@ final readonly class RuleReference implements StoredValue
      */
     public static function fromArray(array $fields): self
     {
-        return new self(RuleScope::fromArray($fields['scope']), $fields['id'], $fields['revision']);
+        return StoredRuleReference::from($fields)->toReference();
     }
 
     public function label(): string

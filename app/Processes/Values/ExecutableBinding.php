@@ -50,31 +50,18 @@ final readonly class ExecutableBinding
     }
 
     /**
-     * @return array<string, mixed>
+     * The binding as it was stored, read back without the checks of a new one.
+     *
+     * @param  list<string>  $locations
      */
-    public function toArray(): array
-    {
-        return [
-            'type' => $this->type->value,
-            'family' => $this->family,
-            'locations' => $this->locations,
-            'content_digest' => $this->contentDigest,
-            'configuration_revision' => $this->configurationRevision,
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $fields  the shape toArray writes
-     */
-    public static function fromArray(array $fields): self
-    {
-        return new self(
-            BindingType::from($fields['type']),
-            $fields['family'],
-            $fields['locations'],
-            $fields['content_digest'],
-            $fields['configuration_revision'],
-        );
+    public static function stored(
+        BindingType $type,
+        string $family,
+        array $locations,
+        string $contentDigest,
+        int $configurationRevision,
+    ): self {
+        return new self($type, $family, $locations, $contentDigest, $configurationRevision);
     }
 
     public function trustsContent(): bool
