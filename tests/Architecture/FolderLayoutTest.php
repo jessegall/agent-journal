@@ -119,7 +119,9 @@ final class FolderLayoutTest extends TestCase
             }
 
             foreach ($declarations as $declaration) {
-                /** @var class-string $name */
+                /**
+                 * @var class-string $name
+                 */
                 $name = $declaration['name'];
                 $misfit = $type->requirementNotMetBy(new ReflectionClass($name));
 

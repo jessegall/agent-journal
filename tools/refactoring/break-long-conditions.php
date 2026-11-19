@@ -14,34 +14,7 @@ const LIMIT = 120;
 
 const BREAK_BEFORE = [T_BOOLEAN_AND, T_BOOLEAN_OR, T_LOGICAL_AND, T_LOGICAL_OR, T_COALESCE];
 
-/**
- * The PHP files under the given paths.
- *
- * @param  list<string>  $paths
- * @return list<string>
- */
-function phpFiles(array $paths): array
-{
-    $files = [];
-
-    foreach ($paths as $path) {
-        if (is_file($path)) {
-            $files[] = $path;
-
-            continue;
-        }
-
-        $entries = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
-
-        foreach ($entries as $entry) {
-            if ($entry->isFile() && str_ends_with($entry->getFilename(), '.php')) {
-                $files[] = $entry->getPathname();
-            }
-        }
-    }
-
-    return $files;
-}
+require_once __DIR__.'/php-files.php';
 
 /**
  * Whether the token is an operator a long line breaks before: a logical one, a null coalescing one, or the parts of a

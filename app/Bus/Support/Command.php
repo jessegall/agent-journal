@@ -17,7 +17,9 @@ use App\Bus\Exceptions\CommandDispatcherMissing;
  */
 abstract readonly class Command implements CommandContract
 {
-    /** @phpstan-ignore property.uninitializedReadonly (bound later by withDispatcher through clone-with) */
+    /**
+     * @phpstan-ignore property.uninitializedReadonly (bound later by withDispatcher through clone-with)
+     */
     private ActorContext $dispatchingActor;
 
     /**

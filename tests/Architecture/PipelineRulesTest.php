@@ -90,7 +90,9 @@ final class PipelineRulesTest extends TestCase
             if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
                 continue;
             }
-            /** @var class-string $given */
+            /**
+             * @var class-string $given
+             */
             $given = $type->getName();
             if ($given === Pipelines::class || is_subclass_of($given, PipelineAdapter::class)) {
                 return true;
@@ -116,7 +118,9 @@ final class PipelineRulesTest extends TestCase
             $namespace = preg_match('/^namespace ([^;]+);/m', $source, $namespaceMatch) === 1;
             $name = preg_match('/^(?:final |abstract )?(?:readonly )?class (\w+)/m', $source, $nameMatch) === 1;
             if ($namespace && $name) {
-                /** @var class-string $class */
+                /**
+                 * @var class-string $class
+                 */
                 $class = $namespaceMatch[1].'\\'.$nameMatch[1];
                 $classes[] = $class;
             }

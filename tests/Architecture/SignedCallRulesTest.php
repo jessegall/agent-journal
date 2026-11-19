@@ -132,7 +132,9 @@ final class SignedCallRulesTest extends TestCase
             }
         }
 
-        /** @var list<class-string> $found */
+        /**
+         * @var list<class-string> $found
+         */
         $found = array_values(array_unique(array_filter($controllers)));
 
         return $found;
@@ -200,7 +202,9 @@ final class SignedCallRulesTest extends TestCase
             return null;
         }
 
-        /** @var class-string $class */
+        /**
+         * @var class-string $class
+         */
         $class = $namespace[1].'\\'.$name[1];
 
         return class_exists($class) ? $class : null;

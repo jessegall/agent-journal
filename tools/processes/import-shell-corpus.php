@@ -218,7 +218,9 @@ function main(array $arguments): void
  */
 final class CaseSet
 {
-    /** @var array<string, array{id: string, source: string, dialect: string, context: string, origins: list<array<string, mixed>>, legacy: list<array<string, mixed>>, expected: object}> */
+    /**
+     * @var array<string, array{id: string, source: string, dialect: string, context: string, origins: list<array<string, mixed>>, legacy: list<array<string, mixed>>, expected: object}>
+     */
     private array $cases = [];
 
     private int $inputs = 0;

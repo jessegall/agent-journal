@@ -23,16 +23,6 @@ use Tests\Support\ScanCache\FileScan;
  */
 final readonly class TableScan implements FileScan
 {
-    public function key(): string
-    {
-        return 'table-uses-1';
-    }
-
-    public function findingsIn(ParsedFile $file): array
-    {
-        return self::of($file);
-    }
-
     private const string DB = 'Illuminate\\Support\\Facades\\DB';
 
     private const string SCHEMA = 'Illuminate\\Support\\Facades\\Schema';
@@ -51,6 +41,16 @@ final readonly class TableScan implements FileScan
      * The argument that names the pivot table of each relation that has one.
      */
     private const array PIVOT_ARGUMENTS = ['belongsToMany' => 1, 'morphToMany' => 2, 'morphedByMany' => 2];
+
+    public function key(): string
+    {
+        return 'table-uses-1';
+    }
+
+    public function findingsIn(ParsedFile $file): array
+    {
+        return self::of($file);
+    }
 
     /**
      * @return list<TableUse>
