@@ -197,6 +197,7 @@ func terminalDriverOf(profile contracts.ProgramProfile, opened host.Terminal, ge
 	relay := &drivers.ProgressRelay{}
 	clock := keyscripts.WallClock{}
 	view := screen.NewView(layout, opened.Reader)
+	program := keyscripts.Program{Name: profile.Program(), Layout: layout}
 
 	return drivers.NewTerminalDriver(drivers.TerminalRuntime{
 		Profile:           profile.Program() + "@" + profile.Build(),
@@ -205,7 +206,7 @@ func terminalDriverOf(profile contracts.ProgramProfile, opened host.Terminal, ge
 		Composer:          layout.Composer.Name(),
 		Generation:        opened.Reader.Generation,
 		Scripts:           scripts.Registered(),
-		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, relay.Report),
+		Runner:            keyscripts.NewRunner(opened.Gate, classifier, clock, view, program, relay.Report),
 		Clock:             clock,
 		ProcessGeneration: generation,
 		Progress:          relay,

@@ -63,7 +63,8 @@ func recordedTurn(t *testing.T, until time.Duration) (*TerminalDriver, *replayCl
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	classifier := screen.NewClassifier(layout, reader)
 	view := screen.NewView(layout, reader)
-	runner := keyscripts.NewRunner(gate, classifier, clock, view, func(keyscripts.Progress) {})
+	runner := keyscripts.NewRunner(gate, classifier, clock, view, keyscripts.Program{Name: "claude", Layout: layout},
+		func(keyscripts.Progress) {})
 
 	return NewTerminalDriver(TerminalRuntime{
 		Profile:    "claude@2.1.323",

@@ -48,7 +48,13 @@ const trustedFolder = "Yes, I trust this folder"
 // the menu answers the runner's keys itself.
 func newRun(t *testing.T) *run {
 	t.Helper()
-	layout := profiles.ClaudeCode{}.Screens()
+
+	return newRunWith(t, profiles.ClaudeCode{}.Screens())
+}
+
+// newRunWith replays the folder-trust recording the same way, read through the given layout.
+func newRunWith(t *testing.T, layout screen.Layout) *run {
+	t.Helper()
 	fixture, err := recording.Load("../testdata/recordings/claude-code/2.1.323/screens/folder-trust")
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +70,8 @@ func newRun(t *testing.T) *run {
 	gate := terminal.NewInputGate(menu, reader, layout.Composer, clock.Now)
 	result := &run{gate: gate, menu: menu, clock: clock}
 	view := optionsView{reader: reader, options: options}
-	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(step Progress) {
+	program := Program{Name: "claude", Layout: layout}
+	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, program, func(step Progress) {
 		result.steps = append(result.steps, step)
 	})
 
@@ -99,8 +106,11 @@ func TestAScreenThatIsNotTheExpectedOneStopsTheScriptAtItsStep(t *testing.T) {
 	)
 
 	result, err := run.runner.Run(script, nil)
-	if err != nil || result.Outcome != ScriptFailed || result.Name != "type at the prompt" {
-		t.Fatalf("the run ended %+v, %v, not failed at its second step", result, err)
+	if err != nil || result.Outcome != NavigationNeeded || result.Name != "type at the prompt" {
+		t.Fatalf("the run ended %+v, %v, not stopped for navigation at its second step", result, err)
+	}
+	if result.Uncertainty == nil || result.Uncertainty.Reason != NoEntry || result.Uncertainty.Step != 1 {
+		t.Fatalf("the run stopped with %+v", result.Uncertainty)
 	}
 	if run.menu.sent() != "\x1b[B" {
 		t.Fatalf("the program got %q: no key may follow the failed step", run.menu.sent())

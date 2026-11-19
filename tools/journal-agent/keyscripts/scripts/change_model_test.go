@@ -59,7 +59,9 @@ func replayScript(
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	view := screen.NewView(layout, reader)
-	runner := keyscripts.NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(keyscripts.Progress) {})
+	scriptProgram := keyscripts.Program{Name: "program", Layout: layout}
+	runner := keyscripts.NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, scriptProgram,
+		func(keyscripts.Progress) {})
 
 	result, err := runner.Run(script, values)
 	if err != nil {

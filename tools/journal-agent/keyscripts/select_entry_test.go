@@ -33,7 +33,8 @@ func codexPicker(t *testing.T) (*Runner, *liveMenu) {
 	gate := terminal.NewInputGate(menu, reader, layout.Composer, clock.Now)
 	view := optionsView{reader: reader, options: options}
 
-	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(Progress) {}), menu
+	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, Program{Name: "codex", Layout: layout},
+		func(Progress) {}), menu
 }
 
 func selectModel() KeyScript {

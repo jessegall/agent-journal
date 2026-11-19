@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"journal-agent/screen"
+	"journal-agent/screen/contracts"
 	"journal-agent/terminal"
 )
 
@@ -23,6 +24,9 @@ const (
 	// EntryUnavailable is a run whose wanted entry the menu on screen did not show by its label, or showed more than
 	// once: no key was sent for it and nothing was chosen.
 	EntryUnavailable Outcome = "entry-unavailable"
+	// NavigationNeeded is a run that could not be certain of its next key on a stable menu: no key was sent, and its
+	// Uncertainty says where it stopped, for the main agent to answer.
+	NavigationNeeded Outcome = "navigation-needed"
 )
 
 // Result is where a run stopped: its outcome, the step it stopped at and the last reading it saw; Proven is set on a
@@ -31,8 +35,9 @@ type Result struct {
 	Outcome Outcome
 	Step    int
 	Name    string
-	Seen    screen.Classification
-	Proven  bool
+	Seen        screen.Classification
+	Proven      bool
+	Uncertainty *Uncertainty
 }
 
 // Progress is one confirmed step, as the run reports it under its driver request: no key text, only what was seen.
@@ -46,6 +51,7 @@ type Progress struct {
 type Screen interface {
 	Classify(now time.Time) screen.Classification
 	Forget()
+	Snapshot() contracts.Snapshot
 }
 
 // Clock is the time a run waits on; a replay advances it by feeding the recording.
@@ -65,11 +71,12 @@ const pollInterval = 50 * time.Millisecond
 
 // Runner runs key scripts one step at a time through the input gate, reporting each confirmed step.
 type Runner struct {
-	gate   *terminal.InputGate
-	screen Screen
-	clock  Clock
-	view   View
-	report func(Progress)
+	gate    *terminal.InputGate
+	screen  Screen
+	clock   Clock
+	view    View
+	program Program
+	report  func(Progress)
 }
 
 // View is what a run reads besides the screen's kind: the screen's rows and the entries of the menu on it, none
@@ -79,9 +86,17 @@ type View interface {
 	MenuEntries() screen.MenuEntries
 }
 
-// NewRunner runs scripts through the gate, reading the screen's kind from screen and its words and menus from view.
-func NewRunner(gate *terminal.InputGate, screen Screen, clock Clock, view View, report func(Progress)) *Runner {
-	return &Runner{gate: gate, screen: screen, clock: clock, view: view, report: report}
+// NewRunner runs scripts of the program through the gate, reading the screen's kind from screen and its words and
+// menus from view.
+func NewRunner(
+	gate *terminal.InputGate,
+	screen Screen,
+	clock Clock,
+	view View,
+	program Program,
+	report func(Progress),
+) *Runner {
+	return &Runner{gate: gate, screen: screen, clock: clock, view: view, program: program, report: report}
 }
 
 // Run starts the script from its first step with the given parameter values.
@@ -101,7 +116,7 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		step := script.Steps[index]
 		seen, matched := runner.waitFor(step.Expect, step.Deadline, values)
 		if !matched {
-			return Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}, nil
+			return runner.unmatched(index, step, seen), nil
 		}
 		if step.Action == WaitForHuman {
 			return Result{Outcome: WaitingForHuman, Step: index, Name: step.Name, Seen: seen}, nil
@@ -116,6 +131,53 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 	}
 
 	return Result{Outcome: Finished, Step: len(script.Steps), Proven: script.ProvesResult}, nil
+}
+
+// unmatched is how a run ends whose step's screen did not come: on a stable menu, known or not, that may leave the
+// host it needs navigation; on any other screen, a ready prompt, a draft, a turn or a secret prompt, it failed.
+func (runner *Runner) unmatched(index int, step KeyStep, seen screen.Classification) Result {
+	stopped := Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}
+	snapshot := runner.screen.Snapshot()
+	pickable := seen.Kind == screen.MenuShown || (seen.Kind == screen.Unknown && seen.Options)
+	typing := runner.gate.Owner() == terminal.HumanInput
+	if !seen.Stable || !pickable || typing || !runner.program.Layout.Exportable(snapshot) {
+		return stopped
+	}
+
+	uncertainty := runner.uncertainty(NoEntry, index, step, seen, snapshot)
+	stopped.Outcome, stopped.Uncertainty = NavigationNeeded, &uncertainty
+
+	return stopped
+}
+
+// uncertainty is the stable screen the run stopped on, as the main agent may see it.
+func (runner *Runner) uncertainty(
+	reason UncertaintyReason,
+	index int,
+	step KeyStep,
+	seen screen.Classification,
+	snapshot contracts.Snapshot,
+) Uncertainty {
+	layout := runner.program.Layout
+	highlight := -1
+	if options, listed := layout.OptionRegion(snapshot); listed {
+		highlight = options.Entries.Highlighted
+	}
+	rows := make([]string, len(snapshot.Rows))
+	for at, row := range snapshot.Rows {
+		rows[at] = screen.Redact(row)
+	}
+
+	return Uncertainty{
+		Reason:      reason,
+		Step:        index,
+		StepName:    step.Name,
+		Fingerprint: screen.Fingerprint(layout, runner.program.Name, snapshot, seen.Menu),
+		Rows:        rows,
+		Highlight:   highlight,
+		Generation:  seen.Generation,
+		Epoch:       runner.gate.HumanInputs(),
+	}
 }
 
 // waitFor reads the screen until it is the expected one or the deadline passes; it never sleeps without reading.

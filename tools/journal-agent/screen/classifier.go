@@ -177,6 +177,11 @@ func (classifier *Classifier) composerIsEmptyWithCursor(snapshot contracts.Snaps
 		cursor.Column == classifier.layout.EmptyCursorColumn
 }
 
+// Snapshot is the screen the classifier reads, as it stands.
+func (classifier *Classifier) Snapshot() contracts.Snapshot {
+	return classifier.reader.Snapshot()
+}
+
 // Forget drops what the classifier saw, so every region must hold still again from now before it counts as stable:
 // a resumed driver acts only on a screen it read afresh.
 func (classifier *Classifier) Forget() {
