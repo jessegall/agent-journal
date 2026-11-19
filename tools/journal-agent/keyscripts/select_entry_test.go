@@ -33,7 +33,8 @@ func codexPicker(t *testing.T) (*Runner, *liveMenu) {
 	gate := terminal.NewInputGate(menu, reader, layout.Composer, clock.Now)
 	view := optionsView{reader: reader, options: options}
 
-	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(Progress) {}), menu
+	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, Program{Name: "codex", Layout: layout},
+		func(Progress) {}), menu
 }
 
 func selectModel() KeyScript {
@@ -117,14 +118,41 @@ func TestAnInsertedEntryShiftsTheMovesAndCanItselfBeChosen(t *testing.T) {
 	}
 }
 
+// neededNavigation fails the test unless the run stopped for navigation for the reason, with no Enter sent.
+func neededNavigation(t *testing.T, result Result, err error, reason UncertaintyReason, menu *liveMenu) {
+	t.Helper()
+	if err != nil || result.Outcome != NavigationNeeded || result.Uncertainty == nil {
+		t.Fatalf("the run ended %+v, %v", result, err)
+	}
+	if result.Uncertainty.Reason != reason || len(result.Uncertainty.Rows) == 0 {
+		t.Fatalf("the run stopped with %+v, not %s", result.Uncertainty, reason)
+	}
+	if strings.Contains(menu.sent(), enterKey) || menu.chosen != "" {
+		t.Fatalf("the program got %q and chose %q", menu.sent(), menu.chosen)
+	}
+}
+
 func TestAMissingLabelSendsNoKeyAndNoNeighbourIsTaken(t *testing.T) {
 	for _, missing := range []string{"GPT-9-Nova", "GPT-6", "Luna"} {
 		runner, menu := codexPicker(t)
 
 		result, err := runner.Run(chooseModel(missing), nil)
-		if err != nil || result.Outcome != EntryUnavailable || menu.sent() != "" {
-			t.Fatalf("the missing %q ended %+v, %v, and the program got %q", missing, result, err, menu.sent())
+		neededNavigation(t, result, err, LabelMissing, menu)
+		if menu.sent() != "" {
+			t.Fatalf("the missing %q sent %q", missing, menu.sent())
 		}
+	}
+}
+
+func TestALabelTwoEntriesHoldNeedsNavigationAndSendsNoKey(t *testing.T) {
+	runner, menu := codexPicker(t)
+	twice := slices.Insert(slices.Clone(menu.labels), 1, "9. GPT-6-Sol             The same name again.")
+	menu.show(twice, 0)
+
+	result, err := runner.Run(chooseModel("GPT-6-Sol"), nil)
+	neededNavigation(t, result, err, Ambiguous, menu)
+	if menu.sent() != "" {
+		t.Fatalf("an ambiguous label sent %q", menu.sent())
 	}
 }
 
@@ -133,7 +161,8 @@ func TestAHighlightThatSkipsPastTheEntryIsNeverConfirmed(t *testing.T) {
 	menu.stride = 2
 
 	result, err := runner.Run(chooseModel("GPT-6-Sol"), nil)
-	if err != nil || result.Outcome != ScriptFailed || menu.sent() != arrowDown || menu.chosen != "" {
-		t.Fatalf("the skipping highlight ended %+v, %v after %q, choosing %q", result, err, menu.sent(), menu.chosen)
+	neededNavigation(t, result, err, HighlightWrong, menu)
+	if menu.sent() != arrowDown {
+		t.Fatalf("the skipping highlight got %q", menu.sent())
 	}
 }

@@ -10,9 +10,13 @@ use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
+use App\Agents\Values\NavigationRound;
+use App\Agents\Values\ScriptGoal;
+use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -50,9 +54,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $script_id
  * @property int|null $script_version
  * @property int|null $script_step
- * @property array<string, string>|null $script_parameters
+ * @property array<string, string> $script_parameters
  * @property int|null $script_generation
  * @property string|null $script_evidence
+ * @property string|null $navigation_request_id
+ * @property array{request: string, row_version: int, generation: int, keys: list<string>, choose: string|null,
+ *     confirm: string|null, proof: string|null, completes: string|null, next_step: int|null,
+ *     type_parameter: string|null}|null $navigation_round
  * @property HoldReason $hold_reason
  * @property int $row_version
  */
@@ -70,6 +78,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'script_id',
     'script_version',
     'script_parameters',
+    'navigation_request_id',
+    'navigation_round',
 ])]
 final class DriverRequest extends Model implements ReadableModel
 {
@@ -84,6 +94,7 @@ final class DriverRequest extends Model implements ReadableModel
     {
         return [
             'script_parameters' => 'array',
+            'navigation_round' => 'array',
             'operation' => DriverOperation::class,
             'progress' => RequestProgress::class,
             'outcome' => RequestOutcome::class,
@@ -156,6 +167,7 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function settleAfterExit(): void
     {
+        NavigationRequest::cancelOpenFor($this);
         if ($this->operation === DriverOperation::Stop) {
             $this->markApplied('process_exited');
 
@@ -260,6 +272,20 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * The key script this request runs, with its version and parameters, as a navigation request's goal.
+     *
+     * @throws NavigationRaiseRefused
+     */
+    public function scriptGoal(): ScriptGoal
+    {
+        if ($this->script_id === null || $this->script_version === null) {
+            throw NavigationRaiseRefused::notAKeyScript($this->id);
+        }
+
+        return new ScriptGoal($this->script_id, $this->script_version, $this->script_parameters);
+    }
+
+    /**
      * Whether the stopped key script reached a step it can go on from.
      */
     public function canResumeScript(): bool
@@ -284,6 +310,7 @@ final class DriverRequest extends Model implements ReadableModel
     public function cancel(): void
     {
         $this->finish(RequestProgress::Cancelled, null);
+        NavigationRequest::cancelOpenFor($this);
     }
 
     public function fail(RequestOutcome $outcome): void
@@ -341,6 +368,12 @@ final class DriverRequest extends Model implements ReadableModel
             $this->message,
             $this->model,
             $this->effort,
+            $this->script_id,
+            $this->script_version,
+            ScriptParameter::listOf($this->script_parameters),
+            $this->script_step,
+            $this->navigation_request_id,
+            $this->navigationRound(),
         );
     }
 
@@ -403,6 +436,20 @@ final class DriverRequest extends Model implements ReadableModel
         $this->script_id = $payload->scriptId;
         $this->script_version = $payload->scriptVersion;
         $this->script_parameters = $payload->scriptParameters;
+        $this->navigation_request_id = $payload->navigationRound?->navigationRequestId;
+        $this->navigation_round = $payload->navigationRound?->toStored();
+    }
+
+    /**
+     * The main agent's round this request carries; none for any other operation.
+     */
+    public function navigationRound(): NavigationRound|null
+    {
+        if ($this->navigation_round === null) {
+            return null;
+        }
+
+        return NavigationRound::fromStored($this->navigation_round);
     }
 
     /**

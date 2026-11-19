@@ -20,13 +20,15 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
-use App\AgentRequests\Support\StartEnvironment;
 use App\AgentRequests\Support\SendSignedCalls;
+use App\AgentRequests\Support\StartEnvironment;
 use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\ExpiresNavigation;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\NavigationReader;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RecordsStartHeartbeats;
 use App\Agents\Contracts\RuntimeResolver;
@@ -37,6 +39,7 @@ use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\Agent;
+use App\Agents\Models\NavigationRequest;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
@@ -59,15 +62,21 @@ use App\Agents\Support\DatabaseStartTransaction;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\NavigationExpiry;
+use App\Agents\Support\NavigationRecords;
+use App\Agents\Support\NavigationRequestProvider;
+use App\Agents\Support\PendingNavigationWork;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\RequestSession;
 use App\Agents\Support\SessionReadiness;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Contracts\StartTransaction;
+use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
@@ -79,15 +88,19 @@ use Illuminate\Support\ServiceProvider;
  */
 final class AgentsServiceProvider extends ServiceProvider
 {
+    private const string OWNER = 'Agents';
+
     public function register(): void
     {
         $this->app->bind(AgentResolver::class, AgentLabels::class);
         $this->app->bind(CurrentSession::class, RequestSession::class);
         $this->app->bind(StartReadiness::class, SessionReadiness::class);
+        $this->app->bind(NavigationReader::class, NavigationRecords::class);
         $this->app->bind(RuntimeResolver::class, RuntimeRecords::class);
         $this->app->bind(SessionResolver::class, SessionRecords::class);
         $this->app->bind(SendsAgentRequests::class, AgentRequestClient::class);
         $this->app->bind(RecordsStartHeartbeats::class, StartHeartbeats::class);
+        $this->app->bind(ExpiresNavigation::class, NavigationExpiry::class);
         $this->app->scoped(CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
@@ -133,6 +146,8 @@ final class AgentsServiceProvider extends ServiceProvider
         ActiveActorCounterRegistry $presentActors,
         AuthorizerProviderRegistration $authorizers,
         PolicyCatalogue $policies,
+        PendingWorkSources $pendingWork,
+        LinkTypeRegistry $links,
     ): void {
         $policies->register('Core', new PolicyRegistration(
             Agent::class,
@@ -151,6 +166,15 @@ final class AgentsServiceProvider extends ServiceProvider
             GenerateCallsCommand::class,
         ]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent->value, AgentAssignees::class));
+        $links->register([NavigationRequest::LINK_TYPE => NavigationRequest::class]);
+        $assignments->registerOwner(self::OWNER, []);
+        $assignments->registerRecord(
+            NavigationRequest::LINK_TYPE,
+            NavigationRequestProvider::class,
+            self::OWNER,
+            AssignmentPurpose::InternalResponsibility,
+        );
+        $pendingWork->register(PendingNavigationWork::class);
         $assignments->registerActivity(new ActivityRegistration(ActorType::Agent, AgentActivity::class));
         $presentActors->register(AgentSessionCounter::class);
     }

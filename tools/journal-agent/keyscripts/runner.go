@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"journal-agent/screen"
+	"journal-agent/screen/contracts"
 	"journal-agent/terminal"
 )
 
@@ -23,14 +24,20 @@ const (
 	// EntryUnavailable is a run whose wanted entry the menu on screen did not show by its label, or showed more than
 	// once: no key was sent for it and nothing was chosen.
 	EntryUnavailable Outcome = "entry-unavailable"
+	// NavigationNeeded is a run that could not be certain of its next key on a stable menu: no key was sent, and its
+	// Uncertainty says where it stopped, for the main agent to answer.
+	NavigationNeeded Outcome = "navigation-needed"
 )
 
-// Result is where a run stopped: its outcome, the step it stopped at and the last reading it saw.
+// Result is where a run stopped: its outcome, the step it stopped at and the last reading it saw; Proven is set on a
+// finished run of a script that proves its result.
 type Result struct {
-	Outcome Outcome
-	Step    int
-	Name    string
-	Seen    screen.Classification
+	Outcome     Outcome
+	Step        int
+	Name        string
+	Seen        screen.Classification
+	Proven      bool
+	Uncertainty *Uncertainty
 }
 
 // Progress is one confirmed step, as the run reports it under its driver request: no key text, only what was seen.
@@ -44,6 +51,7 @@ type Progress struct {
 type Screen interface {
 	Classify(now time.Time) screen.Classification
 	Forget()
+	Snapshot() contracts.Snapshot
 }
 
 // Clock is the time a run waits on; a replay advances it by feeding the recording.
@@ -52,22 +60,27 @@ type Clock interface {
 	Sleep(duration time.Duration)
 }
 
-// errEntryNotShown is a label the menu on screen shows on no entry, or on more than one.
-var errEntryNotShown = errors.New("the menu on screen shows no single entry with that label")
+// errLabelMissing is a label no entry of the menu on screen holds.
+var errLabelMissing = errors.New("the menu on screen shows no entry with that label")
 
-// errHighlightAstray is a highlight that did not move one entry toward the wanted entry after a key.
-var errHighlightAstray = errors.New("the highlight did not move one entry toward the wanted entry")
+// errLabelAmbiguous is a label more than one entry of the menu on screen holds.
+var errLabelAmbiguous = errors.New("the menu on screen shows more than one entry with that label")
+
+// errHighlightAstray is a highlight that did not move one entry toward the wanted entry after a key, or that is not
+// on the wanted entry when it is to be confirmed.
+var errHighlightAstray = errors.New("the highlight is not where the wanted entry is")
 
 // pollInterval is how often a waiting step reads the screen again.
 const pollInterval = 50 * time.Millisecond
 
 // Runner runs key scripts one step at a time through the input gate, reporting each confirmed step.
 type Runner struct {
-	gate   *terminal.InputGate
-	screen Screen
-	clock  Clock
-	view   View
-	report func(Progress)
+	gate    *terminal.InputGate
+	screen  Screen
+	clock   Clock
+	view    View
+	program Program
+	report  func(Progress)
 }
 
 // View is what a run reads besides the screen's kind: the screen's rows and the entries of the menu on it, none
@@ -77,9 +90,17 @@ type View interface {
 	MenuEntries() screen.MenuEntries
 }
 
-// NewRunner runs scripts through the gate, reading the screen's kind from screen and its words and menus from view.
-func NewRunner(gate *terminal.InputGate, screen Screen, clock Clock, view View, report func(Progress)) *Runner {
-	return &Runner{gate: gate, screen: screen, clock: clock, view: view, report: report}
+// NewRunner runs scripts of the program through the gate, reading the screen's kind from screen and its words and
+// menus from view.
+func NewRunner(
+	gate *terminal.InputGate,
+	screen Screen,
+	clock Clock,
+	view View,
+	program Program,
+	report func(Progress),
+) *Runner {
+	return &Runner{gate: gate, screen: screen, clock: clock, view: view, program: program, report: report}
 }
 
 // Run starts the script from its first step with the given parameter values.
@@ -99,21 +120,135 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		step := script.Steps[index]
 		seen, matched := runner.waitFor(step.Expect, step.Deadline, values)
 		if !matched {
-			return Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}, nil
+			return runner.unmatched(index, step, seen), nil
 		}
 		if step.Action == WaitForHuman {
 			return Result{Outcome: WaitingForHuman, Step: index, Name: step.Name, Seen: seen}, nil
 		}
 
 		if err := runner.act(step, values); err != nil {
-			outcome, cause := stoppedBy(err)
-
-			return Result{Outcome: outcome, Step: index, Name: step.Name, Seen: seen}, cause
+			return runner.stopped(err, index, step, seen)
+		}
+		if unproven, stopped := runner.proofMissing(index, step, values); stopped {
+			return unproven, nil
 		}
 		runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
 	}
 
-	return Result{Outcome: Finished, Step: len(script.Steps)}, nil
+	return Result{Outcome: Finished, Step: len(script.Steps), Proven: script.ProvesResult()}, nil
+}
+
+// proofMissing waits within the step's deadline for a stable screen holding the step's proof; when it never shows,
+// the run stops for navigation with no further key, or fails on a screen that may not leave the host. A step with
+// no proof is never stopped here.
+func (runner *Runner) proofMissing(index int, step KeyStep, values map[string]string) (Result, bool) {
+	proof, proves, err := step.proof(values)
+	if !proves {
+		return Result{}, false
+	}
+	failed := Result{Outcome: ScriptFailed, Step: index, Name: step.Name}
+	if err != nil {
+		return failed, true
+	}
+
+	until := runner.clock.Now().Add(step.Deadline)
+	for {
+		seen := runner.screen.Classify(runner.clock.Now())
+		if seen.Stable && proof.SeenIn(runner.screen.Snapshot().Rows) {
+			return Result{}, false
+		}
+		if !runner.clock.Now().Before(until) {
+			failed.Seen = seen
+			if navigation, raised := runner.navigation(NoProof, index, step, seen); raised {
+				return navigation, true
+			}
+
+			return failed, true
+		}
+		runner.clock.Sleep(pollInterval)
+	}
+}
+
+// navigation is the run stopped at the step for the main agent, on the screen as it stands; raised is false on a
+// screen that may not leave the host, such as a secret prompt.
+func (runner *Runner) navigation(
+	reason UncertaintyReason,
+	index int,
+	step KeyStep,
+	seen screen.Classification,
+) (Result, bool) {
+	snapshot := runner.screen.Snapshot()
+	if !runner.program.Layout.Exportable(snapshot) {
+		return Result{}, false
+	}
+	uncertainty := runner.uncertainty(reason, index, step, seen, snapshot)
+
+	return Result{Outcome: NavigationNeeded, Step: index, Name: step.Name, Seen: seen, Uncertainty: &uncertainty}, true
+}
+
+// unmatched is how a run ends whose step's screen did not come: on a stable menu, known or not, that may leave the
+// host it needs navigation; on any other screen, a ready prompt, a draft, a turn or a secret prompt, it failed.
+func (runner *Runner) unmatched(index int, step KeyStep, seen screen.Classification) Result {
+	failed := Result{Outcome: ScriptFailed, Step: index, Name: step.Name, Seen: seen}
+	pickable := seen.Kind == screen.MenuShown || (seen.Kind == screen.Unknown && seen.Options)
+	typing := runner.gate.Owner() == terminal.HumanInput
+	if !seen.Stable || !pickable || typing {
+		return failed
+	}
+	if navigation, raised := runner.navigation(NoEntry, index, step, seen); raised {
+		return navigation
+	}
+
+	return failed
+}
+
+// Reread forgets what the screen showed and reads the stalled step's screen afresh, for the same reason; readable is
+// false when the screen now may not leave the host.
+func (runner *Runner) Reread(stalled Uncertainty) (fresh Uncertainty, readable bool) {
+	runner.screen.Forget()
+	seen := runner.screen.Classify(runner.clock.Now())
+	snapshot := runner.screen.Snapshot()
+	if !runner.program.Layout.Exportable(snapshot) {
+		return Uncertainty{}, false
+	}
+
+	return runner.uncertainty(stalled.Reason, stalled.Step, KeyStep{Name: stalled.StepName}, seen, snapshot), true
+}
+
+// uncertainty is the stable screen the run stopped on, as the main agent may see it.
+func (runner *Runner) uncertainty(
+	reason UncertaintyReason,
+	index int,
+	step KeyStep,
+	seen screen.Classification,
+	snapshot contracts.Snapshot,
+) Uncertainty {
+	layout := runner.program.Layout
+	highlight := -1
+	if options, listed := layout.OptionRegion(snapshot); listed {
+		highlight = options.Entries.Highlighted
+	}
+	rows := make([]string, len(snapshot.Rows))
+	for at, row := range snapshot.Rows {
+		rows[at] = screen.Redact(row)
+	}
+
+	return Uncertainty{
+		Reason:      reason,
+		Step:        index,
+		StepName:    step.Name,
+		Fingerprint: screen.Fingerprint(layout, runner.program.Name, snapshot, seen.Menu),
+		Rows:        rows,
+		HostRows:    snapshot.Rows,
+		Highlight:   highlight,
+		Generation:  seen.Generation,
+		Epoch:       runner.gate.HumanInputs(),
+	}
+}
+
+// fingerprint is the live screen's fingerprint, read as the reading names its menu.
+func (runner *Runner) fingerprint(reading screen.Classification) string {
+	return screen.Fingerprint(runner.program.Layout, runner.program.Name, runner.screen.Snapshot(), reading.Menu)
 }
 
 // waitFor reads the screen until it is the expected one or the deadline passes; it never sleeps without reading.
@@ -126,7 +261,7 @@ func (runner *Runner) waitFor(
 
 	for {
 		seen := runner.screen.Classify(runner.clock.Now())
-		if expect.matches(seen, runner.view.Rows, values) {
+		if expect.matches(seen, runner.view.Rows, runner.fingerprint, values) {
 			return seen, true
 		}
 		if !runner.clock.Now().Before(until) {
@@ -136,12 +271,43 @@ func (runner *Runner) waitFor(
 	}
 }
 
+// stopped is how a run ends whose step failed with err: a label the menu does not show once or a highlight that is
+// not on the wanted entry needs navigation, on a screen that may leave the host, before any Enter; anything else
+// ends with its outcome, and the error the run gives back, if any.
+func (runner *Runner) stopped(err error, index int, step KeyStep, seen screen.Classification) (Result, error) {
+	if reason, uncertain := uncertaintyOf(err); uncertain {
+		now := runner.screen.Classify(runner.clock.Now())
+		if navigation, raised := runner.navigation(reason, index, step, now); raised {
+			return navigation, nil
+		}
+	}
+
+	outcome, cause := stoppedBy(err)
+
+	return Result{Outcome: outcome, Step: index, Name: step.Name, Seen: seen}, cause
+}
+
+// uncertaintyOf is the reason a refusal of the label helper gives the main agent; uncertain is false for any other
+// failure.
+func uncertaintyOf(err error) (UncertaintyReason, bool) {
+	switch {
+	case errors.Is(err, errLabelMissing):
+		return LabelMissing, true
+	case errors.Is(err, errLabelAmbiguous):
+		return Ambiguous, true
+	case errors.Is(err, errHighlightAstray):
+		return HighlightWrong, true
+	}
+
+	return "", false
+}
+
 // stoppedBy is the outcome of a run whose step failed with err, and the error the run gives back, if any.
 func stoppedBy(err error) (Outcome, error) {
 	switch {
 	case errors.Is(err, terminal.ErrPersonTyping):
 		return Paused, nil
-	case errors.Is(err, errEntryNotShown):
+	case errors.Is(err, errLabelMissing), errors.Is(err, errLabelAmbiguous):
 		return EntryUnavailable, nil
 	case errors.Is(err, errHighlightAstray):
 		return ScriptFailed, nil
@@ -179,6 +345,19 @@ func (runner *Runner) selectEntry(step KeyStep, values map[string]string) error 
 			return errHighlightAstray
 		}
 		entries, distance = moved, next
+	}
+
+	return runner.highlightIsOn(step, values)
+}
+
+// highlightIsOn reads the menu afresh and refuses a highlight that is not on the step's entry, before any Enter.
+func (runner *Runner) highlightIsOn(step KeyStep, values map[string]string) error {
+	distance, err := distanceTo(step, runner.view.MenuEntries(), values)
+	if err != nil {
+		return err
+	}
+	if distance != 0 {
+		return errHighlightAstray
 	}
 
 	return nil

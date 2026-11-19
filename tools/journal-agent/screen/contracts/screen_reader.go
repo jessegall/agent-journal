@@ -40,6 +40,10 @@ type ScreenReader interface {
 
 	// Generation counts the changes of a named region's text, so a reader waits for a region to settle.
 	Generation(region string) uint64
+
+	// ScreenGeneration counts the changes of the whole screen's text, leaving out the regions that change while the
+	// screen stays the same, such as a spinner; a change undone before anyone looks still counts.
+	ScreenGeneration() uint64
 }
 
 // RowRange is a run of screen rows from First up to, not including, Last.

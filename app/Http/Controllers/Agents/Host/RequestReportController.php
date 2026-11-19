@@ -26,6 +26,7 @@ final readonly class RequestReportController
             $report->actualBinding,
             $report->outcome,
             $report->scriptProgress(),
+            $report->navigationReport(),
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

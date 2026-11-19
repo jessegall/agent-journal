@@ -16,7 +16,51 @@ type fakeJournal struct {
 	grants   int
 	reports  []client.RequestReport
 	activity []string
+	holds    []string
 	exits    int
+	raises   []client.NavigationRaise
+	// interrupts are the navigation requests the host reported the person took over.
+	interrupts []string
+	// replayed are the library entries the host reported it replayed.
+	replayed []string
+	// answers are the replies to the raises in turn; past the last one a raise is opened.
+	answers []raiseReply
+}
+
+// raiseReply is one reply of the journal to a raise: an answer, or the error its call ended with.
+type raiseReply struct {
+	answer client.NavigationAnswer
+	err    error
+}
+
+func (journal *fakeJournal) ReportReplayed(_ context.Context, entryID, _, _ string) error {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	journal.replayed = append(journal.replayed, entryID)
+	return nil
+}
+
+func (journal *fakeJournal) InterruptNavigation(_ context.Context, navigationID string) error {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	journal.interrupts = append(journal.interrupts, navigationID)
+	return nil
+}
+
+func (journal *fakeJournal) RaiseNavigation(
+	_ context.Context,
+	_ string,
+	raise client.NavigationRaise,
+) (client.NavigationAnswer, error) {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	journal.raises = append(journal.raises, raise)
+	if len(journal.answers) == 0 {
+		return client.NavigationAnswer{Answer: client.NavigationOpened}, nil
+	}
+	reply := journal.answers[0]
+	journal.answers = journal.answers[1:]
+	return reply.answer, reply.err
 }
 
 func (journal *fakeJournal) StartGrant(context.Context, string) (client.Grant, error) {
@@ -37,6 +81,7 @@ func (journal *fakeJournal) ReportActivity(_ context.Context, report client.Acti
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.activity = append(journal.activity, report.Activity)
+	journal.holds = append(journal.holds, report.Hold)
 	return nil
 }
 

@@ -10,11 +10,15 @@ use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Support\HostRuntimes;
+use App\Agents\Support\NavigationRoundReports;
 use App\Contracts\CommandHandler;
 
 final readonly class ReportRequestProgressHandler implements CommandHandler
 {
-    public function __construct(private HostRuntimes $runtimes) {}
+    public function __construct(
+        private HostRuntimes $runtimes,
+        private NavigationRoundReports $navigationReports,
+    ) {}
 
     public function handle(ReportRequestProgress $command): void
     {
@@ -41,6 +45,9 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
 
         if ($command->script !== null) {
             $request->recordScriptProgress($command->script);
+        }
+        if ($command->navigation !== null) {
+            $this->navigationReports->apply($request, $command->navigation);
         }
     }
 }

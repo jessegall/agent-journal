@@ -34,9 +34,11 @@ return new class extends Migration
             $table->string('script_id')->nullable();
             $table->unsignedInteger('script_version')->nullable();
             $table->unsignedInteger('script_step')->nullable();
-            $table->json('script_parameters')->nullable();
+            $table->json('script_parameters');
             $table->unsignedBigInteger('script_generation')->nullable();
             $table->string('script_evidence', 500)->nullable();
+            $table->ulid('navigation_request_id')->nullable();
+            $table->json('navigation_round')->nullable();
             $table->string('hold_reason', 32);
             $table->unsignedInteger('row_version')->default(1);
             $table->timestampsTz();

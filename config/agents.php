@@ -5,12 +5,13 @@ declare(strict_types=1);
 return [
 
     /*
-    | The maintenance key scripts an operator may run on an agent's terminal, by name, each with its parameters and
-    | their rules. The host registers the same names (tools/journal-agent/keyscripts); nothing else runs (doc 40,
-    | section 26).
+    | The maintenance key scripts an operator may run on an agent's terminal, by name, each with its version, its
+    | parameters and their rules. The host registers exactly these names and versions
+    | (tools/journal-agent/keyscripts/scripts, recorded()); nothing else runs (doc 40, section 26).
     */
     'key_scripts' => [
-        'LoginMcp' => ['version' => 1, 'parameters' => ['server' => 'required|string|max:200']],
+        'ChangeModel' => ['version' => 2, 'parameters' => ['model' => 'required|string|max:200']],
+        'ChangeEffort' => ['version' => 1, 'parameters' => ['effort' => 'required|string|max:200']],
     ],
 
     /*
@@ -22,6 +23,15 @@ return [
         'long_poll_max_seconds' => (int) env('AGENTS_LONG_POLL_MAX_SECONDS', 10),
         // The largest message a delivery carries; a longer one is refused before it is accepted (section 19).
         'deliver_max_bytes' => (int) env('AGENTS_DELIVER_MAX_BYTES', 64 * 1024),
+    ],
+
+    /*
+    | Navigation requests: how long one waits for the main agent before it expires, and how soon a runtime that
+    | waits behind another runtime's open request of the same menu asks again (doc 54, section 5).
+    */
+    'navigation' => [
+        'expire_minutes' => (int) env('AGENTS_NAVIGATION_EXPIRE_MINUTES', 30),
+        'retry_after_seconds' => (int) env('AGENTS_NAVIGATION_RETRY_AFTER_SECONDS', 30),
     ],
 
     /*

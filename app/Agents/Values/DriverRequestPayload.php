@@ -11,7 +11,7 @@ namespace App\Agents\Values;
 final readonly class DriverRequestPayload
 {
     /**
-     * @param  array<string, string>|null  $scriptParameters
+     * @param  array<string, string>  $scriptParameters
      */
     private function __construct(
         public string|null $message = null,
@@ -19,7 +19,8 @@ final readonly class DriverRequestPayload
         public string|null $effort = null,
         public string|null $scriptId = null,
         public int|null $scriptVersion = null,
-        public array|null $scriptParameters = null,
+        public array $scriptParameters = [],
+        public NavigationRound|null $navigationRound = null,
     ) {}
 
     public static function nothing(): self
@@ -51,6 +52,14 @@ final readonly class DriverRequestPayload
     }
 
     /**
+     * One round of the main agent's navigation of a stalled runtime.
+     */
+    public static function navigate(NavigationRound $round): self
+    {
+        return new self(navigationRound: $round);
+    }
+
+    /**
      * A digest of the operation and everything the payload carries, so a repeated key with other content conflicts.
      */
     public function digestFor(string $operation): string
@@ -62,6 +71,7 @@ final readonly class DriverRequestPayload
             $this->scriptId,
             $this->scriptVersion,
             $this->scriptParameters,
+            $this->navigationRound?->toStored(),
         ];
 
         return hash('sha256', $operation."\n".json_encode($content, JSON_THROW_ON_ERROR));

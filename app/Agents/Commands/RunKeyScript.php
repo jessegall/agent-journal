@@ -17,7 +17,7 @@ use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Bus\Support\Command;
 
 /**
- * An operator's request to run one registered maintenance key script, such as LoginMcp, on an agent's terminal. The
+ * An operator's request to run one registered maintenance key script, such as ChangeModel, on an agent's terminal. The
  * script is named by the operator's command, never read from a message body.
  *
  * @extends Command<DriverReceipt>

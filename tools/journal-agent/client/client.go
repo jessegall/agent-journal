@@ -34,15 +34,127 @@ type ClaimedRequest struct {
 	Message   *string `json:"message"`
 	Model     *string `json:"model"`
 	Effort    *string `json:"effort"`
+	// Script is the key script a key_script request runs, with its version, its parameters and the step it stopped
+	// at, which a resumed run goes on from; all empty for any other request.
+	Script           *string           `json:"script"`
+	ScriptVersion    *int              `json:"scriptVersion"`
+	ScriptParameters []ScriptParameter `json:"scriptParameters"`
+	ScriptStep       *int              `json:"scriptStep"`
+	// NavigationRequestID and NavigationRound are the main agent's round a navigate request carries.
+	NavigationRequestID *string          `json:"navigationRequestId"`
+	NavigationRound     *NavigationRound `json:"navigationRound"`
+}
+
+// NavigationRound mirrors App\Agents\Values\NavigationRound: the row version and screen generation a round of the
+// main agent answers, and exactly one of keys, a label to choose, a seen label to confirm, a goal parameter to type,
+// or a proof with what it completes.
+type NavigationRound struct {
+	NavigationRequestID string   `json:"navigationRequestId"`
+	RowVersion          int      `json:"rowVersion"`
+	Generation          uint64   `json:"generation"`
+	Keys                []string `json:"keys"`
+	Choose              *string  `json:"choose"`
+	Confirm             *string  `json:"confirm"`
+	Proof               *string  `json:"proof"`
+	Completes           *string  `json:"completes"`
+	NextStep            *int     `json:"nextStep"`
+	TypeParameter       *string  `json:"typeParameter"`
+}
+
+// ScriptParameter mirrors App\Agents\Values\ScriptParameter: one named value a key script request gives its script.
+type ScriptParameter struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // RequestReport mirrors App\Http\Data\Agents\RequestProgressReportData.
 type RequestReport struct {
-	RequestID     string  `json:"request_id"`
-	Attempt       int     `json:"attempt"`
-	Progress      string  `json:"progress"`
-	ActualBinding *string `json:"actual_binding"`
-	Outcome       *string `json:"outcome"`
+	RequestID     string        `json:"request_id"`
+	Attempt       int           `json:"attempt"`
+	Progress      string        `json:"progress"`
+	ActualBinding *string       `json:"actual_binding"`
+	Outcome       *string       `json:"outcome"`
+	Script        *ScriptReport `json:"script,omitempty"`
+	// OperationKey names one raise or report call, so the journal takes a repeated call once; empty for the others.
+	OperationKey string `json:"operation_key,omitempty"`
+	// Navigation is what the host saw after a round of the main agent; nil for any other request.
+	Navigation *NavigationReport `json:"navigation,omitempty"`
+}
+
+// NavigationReport mirrors App\Http\Data\Agents\NavigationRoundReportData: the screen after a round, its rows
+// redacted, whether the round's proof showed, the actions carried out and the refusal that stopped it.
+type NavigationReport struct {
+	Rows       []string       `json:"rows"`
+	Highlight  int            `json:"highlight"`
+	Generation uint64         `json:"generation"`
+	ProofSeen  bool           `json:"proof_seen"`
+	Actions    []ActionReport `json:"actions,omitempty"`
+	Refusal    *string        `json:"refusal"`
+	// Steps are the proven path as a library entry keeps it, sent when the round's proof showed.
+	Steps []PathStep `json:"steps,omitempty"`
+}
+
+// PathStep is one step of a proven path: the fingerprint of the screen it expects, and a label to choose or a named
+// key, with the proof the last step carries.
+type PathStep struct {
+	Fingerprint string  `json:"fingerprint"`
+	Choose      *string `json:"choose"`
+	Key         *string `json:"key"`
+	Proof       *string `json:"proof"`
+}
+
+// ActionReport is one action a round carried out: a choose or a key, the label seen before confirming, the
+// fingerprint of the screen before it and the key's name.
+type ActionReport struct {
+	Kind        string `json:"kind"`
+	Label       string `json:"label,omitempty"`
+	Fingerprint string `json:"fingerprint"`
+	Key         string `json:"key,omitempty"`
+}
+
+// ScriptReport mirrors App\Http\Data\Agents\ScriptProgressData: the step a key script confirmed, the screen
+// generation it matched and what it saw.
+type ScriptReport struct {
+	Step       int    `json:"step"`
+	Generation int    `json:"generation"`
+	Evidence   string `json:"evidence"`
+}
+
+// NavigationRaise mirrors App\Http\Data\Agents\NavigationRaiseData: a key script run stopped at a point it could not
+// be certain of, the stalled request, attempt and step, why, and the stable screen, its rows redacted on the host.
+// The operation key names the raise, so a repeated send is the same raise.
+type NavigationRaise struct {
+	OperationKey string   `json:"operation_key"`
+	RequestID    string   `json:"request_id"`
+	Attempt      int      `json:"attempt"`
+	Step         int      `json:"step"`
+	Reason       string   `json:"reason"`
+	Fingerprint  string   `json:"fingerprint"`
+	Rows         []string `json:"rows"`
+	Highlight    int      `json:"highlight"`
+	Generation   uint64   `json:"generation"`
+	// DeclinedEntries are library entries whose replay failed here, which the journal must not answer again.
+	DeclinedEntries []string `json:"declined_entries,omitempty"`
+}
+
+// The answers to a raise, as App\Agents\Enums\NavigationRaiseOutcome names them.
+const (
+	NavigationOpened = "opened"
+	NavigationHeld   = "held"
+	NavigationWait   = "wait"
+	NavigationEntry  = "entry"
+)
+
+// NavigationAnswer mirrors App\Agents\Support\NavigationRaiseAnswer: a navigation request is open, the person holds
+// the runtime, or the host waits and asks again.
+type NavigationAnswer struct {
+	Answer            string  `json:"answer"`
+	RequestID         *string `json:"requestId"`
+	RetryAfterSeconds *int    `json:"retryAfterSeconds"`
+	// Entry is the library entry to replay, as keyscripts.Entry reads it; Guarded is set when it was proven on
+	// another build only.
+	Entry   json.RawMessage `json:"entry"`
+	Guarded bool            `json:"guarded"`
 }
 
 // ActivityReport mirrors App\Http\Data\Agents\RuntimeActivityReportData.
@@ -152,19 +264,19 @@ type StartFile struct {
 // StartFolder is a folder the host writes inside the start's settings folder before it spawns the program, with the
 // arguments that come right before the folder's absolute path.
 type StartFolder struct {
-	Name      string       `json:"name"`
+	Name      string      `json:"name"`
 	Files     []StartFile `json:"files"`
-	Arguments []string     `json:"arguments"`
+	Arguments []string    `json:"arguments"`
 }
 
 // Grant is a runtime's start token and the folders its start needs, which the journal hands out once.
 type Grant struct {
-	Token           string         `json:"token"`
+	Token           string        `json:"token"`
 	Folders         []StartFolder `json:"folders"`
-	ProfileKey      string         `json:"profile_key"`
-	ProfileRevision int            `json:"profile_revision"`
-	OfflineReply    string         `json:"offline_reply"`
-	OfflineSeal     string         `json:"offline_reply_seal"`
+	ProfileKey      string        `json:"profile_key"`
+	ProfileRevision int           `json:"profile_revision"`
+	OfflineReply    string        `json:"offline_reply"`
+	OfflineSeal     string        `json:"offline_reply_seal"`
 	Runtime         RuntimeStart  `json:"runtime"`
 }
 
@@ -197,6 +309,27 @@ func (grant Grant) ProfileEnvironment() []string {
 func (client *Client) StartGrant(ctx context.Context, runtimeID string) (Grant, error) {
 	var answer Grant
 	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/start", nil, &answer)
+}
+
+// RaiseNavigation asks the journal what to do at a point a key script run could not be certain of.
+func (client *Client) RaiseNavigation(
+	ctx context.Context,
+	runtimeID string,
+	raise NavigationRaise,
+) (NavigationAnswer, error) {
+	var answer NavigationAnswer
+	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/navigation", raise, &answer)
+}
+
+// ReportReplayed reports that the replay of a library entry worked on the runtime, under the replay's key.
+func (client *Client) ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error {
+	body := map[string]string{"runtime_id": runtimeID, "operation_key": operationKey}
+	return client.call(ctx, "/host/menu-entries/"+entryID+"/replayed", body, nil)
+}
+
+// InterruptNavigation reports that the person took over a runtime whose navigation request was open.
+func (client *Client) InterruptNavigation(ctx context.Context, navigationID string) error {
+	return client.call(ctx, "/host/navigation/"+navigationID+"/interrupt", nil, nil)
 }
 
 // ReportRequest, ReportActivity, ReportTurn, ReportHeartbeat and ReportExit send one typed report each.

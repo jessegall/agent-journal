@@ -16,24 +16,32 @@ const (
 	operationStop         = "stop"
 	operationStartRecord  = "start_recording"
 	operationStopRecord   = "stop_recording"
+	operationKeyScript    = "key_script"
+	operationNavigate     = "navigate"
 )
 
 // maxBatch is the fixed cut-off of consecutive deliveries one turn takes.
 const maxBatch = 8
 
-// Admission is what one runtime may do next: a control to carry out at once, settings to stage, and the deliveries
-// and wakes of one turn. Superseded settings were replaced by a later one of the same kind before they ran.
+// Admission is what one runtime may do next: a control to carry out at once, settings to stage, and either the
+// deliveries and wakes of one turn or one key script run alone. Superseded settings were replaced by a later one of
+// the same kind before they ran.
 type Admission struct {
 	Control    *client.ClaimedRequest
 	Staged     []client.ClaimedRequest
 	Superseded []client.ClaimedRequest
 	Deliveries []client.ClaimedRequest
 	Wakes      []client.ClaimedRequest
+	Script     *client.ClaimedRequest
+	// Navigation is a round of the main agent on the runtime's stalled screen: admitted while the runtime is held
+	// for it, and alone.
+	Navigation *client.ClaimedRequest
 }
 
 // IsEmpty says whether the admission asks for nothing.
 func (admission Admission) IsEmpty() bool {
-	return admission.Control == nil && len(admission.Staged) == 0 && len(admission.Deliveries) == 0 && len(admission.Wakes) == 0
+	return admission.Control == nil && len(admission.Staged) == 0 && len(admission.Deliveries) == 0 &&
+		len(admission.Wakes) == 0 && admission.Script == nil && admission.Navigation == nil
 }
 
 // StartsTurn says whether the admission starts a turn of the program.
@@ -74,8 +82,9 @@ func (queue *RuntimeQueue) SettingsReconciled() { queue.reconciling = false }
 
 // Next takes what may run now out of the queue. A stop or an interrupt goes first, past everything; an interrupt also
 // holds the runtime, so nothing waiting restarts work until it is released. A held runtime admits nothing else. A
-// busy runtime only stages the settings at the front of the queue. An idle one stages those settings, then takes the
-// deliveries and wakes up to the next barrier, at most maxBatch deliveries, as one turn.
+// busy runtime only stages the settings at the front of the queue. An idle one stages those settings, then takes a
+// key script at the front to run alone, or else the deliveries and wakes up to the next barrier, at most maxBatch
+// deliveries, as one turn.
 func (queue *RuntimeQueue) Next() Admission {
 	if control, found := queue.takeControl(); found {
 		if control.Operation == operationInterrupt {
@@ -84,11 +93,17 @@ func (queue *RuntimeQueue) Next() Admission {
 		return Admission{Control: &control}
 	}
 	if queue.held {
-		return Admission{}
+		return queue.takeNavigation()
 	}
 
 	admission := queue.takeLeadingSettings()
 	if queue.busy || queue.reconciling {
+		return admission
+	}
+	if len(queue.pending) > 0 && queue.pending[0].Operation == operationKeyScript {
+		script := queue.pending[0]
+		admission.Script = &script
+		queue.pending = queue.pending[1:]
 		return admission
 	}
 	for len(queue.pending) > 0 {
@@ -103,6 +118,21 @@ func (queue *RuntimeQueue) Next() Admission {
 		queue.pending = queue.pending[1:]
 	}
 	return admission
+}
+
+// takeNavigation admits the first round of the main agent waiting, while the runtime is held and not busy; nothing
+// else passes the hold.
+func (queue *RuntimeQueue) takeNavigation() Admission {
+	if queue.busy {
+		return Admission{}
+	}
+	for at, request := range queue.pending {
+		if request.Operation == operationNavigate {
+			queue.pending = append(queue.pending[:at], queue.pending[at+1:]...)
+			return Admission{Navigation: &request}
+		}
+	}
+	return Admission{}
 }
 
 func (queue *RuntimeQueue) takeControl() (client.ClaimedRequest, bool) {

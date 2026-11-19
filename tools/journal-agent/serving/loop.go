@@ -5,13 +5,18 @@ package serving
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
+	"time"
 
 	"journal-agent/client"
 	"journal-agent/drivers/contracts"
 	"journal-agent/host"
+	"journal-agent/keyscripts"
 )
 
 // Journal is the part of the journal the loop reports to.
@@ -20,7 +25,14 @@ type Journal interface {
 	ReportRequest(ctx context.Context, report client.RequestReport) error
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
+	ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error
+	RaiseNavigation(ctx context.Context, runtimeID string, raise client.NavigationRaise) (client.NavigationAnswer, error)
+	InterruptNavigation(ctx context.Context, navigationID string) error
 }
+
+// raiseAttempts is how many times a raise is sent, its screen read afresh before each later one, while its answer is
+// lost; after that the runtime stays held.
+const raiseAttempts = 3
 
 // Runtime is a running program's driver as the loop uses it: the six operations, the process generation its reports
 // carry, and when the current turn ends.
@@ -40,6 +52,8 @@ type Loop struct {
 	scheduler *host.Scheduler
 	mutex     sync.Mutex
 	runtimes  map[string]*liveRuntime
+	// raiseRetryDelay is how long a raise whose answer was lost waits before it is sent again.
+	raiseRetryDelay time.Duration
 }
 
 // liveRuntime is a runtime the host runs: its driver, the turns it started, the requests of the running turn and
@@ -57,7 +71,13 @@ type liveRuntime struct {
 
 // NewLoop returns a loop that reports to the journal and opens drivers with open.
 func NewLoop(journal Journal, open Opener) *Loop {
-	return &Loop{journal: journal, open: open, scheduler: host.NewScheduler(), runtimes: map[string]*liveRuntime{}}
+	return &Loop{
+		journal:         journal,
+		open:            open,
+		scheduler:       host.NewScheduler(),
+		runtimes:        map[string]*liveRuntime{},
+		raiseRetryDelay: time.Second,
+	}
 }
 
 // Take files the claimed requests and runs whatever each touched runtime may run now.
@@ -102,6 +122,16 @@ func (loop *Loop) run(ctx context.Context, runtime *liveRuntime, admission host.
 	}
 	for _, setting := range admission.Staged {
 		loop.setting(ctx, runtime, setting)
+	}
+	if admission.Script != nil {
+		loop.startScript(ctx, runtime, *admission.Script)
+
+		return false
+	}
+	if admission.Navigation != nil {
+		loop.startNavigation(ctx, runtime, *admission.Navigation)
+
+		return false
 	}
 	if !admission.StartsTurn() {
 		return true
@@ -218,6 +248,402 @@ func (loop *Loop) awaitTurn(ctx context.Context, runtime *liveRuntime) {
 	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
 	loop.activity(ctx, runtime, "idle")
 	loop.advance(ctx, runtime.id)
+}
+
+// startScript runs a key script like a turn: the runtime is busy while it runs, the run waits on its screen in its
+// own goroutine so the loop takes a stop or a wake meanwhile, and the runtime takes more work when it ends.
+func (loop *Loop) startScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
+	loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressApplying})
+	loop.activity(ctx, runtime, "running")
+	go loop.runScript(ctx, runtime, request)
+}
+
+func (loop *Loop) runScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	loop.settleScript(ctx, runtime, request)
+
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
+	loop.activity(ctx, runtime, "idle")
+	loop.advance(ctx, runtime.id)
+}
+
+// settleScript runs the script and ends its request, or asks the journal at an uncertain point.
+func (loop *Loop) settleScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	result, err := loop.scriptResult(ctx, runtime, request)
+	if err == nil && result.Hold == contracts.HoldNavigationNeeded {
+		loop.raiseNavigation(ctx, runtime, request, *result.Script.Uncertainty, nil)
+		return
+	}
+	loop.reportResult(ctx, request, result, err)
+}
+
+// scriptResult runs the script on a driver that runs key scripts, reporting each step it confirms, and reads how it
+// ended in the journal's words.
+func (loop *Loop) scriptResult(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+) (contracts.OperationResult, error) {
+	runner, runsScripts := runtime.driver.(contracts.KeyScriptRunner)
+	if !runsScripts {
+		return contracts.OperationResult{
+			Progress: contracts.ProgressUnavailable,
+			Outcome:  contracts.OutcomeTerminalRequired,
+		}, nil
+	}
+	if reporter, reportsSteps := runtime.driver.(stepReporter); reportsSteps {
+		reporter.ReportProgressTo(func(progress keyscripts.Progress) { loop.reportStep(ctx, runtime, request, progress) })
+	}
+
+	result, err := runner.RunKeyScript(ctx, contracts.KeyScriptRequest{
+		Request:    identityOf(request),
+		Script:     text(request.Script),
+		Parameters: parametersOf(request),
+		ResumeStep: request.ScriptStep,
+	})
+	if err != nil || result.Script == nil {
+		return result, err
+	}
+
+	return scriptEnd(*result.Script), nil
+}
+
+// raiseNavigation asks the journal what to do with a script stopped on a menu it could not be certain of, sending the
+// same raise again, its screen read afresh, while the answer is lost; no key is sent meanwhile and the runtime stays
+// held. A refusal ends the script as one the person holds.
+func (loop *Loop) raiseNavigation(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+	declined []string,
+) {
+	loop.holdRuntime(runtime)
+	for attempt := 1; ; attempt++ {
+		raise := raiseOf(request, uncertainty)
+		raise.DeclinedEntries = declined
+		answer, err := loop.journal.RaiseNavigation(ctx, runtime.id, raise)
+		if err == nil {
+			loop.answerNavigation(ctx, runtime, request, uncertainty, answer, declined)
+			return
+		}
+		if errors.Is(err, client.ErrRefused) {
+			log.Printf("the raise of request %s was refused: %v", request.RequestID, err)
+			loop.endForNavigation(ctx, runtime, request, uncertainty)
+			return
+		}
+		rereader, rereads := runtime.driver.(screenRereader)
+		if attempt == raiseAttempts || !rereads {
+			log.Printf("the raise of request %s got no answer; the runtime stays held: %v", request.RequestID, err)
+			return
+		}
+		fresh, readable := rereader.Reread(uncertainty)
+		if !readable {
+			log.Printf("the screen of request %s may no longer leave the host; the runtime stays held", request.RequestID)
+			return
+		}
+		uncertainty = fresh
+		time.Sleep(loop.raiseRetryDelay)
+	}
+}
+
+// screenRereader is a driver that reads a stalled key script's screen afresh.
+type screenRereader interface {
+	Reread(stalled keyscripts.Uncertainty) (keyscripts.Uncertainty, bool)
+}
+
+// answerNavigation carries out the journal's answer to a raise: an opened request leaves the script stopped and
+// resumable at its step, the runtime held for the main agent; the person's own hold ends the script as before; a
+// wait keeps the runtime held until it asks again.
+func (loop *Loop) answerNavigation(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+	answer client.NavigationAnswer,
+	declined []string,
+) {
+	switch answer.Answer {
+	case client.NavigationEntry:
+		loop.replayEntry(ctx, runtime, request, uncertainty, answer, declined)
+	case client.NavigationOpened:
+		report := client.RequestReport{
+			RequestID: request.RequestID,
+			Attempt:   request.Attempt,
+			Progress:  string(contracts.ProgressApplying),
+			Script:    navigationEvidence(runtime, uncertainty),
+		}
+		if err := loop.journal.ReportRequest(ctx, report); err != nil {
+			log.Printf("the stop of request %s for navigation could not be reported: %v", request.RequestID, err)
+		}
+	case client.NavigationWait:
+		log.Printf("request %s waits behind another runtime's navigation of the same menu", request.RequestID)
+	default:
+		loop.endForNavigation(ctx, runtime, request, uncertainty)
+	}
+}
+
+// entryReplayer is a driver that replays a library entry on the live screen.
+type entryReplayer interface {
+	ReplayEntry(entry keyscripts.Entry) (keyscripts.ReplayResult, error)
+}
+
+// replayEntry replays the library entry the journal answered with: proven, the replay is counted, the runtime goes
+// on and the script ends or resumes after the entry's step; any other end raises again with the entry declined, so
+// the journal asks the main agent instead.
+func (loop *Loop) replayEntry(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+	answer client.NavigationAnswer,
+	declined []string,
+) {
+	var entry keyscripts.Entry
+	replayer, replays := runtime.driver.(entryReplayer)
+	if err := json.Unmarshal(answer.Entry, &entry); err != nil || !replays {
+		loop.endForNavigation(ctx, runtime, request, uncertainty)
+		return
+	}
+	result, err := replayer.ReplayEntry(entry)
+	if err != nil || result.Outcome != keyscripts.Proven {
+		loop.raiseNavigation(ctx, runtime, request, uncertainty, append(declined, entry.ID))
+		return
+	}
+
+	key := fmt.Sprintf("%s:%d:replay:%s", request.RequestID, request.Attempt, entry.ID)
+	if err := loop.journal.ReportReplayed(ctx, entry.ID, runtime.id, key); err != nil {
+		log.Printf("the replay of entry %s could not be reported: %v", entry.ID, err)
+	}
+	loop.releaseRuntime(runtime)
+	if result.ResumeAt != nil {
+		request.ScriptStep = result.ResumeAt
+		loop.settleScript(ctx, runtime, request)
+		return
+	}
+	applied := contracts.OperationResult{Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed}
+	loop.report(ctx, request, applied)
+}
+
+// releaseRuntime ends the runtime's navigation hold, so its queue runs again.
+func (loop *Loop) releaseRuntime(runtime *liveRuntime) {
+	loop.mutex.Lock()
+	runtime.hold = contracts.HoldNone
+	loop.mutex.Unlock()
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.Release() })
+}
+
+// raiseOf is the raise of a stopped script: named by its request, attempt and stalled step, so a repeated send is the
+// same raise.
+func raiseOf(request client.ClaimedRequest, uncertainty keyscripts.Uncertainty) client.NavigationRaise {
+	return client.NavigationRaise{
+		OperationKey: fmt.Sprintf("%s:%d:%d", request.RequestID, request.Attempt, uncertainty.Step),
+		RequestID:    request.RequestID,
+		Attempt:      request.Attempt,
+		Step:         uncertainty.Step,
+		Reason:       string(uncertainty.Reason),
+		Fingerprint:  uncertainty.Fingerprint,
+		Rows:         uncertainty.Rows,
+		Highlight:    uncertainty.Highlight,
+		Generation:   uncertainty.Generation,
+	}
+}
+
+// navigationEvidence is the stalled step as a report shows it: the reason only, never the screen's rows.
+func navigationEvidence(runtime *liveRuntime, uncertainty keyscripts.Uncertainty) *client.ScriptReport {
+	return &client.ScriptReport{
+		Step:       uncertainty.Step,
+		Generation: runtime.driver.Generation(),
+		Evidence:   "navigation-needed: " + string(uncertainty.Reason),
+	}
+}
+
+// holdRuntime holds the runtime navigation_needed, so no other work types into the menu its script stopped on.
+func (loop *Loop) holdRuntime(runtime *liveRuntime) {
+	loop.mutex.Lock()
+	runtime.hold = contracts.HoldNavigationNeeded
+	loop.mutex.Unlock()
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.Hold() })
+}
+
+// endForNavigation ends a script that stopped on a menu the person holds: its request ends entry_unavailable at the
+// stalled step with only the reason as evidence, never the screen's rows, and the runtime stays held.
+func (loop *Loop) endForNavigation(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+) {
+	outcome := string(contracts.OutcomeEntryUnavailable)
+	report := client.RequestReport{
+		RequestID: request.RequestID,
+		Attempt:   request.Attempt,
+		Progress:  string(contracts.ProgressFailed),
+		Outcome:   &outcome,
+		Script:    navigationEvidence(runtime, uncertainty),
+	}
+	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+		log.Printf("the stop of request %s for navigation could not be reported: %v", request.RequestID, err)
+	}
+	loop.holdRuntime(runtime)
+}
+
+// roundNavigator is a driver that carries out the main agent's rounds on a stalled key script's screen.
+type roundNavigator interface {
+	NavigateRound(round keyscripts.Round) keyscripts.RoundResult
+}
+
+// startNavigation runs a round of the main agent like a turn, in its own goroutine, while the runtime stays held for
+// its navigation; the loop takes stops and other runtimes' work meanwhile.
+func (loop *Loop) startNavigation(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnStarted() })
+	go loop.runNavigation(ctx, runtime, request)
+}
+
+func (loop *Loop) runNavigation(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
+	navigator, navigates := runtime.driver.(roundNavigator)
+	switch {
+	case !navigates || request.NavigationRound == nil:
+		loop.report(ctx, request, contracts.OperationResult{
+			Progress: contracts.ProgressUnavailable,
+			Outcome:  contracts.OutcomeTerminalRequired,
+		})
+	default:
+		loop.reportRound(ctx, request, navigator.NavigateRound(roundOf(*request.NavigationRound)))
+	}
+
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.TurnFinished() })
+	loop.advance(ctx, runtime.id)
+}
+
+// reportRound reports what a round left: the person's keys end it paused and the navigation request interrupted;
+// otherwise the screen after it, its actions, its refusal and whether its proof showed.
+func (loop *Loop) reportRound(ctx context.Context, request client.ClaimedRequest, result keyscripts.RoundResult) {
+	if result.Paused {
+		if err := loop.journal.InterruptNavigation(ctx, text(request.NavigationRequestID)); err != nil {
+			log.Printf("the interrupt of navigation %s could not be reported: %v", text(request.NavigationRequestID), err)
+		}
+		loop.report(ctx, request, contracts.OperationResult{Progress: contracts.ProgressFailed})
+		return
+	}
+
+	report := client.RequestReport{
+		RequestID:  request.RequestID,
+		Attempt:    request.Attempt,
+		Progress:   string(contracts.ProgressApplied),
+		Navigation: navigationReportOf(result),
+	}
+	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+		log.Printf("round %s could not be reported: %v", request.RequestID, err)
+	}
+}
+
+// roundOf is a round as the journal sent it, as the host carries it out.
+func roundOf(round client.NavigationRound) keyscripts.Round {
+	return keyscripts.Round{
+		Generation:    round.Generation,
+		Keys:          round.Keys,
+		Choose:        text(round.Choose),
+		Confirm:       text(round.Confirm),
+		TypeParameter: text(round.TypeParameter),
+		Proof:         text(round.Proof),
+		Completes:     text(round.Completes),
+		NextStep:      round.NextStep,
+	}
+}
+
+// navigationReportOf is a round's result as the journal reads it; a secret screen sends no rows.
+func navigationReportOf(result keyscripts.RoundResult) *client.NavigationReport {
+	report := &client.NavigationReport{Rows: []string{}, Highlight: -1, ProofSeen: result.ProofSeen}
+	if result.Refusal != "" {
+		refusal := result.Refusal
+		report.Refusal = &refusal
+	}
+	if result.ScreenAfter != nil {
+		report.Rows = result.ScreenAfter.Rows
+		report.Highlight = result.ScreenAfter.Highlight
+		report.Generation = result.ScreenAfter.Generation
+	}
+	for _, step := range result.Path {
+		report.Steps = append(report.Steps, client.PathStep{
+			Fingerprint: step.Fingerprint,
+			Choose:      step.Choose,
+			Key:         step.Key,
+			Proof:       step.Proof,
+		})
+	}
+	for _, action := range result.Actions {
+		report.Actions = append(report.Actions, client.ActionReport{
+			Kind:        action.Kind,
+			Label:       action.Label,
+			Fingerprint: action.Fingerprint,
+			Key:         action.Key,
+		})
+	}
+
+	return report
+}
+
+// stepReporter is a driver whose key scripts report each step they confirm.
+type stepReporter interface {
+	ReportProgressTo(receiver func(keyscripts.Progress))
+}
+
+// reportStep reports one confirmed step under the script's request: its number and what it saw, never a key.
+func (loop *Loop) reportStep(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	progress keyscripts.Progress,
+) {
+	evidence := progress.Name + ": " + string(progress.Seen.Kind)
+	if progress.Seen.Menu != "" {
+		evidence += " " + progress.Seen.Menu
+	}
+	report := client.RequestReport{
+		RequestID: request.RequestID,
+		Attempt:   request.Attempt,
+		Progress:  string(contracts.ProgressApplying),
+		Script:    &client.ScriptReport{Step: progress.Step, Generation: runtime.driver.Generation(), Evidence: evidence},
+	}
+	if err := loop.journal.ReportRequest(ctx, report); err != nil {
+		log.Printf("step %d of request %s could not be reported: %v", progress.Step, request.RequestID, err)
+	}
+}
+
+// scriptEnd is how a run that stopped ends its request: applied only when the script proved its result on screen,
+// failed with the reason otherwise, and held for the person when the person typed or a step waits for them.
+func scriptEnd(result keyscripts.Result) contracts.OperationResult {
+	switch result.Outcome {
+	case keyscripts.Finished:
+		if result.Proven {
+			return contracts.OperationResult{Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed}
+		}
+		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeUnconfirmed}
+	case keyscripts.ScriptFailed:
+		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeScriptFailed}
+	case keyscripts.EntryUnavailable:
+		return contracts.OperationResult{Progress: contracts.ProgressFailed, Outcome: contracts.OutcomeEntryUnavailable}
+	case keyscripts.NavigationNeeded:
+		return contracts.OperationResult{
+			Progress: contracts.ProgressFailed,
+			Outcome:  contracts.OutcomeEntryUnavailable,
+			Hold:     contracts.HoldNavigationNeeded,
+			Script:   &result,
+		}
+	}
+
+	return contracts.OperationResult{Progress: contracts.ProgressFailed, Hold: contracts.HoldNeedsAttention}
+}
+
+// parametersOf is the claimed script's parameters by name.
+func parametersOf(request client.ClaimedRequest) map[string]string {
+	values := map[string]string{}
+	for _, parameter := range request.ScriptParameters {
+		values[parameter.Name] = parameter.Value
+	}
+
+	return values
 }
 
 func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime, error) {

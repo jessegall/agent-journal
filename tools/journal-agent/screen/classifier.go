@@ -20,13 +20,22 @@ const (
 	Unknown Kind = "unknown"
 )
 
-// Classification is one reading of the screen: its kind, the menu family when one shows, and whether the region it
-// rests on has held still for its interval.
+// Classification is one reading of the screen: its kind, the menu family when one shows, whether the region it
+// rests on has held still for its interval, the whole-screen generation it was read at, and whether an option list
+// is drawn with no composer, as a picker is and a draft or a turn is not.
 type Classification struct {
-	Kind   Kind
-	Menu   string
-	Stable bool
+	Kind       Kind
+	Menu       string
+	Stable     bool
+	Generation uint64
+	Options    bool
 }
+
+// defaultUnknownStableFor is how long an unknown screen's text must hold still when the layout names no interval.
+const defaultUnknownStableFor = 500 * time.Millisecond
+
+// wholeScreen is the name the classifier keeps the whole screen's stillness under, beside its regions'.
+const wholeScreen = "\x00whole screen"
 
 // MenuFamily is one kind of menu a program puts up, known by shape and words rather than exact text: its option
 // list is found by its shape, and enough of its keywords must appear on the screen, in any case and order, so a
@@ -41,6 +50,8 @@ type MenuFamily struct {
 	Hold string
 	// LaterKeys are the recorded keys that choose a menu's harmless Later; empty means nothing is answered.
 	LaterKeys string
+	// Secret is whether this family's screen asks the person for a password, key or other secret.
+	Secret bool
 }
 
 // matches is whether the snapshot shows this family: its option list is drawn and enough keywords appear.
@@ -49,6 +60,11 @@ func (family MenuFamily) matches(snapshot contracts.Snapshot) bool {
 		return false
 	}
 
+	return family.matchesWords(snapshot)
+}
+
+// matchesWords is whether enough of the family's keywords appear on the screen, with or without its option list.
+func (family MenuFamily) matchesWords(snapshot contracts.Snapshot) bool {
 	text := strings.ToLower(strings.Join(snapshot.Rows, "\n"))
 	present := 0
 	for _, keyword := range family.Keywords {
@@ -70,6 +86,17 @@ type Layout struct {
 	ComposerStableFor time.Duration
 	Menus             []MenuFamily
 	Others            []contracts.Region
+	// UnknownStableFor is how long an unknown screen's text must hold still to count as stable; zero is 500ms.
+	UnknownStableFor time.Duration
+}
+
+// unknownStableFor is the layout's interval for an unknown screen, or the default when it names none.
+func (layout Layout) unknownStableFor() time.Duration {
+	if layout.UnknownStableFor == 0 {
+		return defaultUnknownStableFor
+	}
+
+	return layout.UnknownStableFor
 }
 
 // Regions are every region the layout names, for the reader to count generations of.
@@ -99,22 +126,42 @@ func NewClassifier(layout Layout, reader contracts.ScreenReader) *Classifier {
 // a replay.
 func (classifier *Classifier) Classify(now time.Time) Classification {
 	snapshot := classifier.reader.Snapshot()
+	generation := classifier.reader.ScreenGeneration()
+	options := classifier.showsOptions(snapshot)
 
 	for _, family := range classifier.layout.Menus {
 		if family.matches(snapshot) {
-			stable := classifier.heldFor(family.Options.Name(), now, family.StableFor)
+			name := family.Options.Name()
+			stable := classifier.heldFor(name, classifier.reader.Generation(name), now, family.StableFor)
 
-			return Classification{Kind: MenuShown, Menu: family.Name, Stable: stable}
+			return Classification{
+				Kind:       MenuShown,
+				Menu:       family.Name,
+				Stable:     stable,
+				Generation: generation,
+				Options:    options,
+			}
 		}
 	}
 
 	if classifier.composerIsEmptyWithCursor(snapshot) {
-		stable := classifier.heldFor(classifier.layout.Composer.Name(), now, classifier.layout.ComposerStableFor)
+		name := classifier.layout.Composer.Name()
+		stable := classifier.heldFor(name, classifier.reader.Generation(name), now, classifier.layout.ComposerStableFor)
 
-		return Classification{Kind: PromptReady, Stable: stable}
+		return Classification{Kind: PromptReady, Stable: stable, Generation: generation, Options: options}
 	}
 
-	return Classification{Kind: Unknown}
+	stable := classifier.heldFor(wholeScreen, generation, now, classifier.layout.unknownStableFor())
+
+	return Classification{Kind: Unknown, Stable: stable, Generation: generation, Options: options}
+}
+
+// showsOptions is whether an option list is drawn, known or not, while no composer is: a picker, not a draft.
+func (classifier *Classifier) showsOptions(snapshot contracts.Snapshot) bool {
+	_, listed := classifier.layout.OptionRegion(snapshot)
+	_, composing := classifier.layout.Composer.Rows(snapshot)
+
+	return listed && !composing
 }
 
 // composerIsEmptyWithCursor is whether the composer is drawn where the layout says, on the layout's buffer, with the
@@ -130,6 +177,11 @@ func (classifier *Classifier) composerIsEmptyWithCursor(snapshot contracts.Snaps
 		cursor.Column == classifier.layout.EmptyCursorColumn
 }
 
+// Snapshot is the screen the classifier reads, as it stands.
+func (classifier *Classifier) Snapshot() contracts.Snapshot {
+	return classifier.reader.Snapshot()
+}
+
 // Forget drops what the classifier saw, so every region must hold still again from now before it counts as stable:
 // a resumed driver acts only on a screen it read afresh.
 func (classifier *Classifier) Forget() {
@@ -137,9 +189,8 @@ func (classifier *Classifier) Forget() {
 	classifier.since = map[string]time.Time{}
 }
 
-// heldFor is whether the region's generation has not changed for at least the interval.
-func (classifier *Classifier) heldFor(region string, now time.Time, interval time.Duration) bool {
-	generation := classifier.reader.Generation(region)
+// heldFor is whether the generation kept under the name has not changed for at least the interval.
+func (classifier *Classifier) heldFor(region string, generation uint64, now time.Time, interval time.Duration) bool {
 	if _, known := classifier.since[region]; !known || classifier.seen[region] != generation {
 		classifier.seen[region] = generation
 		classifier.since[region] = now

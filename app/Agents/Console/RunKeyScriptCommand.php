@@ -12,14 +12,14 @@ use App\Bus\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**
- * The owner runs one registered maintenance key script, such as LoginMcp, on an agent's running terminal, under a
+ * The owner runs one registered maintenance key script, such as ChangeModel, on an agent's running terminal, under a
  * request key, and prints the request it appended.
  */
 final class RunKeyScriptCommand extends Command
 {
     protected $signature = 'agents:key-script {agent} {script} {--param=*} {--request-key=}';
 
-    protected $description = 'Run a registered maintenance key script, such as LoginMcp, on an agent terminal';
+    protected $description = 'Run a registered maintenance key script, such as ChangeModel, on an agent terminal';
 
     public function handle(ConsoleOwner $owner, CommandBus $commands): int
     {

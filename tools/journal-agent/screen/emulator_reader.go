@@ -28,12 +28,33 @@ type EmulatorReader struct {
 	version       uint64
 	feedRefused   bool
 	resizeRefused bool
+	// volatile are the regions the whole-screen generation leaves out.
+	volatile         []contracts.Region
+	screenHash       uint64
+	screenGeneration uint64
 }
 
 var _ contracts.ScreenReader = (*EmulatorReader)(nil)
 
-// NewEmulatorReader starts an empty screen of the given size that counts the generations of the regions.
+// NewEmulatorReader starts an empty screen of the given size that counts the generations of the regions, and of the
+// whole screen.
 func NewEmulatorReader(columns, rows int, limits Limits, regions []contracts.Region) (*EmulatorReader, error) {
+	return newEmulatorReader(columns, rows, limits, regions, nil)
+}
+
+// NewReader starts an empty screen of the given size for a program drawn this way: it counts the generations of
+// every region the layout names, and of the whole screen without the layout's other regions, such as its spinner
+// and status line.
+func (layout Layout) NewReader(columns, rows int, limits Limits) (*EmulatorReader, error) {
+	return newEmulatorReader(columns, rows, limits, layout.Regions(), layout.Others)
+}
+
+func newEmulatorReader(
+	columns, rows int,
+	limits Limits,
+	regions []contracts.Region,
+	volatile []contracts.Region,
+) (*EmulatorReader, error) {
 	if err := limits.checkSize(columns, rows); err != nil {
 		return nil, err
 	}
@@ -45,6 +66,7 @@ func NewEmulatorReader(columns, rows int, limits Limits, regions []contracts.Reg
 		regions:       regions,
 		hashes:        map[string]uint64{},
 		generations:   map[string]uint64{},
+		volatile:      volatile,
 	}
 	reader.terminal.SetCallbacks(vt.Callbacks{CursorVisibility: func(visible bool) { reader.cursorVisible = visible }})
 	reader.terminal.SetScrollbackSize(limits.MaxScrollbackLines)
@@ -168,6 +190,13 @@ func (reader *EmulatorReader) Version() uint64 {
 	return reader.version
 }
 
+func (reader *EmulatorReader) ScreenGeneration() uint64 {
+	reader.lock.Lock()
+	defer reader.lock.Unlock()
+
+	return reader.screenGeneration
+}
+
 // Follow feeds every chunk the program writes into the reader until the source ends, calling afterChunk once each
 // chunk is read, so a live terminal is read as it is drawn. The source's end is not an error.
 func (reader *EmulatorReader) Follow(source io.Reader, afterChunk func()) error {
@@ -197,6 +226,7 @@ const followChunkBytes = 32 << 10
 // not drawn counts as its own text, so it changes when it appears or goes.
 func (reader *EmulatorReader) countGenerations() {
 	snapshot := reader.snapshot()
+	reader.countScreenGeneration(snapshot)
 
 	for _, region := range reader.regions {
 		hash := fnv.New64a()
@@ -214,5 +244,28 @@ func (reader *EmulatorReader) countGenerations() {
 			reader.hashes[name] = sum
 			reader.generations[name]++
 		}
+	}
+}
+
+// countScreenGeneration raises the whole-screen generation when the text of any row outside the volatile regions
+// changed since the last count.
+func (reader *EmulatorReader) countScreenGeneration(snapshot contracts.Snapshot) {
+	var volatileRows []contracts.RowRange
+	for _, region := range reader.volatile {
+		if rows, found := region.Rows(snapshot); found {
+			volatileRows = append(volatileRows, rows)
+		}
+	}
+
+	hash := fnv.New64a()
+	for row, text := range snapshot.Rows {
+		if !isInAny(row, volatileRows) {
+			hash.Write([]byte(text))
+		}
+		hash.Write([]byte{'\n'})
+	}
+	if sum := hash.Sum64(); sum != reader.screenHash {
+		reader.screenHash = sum
+		reader.screenGeneration++
 	}
 }

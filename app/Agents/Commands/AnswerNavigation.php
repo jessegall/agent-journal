@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Commands;
+
+use App\Agents\Enums\AgentAbility;
+use App\Agents\Handlers\AnswerNavigationHandler;
+use App\Agents\Models\Agent;
+use App\Agents\Policies\AgentPolicy;
+use App\Agents\Support\DriverReceipt;
+use App\Agents\Values\NavigationAnswer;
+use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\HandledBy;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Support\Command;
+
+/**
+ * One round of the main agent on a stalled runtime's screen, answering the navigation request at the row version and
+ * screen generation it read: keys, a label to choose, a seen label to confirm, or a goal parameter to type.
+ *
+ * @extends Command<DriverReceipt>
+ */
+#[HandledBy(AnswerNavigationHandler::class)]
+#[Authorize(AgentPolicy::class, AgentAbility::Navigate)]
+final readonly class AnswerNavigation extends Command implements HasAuthorizationSubject
+{
+    public function __construct(
+        public string $navigationId,
+        public int $expectedRowVersion,
+        public int $generation,
+        public NavigationAnswer $answer,
+    ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Agent::class;
+    }
+}

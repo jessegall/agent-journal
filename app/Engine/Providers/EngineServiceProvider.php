@@ -19,6 +19,7 @@ use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineLoop;
 use App\Engine\Support\EngineSettings;
 use App\Engine\Support\EngineTickedDelivery;
+use App\Engine\Support\ExpireNavigationRequestsOnTick;
 use App\Engine\Support\FrameBaselines;
 use App\Engine\Support\MarkSilentSessionsOnTick;
 use App\Engine\Support\SystemMonotonicClock;
@@ -71,6 +72,7 @@ final class EngineServiceProvider extends ServiceProvider
         $authorizers->register(ActorType::Engine, EngineAuthorizerProvider::class);
         $listeners->add(MarkSilentSessionsOnTick::class);
         $listeners->add(EndTerminalViewsOnTick::class);
+        $listeners->add(ExpireNavigationRequestsOnTick::class);
         $selfMeasured->add('engine:tick');
         $this->commands([TickCommand::class]);
     }

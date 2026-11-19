@@ -59,7 +59,9 @@ func replayScript(
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	view := screen.NewView(layout, reader)
-	runner := keyscripts.NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(keyscripts.Progress) {})
+	scriptProgram := keyscripts.Program{Name: "program", Layout: layout}
+	runner := keyscripts.NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, scriptProgram,
+		func(keyscripts.Progress) {})
 
 	result, err := runner.Run(script, values)
 	if err != nil {
@@ -124,11 +126,12 @@ func TestClaudeCodeChangeEffortMovesTheSliderAndEndsWhenClaudeCodeSaysItIsSet(t 
 	}
 }
 
-func TestALevelTheSliderDoesNotShowIsRefusedBeforeAnyMove(t *testing.T) {
+func TestALevelTheSliderDoesNotShowNeedsNavigationBeforeAnyMove(t *testing.T) {
 	result, keys := replayScript(t, profiles.ClaudeCode{}.Screens(), "claude-code/2.1.323/keyscripts/effort-change",
 		21*time.Second, claudeCodeChangeEffort(), map[string]string{"effort": "turbo"})
 
-	if result.Outcome != keyscripts.EntryUnavailable || keys != "/effort"+enter {
+	missing := result.Uncertainty != nil && result.Uncertainty.Reason == keyscripts.LabelMissing
+	if result.Outcome != keyscripts.NavigationNeeded || !missing || keys != "/effort"+enter {
 		t.Fatalf("an unknown level ended %+v after keys %q", result, keys)
 	}
 }
@@ -166,5 +169,25 @@ func TestNoScriptMovesThroughAMenuByCountedArrowKeys(t *testing.T) {
 					script.Profile, step.Name)
 			}
 		}
+	}
+}
+
+func TestNoRecordedScriptClaimsToProveItsResult(t *testing.T) {
+	for _, script := range recorded() {
+		if script.ProvesResult() {
+			t.Fatalf("%s for %s claims a proof no recording holds", script.Name, script.Profile)
+		}
+	}
+}
+
+func TestANewBuildOfAProgramRunsTheNewestRegisteredScript(t *testing.T) {
+	registry := Registered()
+
+	script, err := registry.Find("claude@2.1.330", "ChangeModel")
+	if err != nil || script.Profile != claudeCode {
+		t.Fatalf("a new build found %q, %v", script.Profile, err)
+	}
+	if _, err := registry.Find("gemini@1.0.0", "ChangeModel"); err == nil {
+		t.Fatal("another program found a script")
 	}
 }

@@ -30,17 +30,24 @@ const echoDeadline = 5 * time.Second
 // pollInterval is how often the driver reads the screen again while it waits.
 const pollInterval = 50 * time.Millisecond
 
+// turnStartDeadline is how long a submitted prompt waits for its turn to take the composer away; a turn that ends
+// sooner than the screen is read is over already.
+const turnStartDeadline = 10 * time.Second
+
 // TerminalRuntime is what the terminal driver drives: the screen read from the program, the gate every key passes,
-// the program build's registered key scripts and the clock its waits run on.
+// the program build's registered key scripts, the clock its waits run on, the process generation its reports carry
+// and the relay its key scripts report their steps through.
 type TerminalRuntime struct {
-	Profile    string
-	Classifier *screen.Classifier
-	Gate       *terminal.InputGate
-	Composer   string
-	Generation func(region string) uint64
-	Scripts    *keyscripts.Registry
-	Runner     *keyscripts.Runner
-	Clock      keyscripts.Clock
+	Profile           string
+	Classifier        *screen.Classifier
+	Gate              *terminal.InputGate
+	Composer          string
+	Generation        func(region string) uint64
+	Scripts           *keyscripts.Registry
+	Runner            *keyscripts.Runner
+	Clock             keyscripts.Clock
+	ProcessGeneration int
+	Progress          *ProgressRelay
 }
 
 // TerminalDriver carries out the six operations on one persistent program in one process generation: every delivered
@@ -50,6 +57,26 @@ type TerminalDriver struct {
 	mutex       sync.Mutex
 	turns       int
 	interrupted bool
+	turnEnd     *turnEnd
+	// stalled is the key script run stopped for the main agent, which its rounds answer; nil while none is.
+	stalled *stalledScript
+}
+
+// stalledScript is a key script run stopped on a screen it could not be certain of: that screen, the run's values,
+// and the count of the person's inputs the main agent's next round must find unchanged.
+type stalledScript struct {
+	uncertainty keyscripts.Uncertainty
+	values      map[string]string
+	epoch       uint64
+	// actions are every round's actions so far, and secret whether any round met a screen kept on the host.
+	actions []keyscripts.ActionRecord
+	secret  bool
+}
+
+// turnEnd is the end of one submitted prompt's turn, watched from the first time someone waits for it.
+type turnEnd struct {
+	ended chan error
+	watch sync.Once
 }
 
 var _ contracts.AgentDriver = (*TerminalDriver)(nil)
@@ -58,6 +85,31 @@ var _ contracts.KeyScriptRunner = (*TerminalDriver)(nil)
 
 func NewTerminalDriver(runtime TerminalRuntime) *TerminalDriver {
 	return &TerminalDriver{runtime: runtime}
+}
+
+// Generation is the process generation of the one program the driver types into.
+func (driver *TerminalDriver) Generation() int {
+	return driver.runtime.ProcessGeneration
+}
+
+// Finished delivers the end of the last submitted prompt's turn: once the turn has taken the composer away, the
+// composer is empty and still again. The program keeps running between turns. With no prompt submitted yet there is
+// no turn to end, and the channel never delivers.
+func (driver *TerminalDriver) Finished() <-chan error {
+	driver.mutex.Lock()
+	current := driver.turnEnd
+	driver.mutex.Unlock()
+	if current == nil {
+		return nil
+	}
+	current.watch.Do(func() { go driver.awaitTurnEnd(current.ended) })
+
+	return current.ended
+}
+
+// ReportProgressTo sends every step a key script confirms to the receiver.
+func (driver *TerminalDriver) ReportProgressTo(receiver func(keyscripts.Progress)) {
+	driver.runtime.Progress.SendTo(receiver)
 }
 
 // Turns is how many prompts the driver submitted in this generation.
@@ -138,16 +190,72 @@ func (driver *TerminalDriver) RunKeyScript(
 		return failed(request.Request), err
 	}
 
-	result, err := driver.runtime.Runner.Run(script, request.Parameters)
-	if err != nil || result.Outcome != keyscripts.Finished {
-		return contracts.OperationResult{
-			Request:  request.Request,
-			Progress: contracts.ProgressFailed,
-			Hold:     contracts.HoldNeedsAttention,
-		}, err
+	result, err := driver.run(script, request)
+	if result.Outcome == keyscripts.NavigationNeeded && result.Uncertainty != nil {
+		driver.mutex.Lock()
+		driver.stalled = &stalledScript{
+			uncertainty: *result.Uncertainty,
+			values:      request.Parameters,
+			epoch:       result.Uncertainty.Epoch,
+		}
+		driver.mutex.Unlock()
 	}
 
-	return contracts.OperationResult{Request: request.Request, Progress: contracts.ProgressApplying}, nil
+	return contracts.OperationResult{Request: request.Request, Progress: contracts.ProgressApplying, Script: &result}, err
+}
+
+// NavigateRound carries out a round of the main agent on the stalled key script's screen. With no stalled script, as
+// after a restart, there is no live screen to answer and the round ends paused, for the person.
+func (driver *TerminalDriver) NavigateRound(round keyscripts.Round) keyscripts.RoundResult {
+	driver.mutex.Lock()
+	stalled := driver.stalled
+	driver.mutex.Unlock()
+	if stalled == nil {
+		return keyscripts.RoundResult{Paused: true}
+	}
+
+	result := driver.runtime.Runner.Navigate(round, stalled.epoch, stalled.uncertainty, stalled.values)
+	driver.mutex.Lock()
+	defer driver.mutex.Unlock()
+	stalled.epoch = driver.runtime.Gate.HumanInputs()
+	stalled.actions = append(stalled.actions, result.Actions...)
+	stalled.secret = stalled.secret || result.Refusal == keyscripts.RefusedSecretScreen
+	if round.Proof != "" && result.ProofSeen {
+		path := keyscripts.ProvenPath{
+			Actions:   stalled.actions,
+			Secret:    stalled.secret,
+			Proof:     round.Proof,
+			Completes: round.Completes,
+			NextStep:  round.NextStep,
+		}
+		if entry, err := keyscripts.EntryFromActions(path); err == nil {
+			result.Path = entry.Steps
+		}
+	}
+
+	return result
+}
+
+// ReplayEntry replays a library entry the journal answered with, on the live screen, through the runner.
+func (driver *TerminalDriver) ReplayEntry(entry keyscripts.Entry) (keyscripts.ReplayResult, error) {
+	return driver.runtime.Runner.Replay(entry, driver.runtime.Profile)
+}
+
+// Reread reads a stalled key script's screen afresh, as the host does before it sends a raise again.
+func (driver *TerminalDriver) Reread(stalled keyscripts.Uncertainty) (keyscripts.Uncertainty, bool) {
+	return driver.runtime.Runner.Reread(stalled)
+}
+
+// run starts the script from its first step, or goes on from the step a stopped attempt reached.
+func (driver *TerminalDriver) run(
+	script keyscripts.KeyScript,
+	request contracts.KeyScriptRequest,
+) (keyscripts.Result, error) {
+	if request.ResumeStep != nil {
+		return driver.runtime.Runner.Resume(script, *request.ResumeStep, request.Parameters)
+	}
+
+	return driver.runtime.Runner.Run(script, request.Parameters)
 }
 
 // prompt types a prompt into an empty, still composer, waits for its echo and submits it once. An interrupted
@@ -188,9 +296,19 @@ func (driver *TerminalDriver) prompt(
 
 	driver.mutex.Lock()
 	driver.turns++
+	driver.turnEnd = &turnEnd{ended: make(chan error, 1)}
 	driver.mutex.Unlock()
 
 	return contracts.OperationResult{Request: request, Progress: contracts.ProgressApplying}, nil
+}
+
+// awaitTurnEnd waits for the turn to take the composer away and then for an empty, still composer again.
+func (driver *TerminalDriver) awaitTurnEnd(ended chan<- error) {
+	driver.waitUntil(turnStartDeadline, func() bool { return !driver.promptReady() })
+	for !driver.promptReady() {
+		driver.runtime.Clock.Sleep(pollInterval)
+	}
+	ended <- nil
 }
 
 func (driver *TerminalDriver) promptReady() bool {

@@ -23,6 +23,9 @@ type InputGate struct {
 	owner      Owner
 	draftSince time.Time
 	pending    *TypedLine
+	// humanInputs counts every input of the person's, so a check before an action sees whether the person typed
+	// since it last looked, even when their Enter already gave the composer back.
+	humanInputs uint64
 }
 
 // NewInputGate guards writes to the program, reading its composer from the reader; now is the clock of draft ages.
@@ -41,6 +44,7 @@ func (gate *InputGate) Human(keys []byte) error {
 	gate.mutex.Lock()
 	defer gate.mutex.Unlock()
 
+	gate.humanInputs++
 	if gate.pending != nil {
 		gate.pending.invalidated = true
 		gate.pending = nil
@@ -54,6 +58,14 @@ func (gate *InputGate) Human(keys []byte) error {
 	_, err := gate.program.Write(keys)
 
 	return err
+}
+
+// HumanInputs is how many inputs the person has sent through the gate; it only grows.
+func (gate *InputGate) HumanInputs() uint64 {
+	gate.mutex.Lock()
+	defer gate.mutex.Unlock()
+
+	return gate.humanInputs
 }
 
 // Type writes a driver line into an empty composer whose generation is still the one the caller read; anything else

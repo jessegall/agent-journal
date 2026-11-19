@@ -1,0 +1,132 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Agents;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\OwnerAuthority;
+use App\Agents\Enums\MenuEntryState;
+use App\Agents\Enums\NavigationCompletion;
+use App\Agents\Models\MenuEntry;
+use App\Agents\Values\MenuStep;
+use App\Agents\Values\ScriptGoal;
+use Illuminate\Support\Facades\Schema;
+use Tests\Support\Agents\RaisesNavigationRequests;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsTrustedCommands;
+use Tests\TestCase;
+
+/**
+ * A menu library entry belongs to its owner, is found by program, first screen and goal, carries a stale mark per
+ * build and is superseded or retired, never deleted.
+ */
+final class MenuEntryTest extends TestCase
+{
+    use CommitsHookRows;
+    use RaisesNavigationRequests;
+    use RunsTrustedCommands;
+
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'start_tokens',
+        'agent_stacks',
+        'hook_calls',
+        'hosts',
+        'agent_runtimes',
+        'driver_requests',
+        'navigation_requests',
+        'menu_entries',
+    ];
+
+    public function test_a_proven_entry_is_found_by_its_program_first_screen_and_goal(): void
+    {
+        $entry = $this->provenEntry();
+        $goal = new ScriptGoal('ChangeModel', 2, ['model' => 'GPT-6']);
+
+        $found = MenuEntry::query()
+            ->current()
+            ->forProgram('claude-code')
+            ->matching('fp1:first', $goal)
+            ->firstOrFail();
+
+        $this->assertSame($entry->id, $found->id);
+        $this->assertEquals($this->steps(), $found->steps());
+        $this->assertTrue($found->isCurrentOn('2.1.323'));
+        $this->assertTrue($found->wasProvenElsewhere('2.2.0'));
+    }
+
+    public function test_a_stale_mark_holds_for_its_build_only(): void
+    {
+        $entry = $this->provenEntry();
+        $entry->provenOn('2.2.0');
+
+        $entry->markStaleOn('2.1.323', 'label-missing', ['Model: <redacted>']);
+
+        $entry->refresh();
+        $this->assertFalse($entry->isCurrentOn('2.1.323'));
+        $this->assertTrue($entry->isCurrentOn('2.2.0'));
+        $this->assertSame(['Model: <redacted>'], $entry->builds()['2.1.323']->staleScreen);
+        $this->assertSame(MenuEntryState::Current, $entry->state);
+    }
+
+    public function test_an_entry_is_used_superseded_and_retired_but_kept(): void
+    {
+        $entry = $this->provenEntry();
+        $newer = $this->provenEntry();
+
+        $entry->used();
+        $entry->supersededBy($newer);
+        $newer->retire();
+
+        $this->assertSame(1, $entry->fresh()?->uses);
+        $this->assertSame([MenuEntryState::Superseded, $newer->id], [$entry->state, $entry->superseded_by_id]);
+        $this->assertFalse($newer->fresh()?->isCurrentOn('2.1.323'));
+        $this->assertSame(0, MenuEntry::query()->current()->count());
+        $this->assertSame(2, MenuEntry::query()->count());
+    }
+
+    public function test_another_users_actor_reads_none_of_the_library(): void
+    {
+        $entry = $this->provenEntry();
+        $someoneElse = ActorContext::forUser('someone-else');
+        $this->app->make(CurrentActorSetter::class)->set($someoneElse, new OwnerAuthority('test'));
+
+        $this->assertNull(MenuEntry::query()->find($entry->id));
+        $this->assertSame(0, MenuEntry::query()->count());
+    }
+
+    public function test_no_column_names_an_agent_or_a_session(): void
+    {
+        $columns = Schema::getColumnListing('menu_entries');
+
+        $this->assertSame([], array_values(preg_grep('/agent|session/', $columns) ?: []));
+    }
+
+    private function provenEntry(): MenuEntry
+    {
+        $source = $this->raise($this->stalledScript(), 'raise-1');
+
+        return MenuEntry::proven(
+            new ActorIdentity(ActorType::User, 'owner'),
+            $source,
+            $this->steps(),
+            NavigationCompletion::Goal,
+            'Set model to GPT-6',
+        );
+    }
+
+    /**
+     * Choosing GPT-6 in the picker, then pressing s to set it for this session.
+     *
+     * @return non-empty-list<MenuStep>
+     */
+    private function steps(): array
+    {
+        return [new MenuStep('fp1:first', 'GPT-6', null, null), new MenuStep('fp1:next', null, 's', 'GPT-6')];
+    }
+}

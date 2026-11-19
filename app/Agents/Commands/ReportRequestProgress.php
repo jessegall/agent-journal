@@ -7,6 +7,7 @@ namespace App\Agents\Commands;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Handlers\ReportRequestProgressHandler;
+use App\Agents\Values\NavigationRoundReport;
 use App\Agents\Values\ScriptProgress;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
@@ -31,5 +32,6 @@ final readonly class ReportRequestProgress extends Command
         public string|null $actualBinding,
         public RequestOutcome|null $outcome,
         public ScriptProgress|null $script = null,
+        public NavigationRoundReport|null $navigation = null,
     ) {}
 }

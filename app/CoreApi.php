@@ -103,6 +103,8 @@ use App\AgentRequests\Values\CallAnswer;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
 use App\AgentRequests\Values\ReportLine;
+use App\Agents\Commands\AbandonNavigation;
+use App\Agents\Commands\AnswerNavigation;
 use App\Agents\Commands\CancelDriverRequest;
 use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
@@ -113,9 +115,13 @@ use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\InterruptNavigation;
+use App\Agents\Commands\MarkMenuEntryStale;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\OpenTerminalView;
+use App\Agents\Commands\ProveNavigation;
+use App\Agents\Commands\RaiseNavigation;
 use App\Agents\Commands\ReassignAgentRuntime;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RecordRuntime;
@@ -123,6 +129,7 @@ use App\Agents\Commands\ReleaseAgentHold;
 use App\Agents\Commands\RenewTerminalView;
 use App\Agents\Commands\RepairDriverSettings;
 use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportEntryReplayed;
 use App\Agents\Commands\ReportRequestProgress;
 use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
@@ -131,6 +138,7 @@ use App\Agents\Commands\ReportRuntimeScreen;
 use App\Agents\Commands\ResolveDriverDelivery;
 use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RetireMenuEntry;
 use App\Agents\Commands\RetryDriverRequest;
 use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StartAgent;
@@ -162,7 +170,12 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\HostCapabilityType;
+use App\Agents\Enums\MenuEntryState;
+use App\Agents\Enums\MenuStaleReason;
 use App\Agents\Enums\ModelSelectionType;
+use App\Agents\Enums\NavigationCompletion;
+use App\Agents\Enums\NavigationKey;
+use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RecoveryAction;
@@ -194,8 +207,10 @@ use App\Agents\Exceptions\ExecutionPolicyInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
 use App\Agents\Exceptions\ImageUnverified;
 use App\Agents\Exceptions\ManifestRefused;
+use App\Agents\Exceptions\MenuStepRefused;
 use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
+use App\Agents\Exceptions\NavigationAnswerRefused;
 use App\Agents\Exceptions\OfflineReplyModeInvalid;
 use App\Agents\Exceptions\ProgramConflict;
 use App\Agents\Exceptions\ProgramRequired;
@@ -210,6 +225,7 @@ use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\ContainerManifest;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\EntryGoalAnswer;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\ExecutionReceipt;
@@ -218,8 +234,10 @@ use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\LibraryEntryAnswer;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ModelSelection;
+use App\Agents\Support\NavigationRaiseAnswer;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
@@ -237,9 +255,15 @@ use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\ClassGrant;
+use App\Agents\Values\MenuStep;
+use App\Agents\Values\NavigationAnswer;
+use App\Agents\Values\NavigationRound;
+use App\Agents\Values\NavigationRoundReport;
+use App\Agents\Values\NavigationScreen;
 use App\Agents\Values\Operation as PolicyOperation;
 use App\Agents\Values\OperationGrant;
 use App\Agents\Values\ResourceRequest;
+use App\Agents\Values\ScriptGoal;
 use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\StopCondition;
@@ -466,6 +490,7 @@ use App\Desks\Support\SeatChangeResult;
 use App\Domains\Contracts\ProvidesIncomingWork;
 use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Engine\Commands\EndTerminalViews;
+use App\Engine\Commands\ExpireNavigationRequests;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Events\EngineTicked;
@@ -1400,6 +1425,20 @@ final class CoreApi
                 ToolFinished::class,
                 ToolResult::class,
                 ProgramToolInput::class,
+                NavigationScreen::class,
+                NavigationRaiseAnswer::class,
+                LibraryEntryAnswer::class,
+                EntryGoalAnswer::class,
+                ScriptGoal::class,
+                NavigationReason::class,
+                MenuStaleReason::class,
+                MenuEntryState::class,
+                NavigationRound::class,
+                NavigationRoundReport::class,
+                NavigationAnswer::class,
+                MenuStep::class,
+                NavigationKey::class,
+                NavigationCompletion::class,
                 TerminalViewReceipt::class,
                 ScreenReportAnswer::class,
                 ScreenReportRefusal::class,
@@ -1667,6 +1706,14 @@ final class CoreApi
                 OpenTerminalView::class,
                 RenewTerminalView::class,
                 CloseTerminalView::class,
+                AbandonNavigation::class,
+                AnswerNavigation::class,
+                InterruptNavigation::class,
+                ProveNavigation::class,
+                RaiseNavigation::class,
+                MarkMenuEntryStale::class,
+                ReportEntryReplayed::class,
+                RetireMenuEntry::class,
                 ResumeKeyScript::class,
                 CancelKeyScript::class,
                 ReassignAgentRuntime::class,
@@ -1681,6 +1728,7 @@ final class CoreApi
                 OpenHostMainRuntime::class,
                 MarkSilentSessions::class,
                 EndTerminalViews::class,
+                ExpireNavigationRequests::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,
                 CreateShare::class,
@@ -1727,6 +1775,8 @@ final class CoreApi
                 CommandStopped::class,
                 CallFailed::class,
                 CallRefused::class,
+                NavigationAnswerRefused::class,
+                MenuStepRefused::class,
                 AnswerUnreadable::class,
                 InputRefused::class,
                 NotAuthenticated::class,

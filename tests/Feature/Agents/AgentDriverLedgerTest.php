@@ -15,7 +15,6 @@ use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\DeliverAgent;
-use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\RecordRuntime;
@@ -30,7 +29,6 @@ use App\Agents\Commands\ResolveDriverDelivery;
 use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\RetryDriverRequest;
-use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\RuntimeResolver;
@@ -47,7 +45,6 @@ use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Exceptions\KeyScriptRefused;
 use App\Agents\Exceptions\StaleProcessGeneration;
-use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
@@ -60,15 +57,13 @@ use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\StartGrant;
-use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
-use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
 use Tests\Fixtures\Agents\CountedPendingWork;
+use Tests\Support\Agents\OpensLedgerRuntimes;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -83,6 +78,7 @@ use Tests\TestCase;
 final class AgentDriverLedgerTest extends TestCase
 {
     use CommitsHookRows;
+    use OpensLedgerRuntimes;
     use RunsTrustedCommands;
     use SendsHostCalls;
 
@@ -97,8 +93,6 @@ final class AgentDriverLedgerTest extends TestCase
         'driver_requests',
         'driver_turns',
     ];
-
-    private const string FOLDER = '/work/project';
 
     public function test_opening_a_runtime_records_its_first_delivery(): void
     {
@@ -489,6 +483,44 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(RequestProgress::Accepted, $request->fresh()?->progress);
     }
 
+    public function test_the_host_reports_a_navigation_hold_and_ends_requests_unavailable_or_unconfirmed(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $runtime = AgentRuntime::query()->findOrFail($opened->runtimeId);
+        $unavailable = $this->deliver($opened, 'entry-gone', 'Pick GPT-6');
+        $unconfirmed = $this->deliver($opened, 'only-highlighted', 'Pick GPT-6 again');
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+
+        $this->hostCall($host, '/host/reports/activity', [
+            'runtime_id' => $runtime->id,
+            'activity' => RuntimeActivity::Running->value,
+            'hold' => HoldReason::NavigationNeeded->value,
+            'process_generation' => $runtime->process_generation,
+        ])->assertSuccessful();
+        $ends = [[$unavailable, 'unavailable', 'entry_unavailable'], [$unconfirmed, 'failed', 'unconfirmed']];
+        foreach ($ends as [$receipt, $progress, $outcome]) {
+            $this->hostCall($host, '/host/reports/request', [
+                'request_id' => $receipt->requestId,
+                'attempt' => DriverRequest::query()->findOrFail($receipt->requestId)->attempt_version,
+                'progress' => $progress,
+                'actual_binding' => null,
+                'outcome' => $outcome,
+            ])->assertSuccessful();
+        }
+
+        $this->assertSame(HoldReason::NavigationNeeded, $runtime->fresh()?->hold_reason);
+        $gone = DriverRequest::query()->findOrFail($unavailable->requestId);
+        $this->assertSame(
+            [RequestProgress::Unavailable, RequestOutcome::EntryUnavailable],
+            [$gone->progress, $gone->outcome],
+        );
+        $highlighted = DriverRequest::query()->findOrFail($unconfirmed->requestId);
+        $this->assertSame(
+            [RequestProgress::Failed, RequestOutcome::Unconfirmed],
+            [$highlighted->progress, $highlighted->outcome],
+        );
+    }
+
     public function test_retrying_a_failed_request_starts_a_new_attempt_and_refuses_reports_of_the_old_one(): void
     {
         [$host, $opened] = $this->openRuntime();
@@ -623,10 +655,10 @@ final class AgentDriverLedgerTest extends TestCase
     {
         [$host, $opened] = $this->openRuntime();
         $resumed = DriverRequest::query()->findOrFail(
-            $this->asOwner($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']))->requestId,
+            $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']))->requestId,
         );
         $cancelled = DriverRequest::query()->findOrFail(
-            $this->asOwner($this->keyScript($opened, 'LoginMcp', ['server' => 'other']))->requestId,
+            $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'opus']))->requestId,
         );
         foreach ([$resumed, $cancelled] as $request) {
             $this->asSystem(new ReportRequestProgress(
@@ -717,18 +749,47 @@ final class AgentDriverLedgerTest extends TestCase
 
         $response->assertOk();
         $this->assertSame($opened->firstRequestId, $response->json('requests.0.requestId'));
+        $this->assertSame([], $response->json('requests.0.scriptParameters'));
+    }
+
+    public function test_a_claimed_key_script_carries_its_script_and_resumes_from_its_reported_step(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
+        $request = DriverRequest::query()->findOrFail($receipt->requestId);
+
+        $claimed = $this->claimedScript($host, $receipt->requestId);
+        $this->assertSame(
+            ['ChangeModel', 2, [['name' => 'model', 'value' => 'gpt-6']], null],
+            [$claimed['script'], $claimed['scriptVersion'], $claimed['scriptParameters'], $claimed['scriptStep']],
+        );
+
+        $this->hostCall($host, '/host/reports/request', [
+            'request_id' => $request->id,
+            'attempt' => $claimed['attempt'],
+            'progress' => RequestProgress::Applying->value,
+            'actual_binding' => null,
+            'outcome' => null,
+            'script' => ['step' => 2, 'generation' => 7, 'evidence' => 'menu login-method, stable'],
+        ])->assertSuccessful();
+        $request->refresh();
+        $this->assertSame([2, 'menu login-method, stable'], [$request->script_step, $request->script_evidence]);
+
+        $this->asOwner(new ResumeKeyScript($request->id, $request->row_version, 'go on'));
+
+        $this->assertSame(2, $this->claimedScript($host, $request->id)['scriptStep']);
     }
 
     public function test_an_operator_appends_one_registered_key_script_request(): void
     {
         [, $opened] = $this->openRuntime();
 
-        $receipt = $this->asOwner($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
+        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
 
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
         $this->assertSame(DriverOperation::KeyScript, $request->operation);
-        $this->assertSame('LoginMcp', $request->script_id);
-        $this->assertSame(['server' => 'journal'], $request->script_parameters);
+        $this->assertSame(['ChangeModel', 2], [$request->script_id, $request->script_version]);
+        $this->assertSame(['model' => 'gpt-6'], $request->script_parameters);
     }
 
     public function test_an_unregistered_script_or_an_extra_parameter_is_refused_before_acceptance(): void
@@ -736,7 +797,11 @@ final class AgentDriverLedgerTest extends TestCase
         [, $opened] = $this->openRuntime();
         $before = DriverRequest::query()->count();
 
-        $refused = [['Format', ['server' => 'journal']], ['LoginMcp', ['server' => 'journal', 'shell' => 'rm']]];
+        $refused = [
+            ['LoginMcp', ['server' => 'journal']],
+            ['ChangeModel', ['model' => 'gpt-6', 'shell' => 'rm']],
+            ['ChangeEffort', []],
+        ];
 
         foreach ($refused as [$name, $parameters]) {
             $this->assertThrows(
@@ -757,13 +822,13 @@ final class AgentDriverLedgerTest extends TestCase
         );
 
         $this->expectException(ActorNotAllowed::class);
-        $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
+        $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
     }
 
     public function test_a_progress_report_records_the_scripts_step_and_evidence(): void
     {
         [$host, $opened] = $this->openRuntime();
-        $receipt = $this->asOwner($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
+        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'gpt-6']));
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
         $progress = new ScriptProgress(2, 7, 'menu login-method, stable');
 
@@ -787,26 +852,15 @@ final class AgentDriverLedgerTest extends TestCase
     }
 
     /**
-     * @return array{EnrolledHost, OpenedRuntime}
+     * The request as the host's claim hands it out.
+     *
+     * @return array<string, mixed>
      */
-    private function openRuntime(string|null $firstMessage = null): array
+    private function claimedScript(EnrolledHost $host, string $requestId): array
     {
-        $host = $this->enrollHost();
-        $opened = $this->asOwner(
-            new OpenAgentRuntime(
-                $this->agent()->id,
-                $host->hostId,
-                self::FOLDER,
-                'claude-code',
-                '2.1.323',
-                'claude',
-                DriverType::Process,
-                'claude-opus-5-5',
-                firstMessage: $firstMessage,
-            ),
-        );
+        $requests = $this->hostCall($host, '/host/claim?limit=10&wait=0&watched_version=0')->assertOk()->json('requests');
 
-        return [$host, $opened];
+        return collect($requests)->firstOrFail(fn (array $claimed) => $claimed['requestId'] === $requestId);
     }
 
     private function reportExit(EnrolledHost $host, OpenedRuntime $opened): void
@@ -816,49 +870,11 @@ final class AgentDriverLedgerTest extends TestCase
         $this->asSystem(new ReportRuntimeExit($host->hostId, $opened->runtimeId, $generation, 'exit code 0'));
     }
 
-    private function enrollHost(): EnrolledHost
-    {
-        return $this->asSystem(new EnrollHost('test host '.Str::random(6), [self::FOLDER]));
-    }
-
-    private function agent(): Agent
-    {
-        return Agent::named('Driven agent '.Str::random(6), 'main-agent');
-    }
-
-    private function agentIdOf(OpenedRuntime $opened): string
-    {
-        return AgentSession::query()->findOrFail($opened->sessionId)->agent_id;
-    }
-
-    /**
-     * @param  array<string, string>  $parameters
-     */
-    private function keyScript(OpenedRuntime $opened, string $script, array $parameters): RunKeyScript
-    {
-        $key = (string) Str::ulid();
-        $named = array_map(
-            fn (string $name, string $value) => new ScriptParameter($name, $value),
-            array_keys($parameters),
-            $parameters,
-        );
-
-        return new RunKeyScript($this->agentIdOf($opened), $opened->sessionId, $key, $script, array_values($named));
-    }
-
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt
     {
         return $this->asOwner(new DeliverAgent($this->agentIdOf($opened), $opened->sessionId, $key, $message));
     }
 
-    /**
-     * Runs a command as the person who owns the journal, as the web and the CLI do.
-     *
-     * @template TResult
-     *
-     * @param  Command<TResult>  $command
-     * @return TResult
-     */
     private function reportProgress(string $hostId, string $requestId, RequestProgress $progress): void
     {
         $request = DriverRequest::query()->findOrFail($requestId);
@@ -866,12 +882,5 @@ final class AgentDriverLedgerTest extends TestCase
         $this->asSystem(new ReportRequestProgress(
             $hostId, $request->id, $request->attempt_version, $progress, null, RequestOutcome::EntryUnavailable,
         ));
-    }
-
-    private function asOwner(Command $command): mixed
-    {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

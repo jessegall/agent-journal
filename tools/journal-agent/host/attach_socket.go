@@ -135,7 +135,7 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	if err != nil {
 		return nil, err
 	}
-	reader, err := screen.NewEmulatorReader(int(request.Columns), int(request.Rows), screen.DefaultLimits, layout.Regions())
+	reader, err := layout.NewReader(int(request.Columns), int(request.Rows), screen.DefaultLimits)
 	if err != nil {
 		return nil, err
 	}
@@ -179,6 +179,24 @@ func (socket *AttachSocket) forget(runtimeID string, ended *hostTerminal) {
 func (terminal *hostTerminal) resize(rows, columns uint16) {
 	_ = pty.Setsize(terminal.pty, &pty.Winsize{Rows: rows, Cols: columns})
 	_ = terminal.reader.Resize(int(columns), int(rows))
+}
+
+// Terminal is a program the host runs as a driver sees it: the screen read from its output and the one gate every
+// key passes through, the person's included.
+type Terminal struct {
+	Reader *screen.EmulatorReader
+	Gate   *inputs.InputGate
+}
+
+// Open starts the runtime's program on a PTY the host owns, or finds the one it already runs under the runtime's id,
+// such as one a person attached first; a person may attach to it afterwards.
+func (socket *AttachSocket) Open(request AttachRequest) (Terminal, error) {
+	terminal, err := socket.terminalFor(request)
+	if err != nil {
+		return Terminal{}, err
+	}
+
+	return Terminal{Reader: terminal.reader, Gate: terminal.gate}, nil
 }
 
 func (terminal *hostTerminal) attach(client io.Writer) {
