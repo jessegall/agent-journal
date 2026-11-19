@@ -285,6 +285,25 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
+     * Holds the account so no new launch or claim may use it while its sign-in is changed or removed; holding it
+     * again changes nothing.
+     */
+    public function holdForMaintenance(): void
+    {
+        if ($this->maintenance) {
+            return;
+        }
+
+        $this->maintenance = true;
+        $this->save();
+    }
+
+    public function hasLiveWriter(): bool
+    {
+        return $this->live_writer_attempt_id !== null;
+    }
+
+    /**
      * Holds the account for removal: no new launch starts on it and every older report is out of date.
      */
     public function beginRemoval(): void

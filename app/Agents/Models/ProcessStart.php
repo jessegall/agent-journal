@@ -244,6 +244,33 @@ final class ProcessStart extends Model implements ReadableModel
     }
 
     /**
+     * Cancels the agent's starts no host has claimed yet, as its retirement does; a claimed start stays until its host
+     * proves the process gone, since retiring the agent proves no exit.
+     *
+     * @return list<RecordIdentity>
+     */
+    public static function cancelPendingOfAgent(string $agentId): array
+    {
+        $starts = self::supervised()
+            ->where('agent_id', $agentId)
+            ->where('state', ProcessStartState::Pending->value)
+            ->lockForUpdate()
+            ->readAll('a retiring agent has few starts')
+            ->get();
+        $accounts = [];
+
+        foreach ($starts as $start) {
+            $start->state = ProcessStartState::Cancelled;
+            $start->ended_at = CarbonImmutable::now();
+            $start->save();
+            $account = $start->accountIdentity();
+            $accounts["{$account->type} {$account->id}"] = $account;
+        }
+
+        return array_values($accounts);
+    }
+
+    /**
      * Ends the named starts whose host proved their process exited, and answers the accounts they used.
      *
      * @param  list<string>  $startKeys

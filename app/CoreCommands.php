@@ -111,6 +111,7 @@ use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ExpireSignInAttempt;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
+use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\ReconcileAccounts;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
@@ -262,6 +263,7 @@ final class CoreCommands
             LaunchProfileMain::class,
             SwitchAccount::class,
             RenameAccount::class,
+            MaintainAccount::class,
             BeginSignIn::class,
             CancelSignIn::class,
             CompleteSignIn::class,

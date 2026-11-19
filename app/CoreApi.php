@@ -668,6 +668,7 @@ use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\LaunchProfileMain;
+use App\Profiles\Commands\MaintainAccount;
 use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Commands\SwitchAccount;
@@ -1659,6 +1660,7 @@ final class CoreApi
                 LaunchProfileMain::class,
                 SwitchAccount::class,
                 RenameAccount::class,
+                MaintainAccount::class,
                 BeginSignIn::class,
                 CancelSignIn::class,
                 HoldAccountUses::class,
