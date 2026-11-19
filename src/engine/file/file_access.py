@@ -69,26 +69,27 @@ class FileAccess:
     def binary(cls, file: Path | str) -> bytes:
         path = Path(file).resolve()
         sys.audit(FILE_READ_EVENT, str(path))
+        version = cls.version(path)
         with cls.lock:
-            version = cls.version(path)
             kept = cls.contents.get(path)
             if kept is not None and kept.version == version:
                 cls.contents.move_to_end(path)
                 return kept.data
-            FileTally.note("read")
-            data = path.read_bytes()
+        FileTally.note("read")
+        data = path.read_bytes()
+        with cls.lock:
             cls.contents[path] = FileContents(version, data)
             cls.contents.move_to_end(path)
             if len(cls.contents) > CACHE_SIZE_FILES:
                 cls.contents.popitem(last=False)
-            return data
+        return data
 
     @classmethod
     def version(cls, file: Path | str) -> FileVersion:
         path = resolved_path(str(file))
         FileTally.note("check")
+        status = path.stat()
         with cls.lock:
-            status = path.stat()
             changes = cls.versions.get(path)
             if changes is None:
                 changes = FileChanges()
@@ -98,22 +99,19 @@ class FileAccess:
     @classmethod
     def write(cls, file: Path | str, text: str, encoding: str | None = None, errors: str | None = None, newline: str | None = None) -> int:
         path = Path(file).resolve()
-        with cls.lock:
-            cls.invalidate(path)
+        with cls.changing(path):
             return path.write_text(text, encoding=encoding, errors=errors, newline=newline)
 
     @classmethod
     def write_binary(cls, file: Path | str, data: bytes) -> int:
         path = Path(file).resolve()
-        with cls.lock:
-            cls.invalidate(path)
+        with cls.changing(path):
             return path.write_bytes(data)
 
     @classmethod
     def update_timestamp(cls, file: Path | str, mode: int = 0o666, allow_existing: bool = True) -> None:
         path = Path(file).resolve()
-        with cls.lock:
-            cls.invalidate(path)
+        with cls.changing(path):
             path.touch(mode=mode, exist_ok=allow_existing)
 
     @classmethod
@@ -183,10 +181,37 @@ class FileAccess:
     @classmethod
     def replace(cls, source: Path | str, target: Path | str) -> Path:
         source_path, target_path = Path(source), Path(target)
-        with cls.lock:
-            cls.invalidate(source_path.parent.resolve() / source_path.name)
-            cls.invalidate(target_path.parent.resolve() / target_path.name)
+        with cls.changing(source_path.parent.resolve() / source_path.name, target_path.parent.resolve() / target_path.name):
             return source_path.replace(target_path)
+
+    # A change on disk runs outside the lock, which guards only the kept contents: they are invalidated before the
+    # change and again after it, so a read that ran while the change ran is never kept as current, and a slow copy or
+    # removal never holds every other file access of the server.
+    @classmethod
+    @contextmanager
+    def changing(cls, *paths: Path) -> Generator[None]:
+        with cls.lock:
+            for path in paths:
+                cls.invalidate(path)
+        try:
+            yield
+        finally:
+            with cls.lock:
+                for path in paths:
+                    cls.invalidate(path)
+
+    @classmethod
+    @contextmanager
+    def changing_folders(cls, *folders: Path) -> Generator[None]:
+        with cls.lock:
+            for folder in folders:
+                cls.invalidate_folder(folder)
+        try:
+            yield
+        finally:
+            with cls.lock:
+                for folder in folders:
+                    cls.invalidate_folder(folder)
 
     @classmethod
     def invalidate(cls, path: Path) -> None:
@@ -330,8 +355,7 @@ class FileAccess:
     @classmethod
     def unlink(cls, file: Path | str, missing_ok: bool = False) -> None:
         path = Path(file)
-        with cls.lock:
-            cls.invalidate(path.parent.resolve() / path.name)
+        with cls.changing(path.parent.resolve() / path.name):
             path.unlink(missing_ok=missing_ok)
 
     @classmethod
@@ -341,42 +365,34 @@ class FileAccess:
     @classmethod
     def rmtree(cls, folder: Path | str, ignore_errors: bool = False) -> None:
         path = Path(folder)
-        with cls.lock:
-            cls.invalidate_folder(path)
+        with cls.changing_folders(path):
             shutil.rmtree(path, ignore_errors=ignore_errors)
 
     @classmethod
     def rename(cls, source: Path | str, target: Path | str) -> Path:
         source_path, target_path = Path(source), Path(target)
-        with cls.lock:
-            cls.invalidate_folder(source_path)
-            cls.invalidate_folder(target_path)
+        with cls.changing_folders(source_path, target_path):
             return source_path.rename(target_path)
 
     @classmethod
     def move(cls, source: Path | str, target: Path | str) -> Path:
-        with cls.lock:
-            cls.invalidate_folder(Path(source))
-            cls.invalidate_folder(Path(target))
+        with cls.changing_folders(Path(source), Path(target)):
             return Path(shutil.move(source, target))
 
     @classmethod
     def copy(cls, source: Path | str, target: Path | str) -> Path:
-        with cls.lock:
-            cls.invalidate_folder(Path(target))
+        with cls.changing_folders(Path(target)):
             return Path(shutil.copy2(source, target))
 
     @classmethod
     def copyfile(cls, source: Path | str, target: Path | str) -> Path:
-        with cls.lock:
-            cls.invalidate_folder(Path(target))
+        with cls.changing_folders(Path(target)):
             return Path(shutil.copyfile(source, target))
 
     @classmethod
     def copytree(cls, source: Path | str, target: Path | str, symlinks: bool = True, dirs_exist_ok: bool = False,
                  ignore: Callable[[str, list[str]], Iterable[str]] | None = None) -> Path:
-        with cls.lock:
-            cls.invalidate_folder(Path(target))
+        with cls.changing_folders(Path(target)):
             return Path(shutil.copytree(source, target, symlinks=symlinks, dirs_exist_ok=dirs_exist_ok, ignore=ignore))
 
     @classmethod
