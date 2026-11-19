@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Support;
+
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\JournalAdmission;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\MainDesk;
+use App\Agents\Exceptions\NavigationAnswerRefused;
+use App\Agents\Exceptions\NavigationRaiseRefused;
+use App\Agents\Models\NavigationRequest;
+
+/**
+ * What every command of the main agent on a navigation request checks first: the request, locked; that the caller
+ * answers it, as the main desk's occupant or the owner; and that it read the newest row version.
+ */
+final readonly class NavigationAnswering
+{
+    public function __construct(
+        private CurrentActor $actors,
+        private JournalAdmission $admission,
+        private MainDesk $mainDesk,
+    ) {}
+
+    /**
+     * The request, locked for the caller who answers it.
+     *
+     * @throws NavigationRaiseRefused
+     * @throws NavigationAnswerRefused
+     */
+    public function lockedForAnswerer(string $navigationId): NavigationRequest
+    {
+        $navigation = NavigationRequest::query()
+            ->acrossActors()
+            ->whereKey($navigationId)
+            ->lockForUpdate()
+            ->first()
+            ?? throw NavigationRaiseRefused::unknownRequest($navigationId);
+        $actor = ActorIdentity::of($this->actors->actor());
+        $owner = ActorIdentity::of($this->admission->owner());
+        $seated = $this->mainDesk->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
+        if (! $actor->isSameAs($owner) && ! $seated->getOrElse(false)) {
+            throw NavigationAnswerRefused::notYours($navigation->id);
+        }
+
+        return $navigation;
+    }
+
+    /**
+     * @throws NavigationAnswerRefused
+     */
+    public function checkVersion(NavigationRequest $navigation, int $expectedRowVersion): void
+    {
+        if (! $navigation->isAtRowVersion($expectedRowVersion)) {
+            throw NavigationAnswerRefused::staleVersion(
+                $navigation->id,
+                $expectedRowVersion,
+                $navigation->row_version,
+                $navigation->screen->generation,
+            );
+        }
+    }
+}

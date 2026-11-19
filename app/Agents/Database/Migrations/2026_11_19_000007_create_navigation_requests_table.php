@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('completes', 8)->nullable();
             $table->unsignedInteger('next_step')->nullable();
             $table->string('proof', 200)->nullable();
+            $table->string('abandon_reason', 500)->nullable();
             $table->ulid('stale_entry_id')->nullable();
             $table->ulid('library_entry_id')->nullable();
             $table->timestampTz('expires_at');

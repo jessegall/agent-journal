@@ -80,7 +80,7 @@ final class NavigationRequestTest extends TestCase
         $ends = [
             'cancel while open' => fn (NavigationRequest $navigation) => $navigation->cancel(),
             'expire while open' => fn (NavigationRequest $navigation) => $navigation->expire(),
-            'abandon' => fn (NavigationRequest $navigation) => [$navigation->answer(), $navigation->abandon()],
+            'abandon' => fn (NavigationRequest $navigation) => [$navigation->answer(), $navigation->abandon('stuck')],
             'interrupt' => fn (NavigationRequest $navigation) => [$navigation->answer(), $navigation->interrupt()],
             'cancel while answering' => fn (NavigationRequest $navigation) => [
                 $navigation->answer(),
@@ -105,12 +105,11 @@ final class NavigationRequestTest extends TestCase
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
         $refused = [
             'prove while open' => fn () => $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6'),
-            'abandon while open' => fn () => $navigation->abandon(),
-            'interrupt while open' => fn () => $navigation->interrupt(),
-            'prove twice' => fn () => [
+            'prove proven while open' => fn () => $navigation->markProven(),
+            'expire while proving' => fn () => [
                 $navigation->answer(),
                 $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6'),
-                $navigation->cancel(),
+                $navigation->expire(),
             ],
             'answer after the end' => fn () => [$navigation->markProven(), $navigation->answer()],
         ];

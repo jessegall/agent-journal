@@ -49,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property NavigationCompletion|null $completes
  * @property int|null $next_step
  * @property string|null $proof
+ * @property string|null $abandon_reason
  * @property string|null $stale_entry_id
  * @property string|null $library_entry_id
  * @property CarbonImmutable $expires_at
@@ -230,10 +231,11 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     }
 
     /**
-     * The main agent gives up; the runtime keeps its hold for the person.
+     * The main agent gives up, saying why; the runtime keeps its hold for the person.
      */
-    public function abandon(): void
+    public function abandon(string $reason): void
     {
+        $this->abandon_reason = $reason;
         $this->moveTo(NavigationState::Abandoned);
         $this->cancelQueuedRounds();
     }
