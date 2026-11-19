@@ -48,7 +48,15 @@ final readonly class ExecutionBudgets
         int $workspaceBytes,
         int $wallSeconds,
     ): self {
-        foreach (compact('cpuCores', 'memoryBytes', 'processes', 'openFiles', 'tmpBytes', 'workspaceBytes', 'wallSeconds') as $name => $value) {
+        foreach (compact(
+            'cpuCores',
+            'memoryBytes',
+            'processes',
+            'openFiles',
+            'tmpBytes',
+            'workspaceBytes',
+            'wallSeconds',
+        ) as $name => $value) {
             if ($value < 1) {
                 throw ExecutionBudgetInvalid::notPositive($name, $value);
             }
@@ -58,7 +66,12 @@ final readonly class ExecutionBudgets
             throw ExecutionBudgetInvalid::swapDiffers($memoryBytes, $memorySwapBytes);
         }
 
-        foreach (['cpuCores' => [$cpuCores, self::MOST_CPU_CORES], 'memoryBytes' => [$memoryBytes, self::MOST_MEMORY_BYTES], 'processes' => [$processes, self::MOST_PROCESSES], 'workspaceBytes' => [$workspaceBytes, self::MOST_WORKSPACE_BYTES]] as $name => [$value, $most]) {
+        foreach ([
+            'cpuCores' => [$cpuCores, self::MOST_CPU_CORES],
+            'memoryBytes' => [$memoryBytes, self::MOST_MEMORY_BYTES],
+            'processes' => [$processes, self::MOST_PROCESSES],
+            'workspaceBytes' => [$workspaceBytes, self::MOST_WORKSPACE_BYTES],
+        ] as $name => [$value, $most]) {
             if ($value > $most) {
                 throw ExecutionBudgetInvalid::aboveHost($name, $value, $most);
             }

@@ -59,6 +59,10 @@ final class RuleFiltersData extends Data
 
     public function toDomain(): RuleFilters
     {
-        return new RuleFilters($this->search, $this->page, $this->rule instanceof Optional ? null : (string) $this->rule);
+        return new RuleFilters(
+            $this->search,
+            $this->page,
+            $this->rule instanceof Optional ? null : (string) $this->rule,
+        );
     }
 }

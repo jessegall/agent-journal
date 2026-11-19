@@ -33,7 +33,18 @@ trait PrintsSkillRefusals
             foreach ($work() as $line) {
                 $this->line($line);
             }
-        } catch (CommandRefusal|SkillConditionInvalid|SkillDeclarationInvalid|SkillKeyInvalid|SkillMissing|SkillPreviewRefused|UserActorRequired|MarkdownInvalid|ContentMissing|ContentTooLarge $refusal) {
+        } catch (
+            CommandRefusal
+            |SkillConditionInvalid
+            |SkillDeclarationInvalid
+            |SkillKeyInvalid
+            |SkillMissing
+            |SkillPreviewRefused
+            |UserActorRequired
+            |MarkdownInvalid
+            |ContentMissing
+            |ContentTooLarge $refusal
+        ) {
             $this->error($refusal->getMessage());
 
             return self::FAILURE;

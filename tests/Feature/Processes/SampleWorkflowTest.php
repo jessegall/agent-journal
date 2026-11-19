@@ -148,7 +148,11 @@ final class SampleWorkflowTest extends TestCase
         $part = $this->part($runId);
         $part->start(1, 'host');
         $recorder = $this->app->make(SpoolRecorder::class);
-        $chunk = new CapturedChunk($part, OutputStream::Stdout, "ok first\ndone 1 0\n", CarbonImmutable::now());
+        $chunk = new CapturedChunk($part, OutputStream::Stdout, <<<'TEXT'
+            ok first
+            done 1 0
+
+            TEXT, CarbonImmutable::now());
         $recorder->append($chunk);
         $part->finishProcess(PartEnd::exited($status));
         $part->finishDraining();

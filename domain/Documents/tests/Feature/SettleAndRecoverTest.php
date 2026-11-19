@@ -70,7 +70,11 @@ final class SettleAndRecoverTest extends TestCase
         parent::setUp();
 
         $this->actAsUser(1);
-        $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->bus()->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT));
     }
 
     public function test_a_user_settles_a_document_with_a_reason_and_a_changed_revision_makes_it_active_again(): void

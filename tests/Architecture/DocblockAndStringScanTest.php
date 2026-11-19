@@ -58,7 +58,15 @@ final class DocblockAndStringScanTest extends TestCase
     public function test_a_docblock_tag_that_cannot_be_parsed_is_named(): void
     {
         $path = sys_get_temp_dir().'/'.uniqid('docblock_', true).'.php';
-        file_put_contents($path, "<?php\n\n/**\n * @param  array<\n */\nfunction broken(array \$values): void {}\n");
+        file_put_contents($path, <<<'TEXT'
+            <?php
+
+            /**
+             * @param  array<
+             */
+            function broken(array $values): void {}
+
+            TEXT);
 
         try {
             $this->expectExceptionObject(DocblockTagInvalid::for($path, 4, '@param'));

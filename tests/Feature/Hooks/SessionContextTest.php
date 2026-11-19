@@ -41,7 +41,10 @@ final class SessionContextTest extends TestCase
 
     public function test_a_launch_like_a_codex_start_and_a_clear_like_claude_codes_both_carry_the_reminders(): void
     {
-        foreach ([['call-1', SessionStartSource::Startup], ['call-2', SessionStartSource::Clear]] as [$callId, $source]) {
+        foreach ([
+            ['call-1', SessionStartSource::Startup],
+            ['call-2', SessionStartSource::Clear],
+        ] as [$callId, $source]) {
             $context = $this->start($callId, $source);
 
             $this->assertStringContainsString("Rule {$this->rule->id}: No phase waits on the user.", $context);

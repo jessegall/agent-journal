@@ -109,7 +109,11 @@ final class TunlerGatewayTest extends TestCase
 
     public function test_opening_refuses_another_host_and_plain_http(): void
     {
-        foreach (['https://evil.example.test', 'http://docs.example.test', 'https://docs.example.test:8443'] as $address) {
+        foreach ([
+            'https://evil.example.test',
+            'http://docs.example.test',
+            'https://docs.example.test:8443',
+        ] as $address) {
             $this->processes->fake(
                 [
                     '*--domain=docs*' => $this->processes->describe()->output(

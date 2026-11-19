@@ -72,7 +72,11 @@ final class HookTransactionTest extends TestCase
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             );
         } finally {
-            $this->assertSame("saw the hook waiting\ncommitted\n", stream_get_contents($process['stdout']));
+            $this->assertSame(<<<'TEXT'
+                saw the hook waiting
+                committed
+
+                TEXT, stream_get_contents($process['stdout']));
             proc_close($process['handle']);
         }
 

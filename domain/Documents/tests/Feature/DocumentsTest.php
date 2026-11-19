@@ -49,13 +49,21 @@ final class DocumentsTest extends TestCase
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void
     {
-        $first = $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $first = $this->bus()->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT));
         $second = $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
 
         $this->assertSame('doc 1', $first->label());
         $this->assertSame('doc 2', $second->label());
         $this->assertSame(['1'], [$this->app->make(DocumentResolver::class)->show(2)->revision]);
-        $this->assertSame("# Goal\nShip it.\n", $this->app->make(DocumentResolver::class)->show(1)->body);
+        $this->assertSame(<<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT, $this->app->make(DocumentResolver::class)->show(1)->body);
     }
 
     public function test_a_report_is_filed_and_a_document_number_never_selects_it(): void

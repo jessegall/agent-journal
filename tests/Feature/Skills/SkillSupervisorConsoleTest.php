@@ -70,7 +70,12 @@ final class SkillSupervisorConsoleTest extends TestCase
             ->assertSuccessful();
 
         $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
-        $this->assertSame("# Journal\n\nFirst text.\n", File::get("{$this->target()}/skills/journal/SKILL.md"));
+        $this->assertSame(<<<'TEXT'
+            # Journal
+
+            First text.
+
+            TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
     }
 
     public function test_retry_of_an_unknown_publication_is_refused(): void
@@ -109,7 +114,12 @@ final class SkillSupervisorConsoleTest extends TestCase
         $this->assertSame('Edited by hand.', File::get("{$this->stagingFolder($edited)}/skills/journal/SKILL.md"));
         $this->assertDirectoryExists($this->stagingFolder($previous));
         $this->assertDirectoryExists($this->stagingFolder($current));
-        $this->assertSame("# Journal\n\nFourth text.\n", File::get("{$this->target()}/skills/journal/SKILL.md"));
+        $this->assertSame(<<<'TEXT'
+            # Journal
+
+            Fourth text.
+
+            TEXT, File::get("{$this->target()}/skills/journal/SKILL.md"));
         $this->assertSame(PublicationState::Superseded, $oldest->refresh()->state);
 
         $this->travel(31)->days();
@@ -138,7 +148,12 @@ final class SkillSupervisorConsoleTest extends TestCase
 
     private function intend(string $text): SkillPublication
     {
-        $markdown = "# Journal\n\n{$text}\n";
+        $markdown = <<<TEXT
+            # Journal
+
+            {$text}
+
+            TEXT;
         $generation = SkillGeneration::ready(hash('sha256', $text), str_repeat('e', 64), [[
             'key' => 'journal',
             'owner' => 'Core',

@@ -23,8 +23,16 @@ return new class extends Migration
         DB::statement(<<<'SQL'
             ALTER TABLE claim_authorizations ADD CONSTRAINT claim_authorizations_shape CHECK (
                 (basis_type = 'inbox' AND participation_assignment_id IS NOT NULL AND work_assignment_id IS NULL)
-                OR (basis_type = 'desk-run' AND participation_assignment_id IS NOT NULL AND work_assignment_id IS NOT NULL)
-                OR (basis_type = 'direct-run' AND participation_assignment_id IS NULL AND work_assignment_id IS NOT NULL)
+                OR (
+                    basis_type = 'desk-run'
+                    AND participation_assignment_id IS NOT NULL
+                    AND work_assignment_id IS NOT NULL
+                )
+                OR (
+                    basis_type = 'direct-run'
+                    AND participation_assignment_id IS NULL
+                    AND work_assignment_id IS NOT NULL
+                )
             )
             SQL);
     }

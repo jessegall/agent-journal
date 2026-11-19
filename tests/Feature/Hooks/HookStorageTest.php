@@ -99,10 +99,24 @@ final class HookStorageTest extends TestCase
         $response = "{\"decision\":\"block\",\"reason\":\"Task 42 still needs work: finish it.\"}\n\t\u{00e9}\u{1F600}";
         $steps = RecordedSteps::of([
             WalkStep::from(
-                ['frameId' => 'frame-2', 'stateType' => 'tasks.working', 'hookMethod' => 'onStop', 'answer' => AnswerType::Delegate, 'change' => TransitionType::Keep, 'contextCount' => 2],
+                [
+                    'frameId' => 'frame-2',
+                    'stateType' => 'tasks.working',
+                    'hookMethod' => 'onStop',
+                    'answer' => AnswerType::Delegate,
+                    'change' => TransitionType::Keep,
+                    'contextCount' => 2,
+                ],
             ),
             WalkStep::from(
-                ['frameId' => 'frame-1', 'stateType' => 'hooks.main_ready', 'hookMethod' => 'onStop', 'answer' => AnswerType::Deny, 'change' => TransitionType::Push, 'contextCount' => 1],
+                [
+                    'frameId' => 'frame-1',
+                    'stateType' => 'hooks.main_ready',
+                    'hookMethod' => 'onStop',
+                    'answer' => AnswerType::Deny,
+                    'change' => TransitionType::Push,
+                    'contextCount' => 1,
+                ],
             ),
         ]);
         $call = new HookCall();

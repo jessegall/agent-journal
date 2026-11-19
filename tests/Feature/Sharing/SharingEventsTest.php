@@ -71,7 +71,8 @@ final class SharingEventsTest extends TestCase
             END IF;
             RETURN NEW;
         END $$;
-        CREATE TRIGGER refuse_disabled_audit BEFORE INSERT ON share_audits FOR EACH ROW EXECUTE FUNCTION refuse_disabled_audit();
+        CREATE TRIGGER refuse_disabled_audit BEFORE INSERT ON share_audits
+            FOR EACH ROW EXECUTE FUNCTION refuse_disabled_audit();
         SQL;
 
     private ShareGatewayConfiguration $configuration;

@@ -105,7 +105,15 @@ use Domain\Documents\Resolvers\RevisionWindowResolver;
 use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\ReportShareProvider;
 
-final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesShareRecords
+final class DocumentsDomain extends Domain implements
+    ProvidesCommands,
+    ProvidesLinkRecords,
+    ProvidesNavigation,
+    ProvidesNumberedModels,
+    ProvidesPages,
+    ProvidesPolicies,
+    ProvidesSections,
+    ProvidesShareRecords
 {
     use HasLinkRecords, HasNumberedModels;
 

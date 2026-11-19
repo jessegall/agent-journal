@@ -47,9 +47,17 @@ trait RunsAcmeRequests
     use ActsAsActors;
     use RunsCommandsAsLaunch;
 
-    private const string PASSED_OUTPUT = "{\"test\":\"a\",\"status\":\"ok\"}\n{\"passed\":1,\"failed\":0}\n";
+    private const string PASSED_OUTPUT = <<<'TEXT'
+        {"test":"a","status":"ok"}
+        {"passed":1,"failed":0}
 
-    private const string FINDINGS_OUTPUT = "{\"test\":\"a\",\"status\":\"fail\"}\n{\"passed\":0,\"failed\":1}\n";
+        TEXT;
+
+    private const string FINDINGS_OUTPUT = <<<'TEXT'
+        {"test":"a","status":"fail"}
+        {"passed":0,"failed":1}
+
+        TEXT;
 
     private TestLaunch $launch;
 

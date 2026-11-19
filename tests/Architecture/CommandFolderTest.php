@@ -60,7 +60,13 @@ final class CommandFolderTest extends TestCase
         foreach ($this->allClasses() as $class) {
             $reflection = new ReflectionClass($class);
 
-            foreach ([HandledBy::class, RepeatableRead::class, Authorize::class, Entry::class, RequiresRequestKey::class] as $attribute) {
+            foreach ([
+                HandledBy::class,
+                RepeatableRead::class,
+                Authorize::class,
+                Entry::class,
+                RequiresRequestKey::class,
+            ] as $attribute) {
                 if ($reflection->getAttributes($attribute) !== [] && ! $registry->has($class)) {
                     $misplaced[] = "{$class} carries ".class_basename($attribute);
                 }
@@ -151,7 +157,10 @@ final class CommandFolderTest extends TestCase
     {
         $classes = [];
 
-        foreach (ScanCache::findings(new TypesDeclared(), DomainFiles::in([app_path(), base_path('tests/Fixtures/Modules')])) as $declaration) {
+        foreach (ScanCache::findings(
+            new TypesDeclared(),
+            DomainFiles::in([app_path(), base_path('tests/Fixtures/Modules')]),
+        ) as $declaration) {
             $name = $declaration['name'];
 
             if (class_exists($name) || interface_exists($name) || enum_exists($name)) {

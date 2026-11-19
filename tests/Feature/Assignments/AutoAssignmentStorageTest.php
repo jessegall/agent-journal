@@ -76,7 +76,9 @@ final class AutoAssignmentStorageTest extends TestCase
     {
         $this->assertTrue($this->resolver()->forActor($this->key)->isEmpty());
 
-        $change = $this->write(fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0));
+        $change = $this->write(
+            fn (DatabaseAutoAssignments $writer) => $writer->enable($this->input(self::open(), 2), 0),
+        );
 
         $this->assertEquals(new AutoAssignmentChange(true, 1), $change);
         $fact = $this->fact();

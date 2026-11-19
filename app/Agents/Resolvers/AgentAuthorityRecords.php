@@ -34,7 +34,12 @@ final readonly class AgentAuthorityRecords implements AgentAuthority
 
         $dispatch = [AssignmentAbility::Dispatch];
 
-        if ($this->authorizer->filterActions($caller, AssignmentPolicy::class, AssignmentRecord::class, $dispatch) === []) {
+        if ($this->authorizer->filterActions(
+            $caller,
+            AssignmentPolicy::class,
+            AssignmentRecord::class,
+            $dispatch,
+        ) === []) {
             throw AssignmentDenied::forCaller($caller);
         }
     }

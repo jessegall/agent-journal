@@ -39,15 +39,33 @@ final class SkillContractsTest extends TestCase
     {
         $exports = CoreApi::exports();
 
-        foreach ([ProvidesSkills::class, Skill::class, SkillCondition::class, ProvidesSkillConditions::class, SkillResolver::class] as $contract) {
+        foreach ([
+            ProvidesSkills::class,
+            Skill::class,
+            SkillCondition::class,
+            ProvidesSkillConditions::class,
+            SkillResolver::class,
+        ] as $contract) {
             $this->assertContains($contract, $exports->contracts);
         }
 
-        foreach ([SkillKey::class, SkillSection::class, SkillSections::class, MarkdownPart::class, SkillContext::class, Conditions::class] as $value) {
+        foreach ([
+            SkillKey::class,
+            SkillSection::class,
+            SkillSections::class,
+            MarkdownPart::class,
+            SkillContext::class,
+            Conditions::class,
+        ] as $value) {
             $this->assertContains($value, $exports->values);
         }
 
-        foreach ([CanonicalRenderer::class, StoredSkillSource::class, SkillPublisher::class, ProgramSkills::class] as $port) {
+        foreach ([
+            CanonicalRenderer::class,
+            StoredSkillSource::class,
+            SkillPublisher::class,
+            ProgramSkills::class,
+        ] as $port) {
             $this->assertFalse($exports->has($port), "{$port} is exported.");
         }
     }

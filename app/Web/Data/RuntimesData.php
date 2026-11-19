@@ -9,7 +9,8 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The runtime status page: every runtime with its latest requests. Reading it writes nothing; its buttons run the owner's recovery commands.
+ * The runtime status page: every runtime with its latest requests. Reading it writes nothing; its buttons run the
+ * owner's recovery commands.
  */
 #[TypeScript]
 final class RuntimesData extends Data

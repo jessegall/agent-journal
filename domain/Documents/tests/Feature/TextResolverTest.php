@@ -56,7 +56,11 @@ final class TextResolverTest extends TestCase
 
     public function test_the_current_version_names_its_id_label_and_line_count(): void
     {
-        $this->createDocument("# Goal\nShip it.\n");
+        $this->createDocument(<<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT);
 
         $version = $this->resolver()->version($this->record('doc', 1));
 
@@ -65,7 +69,15 @@ final class TextResolverTest extends TestCase
 
     public function test_sections_come_a_page_at_a_time_with_duplicate_headings_kept_apart(): void
     {
-        $this->createDocument("# Notes\nOne.\n# Notes\nTwo.\n# End\nThree.\n");
+        $this->createDocument(<<<'TEXT'
+            # Notes
+            One.
+            # Notes
+            Two.
+            # End
+            Three.
+
+            TEXT);
 
         $first = $this->resolver()->sections($this->record('doc', 1), '1', 0, PageSize::from(2));
         $rest = $this->resolver()->sections(
@@ -112,7 +124,11 @@ final class TextResolverTest extends TestCase
 
     public function test_the_whole_text_at_once_is_refused(): void
     {
-        $this->createDocument("# Goal\nShip it.\n");
+        $this->createDocument(<<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT);
 
         $this->expectException(TextSelectionRefused::class);
 
@@ -121,7 +137,11 @@ final class TextResolverTest extends TestCase
 
     public function test_a_report_has_only_version_one(): void
     {
-        $this->app->make(CommandBus::class)->run(new CreateReport('Check', 'What was found', "# Found\nAll fine.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateReport('Check', 'What was found', <<<'TEXT'
+            # Found
+            All fine.
+
+            TEXT));
 
         $this->expectException(TextVersionUnavailable::class);
 

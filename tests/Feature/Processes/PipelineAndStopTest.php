@@ -52,13 +52,27 @@ final class PipelineAndStopTest extends TestCase
 
     public function test_each_pipeline_stage_keeps_its_own_output_and_end(): void
     {
-        file_put_contents($this->folder.'/input.txt', "x one\ny two\nx three\n");
+        file_put_contents($this->folder.'/input.txt', <<<'TEXT'
+            x one
+            y two
+            x three
+
+            TEXT);
 
         $outcome = $this->supervise('cat input.txt | grep x');
 
         [$cat, $grep] = $this->parts();
-        $this->assertSame("x one\ny two\nx three\n", $this->output->stdoutOf($cat));
-        $this->assertSame("x one\nx three\n", $this->output->stdoutOf($grep));
+        $this->assertSame(<<<'TEXT'
+            x one
+            y two
+            x three
+
+            TEXT, $this->output->stdoutOf($cat));
+        $this->assertSame(<<<'TEXT'
+            x one
+            x three
+
+            TEXT, $this->output->stdoutOf($grep));
         $this->assertSame(PartEndType::Exited, $cat->end()->type);
         $this->assertSame(0, $outcome->status);
     }

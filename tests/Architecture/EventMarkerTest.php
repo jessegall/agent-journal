@@ -43,7 +43,9 @@ final class EventMarkerTest extends TestCase
         $unmarked = [];
         $misplaced = [];
 
-        foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode(), base_path('tests/Fixtures/Modules')]) as $file) {
+        foreach (DomainFiles::in(
+            [app_path(), ...DomainFiles::domainCode(), base_path('tests/Fixtures/Modules')],
+        ) as $file) {
             $class = self::classIn($file);
 
             if ($class === null || interface_exists($class)) {

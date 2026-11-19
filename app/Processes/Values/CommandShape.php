@@ -37,12 +37,9 @@ final readonly class CommandShape
      */
     public function refusal(): string
     {
-        return "This command's shape is {$this->length()} characters, past the ".ReviewLimit::ShapeCharacters->label().' an agent may be sent for '
-            .'classification: '
-            .'split '
-            .'it '
-            .'into '
-            .'shorter '
-            .'commands.';
+        $limit = ReviewLimit::ShapeCharacters->label();
+
+        return "This command's shape is {$this->length()} characters, past the {$limit} an agent may be sent for "
+            .'classification: split it into shorter commands.';
     }
 }

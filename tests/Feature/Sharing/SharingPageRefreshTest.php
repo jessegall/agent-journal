@@ -63,7 +63,15 @@ final class SharingPageRefreshTest extends TestCase
     {
         $map = new DomainEventServiceProvider($this->app)->discoverEvents();
 
-        foreach ([ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class] as $event) {
+        foreach ([
+            ShareCreated::class,
+            ShareActivated::class,
+            ShareFailed::class,
+            ShareScopeChanged::class,
+            ShareRevoked::class,
+            ShareExpired::class,
+            ShareGatewayChanged::class,
+        ] as $event) {
             $this->assertContains(
                 BroadcastPageChange::class.'@handle',
                 $map[$event] ?? [],

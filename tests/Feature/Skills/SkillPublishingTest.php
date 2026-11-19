@@ -42,9 +42,19 @@ final class SkillPublishingTest extends TestCase
 
         $target = $this->target();
         $this->assertTrue(is_link($target));
-        $this->assertSame("# Journal\n\nFirst text.\n", File::get("{$target}/skills/journal/SKILL.md"));
+        $this->assertSame(<<<'TEXT'
+            # Journal
+
+            First text.
+
+            TEXT, File::get("{$target}/skills/journal/SKILL.md"));
         $manifest = json_decode(File::get("{$target}/manifest.json"), true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame(hash('sha256', "# Journal\n\nFirst text.\n"), $manifest['files']['skills/journal/SKILL.md']);
+        $this->assertSame(hash('sha256', <<<'TEXT'
+            # Journal
+
+            First text.
+
+            TEXT), $manifest['files']['skills/journal/SKILL.md']);
         $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
         $plugin = json_decode(File::get("{$target}/.claude-plugin/plugin.json"), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('journal-session-skills', $plugin['name']);
@@ -93,7 +103,12 @@ final class SkillPublishingTest extends TestCase
 
     private function intend(string $text): SkillPublication
     {
-        $markdown = "# Journal\n\n{$text}\n";
+        $markdown = <<<TEXT
+            # Journal
+
+            {$text}
+
+            TEXT;
         $generation = SkillGeneration::ready(
             hash('sha256', $text),
             str_repeat('e', 64),

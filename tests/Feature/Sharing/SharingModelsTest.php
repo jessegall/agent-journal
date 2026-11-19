@@ -38,7 +38,16 @@ final class SharingModelsTest extends TestCase
 
     public function test_the_create_migrations_make_the_eight_sharing_tables(): void
     {
-        foreach (['share_installations', 'share_previews', 'shares', 'share_members', 'share_gateway_configurations', 'share_gateway_endpoints', 'share_gateway_operations', 'share_audits'] as $table) {
+        foreach ([
+            'share_installations',
+            'share_previews',
+            'shares',
+            'share_members',
+            'share_gateway_configurations',
+            'share_gateway_endpoints',
+            'share_gateway_operations',
+            'share_audits',
+        ] as $table) {
             $this->assertTrue(Schema::hasTable($table), "{$table} is missing.");
         }
     }

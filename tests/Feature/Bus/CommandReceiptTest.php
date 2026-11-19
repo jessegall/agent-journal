@@ -48,7 +48,14 @@ final class CommandReceiptTest extends CommandBusTestCase
     {
         $database = $this->app->make(ConnectionInterface::class);
 
-        foreach (['command_receipts', 'assignments', 'tasks', 'launch_credentials', 'agent_sessions', 'agents'] as $table) {
+        foreach ([
+            'command_receipts',
+            'assignments',
+            'tasks',
+            'launch_credentials',
+            'agent_sessions',
+            'agents',
+        ] as $table) {
             $database->table($table)->delete();
         }
 

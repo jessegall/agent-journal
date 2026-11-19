@@ -50,7 +50,11 @@ final class ActorResolverTest extends TestCase
         $retired->forceFill(['retired_at' => now()])->save();
         $resolver = $this->app->make(ActorResolver::class);
 
-        foreach ([ActorIdentity::of($retired), ActorIdentity::of($stranger), new ActorIdentity(ActorType::Agent, strtolower((string) Str::ulid()))] as $identity) {
+        foreach ([
+            ActorIdentity::of($retired),
+            ActorIdentity::of($stranger),
+            new ActorIdentity(ActorType::Agent, strtolower((string) Str::ulid())),
+        ] as $identity) {
             $this->assertThrows(fn () => $resolver->get($identity), ActorUnavailable::class);
         }
     }

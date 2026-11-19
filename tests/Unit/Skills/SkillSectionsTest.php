@@ -31,7 +31,16 @@ final class SkillSectionsTest extends TestCase
     {
         $root = sys_get_temp_dir().'/skills-'.bin2hex(random_bytes(6));
         File::makeDirectory($root.'/resources/skills', recursive: true);
-        File::put($root.'/resources/skills/guide.md', "# Guide\n\nPurpose.\n\n## Retrying\n\nAgain.\n");
+        File::put($root.'/resources/skills/guide.md', <<<'TEXT'
+            # Guide
+
+            Purpose.
+
+            ## Retrying
+
+            Again.
+
+            TEXT);
         $owner = new SkillOwner('Guide', $root, [], true);
 
         try {

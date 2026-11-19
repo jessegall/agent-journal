@@ -60,11 +60,34 @@ final class DeskCommunicationRulesTest extends TestCase
         $long = str_repeat('x', 121);
 
         return [
-            'a desk that is an actor' => ['implementsActor', "<?php\nfinal class Desk implements Actor\n{\n}\n", [2]],
-            'a branch on actor type' => ['comparesActorType', "<?php\nif (\$type === ActorType::Agent) {}\n", [2]],
-            'a bound interface' => ['bindsInterface', "<?php\n#[Bind(Seats::class)]\ninterface SeatReader {}\n", [2]],
-            'a domain import' => ['namesDomain', "<?php\nuse Domain\\Chat\\ChatDomain;\n", [2]],
-            'a long line' => ['runsPastWidth', "<?php\n{$long}\n", [2]],
+            'a desk that is an actor' => ['implementsActor', <<<'TEXT'
+                <?php
+                final class Desk implements Actor
+                {
+                }
+
+                TEXT, [2]],
+            'a branch on actor type' => ['comparesActorType', <<<'TEXT'
+                <?php
+                if ($type === ActorType::Agent) {}
+
+                TEXT, [2]],
+            'a bound interface' => ['bindsInterface', <<<'TEXT'
+                <?php
+                #[Bind(Seats::class)]
+                interface SeatReader {}
+
+                TEXT, [2]],
+            'a domain import' => ['namesDomain', <<<'TEXT'
+                <?php
+                use Domain\Chat\ChatDomain;
+
+                TEXT, [2]],
+            'a long line' => ['runsPastWidth', <<<TEXT
+                <?php
+                {$long}
+
+                TEXT, [2]],
         ];
     }
 

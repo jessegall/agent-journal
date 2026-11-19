@@ -16,7 +16,14 @@ final class MarkdownTextTest extends TestCase
 {
     public function test_accents_emoji_and_shell_code_come_back_unchanged(): void
     {
-        $body = "Caf\u{e9} \u{1F600}\n\n```sh\necho \"\$HOME\" | grep -v x\n```\n";
+        $body = <<<TEXT
+            Caf\u{e9} \u{1F600}
+
+            ```sh
+            echo "\$HOME" | grep -v x
+            ```
+
+            TEXT;
 
         $this->assertSame($body, MarkdownText::body(str_replace("\n", "\r\n", $body))->text);
     }
@@ -25,23 +32,61 @@ final class MarkdownTextTest extends TestCase
     {
         $this->expectExceptionObject(MarkdownInvalid::unclosedFence(3));
 
-        MarkdownText::body("# Title\n\n```php\necho 1;\n");
+        MarkdownText::body(<<<'TEXT'
+            # Title
+
+            ```php
+            echo 1;
+
+            TEXT);
     }
 
     public function test_a_setext_heading_is_in_the_outline(): void
     {
-        $text = MarkdownText::body("Intro\n\nGoal\n====\n\nText\n");
+        $text = MarkdownText::body(<<<'TEXT'
+            Intro
+
+            Goal
+            ====
+
+            Text
+
+            TEXT);
 
         $this->assertSame(['', 'Goal'], array_map(fn ($section) => $section->heading, $text->sections));
     }
 
     public function test_replacing_a_section_keeps_every_later_section_byte_for_byte(): void
     {
-        $text = MarkdownText::body("# One\na\n# Two\nb\n# Three\nc\n# Four\nd  \n\n# Five\ne\n");
+        $text = MarkdownText::body(<<<'TEXT'
+            # One
+            a
+            # Two
+            b
+            # Three
+            c
+            # Four
+            d  
+
+            # Five
+            e
+
+            TEXT);
         $replaced = $text->withSectionReplaced(3, 'new third');
 
-        $this->assertStringEndsWith("# Four\nd  \n\n# Five\ne\n", $replaced->text);
-        $this->assertStringContainsString("# Three\nnew third\n# Four", $replaced->text);
+        $this->assertStringEndsWith(<<<'TEXT'
+            # Four
+            d  
+
+            # Five
+            e
+
+            TEXT, $replaced->text);
+        $this->assertStringContainsString(<<<'TEXT'
+            # Three
+            new third
+            # Four
+            TEXT, $replaced->text);
     }
 
     public function test_a_script_tag_comes_out_escaped(): void
