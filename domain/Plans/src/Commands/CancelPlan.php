@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\CancelPlanHandler;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\Policies\PlanPolicy;
 
 /**
  * Cancels a plan with its reason; its tasks and assignments stay.
@@ -14,11 +19,20 @@ use Domain\Plans\Handlers\CancelPlanHandler;
  * @implements Command<null>
  */
 #[HandledBy(CancelPlanHandler::class)]
-final readonly class CancelPlan implements Command
+#[Authorize(PlanPolicy::class, PlanAbility::Work)]
+final readonly class CancelPlan implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $planId,
         public int $expectedRevision,
         public string $reason,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Plan::class;
+    }
 }

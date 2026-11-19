@@ -13,6 +13,7 @@ enum AgentAbility: string implements DeclaresClassLevelAbilities
 {
     case RunKeyScript = 'run-key-script';
     case RetireOthers = 'retire-others';
+    case Work = 'work';
 
     /**
      * Each is decided on the model class alone, before the handler loads a record.

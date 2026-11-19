@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\SettleDocumentHandler;
+use Domain\Documents\Models\Document;
+use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
 /**
  * Settles a document at the revision the settler read, with the reason it needs no more attention.
@@ -14,11 +19,20 @@ use Domain\Documents\Handlers\SettleDocumentHandler;
  * @implements Command<null>
  */
 #[HandledBy(SettleDocumentHandler::class)]
-final readonly class SettleDocument implements Command
+#[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
+final readonly class SettleDocument implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public int $documentNumber,
         public int $expectedRevision,
         public string $reason,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Document::class;
+    }
 }

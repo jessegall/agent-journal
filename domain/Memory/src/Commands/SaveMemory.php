@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Handlers\SaveMemoryHandler;
+use Domain\Memory\Models\Memory;
+use Domain\Memory\Policies\MemoryPolicy;
 
 /**
  * Keeps a memory for the calling actor at a weight and answers its id; sent again under the same request key, the
@@ -15,7 +20,16 @@ use Domain\Memory\Handlers\SaveMemoryHandler;
  * @implements Command<string>
  */
 #[HandledBy(SaveMemoryHandler::class)]
-final readonly class SaveMemory implements Command
+#[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
+final readonly class SaveMemory implements Command, HasAuthorizationSubject
 {
     public function __construct(public string $text, public int $weight) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Memory::class;
+    }
 }

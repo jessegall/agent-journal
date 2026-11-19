@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\EditTaskHandler;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Policies\TaskPolicy;
 
 /**
  * Gives a task a new title, brief or both, refused when the task moved past the revision the caller read; answers the
@@ -15,7 +20,8 @@ use Domain\Tasks\Handlers\EditTaskHandler;
  * @implements Command<int>
  */
 #[HandledBy(EditTaskHandler::class)]
-final readonly class EditTask implements Command
+#[Authorize(TaskPolicy::class, TaskAbility::Work)]
+final readonly class EditTask implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $taskId,
@@ -23,4 +29,12 @@ final readonly class EditTask implements Command
         public string|null $title = null,
         public string|null $brief = null,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Task::class;
+    }
 }

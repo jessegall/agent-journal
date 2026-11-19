@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Web\Providers;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Models\UserPresence;
+use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Contracts\CommandRefusal;
 use App\CorePages;
@@ -14,8 +17,10 @@ use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
 use App\Web\Contracts\CurrentUserResolver;
+use App\Web\Enums\PresenceAbility;
 use App\Web\Models\Layout;
 use App\Web\Models\Support\CurrentUserScope;
+use App\Web\Policies\PresencePolicy;
 use App\Web\Routes\DeclaredRoutes;
 use App\Web\Support\OwnerAutoAssignmentAccess;
 use App\Web\Support\OwnerSettingsAccess;
@@ -57,8 +62,16 @@ final class WebServiceProvider extends ServiceProvider
     /**
      * Asking for the declared routes here makes a declaration the application cannot start with fail the boot.
      */
-    public function boot(BroadcastManager $broadcast, LinkTypeRegistry $links, Dispatcher $events, Router $router, DeclaredRoutes $declaredRoutes, ExceptionHandler $exceptions): void
-    {
+    public function boot(
+        BroadcastManager $broadcast,
+        LinkTypeRegistry $links,
+        Dispatcher $events,
+        Router $router,
+        DeclaredRoutes $declaredRoutes,
+        ExceptionHandler $exceptions,
+        PolicyCatalogue $policies,
+    ): void {
+        $policies->register('Core', new PolicyRegistration(UserPresence::class, PresencePolicy::class, PresenceAbility::class));
         $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);
         $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserResolver::class));

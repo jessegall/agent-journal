@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Records\Providers;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
+use App\Links\Models\Link;
 use App\Records\Console\LinkAddCommand;
 use App\Records\Console\LinkRemoveCommand;
+use App\Records\Enums\RecordLinkAbility;
+use App\Records\Policies\RecordLinkPolicy;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -13,8 +18,9 @@ use Illuminate\Support\ServiceProvider;
  */
 final class RecordsServiceProvider extends ServiceProvider
 {
-    public function boot(): void
+    public function boot(PolicyCatalogue $policies): void
     {
+        $policies->register('Core', new PolicyRegistration(Link::class, RecordLinkPolicy::class, RecordLinkAbility::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/links.php');
 
         if ($this->app->runningInConsole()) {

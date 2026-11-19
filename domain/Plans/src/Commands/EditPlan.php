@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Handlers\EditPlanHandler;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\Policies\PlanPolicy;
 
 /**
  * Gives a plan a new title, brief or type, refused when the plan moved past the revision the caller read; answers
@@ -16,7 +21,8 @@ use Domain\Plans\Handlers\EditPlanHandler;
  * @implements Command<int>
  */
 #[HandledBy(EditPlanHandler::class)]
-final readonly class EditPlan implements Command
+#[Authorize(PlanPolicy::class, PlanAbility::Work)]
+final readonly class EditPlan implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $planId,
@@ -25,4 +31,12 @@ final readonly class EditPlan implements Command
         public string|null $brief = null,
         public PlanType|null $type = null,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Plan::class;
+    }
 }

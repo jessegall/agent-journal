@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Processes\Enums\ProcessAbility;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Handlers\OpenCommandRequestHandler;
+use App\Processes\Models\CommandRequest;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 
 /**
  * An agent or a user opens the request that holds a command the journal will not run yet, or gets the open request
@@ -16,7 +21,8 @@ use App\Processes\Handlers\OpenCommandRequestHandler;
  * @implements Command<string>
  */
 #[HandledBy(OpenCommandRequestHandler::class)]
-final readonly class OpenCommandRequest implements Command
+#[Authorize(ProcessAdministrationPolicy::class, ProcessAbility::Work)]
+final readonly class OpenCommandRequest implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $operation,
@@ -25,4 +31,12 @@ final readonly class OpenCommandRequest implements Command
         public string $workingFolder,
         public RequestHoldReason $reason,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return CommandRequest::class;
+    }
 }

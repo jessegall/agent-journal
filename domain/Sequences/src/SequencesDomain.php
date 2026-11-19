@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sequences;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
@@ -14,18 +16,25 @@ use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Skills\Contracts\ProvidesSkills;
 use Domain\Sequences\Commands\StartSequence;
+use Domain\Sequences\Enums\SequenceAbility;
 use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Skills\SequencesSkill;
 use Domain\Sequences\States\Support\FollowingSequenceStateFactory;
 use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
-final class SequencesDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesSkills, ProvidesStates
+final class SequencesDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills, ProvidesStates
 {
     use HasNumberedModels, HasStates;
 
     public function description(): string
     {
         return 'Steps an agent follows one at a time.';
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(SequenceRun::class, SequencePolicy::class, SequenceAbility::class)];
     }
 
     /**

@@ -12,6 +12,7 @@ use App\Bus\Contracts\DeclaresClassLevelAbilities;
 enum ProcessAbility: string implements DeclaresClassLevelAbilities
 {
     case Administer = 'administer';
+    case Work = 'work';
 
     /**
      * Each is decided on the model class alone, before the handler loads a record.

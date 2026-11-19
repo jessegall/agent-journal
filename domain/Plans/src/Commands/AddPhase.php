@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\AddPhaseHandler;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\Policies\PlanPolicy;
 
 /**
  * Adds a phase after the plan's last one and answers its id; the phase takes the plan's next phase number.
@@ -14,10 +19,19 @@ use Domain\Plans\Handlers\AddPhaseHandler;
  * @implements Command<string>
  */
 #[HandledBy(AddPhaseHandler::class)]
-final readonly class AddPhase implements Command
+#[Authorize(PlanPolicy::class, PlanAbility::Work)]
+final readonly class AddPhase implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public string $planId,
         public string $title,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Plan::class;
+    }
 }

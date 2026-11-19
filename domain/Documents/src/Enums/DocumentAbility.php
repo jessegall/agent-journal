@@ -13,6 +13,7 @@ enum DocumentAbility: string implements DeclaresClassLevelAbilities
 {
     case Administer = 'administer';
     case ChangeOthersRecords = 'change-others-records';
+    case Work = 'work';
 
     /**
      * Each is decided on the model class alone, before the handler loads a record.

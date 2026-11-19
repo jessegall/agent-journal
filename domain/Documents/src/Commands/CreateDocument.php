@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\CreatedRecord;
+use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\CreateDocumentHandler;
+use Domain\Documents\Models\Document;
+use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
 /**
  * Publishes a new document with its text as revision 1.
@@ -17,7 +22,8 @@ use Domain\Documents\Handlers\CreateDocumentHandler;
  * @implements Command<CreatedRecord>
  */
 #[HandledBy(CreateDocumentHandler::class)]
-final readonly class CreateDocument implements Command
+#[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
+final readonly class CreateDocument implements Command, HasAuthorizationSubject
 {
     public const int MOST_LINKS = 50;
 
@@ -30,4 +36,12 @@ final readonly class CreateDocument implements Command
         public string $body,
         public array $about = [],
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Document::class;
+    }
 }

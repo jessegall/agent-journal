@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
+use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\RecordPhaseCheckHandler;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\Policies\PlanPolicy;
 
 /**
  * An agent or a user records the validated result of a check on a phase; only a current receipt newer than the
@@ -15,7 +20,16 @@ use Domain\Plans\Handlers\RecordPhaseCheckHandler;
  * @implements Command<string>
  */
 #[HandledBy(RecordPhaseCheckHandler::class)]
-final readonly class RecordPhaseCheck implements Command
+#[Authorize(PlanPolicy::class, PlanAbility::Work)]
+final readonly class RecordPhaseCheck implements Command, HasAuthorizationSubject
 {
     public function __construct(public string $phaseId, public string $receiptId) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Plan::class;
+    }
 }

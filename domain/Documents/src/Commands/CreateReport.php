@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\CreatedRecord;
+use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\CreateReportHandler;
+use Domain\Documents\Models\Document;
+use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
 /**
  * Files a new report, once; a report is never edited.
@@ -17,7 +22,8 @@ use Domain\Documents\Handlers\CreateReportHandler;
  * @implements Command<CreatedRecord>
  */
 #[HandledBy(CreateReportHandler::class)]
-final readonly class CreateReport implements Command
+#[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
+final readonly class CreateReport implements Command, HasAuthorizationSubject
 {
     public const int MOST_LINKS = 50;
 
@@ -30,4 +36,12 @@ final readonly class CreateReport implements Command
         public string $body,
         public array $about = [],
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Document::class;
+    }
 }

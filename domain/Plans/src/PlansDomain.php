@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Support\PoolDefinition;
 use App\Bus\Contracts\ProvidesCommands;
@@ -60,6 +62,7 @@ use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
+use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Enums\PlanView;
@@ -72,6 +75,7 @@ use Domain\Plans\Mcp\HeldPlansOverview;
 use Domain\Plans\Mcp\PlansListTool;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Policies\PlanPolicy;
 use Domain\Plans\Resolvers\OpenPlansCount;
 use Domain\Plans\Resolvers\PhaseWindowResolver;
 use Domain\Plans\Resolvers\PlansWindowResolver;
@@ -89,7 +93,7 @@ use Domain\Plans\Support\PlanShareProvider;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesSkills, ProvidesStates
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesShareRecords, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -175,6 +179,11 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesA
             Plan::LINK_TYPE => PlanRecords::class,
             Phase::LINK_TYPE => PhaseRecords::class,
         ];
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(Plan::class, PlanPolicy::class, PlanAbility::class)];
     }
 
     /**

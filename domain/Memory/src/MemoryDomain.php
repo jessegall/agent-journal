@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
@@ -17,13 +19,15 @@ use Domain\Memory\Commands\EditMemory;
 use Domain\Memory\Commands\RemoveMemory;
 use Domain\Memory\Commands\SaveMemory;
 use Domain\Memory\Contracts\MemoryResolver;
+use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Exceptions\MemoryInvalid;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
+use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Skills\MemorySkill;
 
-final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesSkills
+final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills
 {
     use HasNumberedModels;
 
@@ -52,6 +56,11 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
     public function numberedModels(): array
     {
         return [NumberedModel::global(Memory::class)];
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(Memory::class, MemoryPolicy::class, MemoryAbility::class)];
     }
 
     public function commands(): array

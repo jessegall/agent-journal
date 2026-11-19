@@ -6,11 +6,16 @@ namespace Domain\Plans\Commands;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentResult;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Records\Support\RecordIdentity;
+use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\AssignPlanWorkHandler;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\Policies\PlanPolicy;
 
 /**
  * Gives a plan or phase and every unfinished phase and task under it to one holder, in one repeatable-read transaction.
@@ -18,11 +23,20 @@ use Domain\Plans\Handlers\AssignPlanWorkHandler;
  * @implements Command<AssignmentResult>
  */
 #[HandledBy(AssignPlanWorkHandler::class)]
+#[Authorize(PlanPolicy::class, PlanAbility::Work)]
 #[RepeatableRead]
-final readonly class AssignPlanWork implements Command
+final readonly class AssignPlanWork implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public RecordIdentity $root,
         public ActorIdentity $recipient,
     ) {}
+
+    /**
+     * @return class-string
+     */
+    public function subject(): string
+    {
+        return Plan::class;
+    }
 }
