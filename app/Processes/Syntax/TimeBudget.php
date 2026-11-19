@@ -7,7 +7,8 @@ namespace App\Processes\Syntax;
 use App\Processes\Enums\AnalysisLimit;
 
 /**
- * The time one analysis may take, counted from when the budget is made.
+ * The time one analysis may take, counted from when the budget is made in the processor time this process spends,
+ * so a line costs the same whether or not the machine is busy with other work.
  */
 final readonly class TimeBudget
 {
@@ -15,11 +16,22 @@ final readonly class TimeBudget
 
     public function __construct()
     {
-        $this->startedAt = hrtime(true) / 1e6;
+        $this->startedAt = self::processorMilliseconds();
     }
 
     public function isSpent(): bool
     {
-        return AnalysisLimit::Milliseconds->isPassedBy(hrtime(true) / 1e6 - $this->startedAt);
+        return AnalysisLimit::Milliseconds->isPassedBy(self::processorMilliseconds() - $this->startedAt);
+    }
+
+    /**
+     * The processor time this process has spent so far, in user and system mode, in milliseconds.
+     */
+    private static function processorMilliseconds(): float
+    {
+        $usage = getrusage();
+
+        return ($usage['ru_utime.tv_sec'] + $usage['ru_stime.tv_sec']) * 1_000
+            + ($usage['ru_utime.tv_usec'] + $usage['ru_stime.tv_usec']) / 1_000;
     }
 }
