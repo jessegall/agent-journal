@@ -71,10 +71,9 @@ func pickerRun(t *testing.T, models []string, highlighted int) (*Runner, *modelP
 	picker.draw()
 	clock := &fakeClock{now: time.Unix(0, 0)}
 	gate := terminal.NewInputGate(picker, reader, layout.Composer, clock.Now)
-	options := screen.OptionList{Markers: []string{"› "}}
-	menu := func() (screen.MenuEntries, bool) { return options.Entries(reader.Snapshot()) }
+	view := screen.NewView(layout, reader)
 
-	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, menu, func(Progress) {}), picker
+	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(Progress) {}), picker
 }
 
 var recordedModels = []string{"GPT-6.1-Sol (current)", "GPT-6.1 Terra", "GPT-6-Astra", "GPT-6-Sol", "GPT-6-Luna"}

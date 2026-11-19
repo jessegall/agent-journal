@@ -27,7 +27,8 @@ func claudeCodeMenu(name, hold string, keywords ...string) screen.MenuFamily {
 // composer is the ❯ row fenced by two rules on the normal buffer, empty while the cursor sits after the ❯. A spinner
 // redraw lands about every 100 ms, so 300 ms of stillness is three missed frames. The menu families come from report
 // 175 (the program's own dialog code): each is known by its ❯ option list and two of its keywords, and holds the
-// runtime for a person; none is answered automatically.
+// runtime for a person; none is answered automatically. The effort picker is a slider instead, recorded in
+// keyscripts/effort-change.
 func (ClaudeCode) Screens() screen.Layout {
 	return screen.Layout{
 		Buffer:            screencontracts.NormalBuffer,
@@ -52,6 +53,14 @@ func (ClaudeCode) Screens() screen.Layout {
 				"submit answers"),
 			claudeCodeMenu("model-picker", "human_input", "select model", "switch between claude models",
 				"default for new sessions", "effort"),
+			{
+				Name:        "effort-picker",
+				Options:     screen.Slider{Label: "slider", Marker: "▲"},
+				Keywords:    []string{"faster", "smarter", "to adjust", "for this session only"},
+				MinKeywords: 2,
+				StableFor:   300 * time.Millisecond,
+				Hold:        "human_input",
+			},
 			claudeCodeMenu("tool-permission", "permission_required", "do you want to", "don't ask again",
 				"what to do differently", "allow all edits", "allow this connection"),
 		},

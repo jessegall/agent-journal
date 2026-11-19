@@ -3,6 +3,7 @@
 package keyscripts
 
 import (
+	"strings"
 	"time"
 
 	"journal-agent/screen"
@@ -27,23 +28,51 @@ const (
 	SelectEntry Action = "select-entry"
 )
 
-// Expectation is the screen a step needs before it acts: a kind and, for a menu, its family.
+// Expectation is the screen a step needs before it acts: a kind and, for a menu, its family; or Shows, words that
+// must appear together on one row of whatever screen is drawn, such as a typed command's echo or a confirmation.
+// A word may name a parameter in braces, such as "set effort level to {effort}"; case does not count.
 type Expectation struct {
-	Kind screen.Kind
-	Menu string
+	Kind  screen.Kind
+	Menu  string
+	Shows []string
 }
 
-// AnyScreen is the expectation of a step that may act on whatever stable screen it finds, such as a slash command
-// typed into the composer.
+// AnyScreen is the expectation of a step that may act on whatever stable screen it finds.
 var AnyScreen = Expectation{}
 
-// matches is whether a stable reading is the expected screen.
-func (expectation Expectation) matches(reading screen.Classification) bool {
-	if expectation == AnyScreen {
+// matches is whether a reading is the expected screen: a stable one of its kind, or one showing its words.
+func (expectation Expectation) matches(
+	reading screen.Classification,
+	rows func() []string,
+	values map[string]string,
+) bool {
+	if len(expectation.Shows) > 0 {
+		return showsTogether(rows(), expectation.Shows, values)
+	}
+	if expectation.Kind == "" {
 		return reading.Stable
 	}
 
 	return reading.Stable && reading.Kind == expectation.Kind && reading.Menu == expectation.Menu
+}
+
+// showsTogether is whether one row holds every word, each with its parameters filled in, in any case.
+func showsTogether(rows []string, words []string, values map[string]string) bool {
+	for _, row := range rows {
+		row = strings.ToLower(row)
+		all := true
+		for _, word := range words {
+			for name, value := range values {
+				word = strings.ReplaceAll(word, "{"+name+"}", value)
+			}
+			all = all && strings.Contains(row, strings.ToLower(word))
+		}
+		if all {
+			return true
+		}
+	}
+
+	return false
 }
 
 // KeyStep is one step: the screen it waits for, within its deadline, and the one action it then takes.
@@ -56,6 +85,9 @@ type KeyStep struct {
 	Deadline  time.Duration
 	// MoveBudget is how many moves a SelectEntry step may make before the entry counts as unavailable.
 	MoveBudget int
+	// Marked makes a SelectEntry step find the one entry carrying this note, such as "(current)", instead of a
+	// parameter's value.
+	Marked string
 }
 
 // KeyScript is a versioned recipe for one program build: its registered name, the parameters it is given, the
@@ -74,6 +106,12 @@ const arrowDown = "\x1b[B"
 
 // arrowUp moves a menu's highlight one entry up.
 const arrowUp = "\x1b[A"
+
+// arrowRight and arrowLeft move a slider's marker one label across.
+const (
+	arrowRight = "\x1b[C"
+	arrowLeft  = "\x1b[D"
+)
 
 // MoveAndChoose is the steps that move a menu's highlight down by moves entries and choose it, one confirmed movement
 // at a time: each move waits for the menu again, so a menu that changed stops the script before the next key.

@@ -29,10 +29,9 @@ func codexPicker(t *testing.T) (*Runner, *bytes.Buffer) {
 	clock.Sleep(6500 * time.Millisecond)
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
-	options := screen.OptionList{Markers: []string{"› "}}
-	menu := func() (screen.MenuEntries, bool) { return options.Entries(reader.Snapshot()) }
+	view := screen.NewView(layout, reader)
 
-	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, menu, func(Progress) {}), program
+	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, view, func(Progress) {}), program
 }
 
 func selectModel(budget int) KeyScript {
