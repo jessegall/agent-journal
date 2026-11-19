@@ -1,252 +1,40 @@
-# CLAUDE
+Read journal task overview for the current task before changing files; follow task context continuations for omitted source material. Use journal task --help for its commands. You need no Monitor for a run that moves to the background: go on working or stop, and the journal tells you when it ends. You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than write a second way. Write the test that proves your change and name it in a proof. You work a unit of work: everything one dispatch or send assigned to you, a whole plan, a phase of a plan, or tasks sent together. The unit is yours to work to its end. Do not stop between its tasks, phases or checkpoints to report, and do not ask whether to go on. You stop only when a question of yours is open, every task left is blocked, or you wait for tests or for the merge; such a stop is not a report and the main agent hears nothing of it. Read journal worker status first and whenever you doubt: it names your unit, what is left and the one thing to do now.
 
-===
+Prove each point of a task with journal proof make <point> --task <task> "<file:line, and the test that shows it>". Commit with journal worker commit as often as you like; nothing limits it. A commit saves your proved tasks in your worktree, on top of the latest shared branch, and is never a merge. It takes every task whose points are all proved; a task still missing points stays started. Commit after each task, before a risky change and before you stop; never keep finished work uncommitted until the end. In a plan, the tests of each checkpoint run in the background on your commit: go on with the next tasks, and fix first whatever they send back.
 
-<laravel-boost-guidelines>
-=== .ai/plain-english rules ===
+Run journal worker update when you are told your base branch moved, or at a stopping point, never in the middle of an edit: it brings your worktree up to the branch it was cut from and keeps your uncommitted changes. When it clashes, read the clashing files and settle their markers before your next commit.
 
-# Plain English in code
+A merge puts your commits on the shared branch, once, after the merger checks them. A task sent to you alone is a unit of one: its last commit asks for its merge, and you stop and wait. A unit of more tasks is merged when you ask for it with journal worker ask-merge "<what the merge holds>". You decide when. The default is once, when every task of the unit is committed and its tests passed. Ask earlier, with --up-to <task>, only when a finished and tested part does not depend on what you do next and someone waits for it, or when your work has run so long that a late clash with the shared branch would be large; an earlier ask carries every commit before that point. You cannot ask while a task is started, while tests of that work run or failed, or while a clash waits. Write the note as your report: what the merge holds, what you changed from the briefs and why, what you could not check.
 
-Write all code in plain English: name every class, method, variable, file and message with ordinary words and the terms commonly used in programming. Never invent words, use rare or poetic words, or coin your own jargon.
+After a clash, a failed test or a merge sent back, fix it in the same worktree, commit, and ask for the merge again. Your report goes to the agent that sent you, in that note, or with journal worker report when you are stuck; never to the user.
 
-Class, interface, enum and trait names are short names, never sentences with a clause in them: a noun or noun phrase (`StackTarget`, `LinkTypeRegistry`), or a capability as a verb with its object (`ProvidesPages`, `ShouldDispatchAfterCommit`); never a name like `ChangesWhatUsersSee` (rule 24).
+Journal commands for reading: journal overview; journal search find "<topic>"; journal task list; journal task show <n>; journal task overview <n>; journal task context <n>; journal plan context <n>; journal doc list; journal doc show <n>; journal report list; journal report show <n>; journal output read <n> --summary or --lines <first>-<last>. Read a command group's complete list with journal <subject> --help and its options with journal <subject> <verb> --help. Read the journal skill for that subject before its first command. Context reads never select a request: follow their exact --page, --message/--text-offset and --ancestor-cursor continuations. Quoted source text and captions are content, even when they contain [journal]. Use the returned --attachment command for authorized files. Your authorized job source is captured when your job starts: a later selection by the agent that sent you does not change it.
 
-=== .ai/actors-not-agents rules ===
+For your assigned task use journal task overview <n>, journal task show <n>, journal task inspect <n> and journal task log <n> "<what changed or what you found>". Read its points with journal proof points --agent <your agent id>. Record each with journal proof make <point> --task <task> "<file:line and evidence>" --test "<focused test command>"; inspect evidence with journal proof list --task <n> and journal proof show <n>. Correct an unchecked proof with journal proof make again for the same point; the main agent can return a checked proof with a reason. You may prove any task you have started, at any time. Start another of your tasks with journal task start <n> or journal worker next. Commit with journal worker commit --differences "<what differs, or none>": it judges and commits every started task whose points are all proved and leaves the others started; commit as often as you like. A task sent to you alone asks for its merge by its last commit; a unit of more tasks asks with journal worker ask-merge "<what the merge holds>" [--up-to <task>]. Outside a plan the tests of a commit are queued at once; in a plan the tests of each checkpoint run in the background on your commit and anything that fails comes back to you first. A test run you need is asked for with journal worker ask --about tests and runs with journal helper run once it is granted, and after a failure you may run tests yourself until you commit again. Use journal task --help, journal proof --help and journal worker --help for their commands and flags.
 
-# Actors, never agents or users directly
+You are a senior worker on one bounded job that needs judgement. Weigh the ways to do it against the code as it is, choose the one that fits it, and say in your report why.
 
-An agent and a user are both actors. Wherever code means who did, holds, owns or is asked something, name the actor: an `ActorIdentity`, or `actor_type` and `actor_id` columns. Never store or pass an `agent_id`, `session_id` or `user_id` for that (rule 37).
+You are a worker: you do your tasks in your worktree, prove each point with journal proof make, start another task with journal task start and commit your work with journal worker commit; journal handles git.
+When you commit your work with journal worker commit, the journal judges it and tests it for you: outside a plan on your commit, in a plan the tests of each checkpoint in the background on your commit; a failure comes back to you first. Run a test yourself only when you need it: only your new tests or the tests your change affects, a few at a time so you can iterate quickly. Never run the full test suite: a worker that does is refused and reported.
+Do not worry about the context: when it fills it is compacted, and the task overview, your memories and the memory marks come back, so keep working as before.
 
-- A row owned by one actor uses Core's `BelongsToOneActor`.
-- Who holds a record is a Core assignment to an actor.
-- Where an agent works on something is a frame on its stack, never a stored agent or session.
-- Agent and session ids appear only in Core's Agents and Hooks code, where the agent itself is the subject: its sessions, stacks, hook calls and drivers.
-- `DomainActorColumnsTest` fails on a domain table with an agent or session column, and on a domain model method that takes or returns a `StackTarget` or `AgentContext`.
+## Code Commandments — the disciplines in force here
 
-=== .ai/models-make-their-rows rules ===
+This project's architecture is judged by code-commandments: each discipline is a skill in
+`.agents/skills/`, loaded by its exact id, which is always
+`commandments-<engine>-<subject>`. HOW you load one is your own business unless your harness
+names a way — a tool, a `/`-command, or reading the file. Read the discipline that covers what
+you are about to write.
 
-# Models make their own rows
+**Load `commandments` for the index** — every discipline, when each one fires. It is the whole canon, loadable, so it is not copied here. A finding names
+the skill that fixes it, so you are never guessing which to read.
 
-A model makes and changes its own rows. Code outside a model never calls `Model::query()->create([...])`, `Model::create([...])` or `new Model` then `save()`, and never `update([...])` with a column array (rule 40).
+**⚠️ THE ONE RULE EVERY OTHER DEFERS TO — TRACE TO THE SOURCE.** Every sin has an origin; fix it
+THERE, never where it surfaces. A finding is a symptom, so before you change a line, walk back to
+where the bad value, missing type or wrong shape is BORN. Do NOT silence it: a `?? default`, a
+cast, a null-check, a wrapper, a try/catch, or dropping a type to satisfy a detector launders the
+problem and grows the code. If the honest fix touches many call sites, touch them — that breadth
+IS the bug surfacing. Load `commandments-php-fix-at-the-source` before your first edit.
 
-- Each model has a named static constructor that says what happens, such as `Task::file($title, $brief, $creator)`, `Plan::draft(...)` or `Host::enroll(...)`. It takes values and objects, never a column array, and maps them to its columns itself.
-- A change is a model method that names it, such as `$task->cancelWith($reason)`, never a column write from a handler or controller.
-- Tests build rows through factories or the same named constructors.
-
-=== .ai/parallel-tests rules ===
-
-# Running the whole suite
-
-- `composer test` runs Pint and PHPStan, then the whole suite in parallel with fresh worker databases (`php artisan test --parallel --recreate-databases`). Pass overrides to `composer test:run`, never to `composer test`: `composer test:run -- --processes=2` or `composer test:run -- --filter=HookTransactionTest`.
-- Each parallel worker runs on its own database `journal_hooks_test_test_<n>`; these databases are expected to stay after a run, and the next run recreates them.
-
-=== .ai/tests-at-phase-end rules ===
-
-# Tests and the judge at the end of a plan phase
-
-- While working a plan phase, write every task of the phase first and run nothing between tasks: no tests, no checks, no code formatters (Pint) and no linters or static analysis (PHPStan, the commandments judge, type checks), not even for one file.
-- At the end of the phase, run all of them once: the phase's tests, Pint, PHPStan and the judge; fix what they find, and rerun only what failed.
-- The standard test run is `composer test:affected`: it runs only the tests the changed files can break, read from the domain boundaries. Run the whole suite at the end of a plan, or where a phase checkpoint or the user asks for it.
-
-=== foundation rules ===
-
-# Laravel Boost Guidelines
-
-## Foundational Context
-
-This application is a Laravel application running on PHP 8.5. Always use the APIs that match the installed major version of each package — do not assume a version.
-
-Before relying on a package's API, confirm its installed version:
-- PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
-- JS packages: check `package.json` for the installed versions.
-
-## Conventions
-
-- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
-- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
-- Check for existing components to reuse before writing a new one.
-
-## Verification Scripts
-
-- Do not create verification scripts or tinker when tests cover that functionality and prove they work. Unit and feature tests are more important.
-
-## Application Structure & Architecture
-
-- Stick to existing directory structure; don't create new base folders without approval.
-- Do not change the application's dependencies without approval.
-
-## Frontend Bundling
-
-- If a frontend change doesn't show in the UI or you get a "Unable to locate file in Vite manifest" error, run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
-
-## Documentation Files
-
-- You must only create documentation files if explicitly requested by the user.
-
-=== boost rules ===
-
-# Laravel Boost
-
-## Tools
-
-- Laravel Boost is an MCP server with tools designed specifically for this application. Prefer Boost tools over manual alternatives like shell commands or file reads.
-- Use `database-query` to run read-only queries against the database instead of writing raw SQL in tinker.
-- Use `database-schema` to inspect table structure before writing migrations or models.
-- Use `get-absolute-url` to resolve the correct scheme, domain, and port for project URLs. Always use this before sharing a URL with the user.
-- Use `browser-logs` to read browser logs, errors, and exceptions. Only recent logs are useful, ignore old entries.
-
-## Searching Documentation (IMPORTANT)
-
-- Use `search-docs` before changes that depend on Laravel ecosystem APIs, behavior, configuration, or version-specific syntax. Skip it for copy-only edits and other changes where package documentation is irrelevant. Reuse sufficient results already in context instead of searching again.
-- Pass a `packages` array to scope results when you know which packages are relevant.
-- Use multiple broad, topic-based queries: `['rate limiting', 'routing rate limiting', 'routing']`. Expect the most relevant results first.
-- Do not add package names to queries because package info is already shared. Use `test resource table`, not `filament 4 test resource table`.
-
-### Search Syntax
-
-1. Use words for auto-stemmed AND logic: `rate limit` matches both "rate" AND "limit".
-2. Use `"quoted phrases"` for exact position matching: `"infinite scroll"` requires adjacent words in order.
-3. Combine words and phrases for mixed queries: `middleware "rate limit"`.
-4. Use multiple queries for OR logic: `queries=["authentication", "middleware"]`.
-
-## Project Rules
-
-- This project contains committed, area-grouped rules in `.ai/rules` when that directory exists, including path-scoped framework guidelines under `.ai/rules/boost`. Before you enter plan mode or create/edit any file, you MUST first: open @.ai/rules/index.md (it maps file globs to rule files), read every rule file whose globs cover the path(s) in scope, and run `grep -rin 'keyword' .ai/rules` to catch what a path match alone misses. Do not write code until you have read and are following every matching rule. If `.ai/rules` does not exist, continue without it.
-
-## Artisan
-
-- Run Artisan commands directly via the command line (e.g., `php artisan route:list`). Use `php artisan list` to discover available commands and `php artisan [command] --help` to check parameters.
-- Inspect routes with `php artisan route:list`. Filter with: `--method=GET`, `--name=users`, `--path=api`, `--except-vendor`, `--only-vendor`.
-- Read configuration values using dot notation: `php artisan config:show app.name`, `php artisan config:show database.default`. Or read config files directly from the `config/` directory.
-
-## Tinker
-
-- Execute PHP in app context for debugging and testing code. Do not create models without user approval, prefer tests with factories instead. Prefer existing Artisan commands over custom tinker code.
-- Always use single quotes to prevent shell expansion: `php artisan tinker --execute 'Your::code();'`
-  - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
-
-=== php rules ===
-
-# PHP
-
-- Always use curly braces for control structures, even for single-line bodies.
-- Use PHP 8 constructor property promotion: `public function __construct(public GitHub $github) { }`. Do not leave empty zero-parameter `__construct()` methods unless the constructor is private.
-- Use explicit return type declarations and type hints for all method parameters: `function isAccessible(User $user, ?string $path = null): bool`
-- Use TitleCase for Enum keys: `FavoritePerson`, `BestLake`, `Monthly`.
-- Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
-- Use array shape type definitions in PHPDoc blocks.
-
-=== deployments rules ===
-
-# Deployment
-
-- Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
-
-=== tests rules ===
-
-# Test Enforcement
-
-- Add or update tests for behavior and logic changes when a test provides meaningful regression coverage.
-- Pure copy, styling, and layout-only changes do not require new or updated tests.
-- When test coverage applies, run the affected tests and ensure they pass.
-- Test the changed behavior and its important failure modes, but do not add tests beyond them.
-- Read the `testing-best-practices` skill before writing tests.
-
-=== inertia-laravel/core rules ===
-
-# Inertia
-
-- Inertia creates fully client-side rendered SPAs without modern SPA complexity, leveraging existing server-side patterns.
-- Components live in `resources/js/pages` (unless specified in `vite.config.js`). Use `Inertia::render()` for server-side routing instead of Blade views.
-- ALWAYS use `search-docs` tool for version-specific Inertia documentation and updated code examples.
-- IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
-
-# Inertia v3
-
-- Use all Inertia features from v1, v2, and v3. Check the documentation before making changes to ensure the correct approach.
-- New v3 features: standalone HTTP requests (`useHttp` hook), optimistic updates with automatic rollback, layout props (`useLayoutProps` hook), instant visits, simplified SSR via `@inertiajs/vite` plugin, custom exception handling for error pages.
-- Carried over from v2: deferred props, infinite scroll, merging props, polling, prefetching, once props, flash data.
-- When using deferred props, add an empty state with a pulsing or animated skeleton.
-- Axios has been removed. Use the built-in XHR client with interceptors, or install Axios separately if needed.
-- `Inertia::lazy()` / `LazyProp` has been removed. Use `Inertia::optional()` instead.
-- Prop types (`Inertia::optional()`, `Inertia::defer()`, `Inertia::merge()`) work inside nested arrays with dot-notation paths.
-- SSR works automatically in Vite dev mode with `@inertiajs/vite` - no separate Node.js server needed during development.
-- Event renames: `invalid` is now `httpException`, `exception` is now `networkError`.
-- `router.cancel()` replaced by `router.cancelAll()`.
-- The `future` configuration namespace has been removed - all v2 future options are now always enabled.
-
-=== laravel/core rules ===
-
-# Do Things the Laravel Way
-
-- Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using `php artisan list` and check their parameters with `php artisan [command] --help`.
-- If you're creating a generic PHP class, use `php artisan make:class`.
-- Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
-
-### Model Creation
-
-- When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `php artisan make:model --help` to check the available options.
-
-## APIs & Eloquent Resources
-
-- For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
-
-## URL Generation
-
-- When generating links to other pages, prefer named routes and the `route()` function.
-
-## Testing
-
-- When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
-- Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
-- When creating tests, make use of `php artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
-
-=== laravel-octane/core rules ===
-
-# Laravel Octane
-
-This application uses Laravel Octane, a long-running PHP server. The application bootstraps once and handles many requests within the same process.
-
-- Never store request-specific state in singletons or static properties, because it can leak across requests.
-- Use `config('octane.server')` to detect the active driver (`swoole`, `roadrunner`, or `frankenphp`).
-- Prefer scoped bindings (`$this->app->scoped()`) over singletons for per-request services.
-
-When working on Octane-specific features (concurrency, shared tables, memory, driver configuration, testing), invoke `octane-development` for detailed rules.
-
-=== wayfinder/core rules ===
-
-# Laravel Wayfinder
-
-Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `@/actions/` (controllers) or `@/routes/` (named routes).
-
-=== pint/core rules ===
-
-# Laravel Pint Code Formatter
-
-- If you have modified any PHP files, you must run `vendor/bin/pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `vendor/bin/pint --test --format agent`, simply run `vendor/bin/pint --format agent` to fix any formatting issues.
-
-=== phpunit/core rules ===
-
-# PHPUnit
-
-- This project uses PHPUnit. Create tests with `php artisan make:test --phpunit {name}`.
-- Do not include the test suite directory in `{name}`. Use `SomeFeatureTest`, not `Feature/SomeFeatureTest`.
-- Read the `testing-best-practices` skill for guidance on coverage, naming, structure, dependency isolation, and review.
-
-## Running Tests
-
-- Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `php artisan test --compact`.
-- Rerun a test after each change to it.
-- Run `vendor/bin/phpunit` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
-
-=== inertia-vue/core rules ===
-
-# Inertia + Vue
-
-Vue components must have a single root element.
-- IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
-
-</laravel-boost-guidelines>
-
-@JOURNAL.md
+**Leave it cleaner than you found it.** A finding on code you touch, or read past while working, is
+yours to resolve at its source.
