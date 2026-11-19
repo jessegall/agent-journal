@@ -12,6 +12,7 @@ use Domain\Access\Support\PresentUserCounter;
 use Domain\Access\Tests\TestCase;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\RefreshHookDatabase;
 
 /**
@@ -20,17 +21,8 @@ use Tests\Support\RefreshHookDatabase;
  */
 final class PresentUserCounterTest extends TestCase
 {
+    use ActsAsOwner;
     use RefreshHookDatabase;
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_beats_from_two_tabs_count_one_user(): void
     {

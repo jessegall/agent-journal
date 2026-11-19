@@ -18,8 +18,6 @@ use App\Desks\Exceptions\RunClaimRefused;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Commands\ResumeTaskRun;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
@@ -27,6 +25,7 @@ use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 
@@ -36,6 +35,7 @@ use Tests\Support\StartsAgentRequests;
  */
 final class ResumeTaskRunTest extends TestCase
 {
+    use ActsAsOwner;
     use CommitsHookRows;
     use StartsAgentRequests;
 
@@ -57,16 +57,6 @@ final class ResumeTaskRunTest extends TestCase
         'claim_authorizations',
         'command_receipts',
     ];
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_a_new_occupant_resumes_the_run_and_the_former_one_is_refused(): void
     {

@@ -20,8 +20,6 @@ use App\Bus\Contracts\CommandBus;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use Carbon\CarbonImmutable;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
@@ -34,6 +32,7 @@ use Domain\Tasks\Tests\TestCase;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -46,6 +45,7 @@ use Tests\Support\TimeLimits\TimeLimit;
  */
 final class TaskDetailsResolverTest extends TestCase
 {
+    use ActsAsOwner;
     use CommitsHookRows;
 
     private const array TABLES = [
@@ -66,16 +66,6 @@ final class TaskDetailsResolverTest extends TestCase
         'desk_seats',
         'desk_preferences',
     ];
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_a_task_held_by_a_desk_and_run_by_its_occupant_shows_both_separately(): void
     {

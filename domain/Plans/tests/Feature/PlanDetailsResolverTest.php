@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Contracts\PlanDetailsResolver;
@@ -15,8 +12,8 @@ use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Tests\Support\ActsAsTestUser;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**
@@ -25,19 +22,10 @@ use Tests\Support\TimeLimits\TimeLimit;
  */
 final class PlanDetailsResolverTest extends TestCase
 {
+    use ActsAsTestUser;
     use CommitsHookRows;
 
     private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forUser(TestIds::of(7)),
-            new OwnerAuthority('test'),
-        );
-    }
 
     public function test_progress_equals_the_web_lists_and_a_finishing_task_shows_on_the_next_read(): void
     {

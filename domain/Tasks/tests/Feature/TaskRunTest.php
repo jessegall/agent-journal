@@ -17,8 +17,6 @@ use App\Desks\Contracts\RunClaims;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
@@ -29,6 +27,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\ActsAsOwner;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 
@@ -38,6 +37,7 @@ use Tests\Support\StartsAgentRequests;
  */
 final class TaskRunTest extends TestCase
 {
+    use ActsAsOwner;
     use CommitsHookRows;
     use StartsAgentRequests;
 
@@ -59,16 +59,6 @@ final class TaskRunTest extends TestCase
         'claim_authorizations',
         'command_receipts',
     ];
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-    }
 
     public function test_starting_opens_a_claimed_run_and_finishing_ends_the_claim(): void
     {
