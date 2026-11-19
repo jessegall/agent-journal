@@ -8,7 +8,7 @@ use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Syntax\TokenCursor;
-use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\CommandToParse;
 
 /**
  * Checks the time budget before a command, refuses a missing one, and steps past 'time' before a subshell or group.
@@ -18,10 +18,10 @@ final readonly class CheckCommandStart implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandReading $reading): CommandReading
+    public function handle(CommandToParse $toParse): CommandToParse
     {
-        $cursor = $reading->cursor();
-        $reading->draft()->checkBudget($cursor->position());
+        $cursor = $toParse->cursor();
+        $toParse->draft()->checkBudget($cursor->position());
         if ($cursor->atEnd()) {
             throw ShellGrammarStopped::invalid('A command is missing at the end of the line.', $cursor->position());
         }
@@ -29,7 +29,7 @@ final readonly class CheckCommandStart implements Pipe
             $cursor->advance();
         }
 
-        return $reading;
+        return $toParse;
     }
 
     /**

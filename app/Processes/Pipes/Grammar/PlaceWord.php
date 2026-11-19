@@ -7,7 +7,7 @@ namespace App\Processes\Pipes\Grammar;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\WordPlace;
-use App\Processes\Values\Grammar\WordReading;
+use App\Processes\Values\Grammar\WordToParse;
 
 /**
  * A word before the first argument that starts as NAME= becomes an Assignment node of the command; any other word is
@@ -15,18 +15,18 @@ use App\Processes\Values\Grammar\WordReading;
  */
 final readonly class PlaceWord implements Pipe
 {
-    public function handle(WordReading $reading): WordReading
+    public function handle(WordToParse $toParse): WordToParse
     {
-        if ($reading->place !== WordPlace::Unread) {
-            return $reading;
+        if ($toParse->place !== WordPlace::Unread) {
+            return $toParse;
         }
-        if (! $reading->isBeforeArguments || ! $reading->word->isAssignment()) {
-            return $reading->placedAs(WordPlace::Argument);
+        if (! $toParse->isBeforeArguments || ! $toParse->word->isAssignment()) {
+            return $toParse->placedAs(WordPlace::Argument);
         }
-        $draft = $reading->draft();
-        $assignment = $draft->add(NodeType::Assignment, $reading->word->range, $reading->command);
-        $draft->setWords($assignment, [$reading->word]);
+        $draft = $toParse->draft();
+        $assignment = $draft->add(NodeType::Assignment, $toParse->word->range, $toParse->command);
+        $draft->setWords($assignment, [$toParse->word]);
 
-        return $reading->placedAs(WordPlace::Assignment);
+        return $toParse->placedAs(WordPlace::Assignment);
     }
 }

@@ -11,5 +11,5 @@ use App\Processes\Values\Redirect;
  */
 final readonly class RedirectParts
 {
-    public function __construct(public Redirect $redirect, public SubstitutionsReading $substitutions) {}
+    public function __construct(public Redirect $redirect, public SubstitutionsToParse $substitutions) {}
 }

@@ -6,15 +6,15 @@ namespace App\Processes\Pipes\Grammar;
 
 use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadCommandPipeline;
-use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\CommandToParse;
 use App\Processes\Values\Grammar\NodeRead;
 use App\Processes\Values\Grammar\PipedCommands;
-use App\Processes\Values\Grammar\PipedCommandsReading;
+use App\Processes\Values\Grammar\PipedCommandsToParse;
 
 /**
  * Reads the first command of a shell pipeline through the command pipeline.
  *
- * @extends PipelineAdapter<PipedCommandsReading, NodeRead>
+ * @extends PipelineAdapter<PipedCommandsToParse, NodeRead>
  */
 final readonly class ParseFirstPipedCommand extends PipelineAdapter
 {
@@ -28,9 +28,9 @@ final readonly class ParseFirstPipedCommand extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): CommandReading
+    protected function into(object $input): CommandToParse
     {
-        return $input->reading->command();
+        return $input->toParse->command();
     }
 
     protected function back(object $result, object $input): PipedCommands

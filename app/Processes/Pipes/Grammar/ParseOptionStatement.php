@@ -6,14 +6,14 @@ namespace App\Processes\Pipes\Grammar;
 
 use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadSimpleCommandPipeline;
-use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\CommandToParse;
 use App\Processes\Values\Grammar\NodeRead;
-use App\Processes\Values\Grammar\OptionStatementReading;
+use App\Processes\Values\Grammar\OptionStatementToParse;
 
 /**
  * Reads a shell option statement as a simple command, then marks it not supported.
  *
- * @extends PipelineAdapter<OptionStatementReading, NodeRead>
+ * @extends PipelineAdapter<OptionStatementToParse, NodeRead>
  */
 final readonly class ParseOptionStatement extends PipelineAdapter
 {
@@ -27,14 +27,14 @@ final readonly class ParseOptionStatement extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): CommandReading
+    protected function into(object $input): CommandToParse
     {
-        return $input->reading;
+        return $input->toParse;
     }
 
     protected function back(object $result, object $input): NodeRead
     {
-        $input->reading->draft()->markStatementUnsupported($result->node, $input->reason);
+        $input->toParse->draft()->markStatementUnsupported($result->node, $input->reason);
 
         return $result;
     }

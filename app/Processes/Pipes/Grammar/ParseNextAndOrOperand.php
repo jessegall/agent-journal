@@ -9,7 +9,7 @@ use App\Processes\Pipelines\ReadPipedCommandsPipeline;
 use App\Processes\Values\Grammar\AndOrChain;
 use App\Processes\Values\Grammar\AndOrLink;
 use App\Processes\Values\Grammar\NodeRead;
-use App\Processes\Values\Grammar\NodeReading;
+use App\Processes\Values\Grammar\NodeToParse;
 
 /**
  * Reads the pipeline after an && or || and joins it to the chain from the left.
@@ -28,9 +28,9 @@ final readonly class ParseNextAndOrOperand extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): NodeReading
+    protected function into(object $input): NodeToParse
     {
-        return $input->chain->reading;
+        return $input->chain->toParse;
     }
 
     protected function back(object $result, object $input): AndOrChain

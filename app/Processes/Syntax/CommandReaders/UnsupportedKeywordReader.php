@@ -10,7 +10,7 @@ use App\Processes\Enums\UnsupportedKeyword;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Syntax\TokenCursor;
 use App\Processes\Syntax\UnsupportedConstructs;
-use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\CommandToParse;
 use App\Processes\Values\Grammar\NodeRead;
 
 /**
@@ -29,11 +29,11 @@ final readonly class UnsupportedKeywordReader implements CommandReader, Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandReading $reading): NodeRead
+    public function handle(CommandToParse $toParse): NodeRead
     {
-        $keyword = UnsupportedKeyword::at($reading->cursor());
+        $keyword = UnsupportedKeyword::at($toParse->cursor());
         $reason = "The shell construct '{$keyword->value}' is not supported.";
 
-        return new NodeRead($this->unsupported->skip($reading->context, $reason, $keyword->closingKeyword()));
+        return new NodeRead($this->unsupported->skip($toParse->context, $reason, $keyword->closingKeyword()));
     }
 }

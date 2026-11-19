@@ -8,7 +8,7 @@ use App\Pipelines\Contracts\Pipe;
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Syntax\UnsupportedConstructs;
-use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\CommandToParse;
 use App\Processes\Values\Grammar\NodeRead;
 
 /**
@@ -22,9 +22,9 @@ abstract readonly class UnsupportedCommandReader implements CommandReader, Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(CommandReading $reading): NodeRead
+    public function handle(CommandToParse $toParse): NodeRead
     {
-        return new NodeRead($this->unsupported->skip($reading->context, $this->reason(), null));
+        return new NodeRead($this->unsupported->skip($toParse->context, $this->reason(), null));
     }
 
     abstract protected function reason(): string;

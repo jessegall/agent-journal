@@ -7,17 +7,17 @@ namespace App\Processes\Pipes\Grammar;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\TokenType;
 use App\Processes\Enums\WordPlace;
-use App\Processes\Values\Grammar\WordReading;
+use App\Processes\Values\Grammar\WordToParse;
 
 /**
  * A word ending in = with a ( after it starts an array assignment, which makes its command unsupported.
  */
 final readonly class RefuseArrayAssignment implements Pipe
 {
-    public function handle(WordReading $reading): WordReading
+    public function handle(WordToParse $toParse): WordToParse
     {
-        $isArray = $reading->cursor()->peekIs(1, TokenType::OpenParen) && $reading->word->isArrayName();
+        $isArray = $toParse->cursor()->peekIs(1, TokenType::OpenParen) && $toParse->word->isArrayName();
 
-        return $isArray ? $reading->placedAs(WordPlace::ArrayAssignment) : $reading;
+        return $isArray ? $toParse->placedAs(WordPlace::ArrayAssignment) : $toParse;
     }
 }

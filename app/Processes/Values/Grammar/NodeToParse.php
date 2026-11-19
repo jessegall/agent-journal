@@ -9,7 +9,7 @@ use App\Processes\Values\Grammar\Concerns\UsesGrammarContext;
 /**
  * A grammar rule to read at the cursor: an and-or chain or a pipeline.
  */
-final readonly class NodeReading
+final readonly class NodeToParse
 {
     use UsesGrammarContext;
 
@@ -18,8 +18,8 @@ final readonly class NodeReading
         public int $depth,
     ) {}
 
-    public function command(): CommandReading
+    public function command(): CommandToParse
     {
-        return new CommandReading($this->context, $this->depth);
+        return new CommandToParse($this->context, $this->depth);
     }
 }

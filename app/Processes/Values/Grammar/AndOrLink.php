@@ -20,12 +20,12 @@ final readonly class AndOrLink
     public function joinedWith(int $pipeline): AndOrChain
     {
         $left = $this->chain->node;
-        $draft = $this->chain->reading->draft();
+        $draft = $this->chain->toParse->draft();
         $range = new SourceRange($draft->range($left)->start, $draft->range($pipeline)->end);
         $joined = $draft->add($this->type, $range, null);
         $draft->adopt($joined, $left);
         $draft->adopt($joined, $pipeline);
 
-        return new AndOrChain($this->chain->reading, $joined);
+        return new AndOrChain($this->chain->toParse, $joined);
     }
 }

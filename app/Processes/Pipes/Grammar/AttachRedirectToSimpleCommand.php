@@ -6,14 +6,14 @@ namespace App\Processes\Pipes\Grammar;
 
 use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadRedirectPipeline;
-use App\Processes\Values\Grammar\RedirectReading;
-use App\Processes\Values\Grammar\SimpleCommandBeingRead;
+use App\Processes\Values\Grammar\RedirectToParse;
+use App\Processes\Values\Grammar\SimpleCommandDraft;
 use App\Processes\Values\Redirect;
 
 /**
  * Reads a redirect of a simple command through the redirect pipeline.
  *
- * @extends PipelineAdapter<SimpleCommandBeingRead, Redirect>
+ * @extends PipelineAdapter<SimpleCommandDraft, Redirect>
  */
 final readonly class AttachRedirectToSimpleCommand extends PipelineAdapter
 {
@@ -27,12 +27,12 @@ final readonly class AttachRedirectToSimpleCommand extends PipelineAdapter
         return Redirect::class;
     }
 
-    protected function into(object $input): RedirectReading
+    protected function into(object $input): RedirectToParse
     {
-        return $input->reading->redirect($input->parts->node);
+        return $input->toParse->redirect($input->parts->node);
     }
 
-    protected function back(object $result, object $input): SimpleCommandBeingRead
+    protected function back(object $result, object $input): SimpleCommandDraft
     {
         return $input->withRedirect($result);
     }

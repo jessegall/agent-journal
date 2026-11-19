@@ -7,7 +7,7 @@ namespace App\Processes\Pipes\Grammar;
 use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadRedirectPipeline;
 use App\Processes\Values\Grammar\CompoundParts;
-use App\Processes\Values\Grammar\RedirectReading;
+use App\Processes\Values\Grammar\RedirectToParse;
 use App\Processes\Values\Redirect;
 
 /**
@@ -27,9 +27,9 @@ final readonly class AttachRedirectToCompound extends PipelineAdapter
         return Redirect::class;
     }
 
-    protected function into(object $input): RedirectReading
+    protected function into(object $input): RedirectToParse
     {
-        return $input->reading->redirect($input->node);
+        return $input->toParse->redirect($input->node);
     }
 
     protected function back(object $result, object $input): CompoundParts

@@ -8,7 +8,7 @@ use App\Pipelines\Contracts\Pipe;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Syntax\UnsupportedConstructs;
 use App\Processes\Values\Grammar\NodeRead;
-use App\Processes\Values\Grammar\SimpleCommandBeingRead;
+use App\Processes\Values\Grammar\SimpleCommandDraft;
 
 /**
  * Finishes a simple command's node with its range, arguments and redirects; a command turned into an array assignment
@@ -21,9 +21,9 @@ final readonly class CloseSimpleCommandNode implements Pipe
     /**
      * @throws ShellGrammarStopped
      */
-    public function handle(SimpleCommandBeingRead $command): NodeRead
+    public function handle(SimpleCommandDraft $command): NodeRead
     {
-        $context = $command->reading->context;
+        $context = $command->toParse->context;
         $parts = $command->parts;
         if ($command->isArrayAssignment) {
             $context->draft->undoExecutablePartCount();

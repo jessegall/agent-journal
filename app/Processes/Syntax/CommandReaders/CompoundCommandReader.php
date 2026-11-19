@@ -8,20 +8,20 @@ use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Pipelines\ReadCompoundPipeline;
 use App\Processes\Syntax\TokenCursor;
-use App\Processes\Values\Grammar\CommandReading;
-use App\Processes\Values\Grammar\CompoundReading;
+use App\Processes\Values\Grammar\CommandToParse;
+use App\Processes\Values\Grammar\CompoundToParse;
 use App\Processes\Values\Grammar\NodeRead;
 
 /**
  * ( list ) or { list }: read through the compound pipeline.
  *
- * @extends PipelineAdapter<CommandReading, NodeRead>
+ * @extends PipelineAdapter<CommandToParse, NodeRead>
  */
 final readonly class CompoundCommandReader extends PipelineAdapter implements CommandReader
 {
     public static function reads(TokenCursor $cursor): bool
     {
-        return CompoundReading::opensAt($cursor);
+        return CompoundToParse::opensAt($cursor);
     }
 
     protected function definition(): string
@@ -34,7 +34,7 @@ final readonly class CompoundCommandReader extends PipelineAdapter implements Co
         return NodeRead::class;
     }
 
-    protected function into(object $input): CompoundReading
+    protected function into(object $input): CompoundToParse
     {
         return $input->compound();
     }

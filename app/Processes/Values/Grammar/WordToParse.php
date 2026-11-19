@@ -11,7 +11,7 @@ use App\Processes\Values\Word;
 /**
  * One word of a simple command, read in order: it may start an array assignment, name an assignment or be an argument.
  */
-final readonly class WordReading
+final readonly class WordToParse
 {
     use UsesGrammarContext;
 
@@ -55,10 +55,10 @@ final readonly class WordReading
     /**
      * The word's substitutions, read as children of its command; an array assignment's are not read.
      */
-    public function substitutions(): SubstitutionsReading
+    public function substitutions(): SubstitutionsToParse
     {
         $word = $this->isArrayAssignment() ? new Word([], $this->word->range) : $this->word;
 
-        return new SubstitutionsReading($this->context, $word, $this->command, $this->depth);
+        return new SubstitutionsToParse($this->context, $word, $this->command, $this->depth);
     }
 }

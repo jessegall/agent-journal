@@ -11,7 +11,7 @@ use App\Processes\Values\Word;
 /**
  * A word whose command and process substitutions are read as children of an owner node.
  */
-final readonly class SubstitutionsReading
+final readonly class SubstitutionsToParse
 {
     use UsesGrammarContext;
 

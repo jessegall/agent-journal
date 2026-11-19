@@ -8,7 +8,7 @@ use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadSubstitutionsPipeline;
 use App\Processes\Values\Grammar\RedirectParts;
 use App\Processes\Values\Grammar\SubstitutionsRead;
-use App\Processes\Values\Grammar\SubstitutionsReading;
+use App\Processes\Values\Grammar\SubstitutionsToParse;
 use App\Processes\Values\Redirect;
 
 /**
@@ -28,7 +28,7 @@ final readonly class ParseRedirectSubstitutions extends PipelineAdapter
         return SubstitutionsRead::class;
     }
 
-    protected function into(object $input): SubstitutionsReading
+    protected function into(object $input): SubstitutionsToParse
     {
         return $input->substitutions;
     }

@@ -10,7 +10,7 @@ use App\Processes\Values\Grammar\Concerns\UsesGrammarContext;
 /**
  * A list to read into a parent node: and-or chains split by ; & and newlines, up to a closing token or the end.
  */
-final readonly class ListReading
+final readonly class ListToParse
 {
     use UsesGrammarContext;
 
@@ -21,9 +21,9 @@ final readonly class ListReading
         public TokenType|null $closing,
     ) {}
 
-    public function andOr(): NodeReading
+    public function andOr(): NodeToParse
     {
-        return new NodeReading($this->context, $this->depth);
+        return new NodeToParse($this->context, $this->depth);
     }
 
     /**

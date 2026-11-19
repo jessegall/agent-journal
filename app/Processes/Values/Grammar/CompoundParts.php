@@ -17,7 +17,7 @@ final readonly class CompoundParts
      * @param  list<Redirect>  $redirects
      */
     public function __construct(
-        public CompoundReading $reading,
+        public CompoundToParse $toParse,
         public int $node,
         public SourceRange $range,
         public array $redirects,
@@ -25,18 +25,18 @@ final readonly class CompoundParts
 
     public function isAtRedirect(): bool
     {
-        return $this->reading->cursor()->is(TokenType::Redirect);
+        return $this->toParse->cursor()->is(TokenType::Redirect);
     }
 
     public function closedAt(SourceRange $range): self
     {
-        return new self($this->reading, $this->node, $range, []);
+        return new self($this->toParse, $this->node, $range, []);
     }
 
     public function withRedirect(Redirect $redirect): self
     {
         $range = new SourceRange($this->range->start, $redirect->range->end);
 
-        return new self($this->reading, $this->node, $range, [...$this->redirects, $redirect]);
+        return new self($this->toParse, $this->node, $range, [...$this->redirects, $redirect]);
     }
 }

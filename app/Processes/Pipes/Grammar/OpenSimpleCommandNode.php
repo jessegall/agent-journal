@@ -6,8 +6,8 @@ namespace App\Processes\Pipes\Grammar;
 
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\NodeType;
-use App\Processes\Values\Grammar\CommandReading;
-use App\Processes\Values\Grammar\SimpleCommandBeingRead;
+use App\Processes\Values\Grammar\CommandToParse;
+use App\Processes\Values\Grammar\SimpleCommandDraft;
 use App\Processes\Values\Grammar\SimpleCommandParts;
 use App\Processes\Values\SourceRange;
 
@@ -16,13 +16,13 @@ use App\Processes\Values\SourceRange;
  */
 final readonly class OpenSimpleCommandNode implements Pipe
 {
-    public function handle(CommandReading $reading): SimpleCommandBeingRead
+    public function handle(CommandToParse $toParse): SimpleCommandDraft
     {
-        $draft = $reading->draft();
-        $start = $reading->cursor()->position();
+        $draft = $toParse->draft();
+        $start = $toParse->cursor()->position();
         $node = $draft->add(NodeType::SimpleCommand, new SourceRange($start, $start), null);
         $draft->countExecutablePart($start);
 
-        return new SimpleCommandBeingRead($reading, SimpleCommandParts::startAt($node, $start), false);
+        return new SimpleCommandDraft($toParse, SimpleCommandParts::startAt($node, $start), false);
     }
 }

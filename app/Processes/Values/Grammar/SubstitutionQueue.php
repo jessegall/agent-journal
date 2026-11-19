@@ -18,9 +18,9 @@ final readonly class SubstitutionQueue
      */
     private function __construct(public int $owner, public array $pending, public ShellSource|null $found) {}
 
-    public static function of(SubstitutionsReading $reading): self
+    public static function of(SubstitutionsToParse $toParse): self
     {
-        return new self($reading->owner, PendingSegment::allOf($reading), null);
+        return new self($toParse->owner, PendingSegment::allOf($toParse), null);
     }
 
     /**

@@ -10,10 +10,10 @@ use App\Processes\Values\Redirect;
 /**
  * A simple command part-way through: its parts so far, and whether a word turned it into an array assignment.
  */
-final readonly class SimpleCommandBeingRead
+final readonly class SimpleCommandDraft
 {
     public function __construct(
-        public CommandReading $reading,
+        public CommandToParse $toParse,
         public SimpleCommandParts $parts,
         public bool $isArrayAssignment,
     ) {}
@@ -24,7 +24,7 @@ final readonly class SimpleCommandBeingRead
      */
     public function continues(): bool
     {
-        $cursor = $this->reading->cursor();
+        $cursor = $this->toParse->cursor();
         if ($this->isArrayAssignment || $cursor->atEnd()) {
             return false;
         }
@@ -37,21 +37,21 @@ final readonly class SimpleCommandBeingRead
 
     public function isAtRedirect(): bool
     {
-        return $this->reading->cursor()->is(TokenType::Redirect);
+        return $this->toParse->cursor()->is(TokenType::Redirect);
     }
 
     public function withRedirect(Redirect $redirect): self
     {
-        return new self($this->reading, $this->parts->withRedirect($redirect), false);
+        return new self($this->toParse, $this->parts->withRedirect($redirect), false);
     }
 
-    public function withWord(WordReading $word): self
+    public function withWord(WordToParse $word): self
     {
-        return new self($this->reading, $this->parts->withWord($word), false);
+        return new self($this->toParse, $this->parts->withWord($word), false);
     }
 
     public function asArrayAssignment(): self
     {
-        return new self($this->reading, $this->parts, true);
+        return new self($this->toParse, $this->parts, true);
     }
 }

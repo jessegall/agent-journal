@@ -12,11 +12,11 @@ use App\Processes\Enums\TokenType;
  */
 final readonly class AndOrChain
 {
-    public function __construct(public NodeReading $reading, public int $node) {}
+    public function __construct(public NodeToParse $toParse, public int $node) {}
 
     public function isAtAndOr(): bool
     {
-        $cursor = $this->reading->cursor();
+        $cursor = $this->toParse->cursor();
 
         return $cursor->is(TokenType::AndIf) || $cursor->is(TokenType::OrIf);
     }

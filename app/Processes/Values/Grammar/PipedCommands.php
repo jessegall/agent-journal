@@ -16,7 +16,7 @@ final readonly class PipedCommands
     /**
      * @param  non-empty-list<int>  $commands
      */
-    public function __construct(public PipedCommandsReading $start, public array $commands) {}
+    public function __construct(public PipedCommandsToParse $start, public array $commands) {}
 
     public function with(int $command): self
     {
@@ -25,20 +25,20 @@ final readonly class PipedCommands
 
     public function cursor(): TokenCursor
     {
-        return $this->start->reading->cursor();
+        return $this->start->toParse->cursor();
     }
 
     public function draft(): TreeDraft
     {
-        return $this->start->reading->draft();
+        return $this->start->toParse->draft();
     }
 
     /**
      * The next command of the pipeline, at the cursor.
      */
-    public function command(): CommandReading
+    public function command(): CommandToParse
     {
-        return $this->start->reading->command();
+        return $this->start->toParse->command();
     }
 
     public function isAtPipeSymbol(): bool

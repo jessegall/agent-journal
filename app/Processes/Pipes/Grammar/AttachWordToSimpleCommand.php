@@ -6,14 +6,14 @@ namespace App\Processes\Pipes\Grammar;
 
 use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadWordPipeline;
-use App\Processes\Values\Grammar\SimpleCommandBeingRead;
-use App\Processes\Values\Grammar\WordReading;
+use App\Processes\Values\Grammar\SimpleCommandDraft;
+use App\Processes\Values\Grammar\WordToParse;
 
 /**
  * Reads a word of a simple command through the word pipeline; a word that starts an array assignment turns the
  * whole command into one, and is left at the cursor.
  *
- * @extends PipelineAdapter<SimpleCommandBeingRead, WordReading>
+ * @extends PipelineAdapter<SimpleCommandDraft, WordToParse>
  */
 final readonly class AttachWordToSimpleCommand extends PipelineAdapter
 {
@@ -24,22 +24,22 @@ final readonly class AttachWordToSimpleCommand extends PipelineAdapter
 
     protected function produces(): string
     {
-        return WordReading::class;
+        return WordToParse::class;
     }
 
-    protected function into(object $input): WordReading
+    protected function into(object $input): WordToParse
     {
-        $word = $input->reading->cursor()->word('A word is missing.');
+        $word = $input->toParse->cursor()->word('A word is missing.');
 
-        return $input->reading->word($word, $input->parts->node, ! $input->parts->hasArguments());
+        return $input->toParse->word($word, $input->parts->node, ! $input->parts->hasArguments());
     }
 
-    protected function back(object $result, object $input): SimpleCommandBeingRead
+    protected function back(object $result, object $input): SimpleCommandDraft
     {
         if ($result->isArrayAssignment()) {
             return $input->asArrayAssignment();
         }
-        $input->reading->cursor()->advance();
+        $input->toParse->cursor()->advance();
 
         return $input->withWord($result);
     }

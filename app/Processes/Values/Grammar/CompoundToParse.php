@@ -12,7 +12,7 @@ use App\Processes\Values\Grammar\Concerns\UsesGrammarContext;
 /**
  * A subshell or group to read: its list up to the closing token, then its trailing redirects.
  */
-final readonly class CompoundReading
+final readonly class CompoundToParse
 {
     use UsesGrammarContext;
 
@@ -43,14 +43,14 @@ final readonly class CompoundReading
     /**
      * The list inside, one level deeper, read into the compound node.
      */
-    public function list(int $compound): ListReading
+    public function list(int $compound): ListToParse
     {
-        return new ListReading($this->context, $compound, $this->depth + 1, $this->closing);
+        return new ListToParse($this->context, $compound, $this->depth + 1, $this->closing);
     }
 
-    public function redirect(int $compound): RedirectReading
+    public function redirect(int $compound): RedirectToParse
     {
-        return new RedirectReading($this->context, $compound, $this->depth);
+        return new RedirectToParse($this->context, $compound, $this->depth);
     }
 
     public function name(): string

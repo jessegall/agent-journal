@@ -19,7 +19,7 @@ final readonly class SkipCompoundClosingToken implements Pipe
      */
     public function handle(CompoundParts $parts): CompoundParts
     {
-        $reading = $parts->reading;
+        $reading = $parts->toParse;
         $cursor = $reading->cursor();
         $start = $parts->range->start + $cursor->offset();
         if (! $cursor->is($reading->closing)) {

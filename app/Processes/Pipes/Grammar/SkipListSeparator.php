@@ -21,7 +21,7 @@ final readonly class SkipListSeparator implements Pipe
      */
     public function handle(ListItems $items): ListItems
     {
-        $cursor = $items->reading->cursor();
+        $cursor = $items->toParse->cursor();
         if ($cursor->is(TokenType::Semicolon)) {
             $this->stepPastSemicolon($cursor, $items->mayTakeSemicolon);
         }

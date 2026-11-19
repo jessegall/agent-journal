@@ -15,6 +15,6 @@ final readonly class CompleteList implements Pipe
 {
     public function handle(ListItems $items): ListRead
     {
-        return new ListRead($items->reading->context, $items->reading->parent);
+        return new ListRead($items->toParse->context, $items->toParse->parent);
     }
 }

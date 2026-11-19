@@ -64,7 +64,7 @@ final readonly class FindNextSubstitution implements Pipe
         if ($segment->type !== WordSegmentType::Expansion) {
             return null;
         }
-        $line = $next->reading->draft()->line;
+        $line = $next->toParse->draft()->line;
         if (substr($line, $start, 2) === '${') {
             return $this->wordsInside($next, substr($segment->text, 2, -1), $start + 2);
         }
@@ -92,7 +92,7 @@ final readonly class FindNextSubstitution implements Pipe
      */
     private function wordsInside(PendingSegment $next, string $text, int $offset): array
     {
-        $lexed = $this->lexer->lex($text, $next->reading->draft()->dialect);
+        $lexed = $this->lexer->lex($text, $next->toParse->draft()->dialect);
         if ($lexed->outcome !== ParseOutcome::Complete) {
             throw ShellGrammarStopped::fromLexedLine($lexed, $offset);
         }
@@ -101,7 +101,7 @@ final readonly class FindNextSubstitution implements Pipe
             if ($token->word === null) {
                 continue;
             }
-            $word = $next->reading->inside($token->word->shiftedBy($offset));
+            $word = $next->toParse->inside($token->word->shiftedBy($offset));
             $inside = [...$inside, ...PendingSegment::allOf($word)];
         }
 
@@ -118,7 +118,7 @@ final readonly class FindNextSubstitution implements Pipe
         if ($segment->type !== WordSegmentType::Expansion) {
             return null;
         }
-        $draft = $next->reading->draft();
+        $draft = $next->toParse->draft();
         $opening = substr($draft->line, $segment->range->start, 2);
         $isBacktick = str_starts_with($opening, '`');
         $type = match (true) {
@@ -133,9 +133,9 @@ final readonly class FindNextSubstitution implements Pipe
             $reason = 'A backtick substitution nested inside another is not supported.';
             $draft->markUnsupported($reason, $segment->range->start);
         }
-        $substitution = $draft->add($type, $segment->range, $next->reading->owner);
+        $substitution = $draft->add($type, $segment->range, $next->toParse->owner);
         $innerStart = $segment->range->start + ($isBacktick ? 1 : 2);
 
-        return $next->reading->innerSource($segment->text, $innerStart, $substitution);
+        return $next->toParse->innerSource($segment->text, $innerStart, $substitution);
     }
 }

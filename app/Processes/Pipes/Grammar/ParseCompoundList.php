@@ -8,7 +8,7 @@ use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadListPipeline;
 use App\Processes\Values\Grammar\CompoundParts;
 use App\Processes\Values\Grammar\ListRead;
-use App\Processes\Values\Grammar\ListReading;
+use App\Processes\Values\Grammar\ListToParse;
 
 /**
  * Reads the list inside a subshell or group through the list pipeline again.
@@ -27,9 +27,9 @@ final readonly class ParseCompoundList extends PipelineAdapter
         return ListRead::class;
     }
 
-    protected function into(object $input): ListReading
+    protected function into(object $input): ListToParse
     {
-        return $input->reading->list($input->node);
+        return $input->toParse->list($input->node);
     }
 
     protected function back(object $result, object $input): CompoundParts

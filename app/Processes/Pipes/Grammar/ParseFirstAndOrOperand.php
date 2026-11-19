@@ -8,12 +8,12 @@ use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadPipedCommandsPipeline;
 use App\Processes\Values\Grammar\AndOrChain;
 use App\Processes\Values\Grammar\NodeRead;
-use App\Processes\Values\Grammar\NodeReading;
+use App\Processes\Values\Grammar\NodeToParse;
 
 /**
  * Reads the first pipeline of an and-or chain.
  *
- * @extends PipelineAdapter<NodeReading, NodeRead>
+ * @extends PipelineAdapter<NodeToParse, NodeRead>
  */
 final readonly class ParseFirstAndOrOperand extends PipelineAdapter
 {
@@ -27,7 +27,7 @@ final readonly class ParseFirstAndOrOperand extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): NodeReading
+    protected function into(object $input): NodeToParse
     {
         return $input;
     }

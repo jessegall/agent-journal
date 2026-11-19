@@ -9,5 +9,5 @@ namespace App\Processes\Values\Grammar;
  */
 final readonly class ListItem
 {
-    public function __construct(public ListReading $reading, public int $node) {}
+    public function __construct(public ListToParse $toParse, public int $node) {}
 }

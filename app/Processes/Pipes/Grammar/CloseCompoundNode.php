@@ -15,7 +15,7 @@ final readonly class CloseCompoundNode implements Pipe
 {
     public function handle(CompoundParts $parts): NodeRead
     {
-        $parts->reading->draft()->finish($parts->node, $parts->range, [], $parts->redirects);
+        $parts->toParse->draft()->finish($parts->node, $parts->range, [], $parts->redirects);
 
         return new NodeRead($parts->node);
     }

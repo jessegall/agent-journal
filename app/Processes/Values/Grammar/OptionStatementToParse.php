@@ -7,7 +7,7 @@ namespace App\Processes\Values\Grammar;
 /**
  * A shell option statement to read as a simple command, with the reason it is not supported.
  */
-final readonly class OptionStatementReading
+final readonly class OptionStatementToParse
 {
-    public function __construct(public CommandReading $reading, public string $reason) {}
+    public function __construct(public CommandToParse $toParse, public string $reason) {}
 }

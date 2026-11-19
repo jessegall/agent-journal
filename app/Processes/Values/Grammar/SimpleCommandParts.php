@@ -41,7 +41,7 @@ final readonly class SimpleCommandParts
     /**
      * Adds a read word: an argument joins the arguments, an assignment only moves the end.
      */
-    public function withWord(WordReading $word): self
+    public function withWord(WordToParse $word): self
     {
         $arguments = $this->arguments;
         if ($word->place === WordPlace::Argument) {

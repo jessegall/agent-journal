@@ -17,7 +17,7 @@ final readonly class SkipAndOrOperator implements Pipe
 {
     public function handle(AndOrChain $chain): AndOrLink
     {
-        $cursor = $chain->reading->cursor();
+        $cursor = $chain->toParse->cursor();
         $type = $cursor->is(TokenType::AndIf) ? NodeType::AndList : NodeType::OrList;
         $cursor->advance();
         $cursor->skip(TokenType::Newline, TokenType::Comment);

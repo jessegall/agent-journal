@@ -11,7 +11,7 @@ use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Syntax\TokenCursor;
 use App\Processes\Values\Grammar\ListItem;
 use App\Processes\Values\Grammar\ListItems;
-use App\Processes\Values\Grammar\ListReading;
+use App\Processes\Values\Grammar\ListToParse;
 
 /**
  * Places a read item in its list, in the background when a & follows it; only a command's end may follow it, and only
@@ -24,29 +24,29 @@ final readonly class AttachListItem implements Pipe
      */
     public function handle(ListItem $item): ListItems
     {
-        $reading = $item->reading;
-        $cursor = $reading->cursor();
+        $toParse = $item->toParse;
+        $cursor = $toParse->cursor();
         if ($cursor->is(TokenType::Background)) {
-            $this->runInBackground($reading, $item->node);
+            $this->runInBackground($toParse, $item->node);
 
-            return new ListItems($reading, false);
+            return new ListItems($toParse, false);
         }
-        $reading->draft()->adopt($reading->parent, $item->node);
+        $toParse->draft()->adopt($toParse->parent, $item->node);
         if (! $this->endsCommand($cursor)) {
             $unexpected = $cursor->currentType()->value;
 
             throw ShellGrammarStopped::invalid("Unexpected {$unexpected} after a command.", $cursor->position());
         }
 
-        return new ListItems($reading, true);
+        return new ListItems($toParse, true);
     }
 
-    private function runInBackground(ListReading $reading, int $item): void
+    private function runInBackground(ListToParse $toParse, int $item): void
     {
-        $draft = $reading->draft();
-        $cursor = $reading->cursor();
+        $draft = $toParse->draft();
+        $cursor = $toParse->cursor();
         $range = $draft->rangeTo($item, $cursor->currentEnd());
-        $background = $draft->add(NodeType::Background, $range, $reading->parent);
+        $background = $draft->add(NodeType::Background, $range, $toParse->parent);
         $draft->adopt($background, $item);
         $cursor->advance();
     }

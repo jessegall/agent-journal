@@ -12,7 +12,7 @@ use App\Processes\Pipes\Grammar\AttachWordToSimpleCommand;
 use App\Processes\Pipes\Grammar\CloseSimpleCommandNode;
 use App\Processes\Pipes\Grammar\OpenSimpleCommandNode;
 use App\Processes\Syntax\TokenCursor;
-use App\Processes\Values\Grammar\SimpleCommandBeingRead;
+use App\Processes\Values\Grammar\SimpleCommandDraft;
 
 /**
  * simple := (assignment | word | redirect)+; each word runs through the word pipeline and each redirect through the
@@ -31,11 +31,11 @@ final readonly class ReadSimpleCommandPipeline implements CommandReader, Pipelin
         return [
             OpenSimpleCommandNode::class,
             Step::repeated(
-                Step::chosen(fn (SimpleCommandBeingRead $command) => $command->isAtRedirect(),
+                Step::chosen(fn (SimpleCommandDraft $command) => $command->isAtRedirect(),
                     then: AttachRedirectToSimpleCommand::class,
                     else: AttachWordToSimpleCommand::class
                 ),
-                while: fn (SimpleCommandBeingRead $command) => $command->continues()
+                while: fn (SimpleCommandDraft $command) => $command->continues()
             ),
             CloseSimpleCommandNode::class,
         ];

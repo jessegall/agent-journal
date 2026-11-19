@@ -6,7 +6,7 @@ namespace App\Processes\Pipes\Grammar;
 
 use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\ReadCommandPipeline;
-use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\CommandToParse;
 use App\Processes\Values\Grammar\NodeRead;
 use App\Processes\Values\Grammar\PipedCommands;
 
@@ -27,7 +27,7 @@ final readonly class ParseNextPipedCommand extends PipelineAdapter
         return NodeRead::class;
     }
 
-    protected function into(object $input): CommandReading
+    protected function into(object $input): CommandToParse
     {
         return $input->command();
     }
