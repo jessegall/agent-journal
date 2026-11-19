@@ -102,14 +102,9 @@ final class ShareInstallation extends Model implements ReadableModel
         )->exists();
     }
 
-    /**
-     * @throws GatewayRunStale when another run holds the gateways
-     */
-    public function requireRun(string $runId): void
+    public function isCurrentRun(string $runId): bool
     {
-        if ($this->run_id !== $runId) {
-            throw GatewayRunStale::for($runId);
-        }
+        return $this->run_id === $runId;
     }
 
     /**

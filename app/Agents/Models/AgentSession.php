@@ -8,7 +8,6 @@ use App\Actors\Support\PresenceWindow;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\SessionStatus;
-use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\SessionSelectionFixed;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\SelectedProgram;
@@ -311,34 +310,6 @@ final class AgentSession extends Model implements ReadableModel
     public function isActive(): bool
     {
         return $this->status->isRunning();
-    }
-
-    /**
-     * Refuses a session that may no longer act: no credential, a revoked one, an ended session or a retired agent.
-     *
-     * @throws CredentialRejected
-     */
-    public function requireUsable(): void
-    {
-        if ($this->credential === null) {
-            throw CredentialRejected::unknown();
-        }
-
-        if ($this->credential->isRevoked()) {
-            throw CredentialRejected::revoked();
-        }
-
-        if (! $this->isActive()) {
-            throw CredentialRejected::sessionEnded();
-        }
-
-        if (! $this->agent->isCurrentRuntime($this)) {
-            throw CredentialRejected::fenced();
-        }
-
-        if ($this->agent->isRetired()) {
-            throw CredentialRejected::agentRetired();
-        }
     }
 
     /**

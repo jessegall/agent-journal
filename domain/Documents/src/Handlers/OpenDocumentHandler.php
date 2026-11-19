@@ -8,7 +8,6 @@ use App\Contracts\CommandHandler;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
@@ -26,9 +25,7 @@ final readonly class OpenDocumentHandler implements CommandHandler
         $held = DocumentDraft::query()->where('document_id', $document->id)->first();
 
         if ($held !== null) {
-            try {
-                $held->requireEditor($editor);
-            } catch (DraftConflict) {
+            if (! $held->isEditedBy($editor)) {
                 throw DraftHeld::byOther($held->holderLabel());
             }
 

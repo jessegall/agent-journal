@@ -12,7 +12,6 @@ use App\Assignments\Contracts\Assignable;
 use App\Communication\Data\MessageReader;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
-use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Scopes\MessageVisibility;
@@ -161,14 +160,9 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return mb_strimwidth(strtok($this->body, "\n") ?: '', 0, 80, '…');
     }
 
-    /**
-     * @throws MessageStateConflict
-     */
-    public function requireStateVersion(int $expected): void
+    public function isAtStateVersion(int $expected): bool
     {
-        if ($this->state_version !== $expected) {
-            throw MessageStateConflict::staleVersion($this->id, $expected);
-        }
+        return $this->state_version === $expected;
     }
 
     /**
@@ -302,24 +296,9 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return $this->state === MessageState::WaitingForAnswer;
     }
 
-    /**
-     * @throws MessageStateConflict
-     */
-    public function requireWaiting(): void
+    public function isDismissed(): bool
     {
-        if (! $this->needsReply()) {
-            throw MessageStateConflict::notWaiting($this->id);
-        }
-    }
-
-    /**
-     * @throws AnswerImpossible
-     */
-    public function requireOpenForReplies(): void
-    {
-        if ($this->state === MessageState::Dismissed) {
-            throw AnswerImpossible::forMessage($this->id);
-        }
+        return $this->state === MessageState::Dismissed;
     }
 
     /**
@@ -344,7 +323,10 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
      */
     public function answerWith(self $reply, ActorIdentity $actor, CarbonImmutable $at): void
     {
-        $this->requireWaiting();
+        if (! $this->needsReply()) {
+            throw MessageStateConflict::notWaiting($this->id);
+        }
+
         $this->state = MessageState::Answered;
         $this->state_version++;
         $this->answer_message_id = $reply->id;

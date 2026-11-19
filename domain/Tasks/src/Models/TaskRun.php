@@ -109,14 +109,9 @@ final class TaskRun extends Model implements Assignable, ReadableModel
         return self::query()->where('task_id', $task->id)->where('run_number', $runNumber)->first();
     }
 
-    /**
-     * @throws TaskRunFinished
-     */
-    public function requireUnfinished(): void
+    public function isFinished(): bool
     {
-        if ($this->state === TaskRunState::Finished) {
-            throw TaskRunFinished::forRun($this->id);
-        }
+        return $this->state === TaskRunState::Finished;
     }
 
     /**
@@ -124,7 +119,10 @@ final class TaskRun extends Model implements Assignable, ReadableModel
      */
     public function finish(string $outcome): void
     {
-        $this->requireUnfinished();
+        if ($this->isFinished()) {
+            throw TaskRunFinished::forRun($this->id);
+        }
+
         $this->state = TaskRunState::Finished;
         $this->outcome = $outcome;
         $this->save();

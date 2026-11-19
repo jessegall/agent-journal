@@ -36,6 +36,10 @@ final readonly class TaskAssigner implements AutoAssigner
      */
     public function requireCandidate(RecordIdentity $record): void
     {
-        Task::lockedById($record->id)->requireOpenForAssignment();
+        $task = Task::lockedById($record->id);
+
+        if (! $task->isOpenForAssignment()) {
+            throw TaskNotOpenForAssignment::forTask($task->number, $task->state->value);
+        }
     }
 }

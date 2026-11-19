@@ -7,7 +7,6 @@ namespace App\Assignments\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Casts\PoolReferenceCast;
-use App\Assignments\Exceptions\AutoAssignmentRevisionChanged;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
@@ -112,14 +111,9 @@ final class AutoAssignment extends Model implements ReadableModel
         return self::pageOf(self::query()->ofActor($actor), $page);
     }
 
-    /**
-     * @throws AutoAssignmentRevisionChanged
-     */
-    public function requireRevision(int $expected): void
+    public function isAtRevision(int $expected): bool
     {
-        if ($this->configuration_revision !== $expected) {
-            throw AutoAssignmentRevisionChanged::for($expected, $this->configuration_revision);
-        }
+        return $this->configuration_revision === $expected;
     }
 
     /**

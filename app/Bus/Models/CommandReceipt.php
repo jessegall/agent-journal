@@ -7,7 +7,6 @@ namespace App\Bus\Models;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\RefusalReplayed;
-use App\Bus\Exceptions\RequestKeyConflict;
 use App\Bus\Exceptions\RequestKeyExpired;
 use App\Bus\Support\Operation;
 use App\Bus\Support\PlainValue;
@@ -206,15 +205,11 @@ final class CommandReceipt extends Model implements ReadableModel
     }
 
     /**
-     * Refuses a different command sent under a key whose answer still stands.
-     *
-     * @throws RequestKeyConflict
+     * Whether this receipt's key may answer the command: the key expired and is used again, or it holds this command.
      */
-    public function requireFingerprint(object $command): void
+    public function admitsCommand(object $command): bool
     {
-        if (! $this->isExpired() && ! $this->isFor($command)) {
-            throw RequestKeyConflict::for($this->request_key);
-        }
+        return $this->isExpired() || $this->isFor($command);
     }
 
     public function isFor(object $command): bool

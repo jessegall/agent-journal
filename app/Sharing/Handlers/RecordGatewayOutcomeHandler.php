@@ -15,6 +15,7 @@ use App\Sharing\Enums\ShareState;
 use App\Sharing\Events\ShareActivated;
 use App\Sharing\Events\ShareFailed;
 use App\Sharing\Exceptions\GatewayLeaseRefused;
+use App\Sharing\Handlers\Concerns\RefusesStaleGatewayRuns;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
@@ -31,11 +32,13 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class RecordGatewayOutcomeHandler implements CommandHandler
 {
+    use RefusesStaleGatewayRuns;
+
     public function __construct(private Dispatcher $events) {}
 
     public function handle(RecordGatewayOutcome $command): void
     {
-        ShareInstallation::lockForAdmission()->requireRun($command->runId);
+        $this->refuseStaleGatewayRun(ShareInstallation::lockForAdmission(), $command->runId);
         $claimed = ShareGatewayOperation::of($command->operationId);
         $configuration = ShareGatewayConfiguration::lockById($claimed->share_gateway_configuration_id);
         $endpoint = ShareGatewayEndpoint::lockHeldBy($configuration->id, $command->endpointVersion, $command->runId);

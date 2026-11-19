@@ -32,9 +32,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
-use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
-use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -169,14 +167,9 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         return new OrderedRecordIds(array_values($ordered->readLimit($limit)->pluck('id')->all()));
     }
 
-    /**
-     * @throws TaskNotOpenForAssignment
-     */
-    public function requireOpenForAssignment(): void
+    public function isOpenForAssignment(): bool
     {
-        if ($this->state !== TaskState::Open) {
-            throw TaskNotOpenForAssignment::forTask($this->number, $this->state->value);
-        }
+        return $this->state === TaskState::Open;
     }
 
     /**
@@ -294,16 +287,9 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         $this->save();
     }
 
-    /**
-     * Refuses a run number that is not the task's current run, whoever names it.
-     *
-     * @throws TaskRunNotYours
-     */
-    public function requireCurrentRun(int $runNumber): void
+    public function isCurrentRun(int $runNumber): bool
     {
-        if ($runNumber !== $this->run_number) {
-            throw TaskRunNotYours::forRun($this->number, $runNumber);
-        }
+        return $runNumber === $this->run_number;
     }
 
     /**

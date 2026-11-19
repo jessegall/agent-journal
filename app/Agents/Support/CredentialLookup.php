@@ -7,6 +7,7 @@ namespace App\Agents\Support;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\AgentSession;
+use App\Agents\Support\Concerns\RefusesUnusableSessions;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class CredentialLookup
 {
+    use RefusesUnusableSessions;
+
     public function sessionFor(string $token): AgentSession
     {
         $session = AgentSession::query()->with(['credential', 'agent'])
@@ -27,7 +30,7 @@ final readonly class CredentialLookup
             throw CredentialRejected::unknown();
         }
 
-        $session->requireUsable();
+        $this->refuseUnusableSession($session);
 
         return $session;
     }

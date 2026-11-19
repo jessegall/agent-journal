@@ -28,7 +28,9 @@ final readonly class ResumeTaskRunHandler implements CommandHandler
     public function handle(ResumeTaskRun $command, Task $task): int
     {
         $run = TaskRun::lockedById($command->runId);
-        $run->requireUnfinished();
+        if ($run->isFinished()) {
+            throw TaskRunFinished::forRun($run->id);
+        }
         $this->claims->take(
             $run->assignmentIdentity(),
             $task->assignmentIdentity(),

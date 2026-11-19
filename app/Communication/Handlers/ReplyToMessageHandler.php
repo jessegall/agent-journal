@@ -41,8 +41,13 @@ final readonly class ReplyToMessageHandler implements CommandHandler
             ?? throw MessageMissing::forId($command->messageId);
         [, $membership] = $this->reading->admit((string) $destinationId, $command->dispatchedBy());
         $original = Message::lockedById($command->messageId);
-        $original->requireStateVersion($command->expectedStateVersion);
-        $original->requireOpenForReplies();
+        if (! $original->isAtStateVersion($command->expectedStateVersion)) {
+            throw MessageStateConflict::staleVersion($original->id, $command->expectedStateVersion);
+        }
+
+        if ($original->isDismissed()) {
+            throw AnswerImpossible::forMessage($original->id);
+        }
         $now = CarbonImmutable::now();
         $original->acknowledge($membership, $now);
         $reply = $this->sending->reply($original, $command->body, $command->dispatchedBy());

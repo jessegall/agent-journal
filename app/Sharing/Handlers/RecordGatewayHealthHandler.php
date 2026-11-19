@@ -6,6 +6,7 @@ namespace App\Sharing\Handlers;
 
 use App\Contracts\CommandHandler;
 use App\Sharing\Commands\RecordGatewayHealth;
+use App\Sharing\Handlers\Concerns\RefusesStaleGatewayRuns;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareInstallation;
 
@@ -15,10 +16,12 @@ use App\Sharing\Models\ShareInstallation;
  */
 final readonly class RecordGatewayHealthHandler implements CommandHandler
 {
+    use RefusesStaleGatewayRuns;
+
     public function handle(RecordGatewayHealth $command): void
     {
         $installation = ShareInstallation::lockForAdmission();
-        $installation->requireRun($command->runId);
+        $this->refuseStaleGatewayRun($installation, $command->runId);
         $installation->holdFor($command->runId);
         $endpoint = ShareGatewayEndpoint::lockHeldBy(
             $command->configurationId,

@@ -11,7 +11,6 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -78,14 +77,9 @@ final class Memory extends Model implements Numbered, ReadableModel
             ?? throw MemoryUnavailable::forId($memoryId);
     }
 
-    /**
-     * @throws MemoryRevisionChanged
-     */
-    public function requireRevision(int $expectedRevision): void
+    public function isAtRevision(int $expectedRevision): bool
     {
-        if ($this->revision !== $expectedRevision) {
-            throw MemoryRevisionChanged::for($this->id, $expectedRevision, $this->revision);
-        }
+        return $this->revision === $expectedRevision;
     }
 
     public function saveFor(ActorIdentity $actor): void

@@ -15,7 +15,6 @@ use Carbon\CarbonImmutable;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\CloseCause;
-use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Support\DraftText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -110,26 +109,14 @@ final class DocumentDraft extends Model implements ReadableModel
         return $this->belongsTo(Document::class);
     }
 
-    /**
-     * @throws DraftConflict
-     */
-    public function requireEditor(ActorIdentity $editor): void
+    public function isEditedBy(ActorIdentity $editor): bool
     {
-        $isTheEditor = $this->author_type === $editor->type && $this->author_id === $editor->id;
-
-        if (! $isTheEditor) {
-            throw DraftConflict::notYours();
-        }
+        return $this->author_type === $editor->type && $this->author_id === $editor->id;
     }
 
-    /**
-     * @throws DraftConflict
-     */
-    public function requireVersion(int $version): void
+    public function isAtVersion(int $version): bool
     {
-        if ($this->version !== $version) {
-            throw DraftConflict::stale($version, $this->version);
-        }
+        return $this->version === $version;
     }
 
     /**

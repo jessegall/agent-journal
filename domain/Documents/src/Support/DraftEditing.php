@@ -10,6 +10,7 @@ use Domain\Documents\Api\Events\DocumentDraftSaved;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
+use Domain\Documents\Support\Concerns\RefusesOtherDrafts;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -18,6 +19,8 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class DraftEditing
 {
+    use RefusesOtherDrafts;
+
     public function __construct(private RequestEditor $editors, private Dispatcher $events) {}
 
     /**
@@ -28,8 +31,8 @@ final readonly class DraftEditing
         $document = Document::lockedForEditing($target->documentNumber);
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->first()
             ?? throw DraftMissing::forDocument($target->documentNumber);
-        $draft->requireEditor($this->editors->editor());
-        $draft->requireVersion($target->expectedVersion);
+        $this->refuseUnlessDraftEditor($draft, $this->editors->editor());
+        $this->refuseStaleDraftVersion($draft, $target->expectedVersion);
         $draft->saveText($newText(DraftText::of($draft)));
         $this->events->dispatch(new DocumentDraftSaved($document->id, $draft->version));
 

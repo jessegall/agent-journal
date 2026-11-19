@@ -10,7 +10,6 @@ use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\EditingState;
-use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
@@ -30,9 +29,7 @@ final readonly class DraftRecords implements DraftResolver
         )->first() ?? throw DraftMissing::forDocument($documentNumber);
         $draft = $document->draft ?? throw DraftMissing::forDocument($documentNumber);
 
-        try {
-            $draft->requireEditor($this->editors->editor());
-        } catch (DraftConflict) {
+        if (! $draft->isEditedBy($this->editors->editor())) {
             throw DraftMissing::forDocument($documentNumber);
         }
 
@@ -53,9 +50,7 @@ final readonly class DraftRecords implements DraftResolver
 
         $editor = $this->editors->editor();
 
-        try {
-            $draft->requireEditor($editor);
-        } catch (DraftConflict) {
+        if (! $draft->isEditedBy($editor)) {
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
             $administer = [DocumentAbility::Administer];

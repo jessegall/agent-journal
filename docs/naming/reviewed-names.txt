@@ -4141,6 +4141,8 @@ constant	ContainerManifest::USER
 constant	ContainerManifest::WORKDIR
 constant	Continuations::LIFETIME_MINUTES
 constant	Continuations::PURPOSE
+constant	CoreMcpTools::ORIENTATION_RESOURCES
+constant	CoreMcpTools::ORIENTATION_TOOLS
 constant	CoreServiceProvider::AREAS
 constant	CoreSkills::OWNER
 constant	CreateDocument::MOST_LINKS
@@ -5455,7 +5457,6 @@ method	AgentSession::present()
 method	AgentSession::recordDiscoveryAt()
 method	AgentSession::recordHeartbeatAt()
 method	AgentSession::recordSkillGeneration()
-method	AgentSession::requireUsable()
 method	AgentSession::runningFor()
 method	AgentSession::runningForMaintenance()
 method	AgentSession::selection()
@@ -6011,11 +6012,11 @@ method	AutoAssignment::configure()
 method	AutoAssignment::enableFirst()
 method	AutoAssignment::enabledPage()
 method	AutoAssignment::forKey()
+method	AutoAssignment::isAtRevision()
 method	AutoAssignment::lockedFor()
 method	AutoAssignment::ofActor()
 method	AutoAssignment::pageFor()
 method	AutoAssignment::pageOf()
-method	AutoAssignment::requireRevision()
 method	AutoAssignment::toFact()
 method	AutoAssignmentAccess::mayReadTotals()
 method	AutoAssignmentAccess::requireRead()
@@ -6360,7 +6361,6 @@ method	ChatDomain::policies()
 method	ChatDomain::requires()
 method	ChatDomain::sections()
 method	ChatDomain::skills()
-method	ChatHostTest::launch()
 method	ChatHostTest::test_a_person_sends_to_the_chosen_agent_and_sees_the_pair_exchange()
 method	ChatServiceProvider::boot()
 method	ChatSkill::condition()
@@ -6368,7 +6368,6 @@ method	ChatSkill::description()
 method	ChatSkill::key()
 method	ChatSkill::name()
 method	ChatSkill::sections()
-method	ChatSwitchTest::runOnBus()
 method	ChatSwitchTest::test_chat_off_removes_its_pages_while_core_messaging_still_works()
 method	ChatWindowResolver::__construct()
 method	ChatWindowResolver::conversationIn()
@@ -6693,6 +6692,7 @@ method	CommandPermissions::granted()
 method	CommandPermissions::revoking()
 method	CommandReader::reads()
 method	CommandReaderResolver::readerAt()
+method	CommandReceipt::admitsCommand()
 method	CommandReceipt::booted()
 method	CommandReceipt::casts()
 method	CommandReceipt::complete()
@@ -6705,7 +6705,6 @@ method	CommandReceipt::pastRetention()
 method	CommandReceipt::pastTombstone()
 method	CommandReceipt::recordRefusal()
 method	CommandReceipt::replay()
-method	CommandReceipt::requireFingerprint()
 method	CommandReceipt::take()
 method	CommandReceipt::toOperation()
 method	CommandRefused::because()
@@ -6755,6 +6754,7 @@ method	CommandRequest::answerWith()
 method	CommandRequest::approve()
 method	CommandRequest::approveOrdinary()
 method	CommandRequest::approveSample()
+method	CommandRequest::awaitsProof()
 method	CommandRequest::casts()
 method	CommandRequest::excerptOf()
 method	CommandRequest::finishSample()
@@ -7273,6 +7273,7 @@ method	DatabaseAutoAssignments::enableFirst()
 method	DatabaseAutoAssignments::enabled()
 method	DatabaseAutoAssignments::forActor()
 method	DatabaseAutoAssignments::listFor()
+method	DatabaseAutoAssignments::refuseUnlessAtRevision()
 method	DatabaseAutoAssignments::status()
 method	DatabaseAutoAssignments::unchangedMissing()
 method	DatabaseClock::__construct()
@@ -7565,7 +7566,6 @@ method	DockRecord::subject()
 method	DockRecordHandler::__construct()
 method	DockRecordHandler::handle()
 method	DockSectionTest::dockedTitles()
-method	DockSectionTest::launch()
 method	DockSectionTest::test_a_docked_task_shows_as_its_owners_card_in_that_conversation()
 method	DockTest::actAsAgent()
 method	DockTest::actAsUser()
@@ -7641,10 +7641,10 @@ method	DocumentDraft::document()
 method	DocumentDraft::hasChangesFrom()
 method	DocumentDraft::heldByAgent()
 method	DocumentDraft::holderLabel()
+method	DocumentDraft::isAtVersion()
+method	DocumentDraft::isEditedBy()
 method	DocumentDraft::openFor()
 method	DocumentDraft::reference()
-method	DocumentDraft::requireEditor()
-method	DocumentDraft::requireVersion()
 method	DocumentDraft::saveText()
 method	DocumentDraft::view()
 method	DocumentDraftSaved::__construct()
@@ -7710,7 +7710,6 @@ method	DocumentsDomain::sections()
 method	DocumentsDomain::shareRecords()
 method	DocumentsServiceProvider::boot()
 method	DocumentsTest::bus()
-method	DocumentsTest::setUp()
 method	DocumentsTest::test_a_report_is_filed_and_a_document_number_never_selects_it()
 method	DocumentsTest::test_a_saved_revision_does_not_change()
 method	DocumentsTest::test_a_title_and_abstract_are_stored_trimmed()
@@ -7889,7 +7888,6 @@ method	DraftTokens::keep()
 method	DraftTokens::of()
 method	DraftTokens::path()
 method	DraftView::__construct()
-method	DraftsTest::actAsUser()
 method	DraftsTest::bus()
 method	DraftsTest::documents()
 method	DraftsTest::setUp()
@@ -8612,7 +8610,6 @@ method	HistoryPage::__construct()
 method	HistoryPageData::__construct()
 method	HistoryPageResolver::__construct()
 method	HistoryPageResolver::read()
-method	HistoryPageTest::launch()
 method	HistoryPageTest::stored()
 method	HistoryPageTest::test_the_owner_inspects_an_agents_inbox_and_cancels_a_waiting_question()
 method	HistoryRequest::chosenInbox()
@@ -8801,7 +8798,6 @@ method	InboxNotices::send()
 method	InboxPageData::__construct()
 method	InboxPageResolver::__construct()
 method	InboxPageResolver::read()
-method	InboxPageTest::runOnBus()
 method	InboxPageTest::test_a_person_at_two_inboxes_sees_both_and_takes_the_next_question()
 method	InboxPanelData::__construct()
 method	InboxProvider::inboxFor()
@@ -8936,7 +8932,6 @@ method	IsolatedHookSettings::hasHooks()
 method	IsolatedSettingsFile::__construct()
 method	IsolatedSettingsFile::jsonSerialize()
 method	IsolatedSettingsFile::of()
-method	IsolationTest::actAsUser()
 method	IsolationTest::bus()
 method	IsolationTest::test_a_failed_create_leaves_no_record_and_raises_no_event()
 method	IsolationTest::test_a_second_request_in_the_same_worker_sees_no_draft_text_of_the_first()
@@ -9450,9 +9445,9 @@ method	Measurement::__construct()
 method	MeasuresBody::bodyBytesOf()
 method	MemberWake::__construct()
 method	Memory::casts()
+method	Memory::isAtRevision()
 method	Memory::keep()
 method	Memory::ownForUpdate()
-method	Memory::requireRevision()
 method	Memory::revise()
 method	Memory::saveFor()
 method	MemoryAbility::isClassLevel()
@@ -9519,6 +9514,8 @@ method	Message::firstLine()
 method	Message::firstRead()
 method	Message::firstReader()
 method	Message::fromInbox()
+method	Message::isAtStateVersion()
+method	Message::isDismissed()
 method	Message::isWrittenBy()
 method	Message::lockedById()
 method	Message::needsReply()
@@ -9527,9 +9524,6 @@ method	Message::olderThan()
 method	Message::record()
 method	Message::refuseWhenClosed()
 method	Message::requireAnswer()
-method	Message::requireOpenForReplies()
-method	Message::requireStateVersion()
-method	Message::requireWaiting()
 method	Message::toInbox()
 method	Message::waitingForTakeUp()
 method	MessageAbility::isClassLevel()
@@ -9582,14 +9576,8 @@ method	MessagePinAbility::isClassLevel()
 method	MessagePinPolicy::authorize()
 method	MessagePinRecords::__construct()
 method	MessagePinRecords::pinned()
-method	MessagePinTest::asAgent()
-method	MessagePinTest::launch()
 method	MessagePinTest::pin()
 method	MessagePinTest::pinned()
-method	MessagePinTest::replaceOccupant()
-method	MessagePinTest::runOnBus()
-method	MessagePinTest::seat()
-method	MessagePinTest::setUp()
 method	MessagePinTest::test_a_message_the_asker_cannot_read_is_refused()
 method	MessagePinTest::test_a_pin_hides_while_access_is_gone_and_returns_with_it()
 method	MessagePinTest::test_pinning_twice_keeps_one_pin_and_leaves_other_pins_alone()
@@ -9908,6 +9896,10 @@ method	OpenTaskPoolFactory::open()
 method	OpenTaskPoolFactory::validate()
 method	OpenTiming::forCaller()
 method	OpenedRuntime::__construct()
+method	OpensTeamDeskMessage::asAgent()
+method	OpensTeamDeskMessage::replaceOccupant()
+method	OpensTeamDeskMessage::seat()
+method	OpensTeamDeskMessage::setUpOpensTeamDeskMessage()
 method	Operation::__construct()
 method	Operation::touches()
 method	OperationDeadline::__construct()
@@ -10343,6 +10335,7 @@ method	Plan::describe()
 method	Plan::details()
 method	Plan::draft()
 method	Plan::finish()
+method	Plan::isStarted()
 method	Plan::listOrder()
 method	Plan::lockStructure()
 method	Plan::phaseNumbered()
@@ -10404,7 +10397,6 @@ method	PlanDetailRecords::plan()
 method	PlanDetails::__construct()
 method	PlanDetailsResolver::phase()
 method	PlanDetailsResolver::plan()
-method	PlanDetailsResolverTest::setUp()
 method	PlanDetailsResolverTest::test_a_phase_read_lists_its_task_references_in_order()
 method	PlanDetailsResolverTest::test_a_plan_with_120_tasks_pages_them_50_at_a_time()
 method	PlanDetailsResolverTest::test_progress_equals_the_web_lists_and_a_finishing_task_shows_on_the_next_read()
@@ -10520,7 +10512,6 @@ method	PlanTaskPoolFactory::plan()
 method	PlanTaskPoolFactory::validate()
 method	PlanTaskPoolTest::open()
 method	PlanTaskPoolTest::reference()
-method	PlanTaskPoolTest::setUp()
 method	PlanTaskPoolTest::test_a_plan_of_more_than_a_thousand_tasks_gives_none()
 method	PlanTaskPoolTest::test_a_plan_that_is_not_started_gives_no_tasks()
 method	PlanTaskPoolTest::test_a_reference_that_does_not_name_one_existing_plan_is_refused()
@@ -10663,7 +10654,6 @@ method	PresentUserCounter::__construct()
 method	PresentUserCounter::count()
 method	PresentUserCounter::type()
 method	PresentUserCounterTest::countAt()
-method	PresentUserCounterTest::setUp()
 method	PresentUserCounterTest::test_a_row_older_than_the_window_counts_zero()
 method	PresentUserCounterTest::test_a_user_who_may_no_longer_use_the_journal_counts_zero()
 method	PresentUserCounterTest::test_beats_from_two_tabs_count_one_user()
@@ -11549,15 +11539,9 @@ method	RecordCommentLocation::__construct()
 method	RecordCommentView::__construct()
 method	RecordConversationVisit::compacted()
 method	RecordConversationVisit::entered()
-method	RecordDockTest::asAgent()
 method	RecordDockTest::dock()
 method	RecordDockTest::docked()
-method	RecordDockTest::launch()
 method	RecordDockTest::record()
-method	RecordDockTest::replaceOccupant()
-method	RecordDockTest::runOnBus()
-method	RecordDockTest::seat()
-method	RecordDockTest::setUp()
 method	RecordDockTest::test_an_unreadable_record_is_left_out_but_its_placement_stays()
 method	RecordDockTest::test_docking_hiding_and_restoring_change_only_the_one_placement()
 method	RecordEvidenceReads::__construct()
@@ -11780,6 +11764,11 @@ method	RefuseStaleRuns::__construct()
 method	RefuseStaleRuns::handle()
 method	RefuseWritesDuringEvaluation::__construct()
 method	RefuseWritesDuringEvaluation::handle()
+method	RefusesOtherDrafts::refuseStaleDraftVersion()
+method	RefusesOtherDrafts::refuseUnlessDraftEditor()
+method	RefusesOtherRuns::refuseUnlessCurrentTaskRun()
+method	RefusesStaleGatewayRuns::refuseStaleGatewayRun()
+method	RefusesUnusableSessions::refuseUnusableSession()
 method	RegisterAnsweringState::__construct()
 method	RegisterAnsweringState::handle()
 method	RegisterAssignables::__construct()
@@ -12250,7 +12239,6 @@ method	ResumeTaskRunHandler::handle()
 method	ResumeTaskRunTest::holderOf()
 method	ResumeTaskRunTest::launched()
 method	ResumeTaskRunTest::runAs()
-method	ResumeTaskRunTest::setUp()
 method	ResumeTaskRunTest::test_a_direct_holder_that_regained_the_task_resumes_afresh()
 method	ResumeTaskRunTest::test_a_new_occupant_resumes_the_run_and_the_former_one_is_refused()
 method	RetainedActorRequestKey::__construct()
@@ -12458,7 +12446,6 @@ method	RuleMissing::withId()
 method	RuleNotProposed::inState()
 method	RuleOrigin::__construct()
 method	RuleOrigin::reference()
-method	RulePageChangeTest::setUp()
 method	RulePageChangeTest::test_a_removed_rule_changes_the_page_too()
 method	RulePageChangeTest::test_an_approved_rule_tells_the_owner_once_on_their_private_channel()
 method	RulePageChangeTest::test_with_no_owner_nobody_is_told()
@@ -13123,7 +13110,6 @@ method	SettingsWriter::setToggle()
 method	SettingsWriter::setValue()
 method	SettingsWriter::unchanged()
 method	SettleAndRecoverTest::actAsAgent()
-method	SettleAndRecoverTest::actAsUser()
 method	SettleAndRecoverTest::bus()
 method	SettleAndRecoverTest::documents()
 method	SettleAndRecoverTest::endSession()
@@ -13399,9 +13385,9 @@ method	ShareGrants::requireLiveSlot()
 method	ShareInstallation::casts()
 method	ShareInstallation::hasLiveRun()
 method	ShareInstallation::holdFor()
+method	ShareInstallation::isCurrentRun()
 method	ShareInstallation::lockForAdmission()
 method	ShareInstallation::named()
-method	ShareInstallation::requireRun()
 method	ShareLinkData::__construct()
 method	ShareLinkRefused::malformed()
 method	ShareLinkRefused::refusalCode()
@@ -14540,9 +14526,9 @@ method	Task::file()
 method	Task::finish()
 method	Task::finishRun()
 method	Task::inListedOrder()
+method	Task::isCurrentRun()
+method	Task::isOpenForAssignment()
 method	Task::lockedById()
-method	Task::requireCurrentRun()
-method	Task::requireOpenForAssignment()
 method	Task::start()
 method	Task::startRun()
 method	Task::summary()
@@ -14611,7 +14597,6 @@ method	TaskDetailsResolver::details()
 method	TaskDetailsResolverTest::actAs()
 method	TaskDetailsResolverTest::asUser()
 method	TaskDetailsResolverTest::launch()
-method	TaskDetailsResolverTest::setUp()
 method	TaskDetailsResolverTest::test_a_page_of_20_cards_reads_its_runs_in_one_query()
 method	TaskDetailsResolverTest::test_a_task_held_by_a_desk_and_run_by_its_occupant_shows_both_separately()
 method	TaskDetailsResolverTest::test_a_task_nobody_may_read_answers_like_a_missing_one()
@@ -14640,7 +14625,6 @@ method	TaskPoolRefused::idsGiven()
 method	TaskPoolRefused::noIds()
 method	TaskPoolRefused::otherPool()
 method	TaskPoolRefused::targetGiven()
-method	TaskPoolsTest::setUp()
 method	TaskPoolsTest::test_a_named_pool_opens_to_its_tasks_in_the_listed_order()
 method	TaskPoolsTest::test_a_named_pool_refuses_a_list_that_does_not_fit()
 method	TaskPoolsTest::test_a_named_pool_whose_task_went_missing_does_not_open()
@@ -14677,10 +14661,10 @@ method	TaskRun::assignmentIdentity()
 method	TaskRun::casts()
 method	TaskRun::currentFor()
 method	TaskRun::finish()
+method	TaskRun::isFinished()
 method	TaskRun::lockedById()
 method	TaskRun::ofTask()
 method	TaskRun::replyInboxId()
-method	TaskRun::requireUnfinished()
 method	TaskRun::startFor()
 method	TaskRun::starter()
 method	TaskRunAssignments::finishedRecords()
@@ -14706,7 +14690,6 @@ method	TaskRunTaken::refusalCode()
 method	TaskRunTaken::status()
 method	TaskRunTest::holderOf()
 method	TaskRunTest::launched()
-method	TaskRunTest::setUp()
 method	TaskRunTest::test_a_note_or_reason_over_its_limit_is_refused_before_the_run_ends_and_8000_pass()
 method	TaskRunTest::test_an_actor_that_lost_its_desk_seat_cannot_finish_the_desk_run()
 method	TaskRunTest::test_starting_opens_a_claimed_run_and_finishing_ends_the_claim()
@@ -14797,7 +14780,6 @@ method	TextResolver::version()
 method	TextResolverTest::createDocument()
 method	TextResolverTest::record()
 method	TextResolverTest::resolver()
-method	TextResolverTest::setUp()
 method	TextResolverTest::test_a_line_longer_than_a_part_is_refused_by_name()
 method	TextResolverTest::test_a_long_read_is_cut_and_reads_on_from_its_next_line_at_the_same_version()
 method	TextResolverTest::test_a_report_has_only_version_one()
@@ -17751,12 +17733,6 @@ property	MessagePage::$messages
 property	MessagePage::$olderCursor
 property	MessagePinRecords::$actors
 property	MessagePinRecords::$pinnable
-property	MessagePinTest::$builder
-property	MessagePinTest::$desk
-property	MessagePinTest::$messageId
-property	MessagePinTest::$ownInboxId
-property	MessagePinTest::$owner
-property	MessagePinTest::$reviewer
 property	MessageRead::$firstRead
 property	MessageRead::$inboxId
 property	MessageRead::$messageId
@@ -17959,6 +17935,12 @@ property	OpenPlansCount::$records
 property	OpenedRuntime::$firstRequestId
 property	OpenedRuntime::$runtimeId
 property	OpenedRuntime::$sessionId
+property	OpensTeamDeskMessage::$builder
+property	OpensTeamDeskMessage::$desk
+property	OpensTeamDeskMessage::$messageId
+property	OpensTeamDeskMessage::$ownInboxId
+property	OpensTeamDeskMessage::$owner
+property	OpensTeamDeskMessage::$reviewer
 property	Operation::$accessTypes
 property	Operation::$arguments
 property	Operation::$command
@@ -18360,7 +18342,6 @@ property	PlanStep::$redirects
 property	PlanStep::$type
 property	PlanStep::$zero
 property	PlanTaskPool::$members
-property	PlanTaskPoolTest::$builder
 property	PlanWindowResolver::$records
 property	PlanWindowResolver::$request
 property	PlanWord::$pieces
@@ -18454,7 +18435,6 @@ property	PresenceWindow::$presenceSeconds
 property	PresenceWindow::$signedCallRefreshSeconds
 property	PresentUserCounter::$presences
 property	PresentUserCounter::$recipients
-property	PresentUserCounterTest::$owner
 property	ProbeChallenges::$cache
 property	ProblemData::$code
 property	ProblemData::$end
@@ -18963,12 +18943,6 @@ property	RecordCommentLocation::$type
 property	RecordCommentView::$comment
 property	RecordCommentView::$target
 property	RecordCommentView::$type
-property	RecordDockTest::$builder
-property	RecordDockTest::$desk
-property	RecordDockTest::$messageId
-property	RecordDockTest::$ownInboxId
-property	RecordDockTest::$owner
-property	RecordDockTest::$reviewer
 property	RecordEvidenceReads::$processRunId
 property	RecordEvidenceReads::$ranges
 property	RecordFiled::$id
@@ -19500,7 +19474,6 @@ property	ResumeKeyScriptCommand::$signature
 property	ResumeKeyScriptHandler::$recovery
 property	ResumeTaskRun::$runId
 property	ResumeTaskRunHandler::$claims
-property	ResumeTaskRunTest::$owner
 property	RetainedActorRequestKey::$answerDays
 property	RetainedEntries::$entries
 property	RetainedEntries::$offsets
@@ -19658,7 +19631,6 @@ property	RuleListData::$selected
 property	RuleListData::$selectionMissing
 property	RuleOrigin::$revision
 property	RuleOrigin::$rule
-property	RulePageChangeTest::$owner
 property	RulePaginationData::$lastPage
 property	RulePaginationData::$page
 property	RulePaginationData::$total
@@ -20803,7 +20775,6 @@ property	TaskDetails::$resultNote
 property	TaskDetails::$revision
 property	TaskDetails::$state
 property	TaskDetails::$title
-property	TaskDetailsResolverTest::$owner
 property	TaskEdited::$revision
 property	TaskEdited::$taskId
 property	TaskExecution::$actorId
@@ -20828,7 +20799,6 @@ property	TaskList::$page
 property	TaskList::$total
 property	TaskNamed::$taskId
 property	TaskPolicy::$claims
-property	TaskPoolsTest::$builder
 property	TaskProgress::$blocked
 property	TaskProgress::$cancelled
 property	TaskProgress::$done
@@ -20838,7 +20808,6 @@ property	TaskRecords::$actors
 property	TaskRunOwnershipTest::$first
 property	TaskRunOwnershipTest::$second
 property	TaskRunOwnershipTest::$task
-property	TaskRunTest::$owner
 property	TaskStarted::$actor
 property	TaskStarted::$taskId
 property	TaskSummary::$changedAt
@@ -21201,6 +21170,7 @@ trait	NamesExpectedAssignment
 trait	NamesPlanPhase
 trait	NamesPlanWorkRoot
 trait	NamesRecipient
+trait	OpensTeamDeskMessage
 trait	OptionalOrMissing
 trait	PasswordValidationRules
 trait	PlacedInConversation
@@ -21225,6 +21195,10 @@ trait	ReadsRouteNumber
 trait	ReadsRuleFilters
 trait	ReadsShareId
 trait	ReadsShareRoot
+trait	RefusesOtherDrafts
+trait	RefusesOtherRuns
+trait	RefusesStaleGatewayRuns
+trait	RefusesUnusableSessions
 trait	RendersRefusal
 trait	ReportsPlanWork
 trait	ReportsRecordCards

@@ -12,7 +12,6 @@ use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\ReceiptCaller;
 use App\Bus\Support\ReceiptRetention;
 use App\Communication\Enums\MessageState;
-use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Message;
 use App\Communication\Support\AcceptedOperation;
 use App\Communication\Support\InboxMembership;
@@ -69,7 +68,7 @@ final class InboxMessageSchemaTest extends TestCase
         $message->answerWith($reply, $this->author, CarbonImmutable::now());
 
         $this->assertSame([MessageState::Answered, 1], [$message->state, $message->state_version]);
-        $this->assertThrows(fn () => $message->requireStateVersion(0), MessageStateConflict::class);
+        $this->assertFalse($message->isAtStateVersion(0));
         $this->assertThrows(
             fn () => DB::table('messages')->whereKey($reply->id)->update(['read_at' => now()]),
             QueryException::class,

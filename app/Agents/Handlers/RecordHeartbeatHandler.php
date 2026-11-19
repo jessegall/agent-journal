@@ -7,6 +7,7 @@ namespace App\Agents\Handlers;
 use App\Actors\Contracts\ServerClock;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Models\AgentSession;
+use App\Agents\Support\Concerns\RefusesUnusableSessions;
 use App\Contracts\CommandHandler;
 
 /**
@@ -14,12 +15,14 @@ use App\Contracts\CommandHandler;
  */
 final readonly class RecordHeartbeatHandler implements CommandHandler
 {
+    use RefusesUnusableSessions;
+
     public function __construct(private ServerClock $clock) {}
 
     public function handle(RecordHeartbeat $command): void
     {
         $session = AgentSession::lockedForHeartbeat($command->sessionId);
-        $session->requireUsable();
+        $this->refuseUnusableSession($session);
 
         $session->recordHeartbeatAt($this->clock->now());
     }

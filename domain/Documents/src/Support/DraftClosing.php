@@ -13,6 +13,7 @@ use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
+use Domain\Documents\Support\Concerns\RefusesOtherDrafts;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -21,6 +22,8 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class DraftClosing
 {
+    use RefusesOtherDrafts;
+
     public function __construct(private RequestEditor $editors, private Dispatcher $events) {}
 
     /**
@@ -28,7 +31,7 @@ final readonly class DraftClosing
      */
     public function closeOwn(DraftTarget $target): CloseResult
     {
-        $requireEditor = fn (DocumentDraft $draft) => $draft->requireEditor($this->editors->editor());
+        $requireEditor = fn (DocumentDraft $draft) => $this->refuseUnlessDraftEditor($draft, $this->editors->editor());
 
         return $this->closeTarget($target, $requireEditor, CloseCause::Author, null, null);
     }
@@ -70,7 +73,7 @@ final readonly class DraftClosing
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->first()
             ?? throw DraftMissing::forDocument($document->number);
         $requireCloser($draft);
-        $draft->requireVersion($target->expectedVersion);
+        $this->refuseStaleDraftVersion($draft, $target->expectedVersion);
 
         return $this->closeLocked($document, $draft, $cause, $closer, $reason);
     }
