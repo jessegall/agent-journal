@@ -61,7 +61,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	hostCommands := map[string]func([]string) error{"enroll": enroll, "serve": serve, "attach": attach}
+	hostCommands := map[string]func([]string) error{
+		"enroll": enroll, "serve": serve, "attach": attach, "protection": protection,
+		"install": install, "installation": installation,
+	}
 	if len(os.Args) >= 2 && hostCommands[os.Args[1]] != nil {
 		if err := hostCommands[os.Args[1]](os.Args[2:]); err != nil {
 			fmt.Fprintln(os.Stderr, "journal-agent:", err)
@@ -71,7 +74,7 @@ func main() {
 	}
 
 	if len(os.Args) < 2 || os.Args[1] != "record" {
-		fmt.Fprintln(os.Stderr, "usage: journal-agent record --program <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | attach --agent <id> --folder <dir> [--program claude|codex] | attach --runtime <id>")
+		fmt.Fprintln(os.Stderr, "usage: journal-agent record --program <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | attach --agent <id> --folder <dir> [--program claude|codex] | attach --runtime <id> | protection --program claude|codex --build <version> | install --manifest <file> --into <dir> | installation --folder <dir>")
 		os.Exit(2)
 	}
 

@@ -244,6 +244,8 @@ final class ContainerManifestTest extends TestCase
     {
         return new PreparedStart(
             'start-1',
+            'runtime-1',
+            'session-1',
             TestSelections::of(),
             ExecutionModeType::RequiredContainer,
             'policy-1',

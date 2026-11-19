@@ -72,7 +72,11 @@ func serve(arguments []string) error {
 	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
 	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the programs call")
+	installationFolder := flags.String("installation", "", "the protected installation saved-account starts run from")
 	if err := flags.Parse(arguments); err != nil {
+		return err
+	}
+	if err := verifyInstallation(*installationFolder); err != nil {
 		return err
 	}
 	enrollment, err := (host.State{Folder: *stateFolder}).Load()

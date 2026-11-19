@@ -73,6 +73,17 @@ enum HookProgram: string
         };
     }
 
+    /**
+     * The name the protected host knows the program by, as its profiles and its start protocol write it.
+     */
+    public function hostName(): string
+    {
+        return match ($this) {
+            self::ClaudeCode => 'claude',
+            self::Codex => 'codex',
+        };
+    }
+
     public function hookCommand(): string
     {
         return "journal-hook {$this->value}";
