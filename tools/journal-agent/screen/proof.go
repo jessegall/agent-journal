@@ -35,7 +35,8 @@ func (proof Proof) SeenIn(rows []string) bool {
 	return slices.ContainsFunc(rows, proof.isInRow)
 }
 
-// AlreadyOn is whether the proof is on the screen when it is raised; such a proof proves nothing, and callers refuse it.
+// AlreadyOn is whether the proof is on the screen when it is raised; such a proof proves nothing, and callers refuse
+// it.
 func (proof Proof) AlreadyOn(rows []string) bool {
 	return proof.SeenIn(rows)
 }
