@@ -7598,3 +7598,23 @@ def test_with_no_docker_to_ask_a_clock_out_is_not_held(app: App, monkeypatch, tm
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
     committed(folder / "platform", "totals.php", "<?php\n")
     assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+
+
+def test_a_released_worker_with_unmerged_commits_loses_its_worktree_after_the_set_hours_and_keeps_its_last_commit(app: App, monkeypatch):
+    from journal.features.workers.jobs.worktree_cleanup import WorktreeCleanup
+    from journal.repositories.workers import Workers
+    from journal.support.worktree_refs import TIPS_REF
+    root = workspace_made(app, ("platform",))
+    worker, folder, _ = worktree_worker(app, monkeypatch, "platform totals")
+    tip = committed(folder / "platform", "totals.php", "<?php\n")
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        given_up = workers.find(worker.id)
+        workers.save(given_up.with_(state=WorkerState.RELEASED, moves=given_up.moves.added("released", timing.time())), Actor.system())
+    cleanup = app.container.get(WorktreeCleanup)
+    cleanup.tick(timing.time() + 3 * 3600)
+    assert folder.is_dir(), "a released worker keeps its worktree within the set hours"
+    cleanup.tick(timing.time() + 5 * 3600)
+    assert not folder.is_dir(), "past them its worktree goes, though its commit was never merged"
+    kept = git_run(root / "platform", "for-each-ref", "--format=%(objectname)", f"{TIPS_REF}/").stdout
+    assert tip[:7] in kept or git_run(root / "platform", "cat-file", "-e", f"{tip}^{{commit}}").returncode == 0, "its last commit stays"
