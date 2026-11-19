@@ -8,5 +8,7 @@ from core.modules.triggers.models.trigger import Trigger
 class PauseTrigger(Command[Trigger]):
     """Pauses a trigger without ending it, or lets it go on."""
 
+    lock = True
+
     trigger_id: int
     is_paused: bool = True

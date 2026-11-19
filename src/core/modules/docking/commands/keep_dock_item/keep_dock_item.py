@@ -8,4 +8,6 @@ from core.modules.docking.models.dock_item import DockItem
 class KeepDockItem(Command[DockItem]):
     """Keeps a docked item that would leave by itself once its row ends."""
 
+    lock = True
+
     item_id: int

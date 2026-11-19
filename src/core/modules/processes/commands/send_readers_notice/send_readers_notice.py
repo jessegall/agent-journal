@@ -7,3 +7,5 @@ from engine.command.command import Command
 class SendReadersNotice(Command[None]):
     """Tells a main agent how many readers lack required fields."""
 
+    lock = True
+

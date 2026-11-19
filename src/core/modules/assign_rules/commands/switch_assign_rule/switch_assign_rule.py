@@ -8,6 +8,8 @@ from core.modules.assign_rules.models.assign_rule import AssignRule
 class SwitchAssignRule(Command[AssignRule]):
     """Turns a rule on or off; a rule that is off is kept and skipped."""
 
+    lock = True
+
     rule_id: int
     enabled: bool
     revision: str = ""

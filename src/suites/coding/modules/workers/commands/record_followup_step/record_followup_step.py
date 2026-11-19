@@ -8,6 +8,8 @@ from suites.coding.modules.workers.models.merge_followup import MergeFollowup
 class RecordFollowupStep(Command[MergeFollowup]):
     """Saves the result of one step of a merge's required commands the moment it is known."""
 
+    lock = True
+
     followup_id: int
     index: int
     outcome: str

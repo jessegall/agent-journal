@@ -8,5 +8,7 @@ from core.modules.memories.models.memory import Memory
 class WeighMemories(Command[list[Memory]]):
     """Gives each memory its own weight, or one weight to all of them."""
 
+    lock = True
+
     memory_ids: tuple[int, ...]
     weights: tuple[int, ...]

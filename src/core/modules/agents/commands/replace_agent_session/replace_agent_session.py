@@ -10,6 +10,8 @@ class ReplaceAgentSession(Command[Agent]):
     """Gives a stopped agent a new program session, and a new program and model when named, so its next launch
     starts over under the same journal agent. The reason is written on the session it replaces."""
 
+    lock = True
+
     row_id: int
     reason: EndReason
     program: str = ""

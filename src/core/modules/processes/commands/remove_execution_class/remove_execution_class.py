@@ -7,5 +7,7 @@ from engine.command.command import Command
 class RemoveExecutionClass(Command[str]):
     """Removes a class the person added, or with is_reset brings a changed built-in class back to its default."""
 
+    lock = True
+
     name: str
     is_reset: bool

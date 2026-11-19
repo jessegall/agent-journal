@@ -8,4 +8,6 @@ from core.modules.library.models.library_copy import LibraryCopy
 class LeaveLibraryCopy(Command[LibraryCopy]):
     """Stops a local row from following its item: the copy goes, and the row and the item stay as they are."""
 
+    lock = True
+
     copy_id: int

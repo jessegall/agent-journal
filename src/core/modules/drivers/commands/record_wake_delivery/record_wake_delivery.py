@@ -8,4 +8,6 @@ from core.modules.drivers.models.agent_wake import AgentWake
 class RecordWakeDelivery(Command[AgentWake]):
     """Records that the wake's transport sent it, after the claim's write (doc 1310 section 6.4)."""
 
+    lock = True
+
     wake_id: int

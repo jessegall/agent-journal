@@ -8,5 +8,7 @@ from core.modules.dumps.models.dump import Dump
 class NameDump(Command[Dump]):
     """Gives a dump the title the agent read from its notes."""
 
+    lock = True
+
     dump_id: int
     title: str

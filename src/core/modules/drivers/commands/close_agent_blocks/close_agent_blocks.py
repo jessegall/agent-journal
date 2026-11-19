@@ -7,4 +7,6 @@ from engine.command.command import Command
 class CloseAgentBlocks(Command[None]):
     """Ends the blocks of one hook whose conditions have become true, reading them together."""
 
+    lock = True
+
     agent_block_ids: tuple[int, ...]

@@ -8,4 +8,6 @@ from core.modules.agents.models.agent import Agent
 class PauseAgent(Command[Agent]):
     """Holds a running agent: it finishes its step, and only journal lines run until a user resumes it."""
 
+    lock = True
+
     agent_id: int

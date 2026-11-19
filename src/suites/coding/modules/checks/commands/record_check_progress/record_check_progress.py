@@ -8,5 +8,7 @@ from suites.coding.modules.checks.models.check import Check
 class RecordCheckProgress(Command[Check]):
     """Records how far a check's running command has come, 0 to 100, or that none runs."""
 
+    lock = True
+
     check_id: int
     percent: int | None

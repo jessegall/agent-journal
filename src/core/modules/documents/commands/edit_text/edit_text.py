@@ -9,6 +9,8 @@ from core.modules.documents.support.text_change import TextChange
 class EditText(Command[TextRow]):
     """Changes a document's or report's text, in whole or in part, and its abstract when one is given."""
 
+    lock = True
+
     text_model: type[TextRow]
     row_id: int
     abstract: str | None

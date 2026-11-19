@@ -7,4 +7,6 @@ from engine.command.command import Command
 class RefreshHourlyLimits(Command[None]):
     """Starts the new clock hour of each hourly budget of a program from what its window holds now."""
 
+    lock = True
+
     program: str

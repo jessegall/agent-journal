@@ -8,4 +8,6 @@ from core.modules.mcp.models.mcp_server import McpServer
 class RemoveServer(Command[McpServer]):
     """Takes an installed server out of the project, its configs and its key."""
 
+    lock = True
+
     name: str

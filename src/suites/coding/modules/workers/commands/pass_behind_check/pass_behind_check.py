@@ -7,5 +7,7 @@ from engine.command.command import Command
 class PassBehindCheck(Command[None]):
     """The merger hands the decision about a worker behind its base to the main agent, with the reason."""
 
+    lock = True
+
     worker_id: int
     reason: str

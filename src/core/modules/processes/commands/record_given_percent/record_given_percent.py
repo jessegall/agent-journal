@@ -8,5 +8,7 @@ from core.modules.processes.models.watch import Watch
 class RecordGivenPercent(Command[Watch]):
     """Notes the percent of the run the watch last told the agent of."""
 
+    lock = True
+
     watch_id: int
     given_percent: int

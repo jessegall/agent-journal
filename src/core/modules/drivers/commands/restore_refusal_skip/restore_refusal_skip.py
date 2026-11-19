@@ -8,4 +8,6 @@ from core.modules.drivers.models.driver_grant import DriverGrant
 class RestoreRefusalSkip(Command[DriverGrant]):
     """Gives an agent its skip back after it lost it."""
 
+    lock = True
+
     agent_id: int

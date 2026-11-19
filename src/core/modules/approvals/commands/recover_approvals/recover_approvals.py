@@ -5,4 +5,6 @@ from engine.command.command import Command
 
 @dataclass(frozen=True)
 class RecoverApprovals(Command[int]):
+    lock = True
+
     pass

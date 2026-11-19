@@ -8,4 +8,6 @@ from core.modules.secrets.models.secret import Secret
 class DeleteSecret(Command[Secret]):
     """Erases a secret for good: its row and every value of its fields, with nothing kept to restore."""
 
+    lock = True
+
     secret_id: int

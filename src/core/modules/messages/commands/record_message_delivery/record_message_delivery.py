@@ -8,4 +8,6 @@ from core.modules.messages.models.message import Message
 class RecordMessageDelivery(Command[list[Message]]):
     """Keeps that the agent was told the messages arrived, at the command's timestamp, in one write."""
 
+    lock = True
+
     messages: tuple[Message, ...]

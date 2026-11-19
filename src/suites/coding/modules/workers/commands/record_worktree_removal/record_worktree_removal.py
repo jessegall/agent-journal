@@ -8,4 +8,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 class RecordWorktreeRemoval(Command[Worktree]):
     """Saves that a merged or abandoned worktree's folder is gone."""
 
+    lock = True
+
     worktree_id: int

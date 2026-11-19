@@ -8,5 +8,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 class RecordWorktreeLibraries(Command[Worktree]):
     """Notes that a worktree's copied library folders were removed, or that they are back."""
 
+    lock = True
+
     worktree_id: int
     dropped: bool

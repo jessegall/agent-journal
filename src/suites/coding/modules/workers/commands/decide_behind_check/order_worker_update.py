@@ -7,5 +7,7 @@ from engine.command.command import Command
 class OrderWorkerUpdate(Command[None]):
     """The merger or the main agent orders a worker behind its base to update its worktree, saying what overlaps."""
 
+    lock = True
+
     worker_id: int
     reason: str

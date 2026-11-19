@@ -8,4 +8,6 @@ from core.modules.drivers.models.driver_grant import DriverGrant
 class AllowPermission(Command[DriverGrant]):
     """Lets the asking agent do the one thing of its request, once."""
 
+    lock = True
+
     request_id: int

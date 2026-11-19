@@ -8,4 +8,6 @@ from core.modules.library.models.library_copy import LibraryCopy
 class DeleteLibraryCopy(Command[LibraryCopy]):
     """Deletes a copy whose row left this journal. It never reaches the server."""
 
+    lock = True
+
     copy_id: int

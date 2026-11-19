@@ -9,4 +9,6 @@ ENDED_WITH_WORKTREE_NOTE = "ended: worktree {worktree} was abandoned or removed 
 class EndWorktreeProofs(Command[None]):
     """Ends the queued and running proof tests of a worktree that was abandoned or removed."""
 
+    lock = True
+
     worktree_id: int

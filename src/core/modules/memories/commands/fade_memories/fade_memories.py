@@ -7,4 +7,6 @@ from engine.command.command import Command
 class FadeMemories(Command[None]):
     """Lowers by one the weight of each fading memory in one agent's own scope."""
 
+    lock = True
+
     agent_id: int

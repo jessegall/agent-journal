@@ -8,4 +8,6 @@ from core.modules.triggers.models.trigger import Trigger
 class EnableTrigger(Command[Trigger]):
     """Lets a trigger an agent made start to act."""
 
+    lock = True
+
     trigger_id: int

@@ -9,5 +9,7 @@ class ReportReturnedTasks(Command[None]):
     """Tells a worker which tests of a checkpoint failed for the tasks it got back, and moves the proofs of
     those tasks to the worktree it now works in."""
 
+    lock = True
+
     phase_id: int
     returned: ReturnedTasks

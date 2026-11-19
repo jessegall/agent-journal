@@ -8,4 +8,6 @@ from core.modules.chat.models.journal_exception import JournalException
 class SolveJournalException(Command[JournalException]):
     """Marks a recorded exception solved: it leaves the list of errors."""
 
+    lock = True
+
     row_id: int

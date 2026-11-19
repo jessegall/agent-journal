@@ -9,5 +9,7 @@ from core.modules.processes.models.process import Process
 class SetOutputTimeout(Command[Process]):
     """Sets a run's duration limit from its start."""
 
+    lock = True
+
     process_id: int
     duration: Duration

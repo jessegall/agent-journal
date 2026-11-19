@@ -8,4 +8,6 @@ from core.modules.docking.models.dock_item import DockItem
 class RemoveDockItem(Command[DockItem]):
     """Takes a docked item out of the dock; the row it points at stays as it is."""
 
+    lock = True
+
     item_id: int

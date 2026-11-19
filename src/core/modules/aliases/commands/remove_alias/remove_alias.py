@@ -7,4 +7,6 @@ from engine.command.command import Command
 class RemoveAlias(Command[str]):
     """Removes an alias by its name."""
 
+    lock = True
+
     name: str

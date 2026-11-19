@@ -8,6 +8,8 @@ from core.modules.documents.models.text_row import TextRow
 class CloseText(Command[TextRow]):
     """Closes a document or report with the reason it needs no action."""
 
+    lock = True
+
     text_model: type[TextRow]
     row_id: int
     reason: str

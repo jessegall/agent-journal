@@ -6,4 +6,6 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 
 @dataclass(frozen=True)
 class RelayApproval(Command[ApprovalRequest]):
+    lock = True
+
     request_id: int

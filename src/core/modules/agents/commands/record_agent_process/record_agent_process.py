@@ -9,5 +9,7 @@ class RecordAgentProcess(Command[Agent]):
     """Keeps the process the launcher started an agent's program in; none says the launcher named none, so an older
     process is not taken for this one."""
 
+    lock = True
+
     agent_id: int
     pid: int | None

@@ -6,5 +6,7 @@ from engine.command.command import Command
 class RemoveTaskDependency(Command[None]):
     """Removes the dependency of one task on another."""
 
+    lock = True
+
     task_id: int
     dependency_id: int

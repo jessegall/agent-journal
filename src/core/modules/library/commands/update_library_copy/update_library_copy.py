@@ -10,6 +10,8 @@ class UpdateLibraryCopy(Command[LibraryCopy]):
     """Writes what a round found about a copy: its state, and each stored value that is given. A value that is not
     given stays as it is."""
 
+    lock = True
+
     copy_id: int
     state: CopyState
     note: str | None = None

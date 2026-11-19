@@ -7,4 +7,6 @@ from core.modules.messages.models.message import Message
 class ReadMessage(Command[Message]):
     """Marks a message read at the command's timestamp."""
 
+    lock = True
+
     message_id: int

@@ -8,6 +8,8 @@ from core.modules.messages.models.message import Message
 class TagMessage(Command[Message]):
     """Says what a file attached to a message shows, so it can be found later."""
 
+    lock = True
+
     message_id: int
     file: str
     text: str

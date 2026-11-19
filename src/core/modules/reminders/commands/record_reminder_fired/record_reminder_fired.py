@@ -8,4 +8,6 @@ from core.modules.reminders.models.reminder import Reminder
 class RecordReminderFired(Command[Reminder]):
     """A reminder reached its agent."""
 
+    lock = True
+
     reminder_id: int

@@ -8,4 +8,6 @@ from core.modules.pins.models.pin import Pin
 class ClosePin(Command[Pin]):
     """Takes a pin off the chat."""
 
+    lock = True
+
     pin_id: int

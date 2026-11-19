@@ -8,6 +8,8 @@ from core.modules.secrets.commands.support.secret_program import SecretProgram
 class AllowProgram(Command[SecretProgram]):
     """The user lets a secret go to a program, or lets the main agent's helpers use it."""
 
+    lock = True
+
     secret_id: int
     program: str
     helpers: bool

@@ -8,4 +8,6 @@ from core.modules.viewer.models.person_preset import PersonPreset
 class RemovePersonPreset(Command[PersonPreset]):
     """Deletes one of the caller's presets of your own."""
 
+    lock = True
+
     row_id: int

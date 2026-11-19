@@ -8,4 +8,6 @@ from core.modules.messages.models.message import Message
 class NoteMessageRead(Command[Message]):
     """Marks a delivered message read without selecting it as a request."""
 
+    lock = True
+
     message_id: int

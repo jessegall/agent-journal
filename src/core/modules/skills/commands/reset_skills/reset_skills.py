@@ -8,4 +8,6 @@ from core.modules.skills.models.agent_skill import AgentSkill
 class ResetSkills(Command[AgentSkill | None]):
     """Takes away the loaded skills of an agent: a compacted window no longer holds what it read."""
 
+    lock = True
+
     agent_id: int

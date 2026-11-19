@@ -8,4 +8,6 @@ from core.modules.asks.models.ask_stack import AskStack
 class ApproveAskStack(Command[AskStack]):
     """Puts a question stack an agent set into force, in place of the one its topic had."""
 
+    lock = True
+
     stack_id: int

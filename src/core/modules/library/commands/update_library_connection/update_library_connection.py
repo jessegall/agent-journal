@@ -10,6 +10,8 @@ class UpdateLibraryConnection(Command[LibraryConnection]):
     """Writes what a round found about the connection: the role the server gives, the last failure, why sync stopped,
     and, when the server answered, the time it was reached. A failure or a stop that is not given is cleared."""
 
+    lock = True
+
     role: LibraryRole
     failure: str = ""
     stopped: str = ""

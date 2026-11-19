@@ -9,5 +9,7 @@ from core.modules.docking.models.dock_item import DockItem
 class ScheduleDockItemLeave(Command[DockItem]):
     """Sets when an item leaves the dock by itself."""
 
+    lock = True
+
     item_id: int
     leaves_at: Timestamp

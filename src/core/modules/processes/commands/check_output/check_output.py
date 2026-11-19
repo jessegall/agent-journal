@@ -9,4 +9,6 @@ class CheckOutput(Command[Watch]):
     """Wakes the agent watching a run, when its next wake is due and the run still goes, to confirm the run
     does its work."""
 
+    lock = True
+
     watch_id: int

@@ -9,4 +9,6 @@ class HaltAgent(Command[Agent]):
     """Records that a hook of the agent was stopped at its program's usage limit; an agent already halted is left
     as it is."""
 
+    lock = True
+
     agent_id: int
