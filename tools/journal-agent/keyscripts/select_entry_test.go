@@ -30,13 +30,9 @@ func codexPicker(t *testing.T) (*Runner, *bytes.Buffer) {
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	options := screen.OptionList{Markers: []string{"› "}}
-	highlight := func() string {
-		text, _ := options.Highlighted(reader.Snapshot())
+	menu := func() (screen.MenuEntries, bool) { return options.Entries(reader.Snapshot()) }
 
-		return text
-	}
-
-	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, highlight, func(Progress) {}), program
+	return NewRunner(gate, screen.NewClassifier(layout, reader), clock, menu, func(Progress) {}), program
 }
 
 func selectModel(budget int) KeyScript {

@@ -59,8 +59,8 @@ func newRun(t *testing.T) *run {
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	result := &run{gate: gate, program: program, clock: clock}
-	highlight := func() string { return "" }
-	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, highlight, func(step Progress) {
+	menu := func() (screen.MenuEntries, bool) { return screen.MenuEntries{}, false }
+	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, menu, func(step Progress) {
 		result.steps = append(result.steps, step)
 	})
 

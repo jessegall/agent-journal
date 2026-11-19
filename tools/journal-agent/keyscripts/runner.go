@@ -3,7 +3,7 @@ package keyscripts
 import (
 	"errors"
 	"fmt"
-	"strings"
+	"slices"
 	"time"
 
 	"journal-agent/screen"
@@ -59,22 +59,22 @@ const pollInterval = 50 * time.Millisecond
 
 // Runner runs key scripts one step at a time through the input gate, reporting each confirmed step.
 type Runner struct {
-	gate      *terminal.InputGate
-	screen    Screen
-	clock     Clock
-	highlight func() string
-	report    func(Progress)
+	gate   *terminal.InputGate
+	screen Screen
+	clock  Clock
+	menu   func() (screen.MenuEntries, bool)
+	report func(Progress)
 }
 
-// NewRunner runs scripts through the gate; highlight reads the highlighted entry of the menu on screen.
+// NewRunner runs scripts through the gate; menu reads the entries of the menu on screen and its highlighted one.
 func NewRunner(
 	gate *terminal.InputGate,
 	screen Screen,
 	clock Clock,
-	highlight func() string,
+	menu func() (screen.MenuEntries, bool),
 	report func(Progress),
 ) *Runner {
-	return &Runner{gate: gate, screen: screen, clock: clock, highlight: highlight, report: report}
+	return &Runner{gate: gate, screen: screen, clock: clock, menu: menu, report: report}
 }
 
 // Run starts the script from its first step with the given parameter values.
@@ -137,49 +137,63 @@ func (runner *Runner) waitFor(expect Expectation, deadline time.Duration) (scree
 	}
 }
 
-// selectEntry moves the highlight down one key at a time, each only after the highlight changed, until the
-// highlighted entry holds the wanted label. A highlight that does not move, comes back to an entry it showed before
-// or runs out of moves means the entry is unavailable; no other entry is ever taken in its place.
+// selectEntry finds the entry named by its parameter among the menu's entries on screen and moves the highlight
+// straight to it, up or down, one key at a time, each only after the highlight reached the next entry. It never
+// counts keys in advance of the screen: an entry that is not on screen, or named twice, is unavailable and no key
+// is sent; a list that changes under the moves, or a highlight that does not follow, stops it. It ends only with
+// the wanted entry highlighted.
 func (runner *Runner) selectEntry(step KeyStep, values map[string]string) (bool, error) {
 	label, given := values[step.Parameter]
 	if !given {
 		return false, fmt.Errorf("the step %q needs the parameter %q", step.Name, step.Parameter)
 	}
-	visited := map[string]bool{}
-
-	for move := 0; move <= step.MoveBudget; move++ {
-		current := runner.highlight()
-		if strings.Contains(current, label) {
-			return true, nil
-		}
-		if visited[current] || move == step.MoveBudget {
-			return false, nil
-		}
-		visited[current] = true
-
-		if err := runner.gate.Keys(arrowDown); err != nil {
-			return false, err
-		}
-		if !runner.highlightMoves(current, step.Deadline) {
-			return false, nil
-		}
+	entries, drawn := runner.menu()
+	if !drawn {
+		return false, nil
+	}
+	target := entries.IndexOf(label)
+	if target < 0 {
+		return false, nil
 	}
 
-	return false, nil
+	for move := 0; entries.Highlighted != target; move++ {
+		if move == step.MoveBudget {
+			return false, nil
+		}
+		next, key := entries.Highlighted+1, arrowDown
+		if target < entries.Highlighted {
+			next, key = entries.Highlighted-1, arrowUp
+		}
+		if err := runner.gate.Keys(key); err != nil {
+			return false, err
+		}
+		moved, followed := runner.highlightReaches(entries, next, step.Deadline)
+		if !followed {
+			return false, nil
+		}
+		entries = moved
+	}
+
+	return entries.HighlightedIs(label), nil
 }
 
-// highlightMoves waits until the highlighted entry is another than before, within the deadline.
-func (runner *Runner) highlightMoves(before string, deadline time.Duration) bool {
+// highlightReaches waits, within the deadline, until the same list of entries shows its highlight on the next one.
+func (runner *Runner) highlightReaches(
+	before screen.MenuEntries,
+	next int,
+	deadline time.Duration,
+) (screen.MenuEntries, bool) {
 	until := runner.clock.Now().Add(deadline)
 
 	for runner.clock.Now().Before(until) {
 		runner.clock.Sleep(pollInterval)
-		if runner.highlight() != before {
-			return true
+		entries, drawn := runner.menu()
+		if drawn && entries.Highlighted == next && slices.Equal(entries.Labels, before.Labels) {
+			return entries, true
 		}
 	}
 
-	return false
+	return screen.MenuEntries{}, false
 }
 
 func (runner *Runner) act(step KeyStep, values map[string]string) error {

@@ -22,8 +22,8 @@ const (
 	WaitForScreen Action = "wait-for-screen"
 	// WaitForHuman stops the script for the person to act, with the step named.
 	WaitForHuman Action = "wait-for-human"
-	// SelectEntry moves a menu's highlight down, one confirmed move at a time, until the highlighted entry is
-	// exactly the wanted one; never a neighbour.
+	// SelectEntry finds the wanted entry by its name on screen and moves the menu's highlight straight to it, one
+	// confirmed move at a time, ending only with exactly that entry highlighted; never a neighbour.
 	SelectEntry Action = "select-entry"
 )
 
@@ -71,6 +71,9 @@ type KeyScript struct {
 
 // arrowDown moves a menu's highlight one entry down.
 const arrowDown = "\x1b[B"
+
+// arrowUp moves a menu's highlight one entry up.
+const arrowUp = "\x1b[A"
 
 // MoveAndChoose is the steps that move a menu's highlight down by moves entries and choose it, one confirmed movement
 // at a time: each move waits for the menu again, so a menu that changed stops the script before the next key.
