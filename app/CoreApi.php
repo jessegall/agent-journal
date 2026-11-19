@@ -29,6 +29,7 @@ use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\ProvidesPolicies;
 use App\Actors\Contracts\ReceivesMessages;
+use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Contracts\SendsMessages;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
@@ -315,6 +316,7 @@ use App\Assignments\Support\PoolDescription;
 use App\Assignments\Support\PoolMembers;
 use App\Assignments\Support\PoolReference;
 use App\Assignments\Support\RecordIds;
+use App\Autoload\Support\FolderClasses;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
@@ -335,9 +337,9 @@ use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
-use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandHandlerTwice;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandListedTwice;
 use App\Bus\Exceptions\CommandNestingTooDeep;
 use App\Bus\Exceptions\CommandNotRegistered;
@@ -446,7 +448,6 @@ use App\Desks\Commands\RestoreActorDesk;
 use App\Desks\Commands\SeatActor;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Contracts\Desk;
-use App\Desks\Contracts\ReplyInboxes;
 use App\Desks\Contracts\RunClaims;
 use App\Desks\Exceptions\DeskSeatCountInvalid;
 use App\Desks\Exceptions\DeskUnavailable;
@@ -1934,6 +1935,7 @@ final class CoreApi
                 NamesRecipient::class,
                 NamesExpectedAssignment::class,
                 BaseCommand::class,
+                FolderClasses::class,
             )
             ->build();
     }

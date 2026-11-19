@@ -6,13 +6,14 @@ namespace App\Sharing\Support;
 
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Support\RecordIdentity;
+use App\Registries\Support\Registry;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Exceptions\ShareRecordInvalid;
 use App\Sharing\Exceptions\ShareRelationInvalid;
 use App\Sharing\Exceptions\UnknownShareRecordType;
 use App\Sharing\Exceptions\UnknownShareRelation;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 
 /**
  * Every shareable record type by its alias: its model, provider, advertised capabilities and the relations its model
@@ -21,16 +22,20 @@ use Illuminate\Contracts\Container\Container;
 final class ShareRecordRegistry
 {
     /**
-     * @var array<string, ShareRecordRegistration>
+     * @var Registry<ShareRecordRegistration>
      */
-    private array $registrations = [];
+    private readonly Registry $registrations;
 
     /**
-     * @var array<string, ShareRelationSet>
+     * @var Registry<ShareRelationSet>
      */
-    private array $relationSets = [];
+    private readonly Registry $relationSets;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct()
+    {
+        $this->registrations = Registry::once(UnknownShareRecordType::forAlias(...), ShareRecordInvalid::repeated(...));
+        $this->relationSets = Registry::replacing(UnknownShareRecordType::forAlias(...));
+    }
 
     /**
      * @throws InvalidRecordIdentity
@@ -41,10 +46,6 @@ final class ShareRecordRegistry
         $alias = $registration->alias;
         RecordIdentity::checkType($alias);
 
-        if (array_key_exists($alias, $this->registrations)) {
-            throw ShareRecordInvalid::repeated($alias);
-        }
-
         if (! is_subclass_of($registration->modelClass, Shareable::class)) {
             throw ShareRecordInvalid::notShareable($alias, $registration->modelClass);
         }
@@ -53,7 +54,7 @@ final class ShareRecordRegistry
             throw ShareRecordInvalid::notAProvider($alias, $registration->providerClass);
         }
 
-        $this->registrations[$alias] = $registration;
+        $this->registrations->put($alias, $registration);
     }
 
     /**
@@ -64,9 +65,12 @@ final class ShareRecordRegistry
      */
     public function checkRelations(): void
     {
-        $capabilities = array_merge(...array_map(fn (ShareRecordRegistration $registration) => $registration->capabilities, array_values($this->registrations)));
+        $capabilities = array_merge(...array_map(
+            fn (ShareRecordRegistration $registration) => $registration->capabilities,
+            array_values($this->registrations->all()),
+        ));
 
-        foreach ($this->registrations as $alias => $registration) {
+        foreach ($this->registrations->all() as $alias => $registration) {
             $relations = $registration->modelClass::shareRelations();
             $names = [];
 
@@ -82,13 +86,13 @@ final class ShareRecordRegistry
                 $names[] = $relation->name;
             }
 
-            $this->relationSets[$alias] = $relations;
+            $this->relationSets->put($alias, $relations);
         }
     }
 
     public function has(string $alias): bool
     {
-        return array_key_exists($alias, $this->registrations);
+        return $this->registrations->has($alias);
     }
 
     /**
@@ -104,7 +108,7 @@ final class ShareRecordRegistry
      */
     public function get(string $alias): ShareRecordRegistration
     {
-        return $this->registrations[$alias] ?? throw UnknownShareRecordType::forAlias($alias);
+        return $this->registrations->get($alias);
     }
 
     /**
@@ -112,7 +116,7 @@ final class ShareRecordRegistry
      */
     public function provider(string $alias): ShareRecordProvider
     {
-        return $this->container->make($this->get($alias)->providerClass);
+        return Container::getInstance()->make($this->get($alias)->providerClass);
     }
 
     /**
@@ -122,7 +126,7 @@ final class ShareRecordRegistry
      */
     public function relations(string $alias): ShareRelationSet
     {
-        return $this->relationSets[$alias] ?? throw UnknownShareRecordType::forAlias($alias);
+        return $this->relationSets->get($alias);
     }
 
     /**

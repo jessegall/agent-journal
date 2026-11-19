@@ -9,6 +9,7 @@ use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
@@ -19,6 +20,7 @@ use App\Domains\Contracts\ProvidesInternalAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
+use App\Autoload\Support\FolderClasses;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Numbers\Contracts\ProvidesNumberedModels;
@@ -40,13 +42,6 @@ use Domain\Tasks\Assignments\ActiveTaskAssignments;
 use Domain\Tasks\Assignments\NamedTaskPoolFactory;
 use Domain\Tasks\Assignments\OpenTaskPoolFactory;
 use Domain\Tasks\Assignments\TaskAssigner;
-use Domain\Tasks\Commands\BlockTask;
-use Domain\Tasks\Commands\CancelTask;
-use Domain\Tasks\Commands\CreateTask;
-use Domain\Tasks\Commands\EditTask;
-use Domain\Tasks\Commands\FinishTask;
-use Domain\Tasks\Commands\ResumeTaskRun;
-use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Contracts\TaskAssignmentResolver;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
@@ -85,15 +80,7 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesA
      */
     public function commands(): array
     {
-        return [
-            BlockTask::class,
-            CancelTask::class,
-            CreateTask::class,
-            EditTask::class,
-            FinishTask::class,
-            StartTask::class,
-            ResumeTaskRun::class,
-        ];
+        return FolderClasses::in(__DIR__.'/Commands', Command::class);
     }
 
     /**

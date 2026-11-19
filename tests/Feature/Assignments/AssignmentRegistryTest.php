@@ -34,7 +34,7 @@ final class AssignmentRegistryTest extends TestCase
     {
         parent::setUp();
 
-        $this->registry = new AssignmentRegistry($this->app);
+        $this->registry = new AssignmentRegistry();
         $this->registry->registerOwner('Tests', []);
     }
 

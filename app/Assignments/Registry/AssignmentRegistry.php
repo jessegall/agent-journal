@@ -27,7 +27,8 @@ use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Links\Support\LinkTypeRegistry;
 use App\Records\Support\RecordIdentity;
-use Illuminate\Contracts\Container\Container;
+use App\Registries\Support\Registry;
+use Illuminate\Container\Container;
 
 /**
  * Which provider answers for each assignable record type and each type of actor that can hold records, and the
@@ -39,62 +40,87 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     /**
      * The domains each registered owner requires, by owner name.
      *
-     * @var array<string, list<string>>
+     * @var Registry<list<string>>
      */
-    private array $owners = [];
+    private readonly Registry $owners;
 
     /**
-     * @var array<string, class-string<AssignableProvider>>
+     * @var Registry<class-string<AssignableProvider>>
      */
-    private array $recordProviders = [];
+    private readonly Registry $recordProviders;
 
     /**
-     * @var array<string, string>
+     * @var Registry<string>
      */
-    private array $recordOwners = [];
+    private readonly Registry $recordOwners;
 
     /**
-     * @var array<string, AssignmentPurpose>
+     * @var Registry<AssignmentPurpose>
      */
-    private array $recordPurposes = [];
+    private readonly Registry $recordPurposes;
 
     /**
-     * @var array<string, AutoAssignerDefinition>
+     * @var Registry<AutoAssignerDefinition>
      */
-    private array $autoAssigners = [];
+    private readonly Registry $autoAssigners;
 
     /**
-     * @var array<string, PoolDefinition>
+     * @var Registry<PoolDefinition>
      */
-    private array $pools = [];
+    private readonly Registry $pools;
 
     /**
-     * @var array<string, string>
+     * @var Registry<string>
      */
-    private array $poolOwners = [];
+    private readonly Registry $poolOwners;
 
     /**
-     * @var array<string, class-string<AssigneeProvider>>
+     * @var Registry<class-string<AssigneeProvider>>
      */
-    private array $assigneeProviders = [];
+    private readonly Registry $assigneeProviders;
 
     /**
-     * @var array<string, class-string<AutoAssignmentActivity>>
+     * @var Registry<class-string<AutoAssignmentActivity>>
      */
-    private array $activities = [];
+    private readonly Registry $activities;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct()
+    {
+        $this->owners = Registry::once(
+            AutoAssignmentDeclarationRefused::ownerUnknown(...),
+            AutoAssignmentDeclarationRefused::ownerRepeated(...),
+        );
+        $this->recordProviders = Registry::once(
+            AssignmentTypeUnavailable::forType(...),
+            AssignmentTypeRepeated::for(...),
+        );
+        $this->recordOwners = Registry::replacing(AssignmentTypeUnavailable::forType(...));
+        $this->recordPurposes = Registry::replacing(AssignmentTypeUnavailable::forType(...));
+        $this->autoAssigners = Registry::once(
+            AssignmentTypeUnavailable::forAutoAssignment(...),
+            AutoAssignmentDeclarationRefused::assignerRepeated(...),
+        );
+        $this->pools = Registry::once(
+            AssignmentTypeUnavailable::forPool(...),
+            AutoAssignmentDeclarationRefused::poolRepeated(...),
+        );
+        $this->poolOwners = Registry::replacing(AssignmentTypeUnavailable::forPool(...));
+        $this->assigneeProviders = Registry::once(
+            AssignmentTypeUnavailable::forType(...),
+            AssigneeTypeRepeated::for(...),
+        );
+        $this->activities = Registry::once(
+            fn (string $type) => AssignmentTypeUnavailable::forActorType(ActorType::from($type)),
+            AssigneeTypeRepeated::for(...),
+        );
+    }
 
     /**
      * @throws AutoAssignmentDeclarationRefused
      */
     public function registerOwner(string $owner, array $requires): void
     {
-        if (array_key_exists($owner, $this->owners)) {
-            throw AutoAssignmentDeclarationRefused::ownerRepeated($owner);
-        }
-
-        $this->owners[$owner] = $requires;
+        $this->owners->put($owner, $requires);
     }
 
     /**
@@ -111,17 +137,13 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         RecordIdentity::checkType($type);
         $this->requireOwner($owner);
 
-        if (array_key_exists($type, $this->recordProviders)) {
-            throw AssignmentTypeRepeated::for($type);
-        }
-
         if (! is_subclass_of($providerClass, AssignableProvider::class)) {
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
-        $this->recordProviders[$type] = $providerClass;
-        $this->recordOwners[$type] = $owner;
-        $this->recordPurposes[$type] = $purpose;
+        $this->recordProviders->put($type, $providerClass);
+        $this->recordOwners->put($type, $owner);
+        $this->recordPurposes->put($type, $purpose);
     }
 
     /**
@@ -137,16 +159,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         $assignerClass = $definition->assignerClass;
         $workProviderClass = $definition->workProviderClass;
 
-        if (array_key_exists($type, $this->autoAssigners)) {
-            throw AutoAssignmentDeclarationRefused::assignerRepeated($type);
-        }
+        $recordOwner = $this->recordOwners->find($type)
+            ->getOrThrow(AutoAssignmentDeclarationRefused::typeNotAssignable($type, $owner));
 
-        if (! array_key_exists($type, $this->recordOwners)) {
-            throw AutoAssignmentDeclarationRefused::typeNotAssignable($type, $owner);
-        }
-
-        if ($this->recordOwners[$type] !== $owner) {
-            throw AutoAssignmentDeclarationRefused::assignerOfAnotherOwner($type, $owner, $this->recordOwners[$type]);
+        if ($recordOwner !== $owner) {
+            throw AutoAssignmentDeclarationRefused::assignerOfAnotherOwner($type, $owner, $recordOwner);
         }
 
         if (! is_subclass_of($assignerClass, AutoAssigner::class)) {
@@ -157,7 +174,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             throw AssignmentProviderInvalid::forAssignedWork($type, $workProviderClass);
         }
 
-        $this->autoAssigners[$type] = new AutoAssignerDefinition($type, $assignerClass, $workProviderClass);
+        $this->autoAssigners->put($type, new AutoAssignerDefinition($type, $assignerClass, $workProviderClass));
     }
 
     /**
@@ -171,16 +188,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $this->requireOwner($owner);
 
-        if (array_key_exists($pool->key, $this->pools)) {
-            throw AutoAssignmentDeclarationRefused::poolRepeated($pool->key);
-        }
-
         if (! is_subclass_of($pool->factoryClass, AssignmentPoolFactory::class)) {
             throw AssignmentProviderInvalid::forPoolFactory($pool->key, $pool->factoryClass);
         }
 
-        $this->pools[$pool->key] = $pool;
-        $this->poolOwners[$pool->key] = $owner;
+        $this->pools->put($pool->key, $pool);
+        $this->poolOwners->put($pool->key, $owner);
     }
 
     /**
@@ -189,15 +202,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function registerAssignees(AssigneeRegistration $registration): void
     {
-        if (array_key_exists($registration->type, $this->assigneeProviders)) {
-            throw AssigneeTypeRepeated::for($registration->type);
-        }
-
         if (! is_subclass_of($registration->providerClass, AssigneeProvider::class)) {
             throw AssignmentProviderInvalid::forAssignees($registration->type, $registration->providerClass);
         }
 
-        $this->assigneeProviders[$registration->type] = $registration->providerClass;
+        $this->assigneeProviders->put($registration->type, $registration->providerClass);
     }
 
     /**
@@ -208,15 +217,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     {
         $type = $registration->type->value;
 
-        if (array_key_exists($type, $this->activities)) {
-            throw AssigneeTypeRepeated::for($type);
-        }
-
         if (! is_subclass_of($registration->activityClass, AutoAssignmentActivity::class)) {
             throw AssignmentProviderInvalid::forActivity($type, $registration->activityClass);
         }
 
-        $this->activities[$type] = $registration->activityClass;
+        $this->activities->put($type, $registration->activityClass);
     }
 
     public function requirePublic(string $type): void
@@ -235,7 +240,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
 
     public function hasRecordProvider(string $type): bool
     {
-        return isset($this->recordProviders[$type]);
+        return $this->recordProviders->has($type);
     }
 
     /**
@@ -244,9 +249,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function recordProvider(string $type): AssignableProvider
     {
-        $providerClass = $this->recordProviders[$type] ?? throw AssignmentTypeUnavailable::forType($type);
-
-        return $this->build($providerClass, AssignableProvider::class);
+        return $this->build($this->recordProviders->get($type), AssignableProvider::class);
     }
 
     /**
@@ -255,9 +258,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function assigneeProvider(string $type): AssigneeProvider
     {
-        $providerClass = $this->assigneeProviders[$type] ?? throw AssignmentTypeUnavailable::forType($type);
-
-        return $this->build($providerClass, AssigneeProvider::class);
+        return $this->build($this->assigneeProviders->get($type), AssigneeProvider::class);
     }
 
     /**
@@ -266,9 +267,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function activity(ActorType $type): AutoAssignmentActivity
     {
-        $activityClass = $this->activities[$type->value] ?? throw AssignmentTypeUnavailable::forActorType($type);
-
-        return $this->build($activityClass, AutoAssignmentActivity::class);
+        return $this->build($this->activities->get($type->value), AutoAssignmentActivity::class);
     }
 
     /**
@@ -277,7 +276,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function autoAssigner(string $type): AutoAssigner
     {
-        return $this->build($this->autoAssignerDefinition($type)->assignerClass, AutoAssigner::class);
+        return $this->build($this->autoAssigners->get($type)->assignerClass, AutoAssigner::class);
     }
 
     /**
@@ -286,7 +285,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function assignedWork(string $type): AssignedWorkProvider
     {
-        return $this->build($this->autoAssignerDefinition($type)->workProviderClass, AssignedWorkProvider::class);
+        return $this->build($this->autoAssigners->get($type)->workProviderClass, AssignedWorkProvider::class);
     }
 
     /**
@@ -295,9 +294,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function poolFactory(string $key): AssignmentPoolFactory
     {
-        $pool = $this->pools[$key] ?? throw AssignmentTypeUnavailable::forPool($key);
-
-        return $this->build($pool->factoryClass, AssignmentPoolFactory::class);
+        return $this->build($this->pools->get($key)->factoryClass, AssignmentPoolFactory::class);
     }
 
     /**
@@ -305,7 +302,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function recordOwner(string $type): string
     {
-        return $this->recordOwners[$type] ?? throw AssignmentTypeUnavailable::forType($type);
+        return $this->recordOwners->get($type);
     }
 
     /**
@@ -313,12 +310,15 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function poolOwner(string $key): string
     {
-        return $this->poolOwners[$key] ?? throw AssignmentTypeUnavailable::forPool($key);
+        return $this->poolOwners->get($key);
     }
 
     public function pools(string $type): array
     {
-        return array_values(array_filter($this->pools, fn (PoolDefinition $pool) => $pool->assignableType === $type));
+        return array_values(array_filter(
+            $this->pools->all(),
+            fn (PoolDefinition $pool) => $pool->assignableType === $type,
+        ));
     }
 
     /**
@@ -329,7 +329,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function checkRecordModels(LinkTypeRegistry $links): void
     {
-        foreach (array_keys($this->recordProviders) as $type) {
+        foreach ($this->recordProviders->keys() as $type) {
             $model = $links->modelFor($type);
 
             if (! is_subclass_of($model, Assignable::class)) {
@@ -346,12 +346,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function checkPools(): void
     {
-        foreach ($this->pools as $key => $pool) {
-            $owner = $this->poolOwners[$key];
-            $recordOwner = $this->recordOwners[$pool->assignableType]
-                ?? throw AutoAssignmentDeclarationRefused::typeNotAssignable($pool->assignableType, $owner);
+        foreach ($this->pools->all() as $key => $pool) {
+            $owner = $this->poolOwners->get($key);
+            $recordOwner = $this->recordOwners->find($pool->assignableType)
+                ->getOrThrow(AutoAssignmentDeclarationRefused::typeNotAssignable($pool->assignableType, $owner));
 
-            if ($recordOwner !== $owner && ! in_array($recordOwner, $this->owners[$owner], true)) {
+            if ($recordOwner !== $owner && ! in_array($recordOwner, $this->owners->get($owner), true)) {
                 throw AutoAssignmentDeclarationRefused::poolOfUnrelatedOwner($key, $owner, $recordOwner);
             }
         }
@@ -362,17 +362,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     private function requireOwner(string $owner): void
     {
-        if (! array_key_exists($owner, $this->owners)) {
-            throw AutoAssignmentDeclarationRefused::ownerUnknown($owner);
-        }
-    }
-
-    /**
-     * @throws AssignmentTypeUnavailable
-     */
-    private function autoAssignerDefinition(string $type): AutoAssignerDefinition
-    {
-        return $this->autoAssigners[$type] ?? throw AssignmentTypeUnavailable::forAutoAssignment($type);
+        $this->owners->get($owner);
     }
 
     /**
@@ -389,7 +379,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     private function build(string $registeredClass, string $contract): object
     {
-        $built = $this->container->make($registeredClass);
+        $built = Container::getInstance()->make($registeredClass);
 
         if (! $built instanceof $contract) {
             throw AssignmentProviderInvalid::forResolved($registeredClass, $built::class, $contract);
@@ -403,6 +393,6 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     private function purposeOf(string $type): AssignmentPurpose
     {
-        return $this->recordPurposes[$type] ?? throw AssignmentTypeUnavailable::forType($type);
+        return $this->recordPurposes->get($type);
     }
 }

@@ -7,6 +7,7 @@ namespace App\Numbers\Support;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Exceptions\NumberedModelInvalid;
 use App\Numbers\Exceptions\NumberedModelUndeclared;
+use App\Registries\Support\Registry;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
@@ -21,9 +22,17 @@ final class NumberedTypeRegistry
     private array $declared = [];
 
     /**
-     * @var array<string, NumberedModel>
+     * @var Registry<NumberedModel>
      */
-    private array $declaredOfLinkType = [];
+    private readonly Registry $declaredOfLinkType;
+
+    public function __construct()
+    {
+        $this->declaredOfLinkType = Registry::once(
+            NumberedModelUndeclared::for(...),
+            NumberedModelInvalid::linkTypeTwice(...),
+        );
+    }
 
     public function register(NumberedModel ...$models): void
     {
@@ -32,11 +41,14 @@ final class NumberedTypeRegistry
 
     public function checkDeclarations(): void
     {
-        $tables = [];
-        $this->declaredOfLinkType = [];
+        $tables = Registry::once(NumberedModelInvalid::tableTwice(...), NumberedModelInvalid::tableTwice(...));
+        $this->declaredOfLinkType->clear();
 
         foreach ($this->declared as $declared) {
-            if (! is_subclass_of($declared->model, Numbered::class) || ! in_array(HasNumber::class, class_uses_recursive($declared->model), true)) {
+            $numbered = is_subclass_of($declared->model, Numbered::class)
+                && in_array(HasNumber::class, class_uses_recursive($declared->model), true);
+
+            if (! $numbered) {
                 throw NumberedModelInvalid::notNumbered($declared->model);
             }
 
@@ -47,23 +59,13 @@ final class NumberedTypeRegistry
                 throw NumberedModelInvalid::withoutLinkType($declared->model);
             }
 
-            if (isset($this->declaredOfLinkType[$linkType])) {
-                throw NumberedModelInvalid::linkTypeTwice($linkType);
-            }
-
-            if (isset($tables[$table])) {
-                throw NumberedModelInvalid::tableTwice($table);
-            }
-
-            $this->declaredOfLinkType[$linkType] = $declared;
-            $tables[$table] = true;
+            $this->declaredOfLinkType->put($linkType, $declared);
+            $tables->put($table, $declared->model);
         }
     }
 
     public function requireDeclared(string $linkType): void
     {
-        if (! isset($this->declaredOfLinkType[$linkType])) {
-            throw NumberedModelUndeclared::for($linkType);
-        }
+        $this->declaredOfLinkType->get($linkType);
     }
 }

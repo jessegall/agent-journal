@@ -15,7 +15,8 @@ use App\Communication\Contracts\NamesInboxes;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\InboxRecord;
-use Illuminate\Contracts\Container\Container;
+use App\Registries\Support\Registry;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -25,18 +26,17 @@ use Illuminate\Database\Eloquent\Builder;
 final class RegisteredInboxes implements InboxRegistration, InboxResolver, MemberInboxes
 {
     /**
-     * @var array<string, array{class-string<InboxProvider>, class-string<InboxAccess>}>
+     * @var Registry<array{class-string<InboxProvider>, class-string<InboxAccess>}>
      */
-    private array $providers = [];
+    private readonly Registry $providers;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct()
+    {
+        $this->providers = Registry::once(InboxUnavailable::forId(...), InboxProviderInvalid::repeated(...));
+    }
 
     public function register(string $providerKey, string $providerClass, string $accessClass): void
     {
-        if (array_key_exists($providerKey, $this->providers)) {
-            throw InboxProviderInvalid::repeated($providerKey);
-        }
-
         if (! is_subclass_of($providerClass, InboxProvider::class)) {
             throw InboxProviderInvalid::notAProvider($providerKey, $providerClass);
         }
@@ -45,21 +45,21 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver, Membe
             throw InboxProviderInvalid::withoutAccess($providerKey, $accessClass);
         }
 
-        $this->providers[$providerKey] = [$providerClass, $accessClass];
+        $this->providers->put($providerKey, [$providerClass, $accessClass]);
     }
 
     public function resolve(string $inboxId): Inbox
     {
         $record = InboxRecord::query()->find($inboxId) ?? throw InboxUnavailable::forId($inboxId);
-        [$providerClass] = $this->providers[$record->provider_key] ?? throw InboxUnavailable::forId($inboxId);
+        [$providerClass] = $this->providers->find($record->provider_key)->getOrThrow(InboxUnavailable::forId($inboxId));
 
-        return $this->container->make($providerClass)->inboxFor($record->id, $record->provider_id);
+        return Container::getInstance()->make($providerClass)->inboxFor($record->id, $record->provider_id);
     }
 
     public function named(string $name): Inbox
     {
-        foreach ($this->providers as [$providerClass]) {
-            $provider = $this->container->make($providerClass);
+        foreach ($this->providers->all() as [$providerClass]) {
+            $provider = Container::getInstance()->make($providerClass);
 
             if (! $provider instanceof NamesInboxes) {
                 continue;
@@ -78,9 +78,10 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver, Membe
     public function accessFor(Inbox $inbox): InboxAccess
     {
         $record = InboxRecord::query()->find($inbox->inboxId()) ?? throw InboxUnavailable::forId($inbox->inboxId());
-        [, $accessClass] = $this->providers[$record->provider_key] ?? throw InboxUnavailable::forId($inbox->inboxId());
+        [, $accessClass] = $this->providers->find($record->provider_key)
+            ->getOrThrow(InboxUnavailable::forId($inbox->inboxId()));
 
-        return $this->container->make($accessClass);
+        return Container::getInstance()->make($accessClass);
     }
 
     public function membersOf(Inbox $inbox): array
@@ -94,8 +95,8 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver, Membe
     public function inboxIdsOf(ActorIdentity $actor): Builder
     {
         $queries = array_map(
-            fn (array $provider) => $this->container->make($provider[1])->memberInboxIds($actor),
-            array_values($this->providers),
+            fn (array $provider) => Container::getInstance()->make($provider[1])->memberInboxIds($actor),
+            array_values($this->providers->all()),
         );
         $first = array_shift($queries) ?? InboxRecord::query()->whereKey([])->select('id');
 

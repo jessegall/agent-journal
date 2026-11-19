@@ -30,7 +30,7 @@ final class ActiveActorsTest extends TestCase
     {
         parent::setUp();
 
-        $this->counters = new ActiveActorCounterRegistry($this->app);
+        $this->counters = new ActiveActorCounterRegistry();
         $this->app->instance(ActiveActorCounterRegistry::class, $this->counters);
     }
 

@@ -6,8 +6,10 @@ namespace Domain\Chat;
 
 use App\Actors\Contracts\ProvidesPolicies;
 use App\Actors\Values\PolicyRegistration;
+use App\Bus\Contracts\Command;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Support\Domain;
+use App\Autoload\Support\FolderClasses;
 use App\Exports\Support\Exports;
 use App\Skills\Contracts\ProvidesSkills;
 use App\Ui\Contracts\ProvidesNavigation;
@@ -20,11 +22,6 @@ use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
-use Domain\Chat\Commands\DockRecord;
-use Domain\Chat\Commands\HideDockedRecord;
-use Domain\Chat\Commands\PinMessage;
-use Domain\Chat\Commands\RestoreDockedRecord;
-use Domain\Chat\Commands\UnpinMessage;
 use Domain\Chat\Enums\DockedRecordAbility;
 use Domain\Chat\Enums\MessagePinAbility;
 use Domain\Chat\Http\Controllers\CancelMessageController;
@@ -64,13 +61,7 @@ final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavig
 
     public function commands(): array
     {
-        return [
-            PinMessage::class,
-            UnpinMessage::class,
-            DockRecord::class,
-            HideDockedRecord::class,
-            RestoreDockedRecord::class,
-        ];
+        return FolderClasses::in(__DIR__.'/Commands', Command::class);
     }
 
     public function policies(): array

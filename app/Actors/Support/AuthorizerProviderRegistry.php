@@ -9,6 +9,7 @@ use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\AuthorizerProviderMissing;
 use App\Actors\Exceptions\AuthorizerProviderRepeated;
+use App\Registries\Support\Registry;
 use Illuminate\Container\Container;
 
 /**
@@ -18,20 +19,24 @@ use Illuminate\Container\Container;
 final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
 {
     /**
-     * @var array<string, class-string<AuthorizerProvider>>
+     * @var Registry<class-string<AuthorizerProvider>>
      */
-    private array $providers = [];
+    private readonly Registry $providers;
+
+    public function __construct()
+    {
+        $this->providers = Registry::once(
+            AuthorizerProviderMissing::forType(...),
+            AuthorizerProviderRepeated::forType(...),
+        );
+    }
 
     /**
      * @param  class-string<AuthorizerProvider>  $providerClass
      */
     public function register(ActorType $type, string $providerClass): void
     {
-        if (array_key_exists($type->value, $this->providers)) {
-            throw AuthorizerProviderRepeated::forType($type->value);
-        }
-
-        $this->providers[$type->value] = $providerClass;
+        $this->providers->put($type->value, $providerClass);
     }
 
     /**
@@ -39,11 +44,9 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
      */
     public function get(ActorType $type): AuthorizerProvider
     {
-        $providerClass = $this->providers[$type->value] ?? throw AuthorizerProviderMissing::forType($type->value);
-
-        // The registry outlives a request under Octane; the provider comes from the request's own container, so it reads
-        // that request's actor, never the one of the request that booted the registry.
-        return Container::getInstance()->make($providerClass);
+        // The registry outlives a request under Octane; the provider comes from the request's own container, so it
+        // reads that request's actor, never the one of the request that booted the registry.
+        return Container::getInstance()->make($this->providers->get($type->value));
     }
 
     /**
@@ -54,9 +57,7 @@ final class AuthorizerProviderRegistry implements AuthorizerProviderRegistration
     public function requireEveryType(): void
     {
         foreach (ActorType::cases() as $type) {
-            if (! array_key_exists($type->value, $this->providers)) {
-                throw AuthorizerProviderMissing::forType($type->value);
-            }
+            $this->providers->get($type->value);
         }
     }
 }

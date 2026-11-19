@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\LaunchAgent;
@@ -32,7 +33,6 @@ use App\Agents\Support\HostCapacityLock;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Contracts\CommandHandler;
-use App\Desks\Contracts\ReplyInboxes;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

@@ -9,16 +9,6 @@ use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Actions\AdmitPublicAssignments;
 use App\Assignments\Actions\WriteAssignments;
 use App\Assignments\Actions\WriteResponsibilities;
-use App\Assignments\Console\AssignRecordCommand;
-use App\Assignments\Console\AutoAssignmentPoolsCommand;
-use App\Assignments\Console\ConfigureAutoAssignmentCommand;
-use App\Assignments\Console\DisableAutoAssignmentCommand;
-use App\Assignments\Console\EnableAutoAssignmentCommand;
-use App\Assignments\Console\ListAutoAssignmentsCommand;
-use App\Assignments\Console\ReassignRecordCommand;
-use App\Assignments\Console\ShowAssignmentCommand;
-use App\Assignments\Console\ShowAutoAssignmentCommand;
-use App\Assignments\Console\UnassignRecordCommand;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssigneeLocks;
 use App\Assignments\Contracts\AssigneeResolver;
@@ -55,7 +45,9 @@ use App\Assignments\Support\DenyAllAutoAssignmentAccess;
 use App\Assignments\Support\OrderedAssigneeLocks;
 use App\Assignments\Support\ProvedClaimRelease;
 use App\Assignments\Support\SizeAssignmentRoom;
+use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
+use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -98,18 +90,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
             coordinatorOnly: [AssignmentAbility::Dispatch, AssignmentAbility::Unassign],
         ));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
-        $this->commands([
-            ShowAssignmentCommand::class,
-            AssignRecordCommand::class,
-            ReassignRecordCommand::class,
-            UnassignRecordCommand::class,
-            EnableAutoAssignmentCommand::class,
-            ConfigureAutoAssignmentCommand::class,
-            DisableAutoAssignmentCommand::class,
-            ShowAutoAssignmentCommand::class,
-            ListAutoAssignmentsCommand::class,
-            AutoAssignmentPoolsCommand::class,
-        ]);
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->app->booted(function (): void {
             $registry = $this->app->make(AssignmentRegistry::class);
             $registry->checkRecordModels($this->app->make(LinkTypeRegistry::class));

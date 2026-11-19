@@ -6,17 +6,9 @@ namespace App\Sharing\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Autoload\Support\FolderClasses;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
-use App\Sharing\Console\ConfigureShareGatewayCommand;
-use App\Sharing\Console\RequestShareCommand;
-use App\Sharing\Console\ShareCreateCommand;
-use App\Sharing\Console\ShareListCommand;
-use App\Sharing\Console\ShareRevokeCommand;
-use App\Sharing\Console\ShareStatusCommand;
-use App\Sharing\Console\ShareUrlCommand;
-use App\Sharing\Console\SharingHealthCommand;
-use App\Sharing\Console\SuperviseSharingCommand;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\SharePolicy;
@@ -28,6 +20,7 @@ use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
+use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -61,7 +54,7 @@ final class SharingServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/sharing.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([RequestShareCommand::class, ShareStatusCommand::class, ShareListCommand::class, ShareCreateCommand::class, ShareRevokeCommand::class, ShareUrlCommand::class, ConfigureShareGatewayCommand::class, SuperviseSharingCommand::class, SharingHealthCommand::class]);
+            $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         }
     }
 }

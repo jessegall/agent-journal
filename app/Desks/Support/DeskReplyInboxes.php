@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Desks\Support;
 
+use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
-use App\Desks\Contracts\ReplyInboxes;
 use App\Desks\Models\DeskRecord;
 use PhpOption\None;
 use PhpOption\Option;

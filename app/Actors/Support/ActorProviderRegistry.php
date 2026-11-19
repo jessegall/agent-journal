@@ -16,53 +16,64 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
+use App\Actors\Exceptions\ActorProviderMissing;
 use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
+use App\Registries\Support\Registry;
 use Closure;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
+use PhpOption\Option;
 
 /**
- * The actor provider of each actor type, registered once at boot; a provider is built per call, so nothing found
- * outlives the request.
+ * The actor provider of each actor type, registered once at boot; a provider is built per call, from the asking
+ * request's container, so nothing found outlives the request.
  */
 final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistration, ActorResolver, ActorVisibility, WorkStacks
 {
     /**
-     * @var array<string, class-string<ActorProvider>>
+     * @var Registry<class-string<ActorProvider>>
      */
-    private array $providers = [];
+    private readonly Registry $providers;
 
     /**
-     * @var array<string, class-string<ActorLabelProvider>>
+     * @var Registry<class-string<ActorLabelProvider>>
      */
-    private array $labelProviders = [];
+    private readonly Registry $labelProviders;
 
     /**
-     * @var array<string, class-string<ActorVisibilityProvider>>
+     * @var Registry<class-string<ActorVisibilityProvider>>
      */
-    private array $visibilityProviders = [];
+    private readonly Registry $visibilityProviders;
 
     /**
-     * @var array<string, class-string<WorkStackProvider>>
+     * @var Registry<class-string<WorkStackProvider>>
      */
-    private array $workStackProviders = [];
+    private readonly Registry $workStackProviders;
 
-    public function __construct(private readonly Container $container) {}
+    public function __construct()
+    {
+        $this->providers = Registry::once(ActorProviderMissing::forType(...), ActorProviderRepeated::forType(...));
+        $this->labelProviders = Registry::once(ActorProviderMissing::forType(...), ActorProviderRepeated::forType(...));
+        $this->visibilityProviders = Registry::once(
+            CrossOwnerReadRefused::forActor(...),
+            ActorProviderRepeated::forType(...),
+        );
+        $this->workStackProviders = Registry::once(
+            ActorProviderMissing::forType(...),
+            ActorProviderRepeated::forType(...),
+        );
+    }
 
     /**
      * @param  class-string<ActorProvider>  $providerClass
      */
     public function register(ActorType $type, string $providerClass): void
     {
-        if (array_key_exists($type->value, $this->providers)) {
-            throw ActorProviderRepeated::forType($type->value);
-        }
-
-        $this->providers[$type->value] = $providerClass;
+        $this->providers->put($type->value, $providerClass);
     }
 
     /**
@@ -70,11 +81,7 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      */
     public function registerLabels(ActorType $type, string $providerClass): void
     {
-        if (array_key_exists($type->value, $this->labelProviders)) {
-            throw ActorProviderRepeated::forType($type->value);
-        }
-
-        $this->labelProviders[$type->value] = $providerClass;
+        $this->labelProviders->put($type->value, $providerClass);
     }
 
     /**
@@ -85,13 +92,15 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
     public function labelsFor(array $actors): ActorLabelSet
     {
         $idsByType = [];
+
         foreach ($actors as $actor) {
             $idsByType[$actor->type->value][$actor->id] = $actor->id;
         }
 
         $namesByType = [];
-        foreach (array_intersect_key($idsByType, $this->labelProviders) as $type => $ids) {
-            $provider = $this->container->make($this->labelProviders[$type]);
+
+        foreach (array_intersect_key($idsByType, $this->labelProviders->all()) as $type => $ids) {
+            $provider = Container::getInstance()->make($this->labelProviders->get($type));
             $namesByType[$type] = $provider->namesOf(array_values($ids));
         }
 
@@ -103,11 +112,7 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      */
     public function registerVisibility(ActorType $type, string $providerClass): void
     {
-        if (array_key_exists($type->value, $this->visibilityProviders)) {
-            throw ActorProviderRepeated::forType($type->value);
-        }
-
-        $this->visibilityProviders[$type->value] = $providerClass;
+        $this->visibilityProviders->put($type->value, $providerClass);
     }
 
     /**
@@ -118,14 +123,16 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      */
     public function ownRead(Builder $query, string $ownerScope): void
     {
-        $actors = $this->container->make(CurrentActor::class);
+        $actors = Container::getInstance()->make(CurrentActor::class);
+
         if (! $actors->hasActor()) {
             return;
         }
 
-        $providerClass = $this->visibilityProviders[$actors->actor()->actorType()->value] ?? null;
-        if ($providerClass !== null) {
-            $this->container->make($providerClass)->ownRead($query, $ownerScope);
+        $type = $actors->actor()->actorType()->value;
+
+        if ($this->visibilityProviders->has($type)) {
+            Container::getInstance()->make($this->visibilityProviders->get($type))->ownRead($query, $ownerScope);
         }
     }
 
@@ -134,13 +141,15 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      *
      * @param  Builder<covariant Model>  $query
      * @param  class-string<Scope<Model>>  $ownerScope
+     *
+     * @throws CrossOwnerReadRefused
      */
     public function readAcrossOwners(Builder $query, string $ownerScope): void
     {
-        $type = $this->container->make(CurrentActor::class)->actor()->actorType();
-        $providerClass = $this->visibilityProviders[$type->value] ?? throw CrossOwnerReadRefused::forActor($type->value);
+        $type = Container::getInstance()->make(CurrentActor::class)->actor()->actorType();
+        $providerClass = $this->visibilityProviders->get($type->value);
 
-        $this->container->make($providerClass)->readAcrossOwners($query, $ownerScope);
+        Container::getInstance()->make($providerClass)->readAcrossOwners($query, $ownerScope);
     }
 
     /**
@@ -152,21 +161,23 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      */
     public function ownRows(Builder $query, Closure $narrowToOwnRows): void
     {
-        $actors = $this->container->make(CurrentActor::class);
+        $actors = Container::getInstance()->make(CurrentActor::class);
+
         if (! $actors->hasActor()) {
             $narrowToOwnRows($query);
 
             return;
         }
 
-        $providerClass = $this->visibilityProviders[$actors->actor()->actorType()->value] ?? null;
-        if ($providerClass === null) {
+        $type = $actors->actor()->actorType()->value;
+
+        if (! $this->visibilityProviders->has($type)) {
             $query->whereKey([]);
 
             return;
         }
 
-        $this->container->make($providerClass)->ownRows($query, $narrowToOwnRows);
+        Container::getInstance()->make($this->visibilityProviders->get($type))->ownRows($query, $narrowToOwnRows);
     }
 
     /**
@@ -174,11 +185,7 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      */
     public function registerWorkStack(ActorType $type, string $providerClass): void
     {
-        if (array_key_exists($type->value, $this->workStackProviders)) {
-            throw ActorProviderRepeated::forType($type->value);
-        }
-
-        $this->workStackProviders[$type->value] = $providerClass;
+        $this->workStackProviders->put($type->value, $providerClass);
     }
 
     /**
@@ -188,10 +195,15 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
      */
     public function sessionsToAdmit(): array
     {
-        $actors = $this->container->make(CurrentActor::class);
-        $type = $actors->hasActor() ? $actors->actor()->actorType()->value : '';
-        $providerClass = $this->workStackProviders[$type] ?? null;
-        $sessions = $providerClass === null ? [] : $this->container->make($providerClass)->sessionsToAdmit();
+        $actors = Container::getInstance()->make(CurrentActor::class);
+
+        if (! $actors->hasActor()) {
+            return [];
+        }
+
+        $sessions = $this->workStackOf($actors->actor()->actorType()->value)
+            ->map(fn (WorkStackProvider $provider) => $provider->sessionsToAdmit())
+            ->getOrElse([]);
         sort($sessions);
 
         return $sessions;
@@ -199,15 +211,27 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
 
     public function sessionsOf(ActorIdentity $actor): array
     {
-        $providerClass = $this->workStackProviders[$actor->type->value] ?? null;
-
-        return $providerClass === null ? [] : $this->container->make($providerClass)->sessionsOf($actor);
+        return $this->workStackOf($actor->type->value)
+            ->map(fn (WorkStackProvider $provider) => $provider->sessionsOf($actor))
+            ->getOrElse([]);
     }
 
     public function get(ActorIdentity $identity): Actor
     {
-        $providerClass = $this->providers[$identity->type->value] ?? throw ActorUnavailable::forIdentity($identity);
+        $providerClass = $this->providers->find($identity->type->value)
+            ->getOrThrow(ActorUnavailable::forIdentity($identity));
 
-        return $this->container->make($providerClass)->actor($identity);
+        return Container::getInstance()->make($providerClass)->actor($identity);
+    }
+
+    /**
+     * The work stack provider of the actor type, built for this call; a type that works on no stack has none.
+     *
+     * @return Option<WorkStackProvider>
+     */
+    private function workStackOf(string $type): Option
+    {
+        return $this->workStackProviders->find($type)
+            ->map(fn (string $providerClass) => Container::getInstance()->make($providerClass));
     }
 }
