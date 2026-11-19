@@ -31,6 +31,7 @@ use App\Actors\Contracts\SendsMessages;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Contracts\WorkStackProvider;
+use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
@@ -912,6 +913,7 @@ final class CoreApi
                 Policy::class,
                 PolicyCatalogue::class,
                 ActorWorkStacks::class,
+                WorkStacks::class,
                 ProvidesPolicies::class,
                 WorkStackProvider::class,
                 HasAuthorizationSubject::class,

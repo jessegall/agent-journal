@@ -23,10 +23,10 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
-use App\Agents\Enums\KeyScriptAbility;
+use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Models\AgentRuntime;
-use App\Agents\Policies\KeyScriptPolicy;
+use App\Agents\Models\Agent;
+use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
 use App\Agents\Resolvers\HostLaunchMaterial;
@@ -92,10 +92,11 @@ final class AgentsServiceProvider extends ServiceProvider
         PolicyCatalogue $policies,
     ): void {
         $policies->register('Core', new PolicyRegistration(
-            AgentRuntime::class,
-            KeyScriptPolicy::class,
-            KeyScriptAbility::class,
-            ownerOnly: [KeyScriptAbility::Administer],
+            Agent::class,
+            AgentPolicy::class,
+            AgentAbility::class,
+            ownerOnly: [AgentAbility::RunKeyScript],
+            mainAgentOnly: [AgentAbility::RetireOthers],
         ));
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);

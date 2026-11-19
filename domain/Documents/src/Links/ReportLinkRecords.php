@@ -10,6 +10,7 @@ use App\Records\Contracts\RecordProvider;
 use App\Records\Data\RecordCard;
 use App\Records\Support\ProvidesModelRecords;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Support\RecordChanges;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,7 +26,7 @@ final readonly class ReportLinkRecords implements RecordProvider
      */
     use ProvidesModelRecords;
 
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(private RecordChanges $changes, private CurrentActor $actors) {}
 
     public function referenceWord(): string
     {
@@ -59,6 +60,6 @@ final readonly class ReportLinkRecords implements RecordProvider
 
     protected function mayChange(Model $record): bool
     {
-        return $record->allowsChangesBy($this->actors->actor());
+        return $this->changes->mayChange($record);
     }
 }

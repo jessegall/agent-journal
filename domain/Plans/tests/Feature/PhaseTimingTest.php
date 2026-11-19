@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
@@ -22,7 +20,6 @@ use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
 
 /**
  * An agent's tests and checks wait while the current phase of the started plan it holds has open or started tasks,
@@ -91,7 +88,7 @@ final class PhaseTimingTest extends TestCase
     private function timingForAgent(): TimingVerdict
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), TestLaunchAuthority::forAgent($this->agent->id));
+        $this->startRequestAs($this->agent->id, TestIds::of(80));
 
         return $this->app->make(VerificationTiming::class)->forCaller();
     }

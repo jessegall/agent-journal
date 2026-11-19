@@ -6,12 +6,10 @@ namespace Domain\Plans\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\CurrentSession;
-use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use Domain\Plans\Api\AssignedPlanFilters;
@@ -51,8 +49,7 @@ final readonly class PlanRecords implements PlanResolver
         private AssignmentResolver $assignments,
         private AssigneeResolver $assignees,
         private AssignmentTransaction $transaction,
-        private CurrentSession $session,
-        private CurrentState $currentState,
+        private ActorWorkStacks $workStack,
     ) {}
 
     public function list(PlanFilters $filters): PlanList
@@ -78,9 +75,7 @@ final readonly class PlanRecords implements PlanResolver
 
     public function assignedToCaller(AssignedPlanFilters $filters): AssignedPlanList
     {
-        $caller = $this->actors->actor();
-        $caller->requireAgent();
-        $holder = ActorIdentity::of($caller);
+        $holder = ActorIdentity::of($this->actors->actor());
         $focused = $this->focusedPlanId();
 
         return $this->transaction->run(function () use ($filters, $holder, $focused): AssignedPlanList {
@@ -94,20 +89,14 @@ final readonly class PlanRecords implements PlanResolver
     }
 
     /**
-     * The plan the caller's own stack works on now, read once from its highest live plan frame; none for a user, who
-     * has no stack, and never another target's plan.
+     * The plan the caller's own stack works on now, read once from its highest live plan frame; none for an actor that
+     * works on no stack, and never another target's plan.
      *
      * @return Option<string>
      */
     private function focusedPlanId(): Option
     {
-        $caller = $this->actors->actor();
-
-        if ($caller->isUser()) {
-            return None::create();
-        }
-
-        return $this->currentState->of(new StackTarget($caller->actorId(), $this->session->sessionId()), WorkingOnPlanStateReference::TYPE_KEY)
+        return $this->workStack->current(WorkingOnPlanStateReference::TYPE_KEY)
             ->flatMap(fn (StateReference $frame) => $frame->subject instanceof SubjectReference ? new Some($frame->subject->id) : None::create());
     }
 

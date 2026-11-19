@@ -107,7 +107,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->actAsUser(1);
         $this->bus()->run(new CreateReport('Other', 'By a user', "Text\n"));
         $this->actAsAgent(8, 80);
-        $this->expectException(SettlementDenied::class);
+        $this->expectException(ActorNotAllowed::class);
 
         $this->bus()->run(new SettleReport(2, 'Not mine.'));
     }

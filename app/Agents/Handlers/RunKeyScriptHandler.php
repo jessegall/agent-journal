@@ -6,11 +6,11 @@ namespace App\Agents\Handlers;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Commands\RunKeyScript;
+use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\DriverOperation;
-use App\Agents\Enums\KeyScriptAbility;
 use App\Agents\Exceptions\KeyScriptRefused;
 use App\Agents\Models\AgentRuntime;
-use App\Agents\Policies\KeyScriptPolicy;
+use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\DriverRequests;
 use App\Agents\Values\DriverRequestPayload;
@@ -40,7 +40,7 @@ final readonly class RunKeyScriptHandler implements CommandHandler
      */
     public function handle(RunKeyScript $command): DriverReceipt
     {
-        $this->administration->authorize(KeyScriptPolicy::class, AgentRuntime::class, KeyScriptAbility::Administer);
+        $this->administration->authorize(AgentPolicy::class, AgentRuntime::class, AgentAbility::RunKeyScript);
         $script = $this->scripts[$command->script] ?? throw KeyScriptRefused::unknown($command->script);
         $parameters = ScriptParameter::byName($command->parameters);
         $extra = array_diff(array_keys($parameters), array_keys($script['parameters']));

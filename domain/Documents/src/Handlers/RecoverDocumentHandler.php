@@ -11,7 +11,7 @@ use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Models\Document;
-use Domain\Documents\Policies\DocumentRecoveryPolicy;
+use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Domain\Documents\Support\DraftClosing;
 
 final readonly class RecoverDocumentHandler implements CommandHandler
@@ -20,7 +20,7 @@ final readonly class RecoverDocumentHandler implements CommandHandler
 
     public function handle(RecoverDocument $command): CloseResult
     {
-        $this->administration->authorize(DocumentRecoveryPolicy::class, Document::class, DocumentAbility::Administer);
+        $this->administration->authorize(DocumentAdministrationPolicy::class, Document::class, DocumentAbility::Administer);
 
         return $this->drafts->recover($command->draft, $this->actors->actor(), $command->reason);
     }

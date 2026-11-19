@@ -9,9 +9,9 @@ use App\Actors\Contracts\Policy;
 use BackedEnum;
 
 /**
- * Who may administer key scripts run on agent terminals: only the owner holds the ability, so the grants decide.
+ * Who may act on agents: the grants decide; that nobody retires itself is the retirement's own invariant.
  */
-final readonly class KeyScriptPolicy implements Policy
+final readonly class AgentPolicy implements Policy
 {
     /**
      * @param  object|class-string  $subject

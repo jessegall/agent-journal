@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Support;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
-use App\Agents\Contracts\CurrentSession;
+use App\Actors\Contracts\WorkStacks;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Support\SessionOption;
 use App\Records\Support\RecordIdentity;
@@ -23,7 +22,12 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class Docking
 {
-    public function __construct(private SessionResolver $sessions, private CurrentActor $actors, private CurrentSession $session, private Dispatcher $events) {}
+    public function __construct(
+        private WorkStacks $workStacks,
+        private SessionResolver $sessions,
+        private CurrentActor $actors,
+        private Dispatcher $events,
+    ) {}
 
     public function dockDocument(int $number, string $sessionId): void
     {
@@ -46,20 +50,17 @@ final readonly class Docking
     }
 
     /**
-     * Docks a record an agent just created in its session, inside the creating transaction, when that session is
-     * verified running; a user's creation, or one with no running session, docks nothing and still succeeds.
+     * Docks a record just created in the session its creator works in, inside the creating transaction, when that
+     * session is verified running; a creator that works in no session, or one no longer running, docks nothing.
      */
     public function dockInCreatorSession(RecordIdentity $record): void
     {
-        if ($this->actors->actor()->actorType() !== ActorType::Agent) {
-            return;
-        }
-
-        $sessionId = $this->session->sessionId();
         $running = array_map(fn (SessionOption $session) => $session->sessionId, $this->sessions->active());
 
-        if (in_array($sessionId, $running, true)) {
-            $this->dock($record, $sessionId);
+        foreach ($this->workStacks->sessionsToAdmit() as $sessionId) {
+            if (in_array($sessionId, $running, true)) {
+                $this->dock($record, $sessionId);
+            }
         }
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
+use App\Actors\Contracts\WorkStacks;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Processes\Contracts\VerificationTiming;
@@ -23,16 +23,19 @@ final readonly class PhaseTiming implements VerificationTiming
 {
     public function __construct(
         private CurrentActor $actors,
+        private WorkStacks $workStacks,
         private AssignmentResolver $assignments,
         private TaskResolver $tasks,
     ) {}
 
     public function forCaller(): TimingVerdict
     {
-        $caller = $this->actors->actor();
-        if ($caller->actorType() !== ActorType::Agent) {
+        // An actor that works in no session, such as the owner, runs its checks whenever it asks.
+        if ($this->workStacks->sessionsToAdmit() === []) {
             return TimingVerdict::allowed();
         }
+
+        $caller = $this->actors->actor();
         $heldIds = $this->assignments->allRecordIdsFor(Plan::LINK_TYPE, ActorIdentity::of($caller));
         $started = Plan::query()->amongIds($heldIds)->inStates([PlanState::Started])->readLimit(500)->get();
         foreach ($started as $plan) {

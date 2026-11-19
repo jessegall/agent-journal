@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
+use App\Actors\Contracts\WorkStacks;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Exceptions\HostUnavailable;
@@ -14,7 +13,6 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\Host;
-use App\Agents\Support\AgentContext;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\RuntimeIntent;
@@ -26,9 +24,8 @@ use Illuminate\Support\Str;
 final readonly class OpenAgentRuntimeHandler implements CommandHandler
 {
     public function __construct(
+        private WorkStacks $workStacks,
         private LaunchSessions $launches,
-        private CurrentActor $actors,
-        private Container $container,
     ) {}
 
     public function handle(OpenAgentRuntime $command): OpenedRuntime
@@ -51,18 +48,20 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
     }
 
     /**
-     * An agent opens only a child of its own session, on that session's host and inside its folder; a user opens a
-     * top-level runtime anywhere its host permits.
+     * An actor working in a session opens only a child of it, on that session's host and inside its folder; an actor
+     * that works in none opens a top-level runtime anywhere its host permits.
      *
      * @throws LaunchRootRefused
      */
     private function parentSessionFor(OpenAgentRuntime $command): AgentSession|null
     {
-        if ($this->actors->actor()->actorType() !== ActorType::Agent) {
+        $sessionId = $this->workStacks->sessionsToAdmit()[0] ?? null;
+
+        if ($sessionId === null) {
             return null;
         }
 
-        $parent = AgentSession::query()->findOrFail($this->container->make(AgentContext::class)->sessionId);
+        $parent = AgentSession::query()->findOrFail($sessionId);
         $parentRuntime = AgentRuntime::query()->where('agent_session_id', $parent->id)->first();
 
         if ($parentRuntime === null || $parentRuntime->host_id !== $command->hostId || ! str_starts_with($command->folder, rtrim($parentRuntime->canonical_folder, '/'))) {

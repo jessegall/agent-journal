@@ -104,7 +104,7 @@ use Domain\Documents\Links\ReportLinkRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Policies\DocumentRecoveryPolicy;
+use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Resolvers\DocumentWindowResolver;
 use Domain\Documents\Resolvers\LibraryWindowResolver;
@@ -165,9 +165,9 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     {
         return [new PolicyRegistration(
             Document::class,
-            DocumentRecoveryPolicy::class,
+            DocumentAdministrationPolicy::class,
             DocumentAbility::class,
-            ownerOnly: [DocumentAbility::Administer],
+            ownerOnly: [DocumentAbility::Administer, DocumentAbility::ChangeOthersRecords],
         )];
     }
 

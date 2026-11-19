@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchCredentials;
@@ -84,10 +85,10 @@ final class AgentRetirementTest extends TestCase
         $this->assertNotNull($ended->credential?->revoked_at);
     }
 
-    public function test_a_main_agent_retires_a_helper_but_not_a_main_agent_and_a_helper_retires_nobody(): void
+    public function test_a_main_agent_retires_a_helper_but_not_itself_and_a_helper_retires_nobody(): void
     {
         $this->startRequestAs($this->helper->id, TestIds::of(2));
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)), AgentRetirementDenied::class);
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)), ActorNotAllowed::class);
 
         $this->startRequestAs($this->main->id, TestIds::of(1));
         $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)), AgentRetirementDenied::class);
