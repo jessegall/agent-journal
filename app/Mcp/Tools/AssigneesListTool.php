@@ -47,7 +47,7 @@ final class AssigneesListTool extends JournalReadTool
         $filters = $cursor === null
             ? ['after_id' => $arguments->optionalText('after_id'), 'limit' => $arguments->positiveIntegerOr('limit', self::DEFAULT_LIMIT, Page::LARGEST_LIMIT)]
             : $this->continuations->open($cursor, $this->name(), $type->value)->filters;
-        $list = $this->assignees->eligible($type, new Page($filters['after_id'], $filters['limit']));
+        $list = $this->assignees->eligible($type->value, new Page($filters['after_id'], $filters['limit']));
         $nextActions = $list->nextAfterId === null ? [] : [new NextAction($this->name(), [
             'type' => $type->value,
             'continuation' => $this->continuations->issue(new Continuation($this->name(), $type->value, ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']], 0)),

@@ -35,10 +35,23 @@ final readonly class UserAssignees implements AssigneeProvider
     public function requireEligible(AssigneeIdentity $recipient): Assignee
     {
         $this->actors->actor();
-        $user = User::query()->whereKey($recipient->id)->sharedLock()->first()
-            ?? throw AssigneeUnavailable::forActor($recipient);
 
-        if (! $this->admission->admits($user)) {
+        return $this->admitted(User::query()->whereKey($recipient->id)->sharedLock()->first(), $recipient);
+    }
+
+    public function requireExclusive(AssigneeIdentity $recipient): Assignee
+    {
+        $this->actors->actor();
+
+        return $this->admitted(User::query()->whereKey($recipient->id)->lockForUpdate()->first(), $recipient);
+    }
+
+    /**
+     * @throws AssigneeUnavailable
+     */
+    private function admitted(User|null $user, AssigneeIdentity $recipient): User
+    {
+        if ($user === null || ! $this->admission->admits($user)) {
             throw AssigneeUnavailable::forActor($recipient);
         }
 

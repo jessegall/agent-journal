@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Actors\Contracts\ForwardsToDesk;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'role'])]
-final class Agent extends Model implements Assignee, ReadableModel, ReceivesMessages, SendsMessages
+final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableModel, ReceivesMessages, SendsMessages
 {
     use BoundedReads;
     use HasUlids, Linkable;

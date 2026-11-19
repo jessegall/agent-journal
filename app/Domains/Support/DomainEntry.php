@@ -8,6 +8,7 @@ use App\Actors\Contracts\ProvidesPolicies;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AssignableProvider;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
@@ -502,13 +503,23 @@ final readonly class DomainEntry
     }
 
     /**
-     * The actor types this domain adds as holders of records; none when it declares no ProvidesAssignees.
+     * The holders of records this domain adds; none when it declares no ProvidesAssignees.
      *
      * @return list<AssigneeRegistration>
      */
     public function assignees(): array
     {
         return $this->domain instanceof ProvidesAssignees ? $this->domain->assignees() : [];
+    }
+
+    /**
+     * Whether this domain's actors may take automatically assigned work now; none without ProvidesAssignees.
+     *
+     * @return list<ActivityRegistration>
+     */
+    public function activities(): array
+    {
+        return $this->domain instanceof ProvidesAssignees ? $this->domain->activities() : [];
     }
 
     /**

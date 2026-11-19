@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Assignments\Contracts\AssignedWorkProvider;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentDeclarationRefused;
@@ -125,7 +126,7 @@ final class AutoAssignmentRegistryTest extends TestCase
     public function test_a_class_that_does_not_implement_its_contract_is_refused(): void
     {
         $this->boot(ErrandsDomain::class);
-        $this->registry->registerRecord('errands.chore', ErrandAssignables::class, 'Errands');
+        $this->registry->registerRecord('errands.chore', ErrandAssignables::class, 'Errands', AssignmentPurpose::PublicWork);
 
         $this->assertThrows(
             fn () => $this->registry->registerAutoAssigner(
@@ -153,7 +154,7 @@ final class AutoAssignmentRegistryTest extends TestCase
     public function test_an_assigner_for_a_type_its_owner_did_not_register_is_refused(): void
     {
         $this->boot(ErrandsDomain::class, RoundsDomain::class);
-        $this->registry->registerRecord('errands.chore', ErrandAssignables::class, 'Errands');
+        $this->registry->registerRecord('errands.chore', ErrandAssignables::class, 'Errands', AssignmentPurpose::PublicWork);
 
         $this->assertThrows(
             fn () => $this->registry->registerAutoAssigner(
@@ -206,7 +207,7 @@ final class AutoAssignmentRegistryTest extends TestCase
             'without registering itself first',
         );
         $this->assertThrows(
-            fn () => $this->registry->registerRecord(ErrandsDomain::ERRAND, ErrandAssignables::class, 'Strays'),
+            fn () => $this->registry->registerRecord(ErrandsDomain::ERRAND, ErrandAssignables::class, 'Strays', AssignmentPurpose::PublicWork),
             AutoAssignmentDeclarationRefused::class,
             'without registering itself first',
         );

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Assignments\Resolvers;
 
-use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentResolver;
@@ -40,9 +39,9 @@ final readonly class AssigneeRecords implements AssigneeResolver
         return $names;
     }
 
-    public function eligible(ActorType $type, Page $page): AssigneeList
+    public function eligible(string $type, Page $page): AssigneeList
     {
-        return $this->providers->assigneeProvider($type->value)->eligible($page);
+        return $this->providers->assigneeProvider($type)->eligible($page);
     }
 
     /**

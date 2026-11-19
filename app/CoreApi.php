@@ -11,6 +11,7 @@ use App\Actors\Contracts\ActorLabelProvider;
 use App\Actors\Contracts\ActorLabels;
 use App\Actors\Contracts\ActorProvider;
 use App\Actors\Contracts\ActorProviderRegistration;
+use App\Actors\Contracts\ActorProvisioning;
 use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\ActorVisibilityProvider;
@@ -22,6 +23,7 @@ use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
+use App\Actors\Contracts\ForwardsToDesk;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
@@ -194,6 +196,7 @@ use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Contracts\AssigneeProvider;
 use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentPool;
 use App\Assignments\Contracts\AssignmentPoolFactory;
 use App\Assignments\Contracts\AssignmentQuery;
@@ -206,6 +209,7 @@ use App\Assignments\Contracts\AutoAssignmentActivity;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Enums\AssignmentOutcomeType;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Enums\PoolInputType;
 use App\Assignments\Enums\PoolMembersType;
@@ -228,6 +232,7 @@ use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
 use App\Assignments\Models\Support\AssignableListing;
+use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
@@ -240,6 +245,7 @@ use App\Assignments\Support\AssignmentHolder;
 use App\Assignments\Support\AssignmentHolders;
 use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentReference;
+use App\Assignments\Support\AssignmentRequest;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\AutoAssignerDefinition;
@@ -327,9 +333,11 @@ use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxAccess;
+use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
@@ -353,6 +361,21 @@ use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
 use App\Contracts\Listener;
+use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\ProvisionActorDesk;
+use App\Desks\Commands\ReleaseSeat;
+use App\Desks\Commands\ReplaceSeatOccupant;
+use App\Desks\Commands\RestoreActorDesk;
+use App\Desks\Commands\SeatActor;
+use App\Desks\Contracts\ActorDesks;
+use App\Desks\Contracts\Desk;
+use App\Desks\Exceptions\DeskSeatCountInvalid;
+use App\Desks\Exceptions\DeskUnavailable;
+use App\Desks\Exceptions\SeatCapacityReached;
+use App\Desks\Exceptions\SeatConflict;
+use App\Desks\Exceptions\SecondForwardingSeat;
+use App\Desks\Support\SeatChangeResult;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Events\EngineTicked;
@@ -929,6 +952,13 @@ final class CoreApi
                 InboxRegistration::class,
                 InboxProvider::class,
                 InboxAccess::class,
+                ActorDesks::class,
+                ActorProvisioning::class,
+                Desk::class,
+                ForwardsToDesk::class,
+                AssignmentDestinationResolver::class,
+                InboxDestinationResolver::class,
+                ActorInboxResolver::class,
                 WorkStacks::class,
                 ProvidesPolicies::class,
                 WorkStackProvider::class,
@@ -1232,6 +1262,9 @@ final class CoreApi
                 ActorIdentity::class,
                 PolicyRegistration::class,
                 AssigneeIdentity::class,
+                AssignmentRequest::class,
+                AssignmentPurpose::class,
+                SeatChangeResult::class,
                 InboxMembership::class,
                 InboxMembers::class,
                 ActorLabelSet::class,
@@ -1241,6 +1274,7 @@ final class CoreApi
                 TrustedEntryAuthority::class,
                 RecordIdentity::class,
                 AssigneeRegistration::class,
+                ActivityRegistration::class,
                 Assignment::class,
                 AssignmentReference::class,
                 AssignmentSet::class,
@@ -1497,6 +1531,13 @@ final class CoreApi
                 LinkRecords::class,
                 UnlinkRecords::class,
                 AssignRecord::class,
+                CreateDesk::class,
+                InstallDesks::class,
+                ProvisionActorDesk::class,
+                RestoreActorDesk::class,
+                SeatActor::class,
+                ReplaceSeatOccupant::class,
+                ReleaseSeat::class,
                 EnableAutoAssignment::class,
                 ConfigureAutoAssignment::class,
                 DisableAutoAssignment::class,
@@ -1577,6 +1618,11 @@ final class CoreApi
                 AbilityNotRegistered::class,
                 ConsoleOwnerMissing::class,
                 InboxUnavailable::class,
+                DeskUnavailable::class,
+                DeskSeatCountInvalid::class,
+                SeatCapacityReached::class,
+                SecondForwardingSeat::class,
+                SeatConflict::class,
                 InboxProviderInvalid::class,
                 PolicyRegistrationConflict::class,
                 AuthorizerProviderRepeated::class,

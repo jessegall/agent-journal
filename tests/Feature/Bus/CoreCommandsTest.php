@@ -42,6 +42,13 @@ use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
 use App\CoreCommands;
+use App\Desks\Commands\CreateDesk;
+use App\Desks\Commands\InstallDesks;
+use App\Desks\Commands\ProvisionActorDesk;
+use App\Desks\Commands\ReleaseSeat;
+use App\Desks\Commands\ReplaceSeatOccupant;
+use App\Desks\Commands\RestoreActorDesk;
+use App\Desks\Commands\SeatActor;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
@@ -138,6 +145,13 @@ final class CoreCommandsTest extends CommandBusTestCase
             AssignRecord::class,
             ReassignRecord::class,
             UnassignRecord::class,
+            InstallDesks::class,
+            ProvisionActorDesk::class,
+            RestoreActorDesk::class,
+            CreateDesk::class,
+            SeatActor::class,
+            ReplaceSeatOccupant::class,
+            ReleaseSeat::class,
             EnableAutoAssignment::class,
             ConfigureAutoAssignment::class,
             DisableAutoAssignment::class,

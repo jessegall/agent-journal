@@ -9,6 +9,7 @@ use App\Communication\Contracts\InboxAccess;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
+use App\Communication\Contracts\NamesInboxes;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\InboxRecord;
@@ -50,5 +51,24 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver
         [$providerClass] = $this->providers[$record->provider_key] ?? throw InboxUnavailable::forId($inboxId);
 
         return $this->container->make($providerClass)->inboxFor($record->id, $record->provider_id);
+    }
+
+    public function named(string $name): Inbox
+    {
+        foreach ($this->providers as [$providerClass]) {
+            $provider = $this->container->make($providerClass);
+
+            if (! $provider instanceof NamesInboxes) {
+                continue;
+            }
+
+            $inbox = $provider->inboxNamed($name);
+
+            if ($inbox->isDefined()) {
+                return $inbox->get();
+            }
+        }
+
+        throw InboxUnavailable::forName($name);
     }
 }

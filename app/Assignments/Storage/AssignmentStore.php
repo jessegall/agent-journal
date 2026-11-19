@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Assignments\Storage;
 
 use App\Assignments\Enums\AssignmentOutcomeType;
+use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentOutcome;
+use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Database\ConnectionInterface;
@@ -37,6 +39,22 @@ final readonly class AssignmentStore
         $row = AssignmentRecord::query()->forRecord($record)->lockForUpdate()->first();
 
         return $row === null ? None::create() : Some::create($row->toAssignment());
+    }
+
+    /**
+     * The record's current assignment, locked, when it is still the one the caller read.
+     *
+     * @throws AssignmentConflict
+     */
+    public function lockExpected(RecordIdentity $record, AssignmentReference $expected): Assignment
+    {
+        $current = $this->lockCurrent($record);
+
+        if ($current->isEmpty() || ! $current->get()->reference->isSameAs($expected)) {
+            throw AssignmentConflict::staleReference($record);
+        }
+
+        return $current->get();
     }
 
     /**

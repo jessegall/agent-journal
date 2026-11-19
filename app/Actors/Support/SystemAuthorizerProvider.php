@@ -32,6 +32,7 @@ final readonly class SystemAuthorizerProvider implements AuthorizerProvider
         'skill refresh' => [],
         'built-in profiles' => [],
         'number install' => [],
+        'desk install' => [],
     ];
 
     public function __construct(private CurrentActor $actors) {}

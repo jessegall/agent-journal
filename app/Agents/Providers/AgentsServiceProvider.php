@@ -47,6 +47,7 @@ use App\Agents\Support\RequestSession;
 use App\Agents\Support\RolePermissionResolver;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Bus\Contracts\CallerSession;
 use App\Contracts\LaunchTransaction;
@@ -104,9 +105,8 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
         $this->commands([RetireAgentCommand::class, EnrollHostCommand::class, RunKeyScriptCommand::class]);
-        $assignments->registerAssignees(
-            new AssigneeRegistration(ActorType::Agent, AgentAssignees::class, AgentActivity::class),
-        );
+        $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent->value, AgentAssignees::class));
+        $assignments->registerActivity(new ActivityRegistration(ActorType::Agent, AgentActivity::class));
         $presentActors->register(AgentSessionCounter::class);
     }
 }

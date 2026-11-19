@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Bootstrappers;
 
 use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Support\DomainEntry;
 
@@ -21,7 +22,7 @@ final readonly class RegisterAssignables implements DomainBootstrapper
         $this->assignments->registerOwner($domain->name, $domain->requiredNames());
 
         foreach ($domain->assignables() as $type => $providerClass) {
-            $this->assignments->registerRecord($type, $providerClass, $domain->name);
+            $this->assignments->registerRecord($type, $providerClass, $domain->name, AssignmentPurpose::PublicWork);
         }
 
         foreach ($domain->autoAssigners() as $definition) {
@@ -34,6 +35,10 @@ final readonly class RegisterAssignables implements DomainBootstrapper
 
         foreach ($domain->assignees() as $assignees) {
             $this->assignments->registerAssignees($assignees);
+        }
+
+        foreach ($domain->activities() as $activity) {
+            $this->assignments->registerActivity($activity);
         }
     }
 }

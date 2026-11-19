@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\Support\AssignmentBatch;
+use App\Assignments\Contracts\AssignmentAdmission;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
@@ -45,20 +46,22 @@ final readonly class WriteAssignments implements AssignmentWriter
         private AssignmentStore $store,
         private AssignmentFacts $facts,
         private AssignmentBatch $batch,
+        private AssignmentAdmission $admission,
     ) {}
 
     public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
     {
         $this->transaction->requireOpen();
-        $this->checkActors($recipient);
-        $this->providers->recordProvider($record->type)->requireAssignable($record);
+        $admitted = $this->admission->admitPublic($record, $recipient);
         $current = $this->store->lockCurrent($record);
 
         if ($current->isDefined()) {
-            return $this->unchangedIfHeldBy($current->get(), $recipient);
+            return $this->unchangedIfHeldBy($current->get(), $admitted->resolved)->forRequest($admitted->request());
         }
 
-        return $this->changed(AssignmentReason::Assigned, $record, null, $this->store->assignIfUnheld($record, $recipient));
+        $after = $this->store->assignIfUnheld($record, $admitted->resolved);
+
+        return $this->changed(AssignmentReason::Assigned, $record, null, $after)->forRequest($admitted->request());
     }
 
     public function reassign(
@@ -67,28 +70,30 @@ final readonly class WriteAssignments implements AssignmentWriter
         AssigneeIdentity $recipient,
     ): AssignmentResult {
         $this->transaction->requireOpen();
-        $this->checkActors($recipient);
-        $this->providers->recordProvider($record->type)->requireAssignable($record);
-        $current = $this->requireExpected($record, $expected);
+        $admitted = $this->admission->admitPublic($record, $recipient);
+        $current = $this->store->lockExpected($record, $expected);
 
-        if ($current->holder()->isSameAs($recipient)) {
-            return $this->unchanged($current);
+        if ($current->holder()->isSameAs($admitted->resolved)) {
+            return $this->unchanged($current)->forRequest($admitted->request());
         }
 
-        return $this->changed(AssignmentReason::Reassigned, $record, $current, $this->store->replace($current, $recipient));
+        $after = $this->store->replace($current, $admitted->resolved);
+
+        return $this->changed(AssignmentReason::Reassigned, $record, $current, $after)->forRequest($admitted->request());
     }
 
     public function unassign(RecordIdentity $record, AssignmentReference $expected): AssignmentResult
     {
+        $this->providers->requirePublic($record->type);
         $this->transaction->requireOpen();
-        $this->checkActors(null);
+        $this->requireUnassign();
         $this->providers->recordProvider($record->type)->requireAssignable($record);
 
         if ($this->store->lockCurrent($record)->isEmpty()) {
             return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Unchanged)], []);
         }
 
-        $current = $this->requireExpected($record, $expected);
+        $current = $this->store->lockExpected($record, $expected);
         $this->store->remove($current);
 
         return $this->changed(AssignmentReason::Unassigned, $record, $current, null);
@@ -97,15 +102,19 @@ final readonly class WriteAssignments implements AssignmentWriter
     public function assignUnfinished(AssigneeIdentity $recipient, Closure $records): AssignmentResult
     {
         $this->transaction->requireOpen();
-        $this->checkActors($recipient);
         [$group, $finished] = $this->checkedGroup($records);
+        $admitted = $this->admission->admitPublic($group->root, $recipient);
         $root = $this->store->lockCurrent($group->root);
 
-        if ($root->isDefined() && ! $root->get()->holder()->isSameAs($recipient)) {
+        if ($root->isDefined() && ! $root->get()->holder()->isSameAs($admitted->resolved)) {
             throw AssignmentConflict::heldByAnother($group->root);
         }
 
-        return $this->published(AssignmentReason::Assigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->giveTo($record, $recipient)));
+        return $this->published(AssignmentReason::Assigned, $this->each(
+            $group,
+            $finished,
+            fn (RecordIdentity $record) => $this->batch->giveTo($record, $admitted->resolved),
+        ))->forRequest($admitted->request());
     }
 
     public function reassignUnfinished(
@@ -114,19 +123,23 @@ final readonly class WriteAssignments implements AssignmentWriter
         Closure $records,
     ): AssignmentResult {
         $this->transaction->requireOpen();
-        $this->checkActors($recipient);
         [$group, $finished] = $this->checkedGroup($records);
-        $this->requireExpected($group->root, $expectedRoot);
+        $admitted = $this->admission->admitPublic($group->root, $recipient);
+        $this->store->lockExpected($group->root, $expectedRoot);
 
-        return $this->published(AssignmentReason::Reassigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->giveTo($record, $recipient)));
+        return $this->published(AssignmentReason::Reassigned, $this->each(
+            $group,
+            $finished,
+            fn (RecordIdentity $record) => $this->batch->giveTo($record, $admitted->resolved),
+        ))->forRequest($admitted->request());
     }
 
     public function unassignUnfinished(AssignmentReference $expectedRoot, Closure $records): AssignmentResult
     {
         $this->transaction->requireOpen();
-        $this->checkActors(null);
+        $this->requireUnassign();
         [$group, $finished] = $this->checkedGroup($records);
-        $this->requireExpected($group->root, $expectedRoot);
+        $this->store->lockExpected($group->root, $expectedRoot);
 
         return $this->published(AssignmentReason::Unassigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->clear($record)));
     }
@@ -172,26 +185,9 @@ final readonly class WriteAssignments implements AssignmentWriter
     /**
      * Authorizes the caller for the write, then checks the recipient may hold work, before anything changes.
      */
-    private function checkActors(AssigneeIdentity|null $recipient): void
+    private function requireUnassign(): void
     {
-        $caller = AssigneeIdentity::of($this->actors->actor());
-        $ability = AssignmentAbility::forRecipient($caller, $recipient);
-        $this->authorizer->authorize(AssignmentPolicy::class, $recipient ?? AssignmentPolicy::class, $ability);
-
-        if ($recipient !== null) {
-            $this->providers->assigneeProvider($recipient->type)->requireEligible($recipient);
-        }
-    }
-
-    private function requireExpected(RecordIdentity $record, AssignmentReference $expected): Assignment
-    {
-        $current = $this->store->lockCurrent($record);
-
-        if ($current->isEmpty() || ! $current->get()->reference->isSameAs($expected)) {
-            throw AssignmentConflict::staleReference($record);
-        }
-
-        return $current->get();
+        $this->authorizer->authorize(AssignmentPolicy::class, AssignmentPolicy::class, AssignmentAbility::Unassign);
     }
 
     private function unchangedIfHeldBy(Assignment $current, AssigneeIdentity $recipient): AssignmentResult

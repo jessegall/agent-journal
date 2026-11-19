@@ -14,7 +14,9 @@ final class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
 
-    public function __construct(private readonly ValidationFactory $validation) {}
+    public function __construct(
+        private readonly ValidationFactory $validation,
+    ) {}
 
     /**
      * Validate and create a newly registered user.

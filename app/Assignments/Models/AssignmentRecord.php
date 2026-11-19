@@ -107,12 +107,16 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     }
 
     /**
+     * The record's assignment whoever holds it, for the store that must see the real current holder.
+     *
      * @param  Builder<self>  $query
      */
     #[Scope]
     protected function forRecord(Builder $query, RecordIdentity $record): void
     {
-        $query->where('record_type', $record->type)->where('record_id', $record->id);
+        $query->withoutGlobalScope(SignedInScope::class)
+            ->where('record_type', $record->type)
+            ->where('record_id', $record->id);
     }
 
     /**
@@ -129,6 +133,31 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             ->where('record_type', $type)
             ->where('holder_type', $holder->type)
             ->where('holder_id', $holder->id);
+    }
+
+    /**
+     * The assignments of one record type among the given record ids, read by a trusted provider path.
+     *
+     * @param  Builder<self>  $query
+     * @param  Builder<*>  $recordIds
+     */
+    #[Scope]
+    protected function assignedAmong(Builder $query, string $type, Builder $recordIds): void
+    {
+        $query->withoutGlobalScope(SignedInScope::class)
+            ->where('record_type', $type)
+            ->whereIn('record_id', $recordIds);
+    }
+
+    /**
+     * The assignments one assignee holds.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function heldBy(Builder $query, AssigneeIdentity $holder): void
+    {
+        $query->where('holder_type', $holder->type)->where('holder_id', $holder->id);
     }
 
     /**

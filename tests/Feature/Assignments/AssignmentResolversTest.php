@@ -102,7 +102,7 @@ final class AssignmentResolversTest extends TestCase
     public function test_names_come_from_each_actor_types_owner(): void
     {
         $names = $this->app->make(AssigneeResolver::class)->names([$this->helper, AssigneeIdentity::of($this->owner)]);
-        $users = $this->app->make(AssigneeResolver::class)->eligible(ActorType::User, new Page());
+        $users = $this->app->make(AssigneeResolver::class)->eligible(ActorType::User->value, new Page());
 
         $this->assertEqualsCanonicalizing(['Helper', 'Jesse'], array_map(fn ($name) => $name->name, $names));
         $this->assertSame(['Jesse'], array_map(fn ($name) => $name->name, $users->assignees));

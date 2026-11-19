@@ -82,10 +82,10 @@ final class AssignmentReadToolsTest extends TestCase
         $nextAfterId = (string) Str::ulid();
         $resolver = Mockery::mock(AssigneeResolver::class);
         $resolver->shouldReceive('eligible')->once()
-            ->withArgs(fn (ActorType $type, Page $page): bool => $type === ActorType::Agent && $page->afterId === $afterId && $page->limit === 20)
+            ->withArgs(fn (string $type, Page $page): bool => $type === ActorType::Agent->value && $page->afterId === $afterId && $page->limit === 20)
             ->andReturn(new AssigneeList([new AssigneeName(new AssigneeIdentity(ActorType::Agent->value, $nextAfterId), 'Worker')], $nextAfterId));
         $resolver->shouldReceive('eligible')->once()
-            ->withArgs(fn (ActorType $type, Page $page): bool => $type === ActorType::Agent && $page->afterId === $nextAfterId && $page->limit === 20)
+            ->withArgs(fn (string $type, Page $page): bool => $type === ActorType::Agent->value && $page->afterId === $nextAfterId && $page->limit === 20)
             ->andReturn(new AssigneeList([], null));
         $this->app->scoped(AssigneeResolver::class, fn (): AssigneeResolver => $resolver);
 

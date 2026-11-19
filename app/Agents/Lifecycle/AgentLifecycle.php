@@ -35,4 +35,20 @@ final readonly class AgentLifecycle
     {
         return Agent::query()->whereKey($agentId)->lockForUpdate()->first() ?? throw AgentNotAvailable::forAgent($agentId);
     }
+
+    /**
+     * The agent under an exclusive lock; a retired agent is refused.
+     *
+     * @throws AgentNotAvailable
+     */
+    public function lockExclusiveActive(string $agentId): Agent
+    {
+        $agent = $this->lockExclusive($agentId);
+
+        if ($agent->isRetired()) {
+            throw AgentNotAvailable::forAgent($agentId);
+        }
+
+        return $agent;
+    }
 }

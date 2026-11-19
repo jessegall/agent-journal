@@ -8,6 +8,7 @@ use App\Assignments\Providers\AssignmentsServiceProvider;
 use App\Bus\Providers\CommandBusServiceProvider;
 use App\Comments\Providers\CommentsServiceProvider;
 use App\Communication\Providers\CommunicationServiceProvider;
+use App\Desks\Providers\DesksServiceProvider;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Engine\Providers\EngineServiceProvider;
@@ -49,6 +50,7 @@ return [
     RecordsServiceProvider::class,
     SharingServiceProvider::class,
     CommunicationServiceProvider::class,
+    DesksServiceProvider::class,
     CommentsServiceProvider::class,
     TextServiceProvider::class,
     HooksServiceProvider::class,

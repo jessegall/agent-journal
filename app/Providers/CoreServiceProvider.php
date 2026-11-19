@@ -51,6 +51,7 @@ final class CoreServiceProvider extends ServiceProvider
         'Bus',
         'Comments',
         'Communication',
+        'Desks',
         'Engine',
         'Hooks',
         'Links',

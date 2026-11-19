@@ -21,6 +21,11 @@ interface AssigneeProvider
     public function requireEligible(AssigneeIdentity $recipient): Assignee;
 
     /**
+     * The recipient under an exclusive lock on its row, for a change that must not race another change of it.
+     */
+    public function requireExclusive(AssigneeIdentity $recipient): Assignee;
+
+    /**
      * @param  list<AssigneeIdentity>  $assignees
      * @return list<AssigneeName>
      */

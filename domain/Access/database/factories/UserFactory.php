@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Access\Database\Factories;
 
+use App\Actors\Support\ActorIdentity;
+use App\Bus\Enums\CommandEntry;
+use App\Bus\Support\EntryDispatchers;
+use App\Desks\Commands\ProvisionActorDesk;
 use Domain\Access\Models\User;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -57,5 +62,19 @@ class UserFactory extends Factory
             'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
             'two_factor_confirmed_at' => now(),
         ]);
+    }
+
+    /**
+     * A user with its personal desk, as admission gives one.
+     */
+    public function withDesk(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            Container::getInstance()->make(EntryDispatchers::class)->runAsJournal(
+                CommandEntry::HostControl,
+                'desk install',
+                new ProvisionActorDesk(ActorIdentity::of($user), $user->name),
+            );
+        });
     }
 }

@@ -39,6 +39,10 @@ final readonly class AssignmentBatch
         $byType = [];
 
         foreach ($group->records as $record) {
+            $this->providers->requirePublic($record->type);
+        }
+
+        foreach ($group->records as $record) {
             $byType[$record->type][] = $this->providers->recordProvider($record->type)->requireAssignable($record);
         }
 

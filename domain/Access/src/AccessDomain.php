@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access;
 
 use App\Actors\Enums\ActorType;
+use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
@@ -51,7 +52,15 @@ final class AccessDomain extends Domain implements ProvidesAssignees, ProvidesSk
      */
     public function assignees(): array
     {
-        return [new AssigneeRegistration(ActorType::User, UserAssignees::class, UserActivity::class)];
+        return [new AssigneeRegistration(ActorType::User->value, UserAssignees::class)];
+    }
+
+    /**
+     * @return list<ActivityRegistration>
+     */
+    public function activities(): array
+    {
+        return [new ActivityRegistration(ActorType::User, UserActivity::class)];
     }
 
     public function skills(): array

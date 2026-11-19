@@ -42,6 +42,20 @@ final readonly class AgentAssignees implements AssigneeProvider
     }
 
     /**
+     * @throws AssigneeUnavailable
+     */
+    public function requireExclusive(AssigneeIdentity $recipient): Assignee
+    {
+        $this->actors->actor();
+
+        try {
+            return $this->lifecycle->lockExclusiveActive($recipient->id);
+        } catch (AgentNotAvailable $unavailable) {
+            throw AssigneeUnavailable::forActor($recipient, $unavailable);
+        }
+    }
+
+    /**
      * @param  list<AssigneeIdentity>  $actors
      * @return list<AssigneeName>
      */

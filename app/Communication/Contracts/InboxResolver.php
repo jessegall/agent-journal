@@ -15,4 +15,11 @@ interface InboxResolver
      * @throws InboxUnavailable
      */
     public function resolve(string $inboxId): Inbox;
+
+    /**
+     * The inbox a provider knows by this stable name.
+     *
+     * @throws InboxUnavailable
+     */
+    public function named(string $name): Inbox;
 }

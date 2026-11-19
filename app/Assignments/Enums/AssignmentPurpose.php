@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Assignments\Enums;
+
+/**
+ * What assignments of a record type are for: public work anyone with authority may hand out, or an internal
+ * responsibility, such as a desk seat, that only Core's own writers change.
+ */
+enum AssignmentPurpose: string
+{
+    case PublicWork = 'public-work';
+    case InternalResponsibility = 'internal-responsibility';
+
+    public function isPublic(): bool
+    {
+        return $this === self::PublicWork;
+    }
+}

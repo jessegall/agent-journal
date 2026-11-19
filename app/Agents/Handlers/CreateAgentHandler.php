@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Actors\Contracts\ActorProvisioning;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Models\Agent;
@@ -14,6 +16,8 @@ use App\Contracts\CommandHandler;
  */
 final readonly class CreateAgentHandler implements CommandHandler
 {
+    public function __construct(private ActorProvisioning $desks) {}
+
     /**
      * @throws AgentNameRequired
      */
@@ -23,6 +27,9 @@ final readonly class CreateAgentHandler implements CommandHandler
             throw AgentNameRequired::forAgent();
         }
 
-        return Agent::named($command->name, $command->role)->id;
+        $agent = Agent::named($command->name, $command->role);
+        $this->desks->provision(ActorIdentity::of($agent), $agent->name);
+
+        return $agent->id;
     }
 }

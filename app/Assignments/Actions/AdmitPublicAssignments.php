@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Assignments\Actions;
+
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
+use App\Assignments\Contracts\AssigneeLocks;
+use App\Assignments\Contracts\AssignmentAdmission;
+use App\Assignments\Contracts\AssignmentDestinationResolver;
+use App\Assignments\Contracts\AssignmentProviders;
+use App\Assignments\Enums\AssignmentAbility;
+use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Support\AdmittedAssignment;
+use App\Assignments\Support\AssigneeIdentity;
+use App\Records\Support\RecordIdentity;
+
+/**
+ * Admits public assignments in one order: public purpose, the caller's authority over the requested recipient, the
+ * recipient's lock, one resolution of the recipient, the final holder's lock and the record. The caller's own seat
+ * never takes part.
+ */
+final readonly class AdmitPublicAssignments implements AssignmentAdmission
+{
+    public function __construct(
+        private CurrentActor $actors,
+        private CurrentAuthorizer $authorizer,
+        private AssignmentProviders $providers,
+        private AssigneeLocks $locks,
+        private AssignmentDestinationResolver $destinations,
+    ) {}
+
+    public function admitPublic(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
+    {
+        $this->providers->requirePublic($record->type);
+        $caller = AssigneeIdentity::of($this->actors->actor());
+        $ability = AssignmentAbility::forRecipient($caller, $requested);
+        $this->authorizer->authorize(AssignmentPolicy::class, $requested, $ability);
+        $this->locks->lockShared([$requested]);
+        $resolved = $this->destinations->resolve($requested)->assigneeIdentity();
+        $this->locks->lockShared([$resolved]);
+        $this->providers->recordProvider($record->type)->requireAssignable($record);
+
+        return new AdmittedAssignment($record, $requested, $resolved);
+    }
+}

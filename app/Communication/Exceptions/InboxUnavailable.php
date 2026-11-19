@@ -16,4 +16,14 @@ final class InboxUnavailable extends RuntimeException implements CommandRefusal
     {
         return new self("Inbox {$inboxId} is not available.");
     }
+
+    public static function forActor(string $actorId): self
+    {
+        return new self("Actor {$actorId} has no inbox.");
+    }
+
+    public static function forName(string $name): self
+    {
+        return new self("No inbox is named {$name}.");
+    }
 }

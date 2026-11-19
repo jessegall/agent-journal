@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Assignments\Contracts;
 
+use App\Assignments\Enums\AssignmentPurpose;
+use App\Assignments\Exceptions\AssigneeTypeRepeated;
+use App\Assignments\Exceptions\AssignmentProviderInvalid;
+use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
@@ -25,11 +29,22 @@ interface AssignmentRegistration
     /**
      * @param  class-string<AssignableProvider>  $providerClass
      */
-    public function registerRecord(string $type, string $providerClass, string $owner): void;
+    public function registerRecord(
+        string $type,
+        string $providerClass,
+        string $owner,
+        AssignmentPurpose $purpose,
+    ): void;
 
     public function registerAutoAssigner(AutoAssignerDefinition $definition, string $owner): void;
 
     public function registerPool(PoolDefinition $pool, string $owner): void;
 
     public function registerAssignees(AssigneeRegistration $registration): void;
+
+    /**
+     * @throws AssigneeTypeRepeated
+     * @throws AssignmentProviderInvalid
+     */
+    public function registerActivity(ActivityRegistration $registration): void;
 }

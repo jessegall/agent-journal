@@ -64,6 +64,7 @@ final class BindingRulesTest extends TestCase
         'app/Assignments/Registry/AssignmentRegistry.php',
         'app/Assignments/Providers/AssignmentsServiceProvider.php',
         'app/Agents/Providers/AgentsServiceProvider.php',
+        'app/Desks/Providers/DesksServiceProvider.php',
         'app/CoreApi.php',
         'app/Domains/Bootstrappers/RegisterAssignables.php',
     ];

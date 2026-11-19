@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Desks\Database\Seeders\DesksSeeder;
 use App\Numbers\Database\Seeders\NumbersSeeder;
 use Domain\Access\Database\Seeders\OwnerSeeder;
 use Domain\Plans\Database\Seeders\PlansSeeder;
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(NumbersSeeder::class);
+        $this->call(DesksSeeder::class);
         $this->call(OwnerSeeder::class);
         $tasks = $this->container->make(PlanTasksSeeder::class);
         $this->callWith(PlansSeeder::class, [

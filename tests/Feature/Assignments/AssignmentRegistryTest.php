@@ -7,6 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\AssignableProvider;
 use App\Assignments\Contracts\AssigneeProvider;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
@@ -17,7 +18,6 @@ use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
 use App\Records\Exceptions\InvalidRecordIdentity;
 use Domain\Access\Models\User;
-use Domain\Access\Support\UserActivity;
 use Domain\Plans\Models\Plan;
 use Tests\TestCase;
 
@@ -43,12 +43,12 @@ final class AssignmentRegistryTest extends TestCase
         $provider = $this->createStub(AssignableProvider::class);
         $this->app->instance($provider::class, $provider);
 
-        $this->registry->registerRecord('tests.record', $provider::class, 'Tests');
+        $this->registry->registerRecord('tests.record', $provider::class, 'Tests', AssignmentPurpose::PublicWork);
 
         $this->assertSame($provider, $this->registry->recordProvider('tests.record'));
         $this->expectException(AssignmentTypeRepeated::class);
 
-        $this->registry->registerRecord('tests.record', $provider::class, 'Tests');
+        $this->registry->registerRecord('tests.record', $provider::class, 'Tests', AssignmentPurpose::PublicWork);
     }
 
     public function test_a_type_that_is_no_alias_or_a_provider_of_the_wrong_type_is_refused(): void
@@ -56,7 +56,7 @@ final class AssignmentRegistryTest extends TestCase
         $provider = $this->createStub(AssignableProvider::class)::class;
 
         $this->assertThrows(
-            fn () => $this->registry->registerRecord('Tasks', $provider, 'Tests'),
+            fn () => $this->registry->registerRecord('Tasks', $provider, 'Tests', AssignmentPurpose::PublicWork),
             InvalidRecordIdentity::class,
         );
         // A module's descriptor is read at runtime, so a wrong class must be refused even though the types forbid it.
@@ -65,15 +65,15 @@ final class AssignmentRegistryTest extends TestCase
                 'tests.record',
                 self::class, // @phpstan-ignore argument.type
                 'Tests',
+                AssignmentPurpose::PublicWork,
             ),
             AssignmentProviderInvalid::class,
         );
         $this->assertThrows(
             fn () => $this->registry->registerAssignees(
                 new AssigneeRegistration(
-                    ActorType::User,
+                    ActorType::User->value,
                     self::class, // @phpstan-ignore argument.type
-                    UserActivity::class,
                 ),
             ),
             AssignmentProviderInvalid::class,
@@ -85,14 +85,14 @@ final class AssignmentRegistryTest extends TestCase
         $provider = $this->createStub(AssigneeProvider::class);
         $this->app->instance($provider::class, $provider);
         $this->registry->registerAssignees(
-            new AssigneeRegistration(ActorType::User, $provider::class, UserActivity::class),
+            new AssigneeRegistration(ActorType::User->value, $provider::class),
         );
 
         $this->assertSame($provider, $this->registry->assigneeProvider(ActorType::User->value));
         $this->expectException(AssigneeTypeRepeated::class);
 
         $this->registry->registerAssignees(
-            new AssigneeRegistration(ActorType::User, $provider::class, UserActivity::class),
+            new AssigneeRegistration(ActorType::User->value, $provider::class),
         );
     }
 
@@ -108,7 +108,7 @@ final class AssignmentRegistryTest extends TestCase
     public function test_an_alias_registered_after_the_type_passes_once_its_model_is_assignable(): void
     {
         $provider = $this->createStub(AssignableProvider::class)::class;
-        $this->registry->registerRecord('tests.late-record', $provider, 'Tests');
+        $this->registry->registerRecord('tests.late-record', $provider, 'Tests', AssignmentPurpose::PublicWork);
 
         $this->assertThrows(
             fn () => $this->registry->checkRecordModels($this->app->make(LinkTypeRegistry::class)),

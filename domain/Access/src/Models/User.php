@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Models;
 
+use App\Actors\Contracts\ForwardsToDesk;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
@@ -44,7 +45,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
-class User extends Authenticatable implements Assignee, MustVerifyEmail, PasskeyUser, ReadableModel, ReceivesMessages, SendsMessages
+class User extends Authenticatable implements Assignee, ForwardsToDesk, MustVerifyEmail, PasskeyUser, ReadableModel, ReceivesMessages, SendsMessages
 {
     use BoundedReads;
 
@@ -65,6 +66,14 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * The installation's owner account, made the first time and found by its email after that.
+     */
+    public static function installOwner(string $name, string $email, string $password): self
+    {
+        return self::query()->firstOrCreate(['email' => $email], ['name' => $name, 'password' => $password]);
     }
 
     /**

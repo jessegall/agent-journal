@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Assignments\Contracts;
 
-use App\Actors\Enums\ActorType;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
@@ -24,7 +23,7 @@ interface AssigneeResolver
      */
     public function names(array $actors): array;
 
-    public function eligible(ActorType $type, Page $page): AssigneeList;
+    public function eligible(string $type, Page $page): AssigneeList;
 
     /**
      * The holders of a set of assignments with their names, read with one call per actor type.

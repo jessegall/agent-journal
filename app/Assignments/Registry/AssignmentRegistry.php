@@ -14,11 +14,14 @@ use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AutoAssigner;
 use App\Assignments\Contracts\AutoAssignmentActivity;
+use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
+use App\Assignments\Exceptions\AssignmentTypeInternal;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentDeclarationRefused;
+use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
@@ -49,6 +52,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      * @var array<string, string>
      */
     private array $recordOwners = [];
+
+    /**
+     * @var array<string, AssignmentPurpose>
+     */
+    private array $recordPurposes = [];
 
     /**
      * @var array<string, AutoAssignerDefinition>
@@ -94,8 +102,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      * @throws AssignmentProviderInvalid
      * @throws AutoAssignmentDeclarationRefused
      */
-    public function registerRecord(string $type, string $providerClass, string $owner): void
-    {
+    public function registerRecord(
+        string $type,
+        string $providerClass,
+        string $owner,
+        AssignmentPurpose $purpose,
+    ): void {
         RecordIdentity::checkType($type);
         $this->requireOwner($owner);
 
@@ -109,6 +121,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
 
         $this->recordProviders[$type] = $providerClass;
         $this->recordOwners[$type] = $owner;
+        $this->recordPurposes[$type] = $purpose;
     }
 
     /**
@@ -176,9 +189,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      */
     public function registerAssignees(AssigneeRegistration $registration): void
     {
-        $type = $registration->type->value;
-
-        if (array_key_exists($type, $this->assigneeProviders)) {
+        if (array_key_exists($registration->type, $this->assigneeProviders)) {
             throw AssigneeTypeRepeated::for($registration->type);
         }
 
@@ -186,12 +197,40 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             throw AssignmentProviderInvalid::forAssignees($registration->type, $registration->providerClass);
         }
 
-        if (! is_subclass_of($registration->activityClass, AutoAssignmentActivity::class)) {
-            throw AssignmentProviderInvalid::forActivity($registration->type, $registration->activityClass);
+        $this->assigneeProviders[$registration->type] = $registration->providerClass;
+    }
+
+    /**
+     * @throws AssigneeTypeRepeated
+     * @throws AssignmentProviderInvalid
+     */
+    public function registerActivity(ActivityRegistration $registration): void
+    {
+        $type = $registration->type->value;
+
+        if (array_key_exists($type, $this->activities)) {
+            throw AssigneeTypeRepeated::for($type);
         }
 
-        $this->assigneeProviders[$type] = $registration->providerClass;
+        if (! is_subclass_of($registration->activityClass, AutoAssignmentActivity::class)) {
+            throw AssignmentProviderInvalid::forActivity($type, $registration->activityClass);
+        }
+
         $this->activities[$type] = $registration->activityClass;
+    }
+
+    public function requirePublic(string $type): void
+    {
+        if (! $this->purposeOf($type)->isPublic()) {
+            throw AssignmentTypeInternal::forType($type);
+        }
+    }
+
+    public function requireInternal(string $type): void
+    {
+        if ($this->purposeOf($type)->isPublic()) {
+            throw AssignmentTypeUnavailable::forType($type);
+        }
     }
 
     public function hasRecordProvider(string $type): bool
@@ -357,5 +396,13 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         }
 
         return $built;
+    }
+
+    /**
+     * @throws AssignmentTypeUnavailable
+     */
+    private function purposeOf(string $type): AssignmentPurpose
+    {
+        return $this->recordPurposes[$type] ?? throw AssignmentTypeUnavailable::forType($type);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Assignments\Contracts;
 
 use App\Actors\Enums\ActorType;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
+use App\Assignments\Exceptions\AssignmentTypeInternal;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Support\PoolDefinition;
 
@@ -26,6 +27,21 @@ interface AssignmentProviders
      * @throws AssignmentProviderInvalid
      */
     public function recordProvider(string $type): AssignableProvider;
+
+    /**
+     * Refuses a record type that only Core's own writers assign, before anything is resolved or written.
+     *
+     * @throws AssignmentTypeInternal
+     * @throws AssignmentTypeUnavailable
+     */
+    public function requirePublic(string $type): void;
+
+    /**
+     * Refuses a record type that public writers assign, so Core's own writer touches only its internal types.
+     *
+     * @throws AssignmentTypeUnavailable
+     */
+    public function requireInternal(string $type): void;
 
     /**
      * @throws AssignmentTypeUnavailable
