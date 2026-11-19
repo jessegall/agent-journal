@@ -16,6 +16,7 @@ use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchRecord;
+use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
@@ -99,7 +100,7 @@ final class LaunchAgentTest extends TestCase
 
     public function test_a_codex_launch_receipt_carries_its_model_flag_and_no_actual_model(): void
     {
-        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of('codex'), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, TestSelections::onHost());
+        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of('codex'), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
 
         $receipt = $this->launch($request);
 
@@ -108,7 +109,7 @@ final class LaunchAgentTest extends TestCase
 
     private function request(): LaunchRequest
     {
-        return new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, TestSelections::onHost());
+        return new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
     }
 
     private function launch(LaunchRequest $request): LaunchReceipt

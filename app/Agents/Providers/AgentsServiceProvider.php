@@ -37,6 +37,7 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
+use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\Agent;
@@ -58,6 +59,7 @@ use App\Agents\Support\AgentVisibility;
 use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\DriverBudgets;
+use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\RequestSession;
@@ -92,6 +94,7 @@ final class AgentsServiceProvider extends ServiceProvider
             HelperImages::class,
             fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')),
         );
+        $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
         $this->app->singleton(DriverBudgets::class, fn () => new DriverBudgets(
             $this->app->make('config')->integer('agents.driver_budgets.claim_batch_max'),
             $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),

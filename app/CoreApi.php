@@ -142,6 +142,7 @@ use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\NativeTurnRecords;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RuntimeResolver;
+use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
@@ -212,6 +213,7 @@ use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRecordDetails;
 use App\Agents\Support\LaunchRequest;
@@ -996,6 +998,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                SessionPolicyReader::class,
                 JournalCall::class,
                 RegistersCalls::class,
                 CallSender::class,
@@ -1237,6 +1240,7 @@ final class CoreApi
                 StopConditions::class,
                 ExecutionBudgets::class,
                 ExecutionPolicy::class,
+                LaunchPolicy::class,
                 ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,

@@ -14,6 +14,7 @@ use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
+use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Programs\Enums\HookProgram;
@@ -100,7 +101,7 @@ final class ConversationVisitTest extends TestCase
 
     private function launch(string $context): AgentSession
     {
-        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, $context, $context, ConversationModeType::New, null, TestSelections::onHost());
+        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, $context, $context, ConversationModeType::New, null, LaunchPolicy::withoutProfile(TestSelections::onHost()));
 
         return AgentSession::query()->findOrFail($this->app->make(CommandBus::class)->run(new LaunchAgent($request))->sessionId);
     }

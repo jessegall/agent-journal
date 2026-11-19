@@ -25,6 +25,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\LaunchRecord;
+use App\Agents\Models\SessionPolicy;
 use App\Agents\Resolvers\HostLaunchMaterial;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
@@ -70,12 +71,13 @@ final readonly class LaunchAgentHandler implements CommandHandler
             throw AgentBusy::forAgent($request->agentId);
         }
 
-        if ($request->execution->mode === ExecutionModeType::RequiredContainer) {
+        if ($request->execution()->mode === ExecutionModeType::RequiredContainer) {
             $this->admitContainer($request);
         }
 
         $parent = $request->parentSessionId === null ? null : AgentSession::query()->findOrFail($request->parentSessionId);
         $launched = $this->launches->launchInTransaction(Agent::query()->findOrFail($request->agentId), $request->selection, $request->requestId, $parent);
+        SessionPolicy::freeze($launched->session, $request->policy);
         $record->launchedAs($launched->session);
         $this->material->keep($request->requestId, $launched);
         $this->events->dispatch(new LaunchAccepted($request->requestId, $request->agentId, $launched->session->id));
@@ -114,11 +116,11 @@ final readonly class LaunchAgentHandler implements CommandHandler
             $this->capabilities->capability(new HostCapabilityQuery($capability, $request->selection->program, AccountModeType::Subscription, ExecutionModeType::RequiredContainer))->requireSupported();
         }
 
-        if (! $this->images->isVerified((string) $request->execution->imageReference)) {
-            throw ImageUnverified::because((string) $request->execution->imageReference);
+        if (! $this->images->isVerified((string) $request->execution()->imageReference)) {
+            throw ImageUnverified::because((string) $request->execution()->imageReference);
         }
 
         $this->capacityLock->holdUntilCommit();
-        CapacityReservation::reserve($request->requestId, $request->execution->budgets, $this->capacity);
+        CapacityReservation::reserve($request->requestId, $request->execution()->budgets, $this->capacity);
     }
 }

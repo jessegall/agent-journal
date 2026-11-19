@@ -7,6 +7,7 @@ namespace App\Profiles\Handlers;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchOriginType;
+use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Bus\Contracts\CommandBus;
@@ -38,6 +39,8 @@ final readonly class LaunchProfileMainHandler implements CommandHandler
             throw ProfileCannotCoordinate::for($command->profile);
         }
 
+        $source = $profile->selection->source;
+
         return $this->commands->run(new LaunchAgent(new LaunchRequest(
             $command->requestId,
             $command->agentId,
@@ -47,7 +50,14 @@ final readonly class LaunchProfileMainHandler implements CommandHandler
             null,
             ConversationModeType::New,
             null,
-            $profile->launch->execution,
+            new LaunchPolicy(
+                $profile->launch->access,
+                $profile->launch->stopConditions,
+                $profile->launch->execution,
+                $source->profileKey,
+                $source->profileRevision,
+                $profile->launch->configurationHash(),
+            ),
         )));
     }
 }

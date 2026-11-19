@@ -76,4 +76,12 @@ final readonly class ProfileLaunchPolicy
 
         return ExecutionPolicy::make($mode, $image, self::WORKSPACE, ExecutionBudgets::defaults(), []);
     }
+
+    /**
+     * The hash of the activated configuration this policy came from.
+     */
+    public function configurationHash(): string
+    {
+        return $this->provenance->configurationHash;
+    }
 }
