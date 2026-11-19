@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Profiles\Exceptions;
 
-use App\Profiles\Enums\ProfileType;
-use LogicException;
+use InvalidArgumentException;
 
-final class BuiltInProfileMissing extends LogicException
+final class BuiltInProfileMissing extends InvalidArgumentException
 {
-    public static function forType(ProfileType $type): self
+    public static function forKey(string $key): self
     {
-        return new self("No built-in profile serves the profile type {$type->value}.");
+        return new self("No built-in profile has the key {$key}.");
     }
 }

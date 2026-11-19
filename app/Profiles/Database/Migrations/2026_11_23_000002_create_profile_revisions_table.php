@@ -14,7 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('profile_id')->constrained('profiles')->cascadeOnDelete();
             $table->unsignedInteger('revision');
-            $table->string('type', 32);
+            $table->string('base', 32);
             $table->text('instructions');
             $table->string('model');
             $table->json('skill_allowlist')->nullable();

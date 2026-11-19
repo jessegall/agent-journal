@@ -22,7 +22,6 @@ trait StartsAgentRequests
         $this->app->instance(AgentContext::class, new AgentContext(
             $agentId,
             $sessionId,
-            'hooks.main_ready',
             new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
             null,
         ));

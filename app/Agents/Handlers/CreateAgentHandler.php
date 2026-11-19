@@ -27,7 +27,7 @@ final readonly class CreateAgentHandler implements CommandHandler
             throw AgentNameRequired::forAgent();
         }
 
-        $agent = Agent::named($command->name, $command->role);
+        $agent = Agent::named($command->name, $command->profileKey);
         $this->desks->provision(ActorIdentity::of($agent), $agent->name);
 
         return $agent->id;

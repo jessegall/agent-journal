@@ -9,7 +9,6 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -65,8 +64,8 @@ final class TaskRunOwnershipTest extends TestCase
     {
         parent::setUp();
 
-        $this->first = $this->launch('First', 'hooks.main_ready');
-        $this->second = $this->launch('Second', 'hooks.read_only_helper_ready');
+        $this->first = $this->launch('First', 'main-agent');
+        $this->second = $this->launch('Second', 'read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Owned work']);
     }
 
@@ -138,18 +137,18 @@ final class TaskRunOwnershipTest extends TestCase
         $this->assertThrows(fn () => $this->bus()->run(new StartTask($this->task->id)), TaskRestartRefused::class);
     }
 
-    private function launch(string $name, string $role): AgentSession
+    private function launch(string $name, string $profileKey): AgentSession
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named($name, AgentRole::from($role)), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named($name, $profileKey), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     private function actAs(AgentSession $session): void
     {
         $this->app->forgetScopedInstances();
         $agent = $session->agent()->firstOrFail();
-        $this->app->instance(AgentContext::class, new AgentContext($agent->id, $session->id, $agent->role, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
+        $this->app->instance(AgentContext::class, new AgentContext($agent->id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), TestLaunchAuthority::forAgent($agent->id));
     }
 

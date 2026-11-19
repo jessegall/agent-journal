@@ -7,7 +7,6 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Contracts\AssignmentTransaction;
@@ -119,7 +118,7 @@ final class TaskRunTest extends TestCase
     private function launched(string $name): AgentSession
     {
         return $this->app->make(LaunchSessions::class)
-            ->launch(Agent::named($name, AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())
+            ->launch(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

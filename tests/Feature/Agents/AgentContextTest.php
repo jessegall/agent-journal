@@ -32,18 +32,16 @@ final class AgentContextTest extends TestCase
         Route::post('/testing/agent-context', fn (AgentContext $context) => [
             'agent' => $context->agentId,
             'session' => $context->sessionId,
-            'role' => $context->role,
         ])->middleware(AuthenticateAgent::class);
     }
 
     public function test_a_launch_credential_authenticates_its_own_agent_and_session(): void
     {
-        $launch = TestLaunch::start('hooks.read_only_helper_ready');
+        $launch = TestLaunch::start('read-only-helper');
 
         $this->callAs($launch)->assertOk()->assertExactJson([
             'agent' => $launch->agent->id,
             'session' => $launch->session->id,
-            'role' => 'hooks.read_only_helper_ready',
         ]);
     }
 

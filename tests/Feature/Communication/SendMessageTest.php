@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
@@ -60,7 +59,7 @@ final class SendMessageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $this->ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();
-        $builder = ActorIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
+        $builder = ActorIdentity::of(Agent::named('Builder', 'read-only-helper'));
         $this->builderInboxId = $this->inboxOf($builder)->inboxId();
     }
 

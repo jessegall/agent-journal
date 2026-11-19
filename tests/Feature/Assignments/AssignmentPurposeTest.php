@@ -63,7 +63,7 @@ final class AssignmentPurposeTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->worker = TestLaunch::start('hooks.writing_helper_ready');
+        $this->worker = TestLaunch::start('writing-helper');
         $this->seat = DeskSeat::query()->ofDesk(DeskRecord::openNamed('team', 'Team', 1, false))->sole();
         $this->startUserRequestAs($owner->id);
     }

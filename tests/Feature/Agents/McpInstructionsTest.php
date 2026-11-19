@@ -6,7 +6,6 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Support\AgentContext;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Bus\Support\OperationDeadline;
@@ -35,7 +34,7 @@ final class McpInstructionsTest extends TestCase
 
     public function test_a_main_agents_start_context_holds_the_instructions_once(): void
     {
-        $context = $this->startAs(AgentRole::MainAgent);
+        $context = $this->startAs();
 
         $this->assertSame(1, count(array_filter($context, fn (string $line): bool => str_starts_with($line, 'Use the journal MCP tools'))));
         $this->assertStringContainsString('helper dispatch (journal helper)', implode("\n", $context));
@@ -64,11 +63,11 @@ final class McpInstructionsTest extends TestCase
     /**
      * @return list<string>
      */
-    private function startAs(AgentRole $role): array
+    private function startAs(): array
     {
         $this->callAs('call-1', hash('sha256', 'call-1'));
         $this->app->instance(CurrentAuthorizer::class, new FixedCurrentAuthorizer([AssignmentAbility::Dispatch]));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), $role->value, new SignedCall('call-1', CarbonImmutable::now(), hash('sha256', 'call-1')), null));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), hash('sha256', 'call-1')), null));
         $start = new SessionStarted(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', hash('sha256', 'call-1')), new SessionStartDetails('native-1', SessionStartSource::Startup));
         $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);
 

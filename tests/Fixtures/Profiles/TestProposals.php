@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Enums\HookProgram;
 
@@ -23,7 +23,7 @@ final class TestProposals
      */
     public static function profile(
         string $key,
-        ProfileType $type,
+        ProfileBase $type,
         string $instructions = 'Work.',
         string $model = 'opus',
         array|null $skillAllowlist = null,

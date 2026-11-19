@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\LaunchMaterialResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchDisposition;
 use App\Agents\Enums\LaunchOriginType;
@@ -49,7 +48,7 @@ final class LaunchAgentTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->agent = Agent::named('Researcher', AgentRole::ReadOnlyHelper);
+        $this->agent = Agent::named('Researcher', 'read-only-helper');
     }
 
     public function test_a_session_without_a_selection_cannot_be_written(): void

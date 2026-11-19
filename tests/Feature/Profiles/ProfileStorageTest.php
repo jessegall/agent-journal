@@ -11,7 +11,6 @@ use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileResolver;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
@@ -19,6 +18,7 @@ use App\Profiles\Models\Profile;
 use App\Profiles\Models\ProfileRevision;
 use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ProfileActivation;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
@@ -55,7 +55,7 @@ final class ProfileStorageTest extends TestCase
         $this->assertSame(2, $snapshot->revision);
         $this->assertSame('Review the change twice.', $snapshot->instructions);
         $this->assertSame([], $snapshot->skillAllowlist);
-        $this->assertSame(ProfileType::ReadOnlyHelper, $snapshot->type);
+        $this->assertSame(ProfileBase::readOnlyHelper()->key, $snapshot->base->key);
 
         $profile = Profile::byKey(ProfileKey::from('journal-reviewer'));
         $this->assertSame('Review the change.', ProfileRevision::numbered($profile, 1)->instructions);
@@ -109,7 +109,7 @@ final class ProfileStorageTest extends TestCase
     {
         $this->activate($this->reviewer('Review the change.', null));
         $this->activate(
-            TestProposals::profile('journal-quiet', ProfileType::WritingHelper, 'Write.', 'sonnet', [], ['journal']),
+            TestProposals::profile('journal-quiet', ProfileBase::writingHelper(), 'Write.', 'sonnet', [], ['journal']),
         );
 
         $this->artisan('profile:list')
@@ -117,7 +117,7 @@ final class ProfileStorageTest extends TestCase
             ->expectsOutputToContain('journal-quiet')
             ->assertSuccessful();
         $this->artisan('profile:show', ['key' => 'journal-reviewer'])
-            ->expectsOutputToContain('Type: read_only_helper')
+            ->expectsOutputToContain('Starts from: Read-only helper')
             ->expectsOutputToContain('Skill allowlist: absent, every applicable skill')
             ->expectsOutputToContain('Required skills: none')
             ->assertSuccessful();
@@ -134,7 +134,7 @@ final class ProfileStorageTest extends TestCase
     {
         return TestProposals::profile(
             'journal-reviewer',
-            ProfileType::ReadOnlyHelper,
+            ProfileBase::readOnlyHelper(),
             $instructions,
             'opus',
             $allowlist,

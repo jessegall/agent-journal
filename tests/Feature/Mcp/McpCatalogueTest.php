@@ -34,7 +34,7 @@ final class McpCatalogueTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', 'main', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null));
+        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null));
     }
 
     public function test_a_domain_tool_appears_in_tools_list(): void

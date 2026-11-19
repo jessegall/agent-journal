@@ -6,7 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\StopCondition;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Enums\HookProgram;
 
@@ -25,7 +25,7 @@ final readonly class ProposedProfile
     public function __construct(
         public ProfileKey $key,
         public string $label,
-        public ProfileType $type,
+        public ProfileBase $base,
         public string $instructions,
         public string $model,
         public HookProgram|null $program,

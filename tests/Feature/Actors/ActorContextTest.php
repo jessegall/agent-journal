@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
@@ -69,15 +68,8 @@ final class ActorContextTest extends TestCase
 
     public function test_the_context_of_a_signed_agent_call_is_that_agent_as_actor(): void
     {
-        $actor = ActorContext::of(new AgentContext(TestIds::of(3), TestIds::of(30), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
+        $actor = ActorContext::of(new AgentContext(TestIds::of(3), TestIds::of(30), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
 
         $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actor->type, $actor->id]);
-    }
-
-    public function test_an_agent_is_not_a_user(): void
-    {
-        $this->expectException(UserActorRequired::class);
-
-        ActorContext::forAgent(TestIds::of(3))->requireUser();
     }
 }

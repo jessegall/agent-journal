@@ -11,7 +11,6 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\RecordHeartbeat;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
@@ -120,13 +119,13 @@ final class HookRecoveryTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function startTask(LaunchedAgent $launched): Task
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
-        $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, 'hooks.main_ready', new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null));
+        $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), TestLaunchAuthority::forAgent($launched->session->agent_id));
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $this->app->forgetScopedInstances();

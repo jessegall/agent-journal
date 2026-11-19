@@ -7,7 +7,6 @@ namespace Domain\Chat\Tests\Feature;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
@@ -58,7 +57,7 @@ final class ChatSwitchTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::named('Builder', AgentRole::MainAgent);
+        $agent = Agent::named('Builder', 'main-agent');
         $this->app->make(LaunchSessions::class)
             ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();

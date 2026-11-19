@@ -9,11 +9,6 @@ use Throwable;
 
 final class LaunchRefused extends RuntimeException
 {
-    public static function forUnknownRole(string $role): self
-    {
-        return new self("An agent with the role {$role} cannot be launched: no such role exists.");
-    }
-
     public static function withoutRuntime(string $sessionId): self
     {
         return new self("The launch of session {$sessionId} opened no runtime.");

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
@@ -56,9 +55,9 @@ final class SeatLossTest extends TestCase
     public function test_replacing_a_seat_ends_its_claims_and_keeps_the_others(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 2, false);
-        $leaving = ActorIdentity::of(Agent::named('Leaving', AgentRole::ReadOnlyHelper));
-        $staying = ActorIdentity::of(Agent::named('Staying', AgentRole::ReadOnlyHelper));
-        $arriving = ActorIdentity::of(Agent::named('Arriving', AgentRole::ReadOnlyHelper));
+        $leaving = ActorIdentity::of(Agent::named('Leaving', 'read-only-helper'));
+        $staying = ActorIdentity::of(Agent::named('Staying', 'read-only-helper'));
+        $arriving = ActorIdentity::of(Agent::named('Arriving', 'read-only-helper'));
         $leavingSeat = $this->seat($desk, $leaving);
         $stayingSeat = $this->seat($desk, $staying);
         $lostClaims = array_map(fn (int $number) => $this->claim($number, $leaving, $leavingSeat), [1, 2, 3]);

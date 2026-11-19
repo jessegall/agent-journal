@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\RetryProcessRun;
@@ -13,12 +12,13 @@ use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Exceptions\RetryRefused;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Support\ProcessAdministration;
 use App\Processes\Values\AdmissionRefusal;
 use App\Processes\Values\ExecutionContext;
 
 final readonly class RetryProcessRunHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ShellAdmission $admissions) {}
+    public function __construct(private CurrentActor $actors, private ProcessAdministration $administration, private ShellAdmission $admissions) {}
 
     /**
      * @throws RetryRefused
@@ -27,7 +27,7 @@ final readonly class RetryProcessRunHandler implements CommandHandler
     {
         $lost = ProcessRun::query()->withoutGlobalScopes()->whereKey($command->runId)->sole();
         $actor = ActorIdentity::of($this->actors->actor());
-        if ($actor->type !== ActorType::User && ! $lost->isByActor($actor)) {
+        if (! $this->administration->isGrantedToCaller() && ! $lost->isByActor($actor)) {
             throw RetryRefused::notYours($lost->id);
         }
         if ($lost->lifecycle !== LifecycleState::Lost) {

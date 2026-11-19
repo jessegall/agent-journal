@@ -43,7 +43,7 @@ final class AssignedListCommandsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->caller = TestLaunch::start('hooks.read_only_helper_ready');
+        $this->caller = TestLaunch::start('read-only-helper');
         $this->startUserRequestAs($owner->id);
     }
 

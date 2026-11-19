@@ -14,6 +14,5 @@ final readonly class LaunchStarted implements Event
     public function __construct(
         public string $agentId,
         public string $sessionId,
-        public string $role,
     ) {}
 }

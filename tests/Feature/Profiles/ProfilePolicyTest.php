@@ -44,7 +44,7 @@ final class ProfilePolicyTest extends TestCase
     private const array TABLES = ['profile_revisions', 'profiles', 'revision_fences', 'command_receipts'];
 
     private const array WORKER = [
-        'type' => 'writing_helper',
+        'base' => 'writing-helper',
         'model' => 'opus',
         'container' => 'required',
         'allow_operations' => [
@@ -67,8 +67,8 @@ final class ProfilePolicyTest extends TestCase
     {
         $this->activate([
             'revision' => 1,
-            'type_overrides' => [
-                'writing_helper' => ['remove_classes' => ['delete:workspace'], 'deny_operations' => ['shell:git.push']],
+            'base_overrides' => [
+                'writing-helper' => ['remove_classes' => ['delete:workspace'], 'deny_operations' => ['shell:git.push']],
             ],
             'profiles' => ['journal-worker' => self::WORKER],
         ]);
@@ -90,9 +90,9 @@ final class ProfilePolicyTest extends TestCase
     {
         $proposal = [
             'profiles' => [
-                'journal-researcher' => ['type' => 'read_only_helper', 'model' => 'opus'],
+                'journal-researcher' => ['base' => 'read-only-helper', 'model' => 'opus'],
                 'journal-editor' => [
-                    'type' => 'read_only_helper',
+                    'base' => 'read-only-helper',
                     'model' => 'opus',
                     'allow_classes' => ['edit:workspace'],
                 ],

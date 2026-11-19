@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Skills\Resolvers\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
+use App\Agents\Enums\AgentAbility;
+use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Policies\AgentPolicy;
 use App\Programs\Values\ProgramKey;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\PublicationState;
@@ -33,6 +37,7 @@ final readonly class SkillStatusResolver
 
     public function __construct(
         private CurrentActor $actors,
+        private CurrentAuthorizer $authorizer,
         private Container $container,
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
@@ -166,12 +171,12 @@ final readonly class SkillStatusResolver
     private function visiblePublications(): array
     {
         $actor = $this->actors->actor();
+        $inspect = [AgentAbility::Inspect];
 
-        if ($actor->isUser()) {
+        if ($this->authorizer->filterActions(AgentPolicy::class, Agent::class, $inspect) !== []) {
             return SkillPublication::latestOfEverySession(self::MOST_SESSIONS);
         }
 
-        $actor->requireAgent();
         $sessionIds = AgentSession::idsOfAgent($actor->actorId(), self::MOST_SESSIONS);
 
         return SkillPublication::latestOfSessions($sessionIds, self::MOST_SESSIONS);

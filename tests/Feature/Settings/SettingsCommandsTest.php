@@ -11,7 +11,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Contracts\EnabledSettingsGroup;
@@ -182,7 +182,7 @@ final class SettingsCommandsTest extends TestCase
         $command = new SetIntegerSetting(new SettingReference('Reviews', 'retry_limit'), 4, 0);
 
         $agent = TestIds::of(3);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent), TestLaunchAuthority::granting(ProfileType::MainAgent, []));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent), TestLaunchAuthority::granting(ProfileBase::mainAgent(), []));
         $this->assertRefused(ActorNotAllowed::class, $command);
 
         $this->actAs(ActorContext::forUser(TestIds::of(8)));

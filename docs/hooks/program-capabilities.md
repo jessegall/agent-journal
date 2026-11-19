@@ -21,7 +21,7 @@ Measured on 2026-11-17 against the running FrankenPHP Octane app in Docker, from
 | The health check `/up` | 1.7 ms | 6.7 ms |
 | A hook call with an unknown token, refused at the credential lookup | 2.7 ms | 10.5 ms |
 
-Task 93 measured the authenticated path the same way, with a throwaway main agent launched through `LaunchSessions` in the dev database and deleted afterwards. Each call was signed with the launch token as the relay signs it and walked the agent's real stack:
+Task 93 measured the authenticated path the same way, with a throwaway agent on the main-agent profile, launched through `LaunchSessions` in the dev database and deleted afterwards. Each call was signed with the launch token as the relay signs it and walked the agent's real stack:
 
 | What | Calls | Median | Worst |
 |---|---|---|---|
@@ -59,16 +59,17 @@ A retry is accepted while the issue time is within the retry window (`hooks.retr
 
 ## When the journal cannot answer (plan 2, task 72)
 
-The host shim, not the journal, answers a hook when the journal is unreachable, because a journal that is down cannot send anything. `OutageReply` holds the replies the host gives, by role and by how the call failed (`CallFailure`):
+The host shim, not the journal, answers a hook when the journal is unreachable, because a journal that is down cannot send anything. `OutageReply` holds the replies the host gives, by the offline reply the launch grant sealed and by how the call failed (`CallFailure`):
 
-| How the call failed | Main agent | Read-only helper |
+| How the call failed | Granted the neutral reply | Granted the refusal |
 |---|---|---|
-| No answer, a timeout, a server error or 503 | the neutral reply; the host logs the bypass and uploads it after recovery | refused with the outage reason |
+| No answer, a timeout, or a gateway's 502 or 504 | the neutral reply; the host logs the bypass and uploads it after recovery | refused with the outage reason |
 | 401 or 403 (credential refused) | refused | refused |
 | 409 (a changed retry or an expired identity) | refused | refused |
 | 422 (a payload the adapter cannot read) | refused | refused |
+| 404, 500, 503 or a malformed answer (the journal's own answer) | refused | refused |
 
-A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host relay is `bin/journal-hook <program>`, which runs `php artisan hooks:relay <program>` (`HookRelay`): it signs each call, posts it, answers alone with `OutageReply` when the journal is unreachable, logs a main agent's bypass to the file `JOURNAL_BYPASS_LOG`, and uploads the logged bypasses to `POST /hooks/bypasses` before its next call, where Agents keeps them in `launch_bypasses`. The launch must set `JOURNAL_URL`, `JOURNAL_LAUNCH_TOKEN`, `JOURNAL_ROLE` and `JOURNAL_BYPASS_LOG` in the program's environment.
+A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host relay is `bin/journal-hook <program>`, which runs `php artisan hooks:relay <program>` (`HookRelay`): it signs each call, posts it, answers alone with `OutageReply` when the journal is unreachable, logs the bypass of a launch granted the neutral reply to the file `JOURNAL_BYPASS_LOG`, and uploads the logged bypasses to `POST /hooks/bypasses` before its next call, where Agents keeps them in `launch_bypasses`. The launch must set `JOURNAL_URL`, `JOURNAL_LAUNCH_TOKEN`, the profile pin, `JOURNAL_OFFLINE_REPLY` with its seal `JOURNAL_OFFLINE_REPLY_SEAL`, and `JOURNAL_BYPASS_LOG` in the program's environment; a seal the journal did not issue for this launch stops the relay.
 
 A program that exits or is killed without an end hook is handled by `LaunchHeartbeats`: silence first marks the launch possibly lost (`agents.silent_after_seconds`), and a long silence (`agents.timed_out_after_seconds`) or the host's report of the exit marks it lost, and the stack is closed and kept with its obligations.
 

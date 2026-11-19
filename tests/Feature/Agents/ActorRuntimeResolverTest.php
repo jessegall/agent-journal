@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Contracts\ActorRuntimeResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
 use App\Agents\Support\CredentialLookup;
@@ -27,7 +26,7 @@ final class ActorRuntimeResolverTest extends TestCase
 
     public function test_relaunching_fences_the_older_runtime_and_only_the_current_one_resolves(): void
     {
-        $agent = Agent::named('Builder', AgentRole::MainAgent);
+        $agent = Agent::named('Builder', 'main-agent');
         $launches = $this->app->make(LaunchSessions::class);
         $older = $launches->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
         $this->openDriverRuntime($older->session);

@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Fixtures\Architecture\ActorCategory;
+
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+
+/**
+ * Chooses behaviour by the kind of actor, which rule 39 forbids; the rule 39 test must find it.
+ */
+final readonly class AgentOnlyGreeting
+{
+    public function greet(ActorIdentity $actor): string
+    {
+        if ($actor->type === ActorType::Agent) {
+            return 'Hello, agent.';
+        }
+
+        return 'Hello.';
+    }
+}

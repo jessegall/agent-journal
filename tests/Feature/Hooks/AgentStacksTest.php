@@ -61,7 +61,7 @@ final class AgentStacksTest extends TestCase
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));
 
         $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks));
     }

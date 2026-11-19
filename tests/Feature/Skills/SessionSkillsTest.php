@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\LaunchStarted;
 use App\Agents\Models\Agent;
@@ -88,7 +87,7 @@ final class SessionSkillsTest extends TestCase
         $this->assertContains('user-probe', $this->latestKeys($session));
         $this->assertStringContainsString('start a new session', implode("\n", $reminders->all()));
 
-        $this->artisan('skill:edit', ['number' => 'user-probe', '--expected-revision' => 1, '--type' => ['read_only_helper']])
+        $this->artisan('skill:edit', ['number' => 'user-probe', '--expected-revision' => 1, '--base' => ['read-only-helper']])
             ->assertSuccessful();
         $this->boundary($session);
 
@@ -110,13 +109,13 @@ final class SessionSkillsTest extends TestCase
 
     private function launchedMainAgent(): AgentSession
     {
-        $agent = Agent::named('Main', AgentRole::MainAgent);
+        $agent = Agent::named('Main', 'main-agent');
         $session = new AgentSession(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
         $session->save();
         $this->app->make(AdmitLaunchSkills::class)->handle(
-            new LaunchStarted($agent->id, $session->id, AgentRole::MainAgent->value),
+            new LaunchStarted($agent->id, $session->id),
         );
 
         return $session;

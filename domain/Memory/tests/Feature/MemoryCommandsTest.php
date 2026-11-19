@@ -38,8 +38,8 @@ final class MemoryCommandsTest extends TestCase
 
         $user = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($user->id));
-        $this->owner = TestLaunch::start('hooks.read_only_helper_ready');
-        $this->other = TestLaunch::start('hooks.read_only_helper_ready');
+        $this->owner = TestLaunch::start('read-only-helper');
+        $this->other = TestLaunch::start('read-only-helper');
     }
 
     public function test_an_agent_saves_a_memory_and_reads_it_back(): void

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Contracts\BuiltInLaunchProfiles;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Support\SelectedProgram;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Contracts\ProfileResolver;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
+use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 
 /**
@@ -25,25 +25,31 @@ final readonly class BuiltInProfilePins implements BuiltInLaunchProfiles
         private EntryDispatchers $dispatchers,
     ) {}
 
-    public function snapshotFor(ProfileType $type): ProfileSnapshot
+    public function snapshotFor(ProfileBase $type): ProfileSnapshot
     {
-        $key = BuiltInProfiles::keyFor($type);
-
-        if (! $this->profiles->has($key)) {
-            $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'built-in profiles', new InstallBuiltInProfiles());
-        }
-
-        return $this->profiles->snapshotFor($key);
+        return $this->snapshotOf(BuiltInProfiles::keyFor($type));
     }
 
-    public function pin(SelectedProgram $selection, AgentRole $role): SelectedProgram
+    public function pin(SelectedProgram $selection, string $profileKey): SelectedProgram
     {
         if ($selection->source->profileKey !== null) {
             return $selection;
         }
 
-        $builtIn = $this->snapshotFor(ProfileType::forRole($role));
+        $profile = $this->snapshotOf(ProfileKey::from($profileKey));
 
-        return $selection->pinnedTo($builtIn->key->key, $builtIn->revision);
+        return $selection->pinnedTo($profile->key->key, $profile->revision);
+    }
+
+    /**
+     * The profile's current revision, installing the built-in profiles first when they are not there yet.
+     */
+    private function snapshotOf(ProfileKey $key): ProfileSnapshot
+    {
+        if (! $this->profiles->has($key)) {
+            $this->dispatchers->runAsJournal(CommandEntry::HostControl, 'built-in profiles', new InstallBuiltInProfiles());
+        }
+
+        return $this->profiles->snapshotFor($key);
     }
 }

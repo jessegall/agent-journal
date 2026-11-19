@@ -178,7 +178,7 @@ final class ContinuationTest extends TestCase
     {
         $sessionId = $session === 'session-a' ? self::SESSION_A : self::SESSION_B;
 
-        return new AgentContext(self::AGENT, $sessionId, 'main', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null);
+        return new AgentContext(self::AGENT, $sessionId, new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null);
     }
 
     private function actAs(AgentContext $context): void

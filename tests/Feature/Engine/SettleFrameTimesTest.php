@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Engine;
 
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
@@ -43,7 +42,7 @@ final class SettleFrameTimesTest extends TestCase
     {
         parent::setUp();
 
-        $session = $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
         $this->stack = AgentStackRow::query()->authorizedFor($this->target)->sole();
     }

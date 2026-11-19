@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 use App\Actors\Values\AbilityRequirement;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileSnapshot;
 
 /**
@@ -42,11 +42,12 @@ final readonly class LaunchProfile
     }
 
     /**
-     * @param  list<ProfileType>  $types
+     * @param  list<ProfileBase>  $bases
      */
-    public function hasTypeIn(array $types): bool
+    public function startsFromAnyOf(array $bases): bool
     {
-        return $this->snapshot !== null && in_array($this->snapshot->type, $types, true);
+        return $this->snapshot !== null
+            && array_any($bases, fn (ProfileBase $base) => $base->is($this->snapshot->base));
     }
 
     /**

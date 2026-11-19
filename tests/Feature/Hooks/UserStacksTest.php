@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Support\LaunchedAgent;
@@ -30,6 +29,7 @@ use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -72,11 +72,11 @@ final class UserStacksTest extends TestCase
         $this->assertSame(['hooks.ready'], $this->storedTypeKeys());
     }
 
-    public function test_an_agent_cannot_use_the_user_path(): void
+    public function test_an_agent_without_the_steer_ability_cannot_push_onto_a_stack(): void
     {
-        $this->actAs(ActorContext::forAgent($this->target->agentId));
+        $this->actAsAgent($this->target->agentId);
 
-        $this->expectException(UserActorRequired::class);
+        $this->expectException(ActorNotAllowed::class);
 
         $this->pushInTransaction($this->target);
     }
@@ -121,9 +121,17 @@ final class UserStacksTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
     }
 
+    /**
+     * Acts as the agent under the profile it launches with, as a real agent call does.
+     */
+    private function actAsAgent(string $agentId): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
+    }
+
     private function launch(): LaunchedAgent
     {
-        $agent = Agent::named('Test agent', AgentRole::MainAgent);
+        $agent = Agent::named('Test agent', 'main-agent');
 
         return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
     }

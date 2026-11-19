@@ -76,7 +76,7 @@ final class CallDeadlineTest extends TestCase
 
     private function signedSecondsAgo(int $seconds): void
     {
-        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', 'main', new SignedCall('call-1', CarbonImmutable::now()->subSeconds($seconds), 'digest'), null));
+        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now()->subSeconds($seconds), 'digest'), null));
     }
 
     /**

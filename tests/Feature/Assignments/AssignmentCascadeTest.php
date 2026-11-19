@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Enums\AssignmentOutcomeType;
@@ -58,8 +57,8 @@ final class AssignmentCascadeTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->builder = AssigneeIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
-        $this->other = AssigneeIdentity::of(Agent::named('Other', AgentRole::ReadOnlyHelper));
+        $this->builder = AssigneeIdentity::of(Agent::named('Builder', 'read-only-helper'));
+        $this->other = AssigneeIdentity::of(Agent::named('Other', 'read-only-helper'));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);
         $this->finished = Task::factory()->create(['title' => 'Finished']);

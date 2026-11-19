@@ -6,7 +6,6 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentResolver;
@@ -46,7 +45,7 @@ final class AssignmentResolversTest extends TestCase
 
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->helper = AssigneeIdentity::of(Agent::named('Helper', AgentRole::ReadOnlyHelper));
+        $this->helper = AssigneeIdentity::of(Agent::named('Helper', 'read-only-helper'));
         $this->startUserRequestAs($this->owner->id);
     }
 

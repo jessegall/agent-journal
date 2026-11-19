@@ -25,7 +25,6 @@ use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\RuntimeResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
@@ -451,7 +450,7 @@ final class AgentDriverLedgerTest extends TestCase
 
     private function agent(): Agent
     {
-        return Agent::named('Driven agent '.Str::random(6), AgentRole::MainAgent);
+        return Agent::named('Driven agent '.Str::random(6), 'main-agent');
     }
 
     private function agentIdOf(OpenedRuntime $opened): string

@@ -11,14 +11,13 @@ use App\Agents\Models\AgentSession;
 use Carbon\CarbonImmutable;
 
 /**
- * Who is calling in this request: the agent, its journal session and role, the signed call and the session's last beat. It lives for one request only.
+ * Who is calling in this request: the agent, its journal session, the signed call and the session's last beat. It lives for one request only.
  */
 final readonly class AgentContext implements Actor
 {
     public function __construct(
         public string $agentId,
         public string $sessionId,
-        public string $role,
         public SignedCall $call,
         public CarbonImmutable|null $lastHeartbeatAt,
     ) {}
@@ -28,7 +27,7 @@ final readonly class AgentContext implements Actor
      */
     public static function ofSession(AgentSession $session, SignedCall $call): self
     {
-        return new self($session->agent_id, $session->id, $session->agent->role, $call, $session->last_heartbeat_at);
+        return new self($session->agent_id, $session->id, $call, $session->last_heartbeat_at);
     }
 
     /**

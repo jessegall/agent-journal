@@ -10,8 +10,8 @@ use App\Contracts\Listener;
 use App\Hooks\Actions\LaunchStacks;
 
 /**
- * Opens the launched agent's stack with the bottom state of its role, in the launch transaction. A launch with an
- * unknown role, or with no parser to read its shell commands, is refused before the program starts.
+ * Opens the launched agent's stack with the one ready bottom state, in the launch transaction. A launch with no
+ * parser to read its shell commands is refused before the program starts.
  */
 final readonly class OpenLaunchStack implements Listener
 {

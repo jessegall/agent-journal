@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssigneeIdentity;
@@ -61,7 +60,7 @@ final class PlanCascadeTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->builder = AssigneeIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
+        $this->builder = AssigneeIdentity::of(Agent::named('Builder', 'read-only-helper'));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);

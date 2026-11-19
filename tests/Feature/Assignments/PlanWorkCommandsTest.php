@@ -41,8 +41,8 @@ final class PlanWorkCommandsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->main = TestLaunch::start('hooks.main_ready');
-        $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
+        $this->main = TestLaunch::start('main-agent');
+        $this->helper = TestLaunch::start('read-only-helper');
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);

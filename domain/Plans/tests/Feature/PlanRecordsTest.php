@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
 use App\Assignments\Support\AssigneeIdentity;
@@ -69,7 +68,7 @@ final class PlanRecordsTest extends TestCase
 
     public function test_an_assigned_agent_is_named_and_the_plan_its_stack_works_on_comes_first(): void
     {
-        $agent = Agent::named('Planner', AgentRole::MainAgent);
+        $agent = Agent::named('Planner', 'main-agent');
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
         $this->app->instance(CurrentState::class, new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), TestLaunchAuthority::forAgent($agent->id));

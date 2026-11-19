@@ -10,13 +10,12 @@ use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\StopConditions;
 use App\Profiles\Enums\PolicyOriginType;
-use App\Profiles\Enums\ProfileType;
 use App\Programs\Enums\HookProgram;
 
 /**
  * How a profile's agent is launched: its program and whether a launch may choose another, the models it allows (none
  * listed allows any), what it may do, the conditions it must pass before it stops, where it runs, and where each of
- * those came from. The worktree of its execution policy is the role's placeholder, which the host resolves per launch.
+ * those came from. The worktree of its execution policy is the type's placeholder, which the host resolves per launch.
  */
 final readonly class ProfileLaunchPolicy
 {
@@ -45,20 +44,19 @@ final readonly class ProfileLaunchPolicy
      * @param  list<string>  $allowedModels
      */
     public static function defaultsFor(
-        ProfileType $type,
+        ProfileBase $type,
         HookProgram|null $program,
         bool $programPinned,
         array $allowedModels,
         string $configurationHash,
     ): self {
-        $role = $type->agentRole();
 
         return new self(
             $program,
             $programPinned,
             $allowedModels,
-            AccessPolicy::defaultsFor($role),
-            StopConditions::make($role, $type->defaultStopConditions()),
+            $type->defaultAccess(),
+            StopConditions::make($type->defaultStopConditions()),
             self::defaultExecution($type),
             new ProfileProvenance(
                 $configurationHash,
@@ -71,7 +69,7 @@ final readonly class ProfileLaunchPolicy
      * Where a type runs by default: on the protected host, or in a required container of the journal's helper image,
      * which the host resolves to its verified digest.
      */
-    private static function defaultExecution(ProfileType $type): ExecutionPolicy
+    private static function defaultExecution(ProfileBase $type): ExecutionPolicy
     {
         $mode = $type->defaultExecutionMode();
         $image = $mode === ExecutionModeType::RequiredContainer ? self::HELPER_IMAGE : null;

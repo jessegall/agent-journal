@@ -63,7 +63,7 @@ final class AutoAssignmentCommandsTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->worker = TestLaunch::start('hooks.writing_helper_ready');
+        $this->worker = TestLaunch::start('writing-helper');
         $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::VALUE);
         $this->startUserRequestAs($this->owner->id);
     }

@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\LaunchedAgent;
@@ -95,7 +94,7 @@ final class TickingStackFlagTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function push(LaunchedAgent $launched, string $typeKey, string $subject): void
@@ -109,7 +108,7 @@ final class TickingStackFlagTest extends TestCase
     private function as(LaunchedAgent $launched, Closure $work): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, 'hooks.main_ready', new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null));
+        $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), TestLaunchAuthority::forAgent($launched->session->agent_id));
         $this->app->make(StackTransaction::class)->run($work);
     }

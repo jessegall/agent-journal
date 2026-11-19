@@ -44,8 +44,8 @@ final class AutoAssignmentCliTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->main = TestLaunch::start('hooks.main_ready');
-        $this->worker = TestLaunch::start('hooks.writing_helper_ready');
+        $this->main = TestLaunch::start('main-agent');
+        $this->worker = TestLaunch::start('writing-helper');
         $this->runCommandsAs($this->main);
     }
 

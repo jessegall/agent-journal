@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
@@ -26,8 +25,8 @@ use App\Agents\Support\HostCapacity;
 use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\PreparedLaunch;
-use App\Agents\Values\AccessPolicy;
 use App\Bus\Contracts\CommandBus;
+use App\Profiles\Values\ProfileBase;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
@@ -48,18 +47,18 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_writer_launch_compiles_a_manifest_with_exactly_the_listed_controls(): void
     {
-        $manifest = ContainerManifest::compile($this->prepared(AgentRole::WritingHelper), AccessPolicy::defaultsFor(AgentRole::WritingHelper), $this->policy(), 'journal-launch-1');
+        $manifest = ContainerManifest::compile($this->prepared(), ProfileBase::writingHelper()->defaultAccess(), $this->policy(), 'journal-launch-1');
 
         $this->assertSame([self::IMAGE, '10001:10001', '/workspace', true, [], true, 'verified-default', false, [], 'journal-launch-1'], [$manifest->image, $manifest->user, $manifest->workdir, $manifest->readOnlyRoot, $manifest->capabilities, $manifest->noNewPrivileges, $manifest->seccomp, $manifest->privileged, $manifest->publishedPorts, $manifest->network]);
         $this->assertEquals([new ManifestMount('/workspaces/helper-7', '/workspace', true)], $manifest->mounts);
         $this->assertSame(2, $manifest->budgets->cpuCores);
-        $this->assertFalse(ContainerManifest::compile($this->prepared(AgentRole::ReadOnlyHelper), AccessPolicy::defaultsFor(AgentRole::ReadOnlyHelper), $this->policy(), 'journal-launch-1')->mounts[0]->writable);
+        $this->assertFalse(ContainerManifest::compile($this->prepared(), ProfileBase::readOnlyHelper()->defaultAccess(), $this->policy(), 'journal-launch-1')->mounts[0]->writable);
     }
 
     public function test_the_mount_follows_the_access_declaration_not_the_type(): void
     {
-        $writerAccess = AccessPolicy::defaultsFor(AgentRole::WritingHelper);
-        $readerLaunch = $this->prepared(AgentRole::ReadOnlyHelper);
+        $writerAccess = ProfileBase::writingHelper()->defaultAccess();
+        $readerLaunch = $this->prepared();
 
         $manifest = ContainerManifest::compile($readerLaunch, $writerAccess, $this->policy(), 'journal-launch-1');
 
@@ -117,9 +116,9 @@ final class ContainerManifestTest extends TestCase
         $this->assertThrows($make, ManifestRefused::class);
     }
 
-    private function prepared(AgentRole $role): PreparedLaunch
+    private function prepared(): PreparedLaunch
     {
-        return new PreparedLaunch('launch-1', $role, TestSelections::of(), ExecutionModeType::RequiredContainer, 'policy-1', '/workspaces/helper-7', 'account-1');
+        return new PreparedLaunch('launch-1', TestSelections::of(), ExecutionModeType::RequiredContainer, 'policy-1', '/workspaces/helper-7', 'account-1');
     }
 
     private function policy(): ExecutionPolicy
@@ -136,7 +135,7 @@ final class ContainerManifestTest extends TestCase
 
     private function containerRequest(): LaunchRequest
     {
-        $agent = Agent::named('Builder', AgentRole::WritingHelper);
+        $agent = Agent::named('Builder', 'writing-helper');
 
         return new LaunchRequest(TestSelections::requestId(), $agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, 'helpers.job 1', null, ConversationModeType::New, null, $this->policy());
     }

@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Contracts\LaunchRecordResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchDisposition;
 use App\Agents\Enums\LaunchOriginType;
@@ -104,7 +103,7 @@ final class LaunchRecordTest extends TestCase
 
     private function agent(string $name): Agent
     {
-        return Agent::named($name, AgentRole::MainAgent);
+        return Agent::named($name, 'main-agent');
     }
 
     private function request(Agent $agent, string $requestId, ModelSelection $model, string|null $owner = null): LaunchRequest

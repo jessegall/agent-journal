@@ -5,24 +5,17 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Agents\Enums\AccessRuleType;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Processes\Values\ProcessGrants;
 
 /**
- * What one role may do: access types per resource area, exact operation grants, explicit denials, the paths and
- * destinations it is held to, and the role whose ceiling it can never pass. Protected resources are never granted.
+ * What one profile may do: access types per resource area, exact operation grants, explicit denials, and the paths
+ * and destinations it is held to. Protected resources are never granted.
  */
 final readonly class AccessPolicy
 {
-    private const array LOOKING = [AccessType::Read, AccessType::Search];
-
-    private const array CHANGING = [AccessType::Create, AccessType::Edit, AccessType::Delete];
-
-    private const array RUNNING = [AccessType::Execute, AccessType::Test, AccessType::Build];
-
     /**
      * @param  list<ClassGrant>  $classGrants
      * @param  list<OperationGrant>  $operationGrants
@@ -31,7 +24,6 @@ final readonly class AccessPolicy
      * @param  list<string>  $destinations  the network destinations it may reach
      */
     private function __construct(
-        public AgentRole $role,
         public array $classGrants,
         public array $operationGrants,
         public array $denials,
@@ -50,7 +42,6 @@ final readonly class AccessPolicy
      * @throws AccessPolicyInvalid
      */
     public static function make(
-        AgentRole $role,
         array $classGrants,
         array $operationGrants,
         array $denials,
@@ -60,49 +51,11 @@ final readonly class AccessPolicy
     ): self {
         foreach ($classGrants as $grant) {
             if ($grant->area === ResourceAreaType::Protected) {
-                throw AccessPolicyInvalid::protectedGrant($role);
-            }
-
-            foreach ($grant->accessTypes as $access) {
-                if ($role === AgentRole::ReadOnlyHelper && $grant->area->hasWorkspaceFiles() && $access->changesFiles()) {
-                    throw AccessPolicyInvalid::aboveCeiling($role, $access, $grant->area);
-                }
+                throw AccessPolicyInvalid::protectedGrant();
             }
         }
 
-        return new self($role, $classGrants, $operationGrants, $denials, $paths, $destinations, $processes);
-    }
-
-    /**
-     * The global defaults of a role (doc 14, section 51); a project and a profile only override them.
-     */
-    public static function defaultsFor(AgentRole $role): self
-    {
-        $journal = [AccessType::Read, AccessType::Search, AccessType::Create, AccessType::Edit];
-
-        $grants = match ($role) {
-            AgentRole::MainAgent => [
-                new ClassGrant(ResourceAreaType::Workspace, [...self::LOOKING, ...self::CHANGING, ...self::RUNNING]),
-                new ClassGrant(ResourceAreaType::JournalContent, [...self::LOOKING, ...self::CHANGING]),
-                new ClassGrant(ResourceAreaType::JournalWork, [...self::LOOKING, ...self::CHANGING, AccessType::Delegate]),
-                new ClassGrant(ResourceAreaType::JournalControl, self::LOOKING),
-            ],
-            AgentRole::ReadOnlyHelper => [
-                new ClassGrant(ResourceAreaType::Workspace, [...self::LOOKING, AccessType::Execute]),
-                new ClassGrant(ResourceAreaType::JournalContent, $journal),
-                new ClassGrant(ResourceAreaType::JournalWork, $journal),
-            ],
-            AgentRole::WritingHelper => [
-                new ClassGrant(ResourceAreaType::Workspace, [...self::LOOKING, ...self::CHANGING, ...self::RUNNING]),
-                new ClassGrant(ResourceAreaType::Scratch, [...self::LOOKING, ...self::CHANGING, ...self::RUNNING]),
-                new ClassGrant(ResourceAreaType::JournalContent, $journal),
-                new ClassGrant(ResourceAreaType::JournalWork, $journal),
-            ],
-        };
-
-        $processes = $role === AgentRole::ReadOnlyHelper ? ProcessGrants::readingOnly() : ProcessGrants::everything();
-
-        return self::make($role, $grants, [], [], [], [], $processes);
+        return new self($classGrants, $operationGrants, $denials, $paths, $destinations, $processes);
     }
 
     /**

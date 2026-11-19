@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Exceptions\ProgramConflict;
 use App\Agents\Models\Agent;
@@ -14,10 +13,10 @@ use App\Agents\Support\ModelSelection;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
-use App\Profiles\Enums\ProfileType;
-use App\Profiles\Exceptions\ProfileTypeConflict;
+use App\Profiles\Exceptions\ProfileCannotCoordinate;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProposedProfile;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Enums\HookProgram;
 use Domain\Access\Models\User;
@@ -46,7 +45,7 @@ final class ProfileLaunchTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->main = Agent::named('Main', AgentRole::MainAgent);
+        $this->main = Agent::named('Main', 'main-agent');
     }
 
     public function test_default_resolves_to_the_profiles_model_and_revision(): void
@@ -73,9 +72,9 @@ final class ProfileLaunchTest extends TestCase
 
     public function test_a_helper_profile_cannot_launch_a_main(): void
     {
-        $this->activate(TestProposals::profile('journal-main', ProfileType::ReadOnlyHelper));
+        $this->activate(TestProposals::profile('journal-main', ProfileBase::readOnlyHelper()));
 
-        $this->expectException(ProfileTypeConflict::class);
+        $this->expectException(ProfileCannotCoordinate::class);
 
         $this->launch('default', null);
     }
@@ -99,7 +98,7 @@ final class ProfileLaunchTest extends TestCase
         return new ProposedProfile(
             ProfileKey::from('journal-main'),
             'Main',
-            ProfileType::MainAgent,
+            ProfileBase::mainAgent(),
             'Lead the work.',
             $model,
             $program,

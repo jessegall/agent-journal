@@ -7,7 +7,6 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -107,7 +106,7 @@ final class RefreshSkillsTest extends TestCase
 
     private function launch(): AgentSession
     {
-        $agent = Agent::named('Main', AgentRole::MainAgent);
+        $agent = Agent::named('Main', 'main-agent');
         $session = new AgentSession(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;

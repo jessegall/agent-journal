@@ -36,7 +36,7 @@ final class NativeSubagentRuleTest extends TestCase
     {
         parent::setUp();
 
-        $this->launch = TestLaunch::start('hooks.main_ready');
+        $this->launch = TestLaunch::start('main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id), TestLaunchAuthority::forAgent($this->launch->agent->id));
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target()));
     }

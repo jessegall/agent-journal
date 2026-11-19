@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Enums\ActorType;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
@@ -48,7 +47,7 @@ final class AssigneesTest extends TestCase
 
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->builder = Agent::named('Builder', AgentRole::MainAgent);
+        $this->builder = Agent::named('Builder', 'main-agent');
         $this->startUserRequestAs($this->owner->id);
     }
 
@@ -88,8 +87,8 @@ final class AssigneesTest extends TestCase
     public function test_eligible_lists_page_by_id_and_names_keep_a_retired_agent_and_show_no_email(): void
     {
         $registry = $this->app->make(AssignmentRegistry::class);
-        $second = Agent::named('Reviewer', AgentRole::ReadOnlyHelper);
-        $retired = Agent::named('Gone', AgentRole::ReadOnlyHelper);
+        $second = Agent::named('Reviewer', 'read-only-helper');
+        $retired = Agent::named('Gone', 'read-only-helper');
         $retired->retireAt(CarbonImmutable::now());
 
         $firstPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new Page(null, 1));

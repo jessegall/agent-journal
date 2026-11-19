@@ -25,7 +25,7 @@ final class ProfileShowCommand extends Command
 
         $this->line("Profile {$profile->key}: {$profile->label}".($profile->isRetired() ? ' (retired)' : ''));
         $this->line("Revision: {$revision->revision}");
-        $this->line("Type: {$revision->type->value}");
+        $this->line("Starts from: {$revision->base->label}");
         $this->line("Model: {$revision->model}");
         $this->line('Skill allowlist: '.$this->allowlist($revision->skill_allowlist));
         $this->line('Required skills: '.($revision->required_skills === [] ? 'none' : implode(', ', $revision->required_skills)));

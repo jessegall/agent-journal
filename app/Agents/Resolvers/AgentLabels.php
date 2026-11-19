@@ -6,8 +6,11 @@ namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\ActorLabelProvider;
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\AgentResolver;
+use App\Agents\Enums\AgentAbility;
 use App\Agents\Models\Agent;
+use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\AgentLabel;
 
 /**
@@ -16,7 +19,7 @@ use App\Agents\Support\AgentLabel;
  */
 final readonly class AgentLabels implements ActorLabelProvider, AgentResolver
 {
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(private CurrentActor $actors, private CurrentAuthorizer $authorizer) {}
 
     /**
      * @param  list<string>  $agentIds
@@ -25,7 +28,8 @@ final readonly class AgentLabels implements ActorLabelProvider, AgentResolver
     public function labelsFor(array $agentIds): array
     {
         $actor = $this->actors->actor();
-        $visible = $actor->isUser() ? array_values(array_unique($agentIds)) : array_values(array_intersect(array_unique($agentIds), [$actor->id]));
+        $unique = array_values(array_unique($agentIds));
+        $visible = $this->inspectsAgents() ? $unique : array_values(array_intersect($unique, [$actor->id]));
 
         if ($visible === []) {
             return [];
@@ -43,5 +47,13 @@ final readonly class AgentLabels implements ActorLabelProvider, AgentResolver
     public function namesOf(array $actorIds): array
     {
         return array_map(fn (AgentLabel $label) => $label->name, $this->labelsFor($actorIds));
+    }
+
+    /**
+     * Whether the caller may see every agent's sessions and runtimes, not only its own.
+     */
+    private function inspectsAgents(): bool
+    {
+        return $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AgentAbility::Inspect]) !== [];
     }
 }

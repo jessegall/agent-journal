@@ -6,11 +6,10 @@ namespace Tests\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\LaunchProfileAuthority;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use Illuminate\Container\Container;
@@ -23,18 +22,23 @@ use Tests\Fixtures\Profiles\TestLaunchPolicies;
 final class TestLaunchAuthority
 {
     /**
-     * The authority of the agent's own kind, read from its role when the agent exists; a main agent otherwise.
+     * The authority of the agent's own kind, read from the built-in profile it launches with when the agent exists; a
+     * main agent otherwise.
      */
     public static function forAgent(string $agentId): LaunchProfileAuthority
     {
-        $role = Agent::query()->whereKey($agentId)->value('role');
+        $profileKey = Agent::query()->whereKey($agentId)->value('profile_key');
 
-        return self::of($role === null ? ProfileType::MainAgent : ProfileType::forRole(AgentRole::from($role)));
+        return self::of(match ($profileKey) {
+            'read-only-helper' => ProfileBase::readOnlyHelper(),
+            'writing-helper' => ProfileBase::writingHelper(),
+            default => ProfileBase::mainAgent(),
+        });
     }
 
-    public static function of(ProfileType $type = ProfileType::MainAgent): LaunchProfileAuthority
+    public static function of(ProfileBase|null $base = null): LaunchProfileAuthority
     {
-        return self::granting($type, Container::getInstance()->make(PolicyCatalogue::class)->grantable());
+        return self::granting($base ?? ProfileBase::mainAgent(), Container::getInstance()->make(PolicyCatalogue::class)->grantable());
     }
 
     /**
@@ -42,13 +46,13 @@ final class TestLaunchAuthority
      *
      * @param  list<PolicyRegistration>  $registrations
      */
-    public static function granting(ProfileType $type, array $registrations): LaunchProfileAuthority
+    public static function granting(ProfileBase $type, array $registrations): LaunchProfileAuthority
     {
 
         return new LaunchProfileAuthority(ProfileSnapshot::from([
-            'key' => ProfileKey::from(str_replace('_', '-', $type->value)),
+            'key' => ProfileKey::from($type->key),
             'revision' => 1,
-            'type' => $type,
+            'base' => $type,
             'instructions' => 'Work as the test asks.',
             'model' => 'opus',
             'skillAllowlist' => null,

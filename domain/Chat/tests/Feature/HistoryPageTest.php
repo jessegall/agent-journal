@@ -7,7 +7,6 @@ namespace Domain\Chat\Tests\Feature;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
@@ -85,7 +84,7 @@ final class HistoryPageTest extends TestCase
      */
     private function launch(string $name): array
     {
-        $agent = Agent::named($name, AgentRole::MainAgent);
+        $agent = Agent::named($name, 'main-agent');
         $session = $this->app->make(LaunchSessions::class)
             ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

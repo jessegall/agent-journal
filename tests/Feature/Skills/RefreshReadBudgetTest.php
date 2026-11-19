@@ -6,7 +6,6 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -100,7 +99,7 @@ final class RefreshReadBudgetTest extends TestCase
         $this->seedSkills(0, $skills);
 
         foreach (range(1, self::SESSIONS) as $number) {
-            $agent = Agent::named("Agent {$number}", AgentRole::MainAgent);
+            $agent = Agent::named("Agent {$number}", 'main-agent');
             $session = new AgentSession(TestSelections::sessionColumns());
             $session->agent_id = $agent->id;
             $session->status = SessionStatus::Active;

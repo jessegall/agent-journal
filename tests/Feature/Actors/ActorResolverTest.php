@@ -12,7 +12,6 @@ use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\SystemActor;
 use App\Actors\Support\SystemActors;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -34,7 +33,7 @@ final class ActorResolverTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::named('Writer', AgentRole::ReadOnlyHelper);
+        $agent = Agent::named('Writer', 'read-only-helper');
         $resolver = $this->app->make(ActorResolver::class);
 
         $this->assertSame($owner->id, $resolver->get(ActorIdentity::of($owner))->actorId());
@@ -47,7 +46,7 @@ final class ActorResolverTest extends TestCase
         $owner = User::factory()->create();
         $stranger = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $retired = Agent::named('Gone', AgentRole::ReadOnlyHelper);
+        $retired = Agent::named('Gone', 'read-only-helper');
         $retired->forceFill(['retired_at' => now()])->save();
         $resolver = $this->app->make(ActorResolver::class);
 

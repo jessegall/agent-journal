@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
-use App\Profiles\Enums\ProfileType;
-
 /**
  * What an owner activates for one profile: its stable key, label and the content of its next revision, its launch
  * policy included. A null skill allowlist means every applicable skill; an empty one means none.
@@ -19,7 +17,7 @@ final readonly class ProfileDefinition
     public function __construct(
         public ProfileKey $key,
         public string $label,
-        public ProfileType $type,
+        public ProfileBase $base,
         public string $instructions,
         public string $model,
         public array|null $skillAllowlist,
@@ -37,7 +35,7 @@ final readonly class ProfileDefinition
         $mine = $this->launch;
         $theirs = $active->launch;
 
-        return $this->type !== $active->type
+        return ! $this->base->is($active->base)
             || $this->instructions !== $active->instructions
             || $this->model !== $active->model
             || $this->skillAllowlist !== $active->skillAllowlist

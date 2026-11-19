@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
@@ -56,8 +55,8 @@ final class AssignmentWriterTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::named('Main', AgentRole::MainAgent);
-        $this->helper = Agent::named('Helper', AgentRole::ReadOnlyHelper);
+        $this->main = Agent::named('Main', 'main-agent');
+        $this->helper = Agent::named('Helper', 'read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
     }

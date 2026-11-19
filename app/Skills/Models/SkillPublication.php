@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Skills\Models;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\AgentSession;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -460,18 +457,6 @@ final class SkillPublication extends Model implements ReadableModel
             $this->target,
             $this->error,
         );
-    }
-
-    /**
-     * Whether the actor may read this publication: a user reads every one, an agent only those of its own sessions.
-     */
-    public function isReadableBy(ActorIdentity $actor): bool
-    {
-        if ($actor->type === ActorType::User) {
-            return true;
-        }
-
-        return AgentSession::query()->whereKey($this->session_id)->where('agent_id', $actor->id)->exists();
     }
 
     /**

@@ -8,7 +8,7 @@ use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 /**
- * An execution policy that breaks its role's requirement or names no image for its container.
+ * An execution policy that names no image for its container.
  */
 final class ExecutionPolicyInvalid extends InvalidArgumentException implements CommandRefusal
 {

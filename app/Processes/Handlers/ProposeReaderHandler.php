@@ -14,6 +14,7 @@ use App\Processes\Exceptions\ReaderProposalRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ReaderRevision;
 use App\Processes\Models\RuleProposalRevision;
+use App\Processes\Support\ProcessAdministration;
 
 /**
  * Writes a draft reader revision for the request's declaration revision, after checking the definition against the
@@ -21,7 +22,7 @@ use App\Processes\Models\RuleProposalRevision;
  */
 final readonly class ProposeReaderHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(private CurrentActor $actors, private ProcessAdministration $administration) {}
 
     /**
      * @throws ReaderProposalRefused
@@ -31,7 +32,7 @@ final readonly class ProposeReaderHandler implements CommandHandler
     {
         $actor = ActorIdentity::of($this->actors->actor());
         $request = CommandRequest::query()->whereKey($command->commandRequestId)->lockForUpdate()->sole();
-        if (! $request->acceptsProposalFrom($actor)) {
+        if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw ReaderProposalRefused::notTheRequester($request->id);
         }
         if (! $request->state->isOpen()) {

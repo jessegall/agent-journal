@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\SessionResolver;
+use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
@@ -25,7 +29,7 @@ final readonly class SessionRecords implements SessionResolver
      */
     public const int CHOICES_SHOWN = 50;
 
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(private CurrentActor $actors, private CurrentAuthorizer $authorizer) {}
 
     /**
      * The running sessions, oldest first: running is decided in the query, and the choice holds at most a page.
@@ -72,7 +76,7 @@ final readonly class SessionRecords implements SessionResolver
         $actor = $this->actors->actor();
         $query = AgentSession::query();
 
-        return $actor->isUser() ? $query : $query->where('agent_id', $actor->id);
+        return $this->inspectsAgents() ? $query : $query->where('agent_id', $actor->id);
     }
 
     private static function optionOf(AgentSession $session): SessionOption
@@ -86,5 +90,13 @@ final readonly class SessionRecords implements SessionResolver
             $session->currentConversation?->native_id,
             (int) $session->getAttribute('visits_count'),
         );
+    }
+
+    /**
+     * Whether the caller may see every agent's sessions and runtimes, not only its own.
+     */
+    private function inspectsAgents(): bool
+    {
+        return $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AgentAbility::Inspect]) !== [];
     }
 }

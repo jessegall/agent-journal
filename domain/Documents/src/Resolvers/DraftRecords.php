@@ -4,20 +4,23 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Resolvers;
 
+use App\Actors\Contracts\CurrentAuthorizer;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Contracts\EditorContext;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
+use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Illuminate\Container\Attributes\Scoped;
 
 #[Scoped]
 final readonly class DraftRecords implements DraftResolver
 {
-    public function __construct(private EditorContext $editors) {}
+    public function __construct(private EditorContext $editors, private CurrentAuthorizer $authorizer) {}
 
     public function current(int $documentNumber): DraftView
     {
@@ -49,7 +52,10 @@ final readonly class DraftRecords implements DraftResolver
         } catch (DraftConflict) {
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
-            return DraftState::from($editor->type->isUser() ? [...$held, 'held' => $draft->view($document)] : $held);
+            $administer = [DocumentAbility::Administer];
+            $administers = $this->authorizer->filterActions(DocumentAdministrationPolicy::class, Document::class, $administer) !== [];
+
+            return DraftState::from($administers ? [...$held, 'held' => $draft->view($document)] : $held);
         }
 
         return DraftState::from(['state' => EditingState::Yours, 'draft' => $draft->view($document)]);

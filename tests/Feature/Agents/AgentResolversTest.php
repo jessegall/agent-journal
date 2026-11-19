@@ -11,7 +11,6 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\SessionResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -46,8 +45,8 @@ final class AgentResolversTest extends TestCase
     {
         parent::setUp();
 
-        $this->builder = Agent::named('Builder', AgentRole::MainAgent);
-        $this->reviewer = Agent::named('Reviewer', AgentRole::MainAgent);
+        $this->builder = Agent::named('Builder', 'main-agent');
+        $this->reviewer = Agent::named('Reviewer', 'main-agent');
         $launch = $this->app->make(LaunchSessions::class);
         $this->running = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->ended = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;
@@ -67,7 +66,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_an_agent_sees_only_its_own_running_sessions(): void
     {
-        $this->actAs(ActorContext::forAgent($this->reviewer->id));
+        $this->actAsAgent($this->reviewer->id);
 
         $this->assertSame([$this->reviewing->id], array_map(fn (SessionOption $option) => $option->sessionId, $this->sessions()->active()));
     }
@@ -83,7 +82,7 @@ final class AgentResolversTest extends TestCase
 
     public function test_an_ended_a_missing_and_another_agents_session_are_refused_alike(): void
     {
-        $this->actAs(ActorContext::forAgent($this->reviewer->id));
+        $this->actAsAgent($this->reviewer->id);
 
         foreach ([$this->ended->id, TestIds::of(99999), $this->running->id] as $sessionId) {
             try {
@@ -116,6 +115,14 @@ final class AgentResolversTest extends TestCase
     private function actAs(ActorContext $actor): void
     {
         $this->app->make(CurrentActorSetter::class)->set($actor, new OwnerAuthority('test'));
+    }
+
+    /**
+     * Acts as the agent under the profile it launches with, as a real agent call does.
+     */
+    private function actAsAgent(string $agentId): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), TestLaunchAuthority::forAgent($agentId));
     }
 
     private function sessions(): SessionResolver

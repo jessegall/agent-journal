@@ -6,10 +6,10 @@ namespace Tests\Unit\Profiles;
 
 use App\CoreApi;
 use App\Profiles\Contracts\ProfileResolver;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Support\BuiltInAuthorizations;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use Tests\Fixtures\Profiles\TestLaunchPolicies;
@@ -26,7 +26,7 @@ final class ProfilesExportsTest extends TestCase
 
         $this->assertContains(ProfileResolver::class, $exports->contracts);
         $this->assertContains(ProfileKey::class, $exports->values);
-        $this->assertContains(ProfileType::class, $exports->values);
+        $this->assertContains(ProfileBase::class, $exports->values);
         $this->assertContains(ProfileSnapshot::class, $exports->values);
         $this->assertContains(ProfileKeyInvalid::class, $exports->exceptions);
         $this->assertContains(ProfileMissing::class, $exports->exceptions);
@@ -39,7 +39,7 @@ final class ProfilesExportsTest extends TestCase
 
         $this->assertSame([], array_values(array_filter($domains, fn (string $class) => str_contains($class, 'Profiles'))));
         $this->assertArrayNotHasKey('Domain\\Profiles\\', $composer['autoload']['psr-4']);
-        $this->assertSame(['main_agent', 'read_only_helper', 'writing_helper'], array_column(ProfileType::cases(), 'value'));
+        $this->assertSame(['main-agent', 'writing-helper', 'read-only-helper'], array_column(ProfileBase::all(), 'key'));
     }
 
     public function test_a_snapshot_keeps_an_absent_allowlist_apart_from_an_empty_one(): void
@@ -47,13 +47,13 @@ final class ProfilesExportsTest extends TestCase
         $absent = ProfileSnapshot::from([
             'key' => ProfileKey::from('journal-reviewer'),
             'revision' => 1,
-            'type' => ProfileType::ReadOnlyHelper,
+            'base' => ProfileBase::readOnlyHelper(),
             'instructions' => 'Review the change.',
             'model' => 'opus',
             'skillAllowlist' => null,
             'requiredSkills' => [],
-            'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
-            'authorization' => BuiltInAuthorizations::for(ProfileType::ReadOnlyHelper),
+            'launch' => TestLaunchPolicies::for(ProfileBase::readOnlyHelper()),
+            'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
         $none = ProfileSnapshot::from([
             ...$absent->all(),

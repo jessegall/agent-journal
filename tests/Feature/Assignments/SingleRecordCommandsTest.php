@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Models\AssignmentRecord;
@@ -45,8 +44,8 @@ final class SingleRecordCommandsTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = TestLaunch::start('hooks.main_ready');
-        $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
+        $this->main = TestLaunch::start('main-agent');
+        $this->helper = TestLaunch::start('read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Write the commands']);
     }
 
@@ -88,7 +87,7 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_retirement_is_open_to_the_user_over_the_web_and_to_a_main_agent_over_a_signed_call(): void
     {
-        $spare = Agent::named('Spare', AgentRole::ReadOnlyHelper);
+        $spare = Agent::named('Spare', 'read-only-helper');
         $this->actingAs($this->owner)->postJson('/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])->assertOk();
 
         $this->signed($this->main, '/agent/agents/retire', ['agentId' => $this->main->agent->id])->assertForbidden();

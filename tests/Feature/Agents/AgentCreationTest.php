@@ -6,7 +6,6 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Contracts\AgentResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
@@ -37,18 +36,18 @@ final class AgentCreationTest extends TestCase
     {
         $bus = $this->app->make(CommandBus::class);
 
-        $resolver = $bus->run(new CreateAgent('Researcher', AgentRole::ReadOnlyHelper));
-        $writer = $bus->run(new CreateAgent('Builder', AgentRole::WritingHelper));
+        $resolver = $bus->run(new CreateAgent('Researcher', 'read-only-helper'));
+        $writer = $bus->run(new CreateAgent('Builder', 'writing-helper'));
         $labels = $this->app->make(AgentResolver::class)->labelsFor([$resolver, $writer]);
 
         $this->assertSame(['Researcher', 'Builder'], [$labels[$resolver]->name, $labels[$writer]->name]);
-        $this->assertSame([AgentRole::ReadOnlyHelper->value, AgentRole::WritingHelper->value], [Agent::query()->findOrFail($resolver)->role, Agent::query()->findOrFail($writer)->role]);
+        $this->assertSame(['read-only-helper', 'writing-helper'], [Agent::query()->findOrFail($resolver)->profile_key, Agent::query()->findOrFail($writer)->profile_key]);
     }
 
     public function test_a_blank_name_is_refused(): void
     {
         $this->expectException(AgentNameRequired::class);
 
-        $this->app->make(CommandBus::class)->run(new CreateAgent('   ', AgentRole::WritingHelper));
+        $this->app->make(CommandBus::class)->run(new CreateAgent('   ', 'writing-helper'));
     }
 }

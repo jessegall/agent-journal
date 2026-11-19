@@ -9,7 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -48,8 +47,8 @@ final class DockTest extends TestCase
         parent::setUp();
 
         $launch = $this->app->make(LaunchSessions::class);
-        $this->builderSession = $launch->launch(Agent::named('Builder', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
-        $this->reviewerSession = $launch->launch(Agent::named('Reviewer', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->builderSession = $launch->launch(Agent::named('Builder', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->reviewerSession = $launch->launch(Agent::named('Reviewer', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     public function test_creating_a_document_or_report_docks_nothing_and_the_section_only_suggests_them(): void
@@ -82,7 +81,7 @@ final class DockTest extends TestCase
     private function actAsAgent(AgentSession $session): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), TestLaunchAuthority::forAgent($session->agent_id));
-        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, 'hooks.main_ready', new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)), null));
+        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 
     private function bus(): CommandBus

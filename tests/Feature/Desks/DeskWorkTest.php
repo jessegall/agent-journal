@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
@@ -47,9 +46,9 @@ final class DeskWorkTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $desk = DeskRecord::openNamed('team', 'Team', 2, false);
-        $first = Agent::named('First', AgentRole::ReadOnlyHelper);
-        $second = Agent::named('Second', AgentRole::ReadOnlyHelper);
-        $outsider = Agent::named('Outsider', AgentRole::ReadOnlyHelper);
+        $first = Agent::named('First', 'read-only-helper');
+        $second = Agent::named('Second', 'read-only-helper');
+        $outsider = Agent::named('Outsider', 'read-only-helper');
 
         foreach ([$first, $second] as $agent) {
             $this->app->make(AssignmentTransaction::class)->run(

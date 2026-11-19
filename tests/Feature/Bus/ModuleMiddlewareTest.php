@@ -9,7 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\RetireAgent;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Commands\AssignRecord;
@@ -183,7 +182,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
     private function launchedSession(): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Reader', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Reader', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void
@@ -256,7 +255,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)));
-        $helper = Agent::named('Helper', AgentRole::ReadOnlyHelper);
+        $helper = Agent::named('Helper', 'read-only-helper');
         $task = Task::factory()->create(['title' => 'Held']);
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);

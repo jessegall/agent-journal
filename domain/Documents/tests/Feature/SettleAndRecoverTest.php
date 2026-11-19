@@ -206,7 +206,7 @@ final class SettleAndRecoverTest extends TestCase
     private function actAsAgent(int $agent, int $session): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), TestLaunchAuthority::forAgent(TestIds::of($agent)));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($session), 'hooks.main_ready', new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($session), new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 
     private function documents(): DocumentResolver

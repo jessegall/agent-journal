@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 use App\Processes\Values\ProcessGrants;
-use App\Profiles\Enums\ProfileType;
 use Spatie\LaravelData\Data;
 
 /**
@@ -21,7 +20,7 @@ final class ProfileSnapshot extends Data
     public function __construct(
         public readonly ProfileKey $key,
         public readonly int $revision,
-        public readonly ProfileType $type,
+        public readonly ProfileBase $base,
         public readonly string $instructions,
         public readonly string $model,
         public readonly array|null $skillAllowlist,

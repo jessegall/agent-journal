@@ -24,4 +24,13 @@ final readonly class ClassGrant
     {
         return $area === $this->area && in_array($access, $this->accessTypes, true);
     }
+
+    /**
+     * Whether the grant lets a holder change files of the workspace.
+     */
+    public function changesWorkspaceFiles(): bool
+    {
+        return $this->area->hasWorkspaceFiles()
+            && array_any($this->accessTypes, fn (AccessType $access) => $access->changesFiles());
+    }
 }

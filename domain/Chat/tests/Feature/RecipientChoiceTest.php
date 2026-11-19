@@ -8,7 +8,6 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Contracts\MainSeatTakeover;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Enums\CommandEntry;
@@ -78,7 +77,7 @@ final class RecipientChoiceTest extends TestCase
      */
     private function launch(string $name): array
     {
-        $agent = Agent::named($name, AgentRole::MainAgent);
+        $agent = Agent::named($name, 'main-agent');
         $session = $this->app->make(LaunchSessions::class)
             ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

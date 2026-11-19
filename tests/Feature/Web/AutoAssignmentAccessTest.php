@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
+use App\Agents\Actions\LaunchSessions;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Exceptions\AssignmentDenied;
@@ -16,6 +16,7 @@ use App\Engine\Support\EngineActor;
 use App\Web\Support\OwnerAutoAssignmentAccess;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -41,8 +42,8 @@ final class AutoAssignmentAccessTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->dispatcher = Agent::named('Main', AgentRole::MainAgent);
-        $this->worker = Agent::named('Worker', AgentRole::WritingHelper);
+        $this->dispatcher = $this->launched(Agent::named('Main', 'main-agent'));
+        $this->worker = $this->launched(Agent::named('Worker', 'writing-helper'));
         $this->access = $this->app->make(AutoAssignmentAccess::class);
     }
 
@@ -92,7 +93,7 @@ final class AutoAssignmentAccessTest extends TestCase
 
     public function test_a_worker_writes_nobody_and_reads_only_its_own_without_totals(): void
     {
-        $other = Agent::named('Other', AgentRole::WritingHelper);
+        $other = Agent::named('Other', 'writing-helper');
 
         $this->access->requireRead($this->worker, ActorIdentity::of($this->worker));
 
@@ -113,5 +114,15 @@ final class AutoAssignmentAccessTest extends TestCase
             fn () => $this->access->requireWrite(new EngineActor(), ActorIdentity::of($this->worker)),
             AutoAssignmentDenied::class,
         );
+    }
+
+    /**
+     * The agent with a live session, so its own profile answers what it may do.
+     */
+    private function launched(Agent $agent): Agent
+    {
+        $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
+
+        return $agent;
     }
 }

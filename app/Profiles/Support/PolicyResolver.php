@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
@@ -17,7 +16,6 @@ use App\Agents\Values\StopConditions;
 use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Contracts\KnownOperations;
 use App\Profiles\Enums\PolicyOriginType;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileDefinition;
@@ -42,17 +40,16 @@ final readonly class PolicyResolver
         ProposedProfile $profile,
         string $configurationHash,
     ): ProfileDefinition {
-        $role = $profile->type->agentRole();
-        $project = $proposal->overrideFor($profile->type);
+        $project = $proposal->overrideFor($profile->base);
         $this->requireKnownOperations($profile, $project);
 
         $launch = new ProfileLaunchPolicy(
             $profile->program,
             $profile->programPinned,
             $profile->allowedModels,
-            $this->access($role, $profile, $project),
-            $this->stopConditions($role, $profile),
-            $this->execution($role, $profile),
+            $this->access($profile, $project),
+            $this->stopConditions($profile),
+            $this->execution($profile),
             new ProfileProvenance($configurationHash, [
                 new FieldOrigin('program', PolicyOriginType::Profile),
                 new FieldOrigin('allowedModels', PolicyOriginType::Profile),
@@ -69,24 +66,26 @@ final readonly class PolicyResolver
         return new ProfileDefinition(
             $profile->key,
             $profile->label,
-            $profile->type,
+            $profile->base,
             $profile->instructions,
             $profile->model,
             $profile->skillAllowlist,
             $profile->requiredSkills,
             $launch,
-            BuiltInAuthorizations::for($profile->type, $this->policies->grantable()),
+            BuiltInAuthorizations::for($profile->base, $this->policies->grantable()),
         );
     }
 
     /**
      * @throws ProfilePolicyRefused
      */
-    private function access(AgentRole $role, ProposedProfile $profile, PolicyOverride $project): AccessPolicy
+    private function access(ProposedProfile $profile, PolicyOverride $project): AccessPolicy
     {
         $classes = [];
 
-        foreach (AccessPolicy::defaultsFor($role)->classGrants as $grant) {
+        $defaults = $profile->base->defaultAccess();
+
+        foreach ($defaults->classGrants as $grant) {
             foreach ($grant->accessTypes as $access) {
                 $classes[] = new ClassRule($access, $grant->area);
             }
@@ -108,16 +107,15 @@ final readonly class PolicyResolver
             $denials = [...$denials, ...$override->denyOperations];
         }
 
-        $this->requireWithinCeiling($role, $profile, $classes);
+        $this->requireWithinCeiling($profile, $classes);
 
         return AccessPolicy::make(
-            $role,
             self::classGrants($classes),
             $grants,
             array_values(array_unique($denials)),
             [],
             [],
-            AccessPolicy::defaultsFor($role)->processes,
+            $defaults->processes,
         );
     }
 
@@ -127,9 +125,9 @@ final readonly class PolicyResolver
      *
      * @throws ProfilePolicyRefused
      */
-    private function stopConditions(AgentRole $role, ProposedProfile $profile): StopConditions
+    private function stopConditions(ProposedProfile $profile): StopConditions
     {
-        $conditions = ProfileType::forRole($role)->defaultStopConditions();
+        $conditions = $profile->base->defaultStopConditions();
 
         foreach ($profile->stopConditions as $condition) {
             $same = array_filter($conditions, fn (StopCondition $kept) => $kept->key === $condition->key);
@@ -145,15 +143,15 @@ final readonly class PolicyResolver
             }
         }
 
-        return StopConditions::make($role, $conditions);
+        return StopConditions::make($conditions);
     }
 
     /**
      * @throws ProfilePolicyRefused
      */
-    private function execution(AgentRole $role, ProposedProfile $profile): ExecutionPolicy
+    private function execution(ProposedProfile $profile): ExecutionPolicy
     {
-        $type = ProfileType::forRole($role);
+        $type = $profile->base;
         $mode = $profile->container ?? $type->defaultExecutionMode();
 
         if ($type->isContainerRequired() && $mode !== ExecutionModeType::RequiredContainer) {
@@ -188,7 +186,7 @@ final readonly class PolicyResolver
      *
      * @throws ProfilePolicyRefused
      */
-    private function requireWithinCeiling(AgentRole $role, ProposedProfile $profile, array $classes): void
+    private function requireWithinCeiling(ProposedProfile $profile, array $classes): void
     {
         foreach ($classes as $class) {
             if ($class->area === ResourceAreaType::Protected) {
@@ -197,7 +195,7 @@ final readonly class PolicyResolver
 
             $writes = $class->area->hasWorkspaceFiles() && $class->access->changesFiles();
 
-            if ($role === AgentRole::ReadOnlyHelper && $writes) {
+            if ($writes && ! $profile->base->mayChangeWorkspaceFiles()) {
                 throw ProfilePolicyRefused::readOnlyCeiling($profile->key);
             }
         }

@@ -7,7 +7,6 @@ namespace Tests\Feature\Desks;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\RetireAgent;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
@@ -86,7 +85,7 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_a_created_agent_has_one_personal_desk_it_prefers(): void
     {
-        $agentId = $this->app->make(CommandBus::class)->run(new CreateAgent('Builder', AgentRole::ReadOnlyHelper));
+        $agentId = $this->app->make(CommandBus::class)->run(new CreateAgent('Builder', 'read-only-helper'));
         $agent = ActorIdentity::of(Agent::query()->findOrFail($agentId));
 
         $this->assertSame(1, DeskRecord::query()->occupiedBy($agent)->count());
@@ -95,8 +94,8 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_losing_the_only_seat_gives_a_new_desk_and_retiring_gives_none(): void
     {
-        $builder = ActorIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
-        $reviewer = ActorIdentity::of(Agent::named('Reviewer', AgentRole::ReadOnlyHelper));
+        $builder = ActorIdentity::of(Agent::named('Builder', 'read-only-helper'));
+        $reviewer = ActorIdentity::of(Agent::named('Reviewer', 'read-only-helper'));
         $first = $this->provision($builder);
         $this->provision($reviewer);
 
@@ -116,8 +115,8 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_restoring_an_actor_whose_old_seat_was_taken_gives_it_a_new_desk(): void
     {
-        $builder = ActorIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
-        $reviewer = ActorIdentity::of(Agent::named('Reviewer', AgentRole::ReadOnlyHelper));
+        $builder = ActorIdentity::of(Agent::named('Builder', 'read-only-helper'));
+        $reviewer = ActorIdentity::of(Agent::named('Reviewer', 'read-only-helper'));
         $old = $this->provision($builder);
         $this->app->make(CommandBus::class)->run(new RetireAgent($builder->id));
         $this->inTransaction(fn () => $this->app->make(SeatingWriter::class)->seat($old->deskId, $reviewer));

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * One model with the policy that decides on it and the enum of the abilities that policy grants, with the abilities
- * the journal's built-in agent profiles never get and those only its main agent gets.
+ * the journal's built-in agent profiles never get and those only a coordinating profile gets.
  */
 final readonly class PolicyRegistration
 {
@@ -19,24 +19,25 @@ final readonly class PolicyRegistration
      * @param  class-string<Policy>  $policy
      * @param  class-string<BackedEnum>  $abilities
      * @param  list<BackedEnum>  $ownerOnly
-     * @param  list<BackedEnum>  $mainAgentOnly
+     * @param  list<BackedEnum>  $coordinatorOnly
      */
     public function __construct(
         public string $model,
         public string $policy,
         public string $abilities,
         public array $ownerOnly = [],
-        public array $mainAgentOnly = [],
+        public array $coordinatorOnly = [],
     ) {}
 
     /**
-     * The abilities a built-in agent profile gets: every one but the owner's, and the main agent's only for it.
+     * The abilities a built-in agent profile gets: every one but the owner's, and the coordinator's only for a
+     * coordinating profile.
      *
      * @return list<BackedEnum>
      */
-    public function abilitiesForAgents(bool $mainAgent): array
+    public function abilitiesForAgents(bool $coordinator): array
     {
-        $withheld = $mainAgent ? $this->ownerOnly : [...$this->ownerOnly, ...$this->mainAgentOnly];
+        $withheld = $coordinator ? $this->ownerOnly : [...$this->ownerOnly, ...$this->coordinatorOnly];
 
         $granted = array_filter($this->abilities::cases(), fn (BackedEnum $ability) => ! in_array($ability, $withheld, true));
 

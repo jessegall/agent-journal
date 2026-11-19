@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Records\Support\RecordIdentity;
@@ -44,8 +43,8 @@ final class RecordVisibilityTest extends TestCase
         $this->installNotesModule();
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->writer = Agent::named('Writer', AgentRole::MainAgent);
-        $this->resolver = Agent::named('Reader', AgentRole::MainAgent);
+        $this->writer = Agent::named('Writer', 'main-agent');
+        $this->resolver = Agent::named('Reader', 'main-agent');
         $this->note = new Note(['text' => 'Check the lock order']);
         $this->note->saveFor($this->writer->id);
     }

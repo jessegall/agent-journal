@@ -12,6 +12,7 @@ use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\RuleProposal;
+use App\Processes\Support\ProcessAdministration;
 use App\Processes\Support\ProposalChecks;
 use App\Processes\Values\ProposalReceipt;
 
@@ -22,7 +23,7 @@ use App\Processes\Values\ProposalReceipt;
  */
 final readonly class ProposeCommandRuleHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private ProposalChecks $checks) {}
+    public function __construct(private CurrentActor $actors, private ProcessAdministration $administration, private ProposalChecks $checks) {}
 
     /**
      * @throws RuleProposalRefused
@@ -32,7 +33,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
     {
         $actor = ActorIdentity::of($this->actors->actor());
         $request = CommandRequest::query()->whereKey($command->commandRequestId)->lockForUpdate()->sole();
-        if (! $request->acceptsProposalFrom($actor)) {
+        if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw RuleProposalRefused::notTheRequester($request->id);
         }
         $this->checks->check($command->proposed->rule, $request->hold_reason->needsReader());

@@ -21,9 +21,8 @@ final readonly class ProposalStatusResolver
      */
     public function ownProposals(): array
     {
-        $agent = $this->actors->actor();
-        $agent->requireAgent();
+        $proposer = ActorIdentity::of($this->actors->actor());
 
-        return array_map(fn (Share $proposal) => $proposal->proposalStatus(), Share::proposedBy(ActorIdentity::of($agent)));
+        return array_map(fn (Share $proposal) => $proposal->proposalStatus(), Share::proposedBy($proposer));
     }
 }

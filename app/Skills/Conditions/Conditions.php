@@ -8,7 +8,7 @@ use App\Actors\Values\AbilityRequirement;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Policies\AssignmentPolicy;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
@@ -48,9 +48,9 @@ final class Conditions
         return new Profiles(array_values($keys));
     }
 
-    public static function agentTypes(ProfileType ...$types): AgentTypes
+    public static function profileBases(ProfileBase ...$bases): ProfileBases
     {
-        return new AgentTypes(array_values($types));
+        return new ProfileBases(array_values($bases));
     }
 
     public static function programs(ProgramKey ...$keys): Programs

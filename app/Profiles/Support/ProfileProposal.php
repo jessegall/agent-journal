@@ -9,8 +9,8 @@ use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\StopCondition;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileProposalRefused;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Enums\HookProgram;
 use TypeError;
@@ -18,7 +18,7 @@ use ValueError;
 
 /**
  * The validated, typed form of a proposed profile configuration such as config/profiles.php: its revision, the
- * project's overrides per type, and each profile. A proposal is not live authority until an owner activates it. No
+ * project's overrides per built-in base, and each profile. A proposal is not live authority until an owner activates it. No
  * untyped value passes beyond this class.
  */
 final readonly class ProfileProposal
@@ -29,12 +29,12 @@ final readonly class ProfileProposal
     private const array UNSUPPORTED_FIELDS = ['supervisor', 'instances', 'script', 'commands'];
 
     /**
-     * @param  list<TypeOverride>  $typeOverrides
+     * @param  list<BaseOverride>  $baseOverrides
      * @param  list<ProposedProfile>  $profiles
      */
     public function __construct(
         public int $revision,
-        public array $typeOverrides,
+        public array $baseOverrides,
         public array $profiles,
     ) {}
 
@@ -50,8 +50,8 @@ final readonly class ProfileProposal
         try {
             $overrides = [];
 
-            foreach ($configuration['type_overrides'] ?? [] as $type => $override) {
-                $overrides[] = new TypeOverride(ProfileType::from((string) $type), self::override($override));
+            foreach ($configuration['base_overrides'] ?? [] as $base => $override) {
+                $overrides[] = new BaseOverride(ProfileBase::of((string) $base), self::override($override));
             }
 
             $profiles = [];
@@ -72,16 +72,16 @@ final readonly class ProfileProposal
      */
     public function withBuiltIns(): self
     {
-        return new self($this->revision, $this->typeOverrides, [...BuiltInProfiles::proposed(), ...$this->profiles]);
+        return new self($this->revision, $this->baseOverrides, [...BuiltInProfiles::proposed(), ...$this->profiles]);
     }
 
     /**
-     * The project's override of the type; none when the proposal gives none.
+     * The project's override of the base; none when the proposal gives none.
      */
-    public function overrideFor(ProfileType $type): PolicyOverride
+    public function overrideFor(ProfileBase $base): PolicyOverride
     {
-        foreach ($this->typeOverrides as $override) {
-            if ($override->type === $type) {
+        foreach ($this->baseOverrides as $override) {
+            if ($override->base->is($base)) {
                 return $override->override;
             }
         }
@@ -108,7 +108,7 @@ final readonly class ProfileProposal
         return new ProposedProfile(
             ProfileKey::from($key),
             (string) ($profile['label'] ?? $key),
-            ProfileType::from((string) $profile['type']),
+            ProfileBase::of((string) $profile['base']),
             (string) ($profile['instructions'] ?? ''),
             (string) $profile['model'],
             $program === null ? null : HookProgram::from((string) $program),

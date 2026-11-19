@@ -77,7 +77,7 @@ final readonly class LaunchSessions
         $token = $this->credentials->issue($session);
         [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 
-        $this->events->dispatch(new LaunchStarted($agent->id, $session->id, $agent->role));
+        $this->events->dispatch(new LaunchStarted($agent->id, $session->id));
 
         return new LaunchedAgent($session, $token, $settings->content(), $selection->program->modelArguments($selection->model), $runtime, $firstRequest);
     }

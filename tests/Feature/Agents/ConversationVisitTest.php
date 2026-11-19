@@ -8,7 +8,6 @@ use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Contracts\ProgramConversationResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchOriginType;
 use App\Agents\Exceptions\ConversationIncompatible;
@@ -44,7 +43,7 @@ final class ConversationVisitTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->agent = Agent::named('Researcher', AgentRole::ReadOnlyHelper);
+        $this->agent = Agent::named('Researcher', 'read-only-helper');
     }
 
     public function test_a_b_a_in_one_process_gives_three_ordered_visits_on_one_session(): void

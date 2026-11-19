@@ -6,8 +6,8 @@ namespace Tests\Unit\Skills;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Support\BuiltInAuthorizations;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Programs\Values\ProgramKey;
@@ -111,13 +111,13 @@ final class SkillSelectionTest extends TestCase
         $snapshot = ProfileSnapshot::from([
             'key' => ProfileKey::from('journal-reviewer'),
             'revision' => 1,
-            'type' => ProfileType::ReadOnlyHelper,
+            'base' => ProfileBase::readOnlyHelper(),
             'instructions' => 'Review.',
             'model' => 'opus',
             'skillAllowlist' => $allowlist,
             'requiredSkills' => $required,
-            'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
-            'authorization' => BuiltInAuthorizations::for(ProfileType::ReadOnlyHelper),
+            'launch' => TestLaunchPolicies::for(ProfileBase::readOnlyHelper()),
+            'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
         return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
@@ -47,8 +46,8 @@ final class AssignedListsTest extends TestCase
     {
         parent::setUp();
 
-        $this->main = Agent::named('Main', AgentRole::MainAgent);
-        $this->other = Agent::named('Other', AgentRole::ReadOnlyHelper);
+        $this->main = Agent::named('Main', 'main-agent');
+        $this->other = Agent::named('Other', 'read-only-helper');
         $this->startRequestAs($this->main->id, TestIds::of(1));
     }
 

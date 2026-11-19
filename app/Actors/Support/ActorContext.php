@@ -6,8 +6,6 @@ namespace App\Actors\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\AgentActorRequired;
-use App\Actors\Exceptions\UserActorRequired;
 
 /**
  * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A user
@@ -49,27 +47,5 @@ final readonly class ActorContext implements Actor
     public function actorId(): string
     {
         return $this->id;
-    }
-
-    public function isUser(): bool
-    {
-        return $this->type === ActorType::User;
-    }
-
-    public function requireUser(): void
-    {
-        if (! $this->isUser()) {
-            throw UserActorRequired::forActor($this->type->value);
-        }
-    }
-
-    /**
-     * @throws AgentActorRequired
-     */
-    public function requireAgent(): void
-    {
-        if ($this->type !== ActorType::Agent) {
-            throw AgentActorRequired::forActor($this->type->value);
-        }
     }
 }

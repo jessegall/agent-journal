@@ -39,8 +39,8 @@ final class AgentRequestKeyTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->main = TestLaunch::start('hooks.main_ready');
-        $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
+        $this->main = TestLaunch::start('main-agent');
+        $this->helper = TestLaunch::start('read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Keyed work']);
     }
 
@@ -68,7 +68,7 @@ final class AgentRequestKeyTest extends TestCase
 
     public function test_one_key_from_two_agents_keys_two_separate_writes(): void
     {
-        $second = TestLaunch::start('hooks.main_ready');
+        $second = TestLaunch::start('main-agent');
         $other = Task::factory()->create(['title' => 'Other work']);
 
         $this->signed($this->main, '/agent/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id, 'request_key' => self::KEY])->assertOk();

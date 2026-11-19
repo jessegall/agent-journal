@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use Tests\Support\RefreshHookDatabase;
-use App\Assignments\Enums\AssignmentAbility;
-use App\Assignments\Policies\AssignmentPolicy;
-use App\Profiles\Values\AbilityGrant;
-use App\Profiles\Enums\AuthorizationType;
-use App\Profiles\Values\ProfileAuthorization;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Profiles\Enums\ProfileType;
+use App\Assignments\Enums\AssignmentAbility;
+use App\Assignments\Policies\AssignmentPolicy;
+use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Support\BuiltInAuthorizations;
+use App\Profiles\Values\AbilityGrant;
+use App\Profiles\Values\ProfileAuthorization;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Programs\Values\ProgramKey;
@@ -26,6 +25,7 @@ use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\SkillContext;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -58,8 +58,8 @@ final class ConditionTreeTest extends TestCase
     {
         $this->assertSame(ConditionOutcome::Match, Conditions::dispatchesWork()->evaluate($this->mainAgentOn('codex'))->outcome);
         $this->assertSame(ConditionOutcome::NoMatch, Conditions::dispatchesWork()->evaluate($this->reviewerOn('codex'))->outcome);
-        $this->assertSame(ConditionOutcome::Match, Conditions::agentTypes(ProfileType::ReadOnlyHelper)->evaluate($this->reviewerOn('codex'))->outcome);
-        $this->assertSame(ConditionOutcome::NoMatch, Conditions::agentTypes(ProfileType::WritingHelper)->evaluate($this->reviewerOn('codex'))->outcome);
+        $this->assertSame(ConditionOutcome::Match, Conditions::profileBases(ProfileBase::readOnlyHelper())->evaluate($this->reviewerOn('codex'))->outcome);
+        $this->assertSame(ConditionOutcome::NoMatch, Conditions::profileBases(ProfileBase::writingHelper())->evaluate($this->reviewerOn('codex'))->outcome);
         $this->assertSame('profile-free', Conditions::profiles(ProfileKey::from('journal-reviewer'))->evaluate($this->profileFreeOn('codex'))->reason);
     }
 
@@ -98,7 +98,7 @@ final class ConditionTreeTest extends TestCase
         yield 'unknown version' => [['type' => 'everyone', 'version' => 2], 'condition.version is 2'];
         yield 'empty keys' => [['type' => 'programs', 'version' => 1, 'keys' => []], 'condition.keys needs at least one key'];
         yield 'wrong key type' => [['type' => 'profiles', 'version' => 1, 'keys' => [7]], 'condition.keys[0] is not text'];
-        yield 'invalid agent type' => [['type' => 'agent-types', 'version' => 1, 'keys' => ['worker']], 'condition.keys holds a key that is not valid'];
+        yield 'invalid agent type' => [['type' => 'profile-bases', 'version' => 1, 'keys' => ['worker']], 'condition.keys holds a key that is not valid'];
         yield 'extra field' => [['type' => 'everyone', 'version' => 1, 'keys' => ['x']], 'condition.keys is not a field of this type'];
         yield 'nested field' => [['type' => 'all', 'version' => 1, 'children' => [['type' => 'profiles', 'version' => 1]]], 'condition.children[0].keys needs at least one key'];
         yield '17 deep' => [self::nested(17), 'nested deeper than 16 levels'];
@@ -163,13 +163,13 @@ final class ConditionTreeTest extends TestCase
         $snapshot = ProfileSnapshot::from([
             'key' => ProfileKey::from('journal-reviewer'),
             'revision' => 1,
-            'type' => ProfileType::ReadOnlyHelper,
+            'base' => ProfileBase::readOnlyHelper(),
             'instructions' => 'Review.',
             'model' => 'opus',
             'skillAllowlist' => null,
             'requiredSkills' => [],
-            'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
-            'authorization' => BuiltInAuthorizations::for(ProfileType::ReadOnlyHelper),
+            'launch' => TestLaunchPolicies::for(ProfileBase::readOnlyHelper()),
+            'authorization' => BuiltInAuthorizations::for(ProfileBase::readOnlyHelper()),
         ]);
 
         return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from($program), $provider === null ? null : ProviderKey::from($provider));
@@ -180,12 +180,12 @@ final class ConditionTreeTest extends TestCase
         $snapshot = ProfileSnapshot::from([
             'key' => ProfileKey::from('main-agent'),
             'revision' => 1,
-            'type' => ProfileType::MainAgent,
+            'base' => ProfileBase::mainAgent(),
             'instructions' => 'Lead.',
             'model' => 'opus',
             'skillAllowlist' => null,
             'requiredSkills' => [],
-            'launch' => TestLaunchPolicies::for(ProfileType::MainAgent),
+            'launch' => TestLaunchPolicies::for(ProfileBase::mainAgent()),
             'authorization' => new ProfileAuthorization(AuthorizationType::Policies, [
                 new AbilityGrant(AssignmentPolicy::class, AssignmentAbility::Dispatch),
             ]),

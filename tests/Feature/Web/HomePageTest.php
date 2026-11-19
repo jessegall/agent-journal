@@ -6,7 +6,6 @@ namespace Tests\Feature\Web;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Communication\Models\Message;
@@ -63,7 +62,7 @@ final class HomePageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $agent = Agent::named('Builder', AgentRole::MainAgent);
+        $agent = Agent::named('Builder', 'main-agent');
         $this->session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $ownInboxId = $this->inboxOf(ActorIdentity::of($this->owner))->inboxId();
         $this->pairId = $ownInboxId.'-'.$this->inboxOf(ActorIdentity::of($agent))->inboxId();

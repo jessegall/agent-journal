@@ -7,7 +7,6 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\LaunchStarted;
 use App\Agents\Models\Agent;
@@ -134,13 +133,13 @@ final class SessionSkillStatusTest extends TestCase
 
     private function launchedMainAgent(): AgentSession
     {
-        $agent = Agent::named('Main', AgentRole::MainAgent);
+        $agent = Agent::named('Main', 'main-agent');
         $session = new AgentSession(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
         $session->save();
         $this->app->make(AdmitLaunchSkills::class)->handle(
-            new LaunchStarted($agent->id, $session->id, AgentRole::MainAgent->value),
+            new LaunchStarted($agent->id, $session->id),
         );
 
         return $session;

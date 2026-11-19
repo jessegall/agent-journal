@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Desks;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
@@ -46,8 +45,8 @@ final class DeskSeatingTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->builder = ActorIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
-        $this->reviewer = ActorIdentity::of(Agent::named('Reviewer', AgentRole::ReadOnlyHelper));
+        $this->builder = ActorIdentity::of(Agent::named('Builder', 'read-only-helper'));
+        $this->reviewer = ActorIdentity::of(Agent::named('Reviewer', 'read-only-helper'));
         $this->startUserRequestAs($owner->id);
     }
 

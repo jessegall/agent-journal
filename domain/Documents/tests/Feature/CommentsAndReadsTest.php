@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Support\Page;
 use App\Bus\Contracts\CommandBus;
@@ -110,7 +109,7 @@ final class CommentsAndReadsTest extends TestCase
 
     public function test_an_agent_comments_as_itself(): void
     {
-        $agent = Agent::named('Commenter', AgentRole::ReadOnlyHelper);
+        $agent = Agent::named('Commenter', 'read-only-helper');
         $this->startRequestAs($agent->id, TestIds::of(9));
 
         $this->comment('From an agent.', WholeRecord::Record);

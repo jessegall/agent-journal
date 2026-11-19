@@ -71,7 +71,7 @@ final class ConditionalReviewStateTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
         $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $this->transaction()->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
     }
 

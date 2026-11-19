@@ -13,8 +13,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Contracts\ProfileSelections;
-use App\Profiles\Enums\ProfileType;
-use App\Profiles\Exceptions\ProfileTypeConflict;
+use App\Profiles\Exceptions\ProfileCannotCoordinate;
 use App\Profiles\Models\Profile;
 
 /**
@@ -29,14 +28,14 @@ final readonly class LaunchProfileMainHandler implements CommandHandler
     ) {}
 
     /**
-     * @throws ProfileTypeConflict
+     * @throws ProfileCannotCoordinate
      */
     public function handle(LaunchProfileMain $command): LaunchReceipt
     {
         $profile = $this->profiles->select($command->profile, $command->requested, $command->programKey, null);
 
-        if ($profile->type !== ProfileType::MainAgent) {
-            throw ProfileTypeConflict::for($command->profile, ProfileType::MainAgent, $profile->type);
+        if (! $profile->base->isCoordinator()) {
+            throw ProfileCannotCoordinate::for($command->profile);
         }
 
         return $this->commands->run(new LaunchAgent(new LaunchRequest(

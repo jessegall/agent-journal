@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Hooks\States\ReadyState;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\CredentialRejected;
-use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -32,7 +29,9 @@ use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\AgentStateMachine;
 use App\Hooks\Stack\HookAnswer;
+use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\FrameRecord;
+use App\Profiles\Exceptions\ProfileMissing;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -52,7 +51,7 @@ final class HookLaunchTest extends TestCase
 
     public function test_the_isolated_settings_hold_only_the_journal_hooks_and_turn_off_the_child_tool(): void
     {
-        $settings = json_decode($this->launch('hooks.main_ready')->settings, true, flags: JSON_THROW_ON_ERROR);
+        $settings = json_decode($this->launch('main-agent')->settings, true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame(['hooks', 'permissions'], array_keys($settings));
         $this->assertSame(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'], array_keys($settings['hooks']));
@@ -62,8 +61,8 @@ final class HookLaunchTest extends TestCase
 
     public function test_each_launch_gets_its_own_session_credential_and_stack(): void
     {
-        $first = $this->launch('hooks.main_ready');
-        $second = $this->launch('hooks.main_ready');
+        $first = $this->launch('main-agent');
+        $second = $this->launch('main-agent');
 
         $this->assertNotSame($first->session->id, $second->session->id);
         $this->assertNotSame($first->token, $second->token);
@@ -75,15 +74,15 @@ final class HookLaunchTest extends TestCase
 
     public function test_every_launch_starts_on_the_one_ready_bottom(): void
     {
-        $this->assertSame([ReadyState::TYPE_KEY], $this->bottomOf($this->launch('hooks.read_only_helper_ready')));
+        $this->assertSame([ReadyState::TYPE_KEY], $this->bottomOf($this->launch('read-only-helper')));
     }
 
-    public function test_an_unknown_role_refuses_the_launch_and_keeps_nothing(): void
+    public function test_an_unknown_profile_refuses_the_launch_and_keeps_nothing(): void
     {
         try {
-            $this->launch('hooks.ready');
-            $this->fail('A launch with an unknown role went through.');
-        } catch (LaunchRefused) {
+            $this->launch('no-such-profile');
+            $this->fail('A launch with an unknown profile went through.');
+        } catch (ProfileMissing) {
             $this->assertSame(0, AgentSession::query()->count());
             $this->assertSame(0, DB::table('agent_stacks')->count());
         }
@@ -93,12 +92,12 @@ final class HookLaunchTest extends TestCase
     {
         $this->expectException(ProgramUnsupported::class);
 
-        $this->launch('hooks.main_ready', 'some-other-program');
+        $this->launch('main-agent', 'some-other-program');
     }
 
     public function test_a_clear_or_resume_keeps_the_journal_session_and_its_stack(): void
     {
-        $launched = $this->launch('hooks.main_ready');
+        $launched = $this->launch('main-agent');
         $visits = $this->app->make(RecordConversationVisit::class);
 
         $visits->entered($launched->session->id, 'program-session-1', 'call-1', CarbonImmutable::now());
@@ -113,10 +112,10 @@ final class HookLaunchTest extends TestCase
 
     public function test_a_child_has_its_own_stack_so_its_stop_does_not_answer_for_the_parent(): void
     {
-        $parent = $this->launch('hooks.main_ready');
+        $parent = $this->launch('main-agent');
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id)));
-        $childAgent = Agent::named('Helper', AgentRole::ReadOnlyHelper);
+        $childAgent = Agent::named('Helper', 'read-only-helper');
 
         $child = $this->app->make(LaunchSessions::class)->launch($childAgent, TestSelections::of('claude-code'), TestSelections::requestId(), $parent->session);
 
@@ -127,7 +126,7 @@ final class HookLaunchTest extends TestCase
 
     public function test_ending_a_launch_closes_its_stack_and_revokes_its_credential(): void
     {
-        $launched = $this->launch('hooks.main_ready');
+        $launched = $this->launch('main-agent');
 
         $this->app->make(LaunchSessions::class)->end($launched->session);
 
@@ -136,12 +135,9 @@ final class HookLaunchTest extends TestCase
         $this->app->make(CredentialLookup::class)->sessionFor($launched->token);
     }
 
-    private function launch(string $role, string $program = 'claude-code'): LaunchedAgent
+    private function launch(string $profileKey, string $program = 'claude-code'): LaunchedAgent
     {
-        $agent = Agent::named('Test agent', AgentRole::MainAgent);
-        // A stored role is only ever unknown through data written outside the journal, as this test writes it.
-        $agent->role = $role;
-        $agent->save();
+        $agent = Agent::named('Test agent', $profileKey);
 
         return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of($program), TestSelections::requestId());
     }
@@ -179,7 +175,6 @@ final class HookLaunchTest extends TestCase
         $this->app->instance(AgentContext::class, new AgentContext(
             $launched->session->agent_id,
             $launched->session->id,
-            $launched->session->loadMissing('agent')->agent->role,
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
             null,
         ));

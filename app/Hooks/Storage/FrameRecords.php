@@ -52,7 +52,7 @@ final readonly class FrameRecords
         }
 
         if ($first->reference->typeKey !== ReadyState::TYPE_KEY) {
-            throw InvalidBottomState::ofAnotherRole($first->reference->typeKey, ReadyState::TYPE_KEY);
+            throw InvalidBottomState::ofAnotherType($first->reference->typeKey, ReadyState::TYPE_KEY);
         }
 
         foreach (array_slice($this->records, 1) as $record) {

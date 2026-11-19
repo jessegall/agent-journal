@@ -11,7 +11,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -118,13 +117,13 @@ final class TaskDetailsResolverTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named($name, AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     private function actAs(AgentSession $session): void
     {
         $this->app->forgetScopedInstances();
-        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, 'hooks.main_ready', new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
+        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id), TestLaunchAuthority::forAgent($session->agent_id));
     }
 

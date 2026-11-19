@@ -10,7 +10,6 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\LaunchStarted;
@@ -22,7 +21,7 @@ use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillSelectionConflict;
@@ -122,7 +121,7 @@ final class LaunchSkillsTest extends TestCase
 
     public function test_a_program_without_a_skill_adapter_is_refused_by_name(): void
     {
-        $session = $this->sessionRow(Agent::named('Other program', AgentRole::MainAgent), 'gemini-cli', null);
+        $session = $this->sessionRow(Agent::named('Other program', 'main-agent'), 'gemini-cli', null);
 
         $this->expectException(LaunchRefused::class);
         $this->expectExceptionMessage('gemini-cli');
@@ -133,7 +132,7 @@ final class LaunchSkillsTest extends TestCase
     public function test_a_required_skill_outside_the_selection_refuses_the_launch_with_its_key(): void
     {
         $this->activateReviewer(['journal-plans']);
-        $session = $this->sessionRow(Agent::named('Reviewer', AgentRole::ReadOnlyHelper), 'claude-code', 1);
+        $session = $this->sessionRow(Agent::named('Reviewer', 'read-only-helper'), 'claude-code', 1);
 
         $this->expectException(SkillSelectionConflict::class);
         $this->expectExceptionMessage('journal-plans');
@@ -144,8 +143,8 @@ final class LaunchSkillsTest extends TestCase
     public function test_two_sessions_in_one_work_folder_keep_their_own_sets_and_never_a_union(): void
     {
         $this->activateReviewer([]);
-        $main = $this->sessionRow(Agent::named('Main', AgentRole::MainAgent), 'claude-code', null);
-        $reviewer = $this->sessionRow(Agent::named('Reviewer', AgentRole::ReadOnlyHelper), 'claude-code', 1);
+        $main = $this->sessionRow(Agent::named('Main', 'main-agent'), 'claude-code', null);
+        $reviewer = $this->sessionRow(Agent::named('Reviewer', 'read-only-helper'), 'claude-code', 1);
 
         $this->started($main);
         $this->started($reviewer);
@@ -171,7 +170,7 @@ final class LaunchSkillsTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',
-                ProfileType::ReadOnlyHelper,
+                ProfileBase::readOnlyHelper(),
                 'Review.',
                 requiredSkills: $requiredSkills,
             ),
@@ -184,7 +183,7 @@ final class LaunchSkillsTest extends TestCase
     private function openCodexRuntime(): array
     {
         $host = $this->asSystem(new EnrollHost('test host', [self::FOLDER]));
-        $agent = Agent::named('Codex agent', AgentRole::MainAgent);
+        $agent = Agent::named('Codex agent', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,
@@ -218,7 +217,7 @@ final class LaunchSkillsTest extends TestCase
     private function started(AgentSession $session): void
     {
         $this->app->make(AdmitLaunchSkills::class)->handle(
-            new LaunchStarted($session->agent_id, $session->id, AgentRole::ReadOnlyHelper->value),
+            new LaunchStarted($session->agent_id, $session->id),
         );
     }
 

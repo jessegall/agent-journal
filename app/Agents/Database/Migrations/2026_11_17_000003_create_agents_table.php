@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('agents', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('name');
-            $table->string('role', 64);
+            $table->string('profile_key', 64);
             $table->timestampTz('retired_at')->nullable();
             $table->ulid('current_session_id')->nullable();
             $table->unsignedInteger('runtime_generation')->default(0);

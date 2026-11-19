@@ -27,6 +27,6 @@ final readonly class GrantOfflineReply implements Listener
         }
 
         $profile = $this->profiles->admittedPin(ProfileKey::from($session->profile_key), $session->profile_revision);
-        $event->additions->grantOfflineReply($profile->type->offlineReply());
+        $event->additions->grantOfflineReply($profile->base->offlineReply());
     }
 }

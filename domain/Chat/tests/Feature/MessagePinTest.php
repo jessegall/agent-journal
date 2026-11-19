@@ -7,7 +7,6 @@ namespace Domain\Chat\Tests\Feature;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Storage\AssignmentStore;
@@ -176,7 +175,7 @@ final class MessagePinTest extends TestCase
      */
     private function launch(string $name): array
     {
-        $agent = Agent::named($name, AgentRole::MainAgent);
+        $agent = Agent::named($name, 'main-agent');
         $session = $this->app->make(LaunchSessions::class)
             ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

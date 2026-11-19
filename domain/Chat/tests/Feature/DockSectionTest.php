@@ -7,7 +7,6 @@ namespace Domain\Chat\Tests\Feature;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandBus;
@@ -102,7 +101,7 @@ final class DockSectionTest extends TestCase
 
     private function launch(): AgentSession
     {
-        $agent = Agent::named('Builder', AgentRole::MainAgent);
+        $agent = Agent::named('Builder', 'main-agent');
 
         return $this->app->make(LaunchSessions::class)
             ->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())

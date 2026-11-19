@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Contracts\SessionResolver;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Models\Agent;
@@ -38,7 +37,7 @@ final class SessionSelectionReadTest extends TestCase
     {
         parent::setUp();
 
-        $agent = Agent::named('Researcher', AgentRole::ReadOnlyHelper);
+        $agent = Agent::named('Researcher', 'read-only-helper');
         $selection = SelectedProgram::resolve(null, ModelSelection::fromInput('default'), new ProfileDefaults('journal-researcher', 4, HookProgram::ClaudeCode, false, 'claude-sonnet-5-5', []), null);
         $this->session = $this->app->make(LaunchSessions::class)->launch($agent, $selection, TestSelections::requestId())->session;
         $this->startRequestAs($agent->id, $this->session->id);

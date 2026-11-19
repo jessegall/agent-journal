@@ -84,7 +84,7 @@ final class LineAdmissionTest extends TestCase
 
     public function test_a_read_only_helper_writing_a_file_is_refused_by_its_ceiling(): void
     {
-        $this->launch = TestLaunch::start('hooks.read_only_helper_ready');
+        $this->launch = TestLaunch::start('read-only-helper');
 
         $refusal = $this->refusalOf($this->admit('cat composer.json > copy.json', 'key-1'));
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Plans\Tests\Feature;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
@@ -54,7 +53,7 @@ final class DeskPlanAssignmentTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
-        $agent = Agent::named('Main', AgentRole::MainAgent);
+        $agent = Agent::named('Main', 'main-agent');
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(SeatingWriter::class)->seat($main->id, ActorIdentity::of($agent)),
         );

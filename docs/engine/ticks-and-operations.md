@@ -66,9 +66,9 @@ failure stops the rest, and the ones before it stay committed. A frame settles o
 answered none). Only then does its timing baseline move, so after a failure the next tick is told the whole interval
 since the last success.
 
-A command the engine runs must declare `#[App\Bus\Attributes\AllowsEngine]`; without it the bus refuses the Engine with
-`EngineNotAllowed`. A command with both `AllowsEngine` and `RequiresActor(User)` or `RequiresActor(Agent)` fails at
-registration.
+The engine is authorized like any actor: its authorizer allows a command only while it holds a grant, the frame it is
+ticking or a maintenance capability (`App\Engine\Support\EngineAccess`). Outside one it may run nothing. Its own
+maintenance commands, such as `App\Engine\Commands\MarkSilentSessions`, name the `EngineMaintenance` entry.
 
 Every command a tick answers runs with the frame's work as its origin (`App\Hooks\Values\WorkOccurrence`, for
 example run 3 of task 41). Inside the command's transaction and before its handler, `GuardTickOrigin` takes the

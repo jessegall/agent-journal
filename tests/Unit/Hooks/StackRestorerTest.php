@@ -116,7 +116,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_a_bottom_of_another_type_is_refused(): void
     {
-        $this->expectExceptionObject(InvalidBottomState::ofAnotherRole('hooks.main_ready', ReadyState::TYPE_KEY));
+        $this->expectExceptionObject(InvalidBottomState::ofAnotherType('hooks.main_ready', ReadyState::TYPE_KEY));
 
         $this->restorer->restore($this->records($this->bottom('hooks.main_ready')));
     }

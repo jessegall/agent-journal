@@ -9,7 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\DriverType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
@@ -67,7 +66,7 @@ final class RuntimesPageTest extends TestCase
     private function openRuntime(): void
     {
         $host = $this->throughEntry(new EnrollHost('test host', ['/work/project']));
-        $agent = Agent::named('Driven agent', AgentRole::MainAgent);
+        $agent = Agent::named('Driven agent', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,

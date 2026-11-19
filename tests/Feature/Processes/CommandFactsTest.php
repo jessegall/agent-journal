@@ -67,8 +67,8 @@ final class CommandFactsTest extends TestCase
     #[DataProvider('linesAndRoleAnswers')]
     public function test_the_admission_decides_each_role_answer(string $line, AnswerType $mainAgent, AnswerType $readOnlyHelper): void
     {
-        $this->assertSame($mainAgent, $this->answer('hooks.main_ready', $line));
-        $this->assertSame($readOnlyHelper, $this->answer('hooks.read_only_helper_ready', $line));
+        $this->assertSame($mainAgent, $this->answer('main-agent', $line));
+        $this->assertSame($readOnlyHelper, $this->answer('read-only-helper', $line));
     }
 
     public function test_the_app_reads_shell_commands_with_the_processes_parser(): void
@@ -110,10 +110,10 @@ final class CommandFactsTest extends TestCase
         return $this->app->make(ShellCommandParser::class)->parse($line, ShellDialect::Bash);
     }
 
-    private function answer(string $role, string $line): AnswerType
+    private function answer(string $profileKey, string $line): AnswerType
     {
         config(['processes.runner' => true]);
-        TestLaunch::start($role)->startRequest($this->app);
+        TestLaunch::start($profileKey)->startRequest($this->app);
         $context = ExecutionContext::inFolder(base_path());
         $admission = $this->app->make(ShellAdmission::class)->admit($line, ShellDialect::Bash, $context, Str::ulid()->toString());
 

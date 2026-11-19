@@ -51,11 +51,21 @@ A command carries whole numbers, text, yes or no, decimals, backed enums, their 
 owner may name, and lists of those, never a model, a service or a stack target (a session is an int id the handler
 resolves). A handler returns nothing, one of those, or a final readonly value such as `App\Assignments\Support\AssignmentResult`.
 
-Two attributes change how a command runs:
+Every command a person or an agent sends declares who may run it: `#[Authorize(Policy::class, Ability::Case)]` and a
+`subject()`, through `App\Bus\Contracts\HasAuthorizationSubject`. The subject is a model class for a class-level
+ability (creating a task: `Domain\Tasks\Commands\CreateTask` returns `Task::class`), or the record the ability acts on
+(blocking a task: `Domain\Tasks\Commands\BlockTask` returns the locked task). A handler may take that subject as its
+second argument, as `Domain\Tasks\Handlers\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
+loads the record once. The bus asks the caller's own profile before the handler runs and refuses with
+`App\Actors\Exceptions\ActorNotAllowed`. A command without `Authorize` fails the boot with
+`App\Bus\Exceptions\CommandAuthorizationMissing`, unless it names a trusted entry: `#[Entry(CommandEntry::HostControl)]`,
+`ShareGateway`, `SkillPublisher` or `EngineMaintenance`. Such a command runs only through that entry's dispatcher, as
+the journal itself, and never from a request. No command asks what kind of actor calls (rule 39); the guide in
+docs/domains/authorization.md shows how a module declares its policies.
+
+One attribute changes how a command runs:
 
 - `#[RepeatableRead]` runs it in a repeatable-read transaction, as `App\Assignments\Commands\AssignRecord` does.
-- `#[RequiresActor(ActorType::User)]` lets only a user run it, as `Domain\Rules\Commands\ApproveRule` does; an agent gets
-  `App\Actors\Exceptions\UserActorRequired`, answered as a 403.
 
 The owner lists its commands on its Domain class through `App\Bus\Contracts\ProvidesCommands`, and exports the ones other
 owners may run. Callers take `App\Bus\Contracts\CommandBus` as a method parameter and call `run`:

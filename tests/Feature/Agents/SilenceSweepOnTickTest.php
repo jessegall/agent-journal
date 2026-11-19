@@ -6,7 +6,6 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Support\DatabaseClock;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Support\CredentialLookup;
@@ -77,7 +76,7 @@ final class SilenceSweepOnTickTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function startedSecondsAgo(LaunchedAgent $launched, int $seconds): void

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Programs\Enums\HookProgram;
 
@@ -14,14 +14,14 @@ use App\Programs\Enums\HookProgram;
  */
 final class TestLaunchPolicies
 {
-    public static function for(ProfileType $type): ProfileLaunchPolicy
+    public static function for(ProfileBase $type): ProfileLaunchPolicy
     {
         return ProfileLaunchPolicy::defaultsFor(
             $type,
             HookProgram::ClaudeCode,
             true,
             ['opus', 'sonnet'],
-            hash('sha256', "test defaults of {$type->value}"),
+            hash('sha256', "test defaults of {$type->key}"),
         );
     }
 }

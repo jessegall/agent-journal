@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Links\Models\Link;
 use App\Records\Support\RecordIdentity;
@@ -42,8 +41,8 @@ final class LinkRemovalTest extends TestCase
     {
         parent::setUp();
 
-        $this->source = Agent::named('Source', AgentRole::ReadOnlyHelper);
-        $this->target = Agent::named('Target', AgentRole::ReadOnlyHelper);
+        $this->source = Agent::named('Source', 'read-only-helper');
+        $this->target = Agent::named('Target', 'read-only-helper');
         $this->source->linkTo($this->target);
         $link = Link::query()->between($this->source, $this->target)->sole();
         $configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));

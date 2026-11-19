@@ -13,7 +13,7 @@ use App\Agents\Support\OfflineReplySeal;
 
 /**
  * What the relay of one launch needs, given to the program's environment by the launch: where the journal
- * answers, the launch token, the agent's role and the host's bypass file.
+ * answers, the launch token, the sealed offline reply and the host's bypass file.
  */
 final readonly class RelaySettings
 {

@@ -9,7 +9,6 @@ use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\RetireAgent;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\LaunchRefused;
@@ -63,8 +62,8 @@ final class AgentRetirementTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::named('Main', AgentRole::MainAgent);
-        $this->helper = Agent::named('Helper', AgentRole::ReadOnlyHelper);
+        $this->main = Agent::named('Main', 'main-agent');
+        $this->helper = Agent::named('Helper', 'read-only-helper');
         $this->startUserRequestAs($this->owner->id);
     }
 

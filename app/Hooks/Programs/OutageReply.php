@@ -8,8 +8,8 @@ use App\Hooks\Enums\CallFailure;
 use App\Hooks\Enums\ProgramStopDecision;
 
 /**
- * The reply the host gives a program when a hook call to the journal fails. During an outage the main agent goes on
- * with a neutral reply and the host logs the bypass; a helper is refused. Any other failure is refused for every role.
+ * The reply the host gives a program when a hook call to the journal fails. During an outage a launch granted the neutral
+ * reply goes on and the host logs the bypass; any other launch is refused. Any other failure is refused for every launch.
  * The host holds these replies; a journal that is down cannot send them.
  */
 final class OutageReply

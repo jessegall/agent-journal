@@ -6,18 +6,18 @@ namespace App\Skills\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\AbilityRequirement;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
 use App\Skills\Conditions\Abilities;
-use App\Skills\Conditions\AgentTypes;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
 use App\Skills\Conditions\Environments;
 use App\Skills\Conditions\Everyone;
 use App\Skills\Conditions\Named;
 use App\Skills\Conditions\Not;
+use App\Skills\Conditions\ProfileBases;
 use App\Skills\Conditions\Profiles;
 use App\Skills\Conditions\Programs;
 use App\Skills\Conditions\Providers;
@@ -144,8 +144,8 @@ final readonly class ConditionTree
             Profiles::TYPE => $this->keyed($node, Profiles::VERSION, fn (array $keys) => new Profiles(
                 array_map(ProfileKey::from(...), $keys),
             )),
-            AgentTypes::TYPE => $this->keyed($node, AgentTypes::VERSION, fn (array $keys) => new AgentTypes(
-                array_map(ProfileType::from(...), $keys),
+            ProfileBases::TYPE => $this->keyed($node, ProfileBases::VERSION, fn (array $keys) => new ProfileBases(
+                array_map(ProfileBase::of(...), $keys),
             )),
             Programs::TYPE => $this->keyed($node, Programs::VERSION, fn (array $keys) => new Programs(
                 array_map(ProgramKey::from(...), $keys),

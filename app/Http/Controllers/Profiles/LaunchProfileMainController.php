@@ -9,7 +9,7 @@ use App\Http\Requests\Profiles\LaunchProfileMainRequest;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Launches a main agent from a main_agent profile and answers with the launch's session, program and model.
+ * Launches a main agent from a profile that coordinates the journal's work and answers with the launch's session, program and model.
  */
 final readonly class LaunchProfileMainController
 {

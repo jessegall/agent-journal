@@ -102,7 +102,6 @@ use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
@@ -599,8 +598,9 @@ use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Events\ProfileRevisionRevoked;
+use App\Profiles\Exceptions\BuiltInProfileMissing;
+use App\Profiles\Exceptions\ProfileCannotCoordinate;
 use App\Profiles\Exceptions\ProfileFieldUnknown;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
@@ -608,19 +608,19 @@ use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
-use App\Profiles\Exceptions\ProfileTypeConflict;
+use App\Profiles\Support\BaseOverride;
 use App\Profiles\Support\ClassRule;
 use App\Profiles\Support\OperationRule;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
-use App\Profiles\Support\TypeOverride;
 use App\Profiles\Values\AbilityGrant;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\LaunchProfileAuthority;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileAuthorization;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileLaunchPolicy;
@@ -806,7 +806,6 @@ use App\Skills\Commands\RestoreSkill;
 use App\Skills\Commands\RetireSkill;
 use App\Skills\Commands\ReviseSkill;
 use App\Skills\Conditions\Abilities;
-use App\Skills\Conditions\AgentTypes;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
 use App\Skills\Conditions\Conditions;
@@ -814,6 +813,7 @@ use App\Skills\Conditions\Environments;
 use App\Skills\Conditions\Everyone;
 use App\Skills\Conditions\Named;
 use App\Skills\Conditions\Not;
+use App\Skills\Conditions\ProfileBases;
 use App\Skills\Conditions\Profiles;
 use App\Skills\Conditions\Programs;
 use App\Skills\Conditions\Providers;
@@ -1120,7 +1120,6 @@ final class CoreApi
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,
-                AgentRole::class,
                 HookProgram::class,
                 PreparedLaunch::class,
                 ExecutionReceipt::class,
@@ -1475,7 +1474,7 @@ final class CoreApi
                 ShareProposalStatus::class,
                 ShareState::class,
                 ProfileKey::class,
-                ProfileType::class,
+                ProfileBase::class,
                 OfflineReplyMode::class,
                 ProfileSnapshot::class,
                 ProfileLaunchPolicy::class,
@@ -1487,7 +1486,7 @@ final class CoreApi
                 ProfileProposal::class,
                 ProposedProfile::class,
                 PolicyOverride::class,
-                TypeOverride::class,
+                BaseOverride::class,
                 ClassRule::class,
                 OperationRule::class,
                 ProfileChangeType::class,
@@ -1503,7 +1502,7 @@ final class CoreApi
                 MarkdownParts::class,
                 Abilities::class,
                 Profiles::class,
-                AgentTypes::class,
+                ProfileBases::class,
                 Programs::class,
                 Providers::class,
                 Environments::class,
@@ -1611,6 +1610,7 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                BuiltInProfileMissing::class,
                 AutoAssignmentSizeInvalid::class,
                 OfflineReplyModeInvalid::class,
                 SkillSourceInvalid::class,
@@ -1784,7 +1784,7 @@ final class CoreApi
                 ProfileFieldUnknown::class,
                 ProfileProposalRefused::class,
                 ProfilePolicyRefused::class,
-                ProfileTypeConflict::class,
+                ProfileCannotCoordinate::class,
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
                 ProgramKeyInvalid::class,

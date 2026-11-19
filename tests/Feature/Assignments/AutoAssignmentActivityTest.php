@@ -7,7 +7,6 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentActivity;
@@ -32,7 +31,7 @@ final class AutoAssignmentActivityTest extends TestCase
 
     public function test_an_agent_takes_work_only_while_a_session_runs(): void
     {
-        $agent = Agent::named('Builder', AgentRole::WritingHelper);
+        $agent = Agent::named('Builder', 'writing-helper');
         $actor = ActorIdentity::of($agent);
         $activity = $this->app->make(AssignmentProviders::class)->activity(ActorType::Agent);
 

@@ -8,11 +8,12 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Profiles\Casts\ProfileAuthorizationCast;
+use App\Profiles\Casts\ProfileBaseCast;
 use App\Profiles\Casts\ProfileLaunchPolicyCast;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
 use App\Profiles\Values\ProfileAuthorization;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileLaunchPolicy;
@@ -27,14 +28,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One numbered, immutable revision of a profile: its type, instructions, default model, skill lists, launch policy
+ * One numbered, immutable revision of a profile: the built-in profile it starts from, its instructions, default model, skill lists, launch policy
  * and who wrote it. A null skill allowlist means every applicable skill; an empty one means none. The launch policy
  * is kept in its own columns and read back through ProfileLaunchPolicyCast.
  *
  * @property string $id
  * @property string $profile_id
  * @property int $revision
- * @property ProfileType $type
+ * @property ProfileBase $base
  * @property string $instructions
  * @property string $model
  * @property list<string>|null $skill_allowlist
@@ -48,7 +49,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable([
     'profile_id',
     'revision',
-    'type',
+    'base',
     'instructions',
     'model',
     'skill_allowlist',
@@ -73,7 +74,7 @@ final class ProfileRevision extends Model implements ReadableModel
     {
         return [
             'revision' => 'integer',
-            'type' => ProfileType::class,
+            'base' => ProfileBaseCast::class,
             'skill_allowlist' => 'array',
             'required_skills' => 'array',
             'launch_policy' => ProfileLaunchPolicyCast::class,
@@ -99,7 +100,7 @@ final class ProfileRevision extends Model implements ReadableModel
         return self::query()->create([
             'profile_id' => $profile->id,
             'revision' => (is_numeric($latest) ? (int) $latest : 0) + 1,
-            'type' => $definition->type,
+            'base' => $definition->base,
             'instructions' => $definition->instructions,
             'model' => $definition->model,
             'skill_allowlist' => $definition->skillAllowlist,
@@ -135,7 +136,7 @@ final class ProfileRevision extends Model implements ReadableModel
         return ProfileSnapshot::from([
             'key' => $key,
             'revision' => $this->revision,
-            'type' => $this->type,
+            'base' => $this->base,
             'instructions' => $this->instructions,
             'model' => $this->model,
             'skillAllowlist' => $this->skill_allowlist,

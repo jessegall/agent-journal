@@ -86,7 +86,7 @@ final class DesksServiceProvider extends ServiceProvider
             DeskRecord::class,
             DeskPolicy::class,
             DeskAbility::class,
-            mainAgentOnly: [DeskAbility::Arrange],
+            coordinatorOnly: [DeskAbility::Arrange],
         ));
         $links->register([
             DeskRecord::LINK_TYPE => DeskRecord::class,

@@ -6,8 +6,6 @@ namespace Tests\Feature\Actors;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Exceptions\SystemActorRequired;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorStore;
 use App\Actors\Support\SystemActor;
@@ -44,11 +42,5 @@ final class SystemActorTest extends TestCase
 
         $this->assertSame(ActorType::System, $inside);
         $this->assertSame(ActorType::User, $store->actor()->actorType());
-    }
-
-    public function test_each_required_actor_type_has_its_own_refusal(): void
-    {
-        $this->assertInstanceOf(SystemActorRequired::class, ActorType::System->refusalFor(ActorType::User));
-        $this->assertInstanceOf(UserActorRequired::class, ActorType::User->refusalFor(ActorType::System));
     }
 }

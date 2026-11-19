@@ -92,7 +92,7 @@ trait CommittedHookStack
      */
     private function launchedTarget(): StackTarget
     {
-        $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(['name' => 'Hook agent', 'role' => 'hooks.main_ready']);
+        $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(['name' => 'Hook agent', 'profile_key' => 'main-agent']);
         $agent->id = TestIds::of(1);
         $agent->save();
         $session = AgentSession::query()->find(TestIds::of(10)) ?? new AgentSession(TestSelections::sessionColumns());
@@ -140,7 +140,7 @@ trait CommittedHookStack
 
     protected function callAs(string $callId, string|null $inputDigest = null): void
     {
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()), null));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), TestLaunchAuthority::forAgent(TestIds::of(1)));
     }
 

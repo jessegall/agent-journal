@@ -6,7 +6,6 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
@@ -63,8 +62,8 @@ final class MessageAttentionTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $deskId = $this->app->make(CommandBus::class)->run(new CreateDesk('Team', 3, false));
         $desk = DeskRecord::query()->whereKey($deskId)->sole();
-        $running = [Agent::named('First', AgentRole::MainAgent), Agent::named('Second', AgentRole::MainAgent)];
-        $idle = Agent::named('Idle', AgentRole::MainAgent);
+        $running = [Agent::named('First', 'main-agent'), Agent::named('Second', 'main-agent')];
+        $idle = Agent::named('Idle', 'main-agent');
 
         foreach ([...$running, $idle] as $agent) {
             $this->app->make(AssignmentTransaction::class)->run(

@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use Tests\Support\TestLaunchAuthority;
-use Illuminate\Container\Container;
-use App\AgentRequests\Support\LaunchProfilePin;
-use App\Agents\Enums\AgentRole;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\AgentRequests\Support\LaunchProfilePin;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Actions\AgentSessions;
@@ -20,7 +17,9 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\RuntimeIntent;
 use Carbon\CarbonImmutable;
+use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
+use Tests\Support\TestLaunchAuthority;
 
 /**
  * One launched test agent with its session and token, and the server headers of a call it signs.
@@ -33,9 +32,9 @@ final readonly class TestLaunch
         public string $token,
     ) {}
 
-    public static function start(string $role = 'hooks.main_ready'): self
+    public static function start(string $profileKey = 'main-agent'): self
     {
-        $agent = Agent::named('Test agent', AgentRole::from($role));
+        $agent = Agent::named('Test agent', $profileKey);
         $sessions = Container::getInstance()->make(AgentSessions::class);
         $session = $sessions->start($agent, TestSelections::of(), TestSelections::requestId());
 
@@ -48,7 +47,7 @@ final readonly class TestLaunch
     public function startRequest(Application $app): void
     {
         $call = new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64));
-        $context = new AgentContext($this->agent->id, $this->session->id, $this->agent->role, $call, null);
+        $context = new AgentContext($this->agent->id, $this->session->id, $call, null);
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
         $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), TestLaunchAuthority::forAgent($this->agent->id));

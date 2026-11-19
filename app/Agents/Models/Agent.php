@@ -9,7 +9,6 @@ use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\RunsRuntimes;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Support\RunningRuntime;
 use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\Assignee;
@@ -27,19 +26,19 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * An agent the journal launches, with the role its bottom state follows. It can hold assigned work until it is
+ * An agent the journal launches, with the profile it launches with. It can hold assigned work until it is
  * retired; retirement is final.
  *
  * @property string $id
  * @property string|null $current_session_id
  * @property int $runtime_generation
  * @property string $name
- * @property string $role
+ * @property string $profile_key
  * @property Carbon|null $retired_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'role'])]
+#[Fillable(['name', 'profile_key'])]
 final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableModel, ReceivesMessages, RunsRuntimes, SendsMessages
 {
     use BoundedReads;
@@ -53,9 +52,12 @@ final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableMod
         return ['retired_at' => 'datetime'];
     }
 
-    public static function named(string $name, AgentRole $role): self
+    /**
+     * A new agent that launches with the profile of this key unless a launch names another.
+     */
+    public static function named(string $name, string $profileKey): self
     {
-        return self::query()->create(['name' => $name, 'role' => $role->value]);
+        return self::query()->create(['name' => $name, 'profile_key' => $profileKey]);
     }
 
     /**
@@ -123,19 +125,6 @@ final class Agent extends Model implements Assignee, ForwardsToDesk, ReadableMod
     public function actorId(): string
     {
         return $this->id;
-    }
-
-    public function isMainAgent(): bool
-    {
-        return $this->role === AgentRole::MainAgent->value;
-    }
-
-    /**
-     * The role the agent was registered with.
-     */
-    public function agentRole(): AgentRole
-    {
-        return AgentRole::from($this->role);
     }
 
     public function isRetired(): bool

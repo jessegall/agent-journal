@@ -26,7 +26,7 @@ final class JournalToolTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', 'main', new SignedCall(self::CALL_ID, CarbonImmutable::now(), 'digest'), null));
+        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', new SignedCall(self::CALL_ID, CarbonImmutable::now(), 'digest'), null));
     }
 
     public function test_a_record_answers_with_status_payload_and_next_actions(): void

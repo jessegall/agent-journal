@@ -7,15 +7,14 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\ProfileRevision;
+use App\Profiles\Values\ProfileBase;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
@@ -47,10 +46,10 @@ final class SkillPreviewTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
-            TestProposals::profile('journal-reviewer', ProfileType::ReadOnlyHelper, 'Review.'),
+            TestProposals::profile('journal-reviewer', ProfileBase::readOnlyHelper(), 'Review.'),
         )));
-        $this->main = $this->launch('Main', AgentRole::MainAgent, null);
-        $this->reviewer = $this->launch('Reviewer', AgentRole::ReadOnlyHelper, 1);
+        $this->main = $this->launch('Main', 'main-agent', null);
+        $this->reviewer = $this->launch('Reviewer', 'read-only-helper', 1);
     }
 
     public function test_journal_plans_lists_the_main_agent_as_match_and_a_read_only_helper_as_no_match(): void
@@ -93,9 +92,9 @@ final class SkillPreviewTest extends TestCase
         return [Agent::query()->count(), AgentSession::query()->count(), Profile::query()->count(), ProfileRevision::query()->count()];
     }
 
-    private function launch(string $name, AgentRole $role, int|null $profileRevision): Agent
+    private function launch(string $name, string $profileKey, int|null $profileRevision): Agent
     {
-        $agent = Agent::named($name, $role);
+        $agent = Agent::named($name, $profileKey);
         $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer', 'profile_revision' => $profileRevision ?? 1]);
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;

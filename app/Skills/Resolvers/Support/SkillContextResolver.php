@@ -19,8 +19,8 @@ use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\SkillContext;
 
 /**
- * Reads the facts skill conditions decide on for one agent's session: its trusted role, the profile revision it was
- * launched with, its program and provider. It reads no token or secret.
+ * Reads the facts skill conditions decide on for one agent's session: the profile revision it was launched with,
+ * its program and provider. It reads no token or secret.
  */
 final readonly class SkillContextResolver
 {

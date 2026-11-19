@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Profiles\Casts;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
@@ -20,7 +19,6 @@ use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandPatternSet;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Enums\PolicyOriginType;
-use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileLaunchPolicy;
@@ -51,14 +49,12 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): ProfileLaunchPolicy
     {
         try {
-            $role = ProfileType::from((string) $attributes['type'])->agentRole();
-
             return new ProfileLaunchPolicy(
                 HookProgram::tryFrom((string) $attributes['program']),
                 (bool) $attributes['program_pinned'],
                 self::decode($attributes['allowed_models']),
-                self::access($role, self::decode($attributes['access_policy'])),
-                self::stopConditions($role, self::decode($attributes['stop_conditions'])),
+                self::access(self::decode($attributes['access_policy'])),
+                self::stopConditions(self::decode($attributes['stop_conditions'])),
                 self::execution(self::decode($attributes['execution_policy'])),
                 self::provenance((string) $attributes['configuration_hash'], self::decode($attributes['provenance'])),
             );
@@ -127,10 +123,9 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
     /**
      * @param  array<string, mixed>  $stored
      */
-    private static function access(AgentRole $role, array $stored): AccessPolicy
+    private static function access(array $stored): AccessPolicy
     {
         return AccessPolicy::make(
-            $role,
             array_values(array_map(fn (array $grant) => new ClassGrant(
                 ResourceAreaType::from($grant['area']),
                 array_values(array_map(AccessType::from(...), $grant['access'])),
@@ -185,9 +180,9 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
     /**
      * @param  array<string, mixed>  $stored
      */
-    private static function stopConditions(AgentRole $role, array $stored): StopConditions
+    private static function stopConditions(array $stored): StopConditions
     {
-        return StopConditions::make($role, array_values(array_map(fn (array $condition) => new StopCondition(
+        return StopConditions::make(array_values(array_map(fn (array $condition) => new StopCondition(
             $condition['key'],
             $condition['label'],
             $condition['executable'],

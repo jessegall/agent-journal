@@ -5,17 +5,21 @@ declare(strict_types=1);
 namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Data\RuntimeStatus;
+use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Policies\AgentPolicy;
 use App\Reads\Support\ReadBuilder;
 use Carbon\CarbonImmutable;
 
 final readonly class RuntimeRecords implements RuntimeResolver
 {
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(private CurrentActor $actors, private CurrentAuthorizer $authorizer) {}
 
     public function page(int $page, int $perPage): array
     {
@@ -58,7 +62,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
     }
 
     /**
-     * A user sees every runtime; an agent sees only the runtimes of its own sessions, as SessionRecords decides.
+     * A caller that inspects agents sees every runtime; any other sees only the runtimes of its own sessions, as SessionRecords decides.
      *
      * @return ReadBuilder<AgentRuntime>
      */
@@ -67,6 +71,14 @@ final readonly class RuntimeRecords implements RuntimeResolver
         $actor = $this->actors->actor();
         $query = AgentRuntime::query();
 
-        return $actor->isUser() ? $query : $query->whereRelation('session', 'agent_id', $actor->id);
+        return $this->inspectsAgents() ? $query : $query->whereRelation('session', 'agent_id', $actor->id);
+    }
+
+    /**
+     * Whether the caller may see every agent's sessions and runtimes, not only its own.
+     */
+    private function inspectsAgents(): bool
+    {
+        return $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AgentAbility::Inspect]) !== [];
     }
 }

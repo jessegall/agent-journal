@@ -39,8 +39,7 @@ final readonly class ProfilePrograms implements ProfileSelections
 
         return new ProfileSelection(
             SelectedProgram::resolve($programKey, $requested, $defaults, $parentProgram),
-            $snapshot->type,
-            $snapshot->type->agentRole(),
+            $snapshot->base,
             $launch,
         );
     }

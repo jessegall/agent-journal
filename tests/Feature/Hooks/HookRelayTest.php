@@ -48,7 +48,7 @@ final class HookRelayTest extends TestCase
     {
         parent::setUp();
 
-        $this->launch = TestLaunch::start('hooks.main_ready');
+        $this->launch = TestLaunch::start('main-agent');
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open(
             new StackTarget($this->launch->agent->id, $this->launch->session->id),
         ));

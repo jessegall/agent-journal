@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Processes\Contracts\VerificationTiming;
@@ -43,7 +42,7 @@ final class PhaseTimingTest extends TestCase
     {
         parent::setUp();
 
-        $this->agent = Agent::named('Worker', AgentRole::WritingHelper);
+        $this->agent = Agent::named('Worker', 'writing-helper');
         $plan = Plan::factory()->create(['title' => 'Phase timing']);
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Started->value]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];

@@ -8,7 +8,6 @@ use App\Actors\Contracts\ActiveActors;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentSessionCounter;
@@ -38,7 +37,7 @@ final class AgentSessionCounterTest extends TestCase
         parent::setUp();
 
         $this->beat = CarbonImmutable::parse('2026-11-18 12:00:00');
-        $this->agent = Agent::named('Test agent', AgentRole::MainAgent);
+        $this->agent = Agent::named('Test agent', 'main-agent');
     }
 
     public function test_a_beat_counts_until_its_window_ends_and_not_at_the_boundary(): void

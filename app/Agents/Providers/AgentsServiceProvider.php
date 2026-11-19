@@ -99,8 +99,8 @@ final class AgentsServiceProvider extends ServiceProvider
             Agent::class,
             AgentPolicy::class,
             AgentAbility::class,
-            ownerOnly: [AgentAbility::RunKeyScript],
-            mainAgentOnly: [AgentAbility::RetireOthers],
+            ownerOnly: [AgentAbility::RunKeyScript, AgentAbility::Inspect, AgentAbility::Steer],
+            coordinatorOnly: [AgentAbility::RetireOthers],
         ));
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);

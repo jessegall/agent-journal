@@ -39,7 +39,7 @@ final class HookEndpointTest extends TestCase
         parent::setUp();
 
         config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start('hooks.main_ready');
+        $this->launch = TestLaunch::start('main-agent');
         $this->launch->openRuntime($this->app);
         $this->asLaunchedAgent(fn () => $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(LaunchStacks::class)->open($this->target()),
@@ -155,7 +155,6 @@ final class HookEndpointTest extends TestCase
         $this->app->instance(AgentContext::class, new AgentContext(
             $this->launch->agent->id,
             $this->launch->session->id,
-            'hooks.main_ready',
             new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
             null,
         ));

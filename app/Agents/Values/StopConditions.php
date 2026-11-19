@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Values;
 
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StopConditionsInvalid;
 
 /**
@@ -36,7 +35,7 @@ final readonly class StopConditions
      *
      * @throws StopConditionsInvalid
      */
-    public static function make(AgentRole $role, array $conditions, int $attemptSeconds = self::DEFAULT_ATTEMPT_SECONDS): self
+    public static function make(array $conditions, int $attemptSeconds = self::DEFAULT_ATTEMPT_SECONDS): self
     {
         if (count($conditions) > self::MOST_CONDITIONS) {
             throw StopConditionsInvalid::tooMany(count($conditions));

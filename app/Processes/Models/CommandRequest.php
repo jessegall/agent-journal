@@ -155,11 +155,11 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
-     * Whether the actor may propose for the request: a user, or the actor that opened it.
+     * Whether the actor may propose for the request: the actor that opened it, or one that administers processes.
      */
-    public function acceptsProposalFrom(ActorIdentity $actor): bool
+    public function acceptsProposalFrom(ActorIdentity $actor, bool $administers): bool
     {
-        return $actor->type->isUser() || $this->isByActor($actor);
+        return $administers || $this->isByActor($actor);
     }
 
     /**

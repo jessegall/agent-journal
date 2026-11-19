@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Contracts\Actor;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
@@ -43,7 +42,7 @@ final class AssigneeIdentityTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::named('Builder', AgentRole::ReadOnlyHelper);
+        $agent = Agent::named('Builder', 'read-only-helper');
         $task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($owner->id);
         $bus = $this->app->make(CommandBus::class);

@@ -7,7 +7,6 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Events\LaunchStarted;
 use App\Agents\Models\Agent;
@@ -22,7 +21,7 @@ use App\Hooks\Events\ToolCallFinished;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Support\ContextReminders;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Skills\Listeners\AdmitLaunchSkills;
 use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
@@ -116,12 +115,12 @@ final class RequiredSkillReadsTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',
-                ProfileType::ReadOnlyHelper,
+                ProfileBase::readOnlyHelper(),
                 'Review.',
                 requiredSkills: ['user-guide'],
             ),
         )));
-        $agent = Agent::named('Reviewer', AgentRole::ReadOnlyHelper);
+        $agent = Agent::named('Reviewer', 'read-only-helper');
         $session = new AgentSession([
             ...TestSelections::sessionColumns(),
             'profile_key' => 'journal-reviewer',
@@ -131,7 +130,7 @@ final class RequiredSkillReadsTest extends TestCase
         $session->status = SessionStatus::Active;
         $session->save();
         $this->app->make(AdmitLaunchSkills::class)->handle(
-            new LaunchStarted($agent->id, $session->id, AgentRole::ReadOnlyHelper->value),
+            new LaunchStarted($agent->id, $session->id),
         );
 
         return $session;

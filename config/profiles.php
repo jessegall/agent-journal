@@ -11,7 +11,7 @@ return [
     */
     'revision' => 1,
 
-    'type_overrides' => [],
+    'base_overrides' => [],
 
     'profiles' => [],
 

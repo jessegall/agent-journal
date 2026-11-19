@@ -10,10 +10,9 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Enums\AgentRole;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
-use App\Profiles\Enums\ProfileType;
+use App\Profiles\Values\ProfileBase;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillAgentHidden;
@@ -42,8 +41,8 @@ final class SkillContextResolverTest extends TestCase
     public function test_a_main_agent_session_matches_main_agent_and_a_helper_on_the_same_program_does_not(): void
     {
         $this->activateReviewer('Review.');
-        [$main, $mainSession] = $this->launch(AgentRole::MainAgent, null);
-        [$helper, $helperSession] = $this->launch(AgentRole::ReadOnlyHelper, 1);
+        [$main, $mainSession] = $this->launch('main-agent', null);
+        [$helper, $helperSession] = $this->launch('read-only-helper', 1);
 
         $this->startRequestAs($main->id, $mainSession->id);
         $mainContext = $this->app->make(SkillContext::class);
@@ -53,16 +52,16 @@ final class SkillContextResolverTest extends TestCase
 
         $this->assertSame(ConditionOutcome::Match, Conditions::dispatchesWork()->evaluate($mainContext)->outcome);
         $this->assertSame(ConditionOutcome::NoMatch, Conditions::dispatchesWork()->evaluate($helperContext)->outcome);
-        $this->assertSame(ProfileType::MainAgent, $mainContext->profile->snapshot?->type);
+        $this->assertSame(ProfileBase::mainAgent()->key, $mainContext->profile->snapshot?->base->key);
         $this->assertSame('claude-code', $helperContext->program?->key);
         $this->assertSame('anthropic', $helperContext->provider?->key);
-        $this->assertSame(ProfileType::ReadOnlyHelper, $helperContext->profile->snapshot?->type);
+        $this->assertSame(ProfileBase::readOnlyHelper()->key, $helperContext->profile->snapshot?->base->key);
     }
 
     public function test_a_session_keeps_the_profile_revision_it_was_launched_with(): void
     {
         $this->activateReviewer('First.');
-        [$helper, $session] = $this->launch(AgentRole::ReadOnlyHelper, 1);
+        [$helper, $session] = $this->launch('read-only-helper', 1);
         $this->activateReviewer('Second.');
 
         $this->startRequestAs($helper->id, $session->id);
@@ -74,8 +73,8 @@ final class SkillContextResolverTest extends TestCase
 
     public function test_two_requests_in_one_worker_get_their_own_contexts(): void
     {
-        [$first, $firstSession] = $this->launch(AgentRole::MainAgent, null);
-        [$second, $secondSession] = $this->launch(AgentRole::MainAgent, null);
+        [$first, $firstSession] = $this->launch('main-agent', null);
+        [$second, $secondSession] = $this->launch('main-agent', null);
 
         $this->startRequestAs($first->id, $firstSession->id);
         $firstContext = $this->app->make(SkillContext::class);
@@ -91,8 +90,8 @@ final class SkillContextResolverTest extends TestCase
 
     public function test_a_preview_reads_only_an_agent_the_actor_may_see(): void
     {
-        [$main, $mainSession] = $this->launch(AgentRole::MainAgent, null);
-        [$other] = $this->launch(AgentRole::MainAgent, null);
+        [$main, $mainSession] = $this->launch('main-agent', null);
+        [$other] = $this->launch('main-agent', null);
         $this->startRequestAs($main->id, $mainSession->id);
         $resolver = $this->app->make(SkillContextResolver::class);
 
@@ -107,16 +106,16 @@ final class SkillContextResolverTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
-            TestProposals::profile('journal-reviewer', ProfileType::ReadOnlyHelper, $instructions),
+            TestProposals::profile('journal-reviewer', ProfileBase::readOnlyHelper(), $instructions),
         )));
     }
 
     /**
      * @return array{Agent, AgentSession}
      */
-    private function launch(AgentRole $role, int|null $profileRevision): array
+    private function launch(string $profileKey, int|null $profileRevision): array
     {
-        $agent = Agent::named('Agent '.TestSelections::requestId(), $role);
+        $agent = Agent::named('Agent '.TestSelections::requestId(), $profileKey);
         $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer', 'profile_revision' => $profileRevision ?? 1]);
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;

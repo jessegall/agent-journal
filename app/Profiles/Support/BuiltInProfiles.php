@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Support;
 
-use App\Profiles\Enums\ProfileType;
-use App\Profiles\Exceptions\BuiltInProfileMissing;
+use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 
 /**
@@ -15,36 +14,28 @@ use App\Profiles\Values\ProfileKey;
 final class BuiltInProfiles
 {
     /**
+     * Each built-in profile, proposed as it starts: its base's key, label and model, and nothing overridden.
+     *
      * @return list<ProposedProfile>
      */
     public static function proposed(): array
     {
-        return [
-            self::profile('main-agent', 'Main agent', ProfileType::MainAgent, 'opus'),
-            self::profile('writing-helper', 'Writing helper', ProfileType::WritingHelper, 'sonnet'),
-            self::profile('read-only-helper', 'Read-only helper', ProfileType::ReadOnlyHelper, 'sonnet'),
-        ];
+        return array_map(self::profile(...), ProfileBase::all());
     }
 
-    public static function keyFor(ProfileType $type): ProfileKey
+    public static function keyFor(ProfileBase $base): ProfileKey
     {
-        foreach (self::proposed() as $profile) {
-            if ($profile->type === $type) {
-                return $profile->key;
-            }
-        }
-
-        throw BuiltInProfileMissing::forType($type);
+        return ProfileKey::from($base->key);
     }
 
-    private static function profile(string $key, string $label, ProfileType $type, string $model): ProposedProfile
+    private static function profile(ProfileBase $base): ProposedProfile
     {
         return new ProposedProfile(
-            ProfileKey::from($key),
-            $label,
-            $type,
+            ProfileKey::from($base->key),
+            $base->label,
+            $base,
             '',
-            $model,
+            $base->model,
             null,
             false,
             [],

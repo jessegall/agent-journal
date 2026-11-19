@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Actions;
 
 use App\Agents\Contracts\BuiltInLaunchProfiles;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Lifecycle\AgentLifecycle;
@@ -42,15 +41,11 @@ final readonly class AgentSessions
     }
 
     /**
-     * The selection with its profile pin; a selection that names no profile is pinned to the role's built-in one.
-     *
-     * @throws LaunchRefused
+     * The selection with its profile pin; a selection that names no profile is pinned to the agent's own profile.
      */
     private function pinned(Agent $agent, SelectedProgram $selection): SelectedProgram
     {
-        $role = AgentRole::tryFrom($agent->role) ?? throw LaunchRefused::forUnknownRole($agent->role);
-
-        return $this->builtInProfiles->pin($selection, $role);
+        return $this->builtInProfiles->pin($selection, $agent->profile_key);
     }
 
     public function end(AgentSession $session): void

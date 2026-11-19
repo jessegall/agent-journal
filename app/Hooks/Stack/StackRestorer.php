@@ -13,7 +13,7 @@ use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 
 /**
- * Rebuilds an agent's stack from its stored frames: one bottom state of the agent's role and every state read fresh,
+ * Rebuilds an agent's stack from its stored frames: the one ready bottom state and every state read fresh,
  * finished ones included. Restoring only reads: it removes, writes and calls nothing.
  */
 final readonly class StackRestorer
