@@ -7,10 +7,13 @@ namespace App\Skills\Support;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillOwner;
+use App\Skills\Values\SkillSection;
 use App\Text\Exceptions\ContentMissing;
 use App\Text\Exceptions\ContentTooLarge;
 use App\Text\Exceptions\MarkdownInvalid;
 use App\Text\Support\MarkdownText;
+use App\Text\Support\Section;
+use Illuminate\Support\Str;
 
 /**
  * Reads Markdown parts and assets from an owner's resources/skills folder, and nowhere else: no absolute path, no
@@ -42,6 +45,36 @@ final readonly class MarkdownParts
     }
 
     /**
+     * The sections of a skill file: the text under its # title as the purpose, then one section per ## heading, keyed
+     * by the heading in kebab case. The # title must be the skill's name.
+     *
+     * @return list<SkillSection>
+     *
+     * @throws SkillSourceInvalid
+     */
+    public function sectionsOf(string $file, SkillOwner $owner, string $name): array
+    {
+        $markdown = $this->markdownOf($file, $owner);
+        $title = $this->titleOf($markdown, $file, $name);
+        $headings = array_values(array_filter($markdown->sections, fn (Section $section) => $section->level === 2));
+        $purposeEnd = isset($headings[0]) ? $headings[0]->firstLine - 1 : $title->lastLine;
+        $purpose = trim($this->bodyUnderHeading($markdown, $title->firstLine, $purposeEnd), "\n");
+        $sections = $purpose === '' ? [] : [SkillSection::text('purpose', 'Purpose', $purpose)];
+
+        foreach ($headings as $heading) {
+            $key = Str::slug($heading->heading);
+
+            if ($key === '') {
+                throw SkillSourceInvalid::headingWithoutKey($file, $heading->heading);
+            }
+
+            $sections[] = SkillSection::markdown($key, $heading->heading, MarkdownPart::heading($file, [$name, $heading->heading]));
+        }
+
+        return $sections;
+    }
+
+    /**
      * The real path of a file a skill declares as an asset, checked to lie inside the owner's folder.
      *
      * @throws SkillSourceInvalid
@@ -49,6 +82,33 @@ final readonly class MarkdownParts
     public function assetPath(string $file, SkillOwner $owner): string
     {
         return $this->pathOf($file, $owner);
+    }
+
+    /**
+     * The file's one # title, which stands first in the file and is the skill's name.
+     *
+     * @throws SkillSourceInvalid
+     */
+    private function titleOf(MarkdownText $markdown, string $file, string $name): Section
+    {
+        $outline = array_values(array_filter($markdown->sections, fn (Section $section) => $section->level > 0));
+        $title = $outline[0] ?? null;
+        $textBeforeTitle = array_filter(
+            $markdown->sections,
+            fn (Section $section) => $section->level === 0 && trim($markdown->lines($section->firstLine, $section->lastLine)) !== '',
+        );
+
+        if ($title === null || $title->level !== 1 || $textBeforeTitle !== []) {
+            throw SkillSourceInvalid::missingTitle($file);
+        }
+
+        $secondTitle = array_find(array_slice($outline, 1), fn (Section $heading) => $heading->level === 1);
+
+        if ($secondTitle !== null) {
+            throw SkillSourceInvalid::secondTitle($file, $secondTitle->heading);
+        }
+
+        return $title->heading === $name ? $title : throw SkillSourceInvalid::titleDiffers($file, $title->heading, $name);
     }
 
     /**
