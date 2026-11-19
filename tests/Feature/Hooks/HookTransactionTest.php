@@ -9,7 +9,6 @@ use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
-use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Models\HookCall;
@@ -21,7 +20,7 @@ use App\Hooks\Storage\WalkStep;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -124,7 +123,7 @@ final class HookTransactionTest extends TestCase
     private function answerSessionStart(string $vendorSessionId, ProgramCapabilities $capabilities): void
     {
         $this->callAs('call-start', hash('sha256', 'call-start'));
-        $start = new SessionStarted(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-start', hash('sha256', 'call-start')), new SessionStartDetails($vendorSessionId, SessionStartSource::Startup));
+        $start = new SessionStarted(TestActors::hookIdentity(1, 10, 'call-start', hash('sha256', 'call-start')), new SessionStartDetails($vendorSessionId, SessionStartSource::Startup));
 
         $this->machine()->answer($start, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply('{}', '', 0));
     }

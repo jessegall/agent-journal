@@ -107,7 +107,7 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach ($this->entries as $entry) {
-            foreach (ScanCache::findingsByFile(new NamespacesDeclared(), DomainFiles::in([$entry->folder])) as $path => $namespaces) {
+            foreach (ScanCache::findingsInFolders(new NamespacesDeclared(), [$entry->folder]) as $path => $namespaces) {
                 foreach ($namespaces as $namespace) {
                     $name = $namespace['name'] === '' ? 'the global namespace' : $namespace['name'];
 

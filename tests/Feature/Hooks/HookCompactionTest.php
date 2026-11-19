@@ -10,7 +10,6 @@ use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
@@ -25,7 +24,6 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class HookCompactionTest extends TestCase
@@ -108,7 +106,7 @@ final class HookCompactionTest extends TestCase
     private function compact(string $callId): string
     {
         $this->callAs($callId, hash('sha256', $callId));
-        $compaction = new ContextCompacted(new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, hash('sha256', $callId)), new CompactionDetails($callId));
+        $compaction = new ContextCompacted(TestActors::hookIdentity(1, 10, $callId, hash('sha256', $callId)), new CompactionDetails($callId));
         $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
 
         $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0));

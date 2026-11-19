@@ -56,7 +56,7 @@ final class SharingSupervisorTest extends TestCase
 
     public function test_a_run_activates_a_pending_share(): void
     {
-        $share = $this->pendingShare(TestIds::of(1));
+        $share = $this->pendingShare(1);
         $supervisor = $this->supervisor();
 
         $supervisor->begin();
@@ -69,7 +69,7 @@ final class SharingSupervisorTest extends TestCase
 
     public function test_an_older_run_records_nothing_once_a_newer_one_took_over(): void
     {
-        $share = $this->pendingShare(TestIds::of(1));
+        $share = $this->pendingShare(1);
         $older = $this->supervisor();
         $newer = $this->supervisor();
 
@@ -84,7 +84,7 @@ final class SharingSupervisorTest extends TestCase
 
     public function test_a_restart_reopens_active_shares_with_the_same_link_and_token_after_a_healthy_probe(): void
     {
-        $share = $this->pendingShare(TestIds::of(1));
+        $share = $this->pendingShare(1);
         $first = $this->supervisor();
         $first->begin();
         $first->work();
@@ -118,7 +118,7 @@ final class SharingSupervisorTest extends TestCase
 
     public function test_a_gateway_program_is_never_run_inside_a_transaction(): void
     {
-        $this->pendingShare(TestIds::of(1));
+        $this->pendingShare(1);
         $supervisor = $this->supervisor();
         $supervisor->begin();
         DB::beginTransaction();
@@ -132,8 +132,9 @@ final class SharingSupervisorTest extends TestCase
         $this->assertSame([], $this->gateway->opened);
     }
 
-    private function pendingShare(string $rootId): Share
+    private function pendingShare(int $rootIdNumber): Share
     {
+        $rootId = TestIds::of($rootIdNumber);
         $share = TestShares::grantForADay(new RecordIdentity('binders.binder', $rootId), $this->configuration);
         ShareGatewayOperation::request($this->configuration, GatewayOperationType::Open);
 

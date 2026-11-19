@@ -78,7 +78,7 @@ final class FolderLayoutTest extends TestCase
     {
         $misplaced = [];
 
-        foreach (ScanCache::findingsByFile(new TypesDeclared(), DomainFiles::in([app_path(), ...DomainFiles::domainCode()])) as $file => $types) {
+        foreach (ScanCache::findingsInFolders(new TypesDeclared(), [app_path(), ...DomainFiles::domainCode()]) as $file => $types) {
             $declaresEnum = array_any($types, fn (array $type) => $type['enum']);
 
             if ($declaresEnum && basename(dirname($file)) !== 'Enums') {
@@ -93,7 +93,7 @@ final class FolderLayoutTest extends TestCase
     {
         $misfits = [];
 
-        foreach (ScanCache::findingsByFile(new TypesDeclared(), DomainFiles::in([app_path(), ...DomainFiles::domainCode()])) as $file => $declarations) {
+        foreach (ScanCache::findingsInFolders(new TypesDeclared(), [app_path(), ...DomainFiles::domainCode()]) as $file => $declarations) {
             $type = FolderType::ofFolder(dirname($file));
 
             if ($type === null) {

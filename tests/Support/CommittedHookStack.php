@@ -200,6 +200,6 @@ trait CommittedHookStack
 
     private function hookIdentity(): HookIdentity
     {
-        return new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', self::inputDigest());
+        return TestActors::hookIdentity(1, 10, 'call-1', self::inputDigest());
     }
 }

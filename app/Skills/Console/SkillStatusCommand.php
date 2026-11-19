@@ -13,7 +13,6 @@ use App\Skills\Values\PublicationStatus;
 use App\Skills\Values\SessionSkillStatus;
 use App\Skills\Values\SkillStatus;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Shows the journal's owner where skill delivery stands: the newest generation and each session's newest publication,
@@ -27,7 +26,7 @@ final class SkillStatusCommand extends Command
 
     protected $description = 'Show the skill generation and each session\'s publication';
 
-    public function handle(SkillAuthoring $authoring, Container $container): int
+    public function handle(SkillAuthoring $authoring, SkillStatusResolver $statuses): int
     {
         try {
             $authoring->actAsOwner();
@@ -37,7 +36,7 @@ final class SkillStatusCommand extends Command
             return self::FAILURE;
         }
 
-        $resolver = $container->make(SkillStatusResolver::class);
+        $resolver = $statuses;
         $session = $this->option('session');
 
         try {

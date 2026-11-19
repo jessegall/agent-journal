@@ -12,7 +12,6 @@ use App\Skills\Exceptions\SkillMissing;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Values\SkillKey;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Container\Container;
 
 /**
  * Prints one skill's rendered SKILL.md exactly as a program reads it.
@@ -23,10 +22,10 @@ final class SkillShowCommand extends Command
 
     protected $description = 'Show the rendered text of a skill';
 
-    public function handle(Container $container): int
+    public function handle(SkillResolver $skills): int
     {
         try {
-            $skill = $container->make(SkillResolver::class)->find(SkillKey::from((string) $this->argument('key')));
+            $skill = $skills->find(SkillKey::from((string) $this->argument('key')));
         } catch (SkillKeyInvalid|SkillMissing|SkillSourceInvalid|SkillConflict|SkillDeclarationInvalid $failure) {
             $this->error($failure->getMessage());
 

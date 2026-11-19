@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\FixedFileEditPermission;
 use Tests\Fixtures\Hooks\HookInputs;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 
 /**
  * The one ready bottom state: it leaves every shell line to Core's admission, answers every hook, and lets a file change
@@ -130,6 +130,6 @@ final class ReadyStateTest extends TestCase
 
     private function hook(): HookIdentity
     {
-        return new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest');
+        return TestActors::hookIdentity(1, 2, 'hook-1', 'digest');
     }
 }

@@ -9,7 +9,6 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\RepeatedCommandRewrite;
-use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\Frame;
@@ -26,7 +25,7 @@ use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Hooks\RewritingState;
 use Tests\Fixtures\Hooks\ScriptedState;
-use Tests\Support\TestIds;
+use Tests\Support\TestActors;
 
 final class HookRewriteTest extends TestCase
 {
@@ -131,7 +130,7 @@ final class HookRewriteTest extends TestCase
     private function command(string $line): ShellCommandRequested
     {
         return new ShellCommandRequested(
-            new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
+            TestActors::hookIdentity(1, 2, 'hook-1', 'digest'),
             new ListedCommandParser()->parse($line, ShellDialect::Bash),
         );
     }

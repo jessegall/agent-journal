@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\ScanCache;
 
+use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
 
 /**
@@ -27,6 +28,17 @@ final class ScanCache
     public static function findings(FileScan $scan, array $paths): array
     {
         return array_merge([], ...array_values(self::findingsByFile($scan, $paths)));
+    }
+
+    /**
+     * The scan's findings for every PHP file under the folders, keyed by file path.
+     *
+     * @param  list<string>  $folders
+     * @return array<string, mixed>
+     */
+    public static function findingsInFolders(FileScan $scan, array $folders): array
+    {
+        return self::findingsByFile($scan, DomainFiles::in($folders));
     }
 
     /**
