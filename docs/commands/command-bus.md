@@ -109,6 +109,22 @@ public function __construct(
 - A command a module middleware replaces with a changed copy through `replacedBy` is trusted and not checked again.
 - An enum or a value class checks itself: its cases or its factory are the limit, never an attribute on the property.
 
+The limits in use today:
+
+| Attribute | Commands and properties | Constant |
+|---|---|---|
+| `Required` | `CreateAgent` name; `SendMessage`, `AskMessage`, `ReplyToMessage` body; `SaveMemory` text; `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` title and abstract; `SettleDocument`, `SettleReport`, `RecoverDocument` reason | none |
+| `OneLine` | `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` title and abstract | none |
+| `Max` | `CreateTask` title, `EditTask` title | `Task::TITLE_CHARACTERS` |
+| `Max` | `CreateTask` brief, `EditTask` brief, `FinishTask` note, `BlockTask` reason, `CancelTask` reason | `Task::NOTE_CHARACTERS` |
+| `Max` | `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` title | `Document::TITLE_CHARACTERS` |
+| `Max` | `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` abstract | `Document::ABSTRACT_CHARACTERS` |
+| `Max` | `SettleDocument`, `SettleReport`, `RecoverDocument` reason | `Document::SETTLEMENT_REASON_CHARACTERS` |
+| `Max` | `CreateDocument`, `CreateReport` about | their own `MOST_LINKS` |
+| `RequiredWithout('brief')` | `EditTask` title | none |
+| `RequiredWithout('weight')`, `Filled` | `EditMemory` text | none |
+| `Between` | `SaveMemory`, `EditMemory` weight | `Memory::LIGHTEST`, `Memory::HEAVIEST` |
+
 Bad input is refused with `App\Bus\Exceptions\CommandInputInvalid`, code `invalid_input`, not retryable. Its message
 reads `The input was refused.` and then one line per wrong field with its first problem, never the value sent. The
 CLI prints it after `The journal refused the call (invalid_input):`, MCP and agent routes answer it with its code and
