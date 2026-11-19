@@ -62,12 +62,10 @@ use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
-use App\Agents\Support\RequestSession;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
-use App\Bus\Contracts\CallerSession;
 use App\Contracts\LaunchTransaction;
 use Illuminate\Support\ServiceProvider;
 
@@ -120,7 +118,6 @@ final class AgentsServiceProvider extends ServiceProvider
             AgentClientSettings::class,
             fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch(),
         );
-        $this->app->bind(CallerSession::class, RequestSession::class);
         $this->app->singleton(PendingWorkSources::class);
     }
 

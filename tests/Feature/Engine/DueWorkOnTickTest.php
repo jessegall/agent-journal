@@ -89,7 +89,7 @@ final class DueWorkOnTickTest extends TestCase
 
     public function test_ticking_twice_past_the_wait_sends_one_reminder(): void
     {
-        $question = Question::query()->create(['text' => 'Which database?']);
+        $question = Question::ask('Which database?');
         $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);
 
         $this->passAt(30);
@@ -103,7 +103,7 @@ final class DueWorkOnTickTest extends TestCase
 
     public function test_an_answer_before_the_tick_sends_nothing(): void
     {
-        $question = Question::query()->create(['text' => 'Which database?']);
+        $question = Question::ask('Which database?');
         $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);
         $question->answer();
 
@@ -114,7 +114,7 @@ final class DueWorkOnTickTest extends TestCase
 
     public function test_an_answer_that_lands_before_the_reminder_runs_sends_none_and_removes_the_frame_in_that_command(): void
     {
-        $question = Question::query()->create(['text' => 'Which database?']);
+        $question = Question::ask('Which database?');
         $stack = $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);
         $target = new StackTarget($stack->agent_id, $stack->session_id);
         $question->answer();

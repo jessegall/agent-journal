@@ -40,4 +40,10 @@ final class NoteSnapshot extends Model implements Numbered, ReadableModel, TextC
 
         return TextVersion::ofMarkdown('1', 'snapshot', $this->text);
     }
+
+    public static function written(string $text): self
+    {
+        return self::query()->create(['text' => $text]);
+    }
+
 }

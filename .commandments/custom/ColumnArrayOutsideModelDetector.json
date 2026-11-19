@@ -64,6 +64,9 @@
                         }
                     ]
                 }
+            },
+            {
+                "file": "tests/Fixtures/Models/Shop/Calls/**"
             }
         ]
     },

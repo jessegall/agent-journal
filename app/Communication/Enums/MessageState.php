@@ -13,4 +13,12 @@ enum MessageState: string
     case WaitingForAnswer = 'waiting_for_answer';
     case Answered = 'answered';
     case Dismissed = 'dismissed';
+
+    /**
+     * Whether the message is closed: answered or dismissed, so it takes no further change.
+     */
+    public function isClosed(): bool
+    {
+        return $this === self::Answered || $this === self::Dismissed;
+    }
 }

@@ -42,4 +42,10 @@ final class NotePage extends Model implements Commentable, Numbered, ReadableMod
 
         return TextVersion::ofMarkdown('1', 'page', $this->text);
     }
+
+    public static function written(string $text): self
+    {
+        return self::query()->create(['text' => $text]);
+    }
+
 }

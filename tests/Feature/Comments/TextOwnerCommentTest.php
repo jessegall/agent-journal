@@ -60,7 +60,7 @@ final class TextOwnerCommentTest extends TestCase
 
     public function test_a_note_page_is_read_and_takes_its_first_text_comment_beside_a_whole_record_one(): void
     {
-        $page = $this->target(NotePage::query()->create(['text' => "# Plan\nFirst line.\nSecond line.\n"]));
+        $page = $this->target(NotePage::written("# Plan\nFirst line.\nSecond line.\n"));
 
         $this->assertSame(['1', 4], [$this->text()->version($page)->id, $this->text()->version($page)->lineCount]);
         $this->assertSame(['Plan'], array_map(fn ($section) => $section->heading, $this->text()->sections($page, '1', 0, PageSize::from(null))->items));
@@ -76,7 +76,7 @@ final class TextOwnerCommentTest extends TestCase
 
     public function test_a_note_snapshot_is_read_but_takes_no_comment(): void
     {
-        $snapshot = $this->target(NoteSnapshot::query()->create(['text' => "# Snapshot\nKept.\n"]));
+        $snapshot = $this->target(NoteSnapshot::written("# Snapshot\nKept.\n"));
 
         $this->assertSame('1', $this->text()->version($snapshot)->id);
         $this->expectException(TargetNotCommentable::class);

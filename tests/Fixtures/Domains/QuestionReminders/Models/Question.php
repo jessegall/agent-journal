@@ -59,4 +59,10 @@ final class Question extends Model implements ReadableModel
         $this->reminded_at = $time;
         $this->save();
     }
+
+    public static function ask(string $text): self
+    {
+        return self::query()->create(['text' => $text]);
+    }
+
 }

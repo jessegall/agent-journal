@@ -28,4 +28,10 @@ final class Note extends Model implements ReadableModel
     {
         self::addGlobalScope('visible owner', fn (Builder $query) => $query->where('owner', 'visible'));
     }
+
+    public static function ownedBy(string $owner): self
+    {
+        return self::query()->create(['owner' => $owner]);
+    }
+
 }

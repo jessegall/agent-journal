@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agents;
 
-use App\Agents\Support\LaunchReceipt;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Agents\LaunchAgentRequest;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +15,6 @@ final readonly class LaunchAgentController
 {
     public function __invoke(LaunchAgentRequest $request, CommandBus $commands): JsonResponse
     {
-        /** @var LaunchReceipt $receipt */
         $receipt = $commands->run($request->command());
         $selection = $receipt->selection;
 

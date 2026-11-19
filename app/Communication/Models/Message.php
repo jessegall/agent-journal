@@ -81,6 +81,22 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
 
     public const string LINK_TYPE = 'communication.message';
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function casts(): array
+    {
+        return [
+            'state' => MessageState::class,
+            'state_version' => 'integer',
+            'read_at' => 'immutable_datetime',
+            'closed_at' => 'immutable_datetime',
+            'dismissal_type' => DismissalType::class,
+            'created_at' => 'immutable_datetime',
+            'updated_at' => 'immutable_datetime',
+        ];
+    }
+
     public static function booted(): void
     {
         self::addGlobalScope(new MessageVisibility(
@@ -99,22 +115,6 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     protected function acrossInboxes(Builder $query): void
     {
         $query->withoutGlobalScope(MessageVisibility::class);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function casts(): array
-    {
-        return [
-            'state' => MessageState::class,
-            'state_version' => 'integer',
-            'read_at' => 'immutable_datetime',
-            'closed_at' => 'immutable_datetime',
-            'dismissal_type' => DismissalType::class,
-            'created_at' => 'immutable_datetime',
-            'updated_at' => 'immutable_datetime',
-        ];
     }
 
     /**
@@ -371,7 +371,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
      */
     private function refuseWhenClosed(): void
     {
-        if ($this->state === MessageState::Answered || $this->state === MessageState::Dismissed) {
+        if ($this->state->isClosed()) {
             throw MessageStateConflict::closed($this->id);
         }
     }
