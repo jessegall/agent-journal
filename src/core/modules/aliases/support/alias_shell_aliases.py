@@ -14,6 +14,7 @@ from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_names import AliasNames
 from core.modules.aliases.support.alias_access import AliasAccess
 from core.modules.plugins.support.plugin_alias_variables import PluginAliasVariables
+from core.modules.aliases.support.saved_command_arguments import SavedCommandArguments
 
 JOURNAL_FOLDER_PREFIX = ".journal/"
 
@@ -35,7 +36,7 @@ class AliasShellAliases(ShellAliases):
         self.access.check(alias, caller)
         checkout = self.caller_checkout(caller)
         folder = str(checkout.root) if checkout.checkout_type.is_separate_copy and checkout.exists else request.folder
-        return ShellRun(self.resolved_line(alias.shell_line(argv[1:])), {**request.variables, **checkout.variables(), **self.plugin_values(alias, caller), **alias.variable_values()}, folder)
+        return ShellRun(self.resolved_line(alias.shell_line(SavedCommandArguments.command_arguments(argv[1:]))), {**request.variables, **checkout.variables(), **self.plugin_values(alias, caller), **alias.variable_values()}, folder)
 
     def plugin_values(self, alias: Alias, caller: Caller) -> dict[str, str]:
         return self.plugin_variables.run_settings(alias.plugin_id, caller.environment_id).variables() if alias.plugin_id is not None else {}
