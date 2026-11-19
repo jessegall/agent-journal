@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * For a model whose rows belong to one agent: every query sees only the calling agent's rows, and the journal's own
  * work on another agent's rows reads them through the explicit ownedBy query. A user reads them through the
- * explicit visibleToUser query, which route binding uses when the actor of the request is a user.
+ * explicit acrossOwners query, which route binding uses when the actor of the request is a user.
  */
 trait BelongsToOneAgent
 {
@@ -41,17 +41,11 @@ trait BelongsToOneAgent
     }
 
     /**
-     * The read for the user acting in this request: every agent's rows the user may inspect. The user actor
-     * exists only after the access policy let the user in; any other actor is refused.
-     *
-     * @param  Builder<static>  $query
+     * @return class-string<AgentScope>
      */
-    #[Scope]
-    protected function visibleToUser(Builder $query): void
+    protected static function ownerScope(): string
     {
-        Container::getInstance()->make(CurrentActor::class)->actor()->requireUser();
-
-        $query->withoutGlobalScope(AgentScope::class);
+        return AgentScope::class;
     }
 
     /**

@@ -7,9 +7,13 @@ namespace App;
 use App\Actors\Contracts\ActiveActorCounter;
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\ActorLabelProvider;
+use App\Actors\Contracts\ActorLabels;
 use App\Actors\Contracts\ActorProvider;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorResolver;
+use App\Actors\Contracts\ActorVisibility;
+use App\Actors\Contracts\ActorVisibilityProvider;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
@@ -22,6 +26,7 @@ use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Exceptions\AgentActorRequired;
+use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\EngineActorRequired;
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Exceptions\SystemActorRequired;
@@ -29,6 +34,7 @@ use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Support\ActorLabelSet;
 use App\Actors\Support\CurrentUser;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Console\Concerns\SendsSignedWrites;
@@ -880,6 +886,10 @@ final class CoreApi
                 ActorResolver::class,
                 ActorProvider::class,
                 ActorProviderRegistration::class,
+                ActorLabels::class,
+                ActorLabelProvider::class,
+                ActorVisibility::class,
+                ActorVisibilityProvider::class,
                 ActiveActorRegistration::class,
                 ActiveActorCounter::class,
                 UserPresences::class,
@@ -1166,6 +1176,7 @@ final class CoreApi
                 ToolResult::class,
                 ToolOutcome::class,
                 ActorIdentity::class,
+                ActorLabelSet::class,
                 RecordIdentity::class,
                 AssigneeRegistration::class,
                 Assignment::class,
@@ -1495,6 +1506,7 @@ final class CoreApi
                 RelationReadUndeclared::class,
                 ActorContextMissing::class,
                 UserActorRequired::class,
+                CrossOwnerReadRefused::class,
                 StateTypeRepeated::class,
                 StateTypesFrozen::class,
                 UnknownLinkType::class,

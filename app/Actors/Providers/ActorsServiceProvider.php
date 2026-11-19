@@ -6,8 +6,10 @@ namespace App\Actors\Providers;
 
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActiveActors;
+use App\Actors\Contracts\ActorLabels;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorResolver;
+use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Contracts\UserPresences;
@@ -47,6 +49,8 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->singleton(ActorProviderRegistry::class);
         $this->app->alias(ActorProviderRegistry::class, ActorResolver::class);
         $this->app->alias(ActorProviderRegistry::class, ActorProviderRegistration::class);
+        $this->app->alias(ActorProviderRegistry::class, ActorLabels::class);
+        $this->app->alias(ActorProviderRegistry::class, ActorVisibility::class);
     }
 
     public function boot(ActorProviderRegistration $actors): void

@@ -135,7 +135,7 @@ final class RecordLinksTest extends TestCase
     {
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
         $message = $this->messageFor(8);
-        Link::connect(Document::query()->sole(), Message::query()->visibleToUser()->whereKey($message->id)->sole());
+        Link::connect(Document::query()->sole(), Message::query()->acrossOwners()->whereKey($message->id)->sole());
 
         $this->actAsAgent(9);
 

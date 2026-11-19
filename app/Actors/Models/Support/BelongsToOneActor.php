@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * For a model whose rows belong to one actor, kept as actor_type and actor_id: every query sees only the calling
  * actor's rows, the journal's own work on another actor's rows reads them through ownedBy, and a user inspects every
- * actor's rows through visibleToUser.
+ * actor's rows through acrossOwners.
  */
 trait BelongsToOneActor
 {
@@ -47,16 +47,11 @@ trait BelongsToOneActor
     }
 
     /**
-     * The read for the user acting in this request: every actor's rows the user may inspect; any other actor is refused.
-     *
-     * @param  Builder<static>  $query
+     * @return class-string<ActorScope>
      */
-    #[Scope]
-    protected function visibleToUser(Builder $query): void
+    protected static function ownerScope(): string
     {
-        Container::getInstance()->make(CurrentActor::class)->actor()->requireUser();
-
-        $query->withoutGlobalScope(ActorScope::class);
+        return ActorScope::class;
     }
 
     /**

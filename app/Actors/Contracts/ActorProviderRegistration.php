@@ -18,4 +18,18 @@ interface ActorProviderRegistration
      * @throws ActorProviderRepeated
      */
     public function register(ActorType $type, string $providerClass): void;
+
+    /**
+     * @param  class-string<ActorLabelProvider>  $providerClass
+     *
+     * @throws ActorProviderRepeated
+     */
+    public function registerLabels(ActorType $type, string $providerClass): void;
+
+    /**
+     * @param  class-string<ActorVisibilityProvider>  $providerClass
+     *
+     * @throws ActorProviderRepeated
+     */
+    public function registerVisibility(ActorType $type, string $providerClass): void;
 }

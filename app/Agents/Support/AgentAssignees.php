@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Lifecycle\AgentLifecycle;
@@ -35,10 +34,6 @@ final readonly class AgentAssignees implements AssigneeProvider
     {
         $this->actors->actor();
 
-        if ($recipient->type !== ActorType::Agent) {
-            throw AssigneeUnavailable::forActor($recipient);
-        }
-
         try {
             return $this->lifecycle->lockShared($recipient->id);
         } catch (AgentNotAvailable $unavailable) {
@@ -53,7 +48,7 @@ final readonly class AgentAssignees implements AssigneeProvider
     public function names(array $actors): array
     {
         $this->actors->actor();
-        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, array_filter($actors, fn (ActorIdentity $actor) => $actor->type === ActorType::Agent))));
+        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, $actors)));
 
         return array_values(Agent::query()->whereKey($ids)->readLimit(count($ids))->orderBy('id')->get()
             ->map(fn (Agent $agent) => new AssigneeName(ActorIdentity::of($agent), $agent->name))

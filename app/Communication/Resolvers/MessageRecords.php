@@ -47,7 +47,7 @@ final readonly class MessageRecords implements ConversationResolver
      */
     public function conversationWith(StackTarget $target): Conversation
     {
-        $messages = Message::query()->visibleToUser()
+        $messages = Message::query()->acrossOwners()
             ->where('agent_id', $target->agentId)
             ->where('session_id', $target->sessionId)
             ->orderBy('id')

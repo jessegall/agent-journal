@@ -6,7 +6,7 @@ namespace Tests\Feature;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\StackTarget;
 use App\Communication\Exceptions\MessageMissing;
@@ -122,18 +122,18 @@ final class AgentVisibilityTest extends TestCase
     {
         $this->startUserRequestAs(TestIds::of(7));
 
-        $this->assertSame(['For agent 1', 'For agent 1', 'For agent 2', 'Not addressed yet'], Message::query()->visibleToUser()->orderBy('id')->pluck('body')->all());
-        $this->assertSame(3, SequenceRun::query()->visibleToUser()->count());
-        $this->assertSame(['Kept by agent 1', 'Kept by agent 2'], Memory::query()->visibleToUser()->orderBy('id')->pluck('text')->all());
+        $this->assertSame(['For agent 1', 'For agent 1', 'For agent 2', 'Not addressed yet'], Message::query()->acrossOwners()->orderBy('id')->pluck('body')->all());
+        $this->assertSame(3, SequenceRun::query()->acrossOwners()->count());
+        $this->assertSame(['Kept by agent 1', 'Kept by agent 2'], Memory::query()->acrossOwners()->orderBy('id')->pluck('text')->all());
     }
 
     public function test_an_agent_cannot_use_the_user_read(): void
     {
         $this->startRequestAs(TestIds::of(1), TestIds::of(10));
 
-        $this->expectException(UserActorRequired::class);
+        $this->expectException(CrossOwnerReadRefused::class);
 
-        Message::query()->visibleToUser()->get();
+        Message::query()->acrossOwners()->get();
     }
 
     public function test_a_user_route_binds_any_agents_message_and_an_agent_only_its_own(): void

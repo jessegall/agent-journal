@@ -38,7 +38,7 @@ final readonly class NoteLinkRecords implements RecordProvider
 
     protected function readableRecords(): ReadBuilder
     {
-        return $this->actors->actor()->isUser() ? Note::query()->visibleToUser() : Note::query();
+        return Note::query()->forActor();
     }
 
     protected function cardOf(Model $record): RecordCard

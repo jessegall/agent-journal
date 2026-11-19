@@ -19,6 +19,8 @@ use Domain\Access\Support\JournalAccess;
 use Domain\Access\Support\PresentUserCounter;
 use Domain\Access\Support\UserActors;
 use Domain\Access\Support\UserAssignees;
+use Domain\Access\Support\UserLabels;
+use Domain\Access\Support\UserVisibility;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -51,6 +53,8 @@ class AccessServiceProvider extends ServiceProvider
     public function boot(ActorProviderRegistration $actors, ActiveActorRegistration $presentActors): void
     {
         $actors->register(ActorType::User, UserActors::class);
+        $actors->registerLabels(ActorType::User, UserLabels::class);
+        $actors->registerVisibility(ActorType::User, UserVisibility::class);
         $presentActors->register(PresentUserCounter::class);
         $this->configureActions();
         $this->configureRateLimiting();

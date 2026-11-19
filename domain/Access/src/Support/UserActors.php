@@ -7,7 +7,6 @@ namespace Domain\Access\Support;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ActorProvider;
 use App\Actors\Contracts\JournalAccessPolicy;
-use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorIdentity;
 use Domain\Access\Models\User;
@@ -21,7 +20,7 @@ final readonly class UserActors implements ActorProvider
 
     public function actor(ActorIdentity $identity): Actor
     {
-        $user = $identity->type === ActorType::User ? User::query()->whereKey($identity->id)->first() : null;
+        $user = User::query()->whereKey($identity->id)->first();
 
         return $user !== null && $this->access->allows($user) ? $user : throw ActorUnavailable::forIdentity($identity);
     }

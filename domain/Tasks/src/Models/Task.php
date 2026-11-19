@@ -7,7 +7,7 @@ namespace Domain\Tasks\Models;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\AgentLabel;
+use App\Actors\Support\ActorLabelSet;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Enums\PoolMembersType;
 use App\Assignments\Models\Support\AssignableListing;
@@ -335,25 +335,34 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     }
 
     /**
-     * Who works on the task's latest run, with the agent's label when the caller may see it; null before any run.
-     *
-     * @param  array<string, AgentLabel>  $labels  keyed by agent id
+     * Who works on the task's latest run, with the runner's label when the caller may see it; null before any run.
      */
-    public function executionWith(array $labels): TaskExecution|null
+    public function executionWith(ActorLabelSet $labels): TaskExecution|null
+    {
+        $runner = $this->runner();
+        if ($runner === null) {
+            return null;
+        }
+
+        return new TaskExecution(
+            $runner->type,
+            $runner->id,
+            $labels->nameOf($runner),
+            $this->run_number,
+            $this->state->workState(),
+        );
+    }
+
+    /**
+     * The actor working on the task's latest run; null before any run.
+     */
+    public function runner(): ActorIdentity|null
     {
         if ($this->run_actor_type === null || $this->run_actor_id === null) {
             return null;
         }
 
-        $label = $labels[$this->run_actor_id] ?? null;
-
-        return new TaskExecution(
-            $this->run_actor_type,
-            $this->run_actor_id,
-            $label?->name,
-            $this->run_number,
-            $this->state->workState(),
-        );
+        return new ActorIdentity($this->run_actor_type, $this->run_actor_id);
     }
 
     public function isRunOwnedBy(ActorIdentity $actor): bool

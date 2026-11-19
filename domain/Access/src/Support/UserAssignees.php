@@ -33,12 +33,8 @@ final readonly class UserAssignees implements AssigneeProvider
     public function requireEligible(ActorIdentity $recipient): Assignee
     {
         $this->actors->actor();
-
-        if ($recipient->type !== ActorType::User) {
-            throw AssigneeUnavailable::forActor($recipient);
-        }
-
-        $user = User::query()->whereKey($recipient->id)->sharedLock()->first() ?? throw AssigneeUnavailable::forActor($recipient);
+        $user = User::query()->whereKey($recipient->id)->sharedLock()->first()
+            ?? throw AssigneeUnavailable::forActor($recipient);
 
         if (! $this->access->allows($user)) {
             throw AssigneeUnavailable::forActor($recipient);
@@ -54,7 +50,7 @@ final readonly class UserAssignees implements AssigneeProvider
     public function names(array $actors): array
     {
         $this->actors->actor();
-        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, array_filter($actors, fn (ActorIdentity $actor) => $actor->type === ActorType::User))));
+        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, $actors)));
 
         return array_values(User::query()->whereKey($ids)->readLimit(count($ids))->orderBy('id')->get()
             ->map(fn (User $user) => new AssigneeName(ActorIdentity::of($user), $user->name))

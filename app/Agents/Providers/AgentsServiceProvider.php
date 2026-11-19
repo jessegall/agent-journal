@@ -22,6 +22,7 @@ use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Resolvers\AgentAuthorityRecords;
+use App\Agents\Resolvers\AgentLabels;
 use App\Agents\Resolvers\HostLaunchMaterial;
 use App\Agents\Resolvers\LaunchRecords;
 use App\Agents\Resolvers\ProgramConversationRecords;
@@ -32,6 +33,7 @@ use App\Agents\Support\AgentActors;
 use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
+use App\Agents\Support\AgentVisibility;
 use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\PendingWorkSources;
@@ -79,6 +81,8 @@ final class AgentsServiceProvider extends ServiceProvider
     public function boot(AssignmentRegistration $assignments, ActorProviderRegistration $actors, ActiveActorCounterRegistry $presentActors): void
     {
         $actors->register(ActorType::Agent, AgentActors::class);
+        $actors->registerLabels(ActorType::Agent, AgentLabels::class);
+        $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
         $this->commands([RetireAgentCommand::class, EnrollHostCommand::class, RunKeyScriptCommand::class]);
