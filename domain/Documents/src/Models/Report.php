@@ -16,7 +16,6 @@ use App\Reads\Support\BoundedReads;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRecordCard;
 use App\Text\Contracts\TextContent;
-use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Support\MarkdownText;
 use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
@@ -180,10 +179,6 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
      */
     public function textVersion(string|null $version = null): TextVersion
     {
-        if ($version !== null && $version !== '1') {
-            throw TextVersionUnavailable::named($version);
-        }
-
-        return TextVersion::ofMarkdown('1', 'Report', $this->body);
+        return TextVersion::ofOnlyMarkdown($version, 'Report', $this->body);
     }
 }

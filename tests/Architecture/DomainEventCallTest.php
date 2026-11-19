@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use App\CoreApi;
 use App\Domains\Support\DomainRegistry;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -16,6 +15,7 @@ use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Boundary\EventCalls\Plans\Events\PlanStarted;
 use Tests\Fixtures\Boundary\EventCalls\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain;
+use Tests\Support\JudgesFixtureFiles;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -28,10 +28,12 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class DomainEventCallTest extends TestCase
 {
+    use JudgesFixtureFiles;
+
     /**
      * @return iterable<string, array{string, list<string>}>
      */
-    public static function eventCallFixtures(): iterable
+    public static function fixtures(): iterable
     {
         yield 'string names where only an event can stand' => ['Plans/Actions/StringEvents.php', [
             '16 names the event task.closed by a string; name its event class instead',
@@ -50,15 +52,6 @@ final class DomainEventCallTest extends TestCase
             '17 registers a listener for plans.* by hand; write a concrete typed listener in a Listeners folder',
             '22 registers a listener for an event subscriber by hand; write a concrete typed listener in a Listeners folder',
         ]];
-    }
-
-    /**
-     * @param  list<string>  $expected
-     */
-    #[DataProvider('eventCallFixtures')]
-    public function test_each_event_call_is_judged_by_how_it_names_its_event(string $fixture, array $expected): void
-    {
-        $this->assertSame($expected, $this->violationLines($fixture));
     }
 
     public function test_a_listener_passing_on_its_event_fails(): void

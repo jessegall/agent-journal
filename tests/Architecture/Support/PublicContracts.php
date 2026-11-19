@@ -228,10 +228,14 @@ final readonly class PublicContracts
     {
         $lineage = [$class];
 
-        for ($parent = $class->getParentClass(); $parent !== false; $parent = $parent->getParentClass()) {
+        $parent = $class->getParentClass();
+
+        while ($parent !== false) {
             if ($this->roots->startsWithProjectNamespace($parent->getName())) {
                 $lineage[] = $parent;
             }
+
+            $parent = $parent->getParentClass();
         }
 
         return $lineage;

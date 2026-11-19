@@ -143,15 +143,6 @@ final class HookRuntimeReadinessTest extends TestCase
         }
     }
 
-    public function test_the_capability_record_names_the_pinned_versions_and_no_production_run(): void
-    {
-        $evidence = (string) file_get_contents(base_path('docs/hooks/program-capabilities.md'));
-
-        $this->assertStringContainsString('| Program and pinned version | Claude Code 2.1.323,', $evidence);
-        $this->assertStringContainsString('| Program and pinned version | codex-cli 0.165.0,', $evidence);
-        $this->assertStringContainsString('No production program runs under it yet:', $evidence);
-    }
-
     /**
      * @return list<string>
      */

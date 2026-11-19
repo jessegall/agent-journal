@@ -6,7 +6,6 @@ namespace Tests\Architecture;
 
 use App\CoreApi;
 use App\Domains\Support\DomainRegistry;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\DomainFiles;
@@ -15,17 +14,20 @@ use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Events\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
+use Tests\Support\JudgesFixtureFiles;
 use Tests\Support\TimeLimits\TimeLimit;
 
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainEventRulesTest extends TestCase
 {
+    use JudgesFixtureFiles;
+
     private const string TASK_CLOSED = 'Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed';
 
     /**
      * @return iterable<string, array{string, list<string>}>
      */
-    public static function eventFixtures(): iterable
+    public static function fixtures(): iterable
     {
         $onlyAListener = ', an event of Tasks; only a listener of Plans may name it, as an import, a type or ::class';
         $notExported = ", which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or use what Tasks exports";
@@ -51,15 +53,6 @@ final class DomainEventRulesTest extends TestCase
             '7 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
             '11 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
         ]];
-    }
-
-    /**
-     * @param  list<string>  $expected
-     */
-    #[DataProvider('eventFixtures')]
-    public function test_each_event_name_is_judged_by_where_it_is_named(string $fixture, array $expected): void
-    {
-        $this->assertSame($expected, $this->violationLines($fixture));
     }
 
     /**

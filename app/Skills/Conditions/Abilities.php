@@ -28,7 +28,7 @@ final readonly class Abilities implements SkillCondition
     public function evaluate(SkillContext $context): ConditionResult
     {
         foreach ($this->requirements as $requirement) {
-            if (! $context->grants($requirement)) {
+            if (! $context->profile->grants($requirement)) {
                 return ConditionResult::noMatch('ability-not-granted');
             }
         }

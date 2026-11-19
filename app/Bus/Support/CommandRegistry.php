@@ -33,6 +33,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use PhpOption\Option;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -145,11 +146,13 @@ final readonly class CommandRegistry
     }
 
     /**
-     * The policy and ability the command declared; null while it declares no Authorize yet.
+     * The policy and ability the command declared; none while it declares no Authorize yet.
+     *
+     * @return Option<CommandAuthorization>
      */
-    public function authorizationOf(string $command): CommandAuthorization|null
+    public function authorizationOf(string $command): Option
     {
-        return $this->entry($command)->authorization;
+        return Option::fromValue($this->entry($command)->authorization);
     }
 
     /**

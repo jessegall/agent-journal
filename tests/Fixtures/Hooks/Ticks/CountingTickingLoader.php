@@ -9,7 +9,6 @@ use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
-use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\States\AgentState;
 
 /**
@@ -38,9 +37,10 @@ final class CountingTickingLoader implements TickableStateLoader
     {
         $this->batchSizes[] = count($references->all);
 
-        return StateSet::build($references, fn (StateReference $reference): AgentState => new TickingState(
-            $reference->subject instanceof SubjectReference && in_array($reference->subject->id, $this->finished, true),
-        ));
+        return StateSet::build(
+            $references,
+            fn (StateReference $reference): AgentState => TickingState::of($reference, $this->finished),
+        );
     }
 
     public function schemaVersion(): int

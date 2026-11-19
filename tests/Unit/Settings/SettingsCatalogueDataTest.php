@@ -20,6 +20,7 @@ use App\Settings\Enums\SettingSource;
 use App\Settings\Enums\SettingType;
 use ReflectionClass;
 use ReflectionNamedType;
+use ReflectionType;
 use ReflectionUnionType;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Tests\TestCase;
@@ -122,10 +123,7 @@ final class SettingsCatalogueDataTest extends TestCase
             );
 
             foreach ($ownProperties as $property) {
-                $type = $property->getType();
-                $names = $type instanceof ReflectionUnionType
-                    ? array_map(fn (ReflectionNamedType $named) => $named->getName(), $type->getTypes())
-                    : [$type instanceof ReflectionNamedType ? $type->getName() : 'mixed'];
+                $names = self::typeNamesOf($property->getType());
 
                 $this->assertNotContains('mixed', $names, "{$class->getName()}::\${$property->getName()} is mixed.");
                 $this->assertTrue(
@@ -147,5 +145,23 @@ final class SettingsCatalogueDataTest extends TestCase
     private function identity(string $key): SettingIdentityData
     {
         return SettingIdentityData::from(['owner' => 'Reviews', 'key' => $key, 'canonicalKey' => "Reviews.{$key}"]);
+    }
+
+    /**
+     * The names of the types a property declares; an undeclared or intersection type reads as mixed.
+     *
+     * @return list<string>
+     */
+    private static function typeNamesOf(ReflectionType|null $type): array
+    {
+        if ($type instanceof ReflectionUnionType) {
+            return array_map(fn (ReflectionNamedType $named) => $named->getName(), $type->getTypes());
+        }
+
+        if ($type instanceof ReflectionNamedType) {
+            return [$type->getName()];
+        }
+
+        return ['mixed'];
     }
 }

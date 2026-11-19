@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 use App\Actors\Support\ActorIdentity;
-use App\Actors\Values\AbilityRequirement;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
 
@@ -24,20 +23,4 @@ final readonly class SkillContext
         public ProgramKey|null $program,
         public ProviderKey|null $provider,
     ) {}
-
-    /**
-     * Whether the profile this session is pinned to grants the requirement; the caller's rights never count.
-     */
-    public function grants(AbilityRequirement $requirement): bool
-    {
-        return $this->profile->grants($requirement);
-    }
-
-    /**
-     * @return list<string>
-     */
-    public function requiredSkills(): array
-    {
-        return $this->profile->requiredSkills();
-    }
 }

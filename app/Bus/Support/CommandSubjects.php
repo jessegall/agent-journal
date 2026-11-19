@@ -41,9 +41,11 @@ final class CommandSubjects
         $authorization = $this->registry->authorizationOf($call->name());
         $command = $call->command();
 
-        if ($authorization === null || ! $command instanceof HasAuthorizationSubject) {
+        if ($authorization->isEmpty() || ! $command instanceof HasAuthorizationSubject) {
             return $call;
         }
+
+        $authorization = $authorization->get();
 
         $subject = $command->subject();
         $this->authorizer->authorize($authorization->policy, $subject, $authorization->ability);

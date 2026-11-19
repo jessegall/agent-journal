@@ -58,6 +58,9 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 use ReflectionClass;
 use Spatie\LaravelData\Data;
 
@@ -408,7 +411,9 @@ final readonly class DomainEntry
      */
     public function linkRecords(): array
     {
-        return $this->domain instanceof ProvidesLinkRecords ? $this->domain->linkRecords() : [];
+        return $this->provided(ProvidesLinkRecords::class)
+            ->map(fn (ProvidesLinkRecords $domain) => $domain->linkRecords())
+            ->getOrElse([]);
     }
 
     /**
@@ -419,7 +424,9 @@ final readonly class DomainEntry
      */
     public function assignables(): array
     {
-        return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+        return $this->provided(ProvidesAssignables::class)
+            ->map(fn (ProvidesAssignables $domain) => $domain->assignables())
+            ->getOrElse([]);
     }
 
     /**
@@ -429,7 +436,9 @@ final readonly class DomainEntry
      */
     public function incomingWork(): array
     {
-        return $this->domain instanceof ProvidesIncomingWork ? $this->domain->incomingWork() : [];
+        return $this->provided(ProvidesIncomingWork::class)
+            ->map(fn (ProvidesIncomingWork $domain) => $domain->incomingWork())
+            ->getOrElse([]);
     }
 
     /**
@@ -439,7 +448,9 @@ final readonly class DomainEntry
      */
     public function internalAssignables(): array
     {
-        return $this->domain instanceof ProvidesInternalAssignables ? $this->domain->internalAssignables() : [];
+        return $this->provided(ProvidesInternalAssignables::class)
+            ->map(fn (ProvidesInternalAssignables $domain) => $domain->internalAssignables())
+            ->getOrElse([]);
     }
 
     /**
@@ -449,7 +460,9 @@ final readonly class DomainEntry
      */
     public function autoAssigners(): array
     {
-        return $this->domain instanceof ProvidesAutoAssignments ? $this->domain->autoAssigners() : [];
+        return $this->provided(ProvidesAutoAssignments::class)
+            ->map(fn (ProvidesAutoAssignments $domain) => $domain->autoAssigners())
+            ->getOrElse([]);
     }
 
     /**
@@ -459,7 +472,9 @@ final readonly class DomainEntry
      */
     public function assignmentPools(): array
     {
-        return $this->domain instanceof ProvidesAutoAssignments ? $this->domain->assignmentPools() : [];
+        return $this->provided(ProvidesAutoAssignments::class)
+            ->map(fn (ProvidesAutoAssignments $domain) => $domain->assignmentPools())
+            ->getOrElse([]);
     }
 
     /**
@@ -469,7 +484,9 @@ final readonly class DomainEntry
      */
     public function shareRecords(): array
     {
-        return $this->domain instanceof ProvidesShareRecords ? $this->domain->shareRecords() : [];
+        return $this->provided(ProvidesShareRecords::class)
+            ->map(fn (ProvidesShareRecords $domain) => $domain->shareRecords())
+            ->getOrElse([]);
     }
 
     /**
@@ -479,7 +496,9 @@ final readonly class DomainEntry
      */
     public function policies(): array
     {
-        return $this->domain instanceof ProvidesPolicies ? $this->domain->policies() : [];
+        return $this->provided(ProvidesPolicies::class)
+            ->map(fn (ProvidesPolicies $domain) => $domain->policies())
+            ->getOrElse([]);
     }
 
     /**
@@ -489,7 +508,9 @@ final readonly class DomainEntry
      */
     public function shareGateways(): array
     {
-        return $this->domain instanceof ProvidesShareGateways ? $this->domain->shareGateways() : [];
+        return $this->provided(ProvidesShareGateways::class)
+            ->map(fn (ProvidesShareGateways $domain) => $domain->shareGateways())
+            ->getOrElse([]);
     }
 
     /**
@@ -497,19 +518,23 @@ final readonly class DomainEntry
      */
     public function registerMcpToolsIn(McpRegistration $registration): void
     {
-        if (! $this->domain instanceof ProvidesMcpTools) {
+        $provided = $this->provided(ProvidesMcpTools::class);
+
+        if ($provided->isEmpty()) {
             return;
         }
 
-        foreach ($this->domain->mcpTools() as $tool) {
+        $domain = $provided->get();
+
+        foreach ($domain->mcpTools() as $tool) {
             $registration->registerTool($tool);
         }
 
-        foreach ($this->domain->mcpResources() as $resource) {
+        foreach ($domain->mcpResources() as $resource) {
             $registration->registerResource($resource);
         }
 
-        foreach ($this->domain->overviewContributions() as $contribution) {
+        foreach ($domain->overviewContributions() as $contribution) {
             $registration->registerOverviewContribution($contribution);
         }
     }
@@ -539,7 +564,9 @@ final readonly class DomainEntry
      */
     public function states(): array
     {
-        return $this->domain instanceof ProvidesStates ? $this->domain->states() : [];
+        return $this->provided(ProvidesStates::class)
+            ->map(fn (ProvidesStates $domain) => $domain->states())
+            ->getOrElse([]);
     }
 
     /**
@@ -549,7 +576,9 @@ final readonly class DomainEntry
      */
     public function numberedModels(): array
     {
-        return $this->domain instanceof ProvidesNumberedModels ? $this->domain->numberedModels() : [];
+        return $this->provided(ProvidesNumberedModels::class)
+            ->map(fn (ProvidesNumberedModels $domain) => $domain->numberedModels())
+            ->getOrElse([]);
     }
 
     /**
@@ -559,7 +588,9 @@ final readonly class DomainEntry
      */
     public function assignees(): array
     {
-        return $this->domain instanceof ProvidesAssignees ? $this->domain->assignees() : [];
+        return $this->provided(ProvidesAssignees::class)
+            ->map(fn (ProvidesAssignees $domain) => $domain->assignees())
+            ->getOrElse([]);
     }
 
     /**
@@ -569,7 +600,9 @@ final readonly class DomainEntry
      */
     public function activities(): array
     {
-        return $this->domain instanceof ProvidesAssignees ? $this->domain->activities() : [];
+        return $this->provided(ProvidesAssignees::class)
+            ->map(fn (ProvidesAssignees $domain) => $domain->activities())
+            ->getOrElse([]);
     }
 
     /**
@@ -580,15 +613,14 @@ final readonly class DomainEntry
      */
     public function commandRules(): array
     {
-        if (! $this->domain instanceof ProvidesCommandRules) {
-            return [];
-        }
         $scope = RuleScope::module($this->name, '');
 
-        return array_map(
-            fn (CommandRule $rule): CommandRule => $rule->ownedBy($scope, $rule->revision),
-            $this->domain->commandRules(),
-        );
+        return $this->provided(ProvidesCommandRules::class)
+            ->map(fn (ProvidesCommandRules $domain) => array_map(
+                fn (CommandRule $rule): CommandRule => $rule->ownedBy($scope, $rule->revision),
+                $domain->commandRules(),
+            ))
+            ->getOrElse([]);
     }
 
     /**
@@ -613,7 +645,9 @@ final readonly class DomainEntry
      */
     private function commands(): array
     {
-        return $this->domain instanceof ProvidesCommands ? $this->domain->commands() : [];
+        return $this->provided(ProvidesCommands::class)
+            ->map(fn (ProvidesCommands $domain) => $domain->commands())
+            ->getOrElse([]);
     }
 
     /**
@@ -621,6 +655,21 @@ final readonly class DomainEntry
      */
     private function commandMiddleware(): array
     {
-        return $this->domain instanceof ProvidesCommandMiddleware ? $this->domain->commandMiddleware() : [];
+        return $this->provided(ProvidesCommandMiddleware::class)
+            ->map(fn (ProvidesCommandMiddleware $domain) => $domain->commandMiddleware())
+            ->getOrElse([]);
+    }
+
+    /**
+     * The domain as the capability contract, when it declares that capability.
+     *
+     * @template TCapability of object
+     *
+     * @param  class-string<TCapability>  $contract
+     * @return Option<TCapability>
+     */
+    private function provided(string $contract): Option
+    {
+        return $this->domain instanceof $contract ? new Some($this->domain) : None::create();
     }
 }

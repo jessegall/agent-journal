@@ -6,7 +6,6 @@ namespace Tests\Feature\Skills;
 
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
-use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ContextStarted;
@@ -17,15 +16,13 @@ use App\Hooks\Support\ContextReminders;
 use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
 use App\Skills\Resolvers\Support\SkillStatusResolver;
-use App\Skills\Support\SkillPublishing;
 use App\Skills\Values\SessionSkillStatus;
-use Domain\Access\Support\AccessSettings;
-use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\HasSkillTargets;
+use Tests\Support\Skills\MakesUserGuideSkill;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -40,6 +37,7 @@ final class SessionSkillStatusTest extends TestCase
     use CommitsHookRows;
     use HasSkillTargets;
     use InstallsBuiltInProfiles;
+    use MakesUserGuideSkill;
 
     private const array TABLES = [
         'skill_receipts',
@@ -53,25 +51,6 @@ final class SessionSkillStatusTest extends TestCase
         'agents',
         'agent_sessions',
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
-        $this->app->instance(AgentStack::class, new RecordingStack());
-        $this->artisan('skill:make', [
-            'key' => 'user-guide',
-            '--description' => 'The guide',
-            '--body' => <<<'TEXT'
-            # Guide
-
-            First text.
-
-            TEXT,
-        ])->assertSuccessful();
-        $this->app->make(SkillPublishing::class)->refresh();
-    }
 
     public function test_a_skill_is_delivered_then_read_and_an_edit_makes_it_unread_with_a_new_digest(): void
     {

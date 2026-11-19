@@ -67,7 +67,7 @@ final class GatewayRuntimeTest extends TestCase
             $claim->operation->leaseEndsAt,
             2,
         );
-        $this->assertSame($this->configuration->id, $claim->operation->configuration->configurationId);
+        $this->assertSame($this->configuration->id, $claim->operation->configurationId());
         $this->assertNull($this->claim(self::FIRST_RUN), 'A held operation is not claimed again.');
     }
 

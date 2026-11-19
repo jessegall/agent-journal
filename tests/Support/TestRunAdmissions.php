@@ -16,18 +16,18 @@ use App\Processes\Values\RunAdmission;
 final class TestRunAdmissions
 {
     public static function of(
-        string $admissionId = '',
+        string|null $admissionId = null,
         RunMode $mode = RunMode::Normal,
         string $projectKey = 'project',
-        string $line = '',
+        string|null $line = null,
         ExecutionPlan|null $plan = null,
         string $workingFolder = '',
     ): RunAdmission {
         return new RunAdmission(
-            $admissionId === '' ? bin2hex(random_bytes(8)) : $admissionId,
+            $admissionId ?? bin2hex(random_bytes(8)),
             $mode,
             $projectKey,
-            $line === '' ? str_repeat('a', 64) : hash('sha256', $line),
+            $line === null ? str_repeat('a', 64) : hash('sha256', $line),
             ShellDialect::Bash,
             'rules-1',
             'policy-1',

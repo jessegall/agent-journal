@@ -290,8 +290,12 @@ final class CaseSet
  */
 function frozenExpectations(string $path): array
 {
+    if (! is_file($path)) {
+        return [];
+    }
+
     $expected = [];
-    foreach (is_file($path) ? file($path, FILE_IGNORE_NEW_LINES) ?: [] : [] as $line) {
+    foreach (file($path, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
         $case = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
         $expected[$case['id']] = $case['expected'];
     }

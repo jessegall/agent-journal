@@ -30,9 +30,10 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
+require_once __DIR__.'/promoted-parameters.php';
 
 $arguments = array_slice($argv, 1);
-$mode = in_array($arguments[0] ?? '', ['--check', '--accept'], true) ? array_shift($arguments) : '--list';
+$mode = in_array($arguments[0] ?? null, ['--check', '--accept'], true) ? array_shift($arguments) : '--list';
 $reviewedFile = $mode === '--list' ? '' : (string) array_shift($arguments);
 $names = declaredNames($arguments);
 
@@ -146,7 +147,7 @@ function promotedProperties(ClassMethod $method): array
     $properties = [];
 
     foreach ($method->params as $param) {
-        if ($param->flags !== 0 && $param->var instanceof Node\Expr\Variable && is_string($param->var->name)) {
+        if (isPromoted($param)) {
             $properties[] = ['property', '$'.$param->var->name];
         }
     }

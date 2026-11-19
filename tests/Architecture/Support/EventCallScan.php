@@ -99,6 +99,18 @@ final readonly class EventCallScan implements FileScan
     }
 
     /**
+     * Whether the method is an event subscriber's subscribe(Dispatcher).
+     */
+    private static function isSubscribeMethod(ClassMethod $method): bool
+    {
+        $type = ($method->params[0] ?? null)?->type;
+
+        return $method->name->toLowerString() === 'subscribe'
+            && $type instanceof Name
+            && str_ends_with($type->toString(), 'Dispatcher');
+    }
+
+    /**
      * An event subscriber class, and a provider's listen or subscribe property that is not empty: both register
      * listeners by hand.
      *
@@ -110,11 +122,7 @@ final readonly class EventCallScan implements FileScan
         $finder = new NodeFinder();
 
         foreach ($finder->findInstanceOf($file->statements, ClassMethod::class) as $method) {
-            $type = ($method->params[0] ?? null)?->type;
-
-            if ($method->name->toLowerString() === 'subscribe'
-                && $type instanceof Name
-                && str_ends_with($type->toString(), 'Dispatcher')) {
+            if (self::isSubscribeMethod($method)) {
                 $registrations[] = new EventCall(
                     $file->path,
                     $method->getStartLine(),

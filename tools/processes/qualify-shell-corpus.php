@@ -120,9 +120,13 @@ foreach (glob(WORK.'/differences-*.jsonl') ?: [] as $file) {
     }
 }
 sort($failingIds);
-$complete = count($cursor['done']) === count($chunks);
+$qualification = match (true) {
+    count($cursor['done']) !== count($chunks) => 'incomplete',
+    $failingIds === [] => 'passed',
+    default => 'failed',
+};
 $report = [
-    'qualification' => $complete ? ($failingIds === [] ? 'passed' : 'failed') : 'incomplete',
+    'qualification' => $qualification,
     'unexplained' => count($failingIds),
     'input_hash' => $inputHash,
     'sources' => $sources,
@@ -269,10 +273,12 @@ function readings(array $command, string $input): array
     }
     $readings = [];
     foreach (explode("\n", trim($output)) as $line) {
-        if ($line !== '') {
-            $reading = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
-            $readings[$reading['id']] = $reading;
+        if ($line === '') {
+            continue;
         }
+
+        $reading = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+        $readings[$reading['id']] = $reading;
     }
 
     return $readings;
