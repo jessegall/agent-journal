@@ -117,6 +117,25 @@ record_installed_release() {
   rm -f "$ROOT/.journal/runtime/newest-release.json"
 }
 
+# the ETag of a code archive, which names the code in it as the update check reads it
+archive_etag() {
+  curl -fsSI "$1" 2>/dev/null | awk 'tolower($1) == "etag:" {gsub(/["\r]/, "", $2); print $2}'
+}
+
+# a checkout whose commit is the pushed tip of version-5, with nothing changed, holds the code of that branch's archive,
+# so it is named by the archive's ETag as a download from curl is; a checkout ahead, behind or changed names nothing
+name_checkout_release() {
+  [ -z "${JOURNAL_INSTALLED_CHECKSUM:-}" ] || return 0
+  command -v git >/dev/null 2>&1 && git -C "$HERE" rev-parse --git-dir >/dev/null 2>&1 || return 0
+  [ -z "$(git -C "$HERE" status --porcelain --untracked-files=no 2>/dev/null)" ] || return 0
+  local_tip=$(git -C "$HERE" rev-parse HEAD 2>/dev/null)
+  remote_tip=$(git -C "$HERE" ls-remote origin refs/heads/version-5 2>/dev/null | awk '{print $1}')
+  [ -n "$remote_tip" ] && [ "$local_tip" = "$remote_tip" ] || return 0
+  archive_url="https://codeload.github.com/jessegall/agent-journal/tar.gz/refs/heads/version-5"
+  JOURNAL_INSTALLED_CHECKSUM=$(archive_etag "$archive_url")
+  JOURNAL_INSTALLED_TAG="version-5"
+}
+
 find_python() {
   for candidate in python3.14 python3.15 python3 python; do
     if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' >/dev/null 2>&1; then
@@ -137,7 +156,7 @@ if [ ! -f "$HERE/src/engine/cli/journal.py" ] && [ -z "${JOURNAL_RELEASE_URL:-}"
   trap 'rm -rf "$branch"' EXIT
   archive_url="${JOURNAL_SOURCE_URL:-https://codeload.github.com/jessegall/agent-journal/tar.gz/refs/heads/version-5}"
   # the archive's ETag names the code installed, as the update check reads it, so an installed update is not offered again
-  JOURNAL_INSTALLED_CHECKSUM=$(curl -fsSI "$archive_url" 2>/dev/null | awk 'tolower($1) == "etag:" {gsub(/["\r]/, "", $2); print $2}')
+  JOURNAL_INSTALLED_CHECKSUM=$(archive_etag "$archive_url")
   JOURNAL_INSTALLED_TAG="${archive_url##*/}"
   export JOURNAL_INSTALLED_CHECKSUM JOURNAL_INSTALLED_TAG
   curl -fsSL "$archive_url" | tar -xzf - -C "$branch" --strip-components 1 || fail "the journal could not be downloaded from $archive_url"
@@ -182,6 +201,7 @@ if [ "${1:-}" = "update" ]; then
   fi
   record_python
   env PYTHONPATH="$SOURCE" "$python" -m install.working_tree_install "$ROOT" "$SOURCE" || exit $?
+  name_checkout_release
   record_installed_release
   exit 0
 fi
