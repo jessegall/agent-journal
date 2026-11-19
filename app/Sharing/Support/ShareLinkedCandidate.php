@@ -19,13 +19,21 @@ final readonly class ShareLinkedCandidate
     ) {}
 
     /**
+     * The id of the record the candidate offers to share.
+     */
+    public function recordId(): string
+    {
+        return $this->card->record->id;
+    }
+
+    /**
      * Whether the candidate's record is one of these ids.
      *
      * @param  list<string>  $recordIds
      */
     public function isAmong(array $recordIds): bool
     {
-        return in_array($this->card->record->id, $recordIds, true);
+        return in_array($this->recordId(), $recordIds, true);
     }
 
     /**

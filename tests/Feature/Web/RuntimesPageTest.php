@@ -17,14 +17,12 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Bus\Contracts\CommandBus;
-use App\Settings\Models\SettingsRecord;
-use App\Settings\Storage\EncodedToggle;
-use App\Settings\Storage\EncodedValue;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\TestCase;
 
 /**
@@ -35,6 +33,7 @@ final class RuntimesPageTest extends TestCase
 {
     use RefreshHookDatabase;
     use RunsTrustedCommands;
+    use SwitchesDomainsOff;
 
     private User $owner;
 
@@ -48,7 +47,7 @@ final class RuntimesPageTest extends TestCase
     public function test_the_page_lists_each_runtime_with_its_requests_and_writes_nothing(): void
     {
         $this->assertSame(0, AgentRuntime::query()->count(), 'A runtime another test committed is still here.');
-        $this->switchChatOff();
+        $this->switchDomainOff('chat');
         $this->openRuntime();
         $requests = DriverRequest::query()->count();
 
@@ -66,7 +65,7 @@ final class RuntimesPageTest extends TestCase
 
     public function test_a_failed_request_is_retried_from_the_page_and_the_page_shows_the_new_state(): void
     {
-        $this->switchChatOff();
+        $this->switchDomainOff('chat');
         $this->openRuntime();
         $request = DriverRequest::query()->orderBy('sequence')->firstOrFail();
         $request->fail(RequestOutcome::EntryUnavailable);
@@ -88,7 +87,7 @@ final class RuntimesPageTest extends TestCase
 
     public function test_a_refused_recovery_is_shown_on_the_page(): void
     {
-        $this->switchChatOff();
+        $this->switchDomainOff('chat');
         $this->openRuntime();
         $request = DriverRequest::query()->orderBy('sequence')->firstOrFail();
         $request->fail(RequestOutcome::EntryUnavailable);
@@ -106,7 +105,7 @@ final class RuntimesPageTest extends TestCase
 
     public function test_an_interrupt_is_released_from_the_page(): void
     {
-        $this->switchChatOff();
+        $this->switchDomainOff('chat');
         $this->openRuntime();
         $runtime = AgentRuntime::query()->with('session')->firstOrFail();
         $runtime->hold_reason = HoldReason::Interrupted;
@@ -147,13 +146,5 @@ final class RuntimesPageTest extends TestCase
             'claude-opus-5-5',
             firstMessage: 'hello',
         ));
-    }
-
-    private function switchChatOff(): void
-    {
-        SettingsRecord::insertIfAbsent('Core');
-        $record = SettingsRecord::sharedRuntimeForOwner('Core')->get();
-        $record->revise($record->document->withToggle(new EncodedToggle('domain_chat', EncodedValue::of(false))));
-        $this->app->forgetScopedInstances();
     }
 }

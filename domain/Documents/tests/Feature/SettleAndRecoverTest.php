@@ -25,6 +25,7 @@ use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
 use Domain\Documents\Commands\SettleReport;
 use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftConflict;
@@ -37,7 +38,6 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
@@ -171,8 +171,9 @@ final class SettleAndRecoverTest extends TestCase
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Ship it soon.'));
 
         $this->actAsUser(1);
-        $heldBody = (string) $this->documents()->inspect(1)->editing->held->body;
-        $this->assertSame('Ship it soon.', trim(substr($heldBody, -14)));
+        $editing = $this->documents()->inspect(1)->editing;
+        $this->assertInstanceOf(DraftView::class, $editing->held);
+        $this->assertSame('Ship it soon.', trim(substr($editing->held->body, -14)));
 
         try {
             $this->bus()->run(new RecoverDocument(new DraftTarget(1, $draft->token, 1), 'Agent gone.'));
@@ -227,17 +228,16 @@ final class SettleAndRecoverTest extends TestCase
         $draft = $this->bus()->run(new OpenDocument(1));
         $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Shipped.'));
 
-        try {
-            DB::transaction(function (): void {
+        $this->assertThrows(
+            fn () => DB::transaction(function (): void {
                 $this->endSession(9, 90);
 
                 throw SimulatedFailure::of('The ending failed.');
-            });
-            $this->fail('The ending did not fail.');
-        } catch (RuntimeException) {
-            $this->assertSame(1, DocumentDraft::query()->count());
-            $this->assertSame(0, DocumentClose::query()->count());
-        }
+            }),
+            SimulatedFailure::class,
+        );
+        $this->assertSame(1, DocumentDraft::query()->count());
+        $this->assertSame(0, DocumentClose::query()->count());
     }
 
     public function test_the_documents_listener_hears_a_session_ending_behind_its_domain_gate(): void

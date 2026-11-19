@@ -32,7 +32,7 @@ use Tests\TestCase;
 /**
  * The stored auto-assignment of an actor and a type: enabled first at revision 1, changed only against the current
  * revision and moved on only when something changed, kept with its pool and size when off, and refused when its pool
- * column no longer reads.
+ * column does not read.
  */
 final class AutoAssignmentStorageTest extends TestCase
 {

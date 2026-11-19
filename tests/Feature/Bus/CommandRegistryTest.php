@@ -81,7 +81,7 @@ final class CommandRegistryTest extends TestCase
         $this->assertTrue($registry->needsRepeatableRead(AddItem::class));
         $this->assertEquals(
             new CommandAuthorization(FixturePolicy::class, FixtureAbility::Work),
-            $registry->authorizationOf(AddItem::class),
+            $registry->authorizationOf(AddItem::class)->get(),
         );
         $this->assertSame(CommandEntry::Application, $registry->entryOf(AddItem::class));
         $this->assertSame(

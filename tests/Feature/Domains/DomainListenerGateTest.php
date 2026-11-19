@@ -8,14 +8,12 @@ use App\Contracts\DomainAvailability;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Support\AvailableListener;
 use App\Hooks\Stack\StateTypes;
-use App\Settings\Models\SettingsRecord;
-use App\Settings\Storage\EncodedToggle;
-use App\Settings\Storage\EncodedValue;
 use Domain\Memory\Listeners\SupplyMemories;
 use Domain\Plans\Listeners\RaisePlanProgressChanged;
 use stdClass;
 use Tests\Fixtures\Listeners\CountingListener;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Settings\SwitchesDomainsOff;
 use Tests\TestCase;
 
 /**
@@ -25,6 +23,7 @@ use Tests\TestCase;
 final class DomainListenerGateTest extends TestCase
 {
     use RefreshHookDatabase;
+    use SwitchesDomainsOff;
 
     public function test_a_gated_listener_runs_only_while_its_domain_is_available_asked_at_delivery(): void
     {
@@ -80,10 +79,7 @@ final class DomainListenerGateTest extends TestCase
 
     public function test_registration_still_reaches_a_switched_off_domain(): void
     {
-        SettingsRecord::insertIfAbsent('Core');
-        $record = SettingsRecord::sharedRuntimeForOwner('Core')->get();
-        $record->revise($record->document->withToggle(new EncodedToggle('domain_tasks', EncodedValue::of(false))));
-        $this->app->forgetScopedInstances();
+        $this->switchDomainOff('tasks');
 
         $this->assertTrue($this->app->make(StateTypes::class)->registry()->has('tasks.working'));
     }

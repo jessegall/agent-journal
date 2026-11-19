@@ -158,8 +158,10 @@ final readonly class TickDelivery
         CarbonImmutable $now,
         array $checkpoints,
     ): ElapsedTime {
-        if ($this->baselines->has($candidate->frameId)) {
-            return ElapsedTime::between($this->baselines->of($candidate->frameId), $start);
+        $sinceBaseline = $this->baselines->elapsedUntil($candidate->frameId, $start);
+
+        if ($sinceBaseline->isDefined()) {
+            return $sinceBaseline->get();
         }
 
         $since = $checkpoints[$candidate->frameId] ?? $candidate->enteredAt;

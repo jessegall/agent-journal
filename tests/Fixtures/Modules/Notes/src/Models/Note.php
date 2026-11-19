@@ -52,6 +52,14 @@ final class Note extends Model implements Assignable, Commentable, Numbered, Rea
         $this->save();
     }
 
+    /**
+     * Whether the actor wrote this note.
+     */
+    public function isWrittenBy(ActorIdentity $actor): bool
+    {
+        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+    }
+
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);

@@ -7,6 +7,7 @@ namespace App\Bus\CommandMiddleware;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\RequestKey;
@@ -83,8 +84,7 @@ final readonly class LogCommand implements CommandMiddleware
         $this->log->warning('Authorization refused for '.class_basename($call->name()), [
             'command' => $call->name(),
             'actor' => $call->actorText(),
-            'policy' => $authorization?->policy,
-            'ability' => $authorization?->ability->value,
+            ...$authorization->map(fn (CommandAuthorization $declared) => $declared->auditFields())->getOrElse([]),
             'authority' => $this->actors->authority()->description(),
             'request_key' => $this->key->keyOfCurrentCommand(),
             'refusal' => $refusal->getMessage(),
