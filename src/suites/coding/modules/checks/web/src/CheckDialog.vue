@@ -1,9 +1,9 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Btn, Dialog, Segmented, TimeAgo, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, OutputLines, Segmented, TimeAgo, useWindow} from "@journal/window-kit";
 import CheckRunBar from "./CheckRunBar.vue";
 
-// one check opened: its latest output and its runs, picked at the top, and the button that runs it
+// one check's output in a terminal view: the latest run's, or the run picked from its runs, and the button that runs it
 const VIEWS = [
     {key: "output", label: "Output"},
     {key: "runs", label: "Runs"},
@@ -16,6 +16,7 @@ const chosenRun = ref(null);
 const key = `runs.${props.row.id}`;
 const {rows: runs, failure} = view.props[key];
 const shownOutput = computed(() => chosenRun.value?.output ?? props.row.last_output);
+const shownLines = computed(() => (shownOutput.value ? shownOutput.value.split("\n") : []));
 
 function showRun(run) {
     chosenRun.value = run;
@@ -45,12 +46,9 @@ onUnmounted(() => stopFollowing?.());
             <p class="check-note">{{ failure }}</p>
         </template>
         <template v-if="tab === 'output'">
-            <template v-if="shownOutput">
-                <pre class="check-output" data-check-output>{{ shownOutput }}</pre>
-            </template>
-            <template v-else>
-                <p class="check-note">No output yet</p>
-            </template>
+            <div class="check-output" data-check-output>
+                <OutputLines :lines="shownLines" />
+            </div>
         </template>
         <template v-else>
             <template v-if="runs.length">
@@ -94,14 +92,18 @@ onUnmounted(() => stopFollowing?.());
 }
 
 .check-output {
-    overflow: auto;
-    max-height: 50vh;
+    border-radius: 8px;
+    background: #111418;
+    color: #d7dce2;
+}
+
+.check-output :deep(.output-lines) {
+    max-height: 60vh;
     margin: 0;
     padding: 10px 12px;
-    border-radius: 8px;
-    background: var(--raised);
-    font-size: 12px;
+    font: 12px/1.5 var(--mono, ui-monospace, monospace);
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .check-runs {

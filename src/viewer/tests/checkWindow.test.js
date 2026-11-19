@@ -11,7 +11,7 @@ test("the checks window loads its list key and requests history only in the Runs
     const held = checkWindowContext({"check list": page([row]), "check runs 3": page([{run_at: "2026-11-01T12:00:00Z", passed: true, output: "Earlier totals"}])});
     const element = await mounted(Checks, held);
     expect(held.reads).toEqual(["check list"]);
-    await choose(element.querySelector('[data-row="3"]'), "Open");
+    await choose(element.querySelector('[data-row="3"]'), "View output");
     expect(document.querySelector("[data-check-output]").textContent).toBe("Totals match");
     expect(held.reads).toEqual(["check list"]);
     [...document.querySelectorAll("button")].find((button) => button.textContent.trim() === "Runs").click();

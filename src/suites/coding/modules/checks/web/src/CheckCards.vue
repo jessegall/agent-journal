@@ -6,6 +6,7 @@ import CheckRunBar from "./CheckRunBar.vue";
 import NewCheck from "./NewCheck.vue";
 
 // the checks as cards: its verdict is the state line, the command the line under it, and the one action that waits is Run, or Start for a check that was stopped.
+// A card shows no output, however long: View output opens it in a terminal view, the latest run or one picked.
 // A run shows at once and the server's answer settles it, a refusal naming why
 const view = useWindow();
 const {rows, failure, loaded} = view.props.checks;
@@ -21,7 +22,6 @@ const items = computed(() => rows.value.map((row) => ({
     icon: "check",
     state: verdict(row),
     line: row.command,
-    fault: row.last_passed === false ? row.last_output : "",
     status: verdict(row),
     row,
 })));
@@ -43,7 +43,7 @@ async function run(row) {
 }
 
 const menuOf = (item) => [
-    {label: "Open", group: "open", run: () => (openedId.value = item.id)},
+    {label: "View output", group: "open", run: () => (openedId.value = item.id)},
     item.row.stopped ? {label: "Start", group: "own", run: () => start(item.row)} : {label: "Run now", group: "own", run: () => run(item.row)},
     {label: "Copy command", group: "copy", run: ({say}) => copying(item.row.command, "the command", say)},
 ];

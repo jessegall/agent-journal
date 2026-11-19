@@ -33,16 +33,17 @@ test("a trigger an agent made says it waits and offers to enable it, and an enab
     expect(element.querySelectorAll("[data-trigger-enable]")).toHaveLength(1);
 });
 
-test("a check card shows its title, verdict and how often it runs, and its command and output once opened", async () => {
-    const element = mounted(CheckCards, [{id: 1, title: "Lint", status: "failed", interval_minutes: 15, command: "echo two problems; false", last_output: "two problems"}]);
+test("a check card shows its title, verdict and how often it runs, never its output, which View output opens", async () => {
+    const element = mounted(CheckCards, [{id: 1, title: "Lint", status: "failed", interval_minutes: 15, command: "echo two problems; false", last_output: "two problems", last_passed: false}]);
     await settled();
     const card = element.querySelector('[data-row="1"]');
     expect(card.textContent).toContain("Lint");
-    expect(card.querySelector("[data-card-state]").textContent).toBe("Not run");
+    expect(card.querySelector("[data-card-state]").textContent).toBe("Failing");
     expect(card.querySelector("[data-check-rhythm]").textContent).toBe("Every 15 minutes");
     expect(card.textContent).toContain("echo two problems; false");
     expect(card.querySelector("pre")).toBeNull();
-    await choose(card, "Open");
+    expect(card.querySelector("[data-card-fault]")).toBeNull();
+    await choose(card, "View output");
     expect(document.body.querySelector("[data-check-output]").textContent).toBe("two problems");
 });
 
