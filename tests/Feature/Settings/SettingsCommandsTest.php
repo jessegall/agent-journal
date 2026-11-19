@@ -32,8 +32,8 @@ use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
+use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
@@ -120,7 +120,7 @@ final class SettingsCommandsTest extends TestCase
             fn () => $this->app->make(CommandBus::class)->run(
                 new SetIntegerSettingThenFail($change->setting, $change->value, $change->expectedRevision),
             ),
-            SimulatedFailure::class,
+            NoteWorkFailed::class,
         );
         $this->assertSame(0, $announced);
         $this->assertSame(0, SettingsRecord::query()->count());

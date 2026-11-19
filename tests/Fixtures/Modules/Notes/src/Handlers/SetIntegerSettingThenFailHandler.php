@@ -8,7 +8,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetIntegerSetting;
 use Tests\Fixtures\Modules\Notes\Commands\SetIntegerSettingThenFail;
-use Tests\Support\Exceptions\SimulatedFailure;
+use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 
 final class SetIntegerSettingThenFailHandler implements CommandHandler
 {
@@ -18,6 +18,6 @@ final class SetIntegerSettingThenFailHandler implements CommandHandler
     {
         $this->bus->run(new SetIntegerSetting($command->setting, $command->value, $command->expectedRevision));
 
-        throw SimulatedFailure::of('The surrounding work failed.');
+        throw NoteWorkFailed::afterNestedWork();
     }
 }
