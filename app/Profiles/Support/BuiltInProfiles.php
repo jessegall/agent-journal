@@ -8,7 +8,7 @@ use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 
 /**
- * The journal's own profiles, one per type of agent: every launch without a profile of its own is pinned to its
+ * The journal's own profiles, one per type of agent: every start without a profile of its own is pinned to its
  * type's, and their authorization is the built-in one of that type.
  */
 final class BuiltInProfiles

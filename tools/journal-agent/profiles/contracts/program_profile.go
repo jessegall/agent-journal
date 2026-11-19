@@ -1,9 +1,9 @@
-// Package contracts holds the interfaces of launch profiles.
+// Package contracts holds the interfaces of start profiles.
 package contracts
 
 import "journal-agent/screen"
 
-// Mode is how a program is launched: one child per turn, or one persistent terminal.
+// Mode is how a program is started: one child per turn, or one persistent terminal.
 type Mode string
 
 const (
@@ -11,9 +11,9 @@ const (
 	TerminalMode Mode = "terminal"
 )
 
-// Launch is what one start of a program needs: its isolated settings folder and the exact conversation it starts
+// Start is what one start of a program needs: its isolated settings folder and the exact conversation it starts
 // or resumes. A resume always names its conversation; "the latest" is never resumed.
-type Launch struct {
+type Start struct {
 	Mode           Mode
 	SettingsFolder string
 	SessionID      string
@@ -36,7 +36,7 @@ type SettingsFile struct {
 	LinkTo  string
 }
 
-// ProgramProfile is how the host launches one pinned build of one agent program with its native subagents off
+// ProgramProfile is how the host starts one pinned build of one agent program with its native subagents off
 // (rule 36). Both programs implement it; nothing above it checks which program it has.
 type ProgramProfile interface {
 	// Program names the agent program, such as claude or codex.
@@ -48,16 +48,16 @@ type ProgramProfile interface {
 	// CheckBuild refuses any build but the pinned one, from what the program printed for its version.
 	CheckBuild(reportedVersion string) error
 
-	// Arguments are the command-line arguments of a launch, refusing a launch it cannot make safe.
-	Arguments(launch Launch) ([]string, error)
+	// Arguments are the command-line arguments of a start, refusing a start it cannot make safe.
+	Arguments(start Start) ([]string, error)
 
 	// Environment is the inherited environment with every variable that could turn native delegation on removed,
-	// pointed at the launch's isolated settings folder where the program reads its settings from the environment.
-	Environment(inherited []string, launch Launch) []string
+	// pointed at the start's isolated settings folder where the program reads its settings from the environment.
+	Environment(inherited []string, start Start) []string
 
-	// SettingsFiles are the files the program reads from its isolated settings folder, with the launch's hook
+	// SettingsFiles are the files the program reads from its isolated settings folder, with the start's hook
 	// command installed on every native hook event when it names one.
-	SettingsFiles(launch Launch) ([]SettingsFile, error)
+	SettingsFiles(start Start) ([]SettingsFile, error)
 
 	// AllowedTools is the explicit native tool inventory; anything else is unavailable.
 	AllowedTools() []string

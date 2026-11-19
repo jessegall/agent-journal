@@ -44,7 +44,7 @@ final class NavigationDispatchTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',

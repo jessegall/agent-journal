@@ -44,7 +44,7 @@ final class SkillReceiptsTest extends TestCase
 
     public function test_a_skill_tool_read_records_one_receipt_with_the_delivered_digest(): void
     {
-        $session = $this->launchedMainAgent();
+        $session = $this->startedMainAgent();
         $digest = $this->deliveredDigest($session, 'journal-plans');
 
         $this->finished($session, 'Skill', ['skill' => 'journal-session-skills:journal-plans']);
@@ -60,7 +60,7 @@ final class SkillReceiptsTest extends TestCase
 
     public function test_a_directory_listing_records_none(): void
     {
-        $session = $this->launchedMainAgent();
+        $session = $this->startedMainAgent();
 
         $this->finished($session, 'Bash', ['command' => "ls {$this->root}/targets"]);
 
@@ -69,7 +69,7 @@ final class SkillReceiptsTest extends TestCase
 
     public function test_after_a_compaction_the_skill_reads_as_unread(): void
     {
-        $session = $this->launchedMainAgent();
+        $session = $this->startedMainAgent();
         $digest = $this->deliveredDigest($session, 'journal-plans');
         $this->finished($session, 'mcp__journal__skills_show', ['key' => 'journal-plans']);
         $this->assertTrue(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));

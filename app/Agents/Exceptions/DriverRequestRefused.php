@@ -111,7 +111,7 @@ final class DriverRequestRefused extends RuntimeException implements CommandRefu
 
     public static function sessionEnded(StackTarget $target): self
     {
-        return new self("Session {$target->sessionId} has ended; a new launch starts a new session.");
+        return new self("Session {$target->sessionId} has ended; a new start opens a new session.");
     }
 
     public static function stopping(StackTarget $target): self

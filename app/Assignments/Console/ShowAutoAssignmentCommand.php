@@ -13,7 +13,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Show where an actor's auto-assignment of one type stands, over a signed call as the agent of the launch.
+ * Show where an actor's auto-assignment of one type stands, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Read)]
 final class ShowAutoAssignmentCommand extends Command

@@ -8,7 +8,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Artisan;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -27,16 +27,16 @@ final class AutoAssignmentCliTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'assignments',
         'auto_assignments',
         'command_receipts',
     ];
 
-    private TestLaunch $main;
+    private TestStart $main;
 
-    private TestLaunch $worker;
+    private TestStart $worker;
 
     protected function setUp(): void
     {
@@ -44,8 +44,8 @@ final class AutoAssignmentCliTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->main = TestLaunch::start('main-agent');
-        $this->worker = TestLaunch::start('writing-helper');
+        $this->main = TestStart::start('main-agent');
+        $this->worker = TestStart::start('writing-helper');
         $this->runCommandsAs($this->main);
     }
 

@@ -155,11 +155,11 @@ func TestAPersonAttachedToAServedTerminalTypesThroughItsGate(t *testing.T) {
 	}
 }
 
-func TestATerminalLaunchCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
+func TestATerminalStartCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 	folder := t.TempDir()
-	grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeLaunch{Folder: folder, ProcessGeneration: 4}}
+	grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeStart{Folder: folder, ProcessGeneration: 4}}
 
-	launch, err := launchOf(profiles.ClaudeCode{}, folder, "http://journal.test", "", "runtime-1", grant)
+	launch, err := startOf(profiles.ClaudeCode{}, folder, "http://journal.test", "", "runtime-1", grant)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,7 +167,7 @@ func TestATerminalLaunchCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 	if launch.RuntimeID != "runtime-1" || launch.Command[0] != "claude" || launch.Folder != folder {
 		t.Fatalf("the launch is %+v", launch)
 	}
-	for _, wanted := range []string{"JOURNAL_LAUNCH_TOKEN=launch-token", "JOURNAL_PROCESS_GENERATION=4"} {
+	for _, wanted := range []string{"JOURNAL_START_TOKEN=launch-token", "JOURNAL_PROCESS_GENERATION=4"} {
 		if !slices.Contains(launch.Env, wanted) {
 			t.Fatalf("the launch's environment has no %s", wanted)
 		}

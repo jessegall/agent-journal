@@ -19,7 +19,7 @@ final class EngineAccessTest extends TestCase
         $access = new EngineAccess();
 
         $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 's')));
-        $this->assertRefused(fn () => $access->checkMaintenance('launches.silence'));
+        $this->assertRefused(fn () => $access->checkMaintenance('starts.silence'));
     }
 
     public function test_a_frame_grant_allows_its_own_target_only(): void
@@ -29,15 +29,15 @@ final class EngineAccessTest extends TestCase
 
         $access->checkTarget(new StackTarget('a', 's'));
         $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 'other')));
-        $this->assertRefused(fn () => $access->checkMaintenance('launches.silence'));
+        $this->assertRefused(fn () => $access->checkMaintenance('starts.silence'));
     }
 
     public function test_a_maintenance_grant_allows_its_capability_only(): void
     {
         $access = new EngineAccess();
-        $access->grantMaintenance('launches.silence');
+        $access->grantMaintenance('starts.silence');
 
-        $access->checkMaintenance('launches.silence');
+        $access->checkMaintenance('starts.silence');
         $this->assertRefused(fn () => $access->checkMaintenance('other'));
         $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 's')));
     }

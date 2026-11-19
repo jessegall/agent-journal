@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
-use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartedAgent;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Hooks\Actions\EngineStacks;
 use App\Hooks\Decisions\StateReference;
@@ -35,7 +35,7 @@ final class EngineStackTest extends TestCase
     use CommitsHookRows;
     use RunsAsEngine;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
     private LifecycleLog $log;
 
@@ -55,21 +55,21 @@ final class EngineStackTest extends TestCase
 
     public function test_the_engine_pushes_onto_its_granted_target_and_the_frame_enters_once(): void
     {
-        $launched = $this->launch();
+        $started = $this->start();
 
         $this->asEngineFor(
-            $this->targetOf($launched),
-            fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($launched), $this->task('A')),
+            $this->targetOf($started),
+            fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($started), $this->task('A')),
         );
 
         $this->assertSame(['enter:A'], $this->log->calls);
-        $this->assertSame(['A'], $this->storedSubjects($launched));
+        $this->assertSame(['A'], $this->storedSubjects($started));
     }
 
     public function test_the_engine_is_refused_a_target_its_grant_does_not_cover(): void
     {
-        $granted = $this->launch();
-        $other = $this->launch();
+        $granted = $this->start();
+        $other = $this->start();
 
         $this->assertThrows(
             fn () => $this->asEngineFor(
@@ -84,13 +84,13 @@ final class EngineStackTest extends TestCase
 
     public function test_a_push_onto_an_ended_sessions_stack_is_refused(): void
     {
-        $launched = $this->launch();
-        $launched->session->endAt(CarbonImmutable::now());
+        $started = $this->start();
+        $started->session->endAt(CarbonImmutable::now());
 
         $this->assertThrows(
             fn () => $this->asEngineFor(
-                $this->targetOf($launched),
-                fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($launched), $this->task('A')),
+                $this->targetOf($started),
+                fn () => $this->app->make(EngineStacks::class)->push($this->targetOf($started), $this->task('A')),
             ),
             StackTargetRefused::class,
         );
@@ -100,20 +100,20 @@ final class EngineStackTest extends TestCase
 
     public function test_the_engine_settles_the_finished_frames_of_its_granted_target(): void
     {
-        $launched = $this->launch();
-        $target = $this->targetOf($launched);
+        $started = $this->start();
+        $target = $this->targetOf($started);
         $this->asEngineFor($target, fn () => $this->app->make(EngineStacks::class)->push($target, $this->task('A')));
         $this->tasks->finished = ['A'];
 
         $this->asEngineFor($target, fn () => $this->app->make(EngineStacks::class)->popExposed($target));
 
         $this->assertSame(['enter:A', 'exit:A'], $this->log->calls);
-        $this->assertSame([], $this->storedSubjects($launched));
+        $this->assertSame([], $this->storedSubjects($started));
     }
 
-    private function targetOf(LaunchedAgent $launched): StackTarget
+    private function targetOf(StartedAgent $started): StackTarget
     {
-        return new StackTarget($launched->session->agent_id, $launched->session->id);
+        return new StackTarget($started->session->agent_id, $started->session->id);
     }
 
     private function task(string $subject): StateReference
@@ -124,10 +124,10 @@ final class EngineStackTest extends TestCase
     /**
      * @return list<string>
      */
-    private function storedSubjects(LaunchedAgent $launched): array
+    private function storedSubjects(StartedAgent $started): array
     {
         $frames = array_slice(
-            AgentStackRow::query()->authorizedFor($this->targetOf($launched))->sole()->frames->all(),
+            AgentStackRow::query()->authorizedFor($this->targetOf($started))->sole()->frames->all(),
             1,
         );
 
@@ -139,9 +139,9 @@ final class EngineStackTest extends TestCase
         );
     }
 
-    private function launch(): LaunchedAgent
+    private function start(): StartedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             Agent::named('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),

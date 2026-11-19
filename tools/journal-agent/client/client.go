@@ -1,4 +1,4 @@
-// Package client speaks the journal's host protocol: signed calls to claim requests, take launch grants and report.
+// Package client speaks the journal's host protocol: signed calls to claim requests, take start grants and report.
 package client
 
 import (
@@ -125,8 +125,8 @@ type LivenessReport struct {
 // ErrRefused is returned when the journal refuses a call outright (4xx): a retry would be refused again.
 var ErrRefused = errors.New("the journal refused the call")
 
-// ErrAlreadyGranted is returned when a runtime's launch credential was handed out before.
-var ErrAlreadyGranted = errors.New("this launch was already granted")
+// ErrAlreadyGranted is returned when a runtime's start token was handed out before.
+var ErrAlreadyGranted = errors.New("this start was already granted")
 
 // Client makes signed calls for one enrolled host. It never logs its secret.
 type Client struct {
@@ -149,33 +149,33 @@ func (client *Client) Claim(ctx context.Context, limit, waitSeconds int) ([]Clai
 	return answer.Requests, client.call(ctx, target, nil, &answer)
 }
 
-// LaunchFile is one file the host writes in a launch folder.
-type LaunchFile struct {
+// StartFile is one file the host writes in a start folder.
+type StartFile struct {
 	Path    string `json:"path"`
 	Content string `json:"content"`
 }
 
-// LaunchFolder is a folder the host writes inside the launch's settings folder before it spawns the program, with the
+// StartFolder is a folder the host writes inside the start's settings folder before it spawns the program, with the
 // arguments that come right before the folder's absolute path.
-type LaunchFolder struct {
+type StartFolder struct {
 	Name      string       `json:"name"`
-	Files     []LaunchFile `json:"files"`
+	Files     []StartFile `json:"files"`
 	Arguments []string     `json:"arguments"`
 }
 
-// Grant is a runtime's launch credential and the folders its launch needs, which the journal hands out once.
+// Grant is a runtime's start token and the folders its start needs, which the journal hands out once.
 type Grant struct {
 	Token           string         `json:"token"`
-	Folders         []LaunchFolder `json:"folders"`
+	Folders         []StartFolder `json:"folders"`
 	ProfileKey      string         `json:"profile_key"`
 	ProfileRevision int            `json:"profile_revision"`
 	OfflineReply    string         `json:"offline_reply"`
 	OfflineSeal     string         `json:"offline_reply_seal"`
-	Runtime         RuntimeLaunch  `json:"runtime"`
+	Runtime         RuntimeStart  `json:"runtime"`
 }
 
-// RuntimeLaunch mirrors App\Agents\Support\RuntimeLaunch: what the host needs to start the runtime's program.
-type RuntimeLaunch struct {
+// RuntimeStart mirrors App\Agents\Support\RuntimeStart: what the host needs to start the runtime's program.
+type RuntimeStart struct {
 	DriverType        string  `json:"driver_type"`
 	Program           string  `json:"program"`
 	ProgramBuild      string  `json:"program_build"`
@@ -185,7 +185,7 @@ type RuntimeLaunch struct {
 	Effort            *string `json:"effort"`
 }
 
-// ProfileEnvironment is the launch's pinned authorization profile as environment entries; none when it has no pin.
+// ProfileEnvironment is the start's pinned authorization profile as environment entries; none when it has no pin.
 func (grant Grant) ProfileEnvironment() []string {
 	if grant.ProfileKey == "" {
 		return nil
@@ -198,11 +198,11 @@ func (grant Grant) ProfileEnvironment() []string {
 	}
 }
 
-// LaunchGrant takes a runtime's grant; the journal refuses it while what the launch needs, such as its skills, is not
+// StartGrant takes a runtime's grant; the journal refuses it while what the start needs, such as its skills, is not
 // ready.
-func (client *Client) LaunchGrant(ctx context.Context, runtimeID string) (Grant, error) {
+func (client *Client) StartGrant(ctx context.Context, runtimeID string) (Grant, error) {
 	var answer Grant
-	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/launch", nil, &answer)
+	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/start", nil, &answer)
 }
 
 // RaiseNavigation asks the journal what to do at a point a key script run could not be certain of.

@@ -17,8 +17,8 @@ use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\LaunchesMainAgents;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\StartsMainAgents;
 use Tests\Support\WritesInboxMessages;
 
 /**
@@ -28,15 +28,15 @@ use Tests\Support\WritesInboxMessages;
 final class HistoryPageTest extends TestCase
 {
     use CommitsHookRows;
-    use LaunchesMainAgents;
     use StartsAgentRequests;
+    use StartsMainAgents;
     use WritesInboxMessages;
 
     private const array TABLES = [
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'inboxes',
@@ -54,8 +54,8 @@ final class HistoryPageTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $builder = $this->launchMainAgent('Builder');
-        $reviewer = $this->launchMainAgent('Reviewer');
+        $builder = $this->startMainAgent('Builder');
+        $reviewer = $this->startMainAgent('Reviewer');
         $builderInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $builder[0]))->inboxId();
         $reviewerInboxId = $this->inboxOf(new ActorIdentity(ActorType::Agent, $reviewer[0]))->inboxId();
         $this->startRequestAs($reviewer[0], $reviewer[1]);

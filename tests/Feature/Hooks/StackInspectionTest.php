@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
 use Domain\Access\Models\User;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -83,7 +83,7 @@ final class StackInspectionTest extends TestCase
 
     public function test_an_agent_with_its_own_credential_cannot_read_a_stack(): void
     {
-        $agent = TestLaunch::start();
+        $agent = TestStart::start();
 
         $this->call(
             'GET',

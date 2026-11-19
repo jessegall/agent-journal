@@ -7,7 +7,7 @@ namespace App\Profiles\Values;
 use App\Profiles\Enums\PolicyOriginType;
 
 /**
- * Where one effective field of a profile's launch policy came from.
+ * Where one effective field of a profile's start policy came from.
  */
 final readonly class FieldOrigin
 {

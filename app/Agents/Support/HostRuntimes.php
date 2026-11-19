@@ -13,7 +13,7 @@ use App\Agents\Models\AgentRuntime;
 final readonly class HostRuntimes
 {
     /**
-     * Hands a runtime's launch credential to its own host, once.
+     * Hands a runtime's start token to its own host, once.
      */
     public function lockedFor(string $hostId, string $runtimeId): AgentRuntime
     {

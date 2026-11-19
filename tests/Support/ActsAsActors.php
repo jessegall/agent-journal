@@ -36,7 +36,7 @@ trait ActsAsActors
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agentId),
-            TestLaunchAuthority::forAgent($agentId),
+            TestStartAuthority::forAgent($agentId),
         );
     }
 

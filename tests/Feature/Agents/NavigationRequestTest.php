@@ -30,7 +30,7 @@ final class NavigationRequestTest extends TestCase
     private const array TABLES = [
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'hook_calls',
         'hosts',

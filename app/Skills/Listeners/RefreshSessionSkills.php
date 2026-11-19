@@ -18,15 +18,15 @@ use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\States\Support\AwaitingSkillsStateReference;
-use App\Skills\Support\LaunchProgram;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
+use App\Skills\Support\StartProgram;
 use App\Skills\Values\SelectedSkills;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * At every boundary of a session (launch, clear, resume, compaction) selects its skills afresh from today's facts and
+ * At every boundary of a session (start, clear, resume, compaction) selects its skills afresh from today's facts and
  * revisions. A changed selection becomes a pending publication and holds the session's file changes until it is
  * delivered; a program that loads skills only at a new session is told so. The session's profile and program stay.
  */
@@ -45,7 +45,7 @@ final readonly class RefreshSessionSkills implements Listener
     public function handle(ContextStarted $event): void
     {
         $session = AgentSession::byId($event->target->sessionId);
-        $program = LaunchProgram::of($session->program)->program;
+        $program = StartProgram::of($session->program)->program;
         $generation = SkillGeneration::latestReady();
 
         if ($program === null || ! $this->adapters->supports($program) || $generation === null) {
@@ -79,9 +79,9 @@ final readonly class RefreshSessionSkills implements Listener
             $this->events->dispatch(new SessionSkillsIntended($publication->id));
         }
 
-        $launched = SkillPublication::firstOfSession($session->id);
+        $started = SkillPublication::firstOfSession($session->id);
 
-        if ($launched->selection_digest !== $selected->digest && $this->reloadsAtNewSession($program)) {
+        if ($started->selection_digest !== $selected->digest && $this->reloadsAtNewSession($program)) {
             $event->reminders->add($this->newSessionNotice($program, $selected), true);
         }
     }

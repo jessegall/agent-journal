@@ -29,9 +29,9 @@ use App\Processes\Values\PlanWord;
 final readonly class Supervisor
 {
     /**
-     * Variables a part never inherits: the journal's launch token and the run's event key.
+     * Variables a part never inherits: the journal's start token and the run's event key.
      */
-    private const array SECRET_VARIABLES = ['JOURNAL_LAUNCH_TOKEN', 'JOURNAL_EVENT_KEY'];
+    private const array SECRET_VARIABLES = ['JOURNAL_START_TOKEN', 'JOURNAL_EVENT_KEY'];
 
     /**
      * The most standard output a step keeps in memory as a substitution value; the recorder keeps every byte.

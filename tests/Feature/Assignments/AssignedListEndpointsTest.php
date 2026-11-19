@@ -12,7 +12,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
@@ -32,15 +32,15 @@ final class AssignedListEndpointsTest extends TestCase
         'users',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'tasks',
         'plans',
         'assignments',
     ];
 
-    private TestLaunch $caller;
+    private TestStart $caller;
 
-    private TestLaunch $other;
+    private TestStart $other;
 
     protected function setUp(): void
     {
@@ -48,8 +48,8 @@ final class AssignedListEndpointsTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->caller = TestLaunch::start('read-only-helper');
-        $this->other = TestLaunch::start('read-only-helper');
+        $this->caller = TestStart::start('read-only-helper');
+        $this->other = TestStart::start('read-only-helper');
         $this->startUserRequestAs($owner->id);
     }
 
@@ -107,7 +107,7 @@ final class AssignedListEndpointsTest extends TestCase
     /**
      * @param  array<string, mixed>  $query
      */
-    private function listAs(TestLaunch $launch, string $path, array $query): TestResponse
+    private function listAs(TestStart $start, string $path, array $query): TestResponse
     {
         $this->app->make(CurrentActorSetter::class)->clear();
         $body = json_encode((object) $query) ?: '{}';
@@ -115,7 +115,7 @@ final class AssignedListEndpointsTest extends TestCase
         return $this->call(
             'POST',
             $path,
-            server: $launch->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), target: $path),
+            server: $start->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), target: $path),
             content: $body,
         );
     }

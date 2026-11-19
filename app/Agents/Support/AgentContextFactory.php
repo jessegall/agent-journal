@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\AgentRequests\Support\LaunchProfilePin;
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Contracts\LaunchProfileAdmission;
+use App\AgentRequests\Support\StartProfilePin;
+use App\Agents\Contracts\StartProfileAdmission;
 use App\Agents\Exceptions\CallProtocolUnsupported;
 use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\CredentialRejected;
@@ -14,16 +14,16 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
 /**
- * Builds the context of one agent request from its launch credential and signed call; ids in the body or other headers
+ * Builds the context of one agent request from its start token and signed call; ids in the body or other headers
  * count for nothing.
  */
 final readonly class AgentContextFactory
 {
-    public function __construct(private CredentialLookup $credentials, private LaunchProfileAdmission $profiles) {}
+    public function __construct(private CredentialLookup $credentials, private StartProfileAdmission $profiles) {}
 
     /**
      * The call's context once its credential, its signature and its profile pair passed, with the admitted profile
-     * revision its launch was pinned to; any failure is the same rejected credential.
+     * revision its start was pinned to; any failure is the same rejected credential.
      *
      * @throws CredentialRejected
      * @throws CallSignatureInvalid
@@ -32,7 +32,7 @@ final readonly class AgentContextFactory
     public function admit(Request $request): AdmittedAgent
     {
         $session = $this->credentials->sessionFor(self::tokenOf($request));
-        $pin = new LaunchProfilePin((string) $session->profile_key, (int) $session->profile_revision);
+        $pin = new StartProfilePin((string) $session->profile_key, (int) $session->profile_revision);
         $context = AgentContext::ofSession($session, $this->verifiedCall($request, $pin));
 
         return new AdmittedAgent($context, $this->profiles->admit($pin->key, $pin->revision));
@@ -43,7 +43,7 @@ final readonly class AgentContextFactory
         return $request->bearerToken() ?? throw CredentialRejected::missing();
     }
 
-    private function verifiedCall(Request $request, LaunchProfilePin $pin): SignedCall
+    private function verifiedCall(Request $request, StartProfilePin $pin): SignedCall
     {
         $token = self::tokenOf($request);
         $protocol = $this->header($request, SignedCall::PROTOCOL_HEADER);

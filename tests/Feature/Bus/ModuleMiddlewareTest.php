@@ -7,7 +7,7 @@ namespace Tests\Feature\Bus;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -211,9 +211,9 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         }
     }
 
-    private function launchedSession(): AgentSession
+    private function startedSession(): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             Agent::named('Reader', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -246,7 +246,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessage::class)),
         );
-        $session = $this->launchedSession();
+        $session = $this->startedSession();
         $this->startTestUserRequest(1);
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
@@ -266,7 +266,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             ['Chat'],
             MiddlewareDeclaration::around(SendsToUnknownInbox::class, CommandScope::command(SendMessage::class)),
         );
-        $session = $this->launchedSession();
+        $session = $this->startedSession();
         $this->startTestUserRequest(1);
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $command = new SendMessage(

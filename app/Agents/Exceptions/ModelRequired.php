@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\StartRefusalType;
 use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 /**
- * A launch that names no model, or only blank text.
+ * A start that names no model, or only blank text.
  */
 final class ModelRequired extends InvalidArgumentException implements CommandRefusal
 {
-    public static function forLaunch(): self
+    public static function forStart(): self
     {
-        return new self('Name a model: use --model <model> or --model default with a configured profile default. Nothing was launched.');
+        return new self('Name a model: use --model <model> or --model default with a configured profile default. Nothing was started.');
     }
 
-    public function reason(): LaunchRefusalType
+    public function reason(): StartRefusalType
     {
-        return LaunchRefusalType::ModelRequired;
+        return StartRefusalType::ModelRequired;
     }
 }

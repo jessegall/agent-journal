@@ -16,7 +16,7 @@ use Carbon\CarbonImmutable;
 /**
  * Checks a hook call's process generation against its runtime, records the native turns its prompts start and
  * acknowledges the wake the call answers.
- * Sessions without a runtime (launches from before the drivers, tests) pass untouched.
+ * Sessions without a runtime (starts from before the drivers, tests) pass untouched.
  */
 final readonly class NativeTurns implements NativeTurnRecords
 {

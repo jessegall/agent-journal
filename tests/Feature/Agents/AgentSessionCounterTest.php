@@ -6,8 +6,8 @@ namespace Tests\Feature\Agents;
 
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Support\ActiveActorsResolver;
-use App\Agents\Actions\LaunchCredentials;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
+use App\Agents\Actions\StartTokens;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentSessionCounter;
@@ -26,7 +26,7 @@ final class AgentSessionCounterTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
     private CarbonImmutable $beat;
 
@@ -58,7 +58,7 @@ final class AgentSessionCounterTest extends TestCase
 
     public function test_a_session_that_never_beat_is_absent(): void
     {
-        $this->app->make(LaunchSessions::class)->launch(
+        $this->app->make(StartSessions::class)->start(
             $this->agent,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
@@ -76,7 +76,7 @@ final class AgentSessionCounterTest extends TestCase
 
     public function test_a_revoked_credential_counts_zero(): void
     {
-        $this->app->make(LaunchCredentials::class)->revoke($this->beatingSession());
+        $this->app->make(StartTokens::class)->revoke($this->beatingSession());
 
         $this->assertSame(0, $this->countAt('2026-11-18 12:01:00'));
     }
@@ -114,7 +114,7 @@ final class AgentSessionCounterTest extends TestCase
 
     private function beatingSession(): AgentSession
     {
-        $session = $this->app->make(LaunchSessions::class)->launch(
+        $session = $this->app->make(StartSessions::class)->start(
             $this->agent,
             TestSelections::of('claude-code'),
             TestSelections::requestId(),

@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Skills\Support;
+
+use App\Programs\Enums\HookProgram;
+use App\Programs\Values\ProgramKey;
+use App\Programs\Values\ProviderKey;
+use App\Text\Support\StableKey;
+
+/**
+ * The program a session was started with, as its program and provider keys: a registered program gives both, a
+ * program without a registration gives no provider, and a session with no program gives neither.
+ */
+final readonly class StartProgram
+{
+    private function __construct(
+        public ProgramKey|null $program,
+        public ProviderKey|null $provider,
+    ) {}
+
+    /**
+     * @param  string|null  $program  the program the session recorded at start
+     */
+    public static function of(string|null $program): self
+    {
+        $registered = $program === null ? null : HookProgram::tryFrom($program);
+
+        if ($registered !== null) {
+            return new self($registered->programKey(), $registered->provider());
+        }
+
+        return new self($program !== null && StableKey::isValid($program) ? ProgramKey::from($program) : null, null);
+    }
+}

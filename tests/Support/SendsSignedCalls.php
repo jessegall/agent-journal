@@ -9,18 +9,18 @@ use App\AgentRequests\Support\AgentClientSettings;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 
 /**
- * Signed agent calls in a test: one call as a launch, or a console command's calls sent through the application's
- * own HTTP kernel with that launch's settings. Each call starts with no actor, as a new request does.
+ * Signed agent calls in a test: one call as a start, or a console command's calls sent through the application's
+ * own HTTP kernel with that start's settings. Each call starts with no actor, as a new request does.
  */
 trait SendsSignedCalls
 {
     /**
      * @param  array<string, mixed>  $body
      */
-    private function signed(TestLaunch $launch, string $path, array $body): TestResponse
+    private function signed(TestStart $start, string $path, array $body): TestResponse
     {
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->app->forgetScopedInstances();
@@ -29,17 +29,17 @@ trait SendsSignedCalls
         return $this->call(
             'POST',
             $path,
-            server: $launch->serverHeaders($content, 'call-'.bin2hex(random_bytes(4)), target: $path),
+            server: $start->serverHeaders($content, 'call-'.bin2hex(random_bytes(4)), target: $path),
             content: $content,
         );
     }
 
     /**
-     * Runs the agent's console commands as the launch, signing with its pin; a token names another credential.
+     * Runs the agent's console commands as the start, signing with its pin; a token names another credential.
      */
-    private function runCommandsAs(TestLaunch $launch, string|null $token = null): void
+    private function runCommandsAs(TestStart $start, string|null $token = null): void
     {
-        $settings = new AgentClientSettings('http://journal.test', $token ?? $launch->token, $launch->pin());
+        $settings = new AgentClientSettings('http://journal.test', $token ?? $start->token, $start->pin());
         $this->app->instance(AgentClientSettings::class, $settings);
         Http::fake(function (Request $request) {
             $server = ['CONTENT_TYPE' => 'application/json'];

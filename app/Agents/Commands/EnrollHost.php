@@ -12,7 +12,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 
 /**
- * Enrolls a machine that may run agent programs, with the folders it may launch in; its secret is given once.
+ * Enrolls a machine that may run agent programs, with the folders it may start in; its secret is given once.
  *
  * @extends Command<EnrolledHost>
  */
@@ -21,10 +21,10 @@ use App\Bus\Support\Command;
 final readonly class EnrollHost extends Command
 {
     /**
-     * @param  list<string>  $launchRoots
+     * @param  list<string>  $startRoots
      */
     public function __construct(
         public string $installationName,
-        public array $launchRoots,
+        public array $startRoots,
     ) {}
 }

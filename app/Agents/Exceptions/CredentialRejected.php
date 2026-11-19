@@ -7,12 +7,12 @@ namespace App\Agents\Exceptions;
 use RuntimeException;
 
 /**
- * A request whose launch credential is missing, unknown, revoked, or belongs to an ended session or a retired agent.
+ * A request whose start token is missing, unknown, revoked, or belongs to an ended session or a retired agent.
  */
 final class CredentialRejected extends RuntimeException
 {
     /**
-     * The call claims another profile than the one its launch was pinned to, or that profile is no longer admitted;
+     * The call claims another profile than the one its start was pinned to, or that profile is no longer admitted;
      * the reply is the same as for any rejected credential, so it does not tell whether the profile exists.
      */
     public static function profileMismatched(): self
@@ -22,22 +22,22 @@ final class CredentialRejected extends RuntimeException
 
     public static function missing(): self
     {
-        return new self('The request carries no launch credential.');
+        return new self('The request carries no start token.');
     }
 
     public static function unknown(): self
     {
-        return new self('The launch credential is not known.');
+        return new self('The start token is not known.');
     }
 
     public static function revoked(): self
     {
-        return new self('The launch credential was revoked.');
+        return new self('The start token was revoked.');
     }
 
     public static function sessionEnded(): self
     {
-        return new self('The session of this launch credential has ended.');
+        return new self('The session of this start token has ended.');
     }
 
     public static function fenced(): self
@@ -47,6 +47,6 @@ final class CredentialRejected extends RuntimeException
 
     public static function agentRetired(): self
     {
-        return new self('The agent of this launch credential is retired.');
+        return new self('The agent of this start token is retired.');
     }
 }

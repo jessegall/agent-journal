@@ -25,7 +25,7 @@ use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
- * A launched agent's start context tells it once to use the journal MCP tools, and lists only the CLI and web
+ * A started agent's start context tells it once to use the journal MCP tools, and lists only the CLI and web
  * journeys its role has.
  */
 final class McpInstructionsTest extends TestCase

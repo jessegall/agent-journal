@@ -9,9 +9,9 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\CapacityReservation;
 use App\Agents\Models\ConversationVisit;
-use App\Agents\Models\LaunchBypass;
-use App\Agents\Models\LaunchCredential;
 use App\Agents\Models\ProgramConversation;
+use App\Agents\Models\StartBypass;
+use App\Agents\Models\StartToken;
 use App\Assignments\Models\ClaimAuthorization;
 use App\Bus\Models\CommandReceipt;
 use App\Comments\Models\Comment;
@@ -78,8 +78,8 @@ final class CoreServiceProvider extends ServiceProvider
         $links->register([
             'core.agent' => Agent::class,
             'core.agent-session' => AgentSession::class,
-            'core.launch-bypass' => LaunchBypass::class,
-            'core.launch-credential' => LaunchCredential::class,
+            'core.start-bypass' => StartBypass::class,
+            'core.start-token' => StartToken::class,
             'core.agent-stack' => AgentStackRow::class,
             'core.hook-call' => HookCall::class,
             'core.link' => Link::class,

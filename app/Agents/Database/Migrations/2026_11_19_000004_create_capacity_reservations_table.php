@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('capacity_reservations', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->ulid('launch_request_id')->unique();
+            $table->ulid('start_request_id')->unique();
             $table->unsignedInteger('cpu_cores');
             $table->unsignedBigInteger('memory_bytes');
             $table->unsignedBigInteger('disk_bytes');

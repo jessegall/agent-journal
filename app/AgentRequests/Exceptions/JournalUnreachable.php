@@ -9,7 +9,7 @@ use App\Bus\Enums\RefusalCode;
 use Throwable;
 
 /**
- * A prepared call the journal did not answer. The message names the address, never the launch token or the body.
+ * A prepared call the journal did not answer. The message names the address, never the start token or the body.
  */
 final class JournalUnreachable extends CallFailed implements CodedRefusal
 {

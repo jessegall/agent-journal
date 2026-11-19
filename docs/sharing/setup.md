@@ -41,7 +41,7 @@ A gateway makes the listener reachable on a fixed public origin. Core brings two
 - the subdomain at `sharing.tunler.subdomain` (`SHARING_TUNLER_SUBDOMAIN`), the setting version 5 called
   `journal.tunnels.tunler.subdomain`.
 
-It runs `tunler <port> --domain=<subdomain> --inspect=0` and accepts only the address of its own launch line, and only
+It runs `tunler <port> --domain=<subdomain> --inspect=0` and accepts only the address of its own start line, and only
 when that is the configured HTTPS origin.
 
 **ngrok** requires a fixed HTTPS domain on the account; it never uses a random address. It needs the pinned program at

@@ -20,7 +20,7 @@ use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PartKey;
 use Illuminate\Support\Facades\Storage;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\RecordedCalls;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
@@ -36,7 +36,7 @@ final class ProcessChannelTest extends TestCase
     use RefreshHookDatabase;
     use SendsSignedCalls;
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     private string $folder;
 
@@ -46,8 +46,8 @@ final class ProcessChannelTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         config(['processes.runner' => true]);
-        $this->launch = TestLaunch::start();
-        $this->runCommandsAs($this->launch);
+        $this->start = TestStart::start();
+        $this->runCommandsAs($this->start);
         $this->folder = sys_get_temp_dir().'/channel-'.bin2hex(random_bytes(4));
         mkdir($this->folder);
     }
@@ -81,7 +81,7 @@ final class ProcessChannelTest extends TestCase
     {
         $run = $this->admit('echo hi');
         $eventKey = (string) $this->signed(
-            $this->launch,
+            $this->start,
             "/agent/processes/admissions/{$run->id}",
             ['request_key' => 'channel-1'],
         )->json('event_key');
@@ -112,7 +112,7 @@ final class ProcessChannelTest extends TestCase
         );
 
         return ProcessRun::admit(
-            new ActorIdentity(ActorType::Agent, $this->launch->agent->id),
+            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             TestRunAdmissions::of(line: $line, plan: $plan, workingFolder: $this->folder),
         );
     }

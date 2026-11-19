@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One native conversation of a program in one settings store, owned by the agent whose launch first entered it and
- * bound to that launch's context reference.
+ * One native conversation of a program in one settings store, owned by the agent whose start first entered it and
+ * bound to that start's context reference.
  *
  * @property string $id
  * @property string $program
@@ -53,7 +53,7 @@ final class ProgramConversation extends Model implements ReadableModel
     }
 
     /**
-     * Whether a session of this agent, launched for this context, may continue the conversation.
+     * Whether a session of this agent, started for this context, may continue the conversation.
      */
     public function admits(string $agentId, string|null $contextReference): bool
     {

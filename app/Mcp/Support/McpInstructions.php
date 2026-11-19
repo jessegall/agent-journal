@@ -11,7 +11,7 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Policies\AssignmentPolicy;
 
 /**
- * What a launched agent is told about the journal's MCP tools at every context start, by what its profile grants: how
+ * What a started agent is told about the journal's MCP tools at every context start, by what its profile grants: how
  * to use them, and which of its journeys still go through the CLI or the web. It names no token and no path.
  */
 final readonly class McpInstructions

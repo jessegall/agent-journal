@@ -11,10 +11,10 @@ use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Exceptions\OperationUnavailable;
 use App\Bus\Support\RequestKey;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote;
 use Tests\Fixtures\Modules\Notes\Commands\LimitNote;
-use Tests\Support\ClearsLaunchRows;
+use Tests\Support\ClearsStartRows;
 
 /**
  * Before any lock, transaction or receipt, a command's input passes the rules its properties declare (doc 49, Book 2):
@@ -22,7 +22,7 @@ use Tests\Support\ClearsLaunchRows;
  */
 final class ValidateCommandTest extends CommandBusTestCase
 {
-    use ClearsLaunchRows;
+    use ClearsStartRows;
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2VA1DATE1';
 
@@ -31,8 +31,8 @@ final class ValidateCommandTest extends CommandBusTestCase
         parent::setUp();
 
         $this->installCommandModules();
-        $launch = TestLaunch::start();
-        $this->startRequestAs($launch->agent->id, $launch->session->id);
+        $start = TestStart::start();
+        $this->startRequestAs($start->agent->id, $start->session->id);
     }
 
     public function test_a_value_over_its_limit_is_refused_before_the_handler(): void

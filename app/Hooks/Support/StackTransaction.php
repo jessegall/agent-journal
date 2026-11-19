@@ -8,7 +8,7 @@ use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
-use App\Contracts\LaunchTransaction;
+use App\Contracts\StartTransaction;
 use App\Hooks\Contracts\RunsStackTransactions;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Exceptions\StackTransactionRequired;
@@ -20,7 +20,7 @@ use Illuminate\Database\QueryException;
  * Runs one stack operation in one transaction with a lock and statement time limit set first, before any write.
  * Inside a transaction that already has its limits it joins that transaction and leaves the limits as they are.
  */
-final readonly class StackTransaction implements LaunchTransaction, RunsStackTransactions, StackTransactionRunner
+final readonly class StackTransaction implements RunsStackTransactions, StackTransactionRunner, StartTransaction
 {
     private const string LOCK_NOT_AVAILABLE = '55P03';
 

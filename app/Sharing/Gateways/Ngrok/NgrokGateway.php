@@ -9,8 +9,8 @@ use App\Sharing\Enums\GatewayAddressCheck;
 use App\Sharing\Exceptions\GatewayOpenFailed;
 use App\Sharing\Gateways\Support\ChallengeProbe;
 use App\Sharing\Gateways\Support\GatewayChildren;
-use App\Sharing\Gateways\Support\GatewayLaunches;
 use App\Sharing\Gateways\Support\GatewaySecrets;
+use App\Sharing\Gateways\Support\GatewayStarts;
 use App\Sharing\Gateways\Support\PublicOriginCheck;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
@@ -39,7 +39,7 @@ final readonly class NgrokGateway implements ShareGateway
         private Processes $processes,
         private HttpClient $http,
         private GatewayChildren $children,
-        private GatewayLaunches $launches,
+        private GatewayStarts $starts,
         private GatewaySecrets $secrets,
         private PublicOriginCheck $origins,
         private ChallengeProbe $probe,
@@ -108,7 +108,7 @@ final readonly class NgrokGateway implements ShareGateway
                 ],
             );
 
-        return $this->launches->open(
+        return $this->starts->open(
             self::KEY,
             $operation,
             $child,
@@ -127,7 +127,7 @@ final readonly class NgrokGateway implements ShareGateway
     }
 
     /**
-     * Whether the control API shows this launch's endpoint: confirmed when a tunnel forwards to the listener on the
+     * Whether the control API shows this start's endpoint: confirmed when a tunnel forwards to the listener on the
      * configured origin, unexpected when one forwards to the listener on another address or claims the origin for
      * another upstream, and waiting while neither is there yet. Tunnels of other upstreams on other addresses are
      * ignored.

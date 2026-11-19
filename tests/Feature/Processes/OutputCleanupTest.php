@@ -94,7 +94,7 @@ final class OutputCleanupTest extends TestCase
 
     private function admitCat(string $key): Admission
     {
-        $this->launch->startRequest($this->app);
+        $this->start->startRequest($this->app);
 
         return $this->app->make(ShellAdmission::class)
             ->admit('cat composer.json', ShellDialect::Bash, ExecutionContext::inFolder(base_path()), $key);

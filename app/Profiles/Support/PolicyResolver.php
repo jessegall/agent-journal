@@ -18,8 +18,8 @@ use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileDefinition;
-use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileProvenance;
+use App\Profiles\Values\ProfileStartPolicy;
 
 /**
  * Resolves one proposed profile into the definition an activation stores: the type's global defaults, then the
@@ -42,7 +42,7 @@ final readonly class PolicyResolver
         $project = $proposal->overrideFor($profile->base);
         $this->requireKnownOperations($profile, $project);
 
-        $launch = new ProfileLaunchPolicy(
+        $start = new ProfileStartPolicy(
             $profile->program,
             $profile->programPinned,
             $profile->allowedModels,
@@ -70,7 +70,7 @@ final readonly class PolicyResolver
             $profile->model,
             $profile->skillAllowlist,
             $profile->requiredSkills,
-            $launch,
+            $start,
             BuiltInAuthorizations::for($profile->base, $this->policies->grantable()),
         );
     }
@@ -157,12 +157,12 @@ final readonly class PolicyResolver
             throw ProfilePolicyRefused::writerOutsideContainer($profile->key);
         }
 
-        $image = $mode === ExecutionModeType::RequiredContainer ? ProfileLaunchPolicy::HELPER_IMAGE : null;
+        $image = $mode === ExecutionModeType::RequiredContainer ? ProfileStartPolicy::HELPER_IMAGE : null;
 
         return ExecutionPolicy::make(
             $mode,
             $image,
-            ProfileLaunchPolicy::WORKSPACE,
+            ProfileStartPolicy::WORKSPACE,
             ExecutionBudgets::defaults(),
             [],
         );

@@ -10,11 +10,11 @@ use App\Skills\Support\SkillPublishing;
 
 /**
  * Publishes a session's skill set right after the transaction that asked for it committed, as the journal itself; a
- * launch grant then hands it to the host, or refuses while it is not delivered.
+ * start grant then hands it to the host, or refuses while it is not delivered.
  */
 final readonly class PublishSessionSkills implements Listener
 {
-    private const string HOLDER = 'launch';
+    private const string HOLDER = 'start';
 
     public function __construct(
         private SkillPublishing $publishing,

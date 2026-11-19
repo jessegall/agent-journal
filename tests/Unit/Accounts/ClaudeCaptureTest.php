@@ -7,7 +7,7 @@ namespace Tests\Unit\Accounts;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The account-free Claude Code capture: its fixtures are well formed, the launch invocation keeps out every settings
+ * The account-free Claude Code capture: its fixtures are well formed, the start invocation keeps out every settings
  * and MCP source the journal did not supply, a signed-out account reports no credential, and the document names the
  * same pinned version and digest as the fixtures.
  */
@@ -15,16 +15,16 @@ final class ClaudeCaptureTest extends TestCase
 {
     private const string FIXTURES = __DIR__.'/../../Fixtures/Accounts/Claude';
 
-    public function test_the_launch_invocation_keeps_out_settings_and_mcp_the_journal_did_not_supply(): void
+    public function test_the_start_invocation_keeps_out_settings_and_mcp_the_journal_did_not_supply(): void
     {
         $capture = self::fixture('capture.json');
 
         $this->assertSame('2.1.323', $capture['version']);
-        $this->assertContains('--restricted', $capture['launch_invocation']);
-        $this->assertContains('--strict-mcp-config', $capture['launch_invocation']);
-        $this->assertContains('--settings', $capture['launch_invocation']);
-        $this->assertNotContains('--setting-sources', $capture['launch_invocation']);
-        $this->assertNotContains('--bare', $capture['launch_invocation']);
+        $this->assertContains('--restricted', $capture['start_invocation']);
+        $this->assertContains('--strict-mcp-config', $capture['start_invocation']);
+        $this->assertContains('--settings', $capture['start_invocation']);
+        $this->assertNotContains('--setting-sources', $capture['start_invocation']);
+        $this->assertNotContains('--bare', $capture['start_invocation']);
         $this->assertSame([], $capture['home_after_runs']);
         $this->assertSame([], $capture['anthropic_config_directory_after_runs']);
     }

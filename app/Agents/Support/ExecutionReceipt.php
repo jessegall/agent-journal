@@ -8,12 +8,12 @@ use App\Agents\Enums\ExecutionModeType;
 use Carbon\CarbonImmutable;
 
 /**
- * What the host reports once a launch started: the execution it started, where it runs and when.
+ * What the host reports once a start is under way: the execution it began, where it runs and when.
  */
 final readonly class ExecutionReceipt
 {
     public function __construct(
-        public string $launchId,
+        public string $startId,
         public ExecutionReference $execution,
         public ExecutionModeType $executionMode,
         public CarbonImmutable $startedAt,

@@ -33,7 +33,7 @@ use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
 
@@ -210,7 +210,7 @@ final class RecordLinksTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of($agent)),
-            TestLaunchAuthority::forAgent(TestIds::of($agent)),
+            TestStartAuthority::forAgent(TestIds::of($agent)),
         );
         $call = new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64));
         $context = new AgentContext(TestIds::of($agent), TestIds::of($agent * 10), $call, null);

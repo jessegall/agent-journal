@@ -35,7 +35,7 @@ return [
     ],
 
     /*
-    | What this host gives all its helper containers together; each required-container launch reserves its budgets
+    | What this host gives all its helper containers together; each required-container start reserves its budgets
     | from it and is refused when they do not fit. The defaults are one helper's host maxima (doc 14, section 62).
     */
     'host_capacity' => [

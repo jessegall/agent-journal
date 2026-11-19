@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartSessions;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Support\CredentialLookup;
-use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
+use App\Agents\Support\StartedAgent;
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Events\EngineTicked;
@@ -37,7 +37,7 @@ final class SilenceSweepOnTickTest extends TestCase
     use CommitsHookRows;
     use RunsEnginePasses;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
     public function test_the_agents_area_registers_the_sweep_with_the_engine(): void
     {
@@ -46,8 +46,8 @@ final class SilenceSweepOnTickTest extends TestCase
 
     public function test_one_pass_makes_a_session_past_its_window_silent_and_keeps_its_credential_and_stack(): void
     {
-        $stale = $this->launch();
-        $fresh = $this->launch();
+        $stale = $this->start();
+        $fresh = $this->start();
         $this->startedSecondsAgo($stale, 121);
 
         $this->pass(fn () => $this->app->make(EngineTickedDelivery::class)->deliver(
@@ -70,7 +70,7 @@ final class SilenceSweepOnTickTest extends TestCase
 
     public function test_the_sweep_refuses_the_engine_without_its_grant(): void
     {
-        $stale = $this->launch();
+        $stale = $this->start();
         $this->startedSecondsAgo($stale, 121);
 
         $this->assertThrows(
@@ -81,9 +81,9 @@ final class SilenceSweepOnTickTest extends TestCase
         $this->assertSame(SessionStatus::Active, $stale->session->refresh()->status);
     }
 
-    private function launch(): LaunchedAgent
+    private function start(): StartedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(
+        return $this->app->make(StartSessions::class)->start(
             Agent::named('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),

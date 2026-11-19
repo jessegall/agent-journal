@@ -8,7 +8,7 @@ use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
 
 /**
- * The auto-assignment a command names by its actor and type arguments. The launch decides who calls, never an option.
+ * The auto-assignment a command names by its actor and type arguments. The start decides who calls, never an option.
  */
 trait ReadsAutoAssignmentKey
 {

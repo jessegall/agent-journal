@@ -7,7 +7,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/accounts/launch-handshake.md#claude-code-in-a-required-container",
+            "evidence": "docs/accounts/start-handshake.md#claude-code-in-a-required-container",
             "reason": "Claude Code signs in to a claude.ai subscription only through its own account store (Keychain or .credentials.json); its gateway command runs an enterprise auth gateway that is not shown to carry a claude.ai subscription for a credential-free container client, and setup-token would put a long-lived secret in the container."
         },
         {
@@ -17,7 +17,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unsupported",
-            "evidence": "docs/accounts/launch-handshake.md#codex-in-a-required-container",
+            "evidence": "docs/accounts/start-handshake.md#codex-in-a-required-container",
             "reason": "Codex signs in to a managed ChatGPT account only through auth.json in its CODEX_HOME (or a keyring), which the program refreshes itself; its app-server, remote-control and exec-server commands keep the agent and its login on the host and run only tools elsewhere, which doc 14 section 61 does not accept, and an API key or access token would put a credential in the container or switch to API billing."
         },
         {
@@ -27,8 +27,8 @@
             "account_mode": "subscription",
             "execution_mode": "protected_host",
             "status": "unverified",
-            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
-            "reason": "No host starts programs yet (task 258); the pinned build ran on the host only for the hook capture of task 89, not as a journal launch with a doc 15 account."
+            "evidence": "docs/accounts/start-handshake.md#the-protected-host",
+            "reason": "No host starts programs yet (task 258); the pinned build ran on the host only for the hook capture of task 89, not as a journal start with a doc 15 account."
         },
         {
             "capability": "account-transport",
@@ -37,8 +37,8 @@
             "account_mode": "subscription",
             "execution_mode": "protected_host",
             "status": "unverified",
-            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
-            "reason": "No host starts programs yet (task 258); the pinned build ran on the host only for the hook capture of task 89, not as a journal launch with a doc 15 account."
+            "evidence": "docs/accounts/start-handshake.md#the-protected-host",
+            "reason": "No host starts programs yet (task 258); the pinned build ran on the host only for the hook capture of task 89, not as a journal start with a doc 15 account."
         },
         {
             "capability": "callback-separation",
@@ -147,7 +147,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "evidence": "docs/accounts/start-handshake.md#the-protected-host",
             "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
         },
         {
@@ -157,7 +157,7 @@
             "account_mode": "subscription",
             "execution_mode": "required_container",
             "status": "unverified",
-            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "evidence": "docs/accounts/start-handshake.md#the-protected-host",
             "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
         }
     ]

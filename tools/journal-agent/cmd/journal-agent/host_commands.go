@@ -100,7 +100,7 @@ func serve(arguments []string) error {
 	return nil
 }
 
-// runtimeOpener opens the driver of a runtime the journal hands this host, by the driver type its launch grant names:
+// runtimeOpener opens the driver of a runtime the journal hands this host, by the driver type its start grant names:
 // a process runtime runs one child per turn, a terminal runtime keeps one program open on a PTY the attach socket
 // owns.
 type runtimeOpener struct {
@@ -176,7 +176,7 @@ func (opener runtimeOpener) terminalRuntime(
 	grant client.Grant,
 	profile contracts.ProgramProfile,
 ) (serving.Runtime, error) {
-	request, err := launchOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant)
+	request, err := startOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant)
 	if err != nil {
 		return nil, err
 	}
@@ -300,8 +300,8 @@ func forwardKeys(in io.Reader, connection net.Conn) {
 	}
 }
 
-// openMainRuntime asks the journal for the main runtime, takes its launch credential and builds the program's
-// terminal launch from the pinned profile, with the credential and generation for the hook relay.
+// openMainRuntime asks the journal for the main runtime, takes its start token and builds the program's
+// terminal start from the pinned profile, with the credential and generation for the hook relay.
 func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) (host.AttachRequest, error) {
 	profile, known := profileFor[program]
 	if !known || agentID == "" || folder == "" {
@@ -321,18 +321,18 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	grant, err := journal.LaunchGrant(ctx, opened.RuntimeID)
+	grant, err := journal.StartGrant(ctx, opened.RuntimeID)
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	return launchOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, grant)
+	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, grant)
 }
 
-// launchOf builds the program's terminal launch for a runtime from its pinned profile and its launch grant: the
-// settings files and launch folders written, the arguments, and the environment with the credential, the process
+// startOf builds the program's terminal start for a runtime from its pinned profile and its start grant: the
+// settings files and start folders written, the arguments, and the environment with the credential, the process
 // generation and the bypass log for the hook relay. Attaching a person and serving a terminal runtime both start
 // the program through it.
-func launchOf(
+func startOf(
 	profile contracts.ProgramProfile,
 	stateFolder, journalURL, hookCommand, runtimeID string,
 	grant client.Grant,
@@ -341,48 +341,48 @@ func launchOf(
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	launch := contracts.Launch{
+	start := contracts.Start{
 		Mode:           contracts.TerminalMode,
 		SettingsFolder: filepath.Join(stateFolder, "runtimes", runtimeID),
 		SessionID:      conversationID,
 		HookCommand:    hookCommand,
 		WorkFolder:     grant.Runtime.Folder,
 	}
-	if err := writeSettings(profile, launch); err != nil {
+	if err := writeSettings(profile, start); err != nil {
 		return host.AttachRequest{}, err
 	}
-	launchArguments, err := profile.Arguments(launch)
+	startArguments, err := profile.Arguments(start)
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	folderArguments, err := host.WriteLaunchFolders(launch.SettingsFolder, grant.Folders)
+	folderArguments, err := host.WriteStartFolders(start.SettingsFolder, grant.Folders)
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	launchArguments = append(launchArguments, folderArguments...)
-	environment := append(profile.Environment(drivers.WithoutJournalVariables(os.Environ()), launch),
-		"JOURNAL_URL="+journalURL, "JOURNAL_LAUNCH_TOKEN="+grant.Token,
+	startArguments = append(startArguments, folderArguments...)
+	environment := append(profile.Environment(drivers.WithoutJournalVariables(os.Environ()), start),
+		"JOURNAL_URL="+journalURL, "JOURNAL_START_TOKEN="+grant.Token,
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(grant.Runtime.ProcessGeneration),
-		"JOURNAL_BYPASS_LOG="+filepath.Join(launch.SettingsFolder, drivers.BypassLogName))
+		"JOURNAL_BYPASS_LOG="+filepath.Join(start.SettingsFolder, drivers.BypassLogName))
 	environment = append(environment, grant.ProfileEnvironment()...)
 	return host.AttachRequest{
 		RuntimeID: runtimeID,
-		Command:   append([]string{profile.Program()}, launchArguments...),
+		Command:   append([]string{profile.Program()}, startArguments...),
 		Folder:    grant.Runtime.Folder,
 		Env:       environment,
 	}, nil
 }
 
-func writeSettings(profile contracts.ProgramProfile, launch contracts.Launch) error {
-	files, err := profile.SettingsFiles(launch)
+func writeSettings(profile contracts.ProgramProfile, start contracts.Start) error {
+	files, err := profile.SettingsFiles(start)
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(launch.SettingsFolder, 0o700); err != nil {
+	if err := os.MkdirAll(start.SettingsFolder, 0o700); err != nil {
 		return err
 	}
 	for _, file := range files {
-		target := filepath.Join(launch.SettingsFolder, file.Name)
+		target := filepath.Join(start.SettingsFolder, file.Name)
 		if file.LinkTo != "" {
 			_ = os.Remove(target)
 			if err := os.Symlink(file.LinkTo, target); err != nil {

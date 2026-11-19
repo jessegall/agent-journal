@@ -7,22 +7,22 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\DatabaseClock;
-use App\Agents\Actions\LaunchCredentials;
-use App\Agents\Actions\LaunchHeartbeats;
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\StartHeartbeats;
+use App\Agents\Actions\StartSessions;
+use App\Agents\Actions\StartTokens;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Support\LaunchedAgent;
+use App\Agents\Support\StartedAgent;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\TestLaunchAuthority;
+use Tests\Support\TestStartAuthority;
 use Tests\TestCase;
 
 /**
@@ -33,65 +33,65 @@ final class RecordHeartbeatTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls'];
+    private const array TABLES = ['agents', 'agent_sessions', 'start_tokens', 'agent_stacks', 'hook_calls'];
 
     public function test_a_beat_records_the_database_server_time(): void
     {
-        $launched = $this->launch();
+        $started = $this->start();
         $before = $this->app->make(DatabaseClock::class)->now()->startOfSecond();
 
-        $this->beat($launched->session);
+        $this->beat($started->session);
 
-        $beat = $launched->session->refresh()->last_heartbeat_at;
+        $beat = $started->session->refresh()->last_heartbeat_at;
         $this->assertInstanceOf(CarbonImmutable::class, $beat);
         $this->assertTrue($beat->greaterThanOrEqualTo($before));
         $this->assertTrue($beat->lessThanOrEqualTo($this->app->make(DatabaseClock::class)->now()->addSecond()));
-        $this->assertSame(SessionStatus::Active, $launched->session->refresh()->status);
+        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
     }
 
     public function test_a_beat_makes_a_silent_session_active_again(): void
     {
-        $launched = $this->launch();
-        $this->startedSecondsAgo($launched->session, 121);
-        $this->app->make(LaunchHeartbeats::class)->markSilentLaunches();
-        $this->assertSame(SessionStatus::Silent, $launched->session->refresh()->status);
+        $started = $this->start();
+        $this->startedSecondsAgo($started->session, 121);
+        $this->app->make(StartHeartbeats::class)->markSilentStarts();
+        $this->assertSame(SessionStatus::Silent, $started->session->refresh()->status);
 
-        $this->beat($launched->session);
+        $this->beat($started->session);
 
-        $this->assertSame(SessionStatus::Active, $launched->session->refresh()->status);
-        $this->assertNull($launched->session->refresh()->silent_since);
+        $this->assertSame(SessionStatus::Active, $started->session->refresh()->status);
+        $this->assertNull($started->session->refresh()->silent_since);
     }
 
     public function test_a_beat_of_an_ended_session_is_refused_and_writes_nothing(): void
     {
-        $launched = $this->launch();
-        $this->app->make(LaunchHeartbeats::class)->markExited($launched->session, 'exit code 0');
+        $started = $this->start();
+        $this->app->make(StartHeartbeats::class)->markExited($started->session, 'exit code 0');
 
-        $this->assertRefused($launched->session, CredentialRejected::revoked()->getMessage());
+        $this->assertRefused($started->session, CredentialRejected::revoked()->getMessage());
     }
 
     public function test_a_beat_with_a_revoked_credential_is_refused_and_writes_nothing(): void
     {
-        $launched = $this->launch();
-        $this->app->make(LaunchCredentials::class)->revoke($launched->session);
+        $started = $this->start();
+        $this->app->make(StartTokens::class)->revoke($started->session);
 
-        $this->assertRefused($launched->session, CredentialRejected::revoked()->getMessage());
+        $this->assertRefused($started->session, CredentialRejected::revoked()->getMessage());
     }
 
     public function test_a_beat_of_a_retired_agent_is_refused_and_writes_nothing(): void
     {
-        $launched = $this->launch();
-        $launched->session->loadMissing('agent')->agent->retireAt(CarbonImmutable::now());
+        $started = $this->start();
+        $started->session->loadMissing('agent')->agent->retireAt(CarbonImmutable::now());
 
-        $this->assertRefused($launched->session, CredentialRejected::agentRetired()->getMessage());
+        $this->assertRefused($started->session, CredentialRejected::agentRetired()->getMessage());
     }
 
     public function test_a_beat_of_a_session_with_an_ended_status_but_a_live_credential_is_refused(): void
     {
-        $launched = $this->launch();
-        $launched->session->endAt(CarbonImmutable::now());
+        $started = $this->start();
+        $started->session->endAt(CarbonImmutable::now());
 
-        $this->assertRefused($launched->session, CredentialRejected::sessionEnded()->getMessage());
+        $this->assertRefused($started->session, CredentialRejected::sessionEnded()->getMessage());
     }
 
     public function test_the_session_table_indexes_status_and_last_heartbeat(): void
@@ -113,19 +113,19 @@ final class RecordHeartbeatTest extends TestCase
         $this->assertNull($session->refresh()->last_heartbeat_at);
     }
 
-    private function launch(): LaunchedAgent
+    private function start(): StartedAgent
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch(
+        $started = $this->app->make(StartSessions::class)->start(
             Agent::named('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );
         $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($launched->session->agent_id),
-            TestLaunchAuthority::forAgent($launched->session->agent_id),
+            ActorContext::forAgent($started->session->agent_id),
+            TestStartAuthority::forAgent($started->session->agent_id),
         );
 
-        return $launched;
+        return $started;
     }
 
     private function beat(AgentSession $session): void

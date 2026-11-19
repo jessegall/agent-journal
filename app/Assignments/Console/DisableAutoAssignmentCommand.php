@@ -13,7 +13,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Turn an actor's auto-assignment of one type off, over a signed call as the agent of the launch.
+ * Turn an actor's auto-assignment of one type off, over a signed call as the agent of the start.
  */
 #[JournalRoute(JournalRouteType::Write)]
 final class DisableAutoAssignmentCommand extends Command

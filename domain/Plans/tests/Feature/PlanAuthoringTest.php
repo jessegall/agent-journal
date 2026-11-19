@@ -13,7 +13,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
@@ -34,19 +34,19 @@ final class PlanAuthoringTest extends TestCase
         'tasks',
         'agents',
         'agent_sessions',
-        'launch_credentials',
+        'start_tokens',
         'agent_stacks',
         'assignments',
         'command_receipts',
     ];
 
-    private TestLaunch $launch;
+    private TestStart $start;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->launch = TestLaunch::start();
+        $this->start = TestStart::start();
     }
 
     public function test_the_plans_and_phases_tables_have_the_authoring_columns(): void
@@ -63,7 +63,7 @@ final class PlanAuthoringTest extends TestCase
     public function test_a_plan_is_created_with_its_creator(): void
     {
         $planId = $this->signed(
-            $this->launch,
+            $this->start,
             '/agent/plans/create',
             [
                 'title' => 'Release',
@@ -78,7 +78,7 @@ final class PlanAuthoringTest extends TestCase
             ['Ship version 6.', PlanType::Build, PlanState::Planned, 1],
             [$plan->brief, $plan->type, $plan->state, $plan->revision],
         );
-        $this->assertSame([ActorType::Agent, $this->launch->agent->id], [$plan->creator_type, $plan->creator_id]);
+        $this->assertSame([ActorType::Agent, $this->start->agent->id], [$plan->creator_type, $plan->creator_id]);
     }
 
     public function test_phases_append_in_order(): void
@@ -87,7 +87,7 @@ final class PlanAuthoringTest extends TestCase
 
         foreach (['Read', 'Build', 'Check'] as $title) {
             $this->signed(
-                $this->launch,
+                $this->start,
                 '/agent/plans/phases/create',
                 ['plan_id' => $plan->id, 'title' => $title, 'request_key' => bin2hex(random_bytes(8))],
             )->assertOk();
@@ -105,7 +105,7 @@ final class PlanAuthoringTest extends TestCase
         $tasks = [Task::factory()->create()->id, TestIds::of(999999), Task::factory()->create()->id];
 
         $this->signed(
-            $this->launch,
+            $this->start,
             '/agent/plans/phases/add-tasks',
             [
                 'phase_id' => $phase->id,
@@ -123,7 +123,7 @@ final class PlanAuthoringTest extends TestCase
     {
         $phase = Plan::factory()->create()->addPhase('Build');
         $this->signed(
-            $this->launch,
+            $this->start,
             '/agent/plans/phases/add-tasks',
             [
                 'phase_id' => $phase->id,
@@ -134,7 +134,7 @@ final class PlanAuthoringTest extends TestCase
         )->assertOk();
 
         $this->signed(
-            $this->launch,
+            $this->start,
             '/agent/plans/phases/add-tasks',
             [
                 'phase_id' => $phase->id,
@@ -155,7 +155,7 @@ final class PlanAuthoringTest extends TestCase
         $assignments = AssignmentRecord::query()->withoutGlobalScopes()->count();
 
         $this->signed(
-            $this->launch,
+            $this->start,
             '/agent/plans/edit',
             [
                 'plan_id' => $plan->id,
@@ -165,7 +165,7 @@ final class PlanAuthoringTest extends TestCase
             ],
         )->assertConflict();
         $this->signed(
-            $this->launch,
+            $this->start,
             '/agent/plans/edit',
             [
                 'plan_id' => $plan->id,

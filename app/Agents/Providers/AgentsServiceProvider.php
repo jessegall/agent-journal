@@ -13,27 +13,27 @@ use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Values\PolicyRegistration;
 use App\AgentRequests\Console\GenerateCallsCommand;
 use App\AgentRequests\Contracts\CallSender;
-use App\AgentRequests\Contracts\LaunchCredentialSource;
 use App\AgentRequests\Contracts\RegistersCalls;
 use App\AgentRequests\Contracts\SendsAgentRequests;
+use App\AgentRequests\Contracts\StartTokenSource;
 use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SendSignedCalls;
-use App\Agents\Actions\LaunchHeartbeats;
+use App\Agents\Actions\StartHeartbeats;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\ExpiresNavigation;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Contracts\LaunchReadiness;
-use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
-use App\Agents\Contracts\RecordsLaunchHeartbeats;
+use App\Agents\Contracts\RecordsStartHeartbeats;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionResolver;
+use App\Agents\Contracts\StartReadiness;
+use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\Agent;
@@ -41,13 +41,13 @@ use App\Agents\Models\NavigationRequest;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
-use App\Agents\Resolvers\LaunchRecords;
 use App\Agents\Resolvers\ProgramConversationRecords;
 use App\Agents\Resolvers\RecordedHostCapabilities;
 use App\Agents\Resolvers\RuntimeRecords;
 use App\Agents\Resolvers\SessionRecords;
+use App\Agents\Resolvers\StartRecords;
 use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
-use App\Agents\Resolvers\Support\HostLaunchMaterial;
+use App\Agents\Resolvers\Support\HostStartMaterial;
 use App\Agents\Resolvers\VerifiedHelperImages;
 use App\Agents\Support\AgentActivity;
 use App\Agents\Support\AgentActors;
@@ -56,7 +56,7 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\AgentVisibility;
 use App\Agents\Support\CurrentRuntimeAttention;
-use App\Agents\Support\DatabaseLaunchTransaction;
+use App\Agents\Support\DatabaseStartTransaction;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\HostCapacity;
@@ -72,14 +72,14 @@ use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Autoload\Support\FolderClasses;
-use App\Contracts\LaunchTransaction;
+use App\Contracts\StartTransaction;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
 /**
  * Gives each request its own agent context, which only the agent middleware fills; without it, asking for one fails.
- * A launch runs in a plain transaction until another domain supplies a bounded one. Agents are registered as holders
+ * A start runs in a plain transaction until another domain supplies a bounded one. Agents are registered as holders
  * of
  * assigned work, and their present sessions are counted for ActiveActorsResolver.
  */
@@ -91,11 +91,11 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->app->bind(AgentResolver::class, AgentLabels::class);
         $this->app->bind(CurrentSession::class, RequestSession::class);
-        $this->app->bind(LaunchReadiness::class, SessionReadiness::class);
+        $this->app->bind(StartReadiness::class, SessionReadiness::class);
         $this->app->bind(RuntimeResolver::class, RuntimeRecords::class);
         $this->app->bind(SessionResolver::class, SessionRecords::class);
         $this->app->bind(SendsAgentRequests::class, AgentRequestClient::class);
-        $this->app->bind(RecordsLaunchHeartbeats::class, LaunchHeartbeats::class);
+        $this->app->bind(RecordsStartHeartbeats::class, StartHeartbeats::class);
         $this->app->bind(ExpiresNavigation::class, NavigationExpiry::class);
         $this->app->scoped(CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
@@ -104,7 +104,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
         $this->app->bind(CallSender::class, SendSignedCalls::class);
         $this->app->bind(RegistersCalls::class, CallRoutes::class);
-        $this->app->bind(LaunchRecordResolver::class, LaunchRecords::class);
+        $this->app->bind(StartRecordResolver::class, StartRecords::class);
         $this->app->bind(ProgramConversationResolver::class, ProgramConversationRecords::class);
         $this->app->bind(
             HelperImages::class,
@@ -121,19 +121,19 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
             $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
         ));
-        $this->app->scoped(HostLaunchMaterial::class);
+        $this->app->scoped(HostStartMaterial::class);
         $this->app->bind(
             HostCapabilities::class,
             fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')),
         );
-        $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
+        $this->app->bindIf(StartTransaction::class, DatabaseStartTransaction::class);
         $this->app->bind(
-            LaunchCredentialSource::class,
+            StartTokenSource::class,
             fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))),
         );
         $this->app->bind(
             AgentClientSettings::class,
-            fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch(),
+            fn ($app) => $app->make(StartTokenSource::class)->forThisStart(),
         );
         $this->app->singleton(PendingWorkSources::class);
     }
