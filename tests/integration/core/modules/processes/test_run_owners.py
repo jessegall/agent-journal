@@ -14,13 +14,14 @@ from tests.stories.core.support.fixtures import UserJoined
 from engine.driver.seconds import Seconds
 from engine.process.door.run_placement import RunPlacement
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
-from core.modules.processes.support.carried_runs import CarriedRuns
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 
 TEST_ROWS_REASON = "the test reads every row it checks"
 RUN_LINE = "echo from-main"
 MERGE_LINE = "echo merged"
+# a process id no process holds, for a server that has gone
+GONE_PID = 2 ** 22 + 1
 
 
 def test_a_run_lands_on_its_own_environments_main_agent_and_a_merge_keeps_a_process_row_with_its_output(played, tmp_path: Path):
@@ -44,7 +45,7 @@ def test_a_run_lands_on_its_own_environments_main_agent_and_a_merge_keeps_a_proc
                       detail=f"{owners} {merge_row}")
 
 
-def test_a_merge_the_door_still_carries_is_never_taken_for_an_orphan_and_is_once_released(played, tmp_path: Path, monkeypatch):
+def test_a_merge_the_door_still_carries_is_never_taken_for_an_orphan_while_its_server_lives(played, tmp_path: Path, monkeypatch):
     story = played(UserJoined)
     story.new_row_id("agent start s-main claude main --environment main", actor=story.user)
     main_id = story.container.get(EnvironmentNames).environment_id("main")
@@ -52,6 +53,6 @@ def test_a_merge_the_door_still_carries_is_never_taken_for_an_orphan_and_is_once
     with story.container.get(Scopes).opened(None, main_id):
         placed = story.container.get(RunPlacement).placed(ExecutionRequest(["sh", "-c", MERGE_LINE], tmp_path, ProcessType.MERGE, 5))
     carried = RunEndRecovery().commands(story.container, story.row(Process, placed.process_id))
-    CarriedRuns.shared(story.container.get(OutputFolder).home).release(placed.process_id)
+    story.container.get(OutputFolder).write_carrier(placed.process_id, GONE_PID)
     released = RunEndRecovery().commands(story.container, story.row(Process, placed.process_id))
     story.expect_rows(carried == [], released == [OrphanProcess(placed.process_id)], detail=f"{carried} {released}")

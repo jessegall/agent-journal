@@ -17,6 +17,7 @@ READS_FILE = "reads"
 LINE_FILE = "line"
 PARTS_FILE = "parts"
 PID_FILE = "pid"
+CARRIER_FILE = "carrier"
 END_FILE = "end"
 FIRST_STARTED_FILE = "1.started"
 HEARTBEAT_FILE = "heartbeat"
@@ -147,7 +148,18 @@ class OutputFolder:
         return is_started and self.end(process_id) is None and self.has_leader_process(process_id)
 
     def has_leader_process(self, process_id: int) -> bool:
-        pid = self.pid(process_id)
+        return self.is_alive(self.pid(process_id))
+
+    # the server process that carries a run of its own through the one door, kept apart from the pid file, which a stop
+    # signals: while that server lives, the run is not lost, also across a server's take-over
+    def write_carrier(self, process_id: int, pid: int) -> None:
+        self.write_number(process_id, CARRIER_FILE, pid)
+
+    def has_live_carrier(self, process_id: int) -> bool:
+        return self.is_alive(self.number(process_id, CARRIER_FILE))
+
+    @staticmethod
+    def is_alive(pid: int | None) -> bool:
         if pid is None:
             return False
         try:
