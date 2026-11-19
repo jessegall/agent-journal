@@ -41,6 +41,11 @@ final readonly class SessionEnded implements HookInput
         return $state->onSessionEnd($this);
     }
 
+    public function leavesAgentIdle(AnswerType $type): bool
+    {
+        return true;
+    }
+
     public function contextStart(): Option
     {
         return None::create();

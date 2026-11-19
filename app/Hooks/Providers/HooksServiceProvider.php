@@ -8,6 +8,7 @@ use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Enums\ActorType;
 use App\Agents\Support\AgentContext;
+use App\Agents\Support\PendingWorkSources;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
@@ -37,6 +38,7 @@ use App\Hooks\Support\AgentWorkStack;
 use App\Hooks\Support\ContextBudget;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\IncomingWorkList;
+use App\Hooks\Support\PendingAgentMessages;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
 use App\Hooks\Support\WorkStackPushes;
@@ -87,8 +89,12 @@ final class HooksServiceProvider extends ServiceProvider
         );
     }
 
-    public function boot(Dispatcher $events, ActorProviderRegistration $actors): void
-    {
+    public function boot(
+        Dispatcher $events,
+        ActorProviderRegistration $actors,
+        PendingWorkSources $pendingWork,
+    ): void {
+        $pendingWork->register(PendingAgentMessages::class);
         $actors->registerWorkStack(ActorType::Agent, AgentWorkStack::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/hooks.php');
         $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);

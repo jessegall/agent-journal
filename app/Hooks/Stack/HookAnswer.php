@@ -9,20 +9,22 @@ use App\Hooks\Enums\AnswerType;
 use App\Hooks\Storage\WalkStep;
 
 /**
- * What one walk ends with: the answering decision, the context every visited state added, and the steps taken, with the
- * stack as the walk left it.
+ * What one walk ends with: the answering decision, the context every visited state added, the messages among it, and
+ * the steps taken, with the stack as the walk left it.
  */
 final readonly class HookAnswer
 {
     /**
      * @param  list<string>  $context
      * @param  list<WalkStep>  $steps
+     * @param  list<string>  $messages
      */
     public function __construct(
         public Decision $decision,
         public array $context,
         public array $steps,
         public AgentStack $stack,
+        public array $messages = [],
     ) {}
 
     /**
@@ -31,7 +33,7 @@ final readonly class HookAnswer
      */
     public function replacedBy(Decision $decision, AgentStack $stack): self
     {
-        return new self($decision, $this->context, $this->steps, $stack);
+        return new self($decision, $this->context, $this->steps, $stack, $this->messages);
     }
 
     /**
@@ -70,6 +72,7 @@ final readonly class HookAnswer
             [...$this->context, ...$replacement->context],
             [...$this->steps, ...$replacement->steps],
             $replacement->stack,
+            [...$this->messages, ...$replacement->messages],
         );
     }
 
@@ -78,6 +81,12 @@ final readonly class HookAnswer
      */
     public function refusedOn(AgentStack $stackBefore, self $rewrite): self
     {
-        return new self($this->decision, $this->context, [...$rewrite->steps, ...$this->steps], $stackBefore);
+        return new self(
+            $this->decision,
+            $this->context,
+            [...$rewrite->steps, ...$this->steps],
+            $stackBefore,
+            $this->messages,
+        );
     }
 }

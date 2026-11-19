@@ -51,6 +51,17 @@ final class DecisionTest extends TestCase
         $this->assertSame(SimpleTransition::PopSelf, Decision::pop()->transition);
     }
 
+    public function test_a_message_is_context_that_also_wakes_an_idle_agent(): void
+    {
+        $context = Decision::addContext('Remember rule 7.');
+        $message = Decision::message('Task 9 waits for your review.')->withContext('Remember rule 7.');
+
+        $this->assertTrue($message->isDelegating());
+        $this->assertSame(['Task 9 waits for your review.', 'Remember rule 7.'], $message->context);
+        $this->assertSame(['Task 9 waits for your review.'], $message->messages);
+        $this->assertSame([], $context->messages);
+    }
+
     public function test_a_push_carries_its_state(): void
     {
         $reference = new StateReference('communication.answering', NoSubject::None);

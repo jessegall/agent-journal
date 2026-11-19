@@ -7,6 +7,7 @@ namespace App\Hooks\Programs;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Enums\ClaudeCodeTool;
+use App\Hooks\Enums\FileAccess;
 use App\Hooks\Enums\HookEvent;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
@@ -43,6 +44,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
+        private GuardedFiles $files,
     ) {}
 
     public function capabilities(): ProgramCapabilities
@@ -171,7 +173,21 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             $path = $payload->argument('file_path', 'notebook_path');
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
 
-            return new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+            return $this->files->guard(
+                $hook,
+                FileAccess::Write,
+                [$path],
+                fn () => new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original)),
+            );
+        }
+
+        if ($tool->readsFiles()) {
+            return $this->files->guard(
+                $hook,
+                FileAccess::Read,
+                $payload->toolArguments()->presentTexts('file_path', 'path'),
+                fn () => new UnjudgedCall(ProgramReplies::allowTool([])),
+            );
         }
 
         return new UnjudgedCall(ProgramReplies::allowTool([]));

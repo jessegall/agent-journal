@@ -42,6 +42,11 @@ final readonly class SessionStarted implements HookInput
         return $state->onSessionStart($this);
     }
 
+    public function leavesAgentIdle(AnswerType $type): bool
+    {
+        return false;
+    }
+
     public function contextStart(): Option
     {
         return Some::create(ContextStartType::fromSource($this->start->source));
