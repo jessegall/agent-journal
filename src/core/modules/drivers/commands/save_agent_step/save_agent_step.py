@@ -8,7 +8,7 @@ from engine.command.command import Command
 @dataclass(frozen=True)
 class SaveAgentStep(Command[None]):
     """Marks one step request served and saves the step worked out for it before this write, in one short write; a
-    step whose basis moved since its view was read raises, and the request waits for the next round."""
+    step whose stack moved since its view was read is left unsaved, as a newer step has decided already."""
 
     lock = True
 
