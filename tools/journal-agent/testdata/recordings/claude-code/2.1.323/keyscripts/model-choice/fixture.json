@@ -1,0 +1,172 @@
+{
+  "program": "claude",
+  "program_version": "2.1.323 (Claude Code)",
+  "profile": "",
+  "mode": "terminal",
+  "geometry": {
+    "columns": 0,
+    "rows": 0
+  },
+  "recorded_at": "2026-11-19T15:50:54.332167+01:00",
+  "initial_state": {
+    "working_folder": "/private/tmp/w204/empty-folder",
+    "arguments": [
+      "claude",
+      "--settings",
+      "/tmp/w204/claude-settings.json",
+      "--setting-sources",
+      "",
+      "--strict-mcp-config",
+      "--agents",
+      "{}",
+      "--tools",
+      "Bash,Read",
+      "--disallowedTools",
+      "Agent",
+      "Task",
+      "Workflow",
+      "SendMessage",
+      "ListAgents",
+      "RemoteTrigger",
+      "Skill"
+    ],
+    "environment_names": [
+      "AGENT_JOURNAL_ACTIVE",
+      "AI_AGENT",
+      "BUN_INSTALL",
+      "CLAUDECODE",
+      "CLAUDE_CODE_CHILD_SESSION",
+      "CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN",
+      "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY",
+      "CLAUDE_CODE_ENTRYPOINT",
+      "CLAUDE_CODE_EXECPATH",
+      "CLAUDE_CODE_MESSAGING_SOCKET",
+      "CLAUDE_CODE_MESSAGING_TOKEN",
+      "CLAUDE_CODE_SESSION_ATTENDED",
+      "CLAUDE_CODE_SESSION_ID",
+      "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP",
+      "CLAUDE_EFFORT",
+      "CLAUDE_PID",
+      "CLOUDSDK_PYTHON",
+      "COLORFGBG",
+      "COLORTERM",
+      "COMMAND_MODE",
+      "COREPACK_ENABLE_AUTO_PIN",
+      "DISABLE_AUTOUPDATER",
+      "DISABLE_INSTALLATION_CHECKS",
+      "FPATH",
+      "GIT_EDITOR",
+      "HOME",
+      "HOMEBREW_CELLAR",
+      "HOMEBREW_PREFIX",
+      "HOMEBREW_REPOSITORY",
+      "INFOPATH",
+      "ITERM_PROFILE",
+      "ITERM_SESSION_ID",
+      "JOURNAL_AGENT_SESSION",
+      "JOURNAL_CHECKOUT_ROOT",
+      "JOURNAL_ENV",
+      "JOURNAL_HOME",
+      "JOURNAL_LAUNCH",
+      "JOURNAL_PROCESS",
+      "JOURNAL_PROJECT_ROOT",
+      "JOURNAL_RUNNER_PROCESS",
+      "LANG",
+      "LC_TERMINAL",
+      "LC_TERMINAL_VERSION",
+      "LOGNAME",
+      "LaunchInstanceID",
+      "MSBUILDDISABLENODEREUSE",
+      "NVM_BIN",
+      "NVM_CD_FLAGS",
+      "NVM_DIR",
+      "NVM_INC",
+      "NoDefaultCurrentDirectoryInExePath",
+      "OLDPWD",
+      "PATH",
+      "PWD",
+      "PYTHONUNBUFFERED",
+      "SECURITYSESSIONID",
+      "SHELL",
+      "SHLVL",
+      "SSH_AUTH_SOCK",
+      "TERM",
+      "TERMINFO_DIRS",
+      "TERM_FEATURES",
+      "TERM_PROGRAM",
+      "TERM_PROGRAM_VERSION",
+      "TERM_SESSION_ID",
+      "TMPDIR",
+      "USER",
+      "XPC_FLAGS",
+      "XPC_SERVICE_NAME",
+      "_",
+      "__CFBundleIdentifier",
+      "__CF_USER_TEXT_ENCODING"
+    ]
+  },
+  "output": [
+    {
+      "offset": 608069792,
+      "stream": "terminal",
+      "bytes": "GzcbW3IbOBtbPzI1aA=="
+    },
+    {
+      "offset": 641731792,
+      "stream": "terminal",
+      "bytes": "G1s/MjVsG1s/MjAwNGgbWz8yMDMxaBtbPzEwMDRoG1s8dRtbPjV1G1s+NDsybQ=="
+    },
+    {
+      "offset": 655644042,
+      "stream": "terminal",
+      "bytes": "G1s/MjAyNmgNDQobWzM4OzI7MjU1OzE5Mzs3beKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgBtbMzltDQ0KG1syRxtbMzg7MjsyNTU7MTkzOzdtG1sxbUFjY2Vzc2luZxtbMTJHd29ya3NwYWNlOhtbMjJtG1szOW0NDQoNDQobWzJHG1sxbS9wcml2YXRlL3RtcC93MjA0L2VtcHR5LWZvbGRlchtbMjJtDQ0KDQ0KG1syR1F1aWNrG1s4R3NhZmV0eRtbMTVHY2hlY2s6G1syMkdJcxtbMjVHdGhpcxtbMzBHYRtbMzJHcHJvamVjdBtbNDBHeW91G1s0NEdjcmVhdGVkG1s1MkdvchtbNTVHb25lG1s1OUd5b3UbWzYzR3RydXN0PxtbNzBHKExpa2UbWzc2R3lvdXIbWzgxR293bhtbODVHY29kZSwbWzkxR2EbWzkzR3dlbGwta25vd24bWzEwNEdvcGVuG1sxMDlHc291cmNlDQ0KG1syR3Byb2plY3QsG1sxMUdvchtbMTRHd29yaxtbMTlHZnJvbRtbMjRHeW91chtbMjlHdGVhbSkuG1szNkdJZhtbMzlHbm90LBtbNDRHdGFrZRtbNDlHYRtbNTFHbW9tZW50G1s1OEd0bxtbNjFHcmV2aWV3G1s2OEd3aGF0J3MbWzc1R2luG1s3OEd0aGlzG1s4M0dmb2xkZXIbWzkwR2ZpcnN0Lg0NCg0NChtbMkdDbGF1ZGUbWzlHQ29kZSdsbBtbMTdHYmUbWzIwR2FibGUbWzI1R3RvG1syOEdyZWFkLBtbMzRHZWRpdCwbWzQwR2FuZBtbNDRHZXhlY3V0ZRtbNTJHZmlsZXMbWzU4R2hlcmUuDQ0KDQ0KG1syRxtdODtpZD16YXhtZGE7aHR0cHM6Ly9jb2RlLg=="
+    },
+    {
+      "offset": 658383250,
+      "stream": "terminal",
+      "bytes": "Y2xhdWRlLmNvbS9kb2NzL2VuL3NlY3VyaXR5BxtbMzg7MjsxNTM7MTUzOzE1M21TZWN1cml0eSBndWlkZRtbMzltG104OzsHDQ0KDQ0KG1syRxtbMzg7MjsxNzc7MTg1OzI0OW3ina8bWzRHTm8sG1s4R2V4aXQbWzM5bQ0NChtbNEdZZXMsG1s5R0kbWzExR3RydXN0G1sxN0d0aGlzG1syMkdmb2xkZXINDQoNDQobWzJHG1szODsyOzE1MzsxNTM7MTUzbUVudGVyG1s4R3RvG1sxMUdjb25maXJtG1sxOUfCtxtbMjFHRXNjG1syNUd0bxtbMjhHY2FuY2VsG1szOW0NDQobWzFDG1s0QRtbPzIwMjZsG1s+MHEbWz91G103NTAxOz8HG1tj"
+    },
+    {
+      "offset": 5982825292,
+      "stream": "terminal",
+      "bytes": "GyhCDxtbPzIwMDRoG1s8dRtbPjV1G1s+NDsybQ=="
+    },
+    {
+      "offset": 5988303667,
+      "stream": "terminal",
+      "bytes": "G1s/MTAwNmwbWz8xMDAzbBtbPzEwMDJsG1s/MTAwMGw="
+    },
+    {
+      "offset": 6239360167,
+      "stream": "terminal",
+      "bytes": "G1sxRBtbNEI="
+    },
+    {
+      "offset": 6240450500,
+      "stream": "terminal",
+      "bytes": "G1s/MTAwNGwbWz40bRtbPHUbWz8yMDMxbBtbPzIwMDRsGyhCDxtbPzEwMTZsG1s/MTAwNmwbWz8xMDAzbBtbPzEwMDJsG1s/MTAwMGwbWz8yNWgbNxtbchs4G105OzQ7MDsHG10wOwc="
+    }
+  ],
+  "inputs": [
+    {
+      "offset": 5982220542,
+      "bytes": "DQ==",
+      "secret": false,
+      "length": 1
+    }
+  ],
+  "resizes": [
+    {
+      "offset": 4371833,
+      "geometry": {
+        "columns": 120,
+        "rows": 40
+      }
+    }
+  ],
+  "exit_code": 1,
+  "checkpoints": null,
+  "script_parameters": null,
+  "expected_keys": null,
+  "expected_transitions": null
+}
