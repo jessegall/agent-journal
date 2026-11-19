@@ -20,9 +20,9 @@ trait Settles
      *
      * Who may is decided before, by the caller.
      */
-    public function settle(Actor $actor, string $reason, int|null $revisionNumber): bool
+    public function settle(Actor $actor, string $givenReason, int|null $revisionNumber): bool
     {
-        $reason = trim($reason);
+        $reason = trim($givenReason);
         $last = RecordSettlement::query()->onRecord(static::LINK_TYPE, $this->id)->first();
 
         if ($this->attention === AttentionState::Settled && $last?->reason === $reason) {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ProposalData, RequestWindowData } from '@generated/types/processes';
+import type { RequestPayload } from '@inertiajs/core';
 import { router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -18,7 +19,7 @@ const mayApprove = computed(
     () => props.proposal.state === 'pending' && (state.value === 'awaiting_approval' || !isCheck.value),
 );
 
-function post(path: string, body: Record<string, unknown>): void {
+function post(path: string, body: RequestPayload): void {
     router.post(path, body, { headers: { 'Idempotency-Key': crypto.randomUUID() }, preserveScroll: true });
 }
 

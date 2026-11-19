@@ -142,7 +142,7 @@ final readonly class HookRelay
             return;
         }
 
-        if ($this->client->post($settings->client(), '/hooks/bypasses', $report->toJson())->successful()) {
+        if ($this->client->post($settings->client(), route('hooks.bypasses', absolute: false), $report->toJson())->successful()) {
             $log->clear();
         }
     }

@@ -68,7 +68,7 @@ final class PlanBuilder
                 $runnable,
             );
 
-            return new PlanStep($control, $node->id, $context, children: $children);
+            return PlanStep::from(['type' => $control, 'node' => $node->id, 'context' => $context, 'children' => $children]);
         }
         if ($node->type !== NodeType::SimpleCommand) {
             throw ExecutionPlanRefused::unsupportedNode($node->type->value, $node->id);
@@ -90,15 +90,15 @@ final class PlanBuilder
             ),
         );
         $children = array_map(
-            fn (ShellNode $substitution) => new PlanStep(
-                StepType::Substitution,
-                $substitution->id,
-                ++$this->contexts,
-                children: array_map(
+            fn (ShellNode $substitution) => PlanStep::from([
+                'type' => StepType::Substitution,
+                'node' => $substitution->id,
+                'context' => ++$this->contexts,
+                'children' => array_map(
                     fn (ShellNode $inner) => $this->step($inner->id, $this->contexts),
                     $this->runnableChildren($substitution),
                 ),
-            ),
+            ]),
             $substitutions,
         );
         $argv = array_map(fn (Word $word) => $this->planWord($word, $node, $substitutions), $node->words);
@@ -119,7 +119,15 @@ final class PlanBuilder
         }
         $type = in_array($program, self::BUILTINS, true) ? StepType::Builtin : StepType::Command;
 
-        return new PlanStep($type, $node->id, $context, $argv, $redirects, $assignments, $children);
+        return PlanStep::from([
+            'type' => $type,
+            'node' => $node->id,
+            'context' => $context,
+            'argv' => $argv,
+            'redirects' => $redirects,
+            'assignments' => $assignments,
+            'children' => $children,
+        ]);
     }
 
     /**
@@ -150,17 +158,16 @@ final class PlanBuilder
         }
         $child = new self($inner, $this->syntax, array_slice($arguments, 1))->root();
 
-        return new PlanStep(
-            StepType::Shell,
-            $node->id,
-            $context,
-            $argv,
-            $redirects,
-            [],
-            [...$substitutions, $child],
-            $arguments[0] ?? '',
-            array_slice($arguments, 1),
-        );
+        return PlanStep::from([
+            'type' => StepType::Shell,
+            'node' => $node->id,
+            'context' => $context,
+            'argv' => $argv,
+            'redirects' => $redirects,
+            'children' => [...$substitutions, $child],
+            'zero' => $arguments[0] ?? '',
+            'positional' => array_slice($arguments, 1),
+        ]);
     }
 
     /**
