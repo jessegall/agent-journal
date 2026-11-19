@@ -9,6 +9,7 @@ use App\Actors\Values\PolicyRegistration;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Bus\Support\PropertyRules;
 use App\CoreCommands;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
@@ -40,8 +41,10 @@ trait InstallsCommandModules
      *
      * @param  list<string>  $alsoRequired  owner names, such as Plans
      */
-    protected function installCommandModulesRequiring(array $alsoRequired, MiddlewareDeclaration ...$extraNotesMiddleware): CommandTrail
-    {
+    protected function installCommandModulesRequiring(
+        array $alsoRequired,
+        MiddlewareDeclaration ...$extraNotesMiddleware,
+    ): CommandTrail {
         $this->installCommandRegistry($alsoRequired, ...$extraNotesMiddleware);
 
         if (! Schema::hasTable('module_command_rows')) {
@@ -60,16 +63,29 @@ trait InstallsCommandModules
     /**
      * @param  list<string>  $alsoRequired
      */
-    protected function installCommandRegistry(array $alsoRequired = [], MiddlewareDeclaration ...$extraNotesMiddleware): void
-    {
+    protected function installCommandRegistry(
+        array $alsoRequired = [],
+        MiddlewareDeclaration ...$extraNotesMiddleware,
+    ): void {
         $domains = $this->domainsWith(CardsDomain::class, LedgerDomain::class, NotesDomain::class);
         $this->app->instance(DomainRegistry::class, $domains);
         $owners = array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $domains->all());
         $owners = array_map(fn (CommandOwner $owner) => $owner->domainClass === NotesDomain::class
-            ? new CommandOwner($owner->name, $owner->namespace, $owner->domainClass, $owner->commands, [...$owner->middleware, ...$extraNotesMiddleware], [...$owner->requires, ...$alsoRequired], $owner->exports)
+            ? new CommandOwner(
+                $owner->name,
+                $owner->namespace,
+                $owner->domainClass,
+                $owner->commands,
+                [...$owner->middleware, ...$extraNotesMiddleware],
+                [...$owner->requires, ...$alsoRequired],
+                $owner->exports,
+            )
             : $owner, $owners);
 
-        $this->app->instance(CommandRegistry::class, CommandRegistry::from([CoreCommands::owner(), ...$owners]));
+        $this->app->instance(CommandRegistry::class, CommandRegistry::from(
+            [CoreCommands::owner(), ...$owners],
+            $this->app->make(PropertyRules::class),
+        ));
         $this->registerPoliciesOf($domains, [CardsDomain::class, LedgerDomain::class, NotesDomain::class]);
         $this->app->forgetScopedInstances();
     }
@@ -86,7 +102,10 @@ trait InstallsCommandModules
         $registered = array_map(fn (PolicyRegistration $policy) => $policy->policy, $catalogue->grantable());
 
         if (! in_array(FixturePolicy::class, $registered, true)) {
-            $catalogue->register('Core', new PolicyRegistration(FixtureWork::class, FixturePolicy::class, FixtureAbility::class));
+            $catalogue->register(
+                'Core',
+                new PolicyRegistration(FixtureWork::class, FixturePolicy::class, FixtureAbility::class),
+            );
         }
 
         foreach ($domains->all() as $entry) {
@@ -114,7 +133,10 @@ trait InstallsCommandModules
     {
         $domains = $this->domainsWith(...$moduleClasses);
         $this->app->instance(DomainRegistry::class, $domains);
-        $this->app->instance(CommandRegistry::class, $domains->commandDeclarations(CoreCommands::owner()));
+        $this->app->instance(CommandRegistry::class, $domains->commandDeclarations(
+            CoreCommands::owner(),
+            $this->app->make(PropertyRules::class),
+        ));
 
         foreach ($moduleClasses as $moduleClass) {
             DomainEntry::fromClass($moduleClass)->boot($this->app);

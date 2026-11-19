@@ -6,6 +6,7 @@ namespace App\Domains\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Bus\Support\CommandRegistry;
+use App\Bus\Support\PropertyRules;
 use App\Contracts\DomainAvailability;
 use App\CoreApi;
 use App\CoreCommands;
@@ -26,6 +27,7 @@ use App\Sharing\Support\ShareRecordRegistry;
 use App\Skills\Support\ConditionRegistry;
 use App\Skills\Support\CoreSkills;
 use App\Skills\Support\SkillRegistry;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Events\DiscoverEvents;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -44,17 +46,37 @@ class DomainServiceProvider extends ServiceProvider
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);
-        $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
+        $this->app->singleton(
+            CommandRegistry::class,
+            fn (Application $app) => $registry->commandDeclarations(
+                CoreCommands::owner(),
+                $app->make(PropertyRules::class),
+            ),
+        );
         $this->app->singleton(McpCatalogue::class, fn () => $this->mcpCatalogue($registry));
-        $this->app->singleton(CommandRuleRegistry::class, fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()));
-        $this->app->singleton(SkillRegistry::class, fn () => SkillRegistry::of($registry->skillDeclarations(CoreSkills::owner())));
-        $this->app->singleton(ConditionRegistry::class, fn () => ConditionRegistry::of($registry->skillConditionDeclarations()));
+        $this->app->singleton(
+            CommandRuleRegistry::class,
+            fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()),
+        );
+        $this->app->singleton(
+            SkillRegistry::class,
+            fn () => SkillRegistry::of($registry->skillDeclarations(CoreSkills::owner())),
+        );
+        $this->app->singleton(
+            ConditionRegistry::class,
+            fn () => ConditionRegistry::of($registry->skillConditionDeclarations()),
+        );
         $this->app->singleton(DomainSwitches::class, fn () => $registry->domainSwitches());
-        $this->app->singleton(SettingRegistry::class, fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)));
+        $this->app->singleton(
+            SettingRegistry::class,
+            fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)),
+        );
         $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);
 
         $classNames = Psr4ClassNames::fromComposer();
-        DiscoverEvents::guessClassNamesUsing(fn (SplFileInfo $file, string $basePath) => $classNames->classOf((string) $file->getRealPath()));
+        DiscoverEvents::guessClassNamesUsing(
+            fn (SplFileInfo $file, string $basePath) => $classNames->classOf((string) $file->getRealPath()),
+        );
     }
 
     /**

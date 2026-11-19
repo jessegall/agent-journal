@@ -52,7 +52,7 @@ final readonly class CommandRegistry
      *
      * @param  list<CommandOwner>  $owners  Core first, then the domains in bootstrap/domains.php order
      */
-    public static function from(array $owners): self
+    public static function from(array $owners, PropertyRules $propertyRules): self
     {
         $commands = [];
         $handlers = [];
@@ -93,6 +93,7 @@ final readonly class CommandRegistry
                 actorScopedReceipt: $reflection->getAttributes(RetainedActorRequestKey::class) !== [],
                 retention: self::declaredRetentionOf($reflection),
                 middleware: self::orderedFor($command, $owner, $middleware, $owners),
+                rules: $propertyRules->of($reflection),
                 authorization: self::authorizationDeclaredBy($reflection),
                 entry: self::entryDeclaredBy($reflection),
             );
@@ -201,6 +202,16 @@ final readonly class CommandRegistry
         return $this->entry($command)->middleware;
     }
 
+    /**
+     * The Laravel rules of each ruled property, the type rule first; empty when the command declares none.
+     *
+     * @return array<string, list<string|object>>
+     */
+    public function rulesFor(string $command): array
+    {
+        return $this->entry($command)->rules;
+    }
+
     private function entry(string $command): RegisteredCommand
     {
         return $this->commands[$command];
@@ -226,7 +237,9 @@ final readonly class CommandRegistry
             return ReceiptRetention::retainedForActor($command->getName(), $retained->newInstance());
         }
 
-        return $attribute === null ? ReceiptRetention::standard() : ReceiptRetention::declaredBy($command->getName(), $attribute->newInstance());
+        return $attribute === null
+            ? ReceiptRetention::standard()
+            : ReceiptRetention::declaredBy($command->getName(), $attribute->newInstance());
     }
 
     /**
@@ -263,7 +276,10 @@ final readonly class CommandRegistry
         }
 
         if ($reflection->implementsInterface(ShouldQueue::class)) {
-            throw CommandDeclarationInvalid::for($command, 'queueing a command is not supported yet; take ShouldQueue off');
+            throw CommandDeclarationInvalid::for(
+                $command,
+                'queueing a command is not supported yet; take ShouldQueue off',
+            );
         }
 
         $attributes = [
@@ -319,7 +335,10 @@ final readonly class CommandRegistry
             throw CommandDeclarationInvalid::for($handler, 'a handler is a final class that can be built');
         }
 
-        self::checkLifetime($handler, static fn (string $problem) => CommandDeclarationInvalid::for($handler, $problem));
+        self::checkLifetime(
+            $handler,
+            static fn (string $problem) => CommandDeclarationInvalid::for($handler, $problem),
+        );
         $handle = $reflection->hasMethod('handle') ? $reflection->getMethod('handle') : null;
 
         if ($handle === null || ! $handle->isPublic() || $handle->isStatic()) {
@@ -330,7 +349,10 @@ final readonly class CommandRegistry
         $authorization = self::authorizationDeclaredBy($declaration);
 
         if ($authorization === null && ! self::takesOnly($handle, $command)) {
-            throw CommandDeclarationInvalid::for($handler, "handle takes exactly one required parameter, typed {$command}");
+            throw CommandDeclarationInvalid::for(
+                $handler,
+                "handle takes exactly one required parameter, typed {$command}",
+            );
         }
 
         if ($authorization !== null) {
@@ -470,7 +492,9 @@ final readonly class CommandRegistry
         $parameter = $handle->getParameters()[0] ?? null;
         $type = $parameter?->getType();
 
-        return $handle->getNumberOfRequiredParameters() === 1 && $type instanceof ReflectionNamedType && $type->getName() === $command;
+        return $handle->getNumberOfRequiredParameters() === 1
+            && $type instanceof ReflectionNamedType
+            && $type->getName() === $command;
     }
 
     /**
@@ -483,7 +507,9 @@ final readonly class CommandRegistry
     {
         $reflection = new ReflectionClass($class);
 
-        if ($reflection->getAttributes(Singleton::class) !== [] || $reflection->getAttributes(Scoped::class) !== [] || Container::getInstance()->isShared($class)) {
+        if ($reflection->getAttributes(Singleton::class) !== []
+            || $reflection->getAttributes(Scoped::class) !== []
+            || Container::getInstance()->isShared($class)) {
             throw $refusal('it is kept between commands (Singleton, Scoped or shared); it is built fresh for each one');
         }
     }
@@ -493,8 +519,11 @@ final readonly class CommandRegistry
      */
     private static function grammarFor(CommandOwner $owner, array $owners): CommandGrammar
     {
+        $exportsTo = static fn (CommandOwner $other, string $class): bool => $other->exportsClass($class)
+            && ($other->name === CommandOwner::CORE || $owner->requiresOwner($other->name));
+
         return new CommandGrammar(static fn (string $class): bool => str_starts_with($class, $owner->namespace.'\\')
-            || array_filter($owners, static fn (CommandOwner $other): bool => ($other->name === CommandOwner::CORE || $owner->requiresOwner($other->name)) && $other->exportsClass($class)) !== []);
+            || array_filter($owners, static fn (CommandOwner $other): bool => $exportsTo($other, $class)) !== []);
     }
 
     /**
@@ -520,14 +549,20 @@ final readonly class CommandRegistry
                 }
 
                 if (! $owner->holdsIn('CommandMiddleware', $class)) {
-                    throw MiddlewareDeclarationInvalid::for($class, "it is not in {$owner->name}'s CommandMiddleware folder");
+                    throw MiddlewareDeclarationInvalid::for(
+                        $class,
+                        "it is not in {$owner->name}'s CommandMiddleware folder",
+                    );
                 }
 
                 if (isset($seen[$key])) {
                     throw MiddlewareListedTwice::for($class);
                 }
 
-                self::checkLifetime($class, static fn (string $problem) => MiddlewareDeclarationInvalid::for($class, $problem));
+                self::checkLifetime(
+                    $class,
+                    static fn (string $problem) => MiddlewareDeclarationInvalid::for($class, $problem),
+                );
                 self::checkScope($owner, $declaration, $commandOwners, $ownerClasses);
                 $seen[$key] = true;
                 $registered[] = new RegisteredMiddleware($owner->name, $declaration);
@@ -541,12 +576,19 @@ final readonly class CommandRegistry
      * @param  array<string, CommandOwner>  $commandOwners
      * @param  list<string>  $ownerClasses
      */
-    private static function checkScope(CommandOwner $owner, MiddlewareDeclaration $declaration, array $commandOwners, array $ownerClasses): void
-    {
+    private static function checkScope(
+        CommandOwner $owner,
+        MiddlewareDeclaration $declaration,
+        array $commandOwners,
+        array $ownerClasses,
+    ): void {
         $scope = $declaration->scope;
 
         if ($scope->type === CommandScopeType::Owner && ! in_array($scope->target, $ownerClasses, true)) {
-            throw MiddlewareDeclarationInvalid::for($declaration->middleware, "its scope names {$scope->target}, which is no installed owner");
+            throw MiddlewareDeclarationInvalid::for(
+                $declaration->middleware,
+                "its scope names {$scope->target}, which is no installed owner",
+            );
         }
 
         if ($scope->type !== CommandScopeType::Command) {
@@ -556,13 +598,20 @@ final readonly class CommandRegistry
         $commandOwner = $commandOwners[$scope->target] ?? null;
 
         if ($commandOwner === null) {
-            throw MiddlewareDeclarationInvalid::for($declaration->middleware, "its scope names {$scope->target}, which is no registered command");
+            throw MiddlewareDeclarationInvalid::for(
+                $declaration->middleware,
+                "its scope names {$scope->target}, which is no registered command",
+            );
         }
 
-        $mayName = $commandOwner->exportsCommand($scope->target) && ($commandOwner->name === CommandOwner::CORE || $owner->requiresOwner($commandOwner->name));
+        $mayName = $commandOwner->exportsCommand($scope->target)
+            && ($commandOwner->name === CommandOwner::CORE || $owner->requiresOwner($commandOwner->name));
 
         if ($commandOwner !== $owner && ! $mayName) {
-            throw MiddlewareDeclarationInvalid::for($declaration->middleware, "its owner may not name {$scope->target}: it is neither its own nor exported by an owner it requires");
+            throw MiddlewareDeclarationInvalid::for(
+                $declaration->middleware,
+                "its owner may not name {$scope->target}: it is neither its own nor exported by an owner it requires",
+            );
         }
     }
 
@@ -574,12 +623,22 @@ final readonly class CommandRegistry
     private static function orderedFor(string $command, CommandOwner $owner, array $middleware, array $owners): array
     {
         $order = array_flip(array_map(static fn (CommandOwner $one) => $one->name, $owners));
-        $applying = array_values(array_filter($middleware, static fn (RegisteredMiddleware $entry) => $entry->appliesTo($command, $owner->domainClass)));
+        $applying = array_values(array_filter(
+            $middleware,
+            static fn (RegisteredMiddleware $entry) => $entry->appliesTo($command, $owner->domainClass),
+        ));
         $position = array_flip(array_keys($applying));
 
         // Stage first, then the owner's place, then the declaration's place, as one whole number to sort by.
-        $rank = static fn (RegisteredMiddleware $entry) => ($entry->runsIn(MiddlewareStage::BeforeTransaction) ? 0 : 1_000_000_000) + $order[$entry->owner] * 100_000 + $position[array_search($entry, $applying, true)];
-        usort($applying, static fn (RegisteredMiddleware $one, RegisteredMiddleware $other) => $rank($one) <=> $rank($other));
+        $rank = static fn (RegisteredMiddleware $entry) => (
+            $entry->runsIn(MiddlewareStage::BeforeTransaction) ? 0 : 1_000_000_000
+        )
+            + $order[$entry->owner] * 100_000
+            + $position[array_search($entry, $applying, true)];
+        usort(
+            $applying,
+            static fn (RegisteredMiddleware $one, RegisteredMiddleware $other) => $rank($one) <=> $rank($other),
+        );
 
         return $applying;
     }

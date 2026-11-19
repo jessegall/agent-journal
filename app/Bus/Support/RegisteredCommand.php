@@ -17,6 +17,7 @@ final readonly class RegisteredCommand
      * @param  CommandAuthorization|null  $authorization  null while the command declares no Authorize yet
      * @param  class-string  $handler
      * @param  list<RegisteredMiddleware>  $middleware
+     * @param  array<string, list<string|object>>  $rules  each ruled property's Laravel rules, the type rule first
      */
     public function __construct(
         public string $handler,
@@ -27,6 +28,7 @@ final readonly class RegisteredCommand
         public bool $actorScopedReceipt,
         public ReceiptRetention $retention,
         public array $middleware,
+        public array $rules,
         public CommandAuthorization|null $authorization = null,
         public CommandEntry $entry = CommandEntry::Application,
     ) {}
