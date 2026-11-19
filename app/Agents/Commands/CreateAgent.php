@@ -12,9 +12,11 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
- * Creates an agent with a name and the profile it launches with, and answers its id; its owner, such as Helpers, decides who it serves.
+ * Creates an agent with a name and the profile it launches with, and answers its id; its owner, such as Helpers,
+ * decides who it serves.
  *
  * @implements Command<string>
  */
@@ -23,7 +25,7 @@ use App\Bus\Contracts\HasAuthorizationSubject;
 final readonly class CreateAgent implements Command, HasAuthorizationSubject
 {
     public function __construct(
-        public string $name,
+        #[Required] public string $name,
         public string $profileKey,
     ) {}
 

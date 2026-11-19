@@ -177,7 +177,6 @@ use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\CapacityUnavailable;
@@ -1871,7 +1870,6 @@ final class CoreApi
                 ProgramUnsupported::class,
                 LaunchRequestConflict::class,
                 AgentBusy::class,
-                AgentNameRequired::class,
                 LaunchRecordMissing::class,
                 ConversationIncompatible::class,
                 ManifestRefused::class,

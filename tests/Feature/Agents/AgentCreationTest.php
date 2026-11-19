@@ -6,9 +6,9 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Contracts\AgentResolver;
-use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
@@ -41,13 +41,21 @@ final class AgentCreationTest extends TestCase
         $labels = $this->app->make(AgentResolver::class)->labelsFor([$resolver, $writer]);
 
         $this->assertSame(['Researcher', 'Builder'], [$labels[$resolver]->name, $labels[$writer]->name]);
-        $this->assertSame(['read-only-helper', 'writing-helper'], [Agent::query()->findOrFail($resolver)->profile_key, Agent::query()->findOrFail($writer)->profile_key]);
+        $this->assertSame(
+            ['read-only-helper', 'writing-helper'],
+            [Agent::query()->findOrFail($resolver)->profile_key, Agent::query()->findOrFail($writer)->profile_key],
+        );
     }
 
-    public function test_a_blank_name_is_refused(): void
+    public function test_a_blank_name_is_refused_naming_it_and_no_agent_exists(): void
     {
-        $this->expectException(AgentNameRequired::class);
+        $agents = Agent::query()->count();
 
-        $this->app->make(CommandBus::class)->run(new CreateAgent('   ', 'writing-helper'));
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new CreateAgent('   ', 'writing-helper')),
+            CommandInputInvalid::class,
+            'name: The name field is required.',
+        );
+        $this->assertSame($agents, Agent::query()->count());
     }
 }

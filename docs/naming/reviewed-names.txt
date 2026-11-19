@@ -852,7 +852,6 @@ class	AgentHoldReleased
 class	AgentLabel
 class	AgentLabels
 class	AgentLifecycle
-class	AgentNameRequired
 class	AgentNotAvailable
 class	AgentPolicy
 class	AgentProfileMissing
@@ -4499,7 +4498,6 @@ method	AgentLabels::namesOf()
 method	AgentLifecycle::lockExclusive()
 method	AgentLifecycle::lockExclusiveActive()
 method	AgentLifecycle::lockShared()
-method	AgentNameRequired::forAgent()
 method	AgentNotAvailable::forAgent()
 method	AgentNotAvailable::refusalCode()
 method	AgentNotAvailable::status()
