@@ -12,6 +12,7 @@ use App\Agents\Enums\NavigationState;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\MenuEntry;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\NavigationRounds;
@@ -46,6 +47,7 @@ final class NavigationRoundTest extends TestCase
         'agent_runtimes',
         'driver_requests',
         'navigation_requests',
+        'menu_entries',
         'inboxes',
         'desks',
         'desk_seats',
@@ -147,14 +149,69 @@ final class NavigationRoundTest extends TestCase
         $this->assertGreaterThanOrEqual(400, $this->report($host, $reported, proofSeen: false)->status());
     }
 
+    public function test_a_proven_path_is_saved_once_as_a_menu_entry_and_named_in_the_evidence(): void
+    {
+        [$host, $navigation] = $this->stalled();
+        $round = $this->proved($navigation);
+
+        $this->report($host, $round, proofSeen: true, steps: [$this->step()])->assertNoContent();
+
+        $entry = MenuEntry::query()->acrossActors()->sole();
+        $this->assertSame($entry->id, $navigation->fresh()?->library_entry_id);
+        $this->assertSame([[...$this->step(), 'key' => null, 'proof' => null]], $entry->steps);
+        $stalled = DriverRequest::query()->findOrFail($navigation->driver_request_id);
+        $this->assertSame("proven, saved as menu entry {$entry->id}", $stalled->script_evidence);
+
+        [$otherHost, $other] = $this->stalled('2.1.400');
+        $this->report($otherHost, $this->proved($other), proofSeen: true, steps: [$this->step()])->assertNoContent();
+        $this->assertSame(1, MenuEntry::query()->acrossActors()->count());
+        $this->assertTrue(MenuEntry::query()->acrossActors()->sole()->isCurrentOn('2.1.400'));
+    }
+
+    public function test_steps_that_could_carry_screen_text_are_refused_and_save_nothing(): void
+    {
+        $invalid = [
+            'both actions' => [[...$this->step(), 'key' => 'enter']],
+            'a free text field' => [[...$this->step(), 'screen' => 'Model: GPT-5']],
+            'too many steps' => array_fill(0, 21, $this->step()),
+        ];
+
+        foreach ($invalid as $name => $steps) {
+            [$host, $navigation] = $this->stalled();
+            $response = $this->report($host, $this->proved($navigation), proofSeen: true, steps: $steps);
+
+            $this->assertGreaterThanOrEqual(400, $response->status(), $name);
+            $this->assertSame(0, MenuEntry::query()->acrossActors()->count(), $name);
+        }
+    }
+
+    /**
+     * @return array{fingerprint: string, choose: string}
+     */
+    private function step(): array
+    {
+        return ['fingerprint' => 'fp1:'.str_repeat('b', 64), 'choose' => 'GPT-6'];
+    }
+
+    /**
+     * The navigation answered and proven by the main agent, with its proof round appended.
+     */
+    private function proved(NavigationRequest $navigation): DriverRequest
+    {
+        $navigation->answer();
+        $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
+
+        return $this->append($navigation, $this->proofRound($navigation, NavigationCompletion::Goal, null));
+    }
+
     /**
      * A key script stalled on a newly opened runtime, with its navigation request raised.
      *
      * @return array{EnrolledHost, NavigationRequest}
      */
-    private function stalled(): array
+    private function stalled(string $build = '2.1.323'): array
     {
-        [$host, $opened] = $this->openRuntime();
+        [$host, $opened] = $this->openRuntime(build: $build);
         $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
         $stalled = DriverRequest::query()->with('runtime')->findOrFail($receipt->requestId);
 
@@ -176,7 +233,10 @@ final class NavigationRoundTest extends TestCase
         );
     }
 
-    private function report(EnrolledHost $host, DriverRequest $round, bool $proofSeen): TestResponse
+    /**
+     * @param  list<array<string, mixed>>  $steps
+     */
+    private function report(EnrolledHost $host, DriverRequest $round, bool $proofSeen, array $steps = []): TestResponse
     {
         return $this->hostCall($host, '/host/reports/request', [
             'request_id' => $round->id,
@@ -189,6 +249,7 @@ final class NavigationRoundTest extends TestCase
                 'highlight' => -1,
                 'generation' => 8,
                 'proof_seen' => $proofSeen,
+                ...($steps === [] ? [] : ['steps' => $steps]),
             ],
         ]);
     }

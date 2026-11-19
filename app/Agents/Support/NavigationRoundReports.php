@@ -20,7 +20,10 @@ use App\Agents\Values\ScriptProgress;
  */
 final readonly class NavigationRoundReports
 {
-    public function __construct(private NavigationDispatch $dispatch) {}
+    public function __construct(
+        private NavigationDispatch $dispatch,
+        private NavigationLibrary $library,
+    ) {}
 
     /**
      * @throws NavigationRaiseRefused
@@ -52,20 +55,25 @@ final readonly class NavigationRoundReports
         }
 
         $navigation->markProven();
+        $evidence = 'proven';
+        if ($report->steps !== []) {
+            $evidence = 'proven, saved as menu entry '.$this->library->save($navigation, $report->steps)->id;
+        }
         $stalled = DriverRequest::query()->whereKey($navigation->driver_request_id)->lockForUpdate()->firstOrFail();
         $runtime = AgentRuntime::query()->whereKey($navigation->agent_runtime_id)->lockForUpdate()->firstOrFail();
         $runtime->holdFor(HoldReason::None);
         if ($navigation->completes === NavigationCompletion::Goal) {
+            $stalled->recordScriptProgress(
+                new ScriptProgress($navigation->stalled_step, $report->generation, $evidence),
+            );
             $stalled->markApplied('navigation');
 
             return;
         }
 
-        $stalled->recordScriptProgress(new ScriptProgress(
-            (int) $navigation->next_step,
-            $report->generation,
-            'navigation proven',
-        ));
+        $stalled->recordScriptProgress(
+            new ScriptProgress((int) $navigation->next_step, $report->generation, $evidence),
+        );
         $stalled->resumeScript();
     }
 }

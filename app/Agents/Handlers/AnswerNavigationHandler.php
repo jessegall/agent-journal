@@ -14,6 +14,7 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\NavigationAnswering;
 use App\Agents\Support\NavigationRounds;
 use App\Agents\Values\NavigationRound;
+use App\Agents\Values\ScriptProgress;
 use App\Contracts\CommandHandler;
 
 /**
@@ -51,9 +52,24 @@ final readonly class AnswerNavigationHandler implements CommandHandler
             $command->answer,
         );
         $request = $this->rounds->append($navigation, $round);
+        if ($navigation->state === NavigationState::Open) {
+            $this->recordAnswered($navigation);
+        }
         $navigation->answer();
 
         return $request->receipt();
+    }
+
+    /**
+     * Tells the user, on the stalled key script's request, that the main agent took the request up.
+     */
+    private function recordAnswered(NavigationRequest $navigation): void
+    {
+        $stalled = DriverRequest::query()->whereKey($navigation->driver_request_id)->lockForUpdate()->firstOrFail();
+        $generation = $navigation->screen->generation;
+        $stalled->recordScriptProgress(
+            new ScriptProgress($navigation->stalled_step, $generation, 'answered by main agent'),
+        );
     }
 
     /**

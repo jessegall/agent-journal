@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\NavigationCompletion;
@@ -35,6 +36,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $driver_request_id
  * @property string $agent_runtime_id
  * @property string $operation_key
+ * @property string $actor_type
+ * @property string $actor_id
  * @property string $program
  * @property string $build
  * @property string $fingerprint
@@ -157,6 +160,23 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
             ->lockForUpdate()
             ->first();
         $open?->cancel();
+    }
+
+    /**
+     * The user the request belongs to.
+     */
+    public function owner(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    /**
+     * The proven path was saved as the menu entry.
+     */
+    public function savedAs(MenuEntry $entry): void
+    {
+        $this->library_entry_id = $entry->id;
+        $this->change();
     }
 
     public function assignmentIdentity(): RecordIdentity

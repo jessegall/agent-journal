@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Agents;
 
+use App\Agents\Exceptions\MenuStepRefused;
+use App\Agents\Values\MenuStep;
 use App\Agents\Values\NavigationRoundReport;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
@@ -17,7 +19,13 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 final class NavigationRoundReportData extends Data
 {
     /**
+     * The most steps a proven path keeps.
+     */
+    private const int MOST_STEPS = 20;
+
+    /**
      * @param  list<string>  $rows
+     * @param  list<array<string, mixed>>  $steps  the proven path's steps, when the proof showed
      */
     public function __construct(
         public readonly array $rows,
@@ -25,12 +33,31 @@ final class NavigationRoundReportData extends Data
         public readonly int $generation,
         public readonly bool $proofSeen,
         public readonly string|null $refusal = null,
+        public readonly array $steps = [],
     ) {}
 
+    /**
+     * @throws MenuStepRefused
+     */
     public function report(): NavigationRoundReport
     {
         $highlight = $this->highlight >= 0 ? $this->highlight : null;
+        if (count($this->steps) > self::MOST_STEPS) {
+            throw MenuStepRefused::tooMany(count($this->steps), self::MOST_STEPS);
+        }
+        $steps = array_map(
+            fn (int $index, array $step) => MenuStep::fromHost($index + 1, $step),
+            array_keys(array_values($this->steps)),
+            array_values($this->steps),
+        );
 
-        return new NavigationRoundReport($this->rows, $highlight, $this->generation, $this->proofSeen, $this->refusal);
+        return new NavigationRoundReport(
+            $this->rows,
+            $highlight,
+            $this->generation,
+            $this->proofSeen,
+            $this->refusal,
+            $steps,
+        );
     }
 }

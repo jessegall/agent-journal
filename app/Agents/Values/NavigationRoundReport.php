@@ -12,6 +12,7 @@ final readonly class NavigationRoundReport
 {
     /**
      * @param  list<string>  $rows
+     * @param  list<MenuStep>  $steps
      */
     public function __construct(
         public array $rows,
@@ -19,6 +20,7 @@ final readonly class NavigationRoundReport
         public int $generation,
         public bool $proofSeen,
         public string|null $refusal,
+        public array $steps = [],
     ) {}
 
     public function screen(): NavigationScreen

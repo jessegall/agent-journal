@@ -119,10 +119,9 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         DriverRequest $request,
         ActorIdentity $owner,
     ): NavigationRequest {
-        if ($request->script_step !== $command->step) {
-            $evidence = "navigation-needed: {$command->reason->value}";
-            $request->recordScriptProgress(new ScriptProgress($command->step, $command->generation, $evidence));
-        }
+        $request->recordScriptProgress(
+            new ScriptProgress($command->step, $command->generation, 'navigation requested'),
+        );
         $navigation = NavigationRequest::raised(
             $request,
             $owner,
