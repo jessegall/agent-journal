@@ -86,12 +86,25 @@ class WorkerBranch:
         if self.git("rev-parse", "--verify", "-q", own, cwd=checkout).returncode == 0:
             bases = self.config.home / BASES / name
             held = sorted(path for path in bases.iterdir() if (path / ".git").exists()) if bases.is_dir() else []
-            return next((base for base in held if self.is_cut_from(own, base, checkout)), checkout)
+            tips = (own, *self.worktree_tips(self.folder(worker) / name))
+            return next((base for base in held if any(self.is_cut_from(tip, base, checkout) for tip in tips)), checkout)
         for branch in dict.fromkeys(BRIEF_BRANCH.findall(worker.brief or "")):
             base = self.base_checkout(checkout, name, branch)
             if base is not None:
                 return base
         return checkout
+
+    def worktree_tips(self, worktree: Path) -> tuple[str, ...]:
+        """What the worker's worktree holds, which the worker may have moved off the journal's branch: on 19 Nov workers cut
+        their own branches from feature/payroll-framework-v2 there, and every clock-out rebased them onto main, replaying all
+        of v2 one clash at a time. A rebase stopped halfway holds the tip it started from."""
+        if not (worktree / ".git").exists():
+            return ()
+        started = worktree / self.git("rev-parse", "--git-path", "rebase-merge/orig-head", cwd=worktree).stdout.strip()
+        if started.is_file():
+            return (started.read_text().strip(),)
+        head = self.git("rev-parse", "-q", "--verify", "HEAD", cwd=worktree).stdout.strip()
+        return (head,) if head else ()
 
     def is_cut_from(self, own: str, base: Path, checkout: Path) -> bool:
         """Whether the worker's branch was cut from the base checkout's branch: where the two meet lies beyond the project's checkout. A worker cut from the project's checkout before its brief named a branch meets the base inside it, so it keeps merging there and never pours the project's branch into the base."""
@@ -303,6 +316,8 @@ class WorkerBranch:
         return ""
 
     def rebased(self, repository: WorkerRepository, worker: Worker) -> str:
+        if self.has_stopped_rebase(repository) and not self.is_rebasing_onto(repository):
+            self.git("rebase", "--abort", cwd=repository.worktree)
         unresolved = self.continue_rebase(repository) if self.has_stopped_rebase(repository) else ""
         if unresolved:
             return unresolved
@@ -351,6 +366,15 @@ class WorkerBranch:
     def stopped_rebase(self, worker: Worker) -> str:
         stopped = [repository for repository in self.repositories(worker) if self.has_stopped_rebase(repository)]
         return ", ".join(repository.path(path) for repository in stopped for path in self.conflicts(repository.worktree).split(", ") if path) or ", ".join(repository.label() for repository in stopped)
+
+    def is_rebasing_onto(self, repository: WorkerRepository) -> bool:
+        """Whether the stopped rebase goes onto the branch the worker merges into: one stopped onto main while the worker was cut
+        from another base is given up, not carried on."""
+        onto = repository.worktree / self.git("rev-parse", "--git-path", "rebase-merge/onto", cwd=repository.worktree).stdout.strip()
+        if not onto.is_file():
+            return True
+        head = self.git("rev-parse", "HEAD", cwd=repository.checkout).stdout.strip()
+        return self.git("merge-base", "--is-ancestor", onto.read_text().strip(), head, cwd=repository.checkout).returncode == 0
 
     def has_stopped_rebase(self, repository: WorkerRepository) -> bool:
         return repository.is_present and self.is_rebasing(repository.worktree)
