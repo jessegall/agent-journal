@@ -11,7 +11,7 @@ use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Transformers\CallKeyTransformer;
-use Domain\Tasks\Support\TaskLimits;
+use Domain\Tasks\Models\Task;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -30,9 +30,9 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 final class CreateTaskCall extends Data implements JournalCall
 {
     public function __construct(
-        #[Max(TaskLimits::TITLE_CHARACTERS)]
+        #[Max(Task::TITLE_CHARACTERS)]
         public string $title,
-        #[Max(TaskLimits::NOTE_CHARACTERS)]
+        #[Max(Task::NOTE_CHARACTERS)]
         public string $brief,
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         #[LiteralTypeScriptType('string')]

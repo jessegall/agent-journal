@@ -16,9 +16,4 @@ final class ContentTooLarge extends InvalidArgumentException implements CommandR
     {
         return new self("The {$field} is longer than {$limit}; shorten it.");
     }
-
-    public static function lineBreak(string $field): self
-    {
-        return new self("The {$field} must be one line; remove its line breaks.");
-    }
 }

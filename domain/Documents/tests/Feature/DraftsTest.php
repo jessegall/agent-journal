@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Text\Exceptions\SectionMissing;
 use App\Text\Exceptions\TextMatchInvalid;
 use Domain\Documents\Api\DraftReference;
@@ -22,6 +23,7 @@ use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftHeld;
 use Domain\Documents\Exceptions\DraftMissing;
+use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Tests\TestCase;
@@ -39,7 +41,14 @@ final class DraftsTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = [
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+    ];
 
     private const string BODY = "# Goal\nShip it.\n\n## Steps\nOne.\n\n## Risks\nNone.\n";
 
@@ -78,7 +87,7 @@ final class DraftsTest extends TestCase
         $this->assertSame(0, DocumentDraft::query()->count());
     }
 
-    public function test_closing_an_unchanged_draft_adds_no_revision_and_a_repeated_close_returns_the_first_outcome(): void
+    public function test_an_unchanged_draft_adds_no_revision_and_a_repeated_close_returns_the_first_outcome(): void
     {
         $draft = $this->bus()->run(new OpenDocument(1));
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'One.', 'Two.'));
@@ -92,7 +101,7 @@ final class DraftsTest extends TestCase
         $this->assertSame('1', $this->documents()->show(1)->revision);
     }
 
-    public function test_another_user_is_refused_with_the_holder_named_and_the_holder_cannot_open_a_second_document(): void
+    public function test_another_user_is_refused_naming_the_holder_who_cannot_open_a_second_document(): void
     {
         $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
         $this->bus()->run(new OpenDocument(1));
@@ -128,7 +137,10 @@ final class DraftsTest extends TestCase
         $draft = $this->bus()->run(new OpenDocument(1));
         $refusals = [
             [new ReplaceDocumentText($this->target($draft), '.', '!'), TextMatchInvalid::class],
-            [new ReplaceDocumentSection($this->target($draft), 'Missing', "## Missing\nText.\n"), SectionMissing::class],
+            [
+                new ReplaceDocumentSection($this->target($draft), 'Missing', "## Missing\nText.\n"),
+                SectionMissing::class,
+            ],
         ];
 
         foreach ($refusals as [$command, $refusal]) {
@@ -141,6 +153,22 @@ final class DraftsTest extends TestCase
         }
 
         $this->assertSame(1, DocumentDraft::query()->sole()->version);
+    }
+
+    public function test_a_title_over_its_limit_is_refused_and_the_draft_keeps_its_text(): void
+    {
+        $draft = $this->bus()->run(new OpenDocument(1));
+        $tooLong = new ChangeDocumentDetails(
+            $this->target($draft),
+            str_repeat('a', Document::TITLE_CHARACTERS + 1),
+            'What we build',
+        );
+
+        $this->assertThrows(fn () => $this->bus()->run($tooLong), CommandInputInvalid::class, 'title:');
+        $this->assertSame([1, 'Design'], [
+            DocumentDraft::query()->sole()->version,
+            DocumentDraft::query()->sole()->title,
+        ]);
     }
 
     public function test_an_edit_without_an_open_draft_names_doc_open(): void
@@ -158,7 +186,10 @@ final class DraftsTest extends TestCase
 
     private function actAsUser(int $user): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of($user)),
+            new OwnerAuthority('test'),
+        );
     }
 
     private function documents(): DocumentResolver

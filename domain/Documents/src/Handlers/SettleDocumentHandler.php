@@ -13,16 +13,18 @@ use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\RecordChanges;
-use Domain\Documents\Support\RecordFields;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class SettleDocumentHandler implements CommandHandler
 {
-    public function __construct(private RecordChanges $changes, private CurrentActor $actors, private Dispatcher $events) {}
+    public function __construct(
+        private RecordChanges $changes,
+        private CurrentActor $actors,
+        private Dispatcher $events,
+    ) {}
 
     public function handle(SettleDocument $command): void
     {
-        $reason = RecordFields::settlementReason($command->reason);
         $document = Document::lockedForEditing($command->documentNumber);
         $current = $document->currentRevisionOrFail()->number;
 
@@ -36,7 +38,7 @@ final readonly class SettleDocumentHandler implements CommandHandler
 
         $this->changes->requireChangeOf($document);
 
-        if ($document->settle($this->actors->actor(), $reason, $current)) {
+        if ($document->settle($this->actors->actor(), $command->reason, $current)) {
             $this->events->dispatch(new RecordSettled(Document::LINK_TYPE, $document->id));
         }
     }

@@ -77,6 +77,60 @@ use Domain\Tasks\Commands\FinishTask;
 $commands->run(new FinishTask($taskId));
 ```
 
+## Input limits
+
+A command declares what input it takes on its constructor properties, with Spatie's validation attributes
+(`Spatie\LaravelData\Attributes\Validation\Max`, `Min`, `Between`, `Required`, `Filled`, `Regex`, `In`,
+`RequiredWithout` and the rest) and Core's `App\Bus\Attributes\OneLine`, which refuses a line break between two words
+of a title or an abstract. A limit several commands share is a constant on the model it describes, and the attribute
+names it:
+
+```php
+use App\Bus\Attributes\OneLine;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
+
+public function __construct(
+    #[Required, OneLine, Max(Document::TITLE_CHARACTERS)] public string $title,
+    #[Max(Document::ABSTRACT_CHARACTERS)] public string|null $abstract = null,
+) {}
+```
+
+- The registry reads the attributes once at start-up (`App\Bus\Support\PropertyRules`) and puts the rule for the
+  property's type first: `string`, `integer`, `numeric`, `boolean` or `array`, so `Max` counts characters, the number
+  or the items as the type says.
+- `App\Bus\CommandMiddleware\ValidateCommand` checks each call: it gives the validator only the ruled properties and
+  leaves out a property whose value is null, as a field that was not sent; `RequiredWithout` sees it as missing. A
+  command that declares no limit passes without a validator.
+- It runs after the actor check and before stack admission: a caller of the wrong actor type is refused for that first,
+  and bad input takes no stack turn, opens no transaction and leaves no refusal receipt, so the same request key can be
+  sent again with the input corrected. It runs before the check that the command's domain is switched on, so bad input
+  to a disabled domain is refused for its input.
+- A command a module middleware replaces with a changed copy through `replacedBy` is trusted and not checked again.
+- An enum or a value class checks itself: its cases or its factory are the limit, never an attribute on the property.
+
+The limits in use today:
+
+| Attribute | Commands and properties | Constant |
+|---|---|---|
+| `Required` | `CreateAgent` name; `SendMessage`, `AskMessage`, `ReplyToMessage` body; `SaveMemory` text; `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` title and abstract; `SettleDocument`, `SettleReport`, `RecoverDocument` reason | none |
+| `OneLine` | `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` title and abstract | none |
+| `Max` | `CreateTask` title, `EditTask` title | `Task::TITLE_CHARACTERS` |
+| `Max` | `CreateTask` brief, `EditTask` brief, `FinishTask` note, `BlockTask` reason, `CancelTask` reason | `Task::NOTE_CHARACTERS` |
+| `Max` | `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` title | `Document::TITLE_CHARACTERS` |
+| `Max` | `CreateDocument`, `CreateReport`, `ChangeDocumentDetails` abstract | `Document::ABSTRACT_CHARACTERS` |
+| `Max` | `SettleDocument`, `SettleReport`, `RecoverDocument` reason | `Document::SETTLEMENT_REASON_CHARACTERS` |
+| `Max` | `CreateDocument`, `CreateReport` about | their own `MOST_LINKS` |
+| `RequiredWithout('brief')` | `EditTask` title | none |
+| `RequiredWithout('weight')`, `Filled` | `EditMemory` text | none |
+| `Between` | `SaveMemory`, `EditMemory` weight | `Memory::LIGHTEST`, `Memory::HEAVIEST` |
+
+Bad input is refused with `App\Bus\Exceptions\CommandInputInvalid`, code `invalid_input`, not retryable. Its message
+reads `The input was refused.` and then one line per wrong field with its first problem, never the value sent. The
+CLI prints it after `The journal refused the call (invalid_input):`, MCP and agent routes answer it with its code and
+a 422, a JSON route answers 422 with Laravel's `errors` per field, and a web page goes back with each field's error and
+the old input.
+
 ## Middleware: scopes, stages and order
 
 A module watches or changes commands with middleware in its `CommandMiddleware` folder, declared on its Domain class
@@ -101,7 +155,8 @@ public function commandMiddleware(): array
   when that owner exports it and the module requires it; every module may name Core's exported commands.
 - Stages: `around` runs before the transaction opens, and its writes are not rolled back; `inside` runs inside the
   command's transaction, so a refusal rolls its writes back with the handler's.
-- Order: Core's frame first (logging, the actor check, stack admission), then the before-transaction stage, the
+- Order: Core's frame first (logging, the actor check, the input check, stack admission), then the before-transaction
+  stage, the
   transaction, the inside stage and the handler. Within a stage, owners run in the order of `bootstrap/domains.php`, and
   each owner's middleware in its declaration order.
 
@@ -143,6 +198,17 @@ The registry checks every declaration when the application starts:
 | `App\Bus\Exceptions\CommandListedTwice` | List each command once. |
 | `App\Bus\Exceptions\MiddlewareDeclarationInvalid` | Name only commands the module may see, in a `CommandMiddleware` folder. |
 | `App\Bus\Exceptions\MiddlewareListedTwice` | Declare each middleware once per scope and stage. |
+
+`App\Bus\Exceptions\CommandDeclarationInvalid` also refuses an input limit that could never work:
+
+| The limit | Fix |
+|---|---|
+| An attribute on an enum property | Take it off: the enum's cases already limit the value. |
+| An attribute on a value-class property | Take it off: the value checks itself in its factory. |
+| `Exists`, `Unique`, `CurrentPassword`, `Confirmed`, `ActiveUrl`, `File`, `Image`, `Mimes`, `MimeTypes` or `Dimensions` | Look the value up in the handler, inside the transaction: a command's rules check its input alone. |
+| A rule naming a field the command does not have, such as `RequiredWithout('breif')` | Name one of the command's properties. |
+| An attribute on a property of a value class the command carries | Check it in that value's factory: the attribute is never read. |
+| An attribute Spatie cannot turn into a rule | Give it arguments of the types the attribute takes. |
 
 A command nobody registered is refused at dispatch with `App\Bus\Exceptions\CommandNotRegistered`, and a ninth nested
 command with `App\Bus\Exceptions\CommandNestingTooDeep`.

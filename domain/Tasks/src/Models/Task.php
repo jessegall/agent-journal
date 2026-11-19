@@ -35,8 +35,6 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
-use Domain\Tasks\Exceptions\TaskTextTooLong;
-use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -96,6 +94,16 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
      * The stable name links and assignments use for a task.
      */
     public const string LINK_TYPE = TaskType::VALUE;
+
+    /**
+     * The most characters a task's title holds.
+     */
+    public const int TITLE_CHARACTERS = 240;
+
+    /**
+     * The most characters a task's brief, result note, block reason or cancel reason holds.
+     */
+    public const int NOTE_CHARACTERS = 8000;
 
     /**
      * @var array<string, mixed>
@@ -233,12 +241,9 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
 
     /**
      * Gives the task a new title and brief, as a new revision.
-     *
-     * @throws TaskTextTooLong
      */
     public function describe(string $title, string $brief): void
     {
-        TaskLimits::check($title, $brief);
         $this->title = $title;
         $this->brief = $brief;
         $this->revision++;
@@ -264,34 +269,22 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
         $this->save();
     }
 
-    /**
-     * @throws TaskTextTooLong
-     */
     public function finishRun(string $note): void
     {
-        TaskLimits::checkNote($note);
         $this->state = TaskState::Finished;
         $this->result_note = $note;
         $this->save();
     }
 
-    /**
-     * @throws TaskTextTooLong
-     */
     public function blockRun(string $reason): void
     {
-        TaskLimits::checkNote($reason);
         $this->state = TaskState::Blocked;
         $this->block_reason = $reason;
         $this->save();
     }
 
-    /**
-     * @throws TaskTextTooLong
-     */
     public function cancelWith(string $reason): void
     {
-        TaskLimits::checkNote($reason);
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;
         $this->save();

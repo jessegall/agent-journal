@@ -12,6 +12,8 @@ use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\SettleReportHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Settles a report with the reason it needs no more attention.
@@ -24,7 +26,7 @@ final readonly class SettleReport implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public int $reportNumber,
-        public string $reason,
+        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)] public string $reason,
     ) {}
 
     /**

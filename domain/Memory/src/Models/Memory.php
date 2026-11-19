@@ -11,7 +11,6 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
-use Domain\Memory\Exceptions\MemoryInvalid;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -21,7 +20,8 @@ use Illuminate\Support\Carbon;
 
 /**
  * Something an agent must still know when its context starts again. Its weight, 1 to 10, is the agent's own
- * priority: heavier memories come first when a context budget leaves light ones out. Only the agent that keeps it reads it.
+ * priority: heavier memories come first when a context budget leaves light ones out. Only the agent that keeps it
+ * reads it.
  *
  * @property string $id
  * @property string $number_group_id
@@ -55,14 +55,12 @@ final class Memory extends Model implements Numbered, ReadableModel
 
     /**
      * Keeps a new memory for its owner.
-     *
-     * @throws MemoryInvalid
      */
     public static function keep(ActorIdentity $owner, string $text, int $weight): self
     {
         $memory = new self();
-        $memory->text = self::checkedText($text);
-        $memory->weight = self::checkedWeight($weight);
+        $memory->text = $text;
+        $memory->weight = $weight;
         $memory->revision = 1;
         $memory->saveFor($owner);
 
@@ -76,7 +74,8 @@ final class Memory extends Model implements Numbered, ReadableModel
      */
     public static function ownForUpdate(string $memoryId): self
     {
-        return self::query()->whereKey($memoryId)->lockForUpdate()->first() ?? throw MemoryUnavailable::forId($memoryId);
+        return self::query()->whereKey($memoryId)->lockForUpdate()->first()
+            ?? throw MemoryUnavailable::forId($memoryId);
     }
 
     /**
@@ -96,35 +95,13 @@ final class Memory extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * Rewrites the text, the weight or both as one change, one revision later.
-     *
-     * @throws MemoryInvalid
+     * Rewrites the text, the weight or both as one change, one revision later; a value left out stays as it is.
      */
     public function revise(string|null $text, int|null $weight): void
     {
-        if ($text === null && $weight === null) {
-            throw MemoryInvalid::nothingToChange();
-        }
-
-        $this->text = $text === null ? $this->text : self::checkedText($text);
-        $this->weight = $weight === null ? $this->weight : self::checkedWeight($weight);
+        $this->text = $text === null ? $this->text : $text;
+        $this->weight = $weight === null ? $this->weight : $weight;
         $this->revision++;
         $this->save();
-    }
-
-    /**
-     * @throws MemoryInvalid
-     */
-    private static function checkedText(string $text): string
-    {
-        return trim($text) !== '' ? $text : throw MemoryInvalid::blankText();
-    }
-
-    /**
-     * @throws MemoryInvalid
-     */
-    private static function checkedWeight(int $weight): int
-    {
-        return $weight >= self::LIGHTEST && $weight <= self::HEAVIEST ? $weight : throw MemoryInvalid::weight($weight);
     }
 }

@@ -12,15 +12,19 @@ use App\Agents\Models\AgentSession;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Desks\Contracts\RunClaims;
 use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Tasks\Commands\BlockTask;
+use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskRunState;
+use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Tests\TestCase;
@@ -84,6 +88,28 @@ final class TaskRunTest extends TestCase
         $this->assertNull($this->holderOf($run));
     }
 
+    public function test_a_note_or_reason_over_its_limit_is_refused_before_the_run_ends_and_8000_pass(): void
+    {
+        $task = Task::factory()->create();
+        $this->startUserRequestAs($this->owner->id);
+        $bus = $this->app->make(CommandBus::class);
+        $bus->run(new StartTask($task->id));
+        $tooLong = str_repeat('a', Task::NOTE_CHARACTERS + 1);
+
+        $finish = new FinishTask($task->id, 1, $tooLong);
+        $block = new BlockTask($task->id, 1, $tooLong);
+        $cancel = new CancelTask($task->id, $tooLong);
+
+        $this->assertThrows(fn () => $bus->run($finish), CommandInputInvalid::class, 'note:');
+        $this->assertThrows(fn () => $bus->run($block), CommandInputInvalid::class, 'reason:');
+        $this->assertThrows(fn () => $bus->run($cancel), CommandInputInvalid::class, 'reason:');
+        $this->assertSame(TaskState::Started, $task->refresh()->state);
+
+        $bus->run(new FinishTask($task->id, 1, str_repeat('a', Task::NOTE_CHARACTERS)));
+
+        $this->assertSame(TaskState::Finished, $task->refresh()->state);
+    }
+
     public function test_an_actor_that_lost_its_desk_seat_cannot_finish_the_desk_run(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 1, false);
@@ -93,14 +119,22 @@ final class TaskRunTest extends TestCase
         AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat($desk->id, ActorIdentity::of($leaving->agent()->firstOrFail())),
+            fn () => $this->app->make(SeatingWriter::class)->seat(
+                $desk->id,
+                ActorIdentity::of($leaving->agent()->firstOrFail()),
+            ),
         );
         $this->startRequestAs($leaving->agent_id, $leaving->id);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
 
         $this->startUserRequestAs($this->owner->id);
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->replace(
-            new SeatChange($desk->id, $seat->seatId, $seat->reference, ActorIdentity::of($arriving->agent()->firstOrFail())),
+            new SeatChange(
+                $desk->id,
+                $seat->seatId,
+                $seat->reference,
+                ActorIdentity::of($arriving->agent()->firstOrFail()),
+            ),
         ));
         $this->startRequestAs($leaving->agent_id, $leaving->id);
 

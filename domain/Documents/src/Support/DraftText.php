@@ -31,6 +31,6 @@ final readonly class DraftText
 
     public function withDetails(string $title, string $abstract): self
     {
-        return new self(RecordFields::title($title), RecordFields::abstract($abstract), $this->body);
+        return new self(trim($title), trim($abstract), $this->body);
     }
 }

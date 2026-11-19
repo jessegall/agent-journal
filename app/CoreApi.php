@@ -177,7 +177,6 @@ use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\CapacityUnavailable;
@@ -318,6 +317,7 @@ use App\Assignments\Support\PoolReference;
 use App\Assignments\Support\RecordIds;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\OneLine;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -335,6 +335,7 @@ use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
+use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandHandlerTwice;
 use App\Bus\Exceptions\CommandListedTwice;
@@ -423,7 +424,6 @@ use App\Communication\Exceptions\ActorCannotSend;
 use App\Communication\Exceptions\AnswerImpossible;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
-use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Exceptions\MessageBodyTooLong;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
@@ -1435,6 +1435,7 @@ final class CoreApi
                 AssignmentHolders::class,
                 AssignmentHolder::class,
                 HandledBy::class,
+                OneLine::class,
                 RepeatableRead::class,
                 RequiresRequestKey::class,
                 RetainedActorRequestKey::class,
@@ -1761,7 +1762,6 @@ final class CoreApi
                 ActorProviderRepeated::class,
                 SystemActorRequired::class,
                 ActorCannotSend::class,
-                MessageBodyEmpty::class,
                 MessageMissing::class,
                 SettingDeclarationInvalid::class,
                 SettingHandleUnknown::class,
@@ -1834,6 +1834,7 @@ final class CoreApi
                 AssigneeTypeRepeated::class,
                 AssignmentTypeRepeated::class,
                 CommandDeclarationInvalid::class,
+                CommandInputInvalid::class,
                 CommandHandlerMissing::class,
                 CommandHandlerTwice::class,
                 CommandListedTwice::class,
@@ -1871,7 +1872,6 @@ final class CoreApi
                 ProgramUnsupported::class,
                 LaunchRequestConflict::class,
                 AgentBusy::class,
-                AgentNameRequired::class,
                 LaunchRecordMissing::class,
                 ConversationIncompatible::class,
                 ManifestRefused::class,
