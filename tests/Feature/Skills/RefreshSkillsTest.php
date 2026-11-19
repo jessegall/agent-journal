@@ -69,7 +69,7 @@ final class RefreshSkillsTest extends TestCase
         $this->assertSame(1, SkillPublication::query()->count());
     }
 
-    public function test_a_broken_shipped_skill_fails_the_generation_naming_owner_and_key_and_the_previous_stays_ready(): void
+    public function test_a_broken_shipped_skill_fails_its_generation_by_owner_and_key_and_the_last_stays_ready(): void
     {
         $ready = $this->refresh();
         $this->useOwners(

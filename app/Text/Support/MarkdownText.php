@@ -379,7 +379,10 @@ final readonly class MarkdownText
     private static function markSourceLines(Document $document, int $firstLine): void
     {
         foreach ($document->iterator() as $node) {
-            if (! in_array($node::class, self::MARKED_BLOCKS, true) || ! $node instanceof AbstractBlock || $node->getStartLine() === null || $node->getEndLine() === null) {
+            if (! in_array($node::class, self::MARKED_BLOCKS, true)
+                || ! $node instanceof AbstractBlock
+                || $node->getStartLine() === null
+                || $node->getEndLine() === null) {
                 continue;
             }
 

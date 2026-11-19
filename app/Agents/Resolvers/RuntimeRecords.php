@@ -26,6 +26,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
         $now = CarbonImmutable::now();
 
         return array_values($this->visibleRuntimes()
+            ->with('session')
             ->orderBy('id')
             ->forPage(max(1, $page), $perPage)
             ->readLimit($perPage)
@@ -57,7 +58,7 @@ final readonly class RuntimeRecords implements RuntimeResolver
 
     private function visibleRuntimeOf(string $sessionId): AgentRuntime
     {
-        return $this->visibleRuntimes()->where('agent_session_id', $sessionId)->readLimit(1)->first()
+        return $this->visibleRuntimes()->with('session')->where('agent_session_id', $sessionId)->readLimit(1)->first()
             ?? throw StackTargetRefused::forTarget("session {$sessionId}");
     }
 

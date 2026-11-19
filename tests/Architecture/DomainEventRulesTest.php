@@ -28,7 +28,8 @@ final class DomainEventRulesTest extends TestCase
     public static function eventFixtures(): iterable
     {
         $onlyAListener = ', an event of Tasks; only a listener of Plans may name it, as an import, a type or ::class';
-        $notExported = ", which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or use what Tasks exports";
+        $notExported = ", which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or "
+            .'use what Tasks exports';
 
         yield 'a listener importing a declared domain event' => ['Plans/Listeners/StartNextTask.php', []];
         yield 'a listener with an alias import' => ['Plans/Listeners/AliasListener.php', []];

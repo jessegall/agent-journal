@@ -31,7 +31,8 @@ final class MarkdownPartsSectionsTest extends TestCase
 
     public function test_the_text_under_the_title_is_the_purpose_and_each_heading_is_a_section_in_file_order(): void
     {
-        $this->write("# Shell\n\nCommands run through the journal.\n\nThey keep their output.\n\n## Running commands\n\nRun.\n\n## Reading output\n\nRead.\n");
+        $this->write("# Shell\n\nCommands run through the journal.\n\nThey keep their output.\n\n## Running "
+            ."commands\n\nRun.\n\n## Reading output\n\nRead.\n");
 
         $sections = $this->sections('Shell');
 

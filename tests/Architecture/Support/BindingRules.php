@@ -95,7 +95,8 @@ final readonly class BindingRules
             ];
         }
 
-        if ($abstractOwner !== $userOwner && ! ($abstractOwner === 'Core' && $this->isCoreExport($registration->abstract))) {
+        if ($abstractOwner !== $userOwner
+            && ! ($abstractOwner === 'Core' && $this->isCoreExport($registration->abstract))) {
             return [
                 $registration->violation(
                     $userOwner,
@@ -161,7 +162,9 @@ final readonly class BindingRules
             $dependency = $type->getName();
             $target = self::bindTargetOf($dependency) ?? $dependency;
 
-            if (in_array($dependency, $scoped, true) || in_array($target, $scoped, true) || self::isScopedClass($target)) {
+            if (in_array($dependency, $scoped, true)
+                || in_array($target, $scoped, true)
+                || self::isScopedClass($target)) {
                 return $dependency;
             }
 
@@ -272,7 +275,10 @@ final readonly class BindingRules
 
     private static function classStringOf(Node|null $argument): string|null
     {
-        if (! $argument instanceof ClassConstFetch || ! $argument->class instanceof Name || ! $argument->name instanceof Node\Identifier || $argument->name->toString() !== 'class') {
+        if (! $argument instanceof ClassConstFetch
+            || ! $argument->class instanceof Name
+            || ! $argument->name instanceof Node\Identifier
+            || $argument->name->toString() !== 'class') {
             return null;
         }
 

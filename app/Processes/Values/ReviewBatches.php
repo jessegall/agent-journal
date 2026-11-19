@@ -30,7 +30,9 @@ final readonly class ReviewBatches
             if ($shape->isTooLongForReview()) {
                 continue;
             }
-            if ($batch !== [] && (count($batch) === ReviewLimit::BatchShapes->value || ReviewLimit::BatchCharacters->isPassedBy($characters + $shape->length()))) {
+            if ($batch !== []
+
+                    && (count($batch) === ReviewLimit::BatchShapes->value || ReviewLimit::BatchCharacters->isPassedBy($characters + $shape->length()))) {
                 $batches[] = $batch;
                 $batch = [];
                 $characters = 0;

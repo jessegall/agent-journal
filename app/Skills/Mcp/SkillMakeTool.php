@@ -20,7 +20,8 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_make: stores a new skill under a user- key, as skill:make does.
  */
 #[Name('skills_make')]
-#[Description('Store a new skill under a user- key from a Markdown body; the condition is JSON, everyone when left out. Send the request_id again to retry; it is answered once.')]
+#[Description('Store a new skill under a user- key from a Markdown body; the condition is JSON, everyone when left '
+    .'out. Send the request_id again to retry; it is answered once.')]
 final class SkillMakeTool extends JournalWriteTool
 {
     public function __construct(
@@ -34,8 +35,10 @@ final class SkillMakeTool extends JournalWriteTool
             'key' => $schema->string()->max(64)->required(),
             'name' => $schema->string()->max(255),
             'description' => $schema->string()->max(1024)->required(),
-            'body' => $schema->string()->max(262144)->description('The Markdown body; one section per top-level heading.')->required(),
-            'conditions' => $schema->string()->max(32768)->description('The condition as JSON, such as {"type":"profile-bases","version":1,"keys":["main-agent"]}.'),
+            'body' => $schema->string()->max(262144)->description('The Markdown body; one section per top-level '
+                .'heading.')->required(),
+            'conditions' => $schema->string()->max(32768)->description('The condition as JSON, such as '
+                .'{"type":"profile-bases","version":1,"keys":["main-agent"]}.'),
             'request_id' => $schema->string()->max(64),
         ];
     }

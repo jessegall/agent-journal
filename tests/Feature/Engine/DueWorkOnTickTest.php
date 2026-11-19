@@ -125,7 +125,7 @@ final class DueWorkOnTickTest extends TestCase
         $this->assertNull($question->refresh()->reminded_at);
     }
 
-    public function test_an_answer_that_lands_before_the_reminder_runs_sends_none_and_removes_the_frame_in_that_command(): void
+    public function test_an_answer_before_the_reminder_sends_none_and_removes_the_frame_in_that_command(): void
     {
         $question = Question::ask('Which database?');
         $stack = $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);

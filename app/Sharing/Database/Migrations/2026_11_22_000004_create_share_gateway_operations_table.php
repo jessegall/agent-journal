@@ -12,9 +12,14 @@ return new class extends Migration
     {
         Schema::create('share_gateway_operations', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('share_gateway_configuration_id')->constrained('share_gateway_configurations')->restrictOnDelete();
+            $table->foreignUlid('share_gateway_configuration_id')
+                ->constrained('share_gateway_configurations')
+                ->restrictOnDelete();
             $table->unsignedInteger('configuration_version');
-            $table->foreignUlid('share_gateway_endpoint_id')->nullable()->constrained('share_gateway_endpoints')->restrictOnDelete();
+            $table->foreignUlid('share_gateway_endpoint_id')
+                ->nullable()
+                ->constrained('share_gateway_endpoints')
+                ->restrictOnDelete();
             $table->unsignedInteger('endpoint_version')->nullable();
             $table->string('type');
             $table->string('run_id')->nullable();

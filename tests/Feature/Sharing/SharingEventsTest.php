@@ -140,7 +140,8 @@ final class SharingEventsTest extends TestCase
                 'refused for the test',
             );
         } finally {
-            $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION refuse_disabled_audit();');
+            $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION '
+                .'refuse_disabled_audit();');
         }
 
         $this->assertSame([], $this->heard);

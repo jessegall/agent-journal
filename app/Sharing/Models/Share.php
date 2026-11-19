@@ -286,7 +286,8 @@ final class Share extends Model implements Numbered, ReadableModel
     public function isLastLiveOfItsConfiguration(): bool
     {
         return $this->share_gateway_configuration_id !== null
-            && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
+
+                    && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
     }
 
     /**
@@ -430,7 +431,8 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockProposal(string $id): self
     {
-        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first() ?? throw ShareProposalUnavailable::for($id);
+        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first()
+            ?? throw ShareProposalUnavailable::for($id);
     }
 
     /**
@@ -570,7 +572,9 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public function ownerUrl(): Option
     {
-        if (! $this->isReadableNow() || $this->token_ciphertext === null || $this->share_gateway_configuration_id === null) {
+        if (! $this->isReadableNow()
+            || $this->token_ciphertext === null
+            || $this->share_gateway_configuration_id === null) {
             return None::create();
         }
 

@@ -53,7 +53,10 @@ final readonly class SettingsWriter
         $record = $this->lockedRecord($owner, $setting->key(), $expectedRevision);
         $this->requireGroupEnabled($record, $setting);
 
-        if ($record->document->setting($setting->key())->filter(fn (EncodedSetting $stored) => $stored->value->equals($value))->isDefined()) {
+        if ($record->document
+            ->setting($setting->key())
+            ->filter(fn (EncodedSetting $stored) => $stored->value->equals($value))
+            ->isDefined()) {
             return $this->unchanged($record);
         }
 
@@ -104,7 +107,10 @@ final readonly class SettingsWriter
         $record = $this->lockedRecord($owner, $group->key, $expectedRevision);
         $value = EncodedValue::of($enabled);
 
-        if ($record->document->toggle($group->key)->filter(fn (EncodedToggle $stored) => $stored->value->equals($value))->isDefined()) {
+        if ($record->document
+            ->toggle($group->key)
+            ->filter(fn (EncodedToggle $stored) => $stored->value->equals($value))
+            ->isDefined()) {
             return $this->unchanged($record);
         }
 

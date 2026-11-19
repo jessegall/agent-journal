@@ -112,7 +112,9 @@ final readonly class EventCallScan implements FileScan
         foreach ($finder->findInstanceOf($file->statements, ClassMethod::class) as $method) {
             $type = ($method->params[0] ?? null)?->type;
 
-            if ($method->name->toLowerString() === 'subscribe' && $type instanceof Name && str_ends_with($type->toString(), 'Dispatcher')) {
+            if ($method->name->toLowerString() === 'subscribe'
+                && $type instanceof Name
+                && str_ends_with($type->toString(), 'Dispatcher')) {
                 $registrations[] = new EventCall(
                     $file->path,
                     $method->getStartLine(),
@@ -129,7 +131,9 @@ final readonly class EventCallScan implements FileScan
             $name = $property->props[0]->name->toString();
             $default = $property->props[0]->default;
 
-            if (in_array($name, ['listen', 'subscribe'], true) && $default instanceof Expr\Array_ && $default->items !== []) {
+            if (in_array($name, ['listen', 'subscribe'], true)
+                && $default instanceof Expr\Array_
+                && $default->items !== []) {
                 $registrations[] = new EventCall(
                     $file->path,
                     $property->getStartLine(),
@@ -179,8 +183,12 @@ final readonly class EventCallScan implements FileScan
         return match (true) {
             $event instanceof String_ => EventArgument::String,
             $event instanceof Expr\Array_ && self::holdsOnlyStrings($event) => EventArgument::StringList,
-            $event instanceof Expr\ClassConstFetch && $event->class instanceof Name && $event->name instanceof Identifier && $event->name->toLowerString() === 'class' => EventArgument::ClassName,
-            $event instanceof Expr\Variable && $event->name === self::listenerParameter($call) => EventArgument::ListenerParameter,
+            $event instanceof Expr\ClassConstFetch
+                && $event->class instanceof Name
+                && $event->name instanceof Identifier
+                && $event->name->toLowerString() === 'class' => EventArgument::ClassName,
+            $event instanceof Expr\Variable
+                && $event->name === self::listenerParameter($call) => EventArgument::ListenerParameter,
             default => EventArgument::Other,
         };
     }

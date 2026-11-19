@@ -17,7 +17,8 @@ final readonly class AgentMemories
      */
     public function remindersFor(ActorIdentity $actor): array
     {
-        $texts = Memory::query()->ownedBy($actor)->orderByDesc('weight')->orderBy('id')->readAll('every memory of the agent is a reminder')->pluck('text')->all();
+        $texts = Memory::query()->ownedBy($actor)->orderByDesc('weight')->orderBy('id')->readAll('every memory of the '
+            .'agent is a reminder')->pluck('text')->all();
 
         return array_values(array_map(fn (string $text) => "Memory: {$text}", $texts));
     }

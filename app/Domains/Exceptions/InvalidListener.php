@@ -13,28 +13,32 @@ final class InvalidListener extends DomainDeclarationError
     public static function privateEvent(string $listener, string $method, string $event, string $owner): self
     {
         return new self(
-            "{$listener} ({$method}) hears {$event}, which {$owner} does not export under events; {$owner} must export it, or the listener must go.",
+            "{$listener} ({$method}) hears {$event}, which {$owner} does not export under events; {$owner} must "
+                .'export it, or the listener must go.',
         );
     }
 
     public static function notRequired(string $listener, string $event, string $owner): self
     {
         return new self(
-            "{$listener} hears {$event} of {$owner}, a domain its own domain does not require; hear it through an event of a domain it requires, or move the listener.",
+            "{$listener} hears {$event} of {$owner}, a domain its own domain does not require; hear it through an "
+                .'event of a domain it requires, or move the listener.',
         );
     }
 
     public static function notAConcreteEvent(string $listener, string $event): self
     {
         return new self(
-            "{$listener} hears {$event}, which is not a concrete class implementing App\\Contracts\\Event; type the listener on the concrete event.",
+            "{$listener} hears {$event}, which is not a concrete class implementing App\\Contracts\\Event; type the "
+                .'listener on the concrete event.',
         );
     }
 
     public static function unknownOwner(string $listener, string $event): self
     {
         return new self(
-            "{$listener} hears {$event}, but the listener or the event belongs to no domain and not to Core; put the listener in a Listeners folder of its owner.",
+            "{$listener} hears {$event}, but the listener or the event belongs to no domain and not to Core; put the "
+                .'listener in a Listeners folder of its owner.',
         );
     }
 

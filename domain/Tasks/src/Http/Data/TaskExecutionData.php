@@ -40,6 +40,7 @@ final class TaskExecutionData extends Data
      */
     public function label(): string
     {
-        return "run {$this->runNumber} by ".($this->actorLabel ?? "{$this->actorType->value} {$this->actorId}").", {$this->workState->value}";
+        return "run {$this->runNumber} by ".($this->actorLabel
+            ?? "{$this->actorType->value} {$this->actorId}").", {$this->workState->value}";
     }
 }

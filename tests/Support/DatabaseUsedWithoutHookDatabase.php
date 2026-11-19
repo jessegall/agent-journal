@@ -14,7 +14,8 @@ final class DatabaseUsedWithoutHookDatabase extends LogicException
     public static function by(string $class): self
     {
         return new self(
-            "The test class {$class} queried the database without RefreshHookDatabase: use Tests\\Support\\RefreshHookDatabase in it.",
+            "The test class {$class} queried the database without RefreshHookDatabase: use "
+                .'Tests\\Support\\RefreshHookDatabase in it.',
         );
     }
 }

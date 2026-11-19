@@ -120,7 +120,8 @@ final readonly class ContainerManifest
         }
 
         if ($privileged || $capabilities !== [] || $user !== self::USER || ! $readOnlyRoot) {
-            throw ManifestRefused::because('a helper runs unprivileged as 10001:10001 on a read-only root with no capabilities');
+            throw ManifestRefused::because('a helper runs unprivileged as 10001:10001 on a read-only root with no '
+                .'capabilities');
         }
 
         if (in_array($network, ['host', 'none', ''], true)) {
@@ -158,12 +159,16 @@ final readonly class ContainerManifest
      */
     private static function checkSource(string $source): void
     {
-        if (! str_starts_with($source, '/') || in_array('..', explode('/', $source), true) || substr_count(trim($source, '/'), '/') < 1) {
+        if (! str_starts_with($source, '/')
+            || in_array('..', explode('/', $source), true)
+            || substr_count(trim($source, '/'), '/') < 1) {
             throw ManifestRefused::because("the workspace {$source} is not an assigned workspace folder");
         }
 
         foreach (self::PROTECTED_SOURCES as $protected) {
-            if (str_starts_with($source, $protected) || str_contains($source, $protected.'/') || str_ends_with($source, $protected)) {
+            if (str_starts_with($source, $protected)
+                || str_contains($source, $protected.'/')
+                || str_ends_with($source, $protected)) {
                 throw ManifestRefused::because("the mount {$source} reaches accounts, credentials or host control");
             }
         }

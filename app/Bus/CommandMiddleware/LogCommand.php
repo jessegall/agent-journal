@@ -47,7 +47,9 @@ final readonly class LogCommand implements CommandMiddleware
             $this->write(
                 $call,
                 $this->meter->end(),
-                $failure instanceof CommandRefusal ? 'refused: '.class_basename($failure) : 'failed: '.class_basename($failure),
+                $failure instanceof CommandRefusal
+                    ? 'refused: '.class_basename($failure)
+                    : 'failed: '.class_basename($failure),
             );
 
             throw $failure;

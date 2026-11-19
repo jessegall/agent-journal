@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Profiles\Casts;
 
-use App\Agents\Support\StoredPolicies;
+use App\Agents\Stored\StoredAccessPolicy;
+use App\Agents\Stored\StoredExecutionPolicy;
+use App\Agents\Stored\StoredStopConditions;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileProvenance;
 use App\Programs\Enums\HookProgram;
-use ErrorException;
+use Exception;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
-use InvalidArgumentException;
 use JsonException;
 use TypeError;
 use ValueError;
@@ -40,12 +41,12 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
                 HookProgram::tryFrom((string) $attributes['program']),
                 (bool) $attributes['program_pinned'],
                 self::decode($attributes['allowed_models']),
-                StoredPolicies::accessFrom(self::decode($attributes['access_policy'])),
-                StoredPolicies::stopConditionsFrom(self::decode($attributes['stop_conditions'])),
-                StoredPolicies::executionFrom(self::decode($attributes['execution_policy'])),
+                StoredAccessPolicy::from(self::decode($attributes['access_policy']))->toAccessPolicy(),
+                StoredStopConditions::from(self::decode($attributes['stop_conditions']))->toStopConditions(),
+                StoredExecutionPolicy::from(self::decode($attributes['execution_policy']))->toExecutionPolicy(),
                 self::provenance((string) $attributes['configuration_hash'], self::decode($attributes['provenance'])),
             );
-        } catch (JsonException|InvalidArgumentException|TypeError|ValueError|ErrorException $failure) {
+        } catch (Exception|TypeError|ValueError $failure) {
             throw ProfileRevisionUnreadable::forRevision((string) $model->getKey(), $failure);
         }
     }
@@ -61,9 +62,9 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
             'program' => $value->program?->value,
             'program_pinned' => $value->programPinned,
             'allowed_models' => self::encode($value->allowedModels),
-            'access_policy' => self::encode(StoredPolicies::accessToArray($value->access)),
-            'stop_conditions' => self::encode(StoredPolicies::stopConditionsToArray($value->stopConditions)),
-            'execution_policy' => self::encode(StoredPolicies::executionToArray($value->execution)),
+            'access_policy' => self::encode(StoredAccessPolicy::fromAccessPolicy($value->access)->toArray()),
+            'stop_conditions' => self::encode(StoredStopConditions::fromStopConditions($value->stopConditions)->toArray()),
+            'execution_policy' => self::encode(StoredExecutionPolicy::fromExecutionPolicy($value->execution)->toArray()),
             'configuration_hash' => $value->provenance->configurationHash,
             'provenance' => self::encode(array_map(
                 fn (FieldOrigin $origin) => ['field' => $origin->field, 'origin' => $origin->origin->value],

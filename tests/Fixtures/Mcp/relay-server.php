@@ -35,6 +35,7 @@ if ($frame['method'] === 'broken') {
 
 $result = $frame['method'] === 'initialize'
     ? ['protocolVersion' => '2025-11-25', 'serverInfo' => ['name' => 'journal', 'version' => '1.0.0']]
-    : ['method' => $frame['method'], 'signed' => isset($headers['x-journal-call-signature']), 'protocol' => $headers['mcp-protocol-version'] ?? null];
+    : ['method' => $frame['method'], 'signed' => isset($headers['x-journal-call-signature']), 'protocol' => $headers['mcp-protocol-version']
+        ?? null];
 
 echo json_encode(['jsonrpc' => '2.0', 'id' => $frame['id'], 'result' => $result]);

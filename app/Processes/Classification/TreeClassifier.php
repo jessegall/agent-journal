@@ -286,7 +286,8 @@ final readonly class TreeClassifier implements CommandClassifier
             $option = (string) $words[$index]->literal();
             if (in_array($option, ['-C', '--git-dir', '--work-tree', '--namespace'], true)) {
                 $index += 2;
-            } elseif (in_array($option, ['--no-pager', '--no-optional-locks', '--bare', '--literal-pathspecs', '-P'], true) || preg_match('/^--(git-dir|work-tree|namespace)=/', $option) === 1) {
+            } elseif (in_array($option, ['--no-pager', '--no-optional-locks', '--bare', '--literal-pathspecs', '-P'], true)
+                || preg_match('/^--(git-dir|work-tree|namespace)=/', $option) === 1) {
                 $index++;
             } else {
                 return $this->unknown(
@@ -499,7 +500,9 @@ final readonly class TreeClassifier implements CommandClassifier
 
                 break;
             }
-            if ($wrapper->takesAssignments && $text !== null && preg_match('/^([A-Za-z_][A-Za-z0-9_]*)=/', $text, $match) === 1) {
+            if ($wrapper->takesAssignments
+                && $text !== null
+                && preg_match('/^([A-Za-z_][A-Za-z0-9_]*)=/', $text, $match) === 1) {
                 $unresolved = [...$unresolved, ...$this->contextAssignment($match[1], $node)];
                 $index++;
 

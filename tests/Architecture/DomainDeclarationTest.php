@@ -156,8 +156,10 @@ final class DomainDeclarationTest extends TestCase
         $files = DomainFiles::in([$this->fixture('Good'), $this->fixture('Deep'), $this->fixture('Based')]);
 
         $this->assertSame([
-            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be Domain\<Name>\<Name>Domain',
-            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be Domain\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be '
+                .'Domain\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be '
+                .'Domain\<Name>\<Name>Domain',
         ], $this->reasons(
             $this->rules($this->registry())->misnamedDomainClasses($files, 'Tests\Fixtures\Declarations'),
         ));
@@ -185,7 +187,8 @@ final class DomainDeclarationTest extends TestCase
         $violations = $this->rules($this->registry())->starterKitDomainUses([$this->fixture('App/Http/Listed.php')]);
 
         $this->assertContains(
-            'is starter-kit code that uses Tests\Fixtures\Declarations\Good\Thing of Good; starter-kit code may use no domain',
+            'is starter-kit code that uses Tests\Fixtures\Declarations\Good\Thing of Good; starter-kit code may use '
+                .'no domain',
             $this->reasons($violations),
         );
     }

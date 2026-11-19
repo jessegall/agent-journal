@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
@@ -43,7 +44,7 @@ final readonly class RawRowAccess implements FileScan
 
     public function key(): string
     {
-        return 'raw-row-access-1';
+        return 'raw-row-access-2';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -85,6 +86,10 @@ final readonly class RawRowAccess implements FileScan
     private function changesSchema(StaticCall $call): bool
     {
         $sql = $call->getArgs()[0]->value ?? null;
+
+        while ($sql instanceof Concat) {
+            $sql = $sql->left;
+        }
 
         return $sql instanceof String_ && preg_match('/^\\s*(ALTER|CREATE|DROP) /i', $sql->value) === 1;
     }

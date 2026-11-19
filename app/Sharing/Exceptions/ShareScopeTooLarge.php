@@ -20,7 +20,8 @@ final class ShareScopeTooLarge extends RuntimeException implements CodedRefusal,
     public static function because(ShareBudgetExceeded $exceeded): self
     {
         return new self(
-            "This record links to too much to preview at once: {$exceeded->getMessage()} Share a record with fewer links, or remove links you do not want to publish.",
+            "This record links to too much to preview at once: {$exceeded->getMessage()} Share a record with fewer "
+                .'links, or remove links you do not want to publish.',
             previous: $exceeded,
         );
     }

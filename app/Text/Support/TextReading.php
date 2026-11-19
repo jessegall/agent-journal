@@ -30,7 +30,10 @@ final class TextReading
 
         return [
             ...$read,
-            'continuation' => "--lines {$part->nextLine}-{$end} --at-revision {$version}".($selection->bullets ? ' --bullets' : '').($selection->words !== null ? " --grep \"{$selection->words}\"" : ''),
+            'continuation' => "--lines {$part->nextLine}-{$end} --at-revision {$version}".($selection->bullets
+                ? ' --bullets'
+                : '').($selection->words !== null
+                ? " --grep \"{$selection->words}\"" : ''),
         ];
     }
 }

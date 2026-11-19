@@ -16,7 +16,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * capabilities_read: the contract, build and protocol versions, the caller's job profile and the tools it may use.
  */
 #[Name('capabilities_read')]
-#[Description('The journal MCP contract version, the server build, the MCP protocol version of this request, your job profile and the tool names you may use.')]
+#[Description('The journal MCP contract version, the server build, the MCP protocol version of this request, your job '
+    .'profile and the tool names you may use.')]
 #[IsReadOnly]
 final class CapabilitiesReadTool extends JournalReadTool
 {

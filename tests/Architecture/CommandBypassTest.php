@@ -82,7 +82,8 @@ final class CommandBypassTest extends TestCase
                 $viaFacade = $call['class'] !== null && str_ends_with($call['class'], 'Bus');
 
                 // map is also a collection method, so only the Bus facade's map counts.
-                if (in_array($call['method'], self::BYPASSES, true) && ($viaFacade || ($call['class'] === null && $call['method'] !== 'map'))) {
+                if (in_array($call['method'], self::BYPASSES, true)
+                    && ($viaFacade || ($call['class'] === null && $call['method'] !== 'map'))) {
                     $found[] = "{$file}:{$call['line']} calls ".($call['class'] === null ? '' : class_basename(
                         $call['class'],
                     ).'::').$call['method'];

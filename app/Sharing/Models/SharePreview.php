@@ -115,7 +115,8 @@ final class SharePreview extends Model implements ReadableModel
      */
     public static function lockFor(string $previewId): self
     {
-        return self::query()->whereKey($previewId)->lockForUpdate()->first() ?? throw SharePreviewRefused::unknown($previewId);
+        return self::query()->whereKey($previewId)->lockForUpdate()->first()
+            ?? throw SharePreviewRefused::unknown($previewId);
     }
 
     /**
@@ -162,7 +163,8 @@ final class SharePreview extends Model implements ReadableModel
         );
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
 
-        if ($checksum !== $this->checksum || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
+        if ($checksum !== $this->checksum
+            || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
             throw SharePreviewRefused::changed($this->id);
         }
 

@@ -39,7 +39,9 @@ final readonly class SettingTargets
     {
         $setting = $this->anySetting($reference);
 
-        return $setting instanceof $declaration ? $setting : throw SettingValueInvalid::for($reference->owner, $reference->key, $commandType);
+        return $setting instanceof $declaration
+            ? $setting
+            : throw SettingValueInvalid::for($reference->owner, $reference->key, $commandType);
     }
 
     /**

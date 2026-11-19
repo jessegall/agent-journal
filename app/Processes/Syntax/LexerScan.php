@@ -107,7 +107,8 @@ final class LexerScan
         $digits = strspn($this->source, '0123456789', $start);
         $afterDigits = $this->at($start + $digits);
 
-        if (($afterDigits === '<' || $afterDigits === '>') && ! ($extended && $this->at($start + $digits + 1) === '(' && $digits === 0)) {
+        if (($afterDigits === '<' || $afterDigits === '>')
+            && ! ($extended && $this->at($start + $digits + 1) === '(' && $digits === 0)) {
             return $this->readRedirect($start, $digits);
         }
         if ($digits > 0) {
@@ -122,7 +123,8 @@ final class LexerScan
 
         foreach ($this->operators($extended) as $text => $type) {
             if (substr_compare($this->source, $text, $start, strlen($text)) === 0) {
-                if ($type === TokenType::Bang && (! $this->atCommandStart() || ! in_array($this->at($start + 1), [' ', "\t", "\n", ''], true))) {
+                if ($type === TokenType::Bang
+                    && (! $this->atCommandStart() || ! in_array($this->at($start + 1), [' ', "\t", "\n", ''], true))) {
                     return false;
                 }
                 if ($text === '&>' || $text === '&>>') {
@@ -269,7 +271,9 @@ final class LexerScan
     private function readWordToken(): void
     {
         $start = $this->position;
-        if (substr($this->source, $start, 3) === '[[ ' && $this->dialect !== ShellDialect::Sh && $this->atCommandStart()) {
+        if (substr($this->source, $start, 3) === '[[ '
+            && $this->dialect !== ShellDialect::Sh
+            && $this->atCommandStart()) {
             $this->readConditionalExpression($start);
 
             return;
@@ -304,7 +308,10 @@ final class LexerScan
             $this->checkBudget();
             $character = $this->source[$this->position];
 
-            if ($extended && ($character === '<' || $character === '>') && $this->at($this->position + 1) === '(' && $this->position === $start) {
+            if ($extended
+                && ($character === '<' || $character === '>')
+                && $this->at($this->position + 1) === '('
+                && $this->position === $start) {
                 $word->add(
                     $this->position,
                     $this->readBalanced($this->position, $this->position + 2, 'a process substitution'),
@@ -783,7 +790,9 @@ final class LexerScan
 
                 continue;
             }
-            if ($this->startsWord($position, 'esac') || ($this->startsWord($position, 'esa') === false && substr_compare($this->source, 'esac', $position, 4) === 0 && in_array($this->at($position + 4), ['', ')', ' ', ';', "\n"], true) && str_contains(" \t\n;", $this->source[$position - 1] ?? ' '))) {
+            if ($this->startsWord($position, 'esac')
+
+                    || ($this->startsWord($position, 'esa') === false && substr_compare($this->source, 'esac', $position, 4) === 0 && in_array($this->at($position + 4), ['', ')', ' ', ';', "\n"], true) && str_contains(" \t\n;", $this->source[$position - 1] ?? ' '))) {
                 if (--$depth === 0) {
                     return $position + 4;
                 }

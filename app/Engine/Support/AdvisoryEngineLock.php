@@ -37,7 +37,8 @@ final class AdvisoryEngineLock implements EngineLock
 
         try {
             return (bool) $this->connection()->scalar(
-                "select exists (select 1 from pg_locks where locktype = 'advisory' and granted and pid = pg_backend_pid() and pid = ? and classid = ? and objid = ? and objsubid = 1)",
+                "select exists (select 1 from pg_locks where locktype = 'advisory' and granted and pid = "
+                    .'pg_backend_pid() and pid = ? and classid = ? and objid = ? and objsubid = 1)',
                 [
                     $this->ownerBackendId,
                     ($this->settings->lockKey >> 32) & 0xFFFFFFFF,

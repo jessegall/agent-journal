@@ -158,7 +158,8 @@ final class SharingListenerTest extends TestCase
             new CreateDocument(
                 'Tricks',
                 'Inert',
-                "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) [other](/s/elsewhere)\n",
+                "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) "
+                    ."[other](/s/elsewhere)\n",
             ),
         );
         $this->app->make(CurrentActorSetter::class)->clear();

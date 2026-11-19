@@ -14,7 +14,8 @@ final class UnknownAccessType extends InvalidArgumentException
     public static function forKey(string $key): self
     {
         return new self(
-            "{$key} is not an access type; use read, search, create, edit, delete, execute, test, build, network, publish, delegate or admin.",
+            "{$key} is not an access type; use read, search, create, edit, delete, execute, test, build, network, "
+                .'publish, delegate or admin.',
         );
     }
 }

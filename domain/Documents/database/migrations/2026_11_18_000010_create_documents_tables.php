@@ -58,7 +58,8 @@ return new class extends Migration
         });
 
         DB::statement('ALTER TABLE documents ADD CONSTRAINT documents_number_positive CHECK (number > 0)');
-        DB::statement('ALTER TABLE document_revisions ADD CONSTRAINT document_revisions_number_positive CHECK (number > 0)');
+        DB::statement('ALTER TABLE document_revisions ADD CONSTRAINT document_revisions_number_positive CHECK (number '
+            .'> 0)');
         DB::statement('ALTER TABLE reports ADD CONSTRAINT reports_number_positive CHECK (number > 0)');
 
         // The library search matches words anywhere in a title, abstract or body, which only a trigram index can serve.
@@ -67,7 +68,8 @@ return new class extends Migration
         foreach (['document_revisions', 'reports'] as $searched) {
             foreach (['title', 'abstract', 'body'] as $column) {
                 DB::statement(
-                    "CREATE INDEX {$searched}_{$column}_search ON {$searched} USING gin (({$column}::text) gin_trgm_ops)",
+                    "CREATE INDEX {$searched}_{$column}_search ON {$searched} USING gin (({$column}::text) "
+                        .'gin_trgm_ops)',
                 );
             }
         }

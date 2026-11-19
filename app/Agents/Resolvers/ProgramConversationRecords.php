@@ -27,7 +27,9 @@ final readonly class ProgramConversationRecords implements ProgramConversationRe
             'conversation_id',
             $conversations->keys()->all(),
         )->orderByDesc('observed_at')
-            ->readAll('the visits of at most 20 conversations, to find each one\'s last')->get()->unique('conversation_id');
+            ->readAll('the visits of at most 20 conversations, to find each one\'s last')
+            ->get()
+            ->unique('conversation_id');
         $models = AgentSession::query()->whereIn(
             'id',
             $lastVisits->pluck('session_id')->all(),

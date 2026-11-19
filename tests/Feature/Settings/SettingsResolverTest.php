@@ -91,7 +91,7 @@ final class SettingsResolverTest extends TestCase
         $this->resolver()->integer(IntegerSetting::make('retry_limit', 'Retry limit', 3));
     }
 
-    public function test_a_group_is_on_or_off_by_its_toggle_or_its_default_and_a_group_read_earlier_keeps_its_revision(): void
+    public function test_a_group_follows_its_toggle_or_default_and_an_earlier_read_keeps_its_revision(): void
     {
         $this->storeSetting('Reviews', 'retry_limit', 7);
         $enabled = $this->resolver()->group($this->reviews->review);

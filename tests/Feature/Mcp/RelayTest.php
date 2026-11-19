@@ -43,7 +43,7 @@ final class RelayTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_initialize_tools_list_and_a_tool_call_come_back_as_their_own_answers_and_a_notification_prints_nothing(): void
+    public function test_initialize_list_and_call_each_get_their_answer_and_a_notification_prints_nothing(): void
     {
         $this->startServer();
 

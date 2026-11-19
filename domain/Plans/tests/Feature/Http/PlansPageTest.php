@@ -59,7 +59,7 @@ final class PlansPageTest extends TestCase
             ->missing('page.data.selected'));
     }
 
-    public function test_the_search_and_selection_survive_in_the_query_and_the_start_is_offered_by_the_domain_rule(): void
+    public function test_search_and_selection_survive_in_the_query_and_the_domain_rule_offers_the_start(): void
     {
         $this->actingAs($this->owner)->get(
             "/plans?q=release&plan={$this->release->number}",

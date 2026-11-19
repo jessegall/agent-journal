@@ -108,7 +108,7 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     /**
      * The report as a search found it: its card with a snippet around the words.
      */
-    public function hit(string $words): ReportCard
+    public function searchResult(string $words): ReportCard
     {
         return ReportCard::from([
             'id' => $this->id,

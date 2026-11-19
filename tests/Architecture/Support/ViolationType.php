@@ -50,10 +50,13 @@ enum ViolationType: string
         return match ($this) {
             self::UndeclaredDomain => "uses {$violation->used}, but {$violation->usingDomain} does not require {$violation->owner}",
             self::PrivateType => "uses {$violation->used}, which {$violation->owner} does not export; add it to {$violation->owner}'s exports() if it is meant to be public, or use what {$violation->owner} exports",
-            self::PrivateCoreType => "uses {$violation->used}, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists",
+            self::PrivateCoreType => "uses {$violation->used}, which is private to Core; list it in CoreApi if it is "
+                .'meant to be public, or use what CoreApi lists',
             self::PrivateTypeInSignature => "shows {$violation->used} at {$violation->detail}, but it is private to {$violation->owner}; export it or keep it out of the public signature",
-            self::DisallowedCategory => "exports {$violation->used}, which is {$violation->detail}; an owner publishes only interfaces, enums, immutable values and its own exceptions",
-            self::CompositionMisuse => "names {$violation->used} of {$violation->owner}, but a composition file names only what it composes: a descriptor, a provider, a middleware, the user model or a seeder",
+            self::DisallowedCategory => "exports {$violation->used}, which is {$violation->detail}; an owner "
+                .'publishes only interfaces, enums, immutable values and its own exceptions',
+            self::CompositionMisuse => "names {$violation->used} of {$violation->owner}, but a composition file "
+                .'names only what it composes: a descriptor, a provider, a middleware, the user model or a seeder',
             self::BindingMisuse => "binds {$violation->used}, but {$violation->detail}",
             self::PrivateEventHeard => "hears {$violation->used}, an event {$violation->owner} does not publish",
             self::OutsideEveryDomain => "uses {$violation->used}, which is project code outside every domain",
@@ -65,24 +68,38 @@ enum ViolationType: string
             self::ModelTableElsewhere => "has model table {$violation->used}, which {$violation->owner} owns",
             self::TableCreatedTwice => "creates table {$violation->used}, which {$violation->owner} also creates",
             self::MigrationNameTwice => "has the migration file name {$violation->used}, as does {$violation->owner}",
-            self::RootMigrationChangesDomainTable => "changes table {$violation->used} of {$violation->owner} from database/migrations",
+            self::RootMigrationChangesDomainTable => "changes table {$violation->used} of {$violation->owner} from "
+                .'database/migrations',
             self::StringEventName => "names the event {$violation->used} by a string; name its event class instead",
-            self::ReRaisedEvent => "raises {$violation->used} again, an event of {$violation->owner}; only its owner raises it",
-            self::ReRaisedReceivedEvent => "passes the event it received, {$violation->used}, on to a raise; only the owner of an event raises it",
-            self::MisnamedDomainClass => "declares {$violation->used}, but a Domain class must be Domain\\<Name>\\<Name>Domain",
-            self::FileOutsideDomains => 'lies outside every domain; new behaviour lives in a domain, and the starter-kit list is for existing starter-kit code until it moves',
-            self::StarterKitUsesDomain => "is starter-kit code that uses {$violation->used} of {$violation->owner}; starter-kit code may use no domain",
+            self::ReRaisedEvent => "raises {$violation->used} again, an event of {$violation->owner}; only its owner "
+                .'raises it',
+            self::ReRaisedReceivedEvent => "passes the event it received, {$violation->used}, on to a raise; only "
+                .'the owner of an event raises it',
+            self::MisnamedDomainClass => "declares {$violation->used}, but a Domain class must be "
+                .'Domain\\<Name>\\<Name>Domain',
+            self::FileOutsideDomains => 'lies outside every domain; new behaviour lives in a domain, and the '
+                .'starter-kit list is for existing starter-kit code until it moves',
+            self::StarterKitUsesDomain => "is starter-kit code that uses {$violation->used} of {$violation->owner}; "
+                .'starter-kit code may use no domain',
             self::NamespaceOutsideDomain => "declares namespace {$violation->used}, outside {$violation->owner}",
-            self::SharedPlaceFile => 'is not one of the fixed files of App\\Domains; the shared foundation holds only Domain, DomainEntry, DomainRegistry, DomainServiceProvider, the listener class reader and the named start-up exceptions',
-            self::FillableNotListed => "declares model {$violation->used}; list every fillable attribute with #[Fillable([...])], and nothing else",
+            self::SharedPlaceFile => 'is not one of the fixed files of App\\Domains; the shared foundation holds only '
+                .'Domain, DomainEntry, DomainRegistry, DomainServiceProvider, the listener class reader and the '
+                .'named start-up exceptions',
+            self::FillableNotListed => "declares model {$violation->used}; list every fillable attribute with "
+                .'#[Fillable([...])], and nothing else',
             self::OpenModel => "declares model {$violation->used}, which is open to mass assignment; close its guard",
             self::OpeningModelCall => "calls {$violation->used}, which opens a model to mass assignment",
             self::KeyNotUlid => "declares model {$violation->used}, whose key is no ULID; use HasUlids",
-            self::ModelReadsUnbounded => "declares model {$violation->used}, whose reads are not bounded; implement ReadableModel and use BoundedReads",
-            self::ListenerRegisteredByHand => "registers a listener for {$violation->used} by hand; write a concrete typed listener in a Listeners folder",
-            self::RawRowAccess => "calls {$violation->used}, which reaches rows past their model; use the model's scopes and methods (rule 25)",
-            self::ModelNotLinkable => "declares model {$violation->used}, which cannot be linked; use Linkable (rule 29)",
-            self::EventOutsideListener => "names {$violation->used}, an event of {$violation->owner}; only a listener of {$violation->usingDomain} may name it, as an import, a type or ::class",
+            self::ModelReadsUnbounded => "declares model {$violation->used}, whose reads are not bounded; implement "
+                .'ReadableModel and use BoundedReads',
+            self::ListenerRegisteredByHand => "registers a listener for {$violation->used} by hand; write a concrete "
+                .'typed listener in a Listeners folder',
+            self::RawRowAccess => "calls {$violation->used}, which reaches rows past their model; use the model's "
+                .'scopes and methods (rule 25)',
+            self::ModelNotLinkable => "declares model {$violation->used}, which cannot be linked; use Linkable (rule "
+                .'29)',
+            self::EventOutsideListener => "names {$violation->used}, an event of {$violation->owner}; only a "
+                ."listener of {$violation->usingDomain} may name it, as an import, a type or ::class",
         };
     }
 }

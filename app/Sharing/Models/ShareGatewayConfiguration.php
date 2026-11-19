@@ -103,7 +103,8 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function usable(string $configurationId): self
     {
-        return self::query()->enabled()->whereKey($configurationId)->first() ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+        return self::query()->enabled()->whereKey($configurationId)->first()
+            ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
     }
 
     /**
@@ -113,7 +114,8 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function lockUsable(string $configurationId): self
     {
-        return self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->first() ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+        return self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->first()
+            ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
     }
 
     /**
@@ -132,7 +134,10 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     public static function allRevisions(): array
     {
         return array_values(
-            self::query()->orderByDesc('id')->readAll('an installation keeps a handful of gateway revisions')->get()->all(),
+            self::query()->orderByDesc('id')
+                ->readAll('an installation keeps a handful of gateway revisions')
+                ->get()
+                ->all(),
         );
     }
 

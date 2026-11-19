@@ -158,9 +158,17 @@ final readonly class NavigationRecords implements RecordsNavigation
         }
 
         usort($roots, fn (RegisteredNavigation $one, RegisteredNavigation $other) => [
-            $one->page?->key !== 'web.home', $groupPositions[(string) $one->item->group], $one->item->position, $one->key,
+            $one->page
+                ?->key !== 'web.home', $groupPositions[(string) $one->item->group], $one
+                ->item
+                ->position, $one
+                ->key,
         ] <=> [
-            $other->page?->key !== 'web.home', $groupPositions[(string) $other->item->group], $other->item->position, $other->key,
+            $other->page
+                ?->key !== 'web.home', $groupPositions[(string) $other->item->group], $other
+                ->item
+                ->position, $other
+                ->key,
         ]);
 
         return $roots;

@@ -17,7 +17,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * skills_revisions: a stored skill's revisions, newest first, with its status.
  */
 #[Name('skills_revisions')]
-#[Description('The revisions of a stored skill, newest first, with its source, current revision, targets, availability and delivery.')]
+#[Description('The revisions of a stored skill, newest first, with its source, current revision, targets, '
+    .'availability and delivery.')]
 #[IsReadOnly]
 final class SkillRevisionsTool extends JournalReadTool
 {
