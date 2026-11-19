@@ -7480,7 +7480,6 @@ def test_a_brief_branch_only_origin_holds_is_fetched_and_checked_out_and_a_repos
     git_run(root / "platform", "remote", "add", "origin", str(origin))
     _, folder, _ = worktree_worker(app, monkeypatch, "platform and mobile, on feature/payroll-v2")
     assert (folder / "platform" / "payroll.php").is_file(), "fetched from origin and cut from it"
-    assert git_run(root / "platform", "rev-parse", "--abbrev-ref", "feature/payroll-v2@{upstream}").stdout.strip() == "origin/feature/payroll-v2"
     assert (folder / "mobile" / "app.php").is_file() and git_run(root / "mobile", "rev-parse", "--verify", "-q", "refs/heads/feature/payroll-v2").returncode != 0, "mobile, without the branch, is cut from its own checkout"
 
 
@@ -7491,3 +7490,34 @@ def test_a_branch_a_brief_only_mentions_is_no_base(app: App, monkeypatch):
     git_run(root / "platform", "checkout", "-q", "main")
     _, folder, _ = worktree_worker(app, monkeypatch, "platform: port the fix that feature/payroll-v2 made to main")
     assert not (folder / "platform" / "payroll.php").exists(), "named in passing, the branch is not the base"
+
+
+def test_a_worker_cut_from_main_before_its_brief_named_a_branch_keeps_merging_into_main_and_never_pours_main_into_the_branch(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "main-only.php", "<?php\n")
+    git_run(root / "platform", "branch", "worker/1-Worker-1", "main")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2. Payroll totals")
+    assert not (folder / "platform" / "payroll.php").exists(), "the worker's branch was there already, cut from main"
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert (root / "platform" / "totals.php").is_file(), "its work is merged into main, where it was cut"
+    assert "main-only.php" not in git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout, "main is not poured into feature/payroll-v2"
+
+
+def test_a_brief_branch_is_checked_out_from_a_checkout_cloned_with_main_only(app: App, monkeypatch):
+    """The hosted journal's checkouts fetch main only: git refused to track a branch fetched by hand ("is not a branch") and no base was made (19 Nov)."""
+    root = workspace_made(app, ("platform",))
+    origin = app.config.root.parent / "platform-origin.git"
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    git_run(app.config.root.parent, "clone", "-q", "--bare", str(root / "platform"), str(origin))
+    git_run(root / "platform", "branch", "-D", "feature/payroll-v2")
+    git_run(root / "platform", "remote", "add", "-t", "main", "origin", str(origin))
+    _, folder, _ = worktree_worker(app, monkeypatch, "Repositories: platform, on feature/payroll-v2.")
+    assert (folder / "platform" / "payroll.php").is_file(), "the base is made from the fetched ref and the worker cut from it"
