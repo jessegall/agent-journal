@@ -16,11 +16,15 @@ func startGroup(t *testing.T, script string) OwnedGroup {
 	if err := command.Start(); err != nil {
 		t.Fatalf("could not start the child: %v", err)
 	}
+	ended := make(chan struct{})
+	go func() {
+		_ = command.Wait()
+		close(ended)
+	}()
 	t.Cleanup(func() {
 		_ = syscall.Kill(-command.Process.Pid, syscall.SIGKILL)
-		_ = command.Wait()
+		<-ended
 	})
-	go func() { _ = command.Wait() }()
 	time.Sleep(100 * time.Millisecond)
 
 	return OwnedGroupOf(command.Process.Pid)
