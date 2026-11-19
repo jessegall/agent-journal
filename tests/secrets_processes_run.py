@@ -87,3 +87,28 @@ def test_secret_run_gives_gh_the_project_token_in_its_environment_and_masks_it(a
     (app.config.root / ".env").unlink()
     monkeypatch.delenv("GITHUB_TOKEN")
     assert "gh needs GITHUB_TOKEN" in console.run(command, AGENT).error
+
+
+def test_secret_run_gives_a_database_client_the_login_plain_values_with_its_fields(app, tmp_path, monkeypatch):
+    from journal.models.secret import Secret
+    from journal.models.secret_type import SecretType
+    from journal.repositories.secrets import Secrets
+    from journal.support.secret_values import SecretValues
+    import tempfile
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    tools = Path(tempfile.mkdtemp(prefix="tools-"))
+    fake = tools / "psql"
+    fake.write_text("#!/bin/sh\necho \"host:$PGHOST port:$PGPORT db:$PGDATABASE user:$PGUSER pw:$PGPASSWORD\"\n")
+    fake.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{tools}:/usr/bin:/bin")
+    secrets = app.container.get(Secrets)
+    secrets.save(Secret(title="Pg", secret_type=SecretType.LOGIN, fields=SecretType.LOGIN.first_fields("Pg"), programs=("psql",)), Actor.user("u"))
+    stored = app.container.get(SecretValues)
+    stored.put_shown("PG_USERNAME", "reader")
+    stored.put("PG_PASSWORD", "pgsecret987")
+    for name, value in (("PG_HOST", "db.example"), ("PG_PORT", "5432"), ("PG_DATABASE", "app")):
+        stored.put_shown(name, value)
+    secrets.save(secrets.find(1).is_filled("username").is_filled("password"), Actor.user("u"))
+    completed = app.console().run(["secret", "run", "1", "--", "psql"], AGENT)
+    assert "host:db.example port:5432 db:app user:reader pw:[secret PG_PASSWORD]" in completed.text, completed.text
+    assert "pgsecret987" not in completed.text

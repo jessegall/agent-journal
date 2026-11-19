@@ -39,7 +39,7 @@ class SecretRun:
             raise Rejection(f"secret {secret.id} has no value for {', '.join(missing)} here: ask with `journal secret request`")
         name_index = {f.name: values[f.variable] for f in fields}
         value = PLACEHOLDER.sub(lambda rows: name_index.get(rows[1], rows[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
-        client = ClientVariables(command[0], {f.name.lower(): values[f.variable] for f in fields})
+        client = ClientVariables(command[0], {**self.plain_values(fields, values), **{f.name.lower(): values[f.variable] for f in fields}})
         tokens = self.program_variables(command[0])
         given = {**tokens, **(client.environment() if client.applies() else {})}
         mask = OutputMask({**{token: name for name, token in tokens.items()}, **{values[f.variable]: f.variable for f in fields if f.hidden}})
@@ -56,6 +56,11 @@ class SecretRun:
             return finished.returncode, mask.masked(finished.stdout)
         finally:
             shutil.rmtree(home, ignore_errors=True)
+
+    def plain_values(self, fields: list[SecretField], values: dict[str, str]) -> dict[str, str]:
+        """The shown values stored beside a login's fields under its variable stem, such as HOST, PORT and DATABASE, by lower-case name."""
+        stems = {f.variable.rsplit("_", 1)[0] + "_" for f in fields if "_" in f.variable}
+        return {variable.removeprefix(stem).lower(): values[variable] for variable in self.values.shown() for stem in stems if variable.startswith(stem) and variable in values}
 
     def program_variables(self, name: str) -> dict[str, str]:
         if name != "gh":
