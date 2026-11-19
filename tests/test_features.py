@@ -6857,6 +6857,23 @@ def test_a_rebase_order_rebases_a_resting_worker_at_once_and_sends_a_clash_back(
     assert worker_row(app, 2).state == WorkerState.DISPATCHED and "conflict in platform/app.php" in worker_row(app, 2).brief, "one that clashes goes back to fix the files"
 
 
+def test_a_rebase_replays_only_the_workers_own_commits_not_foreign_ones_its_branch_holds_that_the_project_branch_lacks(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/other")
+    committed(root / "platform", "payroll.php", "<?php\n// the other task\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    assert git_run(folder / "platform", "merge", "-q", "--no-edit", "feature/other").returncode == 0
+    committed(folder / "platform", "totals.php", "<?php\n// totals\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    committed(root / "platform", "payroll.php", "<?php\n// the project's own payroll\n")
+    ordered = app.console().run(["worker", "rebase"], AGENT)
+    assert ordered.code == 0, ordered.error
+    assert worker_row(app).state == WorkerState.DELIVERED, "the foreign payroll commit is not replayed, so nothing clashes"
+    replayed = git_run(folder / "platform", "log", "--format=%s", "main..HEAD").stdout.split("\n")
+    assert [line for line in replayed if line] == ["the totals.php"], "only the worker's own commit lies beyond the project's branch"
+
+
 def test_a_long_run_whose_progress_showed_only_in_its_last_lines_is_flagged_and_one_counting_as_it_went_is_not():
     from datetime import datetime, timedelta, timezone
     from types import SimpleNamespace

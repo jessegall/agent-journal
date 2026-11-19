@@ -34,6 +34,7 @@ REBUILD_SUBJECT = "Build the built files again on the project's branch"
 # is cut from and its commits are merged into; a branch a brief only tells about ("merged on release/0.5") is none
 BRIEF_BRANCH = re.compile(r"(?:\brepositories:[^.\n]*?\bon|\bbase(?:\s+branch)?:)\s+`?((?:feature|fix|hotfix|bugfix|release|stage|chore)/[\w.\-/]*[\w-])`?", re.IGNORECASE)
 BASES = "bases"
+CLASHES_BEFORE_GIVING_UP = 5
 
 
 class WorkerBranch:
@@ -326,6 +327,9 @@ class WorkerBranch:
     def rebased(self, repository: WorkerRepository, worker: Worker) -> str:
         if self.has_stopped_rebase(repository) and not self.is_rebasing_onto(repository):
             self.git("rebase", "--abort", cwd=repository.worktree)
+        if self.has_stopped_rebase(repository) and worker.clashes >= CLASHES_BEFORE_GIVING_UP:
+            self.git("rebase", "--abort", cwd=repository.worktree)
+            return f"{repository.label()}, whose rebase clashed {worker.clashes} times in a row and was given up; the commits of the project's branch that are not the worker's own are never replayed, so ask for the worker's own commits to be cherry-picked onto the project's branch"
         unresolved = self.continue_rebase(repository) if self.has_stopped_rebase(repository) else ""
         if unresolved:
             return unresolved
@@ -338,7 +342,13 @@ class WorkerBranch:
             return ""
         if not repository.is_present:
             return f"{repository.label()}, whose worktree is gone, so its commits cannot be rebased"
-        return self.rebase_conflicts(repository, self.git("rebase", "--autostash", head, cwd=repository.worktree))
+        return self.rebase_conflicts(repository, self.git("rebase", "--autostash", *self.own_commits_onto(repository, head), cwd=repository.worktree))
+
+    def own_commits_onto(self, repository: WorkerRepository, head: str) -> tuple[str, ...]:
+        """The rebase arguments that replay only the worker's own commits onto head: those on no other branch, so commits other tasks landed that the worker's branch holds under other hashes are not replayed."""
+        branch = self.git("rev-parse", "--abbrev-ref", "HEAD", cwd=repository.worktree).stdout.strip()
+        own = self.git("rev-list", "HEAD", "--not", head, f"--exclude={branch}", "--branches", "--remotes", cwd=repository.worktree).stdout.split()
+        return ("--onto", head, f"{own[-1]}^") if own else (head,)
 
     def unresolved_conflicts(self, repository: WorkerRepository) -> str:
         return ", ".join(repository.path(path) for path in self.conflicts(repository.worktree).split(", ") if path and self.has_conflict_markers(repository.worktree / path))
