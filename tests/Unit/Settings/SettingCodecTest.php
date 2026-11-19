@@ -263,38 +263,38 @@ final class SettingCodecTest extends TestCase
                 'title',
             ],
             'a choice not among the options' => [
-                                fn (
-                                    SettingCodec $codec,
-                                    ReviewSettings $settings,
-                                ) => $codec->encodeOption(
-                                    'Reviews',
-                                    $settings->priority,
-                                    2,
-                                ),
-                                'priority',
-                            ],
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeOption(
+                    'Reviews',
+                    $settings->priority,
+                    2,
+                ),
+                'priority',
+            ],
             'a choice of the other type' => [
-                                                fn (
-                                                    SettingCodec $codec,
-                                                    ReviewSettings $settings,
-                                                ) => $codec->encodeOption(
-                                                    'Reviews',
-                                                    $settings->priority,
-                                                    '1',
-                                                ),
-                                                'priority',
-                                            ],
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeOption(
+                    'Reviews',
+                    $settings->priority,
+                    '1',
+                ),
+                'priority',
+            ],
             'a case of another enum' => [
-                                                                fn (
-                                                                    SettingCodec $codec,
-                                                                    ReviewSettings $settings,
-                                                                ) => $codec->encodeEnum(
-                                                                    'Reviews',
-                                                                    $settings->reviewLevel,
-                                                                    ReviewMode::Quick,
-                                                                ),
-                                                                'review_level',
-                                                            ],
+                fn (
+                    SettingCodec $codec,
+                    ReviewSettings $settings,
+                ) => $codec->encodeEnum(
+                    'Reviews',
+                    $settings->reviewLevel,
+                    ReviewMode::Quick,
+                ),
+                'review_level',
+            ],
         ];
     }
 

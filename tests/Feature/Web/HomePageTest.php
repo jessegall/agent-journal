@@ -85,18 +85,18 @@ final class HomePageTest extends TestCase
         )->get('/?window[plans.list][q]=release&q=elsewhere')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
         ) => $page
-                    ->component('web/Home')
-                    ->where('page.data.windows.0.paneKey', 'chat')
-                    ->where('page.data.windows.1.paneKey', 'plans')
-                    ->where('page.data.windows.2.paneKey', 'rules')
-                    ->where('page.data.barProps', ['section_web_bar_chat_agent'])
-                    ->missing('window_chat_conversation')
-                    ->missing('page.data.plans')
-                    ->missing('page.data.chat')
-                    ->reloadOnly('window_plans_list', fn (AssertableInertia $reload) => $reload
+            ->component('web/Home')
+            ->where('page.data.windows.0.paneKey', 'chat')
+            ->where('page.data.windows.1.paneKey', 'plans')
+            ->where('page.data.windows.2.paneKey', 'rules')
+            ->where('page.data.barProps', ['section_web_bar_chat_agent'])
+            ->missing('window_chat_conversation')
+            ->missing('page.data.plans')
+            ->missing('page.data.chat')
+            ->reloadOnly('window_plans_list', fn (AssertableInertia $reload) => $reload
                 ->where('window_plans_list.data.filters.q', 'release')
                 ->where('window_plans_list.data.pagination.total', 1))
-                    ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
+            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
                 ->where('window_chat_conversation.state', 'ready')
                 ->where('window_chat_conversation.data.sessions.0.id', (string) $this->session->id)
                 ->where('window_chat_conversation.data.sessions.0.agentName', 'Builder')
@@ -113,8 +113,8 @@ final class HomePageTest extends TestCase
         )->get('/?window[plans.list][q]=release&window[rules.list][q]=phase')->assertOk()->assertInertia(fn (
             AssertableInertia $page,
         ) => $page
-                    ->missing('page.data.rules')
-                    ->reloadOnly(['window_plans_list', 'window_rules_list'], fn (AssertableInertia $reload) => $reload
+            ->missing('page.data.rules')
+            ->reloadOnly(['window_plans_list', 'window_rules_list'], fn (AssertableInertia $reload) => $reload
                 ->where('window_plans_list.data.filters.q', 'release')
                 ->where('window_rules_list.data.filters.q', 'phase')
                 ->where('window_rules_list.data.pagination.total', 1)
