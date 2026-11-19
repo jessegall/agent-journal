@@ -2009,6 +2009,44 @@ def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app
     assert ended.state == WorkerState.UNFINISHED and "stopped after" in ended.run_end and "half done" in ended.run_end, "stopped at its limit, it keeps what it printed as the end of its run, its task still held"
 
 
+HOOK_LINE = json.dumps({"type": "system", "subtype": "hook_response", "session_id": "stalled-session"})
+
+
+def stalled_start(app: App, monkeypatch, command: list[str], retried: bool) -> tuple[Workers, list]:
+    """A dispatched worker's run under a start limit of a fraction of a second, its launches gathered instead of started."""
+    launched = []
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: launched.append(worker))
+    hook(app, "SessionStart")
+    dispatched(app.console(), ["Lady Lovelace", "say hello", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    user_set(app, WorkersOptions.START_MINUTES.key, 0.005)
+    workers = app.container.get(Workers)
+    worker = workers.find(1)
+    worker = workers.save(worker.start_retried("", timing.time()), Actor.system()) if retried else worker
+    launched.clear()
+    started_run(app.container.get(WorkerRunner), workers, worker, command, Actor.agent("s1"))
+    return workers, launched
+
+
+def test_a_worker_whose_agent_never_starts_its_session_is_launched_again_on_its_job_once(app: App, monkeypatch):
+    workers, launched = stalled_start(app, monkeypatch, ["sh", "-c", f"echo '{HOOK_LINE}'; sleep 30"], False)
+    worker = workers.find(1)
+    assert [w.id for w in launched] == [1] and worker.is_running() and worker.is_start_retried(), "a run that printed only its hook's lines is stopped at the start limit and launched again on its job, still out"
+    assert launched[0].resume == "" and launched[0].brief.startswith("say hello") and (launched[0].pid, launched[0].began) == (0, 0.0), "in a fresh session as it was launched, not the stalled one it named, with its job"
+
+
+def test_a_worker_whose_agent_never_starts_its_session_a_second_time_ends_unfinished(app: App, monkeypatch):
+    workers, launched = stalled_start(app, monkeypatch, ["sh", "-c", "sleep 30"], True)
+    worker = workers.find(1)
+    assert launched == [] and worker.state == WorkerState.UNFINISHED and worker.run_end.startswith("never started its session"), "the second stalled start is not launched again: its run ends unfinished, saying why"
+
+
+def test_a_worker_whose_agent_started_its_session_is_not_stopped_at_the_start_limit(app: App, monkeypatch):
+    init = json.dumps({"type": "system", "subtype": "init", "session_id": "s-ok"})
+    workers, launched = stalled_start(app, monkeypatch, ["sh", "-c", f"echo '{init}'; sleep 1; echo done"], False)
+    worker = workers.find(1)
+    assert launched == [] and not worker.is_start_retried() and worker.run_end.endswith("done"), "a run whose session began runs on past the start limit to its own end"
+
+
 def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app: App, monkeypatch):
     import subprocess
     from journal.repositories.tasks import Tasks

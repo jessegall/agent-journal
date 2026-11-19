@@ -1365,6 +1365,7 @@ workers.priorities_minutes = 45
 workers.model_fit_sample = 5
 workers.costly_shaped_work_dollars = 2.0
 workers.timeout_minutes = 60
+workers.start_minutes = 10
 workers.mode = 'builder'  (the user sets it)
 workers.test_runs = 3
 workers.test_waiting = ''

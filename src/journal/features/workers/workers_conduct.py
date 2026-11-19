@@ -47,6 +47,7 @@ TEST_LINE_NAME = 60
 # the waiting items a load line names before it counts the rest
 # what a line says of a worker whose run hit the time limit
 RUN_LIMIT_CAUSE = ": run limit"
+STALLED_START_CAUSE = ": its agent never started, twice"
 # the most of an earlier reason a send-back line quotes
 REJECTION_REASON_CHARACTERS = 30
 # the send-back on one task at which the orchestrator is told, once, to change the target, the worker or the model
@@ -87,6 +88,8 @@ class WorkersConduct(Conduct):
     def on_worker_unfinished(self, event: WorkerUnfinished, settings: Settings) -> Transition:
         if event.worker.is_other_dispatcher(event.session) or WorkerNews.is_gathered(settings):
             return self.none()
+        if event.is_stalled_start:
+            return self.none(WorkersNudges.RUN_UNFINISHED.create(n=event.worker.id, cause=STALLED_START_CAUSE))
         if event.times < 2 and event.worker.id in event.data.part(WorkersPart).resumable:
             return self.none()
         return self.none(WorkersNudges.RUN_UNFINISHED.create(n=event.worker.id, cause=RUN_LIMIT_CAUSE if event.is_run_limit else ""))
