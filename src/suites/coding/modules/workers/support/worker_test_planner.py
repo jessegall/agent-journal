@@ -60,7 +60,9 @@ class WorkerTestPlanner:
     def test_folder(self, worktree: Worktree, running: set[int]) -> str:
         if worktree.merged_at is not None:
             return self.runner.folder(self.environments.find(worktree.environment_id), self.plans.find_phase(worktree.task_id).plan_id)
-        return self.git.test_folder(worktree) if worktree.id in running else self.git.test_checkout(worktree)
+        # a test checkout made new has only the committed files: the worktree's library copies and links are given to
+        # it as to the picker's, and one already holding them is left as it is
+        return self.git.test_folder(worktree) if worktree.id in running else self.libraries.worker_checkout(worktree, self.git.test_checkout(worktree))
 
     # the queued proofs of one worktree that run one test program over named files run as one run over all their
     # files; a proof that names no file runs alone, or with the proofs of the very same command
