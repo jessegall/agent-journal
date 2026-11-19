@@ -20,6 +20,7 @@ from suites.coding.modules.workers.listeners.support.worker_test_starts import W
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.support.proof_test_command import ProofTestCommand
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.output_end import FAILURES_END_BYTES
 
 
 class WorkerTestEndListener(CommitListener[Moved[Process]]):
@@ -58,7 +59,7 @@ class WorkerTestEndListener(CommitListener[Moved[Process]]):
             return frozenset()
         if len(proofs) == 1:
             return frozenset({proofs[0].id})
-        failures = ProofTestCommand.failure_text(self.output.all_output(process.id))
+        failures = ProofTestCommand.failure_text(self.output.end_text(process.id, FAILURES_END_BYTES))
         named = frozenset(proof.id for proof in proofs if ProofTestCommand.parsed(proof.test_command).is_named_in(failures))
         return named or frozenset(proof.id for proof in proofs)
 

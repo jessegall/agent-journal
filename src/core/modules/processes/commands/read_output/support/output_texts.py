@@ -8,6 +8,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.output_access import OutputAccess
 from core.modules.processes.support.output_folder import OutputFolder
+from engine.file.file_access import READ_LIMIT_BYTES
 
 
 FLAGS = "--summary, --all, --lines, --tail or --reader"
@@ -36,6 +37,9 @@ class OutputTexts:
         return self.folder.cut_bytes(process_id) == 0
 
     def full_lines(self, process: Process, command: ReadOutput) -> list[str]:
+        size = self.folder.total_bytes(process.id)
+        if size > READ_LIMIT_BYTES:
+            raise Refusal(f"output {process.id} holds {size} bytes, too much to read whole", f"read a part: journal output read {process.id} --tail 40, or --lines <first>-<last>")
         return self.folder.all_output(process.id).splitlines()
 
     def tail(self, process: Process, command: ReadOutput) -> list[str]:

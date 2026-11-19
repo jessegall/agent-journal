@@ -30,6 +30,7 @@ from suites.coding.modules.workers.support.phase_test_deferral_rules import Phas
 from suites.coding.modules.workers.support.phase_test_deferrals import PhaseTestDeferrals
 from suites.coding.modules.workers.support.worker_questions import WorkerQuestions
 from suites.coding.modules.workers.support.worker_settings import PHASE_TEST_DEFERRAL_LIMIT
+from core.modules.processes.support.output_end import FAILURES_END_BYTES
 
 LOG_LINE = "merger deferred {paths} of the test of checkpoint phase {phase} until the checkpoint of phase {due}: was {command}; now {shorter}; why: {reason}"
 WORKER_LINE = ("the failing test paths {paths} of checkpoint phase {phase} wait for the checkpoint of phase {due}: there is nothing to fix,"
@@ -85,7 +86,7 @@ class DeferPhaseTestHandler(Handler[DeferPhaseTest, str]):
         failed = [test for test in self.results.tests(reach) if test.state is AffectedTestState.FAILED and not test.picker_command]
         if not failed:
             return None
-        return tuple(path for test in failed for path in FailedTestPaths.read(self.output.all_output(test.process_id)).paths)
+        return tuple(path for test in failed for path in FailedTestPaths.read(self.output.end_text(test.process_id, FAILURES_END_BYTES)).paths)
 
     @staticmethod
     def refuse_repeat(omitted: tuple[PhaseTestDeferral, ...], paths: tuple[str, ...]) -> None:

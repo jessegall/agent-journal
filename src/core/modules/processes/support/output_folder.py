@@ -259,6 +259,13 @@ class OutputFolder:
     def reader_text(self, process_id: int, position: int) -> str:
         return ColourCodes.removed(self.output(process_id, position)) if position else self.all_output(process_id)
 
+    # the end of the whole output, at most size bytes, starting at a whole line: test failures and their summary are
+    # printed last, so this is where a run's failures are read, whatever the output's size
+    def end_text(self, process_id: int, size: int) -> str:
+        start = max(0, self.total_bytes(process_id) - size)
+        text = self.bytes_after(process_id, start).decode(errors="replace")
+        return ColourCodes.removed(text if start == 0 else text[text.find("\n") + 1:])
+
     def last_text(self, process_id: int) -> str:
         return "\n".join(self.last_lines(process_id, COUNT_LINES))
 

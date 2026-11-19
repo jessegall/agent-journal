@@ -11,6 +11,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.support.failed_run import FailedRun
 from suites.coding.modules.workers.support.failed_test_paths import FailedTestPaths
 from suites.coding.modules.workers.support.failure_attribution import FailureAttribution
+from core.modules.processes.support.output_end import FAILURES_END_BYTES
 
 
 class CheckpointFailures:
@@ -31,7 +32,7 @@ class CheckpointFailures:
         if failed_tests:
             attribution = FailureAttribution(tuple(proof for proof in proofs if proof.test_command), self.last_task_id(reach))
             for test in failed_tests:
-                attributed = attribution.attributed(FailedTestPaths.read(self.output.all_output(test.process_id)).paths)
+                attributed = attribution.attributed(FailedTestPaths.read(self.output.end_text(test.process_id, FAILURES_END_BYTES)).paths)
                 task_outputs[attributed.task_id].append(test.process_id)
                 fallback_task_id = fallback_task_id if attributed.is_certain else attributed.task_id
         return FailedRun({task_id: tuple(output_ids) for task_id, output_ids in task_outputs.items()}, fallback_task_id)

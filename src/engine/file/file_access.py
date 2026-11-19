@@ -13,6 +13,7 @@ from typing import IO, Any, ClassVar
 from weakref import WeakValueDictionary
 
 from engine.errors.unbounded_search_error import UnboundedSearchError
+from engine.errors.file_too_large_error import FileTooLargeError
 from engine.file.file_tally import FileTally
 from engine.file.versions.file_contents import FileContents
 from engine.file.versions.file_version import FileVersion
@@ -22,6 +23,8 @@ from engine.time.thread_turn_count import THREAD_TURN_COUNT
 FILE_READ_EVENT = "journal.file.read"
 FILE_CHANGE_EVENT = "journal.file.write"
 CACHE_SIZE_FILES = 256
+# the most a whole-file read takes; past it the read is refused, so no code reads an insanely large file by accident
+READ_LIMIT_BYTES = 8 * 1024 * 1024
 RESOLVED_PATH_COUNT = 8192
 WALK_LIMIT_UNDER_WRITE_TURN_FOLDERS = 20000
 # the depth a walk over one of the journal's own code trees names: its source, its tests, a plugin or a checkout
@@ -45,16 +48,17 @@ class FileAccess:
     lock: ClassVar[RLock] = RLock()
 
     @classmethod
-    def read(cls, file: Path | str, encoding: str | None = None, errors: str | None = None, newline: str | None = None) -> str:
-        with io.TextIOWrapper(io.BytesIO(cls.binary(file)), encoding=encoding, errors=errors, newline=newline) as text:
+    def read(cls, file: Path | str, encoding: str | None = None, errors: str | None = None, newline: str | None = None, limit_bytes: int = READ_LIMIT_BYTES) -> str:
+        with io.TextIOWrapper(io.BytesIO(cls.binary(file, limit_bytes)), encoding=encoding, errors=errors, newline=newline) as text:
             return text.read()
 
     # The text of a file as it is now, never from the cache: for a file the system changes on its own, such as one under
     # /proc.
     @classmethod
-    def current(cls, file: Path | str, errors: str | None = None) -> str:
+    def current(cls, file: Path | str, errors: str | None = None, limit_bytes: int = READ_LIMIT_BYTES) -> str:
         path = Path(file).resolve()
         sys.audit(FILE_READ_EVENT, str(path))
+        cls.refuse_past_limit(path, path.stat().st_size, limit_bytes)
         return path.read_text(errors=errors)
 
     @classmethod
@@ -66,10 +70,11 @@ class FileAccess:
             return opened.read(length)
 
     @classmethod
-    def binary(cls, file: Path | str) -> bytes:
+    def binary(cls, file: Path | str, limit_bytes: int = READ_LIMIT_BYTES) -> bytes:
         path = Path(file).resolve()
         sys.audit(FILE_READ_EVENT, str(path))
         version = cls.version(path)
+        cls.refuse_past_limit(path, version.size_bytes, limit_bytes)
         with cls.lock:
             kept = cls.contents.get(path)
             if kept is not None and kept.version == version:
@@ -83,6 +88,11 @@ class FileAccess:
             if len(cls.contents) > CACHE_SIZE_FILES:
                 cls.contents.popitem(last=False)
         return data
+
+    @staticmethod
+    def refuse_past_limit(path: Path, size_bytes: int, limit_bytes: int) -> None:
+        if size_bytes > limit_bytes:
+            raise FileTooLargeError(str(path), size_bytes, limit_bytes)
 
     @classmethod
     def version(cls, file: Path | str) -> FileVersion:
