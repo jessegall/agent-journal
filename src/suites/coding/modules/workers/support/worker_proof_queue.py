@@ -61,9 +61,11 @@ class WorkerProofQueue:
     def merge_ready_time(self, task: Task, context: Context) -> Timestamp | None:
         return context.timestamp if self.plans.is_started_plan(task.id) else None
 
+    # each proof is read again before its move, since moving one can move the others of its worktree through a listener
     def move_delivered(self, worktree: Worktree, move: Move, context: Context) -> None:
-        for proof in tuple(self.proofs.delivered_proofs(worktree.id).every_row(WORKTREE_PROOFS_REASON)):
-            if proof.test_command:
+        for proof_id in tuple(proof.id for proof in self.proofs.delivered_proofs(worktree.id).every_row(WORKTREE_PROOFS_REASON)):
+            proof = self.queries.query(Proof).find(proof_id)
+            if proof.state is ProofState.SHOWN and proof.test_command:
                 self.repository.save_change(proof, proof.moved(move), context)
 
     def queue_selected(self, worktree: Worktree, task_id: int, context: Context) -> int:
