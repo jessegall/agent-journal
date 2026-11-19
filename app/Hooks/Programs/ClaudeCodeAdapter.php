@@ -185,7 +185,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             return $this->files->guard(
                 $hook,
                 FileAccess::Read,
-                $payload->textArguments('file_path', 'path'),
+                $payload->toolArguments()->presentTexts('file_path', 'path'),
                 fn () => new UnjudgedCall(ProgramReplies::allowTool([])),
             );
         }

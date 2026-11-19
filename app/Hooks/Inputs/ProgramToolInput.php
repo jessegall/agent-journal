@@ -40,6 +40,16 @@ final readonly class ProgramToolInput
         return is_string($value) ? $value : null;
     }
 
+    /**
+     * Every named argument that holds text, in the order named; a call that leaves them all out gives none.
+     *
+     * @return list<string>
+     */
+    public function presentTexts(string ...$names): array
+    {
+        return array_values(array_filter(array_map($this->textArgument(...), $names), is_string(...)));
+    }
+
     public function hasArgument(string $name): bool
     {
         return array_key_exists($name, $this->arguments) && $this->arguments[$name] !== null;

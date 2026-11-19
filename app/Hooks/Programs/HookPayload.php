@@ -144,21 +144,6 @@ final class HookPayload extends Data
     }
 
     /**
-     * Every named tool argument that holds text, in the order named; a tool that leaves them out gives none.
-     *
-     * @return list<string>
-     */
-    public function textArguments(string ...$names): array
-    {
-        $arguments = $this->toolArguments();
-
-        return array_values(array_filter(
-            array_map(fn (string $name) => $arguments[$name] ?? null, $names),
-            fn (mixed $value) => is_string($value),
-        ));
-    }
-
-    /**
      * The first of the named tool arguments that holds text.
      */
     public function argument(string ...$names): string
