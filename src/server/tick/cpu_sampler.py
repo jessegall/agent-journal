@@ -14,6 +14,8 @@ RUN_SECONDS = 60.0
 LISTED_FUNCTIONS = 40
 # a code file of the journal's own, as against the standard library: a server runs its code from .journal/versions
 JOURNAL_CODE_MARK = "/versions/"
+# the layers every read and file call goes through, passed so a caller names the code that asked
+PASSED_LAYERS = ("/engine/database/", "/engine/query/", "/engine/file/", "/engine/model/")
 # the frames a thread stands in while it waits, which take no CPU
 IDLE_FUNCTIONS = frozenset({"wait", "select", "sleep", "accept", "poll", "readinto", "recv_into", "serve_forever", "_wait_for_tstate_lock", "get_request"})
 
@@ -63,11 +65,12 @@ class CpuSampler:
         code = frame.f_code  # type: ignore[attr-defined]
         return f"{Path(code.co_filename).name}:{code.co_firstlineno} {code.co_name}"
 
-    # the first frame of the journal's own code from the running one outward, so a standard library call shows who made it
+    # the first frame of the journal's own code from the running one outward, past its database, query and file layers,
+    # so a read or a file call shows the code that asked for it
     @staticmethod
     def journal_caller(frame: object) -> str:
         caller = frame.f_back  # type: ignore[attr-defined]
-        while caller is not None and JOURNAL_CODE_MARK not in caller.f_code.co_filename:
+        while caller is not None and (JOURNAL_CODE_MARK not in caller.f_code.co_filename or any(layer in caller.f_code.co_filename for layer in PASSED_LAYERS)):
             caller = caller.f_back
         return "none" if caller is None else CpuSampler.label(caller)
 
