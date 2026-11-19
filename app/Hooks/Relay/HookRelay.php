@@ -10,7 +10,9 @@ use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Support\AgentCallReply;
 use App\Agents\Support\LoggedBypass;
 use App\Hooks\Enums\CallFailure;
+use App\Hooks\Exceptions\OutputGrantsInvalid;
 use App\Hooks\Exceptions\ProgramReplyMalformed;
+use App\Hooks\Inputs\ProtectedFileRead;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
 use App\Programs\Enums\HookProgram;
@@ -34,9 +36,15 @@ final readonly class HookRelay
      */
     private const int ATTEMPTS = 2;
 
+    /**
+     * The one native tool whose call an output grant may let through with the journal away: a file read.
+     */
+    private const string READ_TOOL = 'Read';
+
     public function __construct(
         private SendsAgentRequests $client,
         private Filesystem $files,
+        private OutputGrantSeal $grantSeal,
     ) {}
 
     public function relay(HookProgram $program, string $payload, RelaySettings $settings): ProgramReply
@@ -118,8 +126,9 @@ final readonly class HookRelay
     }
 
     /**
-     * Whether a tool call reaches a saved account's folder; with no journal there is no output grant to read, so the
-     * session's own saved outputs are refused too until it is back.
+     * Whether a tool call reaches a saved account's folder. With no journal, a file read of one of the start's own
+     * outputs passes when the host's sealed snapshot grants that exact file; anything else in the account is
+     * refused, and so is every read when the snapshot is missing, stale or not sealed for this start.
      */
     private function touchesAccounts(string $payload, RelaySettings $settings): bool
     {
@@ -130,8 +139,37 @@ final readonly class HookRelay
         }
 
         $workFolder = is_string($call['cwd'] ?? null) ? $call['cwd'] : '/';
+        $readPath = $call['tool_input']['file_path'] ?? null;
+        $isOwnOutputRead = ($call['tool_name'] ?? null) === self::READ_TOOL && is_string($readPath)
+            && $this->grantsOf($settings)->allowsRead(ProtectedFileRead::resolve($workFolder, $readPath));
+
+        if ($isOwnOutputRead) {
+            return false;
+        }
 
         return $settings->accounts->isTouchedByToolCall($call['tool_input'], $workFolder);
+    }
+
+    /**
+     * The start's sealed output grants; a snapshot that is not sealed for this start grants nothing.
+     */
+    private function grantsOf(RelaySettings $settings): OutputGrants
+    {
+        if ($settings->startKey === '' || ! is_file($settings->outputGrantsFile)) {
+            return OutputGrants::none();
+        }
+
+        try {
+            return OutputGrants::fromSnapshot(
+                (string) file_get_contents($settings->outputGrantsFile),
+                $settings->startKey,
+                $this->grantSeal,
+            );
+        } catch (OutputGrantsInvalid $invalid) {
+            report($invalid);
+
+            return OutputGrants::none();
+        }
     }
 
     private function uploadBypasses(RelaySettings $settings, BypassLog $log): void

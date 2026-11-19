@@ -21,6 +21,10 @@ func (journal *startJournal) StartGrant(context.Context, string) (client.Grant, 
 		nil
 }
 
+func (journal *startJournal) OutputGrants(context.Context, string) ([]byte, error) {
+	return []byte(`{"generation":1,"paths":[],"seal":"s"}`), nil
+}
+
 func (journal *startJournal) ClaimStart(_ context.Context, sessionID string) (client.ClaimedStart, error) {
 	journal.claims++
 	if journal.claimError != nil {
@@ -34,8 +38,9 @@ func preparation(t *testing.T, journal *startJournal, prerequisites error) Start
 	t.Helper()
 	return StartPreparation{
 		Journal:       journal,
-		States:        StartStates{Folder: filepath.Join(t.TempDir(), "starts")},
-		Prerequisites: func(client.Grant, client.ClaimedStart) error { return prerequisites },
+		States:         StartStates{Folder: filepath.Join(t.TempDir(), "starts")},
+		Prerequisites:  func(client.Grant, client.ClaimedStart) error { return prerequisites },
+		RuntimesFolder: filepath.Join(t.TempDir(), "runtimes"),
 	}
 }
 

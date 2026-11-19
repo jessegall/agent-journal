@@ -19,6 +19,7 @@ use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\ProgramCompatibilities;
 use App\Hooks\Enums\ProgramEvidence;
+use App\Hooks\Relay\OutputGrantSeal;
 use App\Hooks\Resolvers\PinnedCompatibilities;
 use App\Hooks\Support\ProgramCompatibility;
 use App\Programs\Enums\HookProgram;
@@ -127,6 +128,23 @@ final class HostStartsTest extends TestCase
 
         $start = ProcessStart::query()->withoutGlobalScopes()->sole();
         $this->assertSame([ProcessStartState::Pending, null], [$start->state, $start->host_id]);
+    }
+
+    public function test_only_the_claiming_host_reads_the_sealed_output_grants_of_its_start(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $other = $this->enrollHost();
+        $key = (string) $this->signed($host, 'POST', '/host/starts/claim', ['session_id' => $opened->sessionId])
+            ->json('start_key');
+
+        $snapshot = $this->signed($host, 'GET', "/host/starts/{$key}/outputs")->assertOk()->json();
+
+        $this->assertSame([$key, [], 0], [$snapshot['start_key'], $snapshot['paths'], $snapshot['generation']]);
+        $this->assertSame(
+            $this->app->make(OutputGrantSeal::class)->seal($key, 0, []),
+            $snapshot['seal'],
+        );
+        $this->signed($other, 'GET', "/host/starts/{$key}/outputs")->assertNotFound();
     }
 
     public function test_the_host_claims_a_start_once_and_reports_its_execution_and_exit(): void

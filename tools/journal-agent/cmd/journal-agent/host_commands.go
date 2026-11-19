@@ -181,6 +181,7 @@ func (opener runtimeOpener) processRuntime(
 		Profile:        profile,
 		Environment:    environment,
 		Account:        accountOf(prepared),
+		RelayVariables: prepared.RelayVariables(settingsFolder),
 	}, grant.Runtime.ProcessGeneration)
 	identity := drivercontracts.RequestIdentity{RuntimeID: runtimeID}
 	if grant.Runtime.Model != nil {
@@ -205,7 +206,7 @@ func (opener runtimeOpener) terminalRuntime(
 ) (serving.Runtime, error) {
 	grant := prepared.Grant
 	request, err := startOf(profile, opener.stateFolder, opener.journalURL, opener.hookCommand, runtimeID, grant,
-		environment, accountOf(prepared))
+		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(opener.stateFolder, "runtimes", runtimeID)))
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +358,8 @@ func cleanEnvironmentOf(
 func startPreparation(journal *client.Client, stateFolder, installationFolder string) host.StartPreparation {
 	return host.StartPreparation{
 		Journal: journal,
-		States:  host.StartStates{Folder: filepath.Join(stateFolder, "starts")},
+		States:         host.StartStates{Folder: filepath.Join(stateFolder, "starts")},
+		RuntimesFolder: filepath.Join(stateFolder, "runtimes"),
 		Prerequisites: func(grant client.Grant, claim client.ClaimedStart) error {
 			return protectedStartAllowed(stateFolder, installationFolder, grant, claim)
 		},
@@ -426,7 +428,7 @@ func openMainRuntime(
 		return host.AttachRequest{}, err
 	}
 	return startOf(profile, stateFolder, journal.JournalURL(), hookCommand, opened.RuntimeID, prepared.Grant,
-		environment, accountOf(prepared))
+		environment, accountOf(prepared), prepared.RelayVariables(filepath.Join(stateFolder, "runtimes", opened.RuntimeID)))
 }
 
 // startOf builds the program's terminal start for a runtime from its pinned profile and its start grant: the
@@ -439,6 +441,7 @@ func startOf(
 	grant client.Grant,
 	environment []string,
 	account *contracts.AccountStart,
+	relayVariables []string,
 ) (host.AttachRequest, error) {
 	conversationID, err := newConversationID()
 	if err != nil {
@@ -472,6 +475,7 @@ func startOf(
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(grant.Runtime.ProcessGeneration),
 		"JOURNAL_BYPASS_LOG="+filepath.Join(start.SettingsFolder, drivers.BypassLogName))
 	environment = append(environment, grant.ProfileEnvironment()...)
+	environment = append(environment, relayVariables...)
 	return host.AttachRequest{
 		RuntimeID: runtimeID,
 		Command:   append([]string{profile.Program()}, startArguments...),

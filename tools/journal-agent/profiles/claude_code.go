@@ -138,6 +138,9 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 	if err := mergeProtection(settings, start.Account.Protection); err != nil {
 		return nil, err
 	}
+	if err := requireSandbox(settings); err != nil {
+		return nil, err
+	}
 	content, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {
 		return nil, err
@@ -174,6 +177,18 @@ func mergeProtection(settings map[string]any, protection string) error {
 		if err := addSetting(settings, name, name, value); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// requireSandbox refuses an account start whose effective settings would let a tool run outside Claude Code's
+// sandbox or skip its permission rules: the boundary must hold before any tool runs, not only on paper.
+func requireSandbox(settings map[string]any) error {
+	sandbox, _ := settings["sandbox"].(map[string]any)
+	permissions, _ := settings["permissions"].(map[string]any)
+	if sandbox["enabled"] != true || sandbox["allowUnsandboxedCommands"] != false ||
+		permissions["disableBypassPermissionsMode"] != "disable" {
+		return errors.New("the account start's settings do not keep every tool in the sandbox: it is not started")
 	}
 	return nil
 }

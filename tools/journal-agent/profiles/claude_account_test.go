@@ -63,3 +63,14 @@ func TestAnAccountSettingThatWouldReplaceTheStartsOwnIsRefused(t *testing.T) {
 		t.Fatal("an account setting replaced the start's own effort")
 	}
 }
+
+func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T) {
+	start := contracts.Start{
+		Mode: contracts.ProcessMode, SettingsFolder: "/state", SessionID: "session",
+		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: `{"sandbox":{"enabled":false}}`},
+	}
+
+	if _, err := (ClaudeCode{}).SettingsFiles(start); err == nil {
+		t.Fatal("an account start without the sandbox was prepared")
+	}
+}

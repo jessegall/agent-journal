@@ -160,7 +160,7 @@ func TestATerminalStartCarriesTheGrantsCredentialAndGeneration(t *testing.T) {
 	grant := client.Grant{Token: "launch-token", Runtime: client.RuntimeStart{Folder: folder, ProcessGeneration: 4}}
 
 	launch, err := startOf(profiles.ClaudeCode{}, folder, "http://journal.test", "", "runtime-1", grant,
-		[]string{"LANG=C"}, nil)
+		[]string{"LANG=C"}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

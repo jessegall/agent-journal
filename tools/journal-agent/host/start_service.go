@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 
 	"journal-agent/client"
 )
 
 // StartJournal is what preparing a start asks the journal: the runtime's one-use grant and its account claim.
 type StartJournal interface {
+	OutputGrantSource
 	StartGrant(ctx context.Context, runtimeID string) (client.Grant, error)
 	ClaimStart(ctx context.Context, sessionID string) (client.ClaimedStart, error)
 }
@@ -21,6 +23,14 @@ type PreparedStart struct {
 	Claim client.ClaimedStart
 }
 
+// RelayVariables tell the program's hook relay the start's key and where its sealed output grants are.
+func (prepared PreparedStart) RelayVariables(runtimeFolder string) []string {
+	return []string{
+		"JOURNAL_START_KEY=" + prepared.Claim.StartKey,
+		"JOURNAL_OUTPUT_GRANTS=" + filepath.Join(runtimeFolder, OutputGrantsName),
+	}
+}
+
 // StartPrerequisites refuses a start the host cannot run protected, such as one with no verified installation or
 // whose arrangement the host has not proven.
 type StartPrerequisites func(grant client.Grant, claim client.ClaimedStart) error
@@ -30,6 +40,8 @@ type StartPreparation struct {
 	Journal       StartJournal
 	States        StartStates
 	Prerequisites StartPrerequisites
+	// RuntimesFolder holds each runtime's folder, where its sealed output grants are refreshed before release.
+	RuntimesFolder string
 }
 
 // ErrClaimUncertain is returned for a runtime whose account claim may have been taken while its answer was lost:
@@ -66,6 +78,10 @@ func (preparation StartPreparation) Prepare(ctx context.Context, runtimeID strin
 	}
 	if err := preparation.Prerequisites(record.Grant, *record.Claim); err != nil {
 		return PreparedStart{}, fmt.Errorf("runtime %s is not started: %w", runtimeID, err)
+	}
+	runtimeFolder := filepath.Join(preparation.RuntimesFolder, runtimeID)
+	if err := RefreshOutputGrants(ctx, preparation.Journal, record.Claim.StartKey, runtimeFolder); err != nil {
+		return PreparedStart{}, fmt.Errorf("runtime %s is not started without its output grants: %w", runtimeID, err)
 	}
 	record.Stage = Prepared
 	if err := preparation.States.Save(record); err != nil {

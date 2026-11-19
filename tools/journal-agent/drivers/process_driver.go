@@ -44,6 +44,8 @@ type ProcessRuntime struct {
 	Environment []string
 	// Account is the saved account each child signs in with.
 	Account *profilecontracts.AccountStart
+	// RelayVariables tell the hook relay the start's key and where its sealed output grants are.
+	RelayVariables []string
 }
 
 // ProcessDriver runs one child of the program per turn, each with a new process generation. Settings asked for between
@@ -172,6 +174,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		"JOURNAL_BYPASS_LOG="+filepath.Join(driver.runtime.SettingsFolder, BypassLogName),
 	)
 	command.Env = append(command.Env, driver.runtime.ProfilePin...)
+	command.Env = append(command.Env, driver.runtime.RelayVariables...)
 	if err := command.Start(); err != nil {
 		driver.generation--
 		return contracts.OperationResult{}, err

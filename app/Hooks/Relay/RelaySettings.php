@@ -28,6 +28,8 @@ final readonly class RelaySettings
         public int $timeoutSeconds = 10,
         public int $processGeneration = 0,
         public ProtectedAccounts $accounts = new ProtectedAccounts([]),
+        public string $outputGrantsFile = '',
+        public string $startKey = '',
     ) {}
 
     /**
@@ -52,7 +54,17 @@ final readonly class RelaySettings
             $start->value('JOURNAL_BYPASS_LOG'),
             processGeneration: self::processGenerationOf($start),
             accounts: self::protectedAccountsOf($start),
+            outputGrantsFile: self::valueOrNothing($start, 'JOURNAL_OUTPUT_GRANTS'),
+            startKey: self::valueOrNothing($start, 'JOURNAL_START_KEY'),
         );
+    }
+
+    /**
+     * The value the host gave the program under the name; empty when it gave none, as for a start with no account.
+     */
+    private static function valueOrNothing(StartEnvironment $start, string $name): string
+    {
+        return $start->has($name) ? $start->value($name) : '';
     }
 
     /**

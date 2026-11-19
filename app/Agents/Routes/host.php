@@ -9,6 +9,7 @@ use App\Http\Controllers\Agents\Host\ExitReportController;
 use App\Http\Controllers\Agents\Host\HeartbeatReportController;
 use App\Http\Controllers\Agents\Host\InterruptNavigationController;
 use App\Http\Controllers\Agents\Host\OpenMainRuntimeController;
+use App\Http\Controllers\Agents\Host\OutputGrantController;
 use App\Http\Controllers\Agents\Host\RaiseNavigationController;
 use App\Http\Controllers\Agents\Host\ReconcileStartsController;
 use App\Http\Controllers\Agents\Host\ReplayedEntryController;
@@ -43,4 +44,5 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/starts/{start}/running', ReportRunningController::class)->name('starts.running');
     Route::post('/starts/{start}/stopped', ReportStoppedController::class)->name('starts.stopped');
     Route::post('/starts/{start}/failure', ReportFailureController::class)->name('starts.failure');
+    Route::get('/starts/{start}/outputs', OutputGrantController::class)->name('starts.outputs');
 });
