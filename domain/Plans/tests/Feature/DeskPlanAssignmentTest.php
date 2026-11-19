@@ -10,8 +10,8 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskSeating;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Commands\AssignPlanWork;
@@ -55,7 +55,7 @@ final class DeskPlanAssignmentTest extends TestCase
         $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
         $agent = Agent::named('Main', 'main-agent');
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat($main->id, ActorIdentity::of($agent)),
+            fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
         );
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $phase = $plan->addPhase('Working');

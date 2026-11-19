@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\StepType;
 use App\Processes\Exceptions\ExecutionPlanRefused;
 use App\Processes\Support\ExecutionPlanner;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\PlanWord;
@@ -68,7 +68,7 @@ final class ExecutionPlanTest extends TestCase
 
     private function plan(string $line): ExecutionPlan
     {
-        $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
+        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
         $classification = $this->app->make(CommandClassifier::class)->classify(
             $tree,
             new ExecutionContext(ShellDialect::Bash, '/work', '/work'),

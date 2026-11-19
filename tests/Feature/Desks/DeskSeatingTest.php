@@ -10,11 +10,11 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Desks\Commands\SeatActor;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Exceptions\SeatCapacityReached;
 use App\Desks\Exceptions\SeatConflict;
 use App\Desks\Exceptions\SecondForwardingSeat;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use App\Desks\Support\SeatRelease;
 use Closure;
@@ -61,7 +61,7 @@ final class DeskSeatingTest extends TestCase
     public function test_an_actor_is_seated_replaced_and_released_and_each_change_advances_the_revision(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 2, true);
-        $seating = $this->app->make(SeatingWriter::class);
+        $seating = $this->app->make(DeskSeating::class);
 
         $seated = $this->inTransaction(fn () => $seating->seat($desk->id, $this->builder));
         $again = $this->inTransaction(fn () => $seating->seat($desk->id, $this->builder));
@@ -92,7 +92,7 @@ final class DeskSeatingTest extends TestCase
     {
         $main = DeskRecord::openNamed('main', 'Main', 1, true);
         $other = DeskRecord::openNamed('team', 'Team', 2, true);
-        $seating = $this->app->make(SeatingWriter::class);
+        $seating = $this->app->make(DeskSeating::class);
         $this->inTransaction(fn () => $seating->seat($main->id, $this->builder));
 
         $this->assertThrows(

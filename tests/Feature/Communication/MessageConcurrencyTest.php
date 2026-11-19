@@ -13,9 +13,9 @@ use App\Communication\Commands\ReadMessages;
 use App\Communication\Exceptions\InboxUnavailable;
 use App\Communication\Models\Message;
 use App\Desks\Commands\CreateDesk;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
+use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +38,7 @@ final class MessageConcurrencyTest extends MessagingTestCase
         $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
         $this->desk = DeskRecord::query()->findOrFail($this->runOnBus(new CreateDesk('Team', 1, false)));
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat($this->desk->id, $this->actorOf($this->builder)),
+            fn () => $this->app->make(DeskSeating::class)->seat($this->desk->id, $this->actorOf($this->builder)),
         );
     }
 
@@ -88,7 +88,7 @@ final class MessageConcurrencyTest extends MessagingTestCase
             $this->actorOf($this->reviewer),
         );
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->replace($change),
+            fn () => $this->app->make(DeskSeating::class)->replace($change),
         );
 
         $this->assertSame([], $this->claimsOn($questionId));

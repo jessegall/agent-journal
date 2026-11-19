@@ -9,8 +9,8 @@ use App\Agents\Values\ResourceRequest;
 use App\Hooks\Support\ShellOperations;
 use App\Operations\Enums\AccessType;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -81,7 +81,7 @@ final class OperationFactsTest extends TestCase
      */
     private function operations(string $line): array
     {
-        $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
+        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
         $classification = $this->app->make(CommandClassifier::class)->classify(
             $tree,
             new ExecutionContext(ShellDialect::Bash, base_path(), base_path()),

@@ -6,7 +6,6 @@ namespace App\Processes\Classification;
 
 use App\Processes\Contracts\AliasResolver;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
@@ -19,6 +18,7 @@ use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\PackageScripts;
 use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ProgramNames;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\AliasLookup;
 use App\Processes\Values\AliasOrigin;
 use App\Processes\Values\ClassFact;
@@ -76,7 +76,7 @@ final readonly class TreeClassifier implements CommandClassifier
         private ProgramNames $names,
         private RedirectFacts $redirects,
         private WrapperRules $wrappers,
-        private ShellSyntax $syntax,
+        private TreeParser $syntax,
         private ProgramClassifiers $programClassifiers,
         private PackageScripts $scripts,
         private AliasResolver $aliases,

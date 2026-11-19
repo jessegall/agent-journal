@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Actors\Contracts\ActiveActors;
 use App\Actors\Support\ActiveActorCounterRegistry;
+use App\Actors\Support\ActiveActorsResolver;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Models\Agent;
@@ -105,7 +105,7 @@ final class AgentSessionCounterTest extends TestCase
 
     public function test_the_agents_counter_is_registered_for_active_actors(): void
     {
-        $this->assertGreaterThanOrEqual(0, $this->app->make(ActiveActors::class)->snapshot()->agentSessions);
+        $this->assertGreaterThanOrEqual(0, $this->app->make(ActiveActorsResolver::class)->snapshot()->agentSessions);
         $this->assertSame(
             AgentSessionCounter::class,
             $this->app->make(ActiveActorCounterRegistry::class)->get(AgentSessionCounter::type())::class,

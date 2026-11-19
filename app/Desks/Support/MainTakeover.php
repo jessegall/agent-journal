@@ -8,7 +8,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentStorage;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
 
@@ -20,7 +19,7 @@ use App\Desks\Models\DeskSeat;
 final readonly class MainTakeover implements MainSeatTakeover
 {
     public function __construct(
-        private SeatingWriter $seating,
+        private DeskSeating $seating,
         private AssignmentStorage $store,
     ) {}
 

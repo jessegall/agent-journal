@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Support;
 
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Exceptions\ExecutionPlanRefused;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\ShellTree;
@@ -16,7 +16,7 @@ use App\Processes\Values\ShellTree;
  */
 final readonly class ExecutionPlanner
 {
-    public function __construct(private ShellSyntax $syntax) {}
+    public function __construct(private TreeParser $syntax) {}
 
     /**
      * @throws ExecutionPlanRefused

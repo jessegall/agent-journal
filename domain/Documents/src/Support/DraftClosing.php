@@ -9,7 +9,6 @@ use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Api\Events\DocumentPublished;
-use Domain\Documents\Contracts\EditorContext;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
@@ -22,7 +21,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class DraftClosing
 {
-    public function __construct(private EditorContext $editors, private Dispatcher $events) {}
+    public function __construct(private RequestEditor $editors, private Dispatcher $events) {}
 
     /**
      * The editor closes their own draft.

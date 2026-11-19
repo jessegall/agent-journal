@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Data\ExplainedNodeData;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
@@ -13,6 +12,7 @@ use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Support\Explanations;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -176,7 +176,7 @@ final class BuiltInRulesTest extends TestCase
 
     private function classify(string $line): Classification
     {
-        $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
+        $tree = $this->app->make(TreeParser::class)->parse($line, ShellDialect::Bash);
 
         return $this->app->make(CommandClassifier::class)->classify(
             $tree,

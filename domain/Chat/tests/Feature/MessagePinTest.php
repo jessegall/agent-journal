@@ -15,9 +15,9 @@ use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Exceptions\MessageMissing;
 use App\Desks\Commands\CreateDesk;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
+use App\Desks\Support\DeskSeating;
 use App\Desks\Support\SeatChange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -143,7 +143,7 @@ final class MessagePinTest extends TestCase
     private function seat(string $agentId): void
     {
         $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)
+            fn () => $this->app->make(DeskSeating::class)
                 ->seat($this->desk->id, new ActorIdentity(ActorType::Agent, $agentId)),
         );
     }
@@ -156,7 +156,7 @@ final class MessagePinTest extends TestCase
         $this->app->make(AssignmentTransaction::class)->run(function () use ($seat, $agentId): void {
             $current = $this->app->make(AssignmentStore::class)->lockCurrent($seat->assignmentIdentity())->get();
             $successor = new ActorIdentity(ActorType::Agent, $agentId);
-            $this->app->make(SeatingWriter::class)
+            $this->app->make(DeskSeating::class)
                 ->replace(new SeatChange($this->desk->id, $seat->id, $current->reference, $successor));
         });
     }

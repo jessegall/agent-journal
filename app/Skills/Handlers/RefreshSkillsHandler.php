@@ -8,8 +8,6 @@ use App\Agents\Models\AgentSession;
 use App\Contracts\CommandHandler;
 use App\Reads\Attributes\ReadBudget;
 use App\Skills\Commands\RefreshSkills;
-use App\Skills\Contracts\SkillRenderer;
-use App\Skills\Contracts\SkillSource;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSelectionConflict;
@@ -18,10 +16,12 @@ use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Resolvers\SkillCatalogue;
 use App\Skills\Resolvers\Support\SkillContextResolver;
+use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
+use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\PublicationIntent;
 use App\Skills\Values\RefreshResult;
 use App\Skills\Values\SkillEntry;
@@ -34,9 +34,9 @@ final readonly class RefreshSkillsHandler implements CommandHandler
     public function __construct(
         private SkillRegistry $registry,
         private Container $container,
-        private SkillRenderer $renderer,
+        private CanonicalRenderer $renderer,
         private ConditionTree $conditions,
-        private SkillSource $stored,
+        private StoredSkillSource $stored,
         private SkillContextResolver $contexts,
         private SkillSelection $selection,
         private SkillTargets $targets,

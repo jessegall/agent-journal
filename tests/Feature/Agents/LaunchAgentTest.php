@@ -15,7 +15,7 @@ use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchRecord;
-use App\Agents\Resolvers\HostLaunchMaterial;
+use App\Agents\Resolvers\Support\HostLaunchMaterial;
 use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;

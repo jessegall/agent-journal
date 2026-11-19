@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Actors\Contracts\ActiveActors;
 use App\Actors\Contracts\ServerClock;
+use App\Actors\Support\ActiveActorsResolver;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
@@ -163,10 +163,10 @@ final class DueWorkOnTickTest extends TestCase
             )->getStatusCode(),
         );
 
-        $this->assertSame(0, $this->app->make(ActiveActors::class)->snapshot()->agentSessions);
+        $this->assertSame(0, $this->app->make(ActiveActorsResolver::class)->snapshot()->agentSessions);
         $this->assertSame(200, $source->beat());
 
-        $this->assertSame(1, $this->app->make(ActiveActors::class)->snapshot()->agentSessions);
+        $this->assertSame(1, $this->app->make(ActiveActorsResolver::class)->snapshot()->agentSessions);
     }
 
     /**

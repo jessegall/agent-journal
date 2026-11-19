@@ -8,7 +8,7 @@ use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
 use App\Actors\Support\AttentionOutcome;
-use App\Agents\Contracts\ActorRuntimeResolver;
+use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
 
 /**
  * Wakes the actor's current runtime through WakeAgent, keyed by the origin, or reports that it runs in none.
@@ -16,7 +16,7 @@ use App\Agents\Contracts\ActorRuntimeResolver;
 final readonly class CurrentRuntimeAttention implements ActorAttention
 {
     public function __construct(
-        private ActorRuntimeResolver $runtimes,
+        private CurrentAgentRuntimes $runtimes,
         private AgentWakes $wakes,
     ) {}
 

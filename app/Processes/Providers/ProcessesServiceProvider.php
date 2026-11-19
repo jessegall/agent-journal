@@ -33,13 +33,10 @@ use App\Processes\Console\ReaderSampleRunCommand;
 use App\Processes\Console\RunProcessCommand;
 use App\Processes\Contracts\AliasResolver;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\CommandRuleResolver;
 use App\Processes\Contracts\OutputRecorder;
-use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\ShellCommandParser;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\ProcessAbility;
 use App\Processes\Models\ClassificationRule;
@@ -87,13 +84,13 @@ final class ProcessesServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(ShellCommandParser::class, ShellParser::class);
-        $this->app->singleton(ShellSyntax::class, TreeParser::class);
+        $this->app->singleton(TreeParser::class);
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
-        $this->app->scoped(CommandRuleResolver::class, ProjectRules::class);
+        $this->app->scoped(ProjectRules::class);
         $this->app->scoped(ActiveRules::class);
         $this->app->scoped(ShellAdmission::class, LineAdmission::class);
         $this->app->scoped(VerificationTiming::class, OpenTiming::class);
-        $this->app->scoped(ResultPublisher::class, ReceiptPublisher::class);
+        $this->app->scoped(ReceiptPublisher::class);
         $this->app->scoped(ResultReceipts::class, ProjectReceipts::class);
         $this->app->when(TreeClassifier::class)
             ->needs(CommandRuleRegistry::class)

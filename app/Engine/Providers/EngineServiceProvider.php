@@ -7,7 +7,6 @@ namespace App\Engine\Providers;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Enums\ActorType;
 use App\Engine\Console\TickCommand;
-use App\Engine\Contracts\EngineLock;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Contracts\Sleeper;
 use App\Engine\Contracts\Watchdog;
@@ -48,7 +47,7 @@ final class EngineServiceProvider extends ServiceProvider
             $app->make('config')->integer('engine.batch_size'),
             $app->make('config')->integer('engine.watchdog_seconds'),
         ));
-        $this->app->singleton(EngineLock::class, AdvisoryEngineLock::class);
+        $this->app->singleton(AdvisoryEngineLock::class);
         $this->app->scoped(EngineAccess::class);
         $this->app->scoped(TickOrigins::class);
         $this->app->bind(EngineTargetAccess::class, fn (Application $app) => $app->make(EngineAccess::class));

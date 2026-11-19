@@ -10,7 +10,6 @@ use App\Communication\Contracts\InboxAccess;
 use App\Communication\Contracts\InboxProvider;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Contracts\MemberInboxes;
 use App\Communication\Contracts\NamesInboxes;
 use App\Communication\Exceptions\InboxProviderInvalid;
 use App\Communication\Exceptions\InboxUnavailable;
@@ -22,7 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
  * The inbox providers registered at boot, each under one key with the access that guards it, and the resolution of
  * an inbox id through the provider its record names.
  */
-final class RegisteredInboxes implements InboxRegistration, InboxResolver, MemberInboxes
+final class RegisteredInboxes implements InboxRegistration, InboxResolver
 {
     /**
      * @var array<string, array{class-string<InboxProvider>, class-string<InboxAccess>}>
@@ -90,6 +89,8 @@ final class RegisteredInboxes implements InboxRegistration, InboxResolver, Membe
 
     /**
      * Every registered provider's inboxes the actor is seated at, as one query.
+     *
+     * @return Builder<*>
      */
     public function inboxIdsOf(ActorIdentity $actor): Builder
     {

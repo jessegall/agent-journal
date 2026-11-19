@@ -6,9 +6,9 @@ namespace Tests\Feature\Processes;
 
 use App\Processes\Contracts\AliasResolver;
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellNode;
 use Tests\Fixtures\Processes\NoAliases;
@@ -17,7 +17,7 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Every case of the portable shell corpus goes through the container's ShellSyntax and must read as its frozen
+ * Every case of the portable shell corpus goes through the container's TreeParser and must read as its frozen
  * expectation says: the outcome, and for a complete line the span of every command it runs (doc 21 revision 3,
  * section 35). The fixture's files must match the manifest's hashes, so an expectation cannot change unnoticed.
  */
@@ -50,7 +50,7 @@ final class ShellCorpusTest extends TestCase
 
     public function test_every_case_reads_as_its_frozen_expectation(): void
     {
-        $syntax = $this->app->make(ShellSyntax::class);
+        $syntax = $this->app->make(TreeParser::class);
         $differences = [];
 
         foreach ($this->cases() as $case) {
@@ -88,7 +88,7 @@ final class ShellCorpusTest extends TestCase
     public function test_every_complete_case_classifies_as_its_frozen_expectation(): void
     {
         $this->app->instance(AliasResolver::class, new NoAliases());
-        $syntax = $this->app->make(ShellSyntax::class);
+        $syntax = $this->app->make(TreeParser::class);
         $classifier = $this->app->make(CommandClassifier::class);
         $context = new ExecutionContext(ShellDialect::Bash, '/work', '/work');
         $differences = [];

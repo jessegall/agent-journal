@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\QuestionReminders\Handlers;
 
 use App\Actors\Contracts\ServerClock;
 use App\Contracts\CommandHandler;
-use App\Hooks\Contracts\EngineStack;
+use App\Hooks\Actions\EngineStacks;
 use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 
@@ -18,7 +18,7 @@ final readonly class SendQuestionReminderHandler implements CommandHandler
 {
     public function __construct(
         private ServerClock $clock,
-        private EngineStack $stacks,
+        private EngineStacks $stacks,
     ) {}
 
     public function handle(SendQuestionReminder $command): void

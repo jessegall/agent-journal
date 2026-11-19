@@ -68,9 +68,16 @@ final readonly class AuthenticateHost
         $issuedAt = (int) $this->header($request, SignedCall::ISSUED_AT_HEADER);
         $signature = $this->header($request, SignedCall::SIGNATURE_HEADER);
 
-        if (! hash_equals(SignedCall::signatureFor($secret, $request->getMethod(), $request
-            ->getRequestUri(), $callId, $issuedAt, $request
-            ->getContent()), $signature)) {
+        $expected = SignedCall::signatureFor(
+            $secret,
+            $request->getMethod(),
+            $request->getRequestUri(),
+            $callId,
+            $issuedAt,
+            $request->getContent(),
+        );
+
+        if (! hash_equals($expected, $signature)) {
             throw CallSignatureInvalid::mismatched($callId);
         }
 

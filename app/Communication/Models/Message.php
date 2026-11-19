@@ -9,7 +9,6 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\Assignable;
-use App\Communication\Contracts\MemberInboxes;
 use App\Communication\Data\MessageReader;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
@@ -20,6 +19,7 @@ use App\Communication\Models\Scopes\MessageVisibility;
 use App\Communication\Support\AcceptedOperation;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageEnvelope;
+use App\Communication\Support\RegisteredInboxes;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -102,7 +102,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         self::addGlobalScope(new MessageVisibility(
             static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
             static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
-            static fn (): MemberInboxes => Container::getInstance()->make(MemberInboxes::class),
+            static fn (): RegisteredInboxes => Container::getInstance()->make(RegisteredInboxes::class),
         ));
     }
 

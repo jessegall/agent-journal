@@ -7,7 +7,6 @@ namespace App\Agents\Support;
 use App\Actors\Support\ActorContext;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Commands\RecordHeartbeat;
-use App\Agents\Contracts\AgentHeartbeatSource;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Handlers\RecordHeartbeatHandler;
@@ -19,7 +18,7 @@ use App\Agents\Models\AgentSession;
  * presence by RecordHeartbeat's own rule, inside the host's command and for its actor, and a verified exit ends it
  * through the launch lifecycle. Silence ends nothing.
  */
-final readonly class DriverHeartbeatSource implements AgentHeartbeatSource
+final readonly class DriverHeartbeatSource
 {
     public function __construct(private RecordHeartbeatHandler $beats, private LaunchHeartbeats $heartbeats) {}
 

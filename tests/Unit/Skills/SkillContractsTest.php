@@ -14,11 +14,11 @@ use App\Skills\Contracts\ProvidesSkills;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillPublisher;
-use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Contracts\SkillSource;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillKeyInvalid;
+use App\Skills\Support\CanonicalRenderer;
+use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\SkillContext;
@@ -47,7 +47,7 @@ final class SkillContractsTest extends TestCase
             $this->assertContains($value, $exports->values);
         }
 
-        foreach ([SkillRenderer::class, SkillSource::class, SkillPublisher::class, ProgramSkills::class] as $port) {
+        foreach ([CanonicalRenderer::class, StoredSkillSource::class, SkillPublisher::class, ProgramSkills::class] as $port) {
             $this->assertFalse($exports->has($port), "{$port} is exported.");
         }
     }

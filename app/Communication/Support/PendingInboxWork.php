@@ -6,7 +6,6 @@ namespace App\Communication\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\PendingWorkSource;
-use App\Communication\Contracts\MemberInboxes;
 use App\Communication\Enums\MessageState;
 use App\Communication\Models\Message;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,7 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
  */
 final readonly class PendingInboxWork implements PendingWorkSource
 {
-    public function __construct(private MemberInboxes $inboxes) {}
+    public function __construct(private RegisteredInboxes $inboxes) {}
 
     public function pendingCount(ActorIdentity $actor): int
     {

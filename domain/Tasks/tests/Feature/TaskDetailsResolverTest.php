@@ -17,8 +17,8 @@ use App\Agents\Support\AgentContext;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Support\NumberedPage;
 use App\Bus\Contracts\CommandBus;
-use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
+use App\Desks\Support\DeskSeating;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -87,7 +87,7 @@ final class TaskDetailsResolverTest extends TestCase
             $task->assignmentIdentity(),
             $desk->assigneeIdentity(),
         );
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->seat(
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->seat(
             $desk->id,
             new ActorIdentity(ActorType::Agent, $runner->agent_id),
         ));
