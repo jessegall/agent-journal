@@ -4,26 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Agents\Enums\SessionStatus;
-use App\Agents\Events\LaunchStarted;
-use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Enums\ContextStartType;
-use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ContextStarted;
-use App\Hooks\Events\ToolCallFinished;
-use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Support\ContextReminders;
 use App\Skills\Enums\ReadEvidence;
-use App\Skills\Listeners\AdmitLaunchSkills;
 use App\Skills\Listeners\AdvanceSkillContext;
-use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillReceipt;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
+use Tests\Support\Skills\AdmitsMainAgentSkills;
+use Tests\Support\Skills\FinishesToolCalls;
 use Tests\Support\Skills\PublishesSkills;
 use Tests\TestCase;
 
@@ -33,7 +26,9 @@ use Tests\TestCase;
  */
 final class SkillReceiptsTest extends TestCase
 {
+    use AdmitsMainAgentSkills;
     use CommitsHookRows;
+    use FinishesToolCalls;
     use InstallsBuiltInProfiles;
     use PublishesSkills;
 
@@ -89,20 +84,6 @@ final class SkillReceiptsTest extends TestCase
         $this->assertFalse(SkillReceipt::hasRead($session->id, 'journal-plans', $digest));
     }
 
-    private function launchedMainAgent(): AgentSession
-    {
-        $agent = Agent::named('Main', 'main-agent');
-        $session = new AgentSession(TestSelections::sessionColumns());
-        $session->agent_id = $agent->id;
-        $session->status = SessionStatus::Active;
-        $session->save();
-        $this->app->make(AdmitLaunchSkills::class)->handle(
-            new LaunchStarted($agent->id, $session->id),
-        );
-
-        return $session;
-    }
-
     private function deliveredDigest(AgentSession $session, string $key): string
     {
         $publication = SkillPublication::latestOfSession($session->id);
@@ -111,16 +92,5 @@ final class SkillReceiptsTest extends TestCase
         $this->assertNotNull($entry);
 
         return $entry['digest'];
-    }
-
-    /**
-     * @param  array<string, mixed>  $arguments
-     */
-    private function finished(AgentSession $session, string $tool, array $arguments): void
-    {
-        $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
-            new StackTarget($session->agent_id, $session->id),
-            new ToolResult($tool, ToolOutcome::Succeeded, $arguments),
-        ));
     }
 }

@@ -4,25 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Pipelines\Contracts\RunsPipelines;
-use App\Pipelines\Support\Pipelines;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\OutputRequirement;
-use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
-use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ClassFact;
 use App\Processes\Values\Classification;
 use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\PartClassification;
 use App\Processes\Values\RuleOrigin;
-use App\Processes\Values\ShellTree;
 use App\Processes\Values\SyntaxOrigin;
 use App\Processes\Values\UnresolvedFact;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Container\Container as ContainerContract;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\Processes\ParsesBashLines;
 
 /**
  * A classification unions the facts of its parts and redirects, keeps where each came from, and stays unknown while
@@ -30,6 +24,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class ClassificationTest extends TestCase
 {
+    use ParsesBashLines;
+
     public function test_a_redirect_writes_while_the_program_reads_each_on_its_own_node(): void
     {
         $tree = $this->parse('cat a > b');
@@ -105,14 +101,5 @@ final class ClassificationTest extends TestCase
             [],
             CommandType::Ordinary,
         );
-    }
-
-    private function parse(string $line): ShellTree
-    {
-        $container = new Container();
-        $container->bind(RunsPipelines::class, Pipelines::class);
-        $container->instance(ContainerContract::class, $container);
-
-        return $container->make(TreeParser::class)->parse($line, ShellDialect::Bash);
     }
 }

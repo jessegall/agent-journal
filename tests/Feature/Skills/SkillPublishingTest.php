@@ -9,7 +9,6 @@ use App\Skills\Commands\PublishSkills;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationStale;
-use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillPublishing;
@@ -19,7 +18,7 @@ use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\Skills\HasSkillTargets;
-use Tests\Support\TestIds;
+use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\TestCase;
 
 /**
@@ -30,6 +29,7 @@ final class SkillPublishingTest extends TestCase
 {
     use CommitsHookRows;
     use HasSkillTargets;
+    use IntendsSkillPublications;
     use RunsTrustedCommands;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
@@ -99,43 +99,6 @@ final class SkillPublishingTest extends TestCase
         $this->expectException(SkillPublicationStale::class);
 
         $this->asSystem(new PrepareSkillPublication($publication->id, $first->fence));
-    }
-
-    private function intend(string $text): SkillPublication
-    {
-        $markdown = <<<TEXT
-        # Journal
-
-        {$text}
-
-        TEXT;
-        $generation = SkillGeneration::ready(
-            hash('sha256', $text),
-            str_repeat('e', 64),
-            [
-                [
-                    'key' => 'journal',
-                    'owner' => 'Core',
-                    'revision' => null,
-                    'markdown' => $markdown,
-                    'digest' => hash('sha256', $markdown),
-                ],
-            ],
-        );
-
-        return SkillPublication::intend(
-            TestIds::of(1),
-            'claude-code',
-            $this->target(),
-            $generation,
-            hash('sha256', $text),
-            ['journal'],
-        );
-    }
-
-    private function target(): string
-    {
-        return "{$this->root}/targets/".TestIds::of(1).'/claude-code';
     }
 
     private function publishing(): SkillPublishing

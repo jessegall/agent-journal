@@ -7,8 +7,6 @@ namespace Tests\Feature\Settings;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsCatalogue;
@@ -29,8 +27,6 @@ use App\Settings\Storage\SettingsDocument;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\RegisteredSettingCommands;
 use App\Settings\Support\SettingRegistry;
-use App\Settings\Values\SettingsChange;
-use Closure;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
@@ -38,10 +34,10 @@ use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\TestIds;
 use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
-use Throwable;
 
 /**
  * The settings stories the phase tests left partly shown: local keys per owner, an owner without settings, races
@@ -50,6 +46,7 @@ use Throwable;
  */
 final class SettingsStoriesTest extends TestCase
 {
+    use ChangesReviewsSettings;
     use CommitsHookRows;
     use UsesSecondConnection;
 
@@ -294,28 +291,6 @@ final class SettingsStoriesTest extends TestCase
         };
     }
 
-    /**
-     * @param  Command<SettingsChange>  $command
-     */
-    private function runCommand(Command $command): SettingsChange
-    {
-        return $this->app->make(CommandBus::class)->run($command);
-    }
-
-    /**
-     * @param  class-string<Throwable>  $refusal
-     * @param  Command<SettingsChange>  $command
-     */
-    private function assertRefused(string $refusal, Command $command): void
-    {
-        try {
-            $this->runCommand($command);
-            $this->fail("The command was not refused with {$refusal}.");
-        } catch (Throwable $thrown) {
-            $this->assertInstanceOf($refusal, $thrown);
-        }
-    }
-
     private function revision(): int
     {
         return SettingsRecord::sharedRuntimeForOwner('Reviews')->get()->revision;
@@ -342,15 +317,5 @@ final class SettingsStoriesTest extends TestCase
         $this->app->forgetScopedInstances();
 
         return $this->app->make(SettingsResolver::class);
-    }
-
-    /**
-     * @param  Closure(SettingsDocument): SettingsDocument  $change
-     */
-    private function storeDirectly(Closure $change): void
-    {
-        SettingsRecord::insertIfAbsent('Reviews');
-        $record = SettingsRecord::sharedRuntimeForOwner('Reviews')->get();
-        $record->revise($change($record->document));
     }
 }

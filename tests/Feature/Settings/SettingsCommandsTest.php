@@ -7,8 +7,6 @@ namespace Tests\Feature\Settings;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\Command;
-use App\Bus\Contracts\CommandBus;
 use App\Profiles\Values\ProfileBase;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\SetIntegerSetting;
@@ -31,18 +29,17 @@ use App\Settings\Storage\SettingsDocument;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
-use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Exceptions\SimulatedFailure;
+use Tests\Support\Settings\ChangesReviewsSettings;
 use Tests\Support\Settings\UsesReviewsSettings;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
-use Throwable;
 
 /**
  * The settings commands on the bus, end to end: only the owner changes settings, each change is one new revision
@@ -51,6 +48,7 @@ use Throwable;
  */
 final class SettingsCommandsTest extends TestCase
 {
+    use ChangesReviewsSettings;
     use CommitsHookRows;
     use UsesReviewsSettings;
 
@@ -291,28 +289,6 @@ final class SettingsCommandsTest extends TestCase
         $this->assertSame(6, $this->reviewGroup()->integer($this->reviews->retryLimit));
     }
 
-    /**
-     * @param  Command<SettingsChange>  $command
-     */
-    private function runCommand(Command $command): SettingsChange
-    {
-        return $this->app->make(CommandBus::class)->run($command);
-    }
-
-    /**
-     * @param  class-string<Throwable>  $refusal
-     * @param  Command<SettingsChange>  $command
-     */
-    private function assertRefused(string $refusal, Command $command): void
-    {
-        try {
-            $this->runCommand($command);
-            $this->fail("The command was not refused with {$refusal}.");
-        } catch (Throwable $thrown) {
-            $this->assertInstanceOf($refusal, $thrown);
-        }
-    }
-
     private function assertChange(SettingsOutcome $outcome, int $revision, SettingsChange $change): void
     {
         $this->assertSame(['Reviews', $revision, $outcome], [$change->owner, $change->revision, $change->outcome]);
@@ -330,16 +306,6 @@ final class SettingsCommandsTest extends TestCase
     private function storedDocument(): SettingsDocument
     {
         return SettingsRecord::sharedRuntimeForOwner('Reviews')->get()->document;
-    }
-
-    /**
-     * @param  Closure(SettingsDocument): SettingsDocument  $change
-     */
-    private function storeDirectly(Closure $change): void
-    {
-        SettingsRecord::insertIfAbsent('Reviews');
-        $record = SettingsRecord::sharedRuntimeForOwner('Reviews')->get();
-        $record->revise($change($record->document));
     }
 
     private function storedText(): string

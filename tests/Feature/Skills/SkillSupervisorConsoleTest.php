@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Skills\HasSkillTargets;
+use Tests\Support\Skills\IntendsSkillPublications;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -32,6 +33,7 @@ final class SkillSupervisorConsoleTest extends TestCase
 {
     use CommitsHookRows;
     use HasSkillTargets;
+    use IntendsSkillPublications;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
 
@@ -146,32 +148,6 @@ final class SkillSupervisorConsoleTest extends TestCase
         return $publication->refresh();
     }
 
-    private function intend(string $text): SkillPublication
-    {
-        $markdown = <<<TEXT
-        # Journal
-
-        {$text}
-
-        TEXT;
-        $generation = SkillGeneration::ready(hash('sha256', $text), str_repeat('e', 64), [[
-            'key' => 'journal',
-            'owner' => 'Core',
-            'revision' => null,
-            'markdown' => $markdown,
-            'digest' => hash('sha256', $markdown),
-        ]]);
-
-        return SkillPublication::intend(
-            TestIds::of(1),
-            'claude-code',
-            $this->target(),
-            $generation,
-            hash('sha256', $text),
-            ['journal'],
-        );
-    }
-
     private function stagingFolder(SkillPublication $publication): string
     {
         return PublicationFiles::of(
@@ -179,11 +155,6 @@ final class SkillSupervisorConsoleTest extends TestCase
             $this->app->make(SkillTargets::class),
             $this->app->make(ProgramSkillAdapters::class),
         )->stagingFolder;
-    }
-
-    private function target(): string
-    {
-        return "{$this->root}/targets/".TestIds::of(1).'/claude-code';
     }
 
     private function publishing(): SkillPublishing

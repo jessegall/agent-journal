@@ -12,15 +12,11 @@ use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Enums\ContextStartType;
-use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Events\ContextStarted;
-use App\Hooks\Events\ToolCallFinished;
-use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Support\ContextReminders;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Values\ProfileBase;
 use App\Skills\Listeners\AdmitLaunchSkills;
-use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
 use App\Skills\Listeners\RemindRequiredSkills;
 use App\Skills\Support\SkillPublishing;
@@ -30,6 +26,7 @@ use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Skills\FinishesToolCalls;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -42,6 +39,7 @@ final class RequiredSkillReadsTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
+    use FinishesToolCalls;
     use HasSkillTargets;
 
     private const array TABLES = [
@@ -151,17 +149,6 @@ final class RequiredSkillReadsTest extends TestCase
         $this->app->make(RemindRequiredSkills::class)->handle($event);
 
         return $reminders->all();
-    }
-
-    /**
-     * @param  array<string, mixed>  $arguments
-     */
-    private function finished(AgentSession $session, string $tool, array $arguments): void
-    {
-        $this->app->make(RecordProvenSkillReads::class)->handle(new ToolCallFinished(
-            new StackTarget($session->agent_id, $session->id),
-            new ToolResult($tool, ToolOutcome::Succeeded, $arguments),
-        ));
     }
 
     /**

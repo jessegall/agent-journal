@@ -4,24 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Processes;
 
-use App\Pipelines\Contracts\RunsPipelines;
-use App\Pipelines\Support\Pipelines;
 use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\ParseOutcome;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ShellNode;
 use App\Processes\Values\ShellTree;
-use Illuminate\Container\Container;
-use Illuminate\Contracts\Container\Container as ContainerContract;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\Processes\ParsesBashLines;
 
 /**
  * The shell grammar builds the lossless tree of doc 21 section 5 and stops at its limits with a diagnostic only.
  */
 final class ShellGrammarTest extends TestCase
 {
+    use ParsesBashLines;
+
     public function test_a_pipe_puts_two_commands_under_one_pipeline(): void
     {
         $tree = $this->parse('cat a | head -5');
@@ -134,15 +131,6 @@ final class ShellGrammarTest extends TestCase
         }
         $this->assertStringContainsString('1024', $tooMany->diagnostic->reason ?? '');
         $this->assertStringContainsString('depth', $tooDeep->diagnostic->reason ?? '');
-    }
-
-    private function parse(string $line): ShellTree
-    {
-        $container = new Container();
-        $container->bind(RunsPipelines::class, Pipelines::class);
-        $container->instance(ContainerContract::class, $container);
-
-        return $container->make(TreeParser::class)->parse($line, ShellDialect::Bash);
     }
 
     /**

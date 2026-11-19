@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Agents\Enums\SessionStatus;
-use App\Agents\Events\LaunchStarted;
-use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\AgentStack;
@@ -16,18 +13,17 @@ use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\ToolCallFinished;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Support\ContextReminders;
-use App\Skills\Listeners\AdmitLaunchSkills;
 use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
 use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Values\SessionSkillStatus;
 use Domain\Access\Support\AccessSettings;
-use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
+use Tests\Support\Skills\AdmitsMainAgentSkills;
 use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\TestActors;
 use Tests\TestCase;
@@ -39,6 +35,7 @@ use Tests\TestCase;
 final class SessionSkillStatusTest extends TestCase
 {
     use ActsAsActors;
+    use AdmitsMainAgentSkills;
     use CommitsHookRows;
     use HasSkillTargets;
     use InstallsBuiltInProfiles;
@@ -125,20 +122,6 @@ final class SessionSkillStatusTest extends TestCase
         $this->assertCount(1, $guide);
 
         return $guide[0];
-    }
-
-    private function launchedMainAgent(): AgentSession
-    {
-        $agent = Agent::named('Main', 'main-agent');
-        $session = new AgentSession(TestSelections::sessionColumns());
-        $session->agent_id = $agent->id;
-        $session->status = SessionStatus::Active;
-        $session->save();
-        $this->app->make(AdmitLaunchSkills::class)->handle(
-            new LaunchStarted($agent->id, $session->id),
-        );
-
-        return $session;
     }
 
     private function boundary(AgentSession $session): void
