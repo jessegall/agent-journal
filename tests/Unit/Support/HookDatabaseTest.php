@@ -104,6 +104,19 @@ final class HookDatabaseTest extends TestCase
         $this->assertNothingWasTouched();
     }
 
+    public function test_a_worktree_database_name_must_be_plain(): void
+    {
+        $this->runAs('journal_hooks_test_wt_Not-Plain', false);
+
+        $refusal = $this->refusalOf(fn () => HookDatabase::checkBase($this->app));
+
+        $this->assertSame(
+            HookDatabaseRefused::otherDatabase('journal_hooks_test_wt_Not-Plain', 'journal_hooks_test')->getMessage(),
+            $refusal->getMessage(),
+        );
+        $this->assertNothingWasTouched();
+    }
+
     private function runAs(string $database, string|false $token): void
     {
         $connection = $this->app['config']->get('database.default');
