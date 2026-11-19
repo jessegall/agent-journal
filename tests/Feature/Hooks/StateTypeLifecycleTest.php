@@ -46,14 +46,14 @@ final class StateTypeLifecycleTest extends TestCase
         }
     }
 
-    public function test_the_types_are_built_once_per_worker_and_the_request_bindings_are_fresh_without_the_event_cache(): void
+    public function test_types_build_once_per_worker_and_request_bindings_stay_fresh_without_the_event_cache(): void
     {
         $this->assertFalse($this->app->eventsAreCached());
 
         $this->assertTypesLastAcrossTwoRequests();
     }
 
-    public function test_the_types_are_built_once_per_worker_and_the_request_bindings_are_fresh_with_the_event_cache(): void
+    public function test_types_build_once_per_worker_and_request_bindings_stay_fresh_with_the_event_cache(): void
     {
         $this->artisan('event:cache')->assertSuccessful();
         $this->assertFileExists($this->eventCachePath);

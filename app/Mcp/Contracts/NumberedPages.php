@@ -18,7 +18,8 @@ use Closure;
 interface NumberedPages
 {
     /**
-     * @param  Closure(ToolArguments): array<string, mixed>  $filtersOf  the first-page filters, with the page number under page
+     * @param  Closure(ToolArguments): array<string, mixed>  $filtersOf  the first-page filters, with the page number
+     *   under page
      * @param  Closure(array<string, mixed>): ListedPage  $read  the owner's reader for those filters
      *
      * @throws ContinuationInvalid

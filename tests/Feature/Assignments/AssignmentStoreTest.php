@@ -110,7 +110,7 @@ final class AssignmentStoreTest extends TestCase
         $this->assertSame([$kept->reference->id], AssignmentRecord::query()->pluck('id')->all());
     }
 
-    public function test_the_store_refuses_work_outside_a_transaction_and_the_transaction_refuses_another_isolation(): void
+    public function test_the_store_refuses_work_outside_a_transaction_or_in_another_isolation(): void
     {
         $this->assertThrows(
             fn () => $this->app->make(AssignmentStore::class)->lockCurrent($this->task),

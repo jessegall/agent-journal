@@ -27,7 +27,8 @@ final readonly class SettingRegistry
     /**
      * @param  array<string, SettingsDefinition>  $definitions
      * @param  array<int, SettingAddress>  $addresses  keyed by the object id of each registered setting and group
-     * @param  array<int, GroupDeclaration>  $groups  the group of each registered setting, keyed by the setting's object id
+     * @param  array<int, GroupDeclaration>  $groups  the group of each registered setting, keyed by the setting's
+     *   object id
      */
     private function __construct(private array $definitions, private array $addresses, private array $groups) {}
 

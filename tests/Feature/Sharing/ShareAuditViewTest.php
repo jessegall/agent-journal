@@ -103,7 +103,7 @@ final class ShareAuditViewTest extends TestCase
         $this->assertNotNull($first->lastPrunedAt);
     }
 
-    public function test_the_runtime_panel_is_offline_without_a_service_and_stale_45_seconds_after_the_last_health(): void
+    public function test_the_runtime_panel_is_offline_without_a_service_and_stale_45_seconds_after_health(): void
     {
         $this->actingAs($this->owner)->get(
             "/sharing/shares/{$this->share->id}",

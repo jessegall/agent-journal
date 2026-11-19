@@ -29,7 +29,7 @@ final class HostCapabilitiesTest extends TestCase
 
     private string $matrixPath = '';
 
-    public function test_every_client_has_an_explicit_account_transport_status_with_evidence_in_both_execution_modes(): void
+    public function test_every_client_states_its_account_transport_with_evidence_in_both_execution_modes(): void
     {
         foreach (HookProgram::cases() as $program) {
             foreach (ExecutionModeType::cases() as $mode) {

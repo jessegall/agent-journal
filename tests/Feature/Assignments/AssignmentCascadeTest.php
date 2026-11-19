@@ -100,7 +100,7 @@ final class AssignmentCascadeTest extends TestCase
         $this->assertSame($before, AssignmentRecord::query()->pluck('id')->sort()->values()->all());
     }
 
-    public function test_a_finished_root_a_missing_record_or_a_group_too_large_is_refused_before_anything_changes(): void
+    public function test_a_finished_root_a_missing_record_or_a_too_large_group_is_refused_unchanged(): void
     {
         $this->assertThrows(
             fn () => $this->writer()->assignUnfinished(

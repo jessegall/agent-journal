@@ -28,7 +28,8 @@ final readonly class SkillPreview
     ) {}
 
     /**
-     * @return array{key: string, audience: string, condition: array<string, mixed>, agents: list<array{agent: string, name: string, outcome: string, reason: string}>}
+     * @return array{key: string, audience: string, condition: array<string, mixed>, agents: list<array{agent: string,
+     *   name: string, outcome: string, reason: string}>}
      */
     public function audience(SkillEntry $skill): array
     {
