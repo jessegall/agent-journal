@@ -2,15 +2,24 @@
 import type { AccountListData, AccountRowData } from '@generated/types/accounts';
 import EmptyState from '@kit/EmptyState';
 import PageHeader from '@kit/PageHeader';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import AccountRow from './AccountRow.vue';
+import { isChosen, newestSelections } from './accountSelections';
 import { programName } from './accountLooks';
 
 /**
  * The owner's saved Claude Code and Codex accounts, by program: which one new launches of each program use, and
- * choosing or renaming one. Signing in is done from the program's own flow.
+ * choosing or renaming one. The page reloads on every change; a reload that answers an older choice never takes
+ * back a newer one, by each program's change number.
  */
 const props = defineProps<{ data: AccountListData }>();
+
+const selections = ref(props.data.selections);
+
+watch(
+    () => props.data.selections,
+    (arrived) => (selections.value = newestSelections(selections.value, arrived)),
+);
 
 const programs = computed(() => {
     const byProgram = new Map<string, AccountRowData[]>();
@@ -39,7 +48,10 @@ const programs = computed(() => {
                 </h2>
                 <ul>
                     <template v-for="row in rows" :key="row.id">
-                        <AccountRow :account="row" />
+                        <AccountRow
+                            :account="row"
+                            :is-chosen="isChosen(selections, row.program, row.id)"
+                        />
                     </template>
                 </ul>
             </section>

@@ -15,7 +15,10 @@ const groups: { label: string; rows: SidebarRow[] }[] = [
     { label: 'Work', rows: [{ label: 'Plans', icon: 'plan', href: '/plans' }] },
     {
         label: 'Agents',
-        rows: [{ label: 'Rules', icon: 'rules', href: '/rules' }],
+        rows: [
+            { label: 'Rules', icon: 'rules', href: '/rules' },
+            { label: 'Accounts', icon: 'accounts', href: '/accounts' },
+        ],
     },
 ];
 
