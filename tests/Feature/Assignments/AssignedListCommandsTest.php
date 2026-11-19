@@ -77,10 +77,10 @@ final class AssignedListCommandsTest extends TestCase
     public function test_a_refusal_or_an_unreachable_journal_fails_without_showing_the_token(): void
     {
         $this->runCommandsAs($this->caller, 'not-a-launch-token');
-        $this->artisan('task:assigned')->expectsOutputToContain('The journal refused the call (401)')->doesntExpectOutputToContain('not-a-launch-token')->assertExitCode(1);
+        $this->artisan('task:assigned')->expectsOutputToContain('The journal refused the call (unauthenticated)')->doesntExpectOutputToContain('not-a-launch-token')->assertExitCode(1);
 
         $this->runCommandsAs($this->caller);
-        $this->artisan('plan:assigned', ['--per-page' => 101])->expectsOutputToContain('(422)')->assertExitCode(1);
+        $this->artisan('plan:assigned', ['--per-page' => 101])->expectsOutputToContain('(invalid_input)')->assertExitCode(1);
 
         Http::fake(fn () => throw new ConnectionException('Connection refused'));
         $this->artisan('task:assigned')->expectsOutputToContain('did not answer')->assertExitCode(1);

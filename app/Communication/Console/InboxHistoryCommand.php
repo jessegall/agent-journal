@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Communication\Calls\ReadInboxHistoryCall;
 use Illuminate\Console\Command;
 
 final class InboxHistoryCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'message:history
         {inbox}
@@ -20,12 +20,11 @@ final class InboxHistoryCommand extends Command
 
     protected $description = 'Page through the history of an inbox, newest page first';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/communication/history', [
+        return $this->runCall(ReadInboxHistoryCall::from([
             'inboxId' => (string) $this->argument('inbox'),
-            'olderCursor' => $this->option('older'),
-            'limit' => (int) $this->option('limit'),
-        ]);
+            'page' => ['olderCursor' => $this->option('older'), 'limit' => (int) $this->option('limit')],
+        ]));
     }
 }

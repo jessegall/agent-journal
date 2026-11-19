@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
-use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\AgentRequests\Values\CommandReport;
+use App\Pipelines\Support\Pipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\ProcessCalls;
 use App\Processes\Enums\JournalRouteType;
+use App\Processes\Pipelines\RunAdmissionPipeline;
+use App\Processes\Values\Run\AdmissionToRun;
+use App\Processes\Values\Run\ChildEnvironment;
 use Illuminate\Console\Command;
 
 /**
@@ -18,29 +22,28 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ReaderSampleRunCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'reader:sample-run {request : The command request id}'
         .' {--permit= : The evidence permit the owner issued}'
-        .' {--request-id= : The id this use of the permit goes under} {--json}';
+        .' {--request-key= : The key this use of the permit goes under} {--json}';
 
     protected $description = 'Run the approved evidence sample of a command request once';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(ProcessCalls $processes, Pipelines $pipelines): int
     {
-        $path = "/agent/processes/requests/{$this->argument('request')}/samples";
-        try {
-            $started = $journal->send($path, [
-                'permit' => (string) $this->option('permit'),
-                'request_id' => (string) $this->option('request-id'),
-            ]);
-        } catch (AgentRequestFailed $failure) {
-            $this->error($failure->getMessage());
+        $commandRequest = (string) $this->argument('request');
+        $key = $this->requestKey();
 
-            return self::FAILURE;
-        }
-        $this->call('process:run', ['--admission' => (string) $started->body['run_id']]);
+        return $this->runReport(function () use ($processes, $pipelines, $commandRequest, $key): CommandReport {
+            $started = $processes->startSample($commandRequest, (string) $this->option('permit'), $key);
+            $admission = new AdmissionToRun($started->runId, $key, ChildEnvironment::ofThisProcess());
+            $report = $pipelines->run(RunAdmissionPipeline::class, $admission, CommandReport::class);
+            $settled = $processes->settleSample($commandRequest, $key);
+            $layout = $this->option('json') === true ? 0 : JSON_PRETTY_PRINT;
+            $flags = JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | $layout;
 
-        return $this->sendAndPrint($journal, "{$path}/settle", []);
+            return $report->line((string) json_encode($settled->toArray(), $flags));
+        });
     }
 }

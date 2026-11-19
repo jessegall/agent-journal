@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Comments\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Comments\Calls\ListCommentsCall;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class CommentListCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'comment:list {target : Such as "doc 12"} {--after=} {--per-page=50} {--json}';
 
@@ -21,15 +21,14 @@ final class CommentListCommand extends Command
 
     protected $help = 'Example: comment:list "doc 12", then comment:list "doc 12" --after <nextAfter>';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        $body = ['target' => (string) $this->argument('target'), 'per_page' => (int) $this->option('per-page')];
-        $after = $this->option('after');
+        $after = (string) $this->option('after');
 
-        if (is_string($after) && $after !== '') {
-            $body['after'] = $after;
-        }
-
-        return $this->sendAndPrint($journal, '/agent/comments/list', $body);
+        return $this->runCall(ListCommentsCall::from([
+            'target' => (string) $this->argument('target'),
+            'after' => $after === '' ? null : $after,
+            'perPage' => (int) $this->option('per-page'),
+        ]));
     }
 }

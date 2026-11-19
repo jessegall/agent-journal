@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Communication\Calls\ReadMessagesCall;
 use Illuminate\Console\Command;
 
 final class ReadMessagesCommand extends Command
 {
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
     protected $signature = 'message:read
         {inbox}
@@ -20,11 +20,12 @@ final class ReadMessagesCommand extends Command
 
     protected $description = 'Read messages in one of your inboxes; the first reader of a question takes it up';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendWriteAndPrint($journal, '/agent/communication/read', [
+        return $this->runCall(ReadMessagesCall::from([
             'inboxId' => (string) $this->argument('inbox'),
-            'messageIds' => (array) $this->argument('ids'),
-        ]);
+            'messageIds' => array_values(array_map(strval(...), (array) $this->argument('ids'))),
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

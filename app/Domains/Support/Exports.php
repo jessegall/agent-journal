@@ -45,7 +45,9 @@ final class Exports
         'App\Mcp\Resources\JournalResource',
         'App\Bus\Exceptions\Concerns\RendersRefusal',
         'App\AgentRequests\Console\Concerns\SendsSignedCalls',
-        'App\AgentRequests\Console\Concerns\SendsSignedWrites',
+        'App\AgentRequests\Console\Concerns\RunsCallPipelines',
+        'App\Assignments\Calls\Concerns\NamesRecipient',
+        'App\Assignments\Calls\Concerns\NamesExpectedAssignment',
     ];
 
     /**
@@ -77,7 +79,9 @@ final class Exports
         $type = $this->ownType('events', $name);
         $className = $type->getName();
 
-        if ($type->isInterface() || $type->isAbstract() || ! $type->isFinal() || ! is_a($className, Event::class, true)) {
+        $isConcreteEvent = ! $type->isInterface() && ! $type->isAbstract() && $type->isFinal();
+
+        if (! $isConcreteEvent || ! is_a($className, Event::class, true)) {
             throw InvalidExports::notAnEvent($this->owner, $className);
         }
 
@@ -108,7 +112,8 @@ final class Exports
     private function command(string $name): string
     {
         $type = $this->ownType('commands', $name);
-        $isConcreteCommand = ! $type->isInterface() && ! $type->isAbstract() && $type->isFinal() && $type->implementsInterface(Command::class);
+        $isConcreteCommand = ! $type->isInterface() && ! $type->isAbstract() && $type->isFinal()
+            && $type->implementsInterface(Command::class);
 
         if (! $isConcreteCommand || $type->implementsInterface(Event::class)) {
             throw InvalidExports::notACommand($this->owner, $type->getName());
@@ -191,7 +196,10 @@ final class Exports
     {
         $className = ltrim($name, '\\');
 
-        if (! class_exists($className) && ! interface_exists($className) && ! enum_exists($className) && ! trait_exists($className)) {
+        $declared = class_exists($className) || interface_exists($className) || enum_exists($className)
+            || trait_exists($className);
+
+        if (! $declared) {
             throw InvalidExports::missing($this->owner, $list, $className);
         }
 

@@ -6,8 +6,8 @@ namespace App\Assignments\Console;
 
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\ReassignRecordCall;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -20,22 +20,29 @@ use Illuminate\Console\Command;
 final class ReassignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
-    protected $signature = 'assignment:reassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--to= : The new holder as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'assignment:reassign {type} {id} {--assignment= : The assignment row id it has now}'
+        .' {--holder= : Its holder now as type:id} {--to= : The new holder as type:id} {--request-key= : Send'
+        .' again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Move one record from the holder it has now to another';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
         try {
-            $body = [...$this->recordFields(), 'assignmentId' => (string) $this->option('assignment'), ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder'), ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient')];
+            $call = ReassignRecordCall::from([
+                ...$this->recordFields(),
+                ...$this->heldFields(),
+                ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),
+                'requestKey' => $this->requestKey(),
+            ]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;
         }
 
-        return $this->sendWriteAndPrint($journal, '/agent/assignments/reassign', $body);
+        return $this->runCall($call);
     }
 }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
+use Domain\Plans\Calls\ListPhaseChecksCall;
 use Illuminate\Console\Command;
 
 /**
@@ -16,17 +16,17 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class PhaseShowCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'phase:show {plan : The plan number} {phase : The phase number} {--json}';
 
     protected $description = 'Show a phase and its recorded check results';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/plans/phases/checks', [
+        return $this->runCall(ListPhaseChecksCall::from([
             'plan' => (int) $this->argument('plan'),
             'phase' => (int) $this->argument('phase'),
-        ]);
+        ]));
     }
 }

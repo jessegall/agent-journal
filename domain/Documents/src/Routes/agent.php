@@ -2,41 +2,31 @@
 
 declare(strict_types=1);
 
-use Domain\Documents\Http\Controllers\CloseDocumentController;
-use Domain\Documents\Http\Controllers\CreateDocumentController;
-use Domain\Documents\Http\Controllers\CreateReportController;
-use Domain\Documents\Http\Controllers\DocumentRevisionController;
-use Domain\Documents\Http\Controllers\DocumentRevisionsController;
-use Domain\Documents\Http\Controllers\EditDocumentController;
-use Domain\Documents\Http\Controllers\EditReportController;
-use Domain\Documents\Http\Controllers\InspectDocumentController;
-use Domain\Documents\Http\Controllers\InspectReportController;
-use Domain\Documents\Http\Controllers\ListDocumentsController;
-use Domain\Documents\Http\Controllers\ListReportsController;
-use Domain\Documents\Http\Controllers\OpenDocumentController;
-use Domain\Documents\Http\Controllers\SettleDocumentController;
-use Domain\Documents\Http\Controllers\SettleReportController;
-use Domain\Documents\Http\Controllers\ShowDocumentController;
-use Domain\Documents\Http\Controllers\ShowDraftController;
-use Domain\Documents\Http\Controllers\ShowReportController;
+use App\AgentRequests\Contracts\RegistersCalls;
+use Domain\Documents\Http\Controllers\Calls;
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('journal.agent')->prefix('agent')->name('documents.agent.')->group(function (): void {
-    Route::post('docs/make', CreateDocumentController::class)->name('docs.make');
-    Route::post('docs/list', ListDocumentsController::class)->name('docs.list');
-    Route::post('docs/show', ShowDocumentController::class)->name('docs.show');
-    Route::post('docs/open', OpenDocumentController::class)->name('docs.open');
-    Route::post('docs/edit', EditDocumentController::class)->name('docs.edit');
-    Route::post('docs/close', CloseDocumentController::class)->name('docs.close');
-    Route::post('docs/draft', ShowDraftController::class)->name('docs.draft');
-    Route::post('docs/revisions', DocumentRevisionsController::class)->name('docs.revisions');
-    Route::post('docs/revision', DocumentRevisionController::class)->name('docs.revision');
-    Route::post('docs/settle', SettleDocumentController::class)->name('docs.settle');
-    Route::post('docs/inspect', InspectDocumentController::class)->name('docs.inspect');
-    Route::post('reports/settle', SettleReportController::class)->name('reports.settle');
-    Route::post('reports/inspect', InspectReportController::class)->name('reports.inspect');
-    Route::post('reports/edit', EditReportController::class)->name('reports.edit');
-    Route::post('reports/make', CreateReportController::class)->name('reports.make');
-    Route::post('reports/list', ListReportsController::class)->name('reports.list');
-    Route::post('reports/show', ShowReportController::class)->name('reports.show');
-});
+Route::middleware('journal.agent')
+    ->prefix('agent')
+    ->name('documents.agent.')
+    ->group(function (): void {
+        $calls = Container::getInstance()->make(RegistersCalls::class);
+        $calls->register(Calls\MakeDocumentController::class)->name('docs.make');
+        $calls->register(Calls\ListDocumentsController::class)->name('docs.list');
+        $calls->register(Calls\ShowDocumentController::class)->name('docs.show');
+        $calls->register(Calls\OpenDocumentController::class)->name('docs.open');
+        $calls->register(Calls\EditDocumentController::class)->name('docs.edit');
+        $calls->register(Calls\CloseDocumentController::class)->name('docs.close');
+        $calls->register(Calls\ShowDraftController::class)->name('docs.draft');
+        $calls->register(Calls\ListDocumentRevisionsController::class)->name('docs.revisions');
+        $calls->register(Calls\ShowDocumentRevisionController::class)->name('docs.revision');
+        $calls->register(Calls\SettleDocumentController::class)->name('docs.settle');
+        $calls->register(Calls\InspectDocumentController::class)->name('docs.inspect');
+        $calls->register(Calls\SettleReportController::class)->name('reports.settle');
+        $calls->register(Calls\InspectReportController::class)->name('reports.inspect');
+        $calls->register(Calls\EditReportController::class)->name('reports.edit');
+        $calls->register(Calls\MakeReportController::class)->name('reports.make');
+        $calls->register(Calls\ListReportsController::class)->name('reports.list');
+        $calls->register(Calls\ShowReportController::class)->name('reports.show');
+    });

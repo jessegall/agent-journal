@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Assignments\Console;
 
 use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Support\ActorIdentity;
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\UnassignRecordCall;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -20,22 +19,28 @@ use Illuminate\Console\Command;
 final class UnassignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
-    protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now}'
+        .' {--holder= : Its holder now as type:id} {--request-key= : Send again under the key a failed attempt'
+        .' printed} {--json}';
 
     protected $description = 'Release one record from the holder it has now';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
         try {
-            $body = [...$this->recordFields(), 'assignmentId' => (string) $this->option('assignment'), ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder')];
+            $call = UnassignRecordCall::from([
+                ...$this->recordFields(),
+                ...$this->heldFields(),
+                'requestKey' => $this->requestKey(),
+            ]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;
         }
 
-        return $this->sendWriteAndPrint($journal, '/agent/assignments/unassign', $body);
+        return $this->runCall($call);
     }
 }

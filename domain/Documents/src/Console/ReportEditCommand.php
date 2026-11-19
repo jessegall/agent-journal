@@ -4,28 +4,32 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\JournalRouteType;
-use Domain\Documents\Console\Concerns\SendsRecordCalls;
+use Domain\Documents\Calls\DocumentCalls;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write, alsoNeeds: [CommandClass::Read])]
 final class ReportEditCommand extends Command
 {
-    use SendsRecordCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'report:edit {number}';
 
     protected $description = 'Reports never change; this explains how to correct one';
 
-    protected $help = 'A report never changes. To correct one, file a new report with report:make and link it to the old one with --about "report 7".';
+    protected $help = 'A report never changes. To correct one, file a new report with report:make and link it'
+        .' to the old one with --about "report 7".';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(DocumentCalls $documents): int
     {
-        $this->sendSigned($journal, '/agent/reports/edit', ['number' => (string) $this->argument('number')]);
+        return $this->runReport(function () use ($documents): CommandReport {
+            $documents->editReport((string) $this->argument('number'));
 
-        return self::FAILURE;
+            return CommandReport::ending(self::FAILURE);
+        });
     }
 }

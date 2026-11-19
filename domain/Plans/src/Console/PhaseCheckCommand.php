@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
+use Domain\Plans\Calls\RecordPhaseCheckCall;
 use Illuminate\Console\Command;
 
 /**
@@ -16,19 +16,21 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class PhaseCheckCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'phase:check {plan : The plan number} {phase : The phase number}'
-        .' {--receipt= : The result receipt of the check} {--json}';
+        .' {--receipt= : The result receipt of the check}'
+        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Record a validated check result on a phase';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/plans/phases/check', [
+        return $this->runCall(RecordPhaseCheckCall::from([
             'plan' => (int) $this->argument('plan'),
             'phase' => (int) $this->argument('phase'),
             'receipt' => (string) $this->option('receipt'),
-        ]);
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

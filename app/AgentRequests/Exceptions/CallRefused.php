@@ -28,9 +28,24 @@ abstract class CallRefused extends CallFailed
     /**
      * @param  array<string, mixed>  $details
      */
-    public static function answered(string $code, string $message, string $callId, CallKey|null $key, array $details): static
-    {
+    public static function answered(
+        string $code,
+        string $message,
+        string $callId,
+        CallKey|null $key,
+        array $details,
+    ): static {
         return new static($code, $message, $callId, $key, $details);
+    }
+
+    /**
+     * The refusal as the console prints it: that the journal refused, its code and why.
+     *
+     * @return list<string>
+     */
+    public function consoleLines(): array
+    {
+        return ["The journal refused the call ({$this->refusalCode}): {$this->getMessage()}"];
     }
 
     public function retryKey(): CallKey|null

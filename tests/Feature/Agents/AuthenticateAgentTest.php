@@ -41,7 +41,7 @@ final class AuthenticateAgentTest extends TestCase
         $launch = TestLaunch::start();
         new LaunchCredentials()->revoke($launch->session);
 
-        $this->signed($launch, '/agent/heartbeat', [])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
+        $this->signed($launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }
 
     public function test_an_ended_session_gets_the_unauthenticated_body(): void
@@ -49,7 +49,7 @@ final class AuthenticateAgentTest extends TestCase
         $launch = TestLaunch::start();
         $this->app->make(AgentSessions::class)->end($launch->session);
 
-        $this->signed($launch, '/agent/heartbeat', [])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
+        $this->signed($launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }
 
     public function test_a_retired_agent_gets_the_unauthenticated_body(): void
@@ -57,14 +57,14 @@ final class AuthenticateAgentTest extends TestCase
         $launch = TestLaunch::start();
         $launch->agent->retireAt(CarbonImmutable::now());
 
-        $this->signed($launch, '/agent/heartbeat', [])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED)->assertDontSee($launch->token);
+        $this->signed($launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED)->assertDontSee($launch->token);
     }
 
     public function test_after_a_request_the_container_no_longer_resolves_its_agent_context(): void
     {
         $launch = TestLaunch::start();
 
-        $this->signed($launch, '/agent/heartbeat', [])->assertSuccessful();
+        $this->signed($launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertSuccessful();
 
         $this->assertThrows(fn () => $this->app->make(AgentContext::class), AgentContextMissing::class);
     }

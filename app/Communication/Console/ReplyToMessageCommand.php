@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Communication\Calls\ReplyToMessageCall;
 use Illuminate\Console\Command;
 
 final class ReplyToMessageCommand extends Command
 {
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
     protected $signature = 'message:reply
         {id}
@@ -21,12 +21,13 @@ final class ReplyToMessageCommand extends Command
 
     protected $description = 'Reply to a message at the version you read';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendWriteAndPrint($journal, '/agent/communication/reply', [
+        return $this->runCall(ReplyToMessageCall::from([
             'messageId' => (string) $this->argument('id'),
             'expectedStateVersion' => (int) $this->argument('version'),
             'body' => (string) $this->argument('body'),
-        ]);
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

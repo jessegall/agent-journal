@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
+use App\Processes\Calls\ProcessCalls;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\LifecycleState;
@@ -69,7 +70,7 @@ final class ProcessChannelTest extends TestCase
     public function test_replaying_the_spool_changes_nothing_and_a_lost_connection_is_made_up(): void
     {
         $run = $this->admit('echo hi');
-        $eventKey = (string) $this->signed($this->launch, "/agent/processes/admissions/{$run->id}", [])->json('event_key');
+        $eventKey = (string) $this->signed($this->launch, "/agent/processes/admissions/{$run->id}", ['request_key' => 'channel-1'])->json('event_key');
         $sender = new class($this->app->make(AgentRequestSender::class)) implements AgentRequestSender
         {
             public bool $connected = false;
@@ -81,7 +82,8 @@ final class ProcessChannelTest extends TestCase
                 return $this->connected ? $this->journal->send($path, $body) : throw new AgentRequestFailed('The connection was cut.');
             }
         };
-        $events = new ChannelRunEvents($sender, $run->id, $eventKey, $this->folder.'/spool');
+        $processes = $this->app->make(ProcessCalls::class);
+        $events = new ChannelRunEvents($sender, $processes, $run->id, $eventKey, $this->folder.'/spool');
         $part = new PartKey(1, 1, 'echo');
 
         $events->queued($part);

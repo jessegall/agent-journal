@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Communication\Calls\DismissMessageCall;
 use Illuminate\Console\Command;
 
 final class DismissMessageCommand extends Command
 {
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
     protected $signature = 'message:dismiss
         {id}
@@ -20,11 +20,12 @@ final class DismissMessageCommand extends Command
 
     protected $description = 'Withdraw or decline a message with a reason';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendWriteAndPrint($journal, '/agent/communication/dismiss', [
+        return $this->runCall(DismissMessageCall::from([
             'messageId' => (string) $this->argument('id'),
             'reason' => (string) $this->argument('reason'),
-        ]);
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

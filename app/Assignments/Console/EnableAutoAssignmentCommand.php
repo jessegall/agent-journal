@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\Assignments\Calls\EnableAutoAssignmentCall;
 use App\Assignments\Console\Concerns\ReadsAutoAssignmentChange;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -27,8 +27,8 @@ final class EnableAutoAssignmentCommand extends Command
 
     protected $description = 'Turn an actor\'s auto-assignment of one record type on';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendChange($journal, '/agent/assignments/auto/enable');
+        return $this->runChange(EnableAutoAssignmentCall::from(...));
     }
 }

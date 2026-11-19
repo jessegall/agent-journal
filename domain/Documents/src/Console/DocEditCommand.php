@@ -4,27 +4,33 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\JournalRouteType;
+use Domain\Documents\Calls\DocumentCalls;
 use Domain\Documents\Console\Concerns\ReadsRecordBody;
-use Domain\Documents\Console\Concerns\SendsRecordCalls;
 use Domain\Documents\Console\Support\DraftTokens;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write, alsoNeeds: [CommandClass::Read])]
 final class DocEditCommand extends Command
 {
-    use ReadsRecordBody, SendsRecordCalls;
+    use ReadsRecordBody;
+    use RunsCallPipelines;
 
-    protected $signature = 'doc:edit {number} {--body= : The new text, or - for standard input} {--file= : A local file holding the new text} {--section= : Replace this section, by number or exact heading, with the body} {--replace= : Text to replace} {--with= : Its replacement} {--title=} {--abstract=}';
+    protected $signature = 'doc:edit {number} {--body= : The new text, or - for standard input} {--file= : A'
+        .' local file holding the new text} {--section= : Replace this section, by number or exact heading,'
+        .' with the body} {--replace= : Text to replace} {--with= : Its replacement} {--title=} {--abstract=}';
 
-    protected $description = 'Edit the open draft of a document: the body, one section, one exact piece, or the title and abstract';
+    protected $description = 'Edit the open draft of a document: the body, one section, one exact piece, or the'
+        .' title and abstract';
 
-    protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace "old words" --with "new words" ; or --title "New title"';
+    protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace'
+        .' "old words" --with "new words" ; or --title "New title"';
 
-    public function handle(AgentRequestSender $journal, DraftTokens $drafts): int
+    public function handle(DocumentCalls $documents, DraftTokens $drafts): int
     {
         $number = (int) $this->argument('number');
         $held = $drafts->of($number);
@@ -35,22 +41,43 @@ final class DocEditCommand extends Command
             return self::FAILURE;
         }
 
-        $reply = $this->sendSigned($journal, '/agent/docs/edit', ['number' => (string) $number, 'token' => $held['token'], 'version' => $held['version'], 'mode' => $this->mode(), 'section' => $this->option('section'), 'body' => $this->bodyText(), 'old' => $this->option('replace'), 'new' => $this->option('with'), 'title' => $this->option('title'), 'abstract' => $this->option('abstract')]);
+        $status = $this->runReport(function () use ($documents, $drafts, $number, $held): CommandReport {
+            $draft = $documents->editDocument(
+                number: (string) $number,
+                token: $held['token'],
+                version: $held['version'],
+                mode: $this->mode(),
+                section: $this->stringOption('section'),
+                body: $this->bodyText(),
+                old: $this->stringOption('replace'),
+                new: $this->stringOption('with'),
+                title: $this->stringOption('title'),
+                abstract: $this->stringOption('abstract'),
+            );
+            $drafts->keep($number, $draft->token, $draft->version);
+            $report = CommandReport::ending(self::SUCCESS)->line("Saved doc {$number} at version {$draft->version}.");
 
-        if ($reply === null) {
-            $this->line("If the version moved on, read the draft again with doc:show {$number} --draft before editing.");
+            foreach ($draft->outline as $section) {
+                $report = $report->line("  {$section}");
+            }
 
-            return self::FAILURE;
+            return $report;
+        });
+
+        if ($status !== self::SUCCESS) {
+            $this->line(
+                "If the version moved on, read the draft again with doc:show {$number} --draft before editing.",
+            );
         }
 
-        $drafts->keep($number, (string) $reply['token'], (int) $reply['version']);
-        $this->info("Saved doc {$number} at version {$reply['version']}.");
+        return $status;
+    }
 
-        foreach ($reply['outline'] as $section) {
-            $this->line("  {$section}");
-        }
+    private function stringOption(string $name): string|null
+    {
+        $value = $this->option($name);
 
-        return self::SUCCESS;
+        return is_string($value) ? $value : null;
     }
 
     /**

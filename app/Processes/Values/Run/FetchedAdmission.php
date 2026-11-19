@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values\Run;
 
+use App\Processes\Calls\AdmissionFetched;
 use App\Processes\Enums\AdmissionState;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\AdmittedPlanChanged;
@@ -31,25 +32,24 @@ final readonly class FetchedAdmission
     ) {}
 
     /**
-     * @param  array<string, mixed>  $answer
      * @param  array<string, string>  $environment
      */
-    public static function fromAnswer(array $answer, array $environment): self
+    public static function fromAnswer(AdmissionFetched $answer, array $environment): self
     {
-        $runId = (string) $answer['run_id'];
-
-        if (AdmissionState::from((string) $answer['state']) === AdmissionState::AlreadyStarted) {
-            return new self($runId, true, null, '', '', null, '', $environment);
+        if ($answer->state === AdmissionState::AlreadyStarted) {
+            return new self($answer->runId, true, null, '', '', null, '', $environment);
         }
 
+        $plan = $answer->plan ?? throw AdmittedPlanChanged::forRun($answer->runId);
+
         return new self(
-            $runId,
+            $answer->runId,
             false,
-            ExecutionPlan::fromArray($answer['plan']),
-            (string) $answer['tree_digest'],
-            (string) $answer['working_folder'],
-            ShellDialect::from((string) $answer['dialect']),
-            (string) $answer['event_key'],
+            ExecutionPlan::fromArray($plan),
+            (string) $answer->treeDigest,
+            (string) $answer->workingFolder,
+            $answer->dialect,
+            (string) $answer->eventKey,
             $environment,
         );
     }

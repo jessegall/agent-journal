@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
-use App\Pipelines\Support\Step;
 use App\Processes\Pipes\Run\AdmitLine;
-use App\Processes\Pipes\Run\ReportRefusedLine;
-use App\Processes\Values\Run\LineAdmission;
 
 /**
- * Admits a direct line through the one shell admission and runs it; a refusal reports why and starts nothing.
+ * Admits a direct line through the one shell admission and runs it; a refusal stops it before anything starts.
  */
 final readonly class RunLinePipeline implements PipelineDefinition
 {
@@ -19,11 +16,7 @@ final readonly class RunLinePipeline implements PipelineDefinition
     {
         return [
             AdmitLine::class,
-            Step::chosen(
-                fn (LineAdmission $admission) => $admission->isAllowed(),
-                then: RunAllowedLinePipeline::class,
-                else: ReportRefusedLine::class,
-            ),
+            RunAdmissionPipeline::class,
         ];
     }
 }

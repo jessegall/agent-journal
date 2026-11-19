@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Sharing\Calls\RequestShareCall;
 use Illuminate\Console\Command;
 
 /**
@@ -13,14 +13,19 @@ use Illuminate\Console\Command;
  */
 final class RequestShareCommand extends Command
 {
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
-    protected $signature = 'share:request {alias : The word the record is named by, such as doc} {number : The record\'s number} {--request-key= : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'share:request {alias : The word the record is named by, such as doc} {number : The'
+        .' record\'s number} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Propose sharing a record; the owner approves it';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendWriteAndPrint($journal, '/agent/sharing/request', ['alias' => (string) $this->argument('alias'), 'number' => (string) $this->argument('number')]);
+        return $this->runCall(RequestShareCall::from([
+            'alias' => (string) $this->argument('alias'),
+            'number' => (string) $this->argument('number'),
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

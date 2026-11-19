@@ -52,7 +52,7 @@ final class EvidencePermitTest extends TestCase
     {
         $permit = $this->permit();
 
-        $options = ['--permit' => $permit->id, '--request-id' => 'first'];
+        $options = ['--permit' => $permit->id, '--request-key' => 'first'];
         $this->artisan('process:run', $options)->expectsOutputToContain('notes.txt')->assertExitCode(0);
         $this->artisan('process:run', $options)->expectsOutputToContain('already started')->assertExitCode(0);
 

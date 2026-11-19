@@ -134,10 +134,12 @@ final class DueWorkOnTickTest extends TestCase
         $this->app->forgetInstance(ServerClock::class);
         $this->app->forgetInstance(MonotonicClock::class);
         $launch = TestLaunch::start();
-        $source = new RouteHeartbeatSource(fn (string $path) => $this->signed($launch, $path, [])->getStatusCode());
+        $source = new RouteHeartbeatSource(
+            fn (string $path) => $this->signed($launch, $path, ['request_key' => bin2hex(random_bytes(8))])->getStatusCode(),
+        );
 
         $this->assertSame(0, $this->app->make(ActiveActors::class)->snapshot()->agentSessions);
-        $this->assertSame(204, $source->beat());
+        $this->assertSame(200, $source->beat());
 
         $this->assertSame(1, $this->app->make(ActiveActors::class)->snapshot()->agentSessions);
     }

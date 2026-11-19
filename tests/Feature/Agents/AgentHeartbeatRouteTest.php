@@ -59,9 +59,9 @@ final class AgentHeartbeatRouteTest extends TestCase
         $this->assertNull($this->storedSession()->last_heartbeat_at);
     }
 
-    public function test_the_heartbeat_route_records_a_beat_and_answers_no_content(): void
+    public function test_the_heartbeat_route_records_a_beat_and_answers_accepted(): void
     {
-        $this->signed($this->launch, '/agent/heartbeat', [])->assertNoContent();
+        $this->signed($this->launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertOk();
 
         $this->assertInstanceOf(CarbonImmutable::class, $this->storedSession()->last_heartbeat_at);
     }
@@ -84,7 +84,7 @@ final class AgentHeartbeatRouteTest extends TestCase
     {
         new LaunchCredentials()->revoke($this->launch->session);
 
-        $this->signed($this->launch, '/agent/heartbeat', [])->assertUnauthorized();
+        $this->signed($this->launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized();
 
         $this->assertNull($this->storedSession()->last_heartbeat_at);
     }
@@ -93,7 +93,7 @@ final class AgentHeartbeatRouteTest extends TestCase
     {
         $this->launch->session->endAt(CarbonImmutable::now());
 
-        $this->signed($this->launch, '/agent/heartbeat', [])->assertUnauthorized();
+        $this->signed($this->launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized();
 
         $this->assertNull($this->storedSession()->last_heartbeat_at);
     }

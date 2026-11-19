@@ -25,6 +25,7 @@ enum RefusalCode: string
     case OutcomeUnknown = 'outcome_unknown';
     case UnsupportedVersion = 'unsupported_version';
     case ProfilesUnavailable = 'profiles_unavailable';
+    case AdmissionRefused = 'admission_refused';
 
     /**
      * The HTTP status a signed route answers the refusal with.
@@ -32,7 +33,7 @@ enum RefusalCode: string
     public function status(): int
     {
         return match ($this) {
-            self::InvalidInput => 422,
+            self::InvalidInput, self::AdmissionRefused => 422,
             self::Unauthenticated => 401,
             self::Forbidden => 403,
             self::RecordUnavailable => 404,
@@ -53,7 +54,16 @@ enum RefusalCode: string
             self::Busy, self::Unavailable, self::DeadlineExpired => true,
             self::InvalidInput, self::Unauthenticated, self::Forbidden, self::RecordUnavailable, self::StateBlocked,
             self::Conflict, self::RequestKeyConflict, self::RequestKeyExpired, self::StaleContinuation,
-            self::Cancelled, self::OutcomeUnknown, self::UnsupportedVersion, self::ProfilesUnavailable => false,
+            self::Cancelled, self::OutcomeUnknown, self::UnsupportedVersion, self::ProfilesUnavailable,
+            self::AdmissionRefused => false,
         };
+    }
+
+    /**
+     * Whether only the calls that declare it answer this code, each with its own refusal class on the client.
+     */
+    public function belongsToItsCalls(): bool
+    {
+        return $this === self::AdmissionRefused;
     }
 }

@@ -7,6 +7,6 @@ namespace App\AgentRequests\Contracts;
 /**
  * A signed call to the journal, whose answer is TAnswer; its #[Endpoint] says where it goes and what it does.
  *
- * @template TAnswer of \Spatie\LaravelData\Data
+ * @template-covariant TAnswer of \Spatie\LaravelData\Data
  */
 interface JournalCall {}

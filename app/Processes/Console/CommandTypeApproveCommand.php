@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\ApproveProposalCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,23 +16,26 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeApproveCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'command-type:approve {proposal : The proposal id}'
         .' {--expected-revision= : The proposal revision reviewed}'
         .' {--expected-active-revision=0 : The active rule revision}'
-        .' {--reader-revision= : The proven reader} {--proof= : The reader proof} {--reason=} {--json}';
+        .' {--reader-revision= : The proven reader} {--proof= : The reader proof} {--reason=}'
+        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Approve a proposal';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, "/agent/processes/proposals/{$this->argument('proposal')}/approve", [
-            'expected_revision' => (int) $this->option('expected-revision'),
-            'expected_active_revision' => (int) $this->option('expected-active-revision'),
-            'reader_revision' => $this->option('reader-revision'),
+        return $this->runCall(ApproveProposalCall::from([
+            'proposal' => (string) $this->argument('proposal'),
+            'expectedRevision' => (int) $this->option('expected-revision'),
+            'expectedActiveRevision' => (int) $this->option('expected-active-revision'),
+            'readerRevision' => $this->option('reader-revision'),
             'proof' => $this->option('proof'),
             'reason' => (string) $this->option('reason'),
-        ]);
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

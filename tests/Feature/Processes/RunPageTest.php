@@ -56,7 +56,7 @@ final class RunPageTest extends TestCase
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
         $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
-        $run->consumeWithEventKey();
+        $run->consumeFor('test-key', (string) config('app.key'));
 
         $this->actingAs($this->owner)->post("/processes/runs/{$run->id}/stop")->assertStatus(303);
 

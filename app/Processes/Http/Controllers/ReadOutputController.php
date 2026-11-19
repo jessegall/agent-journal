@@ -7,17 +7,13 @@ namespace App\Processes\Http\Controllers;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Processes\ReadOutputRequest;
 use App\Processes\Commands\RecordEvidenceReads;
-use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Enums\OutputStream;
-use App\Processes\Enums\RunMode;
-use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Support\OutputSummaries;
 use App\Processes\Support\StoredOutput;
 use App\Processes\Values\EvidenceRange;
-use App\Processes\Values\OutputProblem;
-use App\Processes\Values\Run\PartResult;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -28,13 +24,13 @@ final readonly class ReadOutputController
 {
     public function __construct(
         private StoredOutput $output,
-        private ResultReceipts $receipts,
+        private OutputSummaries $summaries,
     ) {}
 
     public function __invoke(ReadOutputRequest $request, ProcessRun $processRun, CommandBus $commands): JsonResponse
     {
         if ($request->mode() === 'summary') {
-            return $this->summary($processRun, $commands);
+            return new JsonResponse($this->summaries->of($processRun)->toArray());
         }
         $part = $processRun->parts()->where('syntax_node', $request->partNode())->orderByDesc('attempt')->firstOrFail();
         $stream = $request->stream();
@@ -74,51 +70,5 @@ final readonly class ReadOutputController
             ['bytes' => base64_encode($bytes), 'length' => strlen($bytes)],
             [EvidenceRange::bytes($part->id, $source, 0, strlen($bytes))],
         ];
-    }
-
-    /**
-     * The part's result as the one receipt gate answers it, or why there is none.
-     */
-    private function resultOf(ProcessRun $run, PartRun $part): PartResult
-    {
-        if ($run->mode === RunMode::Evidence) {
-            return PartResult::evidenceOnly();
-        }
-        $receipt = $this->receipts->forPart($part->id);
-        if ($receipt->isDefined()) {
-            return PartResult::receipted($receipt->get()->outcome->value, $receipt->get()->receiptId);
-        }
-        $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
-        if ($assessment === null) {
-            return PartResult::unavailable(['no assessment']);
-        }
-
-        $codes = array_map(fn (OutputProblem $problem) => $problem->code->value, $assessment->problems);
-
-        return PartResult::unavailable($codes);
-    }
-
-    private function summary(ProcessRun $run, CommandBus $commands): JsonResponse
-    {
-        $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
-        $envelopes = $parts->map(fn (PartRun $part) => EvidenceRange::envelope($part->id))->all();
-        $commands->run(new RecordEvidenceReads($run->id, array_values($envelopes)));
-
-        return new JsonResponse([
-            'label' => 'diagnostic output',
-            'mode' => $run->mode->value,
-            'lifecycle' => $run->lifecycle->value,
-            'parts' => $parts->map(fn (PartRun $part) => [
-                'node' => $part->syntax_node,
-                'attempt' => $part->attempt,
-                'operation' => $part->operation,
-                'lifecycle' => $part->lifecycle->value,
-                'end' => $part->end_type->value,
-                'code' => $part->end()->hasStatus() ? $part->end_code : null,
-                'capture' => $part->capture_state->value,
-                'bytes' => $part->stream_offsets,
-                'result' => $this->resultOf($run, $part)->toArray(),
-            ])->all(),
-        ]);
     }
 }

@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Communication\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Communication\Calls\CountInboxMessagesCall;
 use Illuminate\Console\Command;
 
 final class InboxCountsCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'message:counts {inbox} {--json}';
 
     protected $description = 'Count what is unread and what waits in an inbox';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/communication/counts', [
+        return $this->runCall(CountInboxMessagesCall::from([
             'inboxId' => (string) $this->argument('inbox'),
-        ]);
+        ]));
     }
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
-use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
+use Domain\Plans\Calls\ListAssignedPlansCall;
+use Domain\Plans\Calls\PlanCalls;
 use Domain\Plans\Http\Data\AssignedPlanCardData;
-use Domain\Plans\Http\Data\AssignedPlanListData;
 use Illuminate\Console\Command;
 
 /**
@@ -19,35 +19,41 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class AssignedPlansCommand extends Command
 {
-    protected $signature = 'plan:assigned {--search= : Words in the title} {--state=* : Only these states} {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
+    use RunsCallPipelines;
+
+    protected $signature = 'plan:assigned {--search= : Words in the title} {--state=* : Only these states}'
+        .' {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
 
     protected $description = 'List the plans the calling agent holds';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(PlanCalls $plans): int
     {
-        try {
-            $reply = $journal->send('/agent/plans/assigned', [
-                'search' => (string) $this->option('search'),
-                'states' => (array) $this->option('state'),
-                'page' => (int) $this->option('page'),
-                'perPage' => (int) $this->option('per-page'),
-            ]);
-        } catch (AgentRequestFailed $failure) {
-            $this->error($failure->getMessage());
+        $search = (string) $this->option('search');
+        $call = ListAssignedPlansCall::from([
+            'search' => $search === '' ? null : $search,
+            'states' => array_values(array_map(strval(...), (array) $this->option('state'))),
+            'page' => (int) $this->option('page'),
+            'perPage' => (int) $this->option('per-page'),
+        ]);
 
-            return self::FAILURE;
+        if ($this->option('json') === true) {
+            return $this->runCall($call);
         }
 
-        if ($this->option('json')) {
-            $this->line(json_encode($reply->body, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+        return $this->runReport(function () use ($plans, $call): int {
+            $list = $plans->listAssignedPlans($call->search, $call->states, $call->page, $call->perPage);
+            $headers = ['Id', 'Title', 'Type', 'State', 'Holder', 'Reference'];
+            $this->table($headers, array_map(fn (AssignedPlanCardData $card) => [
+                $card->id,
+                $card->title,
+                $card->type->value,
+                $card->state->value,
+                $card->holder->label(),
+                $card->holder->reference,
+            ], $list->cards));
+            $this->line("Page {$list->page}: ".count($list->cards)." of {$list->total}");
 
             return self::SUCCESS;
-        }
-
-        $list = AssignedPlanListData::from($reply->body);
-        $this->table(['Id', 'Title', 'Type', 'State', 'Holder', 'Reference'], array_map(fn (AssignedPlanCardData $card) => [$card->id, $card->title, $card->type->value, $card->state->value, $card->holder->label(), $card->holder->reference], $list->cards));
-        $this->line("Page {$list->page}: ".count($list->cards)." of {$list->total}");
-
-        return self::SUCCESS;
+        });
     }
 }

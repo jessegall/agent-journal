@@ -76,19 +76,27 @@ final readonly class SendSignedCalls implements CallSender
         );
     }
 
-    private function answerOf(CallDeclaration $declaration, AgentCallReply $reply, string $callId, CallKey|null $key): Data
-    {
+    private function answerOf(
+        CallDeclaration $declaration,
+        AgentCallReply $reply,
+        string $callId,
+        CallKey|null $key,
+    ): Data {
         $endpoint = $declaration->endpoint;
 
         if (strlen($reply->body) > $endpoint->answerLimit || $reply->status === 413) {
-            throw CallTooLarge::answered(CallTooLarge::CODE, 'The answer is larger than the call allows.', $callId, $key, []);
+            $message = 'The answer is larger than the call allows.';
+
+            throw CallTooLarge::answered(CallTooLarge::CODE, $message, $callId, $key, []);
         }
 
         try {
             $answer = json_decode($reply->body, true, 64, JSON_THROW_ON_ERROR);
         } catch (JsonException $unreadable) {
             if (in_array($reply->status, self::PROXY_STATUSES, true)) {
-                throw JournalUnavailable::answered(JournalUnavailable::CODE, 'The journal cannot answer now.', $callId, $key, []);
+                $message = 'The journal cannot answer now.';
+
+                throw JournalUnavailable::answered(JournalUnavailable::CODE, $message, $callId, $key, []);
             }
 
             throw AnswerUnreadable::at($declaration->call, 'body', $unreadable);
@@ -110,7 +118,7 @@ final readonly class SendSignedCalls implements CallSender
         }
 
         try {
-            return $endpoint->answer::validateAndCreate($answer);
+            return $endpoint->answer::from($answer);
         } catch (Throwable $unreadable) {
             throw AnswerUnreadable::at($declaration->call, 'answer', $unreadable);
         }

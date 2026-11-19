@@ -6,8 +6,8 @@ namespace App\Assignments\Console;
 
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\ListAutoAssignmentsCall;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
@@ -18,29 +18,28 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class ListAutoAssignmentsCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'assignment:auto-list {actor : The actor as type:id}
         {--after= : The id the page starts after} {--json}';
 
     protected $description = 'List an actor\'s auto-assignments';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
+        $after = (string) $this->option('after');
+
         try {
-            $body = ActorIdentity::fromText((string) $this->argument('actor'))->asFields('actor');
+            $call = ListAutoAssignmentsCall::from([
+                ...ActorIdentity::fromText((string) $this->argument('actor'))->asFields('actor'),
+                'after' => $after === '' ? null : $after,
+            ]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;
         }
 
-        $after = (string) $this->option('after');
-
-        return $this->sendAndPrint(
-            $journal,
-            '/agent/assignments/auto/list',
-            $after === '' ? $body : [...$body, 'after' => $after],
-        );
+        return $this->runCall($call);
     }
 }

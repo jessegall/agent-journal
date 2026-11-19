@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\RejectProposalCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,16 +16,19 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeRejectCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
-    protected $signature = 'command-type:reject {proposal : The proposal id} {--reason= : Why it is rejected} {--json}';
+    protected $signature = 'command-type:reject {proposal : The proposal id} {--reason= : Why it is rejected}'
+        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Reject a proposal';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        $path = "/agent/processes/proposals/{$this->argument('proposal')}/reject";
-
-        return $this->sendAndPrint($journal, $path, ['reason' => (string) $this->option('reason')]);
+        return $this->runCall(RejectProposalCall::from([
+            'proposal' => (string) $this->argument('proposal'),
+            'reason' => (string) $this->option('reason'),
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace App\Communication\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Communication\Calls\ShowMessageCall;
 use Illuminate\Console\Command;
 
 final class ShowMessageCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'message:show {id} {--json}';
 
     protected $description = 'Show one message you may see';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/communication/show', [
+        return $this->runCall(ShowMessageCall::from([
             'messageId' => (string) $this->argument('id'),
-        ]);
+        ]));
     }
 }

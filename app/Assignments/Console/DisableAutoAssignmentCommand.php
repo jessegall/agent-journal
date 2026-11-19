@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Assignments\Console;
 
 use App\Actors\Exceptions\InvalidActorText;
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\DisableAutoAssignmentCall;
 use App\Assignments\Console\Concerns\ReadsAutoAssignmentKey;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -19,7 +19,7 @@ use Illuminate\Console\Command;
 final class DisableAutoAssignmentCommand extends Command
 {
     use ReadsAutoAssignmentKey;
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
     protected $signature = 'assignment:auto-disable {actor : The actor as type:id} {type : The record type}
         {--revision= : The revision read last}
@@ -27,16 +27,20 @@ final class DisableAutoAssignmentCommand extends Command
 
     protected $description = 'Turn an actor\'s auto-assignment of one record type off, keeping its pool and size';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
         try {
-            $body = [...$this->keyFields(), 'expectedRevision' => (int) $this->option('revision')];
+            $call = DisableAutoAssignmentCall::from([
+                ...$this->keyFields(),
+                'expectedRevision' => (int) $this->option('revision'),
+                'requestKey' => $this->requestKey(),
+            ]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;
         }
 
-        return $this->sendWriteAndPrint($journal, '/agent/assignments/auto/disable', $body);
+        return $this->runCall($call);
     }
 }

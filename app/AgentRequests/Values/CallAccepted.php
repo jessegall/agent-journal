@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\AgentRequests\Values;
+
+use Spatie\LaravelData\Data;
+
+/**
+ * The answer of a call that has nothing to tell but that the journal took it.
+ */
+final class CallAccepted extends Data
+{
+    public function __construct(public readonly bool $accepted = true) {}
+}

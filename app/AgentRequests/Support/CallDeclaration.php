@@ -40,6 +40,9 @@ final readonly class CallDeclaration
         $inPath = [];
         $body = [];
 
+        $classMapping = new ReflectionClass($call)->getAttributes(MapName::class);
+        $classInput = $classMapping === [] ? null : $classMapping[0]->newInstance()->input;
+
         foreach (new ReflectionClass($call)->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if ($property->isStatic()) {
                 continue;
@@ -52,7 +55,8 @@ final readonly class CallDeclaration
             }
 
             $mapped = $property->getAttributes(MapName::class);
-            $body[] = $mapped === [] ? $property->getName() : self::inputName($mapped[0]->newInstance()->input, $property->getName());
+            $input = $mapped === [] ? $classInput : $mapped[0]->newInstance()->input;
+            $body[] = $input === null ? $property->getName() : self::inputName($input, $property->getName());
         }
 
         $declaration = new self($call, $endpoint, $inPath, $body);
@@ -97,7 +101,9 @@ final readonly class CallDeclaration
         sort($declared);
 
         if ($named !== $declared) {
-            throw EndpointDeclarationInvalid::for($this->call, 'each path placeholder needs one #[InPath] property of its name');
+            $reason = 'each path placeholder needs one #[InPath] property of its name';
+
+            throw EndpointDeclarationInvalid::for($this->call, $reason);
         }
 
         if ($this->needsReceipt() && ! $this->hasRequestKey()) {
@@ -106,11 +112,13 @@ final readonly class CallDeclaration
     }
 
     /**
-     * The name a mapped property is read under: the name the mapping gives, or the property's own when it maps by a
-     * mapper.
+     * The name a mapped property is read under: the name the mapping gives, or the one its mapper makes of the
+     * property's own, whether the mapping sits on the property or on its class.
      */
     private static function inputName(int|string|NameMapper $input, string $property): string
     {
-        return (string) ($input instanceof NameMapper ? $input->map($property) : $input);
+        $mapper = is_string($input) && is_a($input, NameMapper::class, true) ? new $input() : $input;
+
+        return (string) ($mapper instanceof NameMapper ? $mapper->map($property) : $mapper);
     }
 }

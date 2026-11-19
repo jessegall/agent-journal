@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Communication\Http\Controllers\Calls;
+
+use App\Communication\Calls\ReadInboxHistoryCall;
+use App\Communication\Contracts\ConversationResolver;
+use App\Communication\Data\MessagePage;
+
+/**
+ * Reads an inbox's whole history, incoming and outgoing, older than the cursor.
+ */
+final readonly class ReadInboxHistoryController
+{
+    public function __invoke(ReadInboxHistoryCall $call, ConversationResolver $conversations): MessagePage
+    {
+        return $conversations->history($call->inboxId, $call->page->olderCursor, $call->page->limit);
+    }
+}

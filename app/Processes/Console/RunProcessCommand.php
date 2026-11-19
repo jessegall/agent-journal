@@ -8,6 +8,7 @@ use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use App\Processes\Pipelines\RunProcessPipeline;
+use App\Processes\Values\Run\ChildEnvironment;
 use App\Processes\Values\Run\RunStart;
 use Illuminate\Console\Command;
 
@@ -24,12 +25,10 @@ final class RunProcessCommand extends Command
     /**
      * Variables a child never inherits: the journal's launch token and the run's event key.
      */
-    private const array SECRET_VARIABLES = ['JOURNAL_LAUNCH_TOKEN', 'JOURNAL_EVENT_KEY'];
-
     protected $signature = 'process:run {--admission= : The admitted run to start}'
         .' {--line= : A shell line to admit and run directly} {--dialect=bash : bash, sh or zsh}'
         .' {--permit= : An evidence permit to run its exact command line once}'
-        .' {--request-id= : The id this use of the line or permit goes under}';
+        .' {--request-key= : The key this use of the line or permit goes under, to get its answer again}';
 
     protected $description = 'Run an admitted command line under the supervisor and print the start of its output';
 
@@ -45,9 +44,9 @@ final class RunProcessCommand extends Command
             (string) $this->option('dialect'),
             $this->option('permit') === null ? null : (string) $this->option('permit'),
             (string) $this->option('admission'),
-            (string) ($this->option('request-id') ?? bin2hex(random_bytes(16))),
+            $this->requestKey(),
             (string) getcwd(),
-            array_diff_key(getenv(), array_flip(self::SECRET_VARIABLES)),
+            ChildEnvironment::ofThisProcess(),
         );
     }
 }

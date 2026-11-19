@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
-use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\AgentRequests\Exceptions\CommandStopped;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\ProcessCalls;
 use App\Processes\Data\ExplainedNodeData;
-use App\Processes\Data\ExplanationData;
 use App\Processes\Enums\JournalRouteType;
+use App\Processes\Enums\ShellDialect;
 use Illuminate\Console\Command;
 
 /**
@@ -23,26 +23,26 @@ final class ExplainCommandTypeCommand extends Command
 
     protected $description = 'Explain how a shell line is read, without running it';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(ProcessCalls $processes): int
     {
+        $dialect = ShellDialect::from((string) $this->option('dialect'));
+
         try {
-            $reply = $journal->send('/agent/processes/explain', [
-                'line' => (string) $this->option('line'),
-                'dialect' => (string) $this->option('dialect'),
-            ]);
-        } catch (AgentRequestFailed $failure) {
-            $this->error($failure->getMessage());
+            $explanation = $processes->explainCommand((string) $this->option('line'), $dialect);
+        } catch (CommandStopped $stopped) {
+            foreach ($stopped->consoleLines() as $line) {
+                $this->error($line);
+            }
 
             return self::FAILURE;
         }
 
         if ($this->option('json')) {
-            $this->line(json_encode($reply->body, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+            $this->line(json_encode($explanation->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
 
             return self::SUCCESS;
         }
 
-        $explanation = ExplanationData::from($reply->body);
         $where = $explanation->diagnostic === null
             ? ''
             : " at byte {$explanation->diagnosticPosition}: {$explanation->diagnostic}";

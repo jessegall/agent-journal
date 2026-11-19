@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Values\CommandReport;
+use App\Comments\Calls\ListCommentsCall;
 use App\Comments\Data\CommentDetails;
-use App\Text\Enums\TextAnchorType;
-use App\Text\Values\TextAnchor;
+use App\Comments\Data\RecordCommentView;
+use App\Comments\Data\TextCommentView;
 
 /**
  * How doc:comments and report:comments print a page of a record's comments: author and time, the place a text comment
@@ -15,112 +16,46 @@ use App\Text\Values\TextAnchor;
  */
 trait PrintsComments
 {
-    use SendsRecordCalls;
-
-    protected function showComments(AgentRequestSender $journal, string $type): int
+    protected function showComments(string $type): int
     {
-        $fields = ['target' => $type.' '.$this->argument('number')];
+        $after = $this->option('after');
+        $call = ListCommentsCall::from([
+            'target' => "{$type} {$this->argument('number')}",
+            'after' => is_string($after) ? $after : null,
+        ]);
 
-        if (is_string($this->option('after'))) {
-            $fields['after'] = $this->option('after');
-        }
+        return $this->runReport(function () use ($call): CommandReport {
+            $list = $this->sendCall($call);
+            $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $list->items);
 
-        $reply = $this->sendSigned($journal, '/agent/comments/list', $fields);
-
-        if ($reply === null) {
-            return self::FAILURE;
-        }
-
-        /**
-         * @var array{
-         *     items: list<array{
-         *         comment: array<string, mixed>,
-         *         anchor?: array{
-         *             versionId: string,
-         *             versionLabel: string,
-         *             type: string,
-         *             sectionNumber: int,
-         *             firstLine: int,
-         *             lastLine: int,
-         *             quote: string,
-         *             startOffset: int,
-         *             endOffset: int,
-         *         },
-         *     }>,
-         *     nextAfter: string|null,
-         * } $reply
-         */
-        $this->printComments($reply['items']);
-
-        if ($reply['nextAfter'] !== null) {
-            $this->line("More: --after={$reply['nextAfter']}");
-        }
-
-        return self::SUCCESS;
+            return $list->nextAfter === null ? $report : $report->line("More: --after={$list->nextAfter}");
+        });
     }
 
     /**
-     * @param  list<array{
-     *     comment: array<string, mixed>,
-     *     anchor?: array{
-     *         versionId: string,
-     *         versionLabel: string,
-     *         type: string,
-     *         sectionNumber: int,
-     *         firstLine: int,
-     *         lastLine: int,
-     *         quote: string,
-     *         startOffset: int,
-     *         endOffset: int,
-     *     },
-     * }>  $items
+     * @param  list<RecordCommentView|TextCommentView>  $items
      */
-    private function printComments(array $items): void
+    private function commentsReport(CommandReport $start, array $items): CommandReport
     {
         if ($items === []) {
-            $this->line('No comments.');
+            return $start->line('No comments.');
         }
 
-        foreach (CommentDetails::collect(array_column($items, 'comment')) as $index => $comment) {
-            $anchor = $items[$index]['anchor'] ?? null;
-            $this->printComment($comment, $anchor === null ? 'on the whole record' : $this->placeOf($anchor));
+        $report = $start;
+
+        foreach ($items as $item) {
+            $place = $item instanceof TextCommentView ? $item->anchor->description() : 'on the whole record';
+            $report = $this->commentReport($report, $item->comment, $place);
         }
+
+        return $report;
     }
 
-    /**
-     * Where an anchor the journal answered with points, as a person reads it.
-     *
-     * @param  array{
-     *     versionId: string,
-     *     versionLabel: string,
-     *     type: string,
-     *     sectionNumber: int,
-     *     firstLine: int,
-     *     lastLine: int,
-     *     quote: string,
-     *     startOffset: int,
-     *     endOffset: int,
-     * }  $anchor
-     */
-    private function placeOf(array $anchor): string
+    private function commentReport(CommandReport $report, CommentDetails $comment, string $place): CommandReport
     {
-        return TextAnchor::restored(
-            $anchor['versionId'],
-            $anchor['versionLabel'],
-            TextAnchorType::from($anchor['type']),
-            $anchor['sectionNumber'],
-            $anchor['firstLine'],
-            $anchor['lastLine'],
-            $anchor['quote'],
-            $anchor['startOffset'],
-            $anchor['endOffset'],
-        )->description();
-    }
-
-    private function printComment(CommentDetails $comment, string $place): void
-    {
-        $this->line("{$comment->authorType->value} {$comment->authorId}  {$comment->createdAt}");
-        $this->line("  {$place}");
-        $this->line('  '.str_replace("\n", "\n  ", $comment->body));
+        return $report
+            ->line("{$comment->authorType->value} {$comment->authorId}  {$comment->createdAt}")
+            ->line("  {$place}")
+            ->line('  '.str_replace("\n", "\n  ", $comment->body));
     }
 }

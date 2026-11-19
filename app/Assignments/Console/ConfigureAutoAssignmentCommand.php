@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\Assignments\Calls\ConfigureAutoAssignmentCall;
 use App\Assignments\Console\Concerns\ReadsAutoAssignmentChange;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -26,8 +26,8 @@ final class ConfigureAutoAssignmentCommand extends Command
 
     protected $description = 'Give an actor\'s auto-assignment of one record type a new pool and size';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendChange($journal, '/agent/assignments/auto/configure');
+        return $this->runChange(ConfigureAutoAssignmentCall::from(...));
     }
 }

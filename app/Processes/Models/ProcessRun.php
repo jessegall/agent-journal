@@ -45,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @property int $update_sequence the number of the last live update sent for this run
  * @property string $stale_reason why the run's admission no longer holds, or empty while it does
  * @property string $event_key_hash
+ * @property string $consuming_key_hash
  * @property string $working_folder
  * @property array{root: array<string, mixed>, tree_digest: string} $plan
  * @property CarbonImmutable|null $consumed_at
@@ -174,22 +175,37 @@ final class ProcessRun extends Model implements ReadableModel
     }
 
     /**
-     * Consumes the admission and returns the run's new event key, shown only this once; a consumed admission
-     * returns ''.
+     * Consumes the run for the request key and answers its event key, derived from the run and the key so the same
+     * key gets the same event key again while the host has sent nothing for the run; a run consumed under another key,
+     * or one its host already reported on, answers null and starts nothing again.
      */
-    public function consumeWithEventKey(): string
+    public function consumeFor(string $requestKey, string $appKey): string|null
     {
+        $keyHash = hash('sha256', $requestKey);
+        $eventKey = hash_hmac('sha256', $this->id.$requestKey, $appKey);
+
         if ($this->consumed_at !== null) {
-            return '';
+            $sameKey = hash_equals($this->consuming_key_hash, $keyHash);
+
+            return $sameKey && ! $this->hasHeardFromItsHost() ? $eventKey : null;
         }
-        $key = bin2hex(random_bytes(32));
-        $this->event_key_hash = hash('sha256', $key);
+
+        $this->consuming_key_hash = $keyHash;
+        $this->event_key_hash = hash('sha256', $eventKey);
         $this->consumed_at = CarbonImmutable::now();
         $this->lifecycle = LifecycleState::Running;
         $this->started_at = $this->consumed_at;
         $this->save();
 
-        return $key;
+        return $eventKey;
+    }
+
+    /**
+     * Whether the host that took the run has sent anything for it: a heartbeat or a part.
+     */
+    public function hasHeardFromItsHost(): bool
+    {
+        return $this->heartbeat_at !== null || $this->parts()->exists();
     }
 
     /**

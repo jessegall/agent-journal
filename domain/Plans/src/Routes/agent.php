@@ -2,36 +2,25 @@
 
 declare(strict_types=1);
 
-use Domain\Plans\Http\Controllers\AddPhaseController;
-use Domain\Plans\Http\Controllers\AddPhaseTasksController;
-use Domain\Plans\Http\Controllers\AssignedPlansController;
-use Domain\Plans\Http\Controllers\AssignPlanWorkController;
-use Domain\Plans\Http\Controllers\CreatePlanController;
-use Domain\Plans\Http\Controllers\EditPlanController;
-use Domain\Plans\Http\Controllers\EndPlanController;
-use Domain\Plans\Http\Controllers\PhaseChecksController;
-use Domain\Plans\Http\Controllers\ReassignPlanWorkController;
-use Domain\Plans\Http\Controllers\RecordPhaseCheckController;
-use Domain\Plans\Http\Controllers\UnassignPlanWorkController;
+use App\AgentRequests\Contracts\RegistersCalls;
+use Domain\Plans\Http\Controllers\Calls;
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/agent/plans/assigned', AssignedPlansController::class)
-    ->middleware('journal.agent')
-    ->name('plans.assigned');
-
-Route::middleware('journal.agent')->prefix('agent/plans/work')->name('plans.work.')->group(function (): void {
-    Route::post('assign', AssignPlanWorkController::class)->name('assign');
-    Route::post('reassign', ReassignPlanWorkController::class)->name('reassign');
-    Route::post('unassign', UnassignPlanWorkController::class)->name('unassign');
-});
-
-Route::middleware('journal.agent')->prefix('agent/plans')->name('plans.')->group(function (): void {
-    Route::post('create', CreatePlanController::class)->name('create');
-    Route::post('edit', EditPlanController::class)->name('edit');
-    Route::post('finish', EndPlanController::class)->defaults('ending', 'finish')->name('finish');
-    Route::post('cancel', EndPlanController::class)->defaults('ending', 'cancel')->name('cancel');
-    Route::post('phases/create', AddPhaseController::class)->name('phases.create');
-    Route::post('phases/add-tasks', AddPhaseTasksController::class)->name('phases.add-tasks');
-    Route::post('phases/check', RecordPhaseCheckController::class)->name('phases.check');
-    Route::post('phases/checks', PhaseChecksController::class)->name('phases.checks');
-});
+Route::middleware('journal.agent')
+    ->prefix('agent')
+    ->group(function (): void {
+        $calls = Container::getInstance()->make(RegistersCalls::class);
+        $calls->register(Calls\ListAssignedPlansController::class)->name('plans.assigned');
+        $calls->register(Calls\AssignPlanWorkController::class)->name('plans.work.assign');
+        $calls->register(Calls\ReassignPlanWorkController::class)->name('plans.work.reassign');
+        $calls->register(Calls\UnassignPlanWorkController::class)->name('plans.work.unassign');
+        $calls->register(Calls\CreatePlanController::class)->name('plans.create');
+        $calls->register(Calls\EditPlanController::class)->name('plans.edit');
+        $calls->register(Calls\FinishPlanController::class)->name('plans.finish');
+        $calls->register(Calls\CancelPlanController::class)->name('plans.cancel');
+        $calls->register(Calls\AddPhaseController::class)->name('plans.phases.create');
+        $calls->register(Calls\AddPhaseTasksController::class)->name('plans.phases.add-tasks');
+        $calls->register(Calls\RecordPhaseCheckController::class)->name('plans.phases.check');
+        $calls->register(Calls\ListPhaseChecksController::class)->name('plans.phases.checks');
+    });

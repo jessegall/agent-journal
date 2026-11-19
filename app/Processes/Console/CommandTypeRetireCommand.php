@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\RetireRuleCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,18 +16,21 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeRetireCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'command-type:retire {rule : The classification rule id}'
-        .' {--expected-revision= : The active revision read} {--reason= : Why it is retired} {--json}';
+        .' {--expected-revision= : The active revision read} {--reason= : Why it is retired}'
+        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Retire a rule';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, "/agent/processes/rules/{$this->argument('rule')}/retire", [
-            'expected_revision' => (int) $this->option('expected-revision'),
+        return $this->runCall(RetireRuleCall::from([
+            'rule' => (string) $this->argument('rule'),
+            'expectedRevision' => (int) $this->option('expected-revision'),
             'reason' => (string) $this->option('reason'),
-        ]);
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

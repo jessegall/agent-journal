@@ -56,9 +56,12 @@ final readonly class ReadRequestKey
 
         try {
             $response = $next($request);
-            $this->guardReceipt($declaration);
 
-            return $response;
+            if ($response->isSuccessful()) {
+                $this->guardReceipt($declaration);
+            }
+
+            return self::answeredOk($response, $declaration);
         } finally {
             $this->key->forget();
         }
@@ -101,5 +104,18 @@ final readonly class ReadRequestKey
         }
 
         $this->failures->report($failure);
+    }
+
+    /**
+     * A signed call answers 200 on success, read or write: its answer is the call's result, not a created resource,
+     * though Data answers a POST with 201.
+     */
+    private static function answeredOk(Response $response, CallDeclaration|null $declaration): Response
+    {
+        if ($declaration !== null && $response->getStatusCode() === Response::HTTP_CREATED) {
+            $response->setStatusCode(Response::HTTP_OK);
+        }
+
+        return $response;
     }
 }

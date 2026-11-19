@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\ProveReaderCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,19 +16,22 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ReaderProveCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'reader:prove {request : The command request id}'
         .' {--reader-revision= : The draft reader revision}'
-        .' {--output=* : A sample run to replay the reader over} {--json}';
+        .' {--output=* : A sample run to replay the reader over}'
+        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Prove a draft reader against real sample runs';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, "/agent/processes/requests/{$this->argument('request')}/proofs", [
-            'reader_revision' => (string) $this->option('reader-revision'),
+        return $this->runCall(ProveReaderCall::from([
+            'commandRequest' => (string) $this->argument('request'),
+            'readerRevision' => (string) $this->option('reader-revision'),
             'runs' => array_values(array_map(strval(...), (array) $this->option('output'))),
-        ]);
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

@@ -19,13 +19,14 @@ use PHPUnit\Framework\TestCase;
  */
 final class RefusalExceptionsTest extends TestCase
 {
-    public function test_every_refusal_code_maps_to_its_own_class(): void
+    public function test_every_shared_refusal_code_maps_to_its_own_class(): void
     {
-        $classes = array_map(fn (RefusalCode $code) => RefusalExceptions::classOf($code->value, []), RefusalCode::cases());
+        $shared = array_values(array_filter(RefusalCode::cases(), fn (RefusalCode $code) => ! $code->belongsToItsCalls()));
+        $classes = array_map(fn (RefusalCode $code) => RefusalExceptions::classOf($code->value, []), $shared);
 
-        $this->assertCount(count(RefusalCode::cases()), array_unique($classes));
+        $this->assertCount(count($shared), array_unique($classes));
 
-        foreach (RefusalCode::cases() as $code) {
+        foreach ($shared as $code) {
             $this->assertSame($code->value, RefusalExceptions::classOf($code->value, [])::CODE);
         }
     }

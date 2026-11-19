@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use Domain\Documents\Console\Concerns\PrintsComments;
@@ -14,6 +14,7 @@ use Illuminate\Console\Command;
 final class DocCommentsCommand extends Command
 {
     use PrintsComments;
+    use RunsCallPipelines;
 
     protected $signature = 'doc:comments {number} {--after=}';
 
@@ -21,8 +22,8 @@ final class DocCommentsCommand extends Command
 
     protected $help = 'Example: php artisan doc:comments 4';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->showComments($journal, 'doc');
+        return $this->showComments('doc');
     }
 }

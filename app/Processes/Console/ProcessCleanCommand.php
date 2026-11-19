@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\CleanOutputCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,18 +16,20 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ProcessCleanCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'process:clean {run* : The ended runs}'
-        .' {--preview : Only list what would be removed} {--json}';
+        .' {--preview : Only list what would be removed}'
+        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Remove the stored output of ended runs';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/processes/runs/clean', [
+        return $this->runCall(CleanOutputCall::from([
             'runs' => array_values(array_map(strval(...), (array) $this->argument('run'))),
             'preview' => (bool) $this->option('preview'),
-        ]);
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

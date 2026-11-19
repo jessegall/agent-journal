@@ -6,10 +6,12 @@ namespace Domain\Plans\Console;
 
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
-use Domain\Plans\Console\Concerns\SendsPlanWorkCommands;
+use Domain\Plans\Calls\UnassignPlanWorkCall;
+use Domain\Plans\Console\Concerns\ReportsPlanWork;
 use Illuminate\Console\Command;
 
 /**
@@ -18,7 +20,8 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class UnassignPlanWorkCommand extends Command
 {
-    use SendsPlanWorkCommands;
+    use ReportsPlanWork;
+    use RunsCallPipelines;
 
     protected $signature = 'plan:unassign-work
         {type : plans.plan or plans.phase}
@@ -30,16 +33,22 @@ final class UnassignPlanWorkCommand extends Command
 
     protected $description = 'Release a plan or phase and all its unfinished work';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
         try {
-            $fields = ['assignmentId' => (string) $this->option('assignment'), ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder')];
+            $call = UnassignPlanWorkCall::from([
+                'rootType' => (string) $this->argument('type'),
+                'rootId' => (string) $this->argument('id'),
+                'assignmentId' => (string) $this->option('assignment'),
+                ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder'),
+                'requestKey' => $this->requestKey(),
+            ]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;
         }
 
-        return $this->sendCascade($journal, 'unassign', $fields);
+        return $this->runReport(fn (): CommandReport => $this->workReport($this->sendCall($call)));
     }
 }

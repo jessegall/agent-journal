@@ -99,7 +99,7 @@ final class TaskAuthoringTest extends TestCase
     {
         $launch = TestLaunch::start();
 
-        $taskId = $this->signed($launch, '/agent/tasks/create', ['title' => 'From the agent', 'brief' => 'What it asks.'])->assertCreated()->json('taskId');
+        $taskId = $this->signed($launch, '/agent/tasks/create', ['title' => 'From the agent', 'brief' => 'What it asks.', 'request_key' => bin2hex(random_bytes(8))])->assertOk()->json('task_id');
 
         $task = Task::query()->findOrFail($taskId);
         $this->assertSame([ActorType::Agent, $launch->agent->id, TaskState::Open], [$task->creator_type, $task->creator_id, $task->state]);
@@ -112,7 +112,7 @@ final class TaskAuthoringTest extends TestCase
         $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
         $task->describe('Second', 'Second brief');
 
-        $this->signed($launch, '/agent/tasks/edit', ['taskId' => $task->id, 'expectedRevision' => 1, 'title' => 'Stale'])->assertConflict();
+        $this->signed($launch, '/agent/tasks/edit', ['task_id' => $task->id, 'expected_revision' => 1, 'title' => 'Stale', 'request_key' => bin2hex(random_bytes(8))])->assertConflict();
 
         $this->assertSame(['Second', 2], [$task->fresh()?->title, $task->fresh()?->revision]);
     }
@@ -122,7 +122,7 @@ final class TaskAuthoringTest extends TestCase
         $launch = TestLaunch::start();
         $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
 
-        $this->signed($launch, '/agent/tasks/edit', ['taskId' => $task->id, 'expectedRevision' => 1, 'brief' => 'Route brief'])->assertOk()->assertJson(['taskId' => $task->id, 'revision' => 2]);
+        $this->signed($launch, '/agent/tasks/edit', ['task_id' => $task->id, 'expected_revision' => 1, 'brief' => 'Route brief', 'request_key' => bin2hex(random_bytes(8))])->assertOk()->assertJson(['task_id' => $task->id, 'revision' => 2]);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
         $revision = $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, brief: 'Bus brief'));
 

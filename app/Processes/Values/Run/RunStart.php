@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Processes\Values\Run;
 
+use App\AgentRequests\Support\CallKey;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Processes\Pipelines\RunLinePipeline;
 use App\Processes\Pipelines\RunNamedAdmissionPipeline;
 use App\Processes\Pipelines\RunPermitPipeline;
 
 /**
- * What the run command was asked: a line to admit, a permit to run, or an admission to start, with the request id
+ * What the run command was asked: a line to admit, a permit to run, or an admission to start, with the request key
  * that use goes under, the folder it was called in and the environment a child inherits.
  */
 final readonly class RunStart
@@ -23,7 +24,7 @@ final readonly class RunStart
         public string $dialect,
         public string|null $permit,
         public string $admissionId,
-        public string $requestId,
+        public CallKey $requestKey,
         public string $workingFolder,
         public array $environment,
     ) {}
@@ -44,6 +45,6 @@ final readonly class RunStart
 
     public function admission(string $admissionId): AdmissionToRun
     {
-        return new AdmissionToRun($admissionId, $this->environment);
+        return new AdmissionToRun($admissionId, $this->requestKey, $this->environment);
     }
 }

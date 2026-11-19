@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Processes\Calls;
+
+use App\AgentRequests\Attributes\Endpoint;
+use App\AgentRequests\Contracts\JournalCall;
+use App\AgentRequests\Enums\CallEffect;
+use App\Processes\Data\ExplanationData;
+use App\Processes\Enums\ShellDialect;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Data;
+
+/**
+ * Explains how the journal reads a shell line: its parts, and for each held part the request that holds it.
+ *
+ * @implements JournalCall<ExplanationData>
+ */
+#[Endpoint('processes/explain', 'POST', ExplanationData::class, CallEffect::Read)]
+final class ExplainCommandCall extends Data implements JournalCall
+{
+    public function __construct(
+        #[Max(100_000)]
+        public string $line,
+        public ShellDialect $dialect = ShellDialect::Bash,
+    ) {}
+}

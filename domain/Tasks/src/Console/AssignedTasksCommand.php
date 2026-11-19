@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
-use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
+use Domain\Tasks\Calls\ListAssignedTasksCall;
+use Domain\Tasks\Calls\TaskCalls;
 use Domain\Tasks\Http\Data\AssignedTaskCardData;
-use Domain\Tasks\Http\Data\AssignedTaskListData;
 use Illuminate\Console\Command;
 
 /**
@@ -19,41 +19,45 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class AssignedTasksCommand extends Command
 {
-    protected $signature = 'task:assigned {--search= : Words in the title} {--state=* : Only these states} {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
+    use RunsCallPipelines;
+
+    protected $signature = 'task:assigned {--search= : Words in the title} {--state=* : Only these states}'
+        .' {--page=1} {--per-page=20} {--json : Print the answer as JSON}';
 
     protected $description = 'List the tasks the calling agent holds';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(TaskCalls $tasks): int
     {
-        try {
-            $reply = $journal->send('/agent/tasks/assigned', [
-                'search' => (string) $this->option('search'),
-                'states' => (array) $this->option('state'),
-                'page' => (int) $this->option('page'),
-                'perPage' => (int) $this->option('per-page'),
-            ]);
-        } catch (AgentRequestFailed $failure) {
-            $this->error($failure->getMessage());
+        $search = (string) $this->option('search');
+        $call = ListAssignedTasksCall::from([
+            'search' => $search === '' ? null : $search,
+            'states' => array_values(array_map(strval(...), (array) $this->option('state'))),
+            'page' => (int) $this->option('page'),
+            'perPage' => (int) $this->option('per-page'),
+        ]);
 
-            return self::FAILURE;
+        if ($this->option('json') === true) {
+            return $this->runCall($call);
         }
 
-        if ($this->option('json')) {
-            $this->line(json_encode($reply->body, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+        return $this->runReport(function () use ($tasks, $call): int {
+            $list = $tasks->listAssignedTasks($call->search, $call->states, $call->page, $call->perPage);
+            $this->table(['Id', 'Title', 'State', 'Holder', 'Reference'], array_map(fn (AssignedTaskCardData $card) => [
+                $card->id,
+                $card->title,
+                $card->state->value,
+                $card->holder->label(),
+                $card->holder->reference,
+            ], $list->cards));
+            $this->line("Page {$list->page}: ".count($list->cards)." of {$list->total}");
+
+            foreach ($list->cards as $card) {
+                if ($card->execution !== null) {
+                    $this->line("{$card->id}: {$card->execution->label()}");
+                }
+            }
 
             return self::SUCCESS;
-        }
-
-        $list = AssignedTaskListData::from($reply->body);
-        $this->table(['Id', 'Title', 'State', 'Holder', 'Reference'], array_map(fn (AssignedTaskCardData $card) => [$card->id, $card->title, $card->state->value, $card->holder->label(), $card->holder->reference], $list->cards));
-        $this->line("Page {$list->page}: ".count($list->cards)." of {$list->total}");
-
-        foreach ($list->cards as $card) {
-            if ($card->execution !== null) {
-                $this->line("{$card->id}: {$card->execution->label()}");
-            }
-        }
-
-        return self::SUCCESS;
+        });
     }
 }

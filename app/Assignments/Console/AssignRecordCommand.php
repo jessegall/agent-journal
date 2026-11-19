@@ -6,8 +6,8 @@ namespace App\Assignments\Console;
 
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\AssignRecordCall;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -20,22 +20,27 @@ use Illuminate\Console\Command;
 final class AssignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
-    protected $signature = 'assignment:assign {type} {id} {--to= : The new holder as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'assignment:assign {type} {id} {--to= : The new holder as type:id} {--request-key= :'
+        .' Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Give one record to a holder';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
         try {
-            $body = [...$this->recordFields(), ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient')];
+            $call = AssignRecordCall::from([
+                ...$this->recordFields(),
+                ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient'),
+                'requestKey' => $this->requestKey(),
+            ]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;
         }
 
-        return $this->sendWriteAndPrint($journal, '/agent/assignments/assign', $body);
+        return $this->runCall($call);
     }
 }

@@ -37,12 +37,12 @@ final class DirectRunTest extends TestCase
 
     public function test_an_unknown_line_is_refused_with_its_request_and_nothing_starts(): void
     {
-        $reply = $this->signed($this->launch, '/agent/processes/admit', $this->line('acme verify'))->assertOk();
+        $reply = $this->signed($this->launch, '/agent/processes/admit', $this->line('acme verify'))->assertStatus(422);
 
-        $this->assertFalse($reply->json('allowed'));
-        $this->assertSame('command-unknown', $reply->json('code'));
-        $this->assertSame('Nothing in this request started.', $reply->json('notice'));
-        $this->assertSame(CommandRequest::query()->sole()->id, $reply->json('request_id'));
+        $this->assertSame('admission_refused', $reply->json('code'));
+        $this->assertSame('command-unknown', $reply->json('details.reason_code'));
+        $this->assertSame('Nothing in this request started.', $reply->json('details.notice'));
+        $this->assertSame(CommandRequest::query()->sole()->id, $reply->json('details.request_id'));
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
@@ -50,8 +50,24 @@ final class DirectRunTest extends TestCase
     {
         $reply = $this->signed($this->launch, '/agent/processes/admit', $this->line('cat composer.json'))->assertOk();
 
-        $this->assertTrue($reply->json('allowed'));
         $this->assertSame($reply->json('run_id'), ProcessRun::query()->withoutGlobalScopes()->sole()->id);
+    }
+
+    public function test_a_lost_admission_answer_asked_again_under_its_key_starts_the_run_once(): void
+    {
+        $runId = $this->signed($this->launch, '/agent/processes/admit', $this->line('cat composer.json'))->json('run_id');
+        $path = "/agent/processes/admissions/{$runId}";
+
+        $first = $this->signed($this->launch, $path, ['request_key' => 'take-1'])->json();
+        $again = $this->signed($this->launch, $path, ['request_key' => 'take-1'])->json();
+        $other = $this->signed($this->launch, $path, ['request_key' => 'take-2'])->json();
+        ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId)->recordHeartbeat();
+        $afterStart = $this->signed($this->launch, $path, ['request_key' => 'take-1'])->json();
+
+        $this->assertSame('to_run', $first['state']);
+        $this->assertSame($first['event_key'], $again['event_key']);
+        $this->assertSame('already_started', $other['state']);
+        $this->assertSame('already_started', $afterStart['state']);
     }
 
     #[TimeLimit(10, 'It admits and runs printf through the signed channel.')]
@@ -72,6 +88,6 @@ final class DirectRunTest extends TestCase
      */
     private function line(string $line): array
     {
-        return ['line' => $line, 'dialect' => 'bash', 'working_folder' => base_path(), 'request_id' => 'direct-1'];
+        return ['line' => $line, 'dialect' => 'bash', 'working_folder' => base_path(), 'request_key' => 'direct-1'];
     }
 }

@@ -8,6 +8,7 @@ use App\Contracts\CommandRefusal;
 use BackedEnum;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -47,10 +48,15 @@ final class ActorNotAllowed extends RuntimeException implements CommandRefusal
     }
 
     /**
-     * Every transport answers a refusal as forbidden: 403 over HTTP, with the safe message alone.
+     * Every transport answers a refusal as forbidden: 403 over HTTP, with the safe message alone. A signed agent call
+     * gets none here, so the journal answers it with the coded refusal every signed call answers with.
      */
-    public function render(): JsonResponse
+    public function render(Request|null $request = null): JsonResponse|null
     {
+        if ($request?->is('agent/*') === true) {
+            return null;
+        }
+
         return new JsonResponse(['message' => $this->getMessage()], Response::HTTP_FORBIDDEN);
     }
 }

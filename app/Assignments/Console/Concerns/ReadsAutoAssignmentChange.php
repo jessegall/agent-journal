@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Assignments\Console\Concerns;
 
 use App\Actors\Exceptions\InvalidActorText;
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\ConfigureAutoAssignmentCall;
+use App\Assignments\Calls\EnableAutoAssignmentCall;
+use Closure;
 
 /**
  * The change an enable or configure command sends: its auto-assignment key and the pool its options describe. Task
@@ -15,23 +17,26 @@ use App\AgentRequests\Contracts\AgentRequestSender;
 trait ReadsAutoAssignmentChange
 {
     use ReadsAutoAssignmentKey;
-    use SendsSignedWrites;
+    use RunsCallPipelines;
 
     /**
-     * Sends the change its options describe to the journal and prints the answer; actor text that does not read
-     * fails before anything is sent.
+     * Runs the enable or configure call the command builds from its options; actor text that does not read fails
+     * before anything is sent.
+     *
+     * @param  Closure(array<string, mixed>): (EnableAutoAssignmentCall|ConfigureAutoAssignmentCall)  $call
      */
-    protected function sendChange(AgentRequestSender $journal, string $path): int
+    protected function runChange(Closure $call): int
     {
         try {
-            $body = $this->changeFields((int) $this->option('size'));
+            $fields = $this->changeFields((int) $this->option('size'));
+            $change = $call([...$fields, 'requestKey' => $this->requestKey()]);
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;
         }
 
-        return $this->sendWriteAndPrint($journal, $path, $body);
+        return $this->runCall($change);
     }
 
     /**

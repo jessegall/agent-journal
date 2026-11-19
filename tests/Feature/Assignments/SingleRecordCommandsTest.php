@@ -90,8 +90,8 @@ final class SingleRecordCommandsTest extends TestCase
         $spare = Agent::named('Spare', 'read-only-helper');
         $this->actingAs($this->owner)->postJson('/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])->assertOk();
 
-        $this->signed($this->main, '/agent/agents/retire', ['agentId' => $this->main->agent->id])->assertForbidden();
-        $this->signed($this->main, '/agent/agents/retire', ['agentId' => $this->helper->agent->id])->assertOk()->assertJson(['changed' => 1]);
+        $this->signed($this->main, '/agent/agents/retire', ['agentId' => $this->main->agent->id, 'request_key' => 'retire-1'])->assertForbidden();
+        $this->signed($this->main, '/agent/agents/retire', ['agentId' => $this->helper->agent->id, 'request_key' => 'retire-2'])->assertOk()->assertJson(['changed' => 1]);
         $this->actingAs($this->owner)->postJson('/agents/retire', ['agentId' => $spare->id])->assertOk()->assertJson(['changed' => 0]);
 
         $this->assertTrue($this->helper->agent->refresh()->isRetired());
@@ -107,7 +107,7 @@ final class SingleRecordCommandsTest extends TestCase
         $this->artisan('assignment:show', ['type' => 'tasks.task', 'id' => $this->task->id, '--json' => true])
             ->expectsOutputToContain('"reference"')->assertExitCode(0);
         $this->artisan('assignment:unassign', ['type' => 'tasks.task', 'id' => $this->task->id, '--assignment' => TestIds::of(999999), '--holder' => "agent:{$this->helper->agent->id}"])
-            ->expectsOutputToContain('(409)')->assertExitCode(1);
+            ->expectsOutputToContain('The journal refused the call (')->assertExitCode(1);
         $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => 'somebody'])
             ->expectsOutputToContain('type:id')->assertExitCode(1);
     }
@@ -117,6 +117,8 @@ final class SingleRecordCommandsTest extends TestCase
      */
     private function callAs(TestLaunch $launch, string $command, array $body): TestResponse
     {
-        return $this->signed($launch, "/agent/assignments/{$command}", [...$body, 'request_key' => (string) Str::ulid()]);
+        $key = $command === 'show' ? [] : ['request_key' => (string) Str::ulid()];
+
+        return $this->signed($launch, "/agent/assignments/{$command}", [...$body, ...$key]);
     }
 }

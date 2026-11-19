@@ -6,6 +6,8 @@ namespace App\Processes\Execution;
 
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\AgentRequests\Exceptions\CallFailed;
+use App\Processes\Calls\ProcessCalls;
 use App\Processes\Contracts\RunEvents;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RunEventType;
@@ -37,6 +39,7 @@ final class ChannelRunEvents implements RunEvents
 
     public function __construct(
         private readonly AgentRequestSender $journal,
+        private readonly ProcessCalls $processes,
         private readonly string $runId,
         private readonly string $eventKey,
         private readonly string $spoolFolder,
@@ -107,12 +110,10 @@ final class ChannelRunEvents implements RunEvents
     public function staleReason(PartKey $part): string
     {
         try {
-            $reply = $this->journal->send("/agent/processes/runs/{$this->runId}/currency", ['key' => $this->eventKey]);
-        } catch (AgentRequestFailed) {
+            return $this->processes->checkRunCurrency($this->runId, $this->eventKey)->staleReason;
+        } catch (CallFailed) {
             return 'registry-unavailable: the journal could not confirm the rules this part was admitted under';
         }
-
-        return (string) $reply->body['stale_reason'];
     }
 
     public function runStopped(string $reason): void

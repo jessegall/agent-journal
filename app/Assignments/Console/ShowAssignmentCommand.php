@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Console;
 
-use App\Actors\Exceptions\InvalidActorText;
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\ShowAssignmentCall;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -19,22 +18,14 @@ use Illuminate\Console\Command;
 final class ShowAssignmentCommand extends Command
 {
     use ReadsAssignmentArguments;
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'assignment:show {type} {id} {--json}';
 
     protected $description = 'Show who holds one record and its assignment reference';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        try {
-            $body = $this->recordFields();
-        } catch (InvalidActorText $invalid) {
-            $this->error($invalid->getMessage());
-
-            return self::FAILURE;
-        }
-
-        return $this->sendAndPrint($journal, '/agent/assignments/show', $body);
+        return $this->runCall(ShowAssignmentCall::from($this->recordFields()));
     }
 }

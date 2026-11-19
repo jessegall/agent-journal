@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Communication\Calls;
+
+use Spatie\LaravelData\Attributes\Validation\Size;
+use Spatie\LaravelData\Data;
+
+/**
+ * A message to send: the inbox it comes from, the inbox it goes to, and what it says.
+ */
+final class NewMessage extends Data
+{
+    public function __construct(
+        #[Size(26)]
+        public readonly string $sourceInboxId,
+        #[Size(26)]
+        public readonly string $destinationInboxId,
+        public readonly string $body,
+    ) {}
+}

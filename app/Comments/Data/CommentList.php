@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Comments\Data;
 
+use App\Comments\Casts\CommentViewsCast;
+use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -17,6 +19,7 @@ final class CommentList extends Data
      * @param  list<RecordCommentView|TextCommentView>  $items
      */
     public function __construct(
+        #[WithCast(CommentViewsCast::class)]
         public readonly array $items,
         public readonly string|null $nextAfter,
     ) {}

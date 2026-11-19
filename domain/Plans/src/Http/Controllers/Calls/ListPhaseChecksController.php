@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Plans\Http\Controllers\Calls;
+
+use Domain\Plans\Calls\ListPhaseChecksCall;
+use Domain\Plans\Calls\PhaseChecks;
+use Domain\Plans\Models\PhaseCheck;
+
+/**
+ * Answers a phase's checks.
+ */
+final readonly class ListPhaseChecksController
+{
+    public function __invoke(ListPhaseChecksCall $call): PhaseChecks
+    {
+        $phase = $call->phaseOfPlan();
+        $checks = PhaseCheck::query()->ofPhase($phase)->readLimit(100)->get();
+
+        return PhaseChecks::from([
+            'phase' => $phase->number,
+            'title' => $phase->title,
+            'checks' => $checks->map(fn (PhaseCheck $check) => [
+                'operation' => $check->operation,
+                'outcome' => $check->outcome,
+                'receipt' => $check->receipt_id,
+                'recorded_by' => "{$check->actor_type}:{$check->actor_id}",
+            ])->all(),
+        ]);
+    }
+}

@@ -7,6 +7,7 @@ namespace App\Processes\Pipes\Run;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Values\CommandReport;
 use App\Pipelines\Contracts\Pipe;
+use App\Processes\Calls\ProcessCalls;
 use App\Processes\Execution\ChannelRunEvents;
 use App\Processes\Execution\Supervisor;
 use App\Processes\Values\Run\FetchedAdmission;
@@ -23,12 +24,17 @@ final readonly class SuperviseRun implements Pipe
      */
     private const int PREVIEW_CHARACTERS = 4_000;
 
-    public function __construct(private AgentRequestSender $journal, private Supervisor $supervisor) {}
+    public function __construct(
+        private AgentRequestSender $journal,
+        private ProcessCalls $processes,
+        private Supervisor $supervisor,
+    ) {}
 
     public function handle(FetchedAdmission $admission): SupervisedRun
     {
         $events = new ChannelRunEvents(
             $this->journal,
+            $this->processes,
             $admission->runId,
             $admission->eventKey,
             $admission->spoolFolder(),

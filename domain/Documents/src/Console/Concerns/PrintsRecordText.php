@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
+use App\AgentRequests\Values\CommandReport;
 use App\Text\Support\TextSelection;
 use Domain\Documents\Data\RecordText;
 
@@ -15,7 +16,8 @@ trait PrintsRecordText
 {
     protected function selection(): TextSelection
     {
-        $range = is_string($this->option('lines')) && preg_match('/^(\d*)-?(\d*)$/', $this->option('lines'), $bounds) === 1 ? $bounds : ['', '', ''];
+        $lines = $this->option('lines');
+        $range = is_string($lines) && preg_match('/^(\d*)-?(\d*)$/', $lines, $bounds) === 1 ? $bounds : ['', '', ''];
 
         return TextSelection::from([
             'section' => $this->option('section'),
@@ -27,27 +29,29 @@ trait PrintsRecordText
         ]);
     }
 
-    protected function printRecordText(RecordText $read, string $command): void
+    protected function recordTextReport(RecordText $read, string $command): CommandReport
     {
-        $this->line("{$read->label}, revision {$read->revision}: {$read->title}");
-        $this->line($read->abstract);
-        $this->newLine();
+        $report = CommandReport::ending(self::SUCCESS)
+            ->line("{$read->label}, revision {$read->revision}: {$read->title}")
+            ->line($read->abstract)
+            ->line('');
 
         if (! is_string($read->text)) {
             foreach ($read->outline as $section) {
-                $this->line("  {$section}");
+                $report = $report->line("  {$section}");
             }
 
-            $this->line("Read a section with {$command} --section <number>, or a range with --lines a-b.");
-
-            return;
+            return $report->line("Read a section with {$command} --section <number>, or a range with --lines a-b.");
         }
 
-        $this->line($read->text);
+        $report = $report->line($read->text);
 
         if (is_string($read->continuation) && is_string($read->lines)) {
-            $this->newLine();
-            $this->line("Lines {$read->lines} shown; read on with {$command} {$read->continuation}");
+            $report = $report
+                ->line('')
+                ->line("Lines {$read->lines} shown; read on with {$command} {$read->continuation}");
         }
+
+        return $report;
     }
 }

@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Tasks\Calls;
+
+use App\AgentRequests\Attributes\Endpoint;
+use App\AgentRequests\Casts\CallKeyCast;
+use App\AgentRequests\Contracts\JournalCall;
+use App\AgentRequests\Enums\CallEffect;
+use App\AgentRequests\Enums\ReceiptOwner;
+use App\AgentRequests\Support\CallKey;
+use App\AgentRequests\Transformers\CallKeyTransformer;
+use Domain\Tasks\Support\TaskLimits;
+use Spatie\LaravelData\Attributes\MapName;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Mappers\SnakeCaseMapper;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
+
+/**
+ * Files a new open task.
+ *
+ * @implements JournalCall<TaskNamed>
+ */
+#[Endpoint('tasks/create', 'POST', TaskNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
+#[MapName(SnakeCaseMapper::class)]
+final class CreateTaskCall extends Data implements JournalCall
+{
+    public function __construct(
+        #[Max(TaskLimits::TITLE_CHARACTERS)]
+        public string $title,
+        #[Max(TaskLimits::NOTE_CHARACTERS)]
+        public string $brief,
+        #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
+        #[LiteralTypeScriptType('string')]
+        public CallKey $requestKey,
+    ) {}
+}

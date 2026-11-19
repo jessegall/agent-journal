@@ -16,7 +16,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class TextAnchor extends Data
 {
-    private function __construct(
+    public function __construct(
         public readonly string $versionId,
         public readonly string $versionLabel,
         public readonly TextAnchorType $type,
@@ -57,7 +57,17 @@ final class TextAnchor extends Data
 
     public static function section(TextVersion $version, Section $section): self
     {
-        return new self($version->id, $version->label, TextAnchorType::Section, $section->number, $section->firstLine, $section->lastLine, '', 0, 0);
+        return new self(
+            $version->id,
+            $version->label,
+            TextAnchorType::Section,
+            $section->number,
+            $section->firstLine,
+            $section->lastLine,
+            '',
+            0,
+            0,
+        );
     }
 
     public static function lines(TextVersion $version, int $firstLine, int $lastLine): self
@@ -65,9 +75,25 @@ final class TextAnchor extends Data
         return new self($version->id, $version->label, TextAnchorType::Lines, 0, $firstLine, $lastLine, '', 0, 0);
     }
 
-    public static function quote(TextVersion $version, int $firstLine, int $lastLine, string $quote, int $startOffset, int $endOffset): self
-    {
-        return new self($version->id, $version->label, TextAnchorType::Quote, 0, $firstLine, $lastLine, $quote, $startOffset, $endOffset);
+    public static function quote(
+        TextVersion $version,
+        int $firstLine,
+        int $lastLine,
+        string $quote,
+        int $startOffset,
+        int $endOffset,
+    ): self {
+        return new self(
+            $version->id,
+            $version->label,
+            TextAnchorType::Quote,
+            0,
+            $firstLine,
+            $lastLine,
+            $quote,
+            $startOffset,
+            $endOffset,
+        );
     }
 
     /**

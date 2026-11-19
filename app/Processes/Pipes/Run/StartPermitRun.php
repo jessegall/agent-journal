@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Pipes\Run;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Pipelines\Contracts\Pipe;
+use App\Processes\Calls\ProcessCalls;
 use App\Processes\Values\Run\AdmissionToRun;
 use App\Processes\Values\Run\RunStart;
 
@@ -14,14 +14,12 @@ use App\Processes\Values\Run\RunStart;
  */
 final readonly class StartPermitRun implements Pipe
 {
-    public function __construct(private AgentRequestSender $journal) {}
+    public function __construct(private ProcessCalls $processes) {}
 
     public function handle(RunStart $start): AdmissionToRun
     {
-        $started = $this->journal->send("/agent/processes/permits/{$start->permit}/runs", [
-            'request_id' => $start->requestId,
-        ]);
+        $started = $this->processes->startEvidenceRun((string) $start->permit, $start->requestKey);
 
-        return $start->admission((string) $started->body['run_id']);
+        return $start->admission($started->runId);
     }
 }

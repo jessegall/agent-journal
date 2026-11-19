@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Sharing\Calls\ShareStatusCall;
 use Illuminate\Console\Command;
 
 /**
@@ -13,14 +13,14 @@ use Illuminate\Console\Command;
  */
 final class ShareStatusCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'share:status {--json}';
 
     protected $description = 'Show your share proposals and what became of them';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/sharing/status', []);
+        return $this->runCall(new ShareStatusCall());
     }
 }

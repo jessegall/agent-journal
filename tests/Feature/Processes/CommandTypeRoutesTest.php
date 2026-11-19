@@ -59,6 +59,7 @@ final class CommandTypeRoutesTest extends TestCase
 
         $reply = $this->signed($this->launch, "/agent/processes/requests/{$requestId}/proposals", [
             'declaration' => $this->declaration(),
+            'request_key' => 'propose-1',
         ])->assertOk();
 
         $this->assertSame('pending', $reply->json('state'));
@@ -77,6 +78,7 @@ final class CommandTypeRoutesTest extends TestCase
 
         $reply = $this->signed($this->launch, "/agent/processes/requests/{$requestId}/proposals", [
             'declaration' => $declaration,
+            'request_key' => 'propose-1',
         ])->assertStatus(422);
 
         $this->assertStringContainsString('declarations.0.rule.purpose', (string) $reply->json('message'));
@@ -88,10 +90,11 @@ final class CommandTypeRoutesTest extends TestCase
         $requestId = $this->explainAcme();
         $proposal = $this->signed($this->launch, "/agent/processes/requests/{$requestId}/proposals", [
             'declaration' => $this->declaration(),
+            'request_key' => 'propose-1',
         ])->json('proposal_id');
 
         $path = "/agent/processes/proposals/{$proposal}/approve";
-        $reply = $this->signed($this->launch, $path, ['expected_revision' => 1]);
+        $reply = $this->signed($this->launch, $path, ['expected_revision' => 1, 'request_key' => 'approve-1']);
 
         $this->assertFalse($reply->isSuccessful());
         $this->assertSame(0, ClassificationRule::query()->count());

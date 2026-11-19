@@ -55,7 +55,7 @@ final class AssignedListEndpointsTest extends TestCase
         $writer->assign($others->assignmentIdentity(), AssigneeIdentity::of($this->other->agent));
         $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
 
-        $tasks = $this->listAs($this->caller, '/agent/tasks/assigned', ['perPage' => 10]);
+        $tasks = $this->listAs($this->caller, '/agent/tasks/assigned', ['per_page' => 10]);
         $plans = $this->listAs($this->caller, '/agent/plans/assigned', []);
 
         $tasks->assertOk()->assertJson(['total' => 1, 'page' => 1, 'perPage' => 10, 'cards' => [[
@@ -82,7 +82,7 @@ final class AssignedListEndpointsTest extends TestCase
         $this->call('POST', '/agent/tasks/assigned', server: $headers, content: $body)->assertUnauthorized();
         $this->listAs($this->caller, '/agent/tasks/assigned', ['agent' => $this->other->agent->id])->assertUnprocessable();
         $this->listAs($this->caller, '/agent/plans/assigned', ['session_id' => $this->other->session->id])->assertUnprocessable();
-        $this->listAs($this->caller, '/agent/tasks/assigned', ['perPage' => 101])->assertUnprocessable();
+        $this->listAs($this->caller, '/agent/tasks/assigned', ['per_page' => 101])->assertUnprocessable();
         $this->listAs($this->caller, '/agent/plans/assigned', ['page' => 0])->assertUnprocessable();
     }
 

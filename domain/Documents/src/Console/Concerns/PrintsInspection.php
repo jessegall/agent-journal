@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Values\CommandReport;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Enums\EditingState;
 
@@ -13,34 +13,32 @@ use Domain\Documents\Enums\EditingState;
  */
 trait PrintsInspection
 {
-    use SendsRecordCalls;
-
-    protected function showInspection(AgentRequestSender $journal, string $path): int
+    protected function inspectionReport(RecordInspection $inspection): CommandReport
     {
-        $reply = $this->sendSigned($journal, $path, ['number' => (string) $this->argument('number')]);
-
-        if ($reply === null) {
-            return self::FAILURE;
-        }
-
-        $inspection = RecordInspection::from($reply);
-        $this->line($inspection->label);
-        $this->line('Editing: '.($inspection->editing->state === EditingState::Free ? 'free' : "held by {$this->holderOf($inspection)}"));
-        $this->line("Attention: {$inspection->attention->value}");
+        $editing = $inspection->editing->state === EditingState::Free
+            ? 'free'
+            : "held by {$this->holderOf($inspection)}";
+        $report = CommandReport::ending(self::SUCCESS)
+            ->line($inspection->label)
+            ->line("Editing: {$editing}")
+            ->line("Attention: {$inspection->attention->value}");
 
         foreach ($inspection->settlements as $settlement) {
-            $this->line("  settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}: {$settlement->reason}");
+            $by = "{$settlement->actorType} {$settlement->actorId}";
+            $report = $report->line("  settled {$settlement->settledAt} by {$by}: {$settlement->reason}");
         }
 
         foreach ($inspection->links as $link) {
-            $this->line("  linked to {$link->label}: {$link->title}");
+            $report = $report->line("  linked to {$link->label}: {$link->title}");
         }
 
         foreach ($inspection->closes as $close) {
-            $this->line("  draft closed {$close->closedAt} ({$close->cause}), revision {$close->baseRevision} to {$close->resultRevision}".($close->reason === null ? '' : ": {$close->reason}"));
+            $reason = $close->reason === null ? '' : ": {$close->reason}";
+            $revisions = "revision {$close->baseRevision} to {$close->resultRevision}";
+            $report = $report->line("  draft closed {$close->closedAt} ({$close->cause}), {$revisions}{$reason}");
         }
 
-        return self::SUCCESS;
+        return $report;
     }
 
     private function holderOf(RecordInspection $inspection): string

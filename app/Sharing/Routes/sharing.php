@@ -2,11 +2,17 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Agents\RequestShareController;
-use App\Http\Controllers\Agents\ShareStatusController;
+use App\AgentRequests\Support\CallRoutes;
+use App\Sharing\Http\Controllers\Calls;
+use Illuminate\Container\Container;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('journal.agent')->prefix('agent/sharing')->name('shares.agent.')->group(function (): void {
-    Route::post('request', RequestShareController::class)->name('request');
-    Route::post('status', ShareStatusController::class)->name('status');
-});
+Route::middleware(['journal.agent', SubstituteBindings::class])
+    ->prefix('agent')
+    ->name('shares.agent.')
+    ->group(function (): void {
+        $calls = Container::getInstance()->make(CallRoutes::class);
+        $calls->register(Calls\RequestShareController::class)->name('request');
+        $calls->register(Calls\ShareStatusController::class)->name('status');
+    });

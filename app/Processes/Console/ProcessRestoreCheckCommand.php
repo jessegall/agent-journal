@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\CheckRestoredOutputCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,14 +16,18 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ProcessRestoreCheckCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
-    protected $signature = 'process:restore-check {run : The run whose output was restored} {--json}';
+    protected $signature = 'process:restore-check {run : The run whose output was restored}'
+        .' {--request-key= : The key that makes a retry get the same answer} {--json}';
 
     protected $description = 'Check restored output against its original checksums';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, "/agent/processes/runs/{$this->argument('run')}/restore-check", []);
+        return $this->runCall(CheckRestoredOutputCall::from([
+            'processRun' => (string) $this->argument('run'),
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

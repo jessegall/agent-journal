@@ -32,13 +32,13 @@ final class GeneratedCallsTest extends TestCase
 
     public function test_a_check_fails_on_a_changed_file(): void
     {
-        $path = app_path('AgentRequests/Client/JournalClient.php');
+        $path = app_path('Client/Support/JournalClient.php');
         $original = (string) file_get_contents($path);
         file_put_contents($path, $original."\n// changed by hand\n");
 
         try {
             $this->artisan('journal:calls', ['--check' => true])
-                ->expectsOutputToContain('app/AgentRequests/Client/JournalClient.php differs')
+                ->expectsOutputToContain('app/Client/Support/JournalClient.php differs')
                 ->assertFailed();
         } finally {
             file_put_contents($path, $original);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\Assignments\Calls\ListAssignmentPoolsCall;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
@@ -16,16 +16,14 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class AutoAssignmentPoolsCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'assignment:auto-pools {type : The record type, such as tasks.task} {--json}';
 
     protected $description = 'List the pools a record type may be drawn from';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, '/agent/assignments/auto/pools', [
-            'assignableType' => (string) $this->argument('type'),
-        ]);
+        return $this->runCall(ListAssignmentPoolsCall::from(['assignableType' => (string) $this->argument('type')]));
     }
 }

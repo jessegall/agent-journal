@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\RestoreRuleCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,20 +16,21 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommandTypeRestoreCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'command-type:restore {rule : The classification rule id}'
         .' {--from-revision= : The earlier revision} {--expected-revision= : The active revision read}'
-        .' {--request-id= : The id that makes a retry the same proposal} {--json}';
+        .' {--request-key= : The key that makes a retry the same proposal} {--json}';
 
     protected $description = 'Restore an earlier revision of a rule';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        return $this->sendAndPrint($journal, "/agent/processes/rules/{$this->argument('rule')}/restore", [
-            'from_revision' => (int) $this->option('from-revision'),
-            'expected_revision' => (int) $this->option('expected-revision'),
-            'request_id' => (string) $this->option('request-id'),
-        ]);
+        return $this->runCall(RestoreRuleCall::from([
+            'rule' => (string) $this->argument('rule'),
+            'fromRevision' => (int) $this->option('from-revision'),
+            'expectedRevision' => (int) $this->option('expected-revision'),
+            'requestKey' => $this->requestKey(),
+        ]));
     }
 }

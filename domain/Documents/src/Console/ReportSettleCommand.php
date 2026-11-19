@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console;
 
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
+use App\AgentRequests\Values\CommandReport;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
-use Domain\Documents\Console\Concerns\SendsSettlement;
+use Domain\Documents\Calls\DocumentCalls;
 use Illuminate\Console\Command;
 
 #[JournalRoute(JournalRouteType::Write)]
 final class ReportSettleCommand extends Command
 {
-    use SendsSettlement;
+    use RunsCallPipelines;
 
     protected $signature = 'report:settle {number} {--why= : Why the report needs no more attention}';
 
@@ -21,8 +22,14 @@ final class ReportSettleCommand extends Command
 
     protected $help = 'Example: php artisan report:settle 7 --why "Handled in task 12"';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(DocumentCalls $documents): int
     {
-        return $this->sendSettlement($journal, '/agent/reports/settle', ['revision' => 1]);
+        $number = (string) $this->argument('number');
+
+        return $this->runReport(function () use ($documents, $number): CommandReport {
+            $documents->settleReport($number, (string) $this->option('why'));
+
+            return CommandReport::ending(self::SUCCESS)->line("Settled {$number}.");
+        });
     }
 }

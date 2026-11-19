@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Calls\ListProposalsCall;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
@@ -16,17 +16,17 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class CommandTypeListCommand extends Command
 {
-    use SendsSignedCalls;
+    use RunsCallPipelines;
 
     protected $signature = 'command-type:list'
         .' {--state= : draft, pending, approved, rejected, withdrawn or superseded} {--json}';
 
     protected $description = 'List proposals';
 
-    public function handle(AgentRequestSender $journal): int
+    public function handle(): int
     {
-        $state = array_filter(['state' => (string) $this->option('state')]);
+        $state = (string) $this->option('state');
 
-        return $this->sendAndPrint($journal, '/agent/processes/proposals/list', $state);
+        return $this->runCall(ListProposalsCall::from(['states' => $state === '' ? [] : [$state]]));
     }
 }

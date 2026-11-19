@@ -62,12 +62,15 @@ use App\Actors\Values\PolicyRegistration;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Attributes\InPath;
+use App\AgentRequests\Attributes\PresentList;
+use App\AgentRequests\Casts\CallKeyCast;
+use App\AgentRequests\Console\Concerns\RunsCallPipelines;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
-use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Contracts\CallRefusal;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\JournalCall;
+use App\AgentRequests\Contracts\RegistersCalls;
 use App\AgentRequests\Enums\CallEffect;
 use App\AgentRequests\Enums\ReceiptOwner;
 use App\AgentRequests\Enums\ReportLineType;
@@ -84,6 +87,7 @@ use App\AgentRequests\Exceptions\CallTooLarge;
 use App\AgentRequests\Exceptions\ClientOutOfDate;
 use App\AgentRequests\Exceptions\CommandStopped;
 use App\AgentRequests\Exceptions\DeadlineExpired;
+use App\AgentRequests\Exceptions\EndpointDeclarationInvalid;
 use App\AgentRequests\Exceptions\InputRefused;
 use App\AgentRequests\Exceptions\JournalBusy;
 use App\AgentRequests\Exceptions\JournalUnavailable;
@@ -96,6 +100,8 @@ use App\AgentRequests\Exceptions\StaleContinuation;
 use App\AgentRequests\Exceptions\StateBlocked;
 use App\AgentRequests\Support\AgentReply;
 use App\AgentRequests\Support\CallKey;
+use App\AgentRequests\Transformers\CallKeyTransformer;
+use App\AgentRequests\Values\CallAccepted;
 use App\AgentRequests\Values\CallAnswer;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
@@ -220,6 +226,8 @@ use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
+use App\Assignments\Calls\Concerns\NamesExpectedAssignment;
+use App\Assignments\Calls\Concerns\NamesRecipient;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ConfigureAutoAssignment;
 use App\Assignments\Commands\DisableAutoAssignment;
@@ -345,6 +353,7 @@ use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
+use App\Comments\Calls\ListCommentsCall;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\Commentable;
@@ -976,6 +985,7 @@ final class CoreApi
             )
             ->contracts(
                 JournalCall::class,
+                RegistersCalls::class,
                 CallSender::class,
                 CallRefusal::class,
                 RecordProvider::class,
@@ -1152,6 +1162,9 @@ final class CoreApi
             )
             ->values(
                 Endpoint::class,
+                CallKeyCast::class,
+                CallKeyTransformer::class,
+                PresentList::class,
                 InPath::class,
                 CallEffect::class,
                 ReceiptOwner::class,
@@ -1160,6 +1173,7 @@ final class CoreApi
                 ReportLine::class,
                 ReportLineType::class,
                 CallToSend::class,
+                CallAccepted::class,
                 CallAnswer::class,
                 RefusalCode::class,
                 ReceiptState::class,
@@ -1263,6 +1277,7 @@ final class CoreApi
                 RecordCommentLocation::class,
                 TextCommentLocation::class,
                 CommentList::class,
+                ListCommentsCall::class,
                 NoSubject::class,
                 SubjectReference::class,
                 ContextCompacted::class,
@@ -1658,6 +1673,7 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                EndpointDeclarationInvalid::class,
                 CommandStopped::class,
                 CallFailed::class,
                 CallRefused::class,
@@ -1889,7 +1905,9 @@ final class CoreApi
                 JournalResource::class,
                 RendersRefusal::class,
                 SendsSignedCalls::class,
-                SendsSignedWrites::class,
+                RunsCallPipelines::class,
+                NamesRecipient::class,
+                NamesExpectedAssignment::class,
             )
             ->build();
     }

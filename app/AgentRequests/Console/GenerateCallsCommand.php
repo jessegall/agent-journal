@@ -6,6 +6,7 @@ namespace App\AgentRequests\Console;
 
 use App\AgentRequests\Support\CallGroups;
 use Illuminate\Console\Command;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Process\Factory as ProcessFactory;
 
 /**
@@ -18,13 +19,14 @@ final class GenerateCallsCommand extends Command
 
     protected $description = 'Generate the typed groups of signed calls and the JournalClient';
 
-    public function handle(ProcessFactory $processes): int
+    public function handle(ProcessFactory $processes, Filesystem $filesystem): int
     {
         $files = self::files();
 
         foreach ($files as $path => $source) {
             if (! $this->option('check')) {
-                file_put_contents($path, $source);
+                $filesystem->ensureDirectoryExists(dirname($path));
+                $filesystem->put($path, $source);
 
                 continue;
             }
@@ -76,7 +78,7 @@ final class GenerateCallsCommand extends Command
             }
         }
 
-        $files[app_path('AgentRequests/Client/JournalClient.php')] = CallGroups::client($coreGroups);
+        $files[app_path('Client/Support/JournalClient.php')] = CallGroups::client($coreGroups);
 
         return $files;
     }
