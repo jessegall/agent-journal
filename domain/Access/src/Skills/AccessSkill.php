@@ -7,8 +7,6 @@ namespace Domain\Access\Skills;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
-use App\Skills\Values\MarkdownPart;
-use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 
 /**
@@ -16,8 +14,6 @@ use App\Skills\Values\SkillSections;
  */
 final class AccessSkill implements Skill
 {
-    private const string FILE = 'access.md';
-
     public function key(): string
     {
         return 'journal-access';
@@ -40,10 +36,6 @@ final class AccessSkill implements Skill
 
     public function sections(): SkillSections
     {
-        return SkillSections::listed(
-            SkillSection::text('purpose', 'Purpose', 'Access decides who may use the journal and what an agent may do.'),
-            SkillSection::markdown('who-may-use-the-journal', 'Who may use the journal', MarkdownPart::heading(self::FILE, ['Access', 'Who may use the journal'])),
-            SkillSection::markdown('agents', 'Agents', MarkdownPart::heading(self::FILE, ['Access', 'Agents'])),
-        );
+        return SkillSections::fromFile('access.md');
     }
 }

@@ -7,8 +7,6 @@ namespace Domain\Rules\Skills;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
-use App\Skills\Values\MarkdownPart;
-use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 
 /**
@@ -16,8 +14,6 @@ use App\Skills\Values\SkillSections;
  */
 final class RulesSkill implements Skill
 {
-    private const string FILE = 'rules.md';
-
     public function key(): string
     {
         return 'journal-rules';
@@ -40,11 +36,6 @@ final class RulesSkill implements Skill
 
     public function sections(): SkillSections
     {
-        return SkillSections::listed(
-            SkillSection::text('purpose', 'Purpose', 'Rules are what every agent of the project must follow.'),
-            SkillSection::markdown('what-a-rule-is', 'What a rule is', MarkdownPart::heading(self::FILE, ['Rules', 'What a rule is'])),
-            SkillSection::markdown('states', 'States', MarkdownPart::heading(self::FILE, ['Rules', 'States'])),
-            SkillSection::markdown('reading-rules', 'Reading rules', MarkdownPart::heading(self::FILE, ['Rules', 'Reading rules'])),
-        );
+        return SkillSections::fromFile('rules.md');
     }
 }

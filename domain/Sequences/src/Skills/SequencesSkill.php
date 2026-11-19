@@ -7,8 +7,6 @@ namespace Domain\Sequences\Skills;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
-use App\Skills\Values\MarkdownPart;
-use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 
 /**
@@ -16,8 +14,6 @@ use App\Skills\Values\SkillSections;
  */
 final class SequencesSkill implements Skill
 {
-    private const string FILE = 'sequences.md';
-
     public function key(): string
     {
         return 'journal-sequences';
@@ -40,10 +36,6 @@ final class SequencesSkill implements Skill
 
     public function sections(): SkillSections
     {
-        return SkillSections::listed(
-            SkillSection::text('purpose', 'Purpose', 'Sequences are steps you follow one at a time.'),
-            SkillSection::markdown('what-a-sequence-is', 'What a sequence is', MarkdownPart::heading(self::FILE, ['Sequences', 'What a sequence is'])),
-            SkillSection::markdown('following-a-run', 'Following a run', MarkdownPart::heading(self::FILE, ['Sequences', 'Following a run'])),
-        );
+        return SkillSections::fromFile('sequences.md');
     }
 }
