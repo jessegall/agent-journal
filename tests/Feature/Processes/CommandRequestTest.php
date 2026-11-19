@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Models\CommandRequest;
+use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -23,6 +20,7 @@ use Tests\TestCase;
  */
 final class CommandRequestTest extends TestCase
 {
+    use ActsAsActors;
     use RefreshHookDatabase;
 
     public function test_opening_twice_returns_the_same_request_with_its_propose_step(): void
@@ -51,7 +49,7 @@ final class CommandRequestTest extends TestCase
     public function test_a_withdrawn_request_stays_readable_and_a_new_attempt_opens_a_new_one(): void
     {
         $first = $this->open('agent-1', '/projects/acme');
-        $this->runAs('agent-1', new WithdrawCommandRequest($first));
+        $this->runAsAgentId('agent-1', new WithdrawCommandRequest($first));
 
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame(RequestState::Withdrawn, $request->state);
@@ -64,7 +62,7 @@ final class CommandRequestTest extends TestCase
         $first = $this->open('agent-1', '/projects/acme');
 
         $this->assertThrows(
-            fn () => $this->runAs('agent-2', new WithdrawCommandRequest($first)),
+            fn () => $this->runAsAgentId('agent-2', new WithdrawCommandRequest($first)),
             RequestTransitionRefused::class,
         );
         $this->assertThrows(
@@ -85,7 +83,7 @@ final class CommandRequestTest extends TestCase
 
     private function open(string $agentId, string $folder): string
     {
-        return $this->runAs(
+        return $this->runAsAgentId(
             $agentId,
             new OpenCommandRequest(
                 'acme verify',
@@ -95,16 +93,5 @@ final class CommandRequestTest extends TestCase
                 RequestHoldReason::UnknownCommand,
             ),
         );
-    }
-
-    private function runAs(string $agentId, object $command): string
-    {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($agentId),
-            TestLaunchAuthority::forAgent($agentId),
-        );
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

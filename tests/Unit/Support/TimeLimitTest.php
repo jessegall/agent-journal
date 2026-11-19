@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Support;
 
 use PHPUnit\Framework\TestCase;
+use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\TimeLimits\TestAlarm;
-use Tests\Support\TimeLimits\TestTimedOut;
 use Tests\Support\TimeLimits\TimeLimit;
 
 /**

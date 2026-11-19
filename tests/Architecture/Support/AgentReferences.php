@@ -11,6 +11,7 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
+use Tests\Architecture\Support\Exceptions\FileDeclaresNoClass;
 
 /**
  * Finds where a domain stores or names an agent instead of an actor: a column for an agent or an agent session in its
@@ -119,18 +120,17 @@ final readonly class AgentReferences
     private static function classIn(string $file): string
     {
         $text = (string) file_get_contents($file);
-        $namespace = preg_match(
-            '/^namespace ([^;]+);/m',
-            $text,
-            $namespaceMatch,
-        ) === 1 ? $namespaceMatch[1] : throw new \LogicException("{$file} declares no namespace.");
-        $class = preg_match(
-            '/^(?:final |abstract )*class (\w+)/m',
-            $text,
-            $classMatch,
-        ) === 1 ? $classMatch[1] : throw new \LogicException("{$file} declares no class.");
+        if (preg_match('/^namespace ([^;]+);/m', $text, $namespaceMatch) !== 1) {
+            throw FileDeclaresNoClass::withoutNamespace($file);
+        }
 
-        /** @var class-string */
-        return $namespace.'\\'.$class;
+        if (preg_match('/^(?:final |abstract )*class (\w+)/m', $text, $classMatch) !== 1) {
+            throw FileDeclaresNoClass::withoutClass($file);
+        }
+
+        /**
+         * @var class-string
+         */
+        return $namespaceMatch[1].'\\'.$classMatch[1];
     }
 }

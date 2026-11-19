@@ -13,7 +13,6 @@ use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Records\Support\RecordIdentity;
 use Exception;
-use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -23,6 +22,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 
 /**
@@ -34,6 +34,7 @@ final class AssignmentStoreTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
+    use UsesSecondConnection;
 
     private const array TABLES = ['assignments'];
 
@@ -51,15 +52,6 @@ final class AssignmentStoreTest extends TestCase
         $this->builder = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7));
         $this->reviewer = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(8));
         $this->startTestUserRequest(1);
-    }
-
-    protected function tearDown(): void
-    {
-        if ($this->app->make('config')->has('database.connections.assignments_other')) {
-            DB::connection('assignments_other')->disconnect();
-        }
-
-        parent::tearDown();
     }
 
     public function test_an_unheld_record_gets_one_holder_and_a_second_assign_finds_it(): void
@@ -196,16 +188,5 @@ final class AssignmentStoreTest extends TestCase
         return $this->app->make(AssignmentTransaction::class)->run(
             fn () => $work($this->app->make(AssignmentStore::class)),
         );
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $config->set(
-            'database.connections.assignments_other',
-            $config->get('database.connections.'.$config->get('database.default')),
-        );
-
-        return DB::connection('assignments_other');
     }
 }

@@ -7,8 +7,6 @@ namespace Tests\Feature\Settings;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
-use App\Domains\Support\DomainRegistry;
-use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Exceptions\SettingsAccessDenied;
 use App\Settings\Exceptions\SettingsOwnerUnknown;
@@ -17,16 +15,10 @@ use App\Settings\Storage\EncodedSetting;
 use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Storage\SettingsDocument;
-use App\Settings\Support\CoreSettings;
-use App\Settings\Support\RegisteredSettingCommands;
-use App\Settings\Support\SettingRegistry;
 use Closure;
-use Domain\Access\Support\AccessSettings;
-use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
-use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
-use Tests\Support\ActsAsActors;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Settings\UsesReviewsSettings;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -38,33 +30,14 @@ use Tests\TestCase;
  */
 final class SettingsCatalogueTest extends TestCase
 {
-    use ActsAsActors;
     use AssertsReadBudget;
     use CommitsHookRows;
+    use UsesReviewsSettings;
 
     /**
      * The reset runs through the bus, which commits for real, so this table is emptied around each test.
      */
     private const array TABLES = ['settings_records'];
-
-    private ReviewSettings $reviews;
-
-    private SettingCommands $commands;
-
-    private string $ownerId;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
-        $this->app->instance(SettingRegistry::class, $registry);
-        $this->reviews = $registry->definition('Reviews');
-        $this->commands = new RegisteredSettingCommands($registry);
-        $this->ownerId = TestIds::of(7);
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->ownerId));
-        $this->actAs(ActorContext::forUser($this->ownerId));
-    }
 
     public function test_the_owner_sees_every_group_and_setting_in_order_with_types_constraints_and_defaults(): void
     {

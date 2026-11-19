@@ -11,10 +11,10 @@ use App\Bus\Exceptions\CommandInputInvalid;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Exceptions\OperationUnavailable;
 use App\Bus\Support\RequestKey;
-use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Modules\Notes\Commands\CopyLimitNote;
 use Tests\Fixtures\Modules\Notes\Commands\LimitNote;
+use Tests\Support\ClearsLaunchRows;
 
 /**
  * Before any lock, transaction or receipt, a command's input passes the rules its properties declare (doc 49, Book 2):
@@ -22,6 +22,8 @@ use Tests\Fixtures\Modules\Notes\Commands\LimitNote;
  */
 final class ValidateCommandTest extends CommandBusTestCase
 {
+    use ClearsLaunchRows;
+
     private const string KEY = '01JD8X0G9M3QZ6V4K2VA1DATE1';
 
     protected function setUp(): void
@@ -31,17 +33,6 @@ final class ValidateCommandTest extends CommandBusTestCase
         $this->installCommandModules();
         $launch = TestLaunch::start();
         $this->startRequestAs($launch->agent->id, $launch->session->id);
-    }
-
-    protected function tearDown(): void
-    {
-        $database = $this->app->make(ConnectionInterface::class);
-
-        foreach (['command_receipts', 'launch_credentials', 'agent_sessions', 'agents'] as $table) {
-            $database->table($table)->delete();
-        }
-
-        parent::tearDown();
     }
 
     public function test_a_value_over_its_limit_is_refused_before_the_handler(): void

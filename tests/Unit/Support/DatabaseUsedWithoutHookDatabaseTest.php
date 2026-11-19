@@ -6,7 +6,7 @@ namespace Tests\Unit\Support;
 
 use Illuminate\Database\DatabaseManager;
 use PDO;
-use Tests\Support\DatabaseUsedWithoutHookDatabase;
+use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\TestCase;
 
 /**

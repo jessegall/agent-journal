@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
@@ -31,6 +30,7 @@ use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\RunsCommandsAsLaunch;
 use Tests\TestCase;
 
 /**
@@ -42,6 +42,7 @@ final class SampleWorkflowTest extends TestCase
 {
     use ActsAsActors;
     use RefreshHookDatabase;
+    use RunsCommandsAsLaunch;
 
     private TestLaunch $launch;
 
@@ -53,20 +54,20 @@ final class SampleWorkflowTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         $this->launch = TestLaunch::start();
-        $this->requestId = $this->asAgent(new OpenCommandRequest(
+        $this->requestId = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->asAgent(new ProposeCommandRule($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->runAsAgent(new ProposeCommandRule($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
     }
 
     public function test_a_sample_run_before_the_owner_approved_is_refused_with_the_waiting_step(): void
     {
         try {
-            $this->asAgent(new StartSample($this->requestId, 'no-permit', 'first'));
+            $this->runAsAgent(new StartSample($this->requestId, 'no-permit', 'first'));
             $this->fail('The sample started without an approval.');
         } catch (SampleRefused $refusal) {
             $this->assertStringContainsString('waiting for the owner', $refusal->getMessage());
@@ -75,7 +76,7 @@ final class SampleWorkflowTest extends TestCase
 
     public function test_an_agent_cannot_approve_a_sample(): void
     {
-        $this->assertThrows(fn () => $this->asAgent($this->approval()), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $this->runAsAgent($this->approval()), ActorNotAllowed::class);
         $this->assertSame(0, EvidencePermit::query()->count());
     }
 
@@ -84,11 +85,11 @@ final class SampleWorkflowTest extends TestCase
         $permitId = $this->asUser($this->approval());
         $this->assertSame(RequestState::ReadyForSample, $this->request()->state);
 
-        $runId = $this->asAgent(new StartSample($this->requestId, $permitId, 'first'));
-        $this->assertSame($runId, $this->asAgent(new StartSample($this->requestId, $permitId, 'first')));
+        $runId = $this->runAsAgent(new StartSample($this->requestId, $permitId, 'first'));
+        $this->assertSame($runId, $this->runAsAgent(new StartSample($this->requestId, $permitId, 'first')));
         $this->assertSame(RequestState::CapturingSample, $this->request()->state);
         $this->assertThrows(
-            fn () => $this->asAgent(new StartSample($this->requestId, $permitId, 'second')),
+            fn () => $this->runAsAgent(new StartSample($this->requestId, $permitId, 'second')),
             SampleRefused::class,
         );
 
@@ -104,7 +105,7 @@ final class SampleWorkflowTest extends TestCase
     public function test_a_failed_capture_returns_the_request_to_the_owner(): void
     {
         $permitId = $this->asUser($this->approval());
-        $runId = $this->asAgent(new StartSample($this->requestId, $permitId, 'first'));
+        $runId = $this->runAsAgent(new StartSample($this->requestId, $permitId, 'first'));
 
         $part = $this->part($runId);
         $part->start(1, 'host');
@@ -116,7 +117,7 @@ final class SampleWorkflowTest extends TestCase
 
     public function test_a_declaration_without_effects_cannot_be_approved_for_a_sample(): void
     {
-        $other = $this->asAgent(new OpenCommandRequest(
+        $other = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',
             str_repeat('c', 64),
             'acme verify --all',
@@ -126,7 +127,7 @@ final class SampleWorkflowTest extends TestCase
         $rule = AcmeDeclarations::verify()->toArray();
         $rule['classes'] = [];
         $noEffects = AcmeDeclarations::proposed(CommandRule::fromArray($rule));
-        $this->asAgent(new ProposeCommandRule($other, 'request-2', $noEffects));
+        $this->runAsAgent(new ProposeCommandRule($other, 'request-2', $noEffects));
         $digest = CommandRequest::query()->findOrFail($other)->source_digest;
 
         $this->assertThrows(fn () => $this->asUser(new ApproveSample($other, 1, $digest)), SampleRefused::class);
@@ -139,7 +140,7 @@ final class SampleWorkflowTest extends TestCase
 
     private function settle(): SampleOutcome
     {
-        return $this->asAgent(new SettleSample($this->requestId));
+        return $this->runAsAgent(new SettleSample($this->requestId));
     }
 
     private function endRun(string $runId, int $status): void
@@ -165,12 +166,5 @@ final class SampleWorkflowTest extends TestCase
     private function request(): CommandRequest
     {
         return CommandRequest::query()->findOrFail($this->requestId);
-    }
-
-    private function asAgent(object $command): mixed
-    {
-        $this->launch->startRequest($this->app);
-
-        return $this->app->make(CommandBus::class)->run($command);
     }
 }

@@ -9,18 +9,14 @@ use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Support\AssigneeIdentity;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
 use App\Communication\Contracts\InboxDestinationResolver;
 use App\Communication\Contracts\InboxResolver;
-use App\Desks\Commands\InstallDesks;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\StartsAgentRequests;
+use Tests\Support\InstallsDesks;
+use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
 /**
@@ -30,7 +26,8 @@ use Tests\TestCase;
 final class DestinationResolutionTest extends TestCase
 {
     use CommitsHookRows;
-    use StartsAgentRequests;
+    use InstallsDesks;
+    use StartsOwnerRequest;
 
     private const array TABLES = [
         'users',
@@ -41,17 +38,6 @@ final class DestinationResolutionTest extends TestCase
         'desk_preferences',
         'assignments',
     ];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->startUserRequestAs($owner->id);
-        $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
-    }
 
     public function test_an_actor_seated_at_main_resolves_to_main_and_main_resolves_to_itself(): void
     {

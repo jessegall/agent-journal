@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\TestCase;
 
 /**

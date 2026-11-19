@@ -12,7 +12,7 @@ use App\Actors\Support\SystemActor;
 use App\Actors\Values\OwnerAuthority;
 use Domain\Access\Models\User;
 use RuntimeException;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\TestCase;
 
 /**

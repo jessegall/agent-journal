@@ -17,13 +17,12 @@ use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
-use Illuminate\Database\Connection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
+use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 
 /**
@@ -35,6 +34,7 @@ final class AssignedListsTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
+    use UsesSecondConnection;
 
     private const array TABLES = ['agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
 
@@ -49,15 +49,6 @@ final class AssignedListsTest extends TestCase
         $this->main = Agent::named('Main', 'main-agent');
         $this->other = Agent::named('Other', 'read-only-helper');
         $this->startRequestAs($this->main->id, TestIds::of(1));
-    }
-
-    protected function tearDown(): void
-    {
-        if ($this->app->make('config')->has('database.connections.lists_other')) {
-            DB::connection('lists_other')->disconnect();
-        }
-
-        parent::tearDown();
     }
 
     public function test_only_directly_held_tasks_are_listed_by_id_finished_ones_included(): void
@@ -150,16 +141,5 @@ final class AssignedListsTest extends TestCase
         $this->assertSame(0, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())->total);
         $this->assertThrows(fn () => new NumberedPage(0, 20), InvalidAssignmentPage::class);
         $this->assertThrows(fn () => new NumberedPage(1, 101), InvalidAssignmentPage::class);
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $config->set(
-            'database.connections.lists_other',
-            $config->get('database.connections.'.$config->get('database.default')),
-        );
-
-        return DB::connection('lists_other');
     }
 }

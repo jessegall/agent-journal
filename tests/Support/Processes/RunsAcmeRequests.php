@@ -6,7 +6,6 @@ namespace Tests\Support\Processes;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\OpenCommandRequest;
@@ -36,6 +35,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\ActsAsActors;
+use Tests\Support\RunsCommandsAsLaunch;
 use Tests\Support\TestRunAdmissions;
 
 /**
@@ -45,6 +45,7 @@ use Tests\Support\TestRunAdmissions;
 trait RunsAcmeRequests
 {
     use ActsAsActors;
+    use RunsCommandsAsLaunch;
 
     private const string PASSED_OUTPUT = "{\"test\":\"a\",\"status\":\"ok\"}\n{\"passed\":1,\"failed\":0}\n";
 
@@ -58,14 +59,14 @@ trait RunsAcmeRequests
     {
         Storage::fake(SpoolRecorder::DISK);
         $this->launch = TestLaunch::start();
-        $this->requestId = $this->asAgent(new OpenCommandRequest(
+        $this->requestId = $this->runAsAgent(new OpenCommandRequest(
             'acme verify',
             str_repeat('a', 64),
             'acme verify',
             sys_get_temp_dir(),
             RequestHoldReason::UnknownCommand,
         ));
-        $this->asAgent(new ProposeCommandRule($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+        $this->runAsAgent(new ProposeCommandRule($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
     }
 
     /**
@@ -79,7 +80,7 @@ trait RunsAcmeRequests
             RecordRule::of(RecordRole::Summary, 'passed={passed:int} failed={failed:int}'),
         ], failureField: 'failed');
 
-        return $this->asAgent(new ProposeReader($this->requestId, 1, $definition));
+        return $this->runAsAgent(new ProposeReader($this->requestId, 1, $definition));
     }
 
     /**
@@ -88,7 +89,7 @@ trait RunsAcmeRequests
     private function sample(int $status, string $output, bool $read): string
     {
         $permit = $this->asUser(new ApproveSample($this->requestId, 1, $this->request()->source_digest));
-        $runId = $this->asAgent(new StartSample($this->requestId, $permit, "sample-{$status}"));
+        $runId = $this->runAsAgent(new StartSample($this->requestId, $permit, "sample-{$status}"));
         $part = PartRun::queue(
             ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId),
             new PartKey(1, 1, 'acme verify'),
@@ -104,7 +105,7 @@ trait RunsAcmeRequests
             $tail = ['part' => 1, 'stream' => 'stdout', 'lines' => 50];
             $this->signed($this->launch, "/agent/processes/runs/{$runId}/output/tail", $tail)->assertOk();
         }
-        $this->asAgent(new SettleSample($this->requestId));
+        $this->runAsAgent(new SettleSample($this->requestId));
 
         return $runId;
     }
@@ -114,19 +115,12 @@ trait RunsAcmeRequests
         return CommandRequest::query()->findOrFail($this->requestId);
     }
 
-    private function asAgent(object $command): mixed
-    {
-        $this->launch->startRequest($this->app);
-
-        return $this->app->make(CommandBus::class)->run($command);
-    }
-
     private function approvePair(): void
     {
         $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
         $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
         $reader = $this->reader();
-        $proof = $this->asAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]));
+        $proof = $this->runAsAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]));
         $approval = new OwnerApproval(1, 0, [new ReaderApproval($reader, $proof)], 'proven');
 
         $this->asUser(new ApproveRuleProposal(RuleProposal::query()->sole()->id, $approval));
