@@ -7,6 +7,7 @@ namespace Tests\Feature\Sharing;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\SystemActor;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
@@ -131,7 +132,7 @@ final class SharingEventsTest extends TestCase
     private function asSystem(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }
@@ -145,7 +146,7 @@ final class SharingEventsTest extends TestCase
     private function asOwner(Command $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new TrustedEntryAuthority('test'));
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
 
         return $this->app->make(CommandBus::class)->run($command);

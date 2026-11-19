@@ -15,16 +15,20 @@ final readonly class LaunchGrant
     public function __construct(
         public string $token,
         public array $folders,
+        public string|null $profileKey,
+        public int|null $profileRevision,
     ) {}
 
     /**
-     * @return array{token: string, folders: list<array<string, mixed>>}
+     * @return array{token: string, folders: list<array<string, mixed>>, profile_key: string|null, profile_revision: int|null}
      */
     public function toArray(): array
     {
         return [
             'token' => $this->token,
             'folders' => array_map(fn (LaunchFolder $folder) => $folder->toArray(), $this->folders),
+            'profile_key' => $this->profileKey,
+            'profile_revision' => $this->profileRevision,
         ];
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Models;
 
-use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ActorVisibility;
 use App\Agents\Support\AgentContext;
 use App\Hooks\Models\Support\AgentSessionScope;
 use App\Links\Support\Linkable;
@@ -52,7 +52,7 @@ final class RetainedPage extends Model implements ReadableModel
     protected static function booted(): void
     {
         self::addGlobalScope(new AgentSessionScope(
-            static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
+            static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
             static fn (): AgentContext => Container::getInstance()->make(AgentContext::class),
         ));
     }

@@ -20,12 +20,12 @@ final class ProfileActivateCommand extends Command
 {
     protected $signature = 'profile:activate';
 
-    protected $description = 'Activate the profile proposal in config/profiles.php';
+    protected $description = 'Activate the built-in profiles and the profile proposal in config/profiles.php';
 
     public function handle(ConsoleOwner $owner, CommandBus $commands, Repository $config): int
     {
         $owner->actAsOwner();
-        $proposal = ProfileProposal::fromConfiguration((array) $config->get('profiles', []));
+        $proposal = ProfileProposal::fromConfiguration((array) $config->get('profiles', []))->withBuiltIns();
         $activation = $commands->run(new ActivateProfiles($proposal));
 
         $this->line("Configuration {$activation->configurationHash}");

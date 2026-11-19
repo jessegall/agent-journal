@@ -6,6 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CopySkill;
@@ -72,7 +73,7 @@ final class RetireAndCopySkillTest extends TestCase
     private function as(int $user, Command $command): SkillRevisionResult
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Providers;
 
-use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ActorVisibility;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
@@ -55,7 +55,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily());
 
         $scope = new AgentSessionScope(
-            static fn () => Container::getInstance()->make(CurrentActor::class),
+            static fn () => Container::getInstance()->make(ActorVisibility::class),
             static fn () => Container::getInstance()->make(AgentContext::class),
         );
 

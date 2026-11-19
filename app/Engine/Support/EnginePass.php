@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Engine\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Support\OperationDeadline;
 use App\Engine\Contracts\MonotonicClock;
 use App\Reads\Support\ReadLog;
@@ -44,7 +45,8 @@ final readonly class EnginePass
         $meter->begin();
 
         try {
-            $this->app->make(CurrentActorSetter::class)->set(new EngineActor());
+            $authority = new TrustedEntryAuthority('engine pass');
+            $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), $authority);
 
             return $work();
         } finally {

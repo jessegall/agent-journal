@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareState;
@@ -55,7 +56,7 @@ final class ShareManagementPagesTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);

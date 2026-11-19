@@ -107,6 +107,6 @@ final readonly class SkillPublishing
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->actors->actAsSystem(fn () => $this->commands->run($command));
+        return $this->actors->actAsSystem('skill publishing', fn () => $this->commands->run($command));
     }
 }

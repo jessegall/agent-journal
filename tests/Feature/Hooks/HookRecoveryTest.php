@@ -7,6 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\DatabaseClock;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Actions\LaunchSessions;
@@ -66,7 +67,7 @@ final class HookRecoveryTest extends TestCase
         $this->startedSecondsAgo($launched, 121);
         $this->heartbeats()->markSilentLaunches();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new RecordHeartbeat($launched->session->id));
         $this->heartbeats()->markSilentLaunches();
 
@@ -126,7 +127,7 @@ final class HookRecoveryTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, 'hooks.main_ready', new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $launched->session->id));
         $this->app->forgetScopedInstances();
 

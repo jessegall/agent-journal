@@ -6,6 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainSwitches;
 use App\Settings\Commands\DisableSettingGroup;
@@ -43,7 +44,7 @@ final class DomainSwitchesTest extends TestCase
 
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new TrustedEntryAuthority('test'));
     }
 
     public function test_core_declares_one_empty_switch_on_by_default_for_each_domain_but_access(): void

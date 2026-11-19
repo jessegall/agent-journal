@@ -57,7 +57,7 @@ final class DirectRunTest extends TestCase
     #[TimeLimit(10, 'It admits and runs printf through the signed channel.')]
     public function test_process_run_line_refuses_or_runs_and_prints_its_output_number(): void
     {
-        $this->runCommandsAs($this->launch->token);
+        $this->runCommandsAs($this->launch);
 
         $this->artisan('process:run', ['--line' => 'acme verify'])
             ->expectsOutputToContain('Nothing in this request started.')

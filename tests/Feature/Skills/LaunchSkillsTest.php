@@ -7,6 +7,7 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorStore;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
@@ -36,6 +37,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\TestCase;
 
 /**
@@ -46,6 +48,7 @@ use Tests\TestCase;
 final class LaunchSkillsTest extends TestCase
 {
     use CommitsHookRows;
+    use InstallsBuiltInProfiles;
 
     private const array TABLES = [
         'skill_publications',
@@ -163,7 +166,7 @@ final class LaunchSkillsTest extends TestCase
      */
     private function activateReviewer(array $requiredSkills): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile(
                 'journal-reviewer',
@@ -181,7 +184,7 @@ final class LaunchSkillsTest extends TestCase
     {
         $host = $this->asSystem(new EnrollHost('test host', [self::FOLDER]));
         $agent = Agent::named('Codex agent', AgentRole::MainAgent);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
         $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,
             $host->hostId,
@@ -201,8 +204,8 @@ final class LaunchSkillsTest extends TestCase
         $session = new AgentSession([
             ...TestSelections::sessionColumns(),
             'program' => $program,
-            'profile_key' => $profileRevision === null ? null : 'journal-reviewer',
-            'profile_revision' => $profileRevision,
+            'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer',
+            'profile_revision' => $profileRevision ?? 1,
         ]);
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
@@ -226,6 +229,6 @@ final class LaunchSkillsTest extends TestCase
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->app->make(ActorStore::class)->actAsSystem(fn () => $this->app->make(CommandBus::class)->run($command));
+        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run($command));
     }
 }

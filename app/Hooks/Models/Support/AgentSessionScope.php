@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Models\Support;
 
-use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ActorVisibility;
 use App\Agents\Support\AgentContext;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,25 +21,20 @@ use Illuminate\Database\Eloquent\Scope;
 final readonly class AgentSessionScope implements Scope
 {
     /**
-     * @param  Closure(): CurrentActor  $actors
+     * @param  Closure(): ActorVisibility  $visibility
      * @param  Closure(): AgentContext  $currentContext
      */
-    public function __construct(private Closure $actors, private Closure $currentContext) {}
+    public function __construct(private Closure $visibility, private Closure $currentContext) {}
 
     /**
      * @param  Builder<covariant Model>  $builder
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if (($this->actors)()->isJournalActor()) {
-            $builder->whereKey([]);
-
-            return;
-        }
-
-        $context = ($this->currentContext)();
-
-        $builder->where($model->qualifyColumn('agent_id'), $context->agentId)
-            ->where($model->qualifyColumn('session_id'), $context->sessionId);
+        ($this->visibility)()->ownRows($builder, function (Builder $query) use ($model): void {
+            $context = ($this->currentContext)();
+            $query->where($model->qualifyColumn('agent_id'), $context->agentId)
+                ->where($model->qualifyColumn('session_id'), $context->sessionId);
+        });
     }
 }

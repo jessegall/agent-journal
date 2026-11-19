@@ -67,6 +67,15 @@ final readonly class ProfileProposal
     }
 
     /**
+     * The proposal with the journal's built-in profiles added; a project profile of the same key is refused as
+     * repeated when it is activated.
+     */
+    public function withBuiltIns(): self
+    {
+        return new self($this->revision, $this->typeOverrides, [...BuiltInProfiles::proposed(), ...$this->profiles]);
+    }
+
+    /**
      * The project's override of the type; none when the proposal gives none.
      */
     public function overrideFor(ProfileType $type): PolicyOverride

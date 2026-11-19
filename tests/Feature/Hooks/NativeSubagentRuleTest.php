@@ -6,6 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Events\LaunchSettingsRequested;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Support\StackTarget;
@@ -37,7 +38,7 @@ final class NativeSubagentRuleTest extends TestCase
         parent::setUp();
 
         $this->launch = TestLaunch::start('hooks.main_ready');
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id), new TrustedEntryAuthority('test'));
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target(), ReadyStateType::MainAgent));
     }
 

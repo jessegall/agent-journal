@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
@@ -47,7 +48,7 @@ final class PlanFinishCancelTest extends TestCase
         $owner = User::factory()->create();
         $this->owner = $owner;
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($owner->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($owner->id), new TrustedEntryAuthority('test'));
         Event::fake([PlanStarted::class, PlanFinished::class, PlanCancelled::class]);
     }
 

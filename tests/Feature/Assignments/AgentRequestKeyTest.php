@@ -46,7 +46,7 @@ final class AgentRequestKeyTest extends TestCase
 
     public function test_a_cli_assign_retried_with_the_same_request_key_returns_the_stored_result_without_a_second_change(): void
     {
-        $this->runCommandsAs($this->main->token);
+        $this->runCommandsAs($this->main);
         $arguments = ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->helper->agent->id}", '--request-key' => self::KEY, '--json' => true];
         $this->artisan('assignment:assign', $arguments)->expectsOutputToContain('"changed":1')->assertExitCode(0);
         $reference = (string) $this->signed($this->main, '/agent/assignments/show', ['recordType' => 'tasks.task', 'recordId' => $this->task->id])->json('holder.reference');
@@ -59,7 +59,7 @@ final class AgentRequestKeyTest extends TestCase
 
     public function test_a_failed_cli_write_prints_its_request_key_to_retry_with(): void
     {
-        $this->runCommandsAs($this->helper->token);
+        $this->runCommandsAs($this->helper);
 
         $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->helper->agent->id}", '--request-key' => self::KEY])
             ->expectsOutputToContain('--request-key='.self::KEY)

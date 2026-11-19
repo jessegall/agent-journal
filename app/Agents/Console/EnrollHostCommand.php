@@ -21,7 +21,7 @@ final class EnrollHostCommand extends Command
 
     public function handle(CommandBus $commands, ActorStore $actors): int
     {
-        $enrolled = $actors->actAsSystem(fn (): EnrolledHost => $commands->run(new EnrollHost($this->installationName(), $this->launchRoots())));
+        $enrolled = $actors->actAsSystem('host enrolment', fn (): EnrolledHost => $commands->run(new EnrollHost($this->installationName(), $this->launchRoots())));
 
         $this->line("Host {$enrolled->hostId} is enrolled. Its secret, shown only now:");
         $this->line($enrolled->secret);

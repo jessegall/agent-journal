@@ -27,6 +27,8 @@ return new class extends Migration
             $table->json('execution_policy');
             $table->string('configuration_hash', 64);
             $table->json('provenance');
+            $table->string('authorization_type', 32);
+            $table->json('ability_grants');
             $table->string('author_type', 16);
             $table->string('author_id');
             $table->timestampTz('created_at');

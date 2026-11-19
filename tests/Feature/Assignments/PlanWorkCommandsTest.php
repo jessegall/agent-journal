@@ -73,7 +73,7 @@ final class PlanWorkCommandsTest extends TestCase
 
     public function test_the_commands_say_they_covered_the_whole_plan(): void
     {
-        $this->runCommandsAs($this->main->token);
+        $this->runCommandsAs($this->main);
 
         $this->artisan('plan:assign-work', ['type' => Plan::LINK_TYPE, 'id' => $this->plan->id, '--to' => "agent:{$this->helper->agent->id}"])
             ->expectsOutputToContain("Cascade over plans.plan {$this->plan->id} and its unfinished work: 3 changed, 0 unchanged, 2 skipped as finished.")

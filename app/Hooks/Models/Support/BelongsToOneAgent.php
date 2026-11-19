@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Models\Support;
 
-use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Models\Support\ReadsForActor;
 use App\Agents\Support\AgentContext;
 use Illuminate\Container\Container;
@@ -24,7 +24,7 @@ trait BelongsToOneAgent
     public static function bootBelongsToOneAgent(): void
     {
         static::addGlobalScope(new AgentScope(
-            static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
+            static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
             static fn (): AgentContext => Container::getInstance()->make(AgentContext::class),
         ));
     }

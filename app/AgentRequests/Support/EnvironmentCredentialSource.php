@@ -35,7 +35,25 @@ final readonly class EnvironmentCredentialSource implements LaunchCredentialSour
             throw LaunchCredentialRefused::insecureUrl($journalUrl);
         }
 
-        return new AgentClientSettings($journalUrl, $token);
+        return new AgentClientSettings($journalUrl, $token, $this->profileOf($launch));
+    }
+
+    /**
+     * The profile the launch was pinned to; a missing or malformed pin is refused like any other credential.
+     *
+     * @throws LaunchSettingMissing
+     * @throws LaunchCredentialRefused
+     */
+    private function profileOf(LaunchEnvironment $launch): LaunchProfilePin
+    {
+        $key = $this->usable($launch, 'JOURNAL_PROFILE');
+        $revision = $this->usable($launch, 'JOURNAL_PROFILE_REVISION');
+
+        if (preg_match('/^[1-9][0-9]{0,8}$/', $revision) !== 1) {
+            throw LaunchCredentialRefused::placeholder('JOURNAL_PROFILE_REVISION');
+        }
+
+        return new LaunchProfilePin($key, (int) $revision);
     }
 
     private function usable(LaunchEnvironment $launch, string $name): string

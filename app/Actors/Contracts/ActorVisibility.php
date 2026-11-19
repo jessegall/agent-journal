@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Contracts;
 
 use App\Actors\Exceptions\CrossOwnerReadRefused;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -27,4 +28,13 @@ interface ActorVisibility
      * @throws CrossOwnerReadRefused
      */
     public function readAcrossOwners(Builder $query, string $ownerScope): void;
+
+    /**
+     * Narrows a read of ordinary content to the acting actor's own rows, by the narrowing the caller gives; an actor
+     * that sees no ordinary content gets none.
+     *
+     * @param  Builder<covariant Model>  $query
+     * @param  Closure(Builder<covariant Model>): void  $narrowToOwnRows
+     */
+    public function ownRows(Builder $query, Closure $narrowToOwnRows): void;
 }

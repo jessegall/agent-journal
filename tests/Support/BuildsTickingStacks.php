@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Agents\Actions\AgentSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -30,8 +30,7 @@ trait BuildsTickingStacks
     private function tickingStack(string $tickingType, array $subjects, CarbonImmutable $enteredAt, string $plainType = 'test.plain'): AgentStackRow
     {
         $agent = Agent::named('Ticking agent', AgentRole::MainAgent);
-        $session = new AgentSession();
-        $session->startFor($agent, null, TestSelections::of(), TestSelections::requestId());
+        $session = $this->app->make(AgentSessions::class)->start($agent, TestSelections::of(), TestSelections::requestId());
         $records = [
             new FrameRecord("{$session->id}-ready", new StateReference('hooks.main_ready', NoSubject::None), true, 1, $enteredAt),
             new FrameRecord("{$session->id}-plain", new StateReference($plainType, NoSubject::None), false, 1, $enteredAt),

@@ -46,15 +46,16 @@ final readonly class AuthenticateAgent
     public function handle(Request $request, Closure $next): Response
     {
         try {
-            $context = $this->contexts->fromRequest($request);
+            $admitted = $this->contexts->admit($request);
         } catch (CredentialRejected|CallSignatureInvalid) {
             return new JsonResponse(['code' => 'unauthenticated', 'message' => self::UNAUTHENTICATED], Response::HTTP_UNAUTHORIZED);
         } catch (CallProtocolUnsupported $unsupported) {
             return new JsonResponse(['message' => $unsupported->getMessage()], Response::HTTP_UPGRADE_REQUIRED);
         }
 
+        $context = $admitted->context;
         $this->container->instance(AgentContext::class, $context);
-        $this->actors->set($context);
+        $this->actors->set($context, $admitted->authority);
 
         try {
             $this->refreshHeartbeatOf($context);

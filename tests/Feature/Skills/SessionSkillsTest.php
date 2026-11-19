@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -36,6 +37,7 @@ use Tests\TestCase;
 final class SessionSkillsTest extends TestCase
 {
     use CommitsHookRows;
+    use InstallsBuiltInProfiles;
 
     private const array TABLES = [
         'skill_publications',

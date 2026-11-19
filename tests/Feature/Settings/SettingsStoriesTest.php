@@ -6,6 +6,7 @@ namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
@@ -70,7 +71,7 @@ final class SettingsStoriesTest extends TestCase
         $this->commands = new RegisteredSettingCommands($registry);
         $ownerId = TestIds::of(7);
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new TrustedEntryAuthority('test'));
     }
 
     protected function tearDown(): void

@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Profiles\Enums\ProfileType;
+use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Programs\Values\ProgramKey;
@@ -117,6 +118,7 @@ final class SkillSelectionTest extends TestCase
             'skillAllowlist' => $allowlist,
             'requiredSkills' => $required,
             'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
+            'authorization' => BuiltInAuthorizations::for(ProfileType::ReadOnlyHelper),
         ]);
 
         return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), AgentRole::ReadOnlyHelper, TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);

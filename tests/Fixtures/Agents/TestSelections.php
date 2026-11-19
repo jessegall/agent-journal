@@ -33,7 +33,7 @@ final class TestSelections
     /**
      * The selection columns of a session row a test writes by hand.
      *
-     * @return array<string, string>
+     * @return array<string, string|int>
      */
     public static function sessionColumns(HookProgram $program = HookProgram::ClaudeCode): array
     {
@@ -43,6 +43,8 @@ final class TestSelections
             'requested_model_type' => 'named',
             'requested_model' => self::MODEL,
             'program_source' => 'explicit',
+            'profile_key' => 'main-agent',
+            'profile_revision' => 1,
             'launch_request_id' => self::requestId(),
         ];
     }

@@ -130,6 +130,6 @@ final class SkillPublishingTest extends TestCase
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->app->make(ActorStore::class)->actAsSystem(fn () => $this->app->make(CommandBus::class)->run($command));
+        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run($command));
     }
 }

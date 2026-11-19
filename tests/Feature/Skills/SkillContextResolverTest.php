@@ -6,6 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
@@ -16,12 +17,12 @@ use App\Profiles\Enums\ProfileType;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillAgentHidden;
-use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Values\SkillContext;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -33,6 +34,7 @@ use Tests\TestCase;
 final class SkillContextResolverTest extends TestCase
 {
     use CommitsHookRows;
+    use InstallsBuiltInProfiles;
     use StartsAgentRequests;
 
     private const array TABLES = ['agent_sessions', 'agents', 'profile_revisions', 'profiles'];
@@ -51,7 +53,7 @@ final class SkillContextResolverTest extends TestCase
 
         $this->assertSame(ConditionOutcome::Match, Conditions::mainAgent()->evaluate($mainContext)->outcome);
         $this->assertSame(ConditionOutcome::NoMatch, Conditions::mainAgent()->evaluate($helperContext)->outcome);
-        $this->assertTrue($mainContext->profile->isProfileFree());
+        $this->assertSame(ProfileType::MainAgent, $mainContext->profile->snapshot?->type);
         $this->assertSame('claude-code', $helperContext->program?->key);
         $this->assertSame('anthropic', $helperContext->provider?->key);
         $this->assertSame(ProfileType::ReadOnlyHelper, $helperContext->profile->snapshot?->type);
@@ -68,16 +70,6 @@ final class SkillContextResolverTest extends TestCase
 
         $this->assertSame(1, $context->profile->snapshot?->revision);
         $this->assertSame('First.', $context->profile->snapshot?->instructions);
-    }
-
-    public function test_a_helper_without_a_profile_is_refused(): void
-    {
-        [$helper, $session] = $this->launch(AgentRole::ReadOnlyHelper, null);
-        $this->startRequestAs($helper->id, $session->id);
-
-        $this->expectException(SkillContextUnavailable::class);
-
-        $this->app->make(SkillContextResolver::class)->current();
     }
 
     public function test_two_requests_in_one_worker_get_their_own_contexts(): void
@@ -113,7 +105,7 @@ final class SkillContextResolverTest extends TestCase
 
     private function activateReviewer(string $instructions): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileType::ReadOnlyHelper, $instructions),
         )));
@@ -125,7 +117,7 @@ final class SkillContextResolverTest extends TestCase
     private function launch(AgentRole $role, int|null $profileRevision): array
     {
         $agent = Agent::named('Agent '.TestSelections::requestId(), $role);
-        $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? null : 'journal-reviewer', 'profile_revision' => $profileRevision]);
+        $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer', 'profile_revision' => $profileRevision ?? 1]);
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
         $session->save();

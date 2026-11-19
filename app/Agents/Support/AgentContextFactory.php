@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\AgentRequests\Support\LaunchProfilePin;
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Contracts\LaunchProfileAdmission;
 use App\Agents\Exceptions\CallProtocolUnsupported;
 use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\CredentialRejected;
@@ -16,11 +18,23 @@ use Illuminate\Http\Request;
  */
 final readonly class AgentContextFactory
 {
-    public function __construct(private CredentialLookup $credentials) {}
+    public function __construct(private CredentialLookup $credentials, private LaunchProfileAdmission $profiles) {}
 
-    public function fromRequest(Request $request): AgentContext
+    /**
+     * The call's context once its credential, its signature and its profile pair passed, with the admitted profile
+     * revision its launch was pinned to; any failure is the same rejected credential.
+     *
+     * @throws CredentialRejected
+     * @throws CallSignatureInvalid
+     * @throws CallProtocolUnsupported
+     */
+    public function admit(Request $request): AdmittedAgent
     {
-        return AgentContext::ofSession($this->credentials->sessionFor(self::tokenOf($request)), $this->verifiedCall($request));
+        $session = $this->credentials->sessionFor(self::tokenOf($request));
+        $pin = new LaunchProfilePin((string) $session->profile_key, (int) $session->profile_revision);
+        $context = AgentContext::ofSession($session, $this->verifiedCall($request, $pin));
+
+        return new AdmittedAgent($context, $this->profiles->admit($pin->key, $pin->revision));
     }
 
     private static function tokenOf(Request $request): string
@@ -28,7 +42,7 @@ final readonly class AgentContextFactory
         return $request->bearerToken() ?? throw CredentialRejected::missing();
     }
 
-    private function verifiedCall(Request $request): SignedCall
+    private function verifiedCall(Request $request, LaunchProfilePin $pin): SignedCall
     {
         $token = self::tokenOf($request);
         $protocol = $this->header($request, SignedCall::PROTOCOL_HEADER);
@@ -41,8 +55,24 @@ final readonly class AgentContextFactory
         $issuedAt = (int) $this->header($request, SignedCall::ISSUED_AT_HEADER);
         $signature = $this->header($request, SignedCall::SIGNATURE_HEADER);
         $bodyDigest = SignedCall::digestOf($request->getContent());
+        $claimed = $this->header($request, SignedCall::PROFILE_HEADER);
+        $claimedRevision = $this->header($request, SignedCall::PROFILE_REVISION_HEADER);
 
-        if (! hash_equals(SignedCall::signatureFor($token, $request->getMethod(), $request->getRequestUri(), $callId, $issuedAt, $request->getContent()), $signature)) {
+        if ($claimed !== $pin->key || $claimedRevision !== (string) $pin->revision) {
+            throw CredentialRejected::profileMismatched();
+        }
+
+        $expected = SignedCall::agentSignatureFor(
+            $token,
+            $request->getMethod(),
+            $request->getRequestUri(),
+            $callId,
+            $issuedAt,
+            $request->getContent(),
+            $pin,
+        );
+
+        if (! hash_equals($expected, $signature)) {
             throw CallSignatureInvalid::mismatched($callId);
         }
 

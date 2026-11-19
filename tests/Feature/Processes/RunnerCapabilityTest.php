@@ -40,7 +40,7 @@ final class RunnerCapabilityTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         $this->launch = TestLaunch::start();
-        $this->runCommandsAs($this->launch->token);
+        $this->runCommandsAs($this->launch);
         $this->folder = sys_get_temp_dir().'/runner-'.bin2hex(random_bytes(4));
         mkdir($this->folder);
         file_put_contents($this->folder.'/data.txt', "x one\ny two\nx three\n");

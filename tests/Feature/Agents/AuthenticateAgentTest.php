@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Support\AgentContext;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Agents\TestLaunch;
@@ -48,7 +47,7 @@ final class AuthenticateAgentTest extends TestCase
     public function test_an_ended_session_gets_the_unauthenticated_body(): void
     {
         $launch = TestLaunch::start();
-        new AgentSessions(new AgentLifecycle())->end($launch->session);
+        $this->app->make(AgentSessions::class)->end($launch->session);
 
         $this->signed($launch, '/agent/heartbeat', [])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }

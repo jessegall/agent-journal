@@ -12,6 +12,8 @@ type LaunchGrant struct {
 	DriverType string
 	Profile    string
 	Credential string
+	// ProfilePin is the launch's pinned authorization profile as environment entries; empty when it has none.
+	ProfilePin []string
 }
 
 // DriverConstructor opens the driver of one runtime from its grant.

@@ -13,6 +13,7 @@ final readonly class AgentClientSettings
     public function __construct(
         public string $journalUrl,
         public string $token,
+        public LaunchProfilePin $profile,
         public int $timeoutSeconds = 10,
     ) {}
 }

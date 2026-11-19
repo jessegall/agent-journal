@@ -77,6 +77,7 @@ use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Records\Commands\LinkRecords;
@@ -198,6 +199,7 @@ final class CoreCommands
             ReopenSharedGateways::class,
             PruneShareAudit::class,
             ActivateProfiles::class,
+            InstallBuiltInProfiles::class,
             RevokeProfiles::class,
             LaunchProfileMain::class,
             ProposeCommandRule::class,
@@ -247,6 +249,7 @@ final class CoreCommands
     public static function privateCommands(): array
     {
         return [
+            InstallBuiltInProfiles::class,
             ReadShare::class,
             ExpireShares::class,
             ClaimGatewayOperation::class,

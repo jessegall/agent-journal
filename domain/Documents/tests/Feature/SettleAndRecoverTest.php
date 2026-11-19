@@ -7,6 +7,7 @@ namespace Domain\Documents\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Support\AgentContext;
@@ -198,12 +199,12 @@ final class SettleAndRecoverTest extends TestCase
 
     private function actAsUser(int $user): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new TrustedEntryAuthority('test'));
     }
 
     private function actAsAgent(int $agent, int $session): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of($agent)), new TrustedEntryAuthority('test'));
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of($agent), TestIds::of($session), 'hooks.main_ready', new SignedCall(TestIds::of(500 + $agent), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 

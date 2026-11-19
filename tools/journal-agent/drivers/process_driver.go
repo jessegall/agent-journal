@@ -30,6 +30,7 @@ var ErrTurnRunning = errors.New("a turn is still running")
 type ProcessRuntime struct {
 	JournalURL     string
 	Credential     string
+	ProfilePin     []string
 	ConversationID string
 	SettingsFolder string
 	WorkingFolder  string
@@ -139,6 +140,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		"JOURNAL_LAUNCH_TOKEN="+driver.runtime.Credential,
 		"JOURNAL_PROCESS_GENERATION="+strconv.Itoa(driver.generation),
 	)
+	command.Env = append(command.Env, driver.runtime.ProfilePin...)
 	if err := command.Start(); err != nil {
 		driver.generation--
 		return contracts.OperationResult{}, err
@@ -230,6 +232,7 @@ func RegisterProcessDriver(factory *host.RuntimeFactory, runtimeOf func(grant ho
 			return nil, err
 		}
 		runtime.Credential = grant.Credential
+		runtime.ProfilePin = grant.ProfilePin
 		return NewProcessDriver(runtime, generation), nil
 	})
 }

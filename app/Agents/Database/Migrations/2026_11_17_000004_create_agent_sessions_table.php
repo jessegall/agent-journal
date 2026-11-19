@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('requested_model_type', 16);
             $table->string('requested_model', 128)->nullable();
             $table->string('program_source', 16);
-            $table->string('profile_key', 128)->nullable();
-            $table->unsignedInteger('profile_revision')->nullable();
+            $table->string('profile_key', 128);
+            $table->unsignedInteger('profile_revision');
             $table->ulid('launch_request_id')->index();
             $table->ulid('skill_generation_id')->nullable();
             $table->ulid('current_conversation_id')->nullable();

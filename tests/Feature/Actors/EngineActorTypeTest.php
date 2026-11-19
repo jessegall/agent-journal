@@ -9,6 +9,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Models\AssignmentRecord;
@@ -69,7 +70,7 @@ final class EngineActorTypeTest extends TestCase
 
     public function test_a_command_for_users_refuses_the_engine(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()), new TrustedEntryAuthority('test'));
 
         $this->expectException(EngineNotAllowed::class);
 

@@ -7,6 +7,7 @@ namespace Domain\Rules\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Rules\Api\Events\RuleRemoved;
 use Domain\Rules\Commands\ApproveRule;
@@ -54,7 +55,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_removing_a_rule_raises_its_fact(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
         $rule = Rule::holding('Old rule.');
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($rule->id));
@@ -65,7 +66,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_a_main_agent_may_not_approve_a_rule_and_it_stays_proposed(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new TrustedEntryAuthority('test'));
         $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
 
         try {
@@ -78,7 +79,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_an_agent_asking_to_approve_is_answered_403(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new TrustedEntryAuthority('test'));
         $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
         Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
 
@@ -87,7 +88,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_a_missing_rule_is_refused_by_name(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
 
         $this->expectExceptionObject(RuleMissing::withId(TestIds::of(999999)));
 

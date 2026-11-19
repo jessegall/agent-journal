@@ -6,6 +6,7 @@ namespace Tests\Feature\Communication;
 
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Actions\AgentSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -43,8 +44,7 @@ final class MessageAddressTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->first = Agent::named('First', AgentRole::MainAgent);
         $this->second = Agent::named('Second', AgentRole::MainAgent);
-        $this->secondSession = new AgentSession();
-        $this->secondSession->startFor($this->second, null, TestSelections::of(), TestSelections::requestId());
+        $this->secondSession = $this->app->make(AgentSessions::class)->start($this->second, TestSelections::of(), TestSelections::requestId());
         $this->startUserRequestAs($owner->id);
     }
 

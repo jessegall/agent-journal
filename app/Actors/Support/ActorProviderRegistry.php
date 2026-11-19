@@ -17,6 +17,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
+use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -111,7 +112,7 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
     public function ownRead(Builder $query, string $ownerScope): void
     {
         $actors = $this->container->make(CurrentActor::class);
-        if (! $actors->isSignedIn()) {
+        if (! $actors->hasActor()) {
             return;
         }
 
@@ -133,6 +134,32 @@ final class ActorProviderRegistry implements ActorLabels, ActorProviderRegistrat
         $providerClass = $this->visibilityProviders[$type->value] ?? throw CrossOwnerReadRefused::forActor($type->value);
 
         $this->container->make($providerClass)->readAcrossOwners($query, $ownerScope);
+    }
+
+    /**
+     * With nobody acting the caller's own narrowing applies, which asks its own context; a type with no provider finds
+     * nothing.
+     *
+     * @param  Builder<covariant Model>  $query
+     * @param  Closure(Builder<covariant Model>): void  $narrowToOwnRows
+     */
+    public function ownRows(Builder $query, Closure $narrowToOwnRows): void
+    {
+        $actors = $this->container->make(CurrentActor::class);
+        if (! $actors->hasActor()) {
+            $narrowToOwnRows($query);
+
+            return;
+        }
+
+        $providerClass = $this->visibilityProviders[$actors->actor()->actorType()->value] ?? null;
+        if ($providerClass === null) {
+            $query->whereKey([]);
+
+            return;
+        }
+
+        $this->container->make($providerClass)->ownRows($query, $narrowToOwnRows);
     }
 
     public function get(ActorIdentity $identity): Actor

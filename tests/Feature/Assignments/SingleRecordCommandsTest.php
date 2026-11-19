@@ -100,7 +100,7 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_the_commands_send_the_same_calls_and_fail_on_a_refusal(): void
     {
-        $this->runCommandsAs($this->main->token);
+        $this->runCommandsAs($this->main);
 
         $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->helper->agent->id}", '--json' => true])
             ->expectsOutputToContain('"changed":1')->assertExitCode(0);

@@ -19,11 +19,6 @@ final class SkillContextUnavailable extends RuntimeException implements CodedRef
         return new self("Agent {$agentId} has no session to select skills for.");
     }
 
-    public static function profileRequired(string $agentId): self
-    {
-        return new self("Agent {$agentId} is a helper launched without a profile; a helper needs one to receive skills.");
-    }
-
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::StateBlocked;

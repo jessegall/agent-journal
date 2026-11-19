@@ -7,6 +7,7 @@ namespace Tests\Feature\Processes;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\OpenCommandRequest;
@@ -180,7 +181,7 @@ final class SampleWorkflowTest extends TestCase
     private function runAs(ActorContext $actor, object $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set($actor);
+        $this->app->make(CurrentActorSetter::class)->set($actor, new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

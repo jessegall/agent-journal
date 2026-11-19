@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Bus\Contracts\CodedRefusal;
@@ -32,6 +33,7 @@ final readonly class RefusalMapper
             $failure instanceof AuthorizationException => new Refusal(RefusalCode::Forbidden, $failure->getMessage()),
             $failure instanceof UserActorRequired => new Refusal(RefusalCode::Forbidden, $failure->getMessage()),
             $failure instanceof CrossOwnerReadRefused => new Refusal(RefusalCode::Forbidden, $failure->getMessage()),
+            $failure instanceof ActorNotAllowed => new Refusal(RefusalCode::Forbidden, $failure->getMessage()),
             default => $this->unexpected($failure, $subject, $correlationId),
         };
     }

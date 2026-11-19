@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Support\StackTransaction;
 use Domain\Plans\Api\Events\PlanStarted;
@@ -41,7 +42,7 @@ final class StartPlanTest extends TestCase
 
         Event::fake([PlanStarted::class]);
         $this->plan = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
     }
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void

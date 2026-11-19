@@ -6,6 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Text\Exceptions\ContentMissing;
 use Domain\Documents\Commands\CreateDocument;
@@ -38,7 +39,7 @@ final class DocumentsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
     }
 
     public function test_documents_are_numbered_and_each_starts_at_revision_one(): void

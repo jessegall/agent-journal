@@ -20,7 +20,7 @@ final class ProcessReconcileCommand extends Command
 
     public function handle(ActorStore $actors, CommandBus $commands): int
     {
-        $lost = $actors->actAsSystem(fn (): int => $commands->run(new ReconcileLostRuns()));
+        $lost = $actors->actAsSystem('process reconcile', fn (): int => $commands->run(new ReconcileLostRuns()));
         $this->line("{$lost} runs marked lost.");
 
         return self::SUCCESS;

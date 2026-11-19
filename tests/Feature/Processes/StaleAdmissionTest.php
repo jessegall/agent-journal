@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\RetireCommandRule;
 use App\Processes\Commands\SaveCommandRule;
@@ -15,7 +16,6 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\LifecycleState;
-use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Execution\RecordedRunEvents;
 use App\Processes\Execution\Supervisor;
@@ -105,7 +105,7 @@ final class StaleAdmissionTest extends TestCase
     private function asUser(object $command): mixed
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

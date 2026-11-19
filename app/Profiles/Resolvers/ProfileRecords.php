@@ -18,13 +18,7 @@ final readonly class ProfileRecords implements ProfileResolver
 {
     public function snapshotFor(ProfileKey $key): ProfileSnapshot
     {
-        $profile = Profile::byKey($key);
-
-        if ($profile->isRetired()) {
-            throw ProfileRetired::for($key);
-        }
-
-        return ProfileRevision::currentOf($profile)->snapshot($key);
+        return ProfileRevision::currentOf($this->admitted($key))->snapshot($key);
     }
 
     public function snapshotAt(ProfileKey $key, int $revision): ProfileSnapshot
@@ -32,8 +26,23 @@ final readonly class ProfileRecords implements ProfileResolver
         return ProfileRevision::numbered(Profile::byKey($key), $revision)->snapshot($key);
     }
 
+    public function admittedPin(ProfileKey $key, int $revision): ProfileSnapshot
+    {
+        return ProfileRevision::numbered($this->admitted($key), $revision)->snapshot($key);
+    }
+
     public function has(ProfileKey $key): bool
     {
         return Profile::hasCurrent($key);
+    }
+
+    /**
+     * @throws ProfileRetired
+     */
+    private function admitted(ProfileKey $key): Profile
+    {
+        $profile = Profile::byKey($key);
+
+        return $profile->isRetired() ? throw ProfileRetired::for($key) : $profile;
     }
 }

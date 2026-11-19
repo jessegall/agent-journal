@@ -25,6 +25,16 @@ final readonly class SelectedProgram
     ) {}
 
     /**
+     * The same selection pinned to a profile, for a launch whose selection named none.
+     */
+    public function pinnedTo(string $profileKey, int $profileRevision): self
+    {
+        $source = new SelectionSource($this->source->programSource, $profileKey, $profileRevision);
+
+        return new self($this->program, $this->model, $this->requested, $source);
+    }
+
+    /**
      * Applies D7: a program the caller names wins unless the profile pins another, then the profile's program, then
      * the parent session's; the default model comes from the profile, and a named one must be allowed by it.
      *

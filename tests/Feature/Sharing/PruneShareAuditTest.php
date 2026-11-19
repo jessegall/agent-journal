@@ -9,6 +9,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\SystemActor;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\PruneShareAudit;
@@ -72,7 +73,7 @@ final class PruneShareAuditTest extends TestCase
     private function prune(): AuditPruning
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run(new PruneShareAudit());
     }

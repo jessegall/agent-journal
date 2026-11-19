@@ -7,6 +7,7 @@ namespace Domain\Access\Http\Middleware;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Values\OwnerAuthority;
 use Closure;
 use Domain\Access\Exceptions\JournalAccessDenied;
 use Illuminate\Http\Request;
@@ -34,7 +35,7 @@ final readonly class AuthenticateUser
             throw JournalAccessDenied::forUser();
         }
 
-        $this->actors->set($user);
+        $this->actors->set($user, new OwnerAuthority('the web sign-in'));
 
         try {
             return $next($request);

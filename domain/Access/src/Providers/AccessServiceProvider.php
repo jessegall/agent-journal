@@ -6,6 +6,7 @@ namespace Domain\Access\Providers;
 
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActorProviderRegistration;
+use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Web\Contracts\CurrentUserResolver;
@@ -16,6 +17,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Resolvers\CurrentUserRecords;
 use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\JournalAccess;
+use Domain\Access\Support\OwnerAuthorizerProvider;
 use Domain\Access\Support\PresentUserCounter;
 use Domain\Access\Support\UserActors;
 use Domain\Access\Support\UserAssignees;
@@ -50,9 +52,13 @@ class AccessServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(ActorProviderRegistration $actors, ActiveActorRegistration $presentActors): void
-    {
+    public function boot(
+        ActorProviderRegistration $actors,
+        ActiveActorRegistration $presentActors,
+        AuthorizerProviderRegistration $authorizers,
+    ): void {
         $actors->register(ActorType::User, UserActors::class);
+        $authorizers->register(ActorType::User, OwnerAuthorizerProvider::class);
         $actors->registerLabels(ActorType::User, UserLabels::class);
         $actors->registerVisibility(ActorType::User, UserVisibility::class);
         $presentActors->register(PresentUserCounter::class);

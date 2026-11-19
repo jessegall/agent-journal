@@ -21,7 +21,7 @@ final class SystemActorBoundaryTest extends TestCase
     {
         $store = $this->app->make(ActorStore::class);
 
-        $type = $store->actAsSystem(fn () => $this->app->make(CurrentActor::class)->actor()->actorType());
+        $type = $store->actAsSystem('test', fn () => $this->app->make(CurrentActor::class)->actor()->actorType());
 
         $this->assertSame(ActorType::System, $type);
         $this->assertFalse($store->hasActor());

@@ -6,6 +6,7 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\WithdrawCommandRequest;
@@ -84,7 +85,7 @@ final class CommandRequestTest extends TestCase
     private function runAs(string $agentId, object $command): string
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

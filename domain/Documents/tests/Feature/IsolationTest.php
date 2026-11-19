@@ -6,6 +6,7 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Text\Exceptions\ContentMissing;
 use Domain\Documents\Api\Events\DocumentCreated;
@@ -80,7 +81,7 @@ final class IsolationTest extends TestCase
 
     private function actAsUser(int $user): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of($user)), new TrustedEntryAuthority('test'));
     }
 
     private function bus(): CommandBus

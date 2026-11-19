@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Support\ActorStore;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Support\AgentContext;
@@ -93,7 +93,7 @@ final class HookScopeTest extends TestCase
         $this->startRequestAs(TestIds::of(1), TestIds::of(10));
         $store = $this->app->make(ActorStore::class);
 
-        $this->assertSame([[], []], $store->actAsSystem(fn () => [$this->visibleStacks(), $this->visibleCalls()]));
+        $this->assertSame([[], []], $store->actAsSystem('test', fn () => [$this->visibleStacks(), $this->visibleCalls()]));
         $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
     }
 
@@ -101,10 +101,10 @@ final class HookScopeTest extends TestCase
     {
         $this->startRequestAs(TestIds::of(1), TestIds::of(10));
         $store = $this->app->make(ActorStore::class);
-        $scope = new AgentScope(fn (): CurrentActor => $store, fn (): AgentContext => $this->app->make(AgentContext::class));
+        $scope = new AgentScope(fn (): ActorVisibility => $this->app->make(ActorVisibility::class), fn (): AgentContext => $this->app->make(AgentContext::class));
 
         $query = AgentStackRow::query()->withoutGlobalScopes();
-        $store->actAsSystem(fn () => $scope->apply($query, new AgentStackRow()));
+        $store->actAsSystem('test', fn () => $scope->apply($query, new AgentStackRow()));
 
         $this->assertSame(0, $query->count());
         $this->assertStringNotContainsString('agent_id', $query->toSql());

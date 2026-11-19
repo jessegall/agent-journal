@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use Carbon\CarbonImmutable;
@@ -24,11 +25,11 @@ trait StartsAgentRequests
             new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId), new TrustedEntryAuthority('test'));
     }
 
     protected function startUserRequestAs(string $userId): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId), new TrustedEntryAuthority('test'));
     }
 }

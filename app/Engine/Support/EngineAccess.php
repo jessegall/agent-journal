@@ -38,6 +38,18 @@ final class EngineAccess implements EngineTargetAccess
     }
 
     /**
+     * Refuses an engine that acts without a frame or maintenance grant.
+     *
+     * @throws EngineAccessRefused
+     */
+    public function requireGranted(): void
+    {
+        if ($this->grant instanceof NoEngineGrant) {
+            throw EngineAccessRefused::ungranted();
+        }
+    }
+
+    /**
      * @throws EngineAccessRefused
      */
     public function checkTarget(StackTarget $target): void

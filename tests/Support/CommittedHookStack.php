@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Enums\DriverType;
@@ -142,7 +143,7 @@ trait CommittedHookStack
     protected function callAs(string $callId, string|null $inputDigest = null): void
     {
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), new TrustedEntryAuthority('test'));
     }
 
     protected function pushState(StateReference $state): void

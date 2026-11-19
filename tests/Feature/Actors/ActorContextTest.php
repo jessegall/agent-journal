@@ -10,6 +10,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use Carbon\CarbonImmutable;
@@ -32,7 +33,7 @@ final class ActorContextTest extends TestCase
 
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
         $this->assertSame([ActorType::User, TestIds::of(7)], [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id]);
 
         $this->app->forgetScopedInstances();
@@ -46,7 +47,7 @@ final class ActorContextTest extends TestCase
         $actors = $this->app->make(CurrentActor::class);
         $this->assertFalse($actors->hasActor());
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), new TrustedEntryAuthority('test'));
         $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actors->actor()->type, $actors->actor()->id]);
 
         $this->app->make(CurrentActorSetter::class)->clear();

@@ -6,6 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -30,6 +32,7 @@ use Tests\TestCase;
 final class SkillPreviewTest extends TestCase
 {
     use CommitsHookRows;
+    use InstallsBuiltInProfiles;
 
     private const array TABLES = ['agent_sessions', 'agents', 'profile_revisions', 'profiles'];
 
@@ -42,7 +45,7 @@ final class SkillPreviewTest extends TestCase
         parent::setUp();
 
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('journal-reviewer', ProfileType::ReadOnlyHelper, 'Review.'),
         )));
@@ -93,7 +96,7 @@ final class SkillPreviewTest extends TestCase
     private function launch(string $name, AgentRole $role, int|null $profileRevision): Agent
     {
         $agent = Agent::named($name, $role);
-        $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? null : 'journal-reviewer', 'profile_revision' => $profileRevision]);
+        $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer', 'profile_revision' => $profileRevision ?? 1]);
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
         $session->save();

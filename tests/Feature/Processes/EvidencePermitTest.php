@@ -41,7 +41,7 @@ final class EvidencePermitTest extends TestCase
         Storage::fake(SpoolRecorder::DISK);
         config(['processes.runner' => true]);
         $this->launch = TestLaunch::start();
-        $this->runCommandsAs($this->launch->token);
+        $this->runCommandsAs($this->launch);
         $this->folder = sys_get_temp_dir().'/evidence-'.bin2hex(random_bytes(4));
         mkdir($this->folder.'/project', recursive: true);
         touch($this->folder.'/project/notes.txt');

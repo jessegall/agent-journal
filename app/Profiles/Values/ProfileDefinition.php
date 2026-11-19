@@ -25,6 +25,7 @@ final readonly class ProfileDefinition
         public array|null $skillAllowlist,
         public array $requiredSkills,
         public ProfileLaunchPolicy $launch,
+        public ProfileAuthorization $authorization,
     ) {}
 
     /**
@@ -46,6 +47,7 @@ final readonly class ProfileDefinition
             || $mine->allowedModels !== $theirs->allowedModels
             || $mine->access != $theirs->access
             || $mine->stopConditions != $theirs->stopConditions
-            || $mine->execution != $theirs->execution;
+            || $mine->execution != $theirs->execution
+            || $this->authorization != $active->authorization;
     }
 }

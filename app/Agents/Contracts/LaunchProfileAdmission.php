@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Contracts;
+
+use App\Actors\Contracts\AuthoritySource;
+use App\Agents\Exceptions\CredentialRejected;
+
+/**
+ * The authority of an agent call: the admitted profile revision its launch was pinned to, loaded once per request.
+ */
+interface LaunchProfileAdmission
+{
+    /**
+     * @throws CredentialRejected when that profile is no longer admitted or the revision does not exist
+     */
+    public function admit(string $profileKey, int $profileRevision): AuthoritySource;
+}

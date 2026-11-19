@@ -36,6 +36,8 @@ final readonly class PreparedAgentCall
             SignedCall::ISSUED_AT_HEADER => (string) $this->issuedAt,
             SignedCall::PROTOCOL_HEADER => SignedCall::PROTOCOL,
             SignedCall::SIGNATURE_HEADER => $this->signature,
+            SignedCall::PROFILE_HEADER => $this->settings->profile->key,
+            SignedCall::PROFILE_REVISION_HEADER => (string) $this->settings->profile->revision,
         ];
     }
 }

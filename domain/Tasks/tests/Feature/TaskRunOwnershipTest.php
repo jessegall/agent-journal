@@ -6,6 +6,7 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Enums\AgentRole;
@@ -133,7 +134,7 @@ final class TaskRunOwnershipTest extends TestCase
         $this->app->forgetScopedInstances();
         $agent = $session->agent()->firstOrFail();
         $this->app->instance(AgentContext::class, new AgentContext($agent->id, $session->id, $agent->role, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), new TrustedEntryAuthority('test'));
     }
 
     private function bus(): CommandBus

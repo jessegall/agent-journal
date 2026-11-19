@@ -10,6 +10,7 @@ use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\SystemActor;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
@@ -161,7 +162,7 @@ final class ShareEndTest extends TestCase
     private function expire(): ShareExpiry
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()), new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run(new ExpireShares());
     }

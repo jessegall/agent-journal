@@ -226,6 +226,7 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	launchArguments = append(launchArguments, folderArguments...)
 	environment := append(profile.Environment(drivers.WithoutJournalVariables(os.Environ()), launch),
 		"JOURNAL_URL="+journal.JournalURL(), "JOURNAL_LAUNCH_TOKEN="+grant.Token, "JOURNAL_PROCESS_GENERATION=1")
+	environment = append(environment, grant.ProfileEnvironment()...)
 	return host.AttachRequest{RuntimeID: opened.RuntimeID, Command: append([]string{profile.Program()}, launchArguments...), Folder: absolute, Env: environment}, nil
 }
 

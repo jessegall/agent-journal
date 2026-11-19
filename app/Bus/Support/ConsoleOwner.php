@@ -9,6 +9,7 @@ use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Actors\Exceptions\ConsoleOwnerRefused;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\OwnerAuthority;
 use Illuminate\Support\Str;
 
 /**
@@ -36,7 +37,7 @@ final readonly class ConsoleOwner
             throw ConsoleOwnerRefused::forActor($owner);
         }
 
-        $this->actors->set($owner);
+        $this->actors->set($owner, new OwnerAuthority('the console'));
 
         return $owner;
     }

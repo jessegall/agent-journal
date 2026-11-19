@@ -7,6 +7,7 @@ namespace Domain\Documents\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Support\Page;
@@ -59,7 +60,7 @@ final class CommentsAndReadsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
         $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip the editor.\n\n## Risks\nNone.\n"));
     }
 
@@ -114,7 +115,7 @@ final class CommentsAndReadsTest extends TestCase
 
         $this->comment('From an agent.', WholeRecord::Record);
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
         $comment = $this->comments()->list($this->document(), new Page())->items[0]->comment;
         $this->assertSame([ActorType::Agent, $agent->id], [$comment->authorType, $comment->authorId]);
     }

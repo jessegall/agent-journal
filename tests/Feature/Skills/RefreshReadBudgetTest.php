@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -35,6 +36,7 @@ use Tests\TestCase;
 final class RefreshReadBudgetTest extends TestCase
 {
     use AssertsReadBudget, CommitsHookRows;
+    use InstallsBuiltInProfiles;
 
     private const array TABLES = [
         'skill_publications',
@@ -90,7 +92,7 @@ final class RefreshReadBudgetTest extends TestCase
         $many = $this->readCounts(fn () => $publishing->refresh());
 
         $this->assertSame($few->queriesRun, $many->queriesRun);
-        $this->assertSame(2 * 1_000 + 3 * self::SESSIONS + 1, $many->modelsLoaded);
+        $this->assertSame(2 * 1_000 + 3 * self::SESSIONS + 1 + 2, $many->modelsLoaded);
     }
 
     private function seedSkillsAndSessions(int $skills): void

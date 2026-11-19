@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actors\Exceptions;
+
+use App\Contracts\CommandRefusal;
+use BackedEnum;
+use Illuminate\Auth\Access\AuthorizationException;
+use RuntimeException;
+
+/**
+ * The actor may not do the ability; the message names the ability and the kind of subject, never its content.
+ */
+final class ActorNotAllowed extends RuntimeException implements CommandRefusal
+{
+    public static function to(BackedEnum $ability, string $subjectType): self
+    {
+        return new self("This actor may not {$ability->value} this {$subjectType}.");
+    }
+
+    public static function withoutStoredAuthority(string $type): self
+    {
+        return new self("A {$type} has no stored authority another actor's request could evaluate.");
+    }
+
+    public static function asNonOwner(): self
+    {
+        return new self('Only an owner of this journal may do this.');
+    }
+
+    public static function outsideTrustedEntry(string $authority): self
+    {
+        return new self("The journal acts under {$authority}, which is no trusted entry it knows.");
+    }
+
+    /**
+     * The one place a Laravel gate's denial becomes the journal's refusal.
+     */
+    public static function fromDenial(AuthorizationException $denial, BackedEnum $ability, string $subjectType): self
+    {
+        $refusal = self::to($ability, $subjectType);
+
+        return new self($refusal->getMessage(), 0, $denial);
+    }
+}

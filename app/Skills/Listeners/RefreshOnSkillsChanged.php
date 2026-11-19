@@ -23,6 +23,6 @@ final readonly class RefreshOnSkillsChanged implements Listener
 
     public function handle(SkillsChanged $event): void
     {
-        $this->actors->actAsSystem(fn () => $this->commands->run(new RefreshSkills()));
+        $this->actors->actAsSystem('skill refresh', fn () => $this->commands->run(new RefreshSkills()));
     }
 }

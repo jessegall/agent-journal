@@ -21,6 +21,10 @@ final readonly class SignedCall
 
     public const string PROTOCOL_HEADER = 'X-Journal-Protocol';
 
+    public const string PROFILE_HEADER = 'X-Journal-Profile';
+
+    public const string PROFILE_REVISION_HEADER = 'X-Journal-Profile-Revision';
+
     /**
      * The version of the signed envelope this journal reads and writes.
      */
@@ -42,13 +46,27 @@ final readonly class SignedCall
     {
         $fields = [self::PROTOCOL, strtoupper($method), self::targetOf($url), $callId, (string) $issuedAt, self::digestOf($body)];
 
-        foreach ($fields as $field) {
-            if (str_contains($field, "\n") || str_contains($field, "\r")) {
-                throw CallFieldInvalid::lineBreak();
-            }
-        }
+        return self::sign($token, $fields);
+    }
 
-        return hash_hmac('sha256', implode("\n", $fields), $token);
+    /**
+     * An agent call's signature: the version-2 envelope with the launch's pinned profile key and revision after it, so
+     * a call cannot claim another profile than the one it was launched with.
+     *
+     * @throws CallFieldInvalid
+     */
+    public static function agentSignatureFor(
+        string $token,
+        string $method,
+        string $url,
+        string $callId,
+        int $issuedAt,
+        string $body,
+        LaunchProfilePin $profile,
+    ): string {
+        $fields = [self::PROTOCOL, strtoupper($method), self::targetOf($url), $callId, (string) $issuedAt, self::digestOf($body)];
+
+        return self::sign($token, [...$fields, $profile->key, (string) $profile->revision]);
     }
 
     /**
@@ -65,5 +83,21 @@ final readonly class SignedCall
     public static function digestOf(string $body): string
     {
         return hash('sha256', $body);
+    }
+
+    /**
+     * @param  list<string>  $fields
+     *
+     * @throws CallFieldInvalid
+     */
+    private static function sign(string $token, array $fields): string
+    {
+        foreach ($fields as $field) {
+            if (str_contains($field, "\n") || str_contains($field, "\r")) {
+                throw CallFieldInvalid::lineBreak();
+            }
+        }
+
+        return hash_hmac('sha256', implode("\n", $fields), $token);
     }
 }

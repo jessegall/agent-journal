@@ -190,7 +190,7 @@ final class HookRelayTest extends TestCase
 
     private function relay(string $payload, ReadyStateType $role = ReadyStateType::MainAgent, string|null $token = null): ProgramReply
     {
-        $settings = new RelaySettings('http://journal.test', $token ?? $this->launch->token, $role, $this->bypassLog);
+        $settings = new RelaySettings('http://journal.test', $token ?? $this->launch->token, $this->launch->pin(), $role, $this->bypassLog);
 
         return $this->app->make(HookRelay::class)->relay(HookProgram::ClaudeCode, $payload, $settings);
     }

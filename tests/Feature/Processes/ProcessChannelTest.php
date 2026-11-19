@@ -12,7 +12,6 @@ use App\AgentRequests\Support\AgentReply;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\LifecycleState;
-use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Execution\ChannelRunEvents;
 use App\Processes\Models\PartRun;
@@ -49,7 +48,7 @@ final class ProcessChannelTest extends TestCase
         Storage::fake(SpoolRecorder::DISK);
         config(['processes.runner' => true]);
         $this->launch = TestLaunch::start();
-        $this->runCommandsAs($this->launch->token);
+        $this->runCommandsAs($this->launch);
         $this->folder = sys_get_temp_dir().'/channel-'.bin2hex(random_bytes(4));
         mkdir($this->folder);
     }

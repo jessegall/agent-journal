@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorStore;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ClaimDriverRequests;
@@ -298,7 +299,7 @@ final class AgentDriverLedgerTest extends TestCase
         [, $opened] = $this->openRuntime();
         AgentRuntime::query()->findOrFail($opened->runtimeId)->requestEffort('low');
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
         $status = $this->app->make(RuntimeResolver::class)->forSession($opened->sessionId);
 
         $this->assertSame('low', $status->effort->requested);
@@ -408,7 +409,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_an_agent_cannot_run_a_key_script(): void
     {
         [, $opened] = $this->openRuntime();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)), new TrustedEntryAuthority('test'));
 
         $this->expectException(UserActorRequired::class);
         $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
@@ -486,7 +487,7 @@ final class AgentDriverLedgerTest extends TestCase
      */
     private function asOwner(Command $command): mixed
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new TrustedEntryAuthority('test'));
 
         return $this->app->make(CommandBus::class)->run($command);
     }
@@ -501,6 +502,6 @@ final class AgentDriverLedgerTest extends TestCase
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->app->make(ActorStore::class)->actAsSystem(fn () => $this->app->make(CommandBus::class)->run($command));
+        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run($command));
     }
 }

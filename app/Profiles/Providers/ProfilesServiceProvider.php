@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Providers;
 
+use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Enums\ActorType;
+use App\Agents\Contracts\BuiltInLaunchProfiles;
+use App\Agents\Contracts\LaunchProfileAdmission;
 use App\Profiles\Console\ProfileActivateCommand;
 use App\Profiles\Console\ProfileListCommand;
 use App\Profiles\Console\ProfileRevokeCommand;
@@ -13,7 +17,10 @@ use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Resolvers\ProfilePrograms;
 use App\Profiles\Resolvers\ProfileRecords;
+use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ConfiguredOperations;
+use App\Profiles\Support\ProfileAuthorizerProvider;
+use App\Profiles\Support\ProfileLaunchAdmission;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -27,10 +34,13 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
         $this->app->bind(KnownOperations::class, ConfiguredOperations::class);
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
+        $this->app->bind(LaunchProfileAdmission::class, ProfileLaunchAdmission::class);
+        $this->app->bind(BuiltInLaunchProfiles::class, BuiltInProfilePins::class);
     }
 
-    public function boot(): void
+    public function boot(AuthorizerProviderRegistration $authorizers): void
     {
+        $authorizers->register(ActorType::Agent, ProfileAuthorizerProvider::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/web.php');
 
         if ($this->app->runningInConsole()) {

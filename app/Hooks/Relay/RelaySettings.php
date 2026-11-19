@@ -6,6 +6,7 @@ namespace App\Hooks\Relay;
 
 use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\LaunchEnvironment;
+use App\AgentRequests\Support\LaunchProfilePin;
 use App\Hooks\Enums\ReadyStateType;
 
 /**
@@ -17,6 +18,7 @@ final readonly class RelaySettings
     public function __construct(
         public string $journalUrl,
         public string $token,
+        public LaunchProfilePin $profile,
         public ReadyStateType $role,
         public string $bypassLogPath,
         public int $timeoutSeconds = 10,
@@ -35,6 +37,7 @@ final readonly class RelaySettings
         return new self(
             $client->journalUrl,
             $client->token,
+            $client->profile,
             ReadyStateType::forKey($launch->value('JOURNAL_ROLE')),
             $launch->value('JOURNAL_BYPASS_LOG'),
             processGeneration: (int) ($environment['JOURNAL_PROCESS_GENERATION'] ?? 0),
@@ -59,6 +62,6 @@ final readonly class RelaySettings
 
     public function client(): AgentClientSettings
     {
-        return new AgentClientSettings($this->journalUrl, $this->token, $this->timeoutSeconds);
+        return new AgentClientSettings($this->journalUrl, $this->token, $this->profile, $this->timeoutSeconds);
     }
 }

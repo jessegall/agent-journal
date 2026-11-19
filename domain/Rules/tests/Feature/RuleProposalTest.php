@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Commands\DenyRule;
@@ -66,7 +67,7 @@ final class RuleProposalTest extends TestCase
     public function test_the_user_removes_a_rule(): void
     {
         $active = Rule::holding('Held rule.');
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($active->id));
 

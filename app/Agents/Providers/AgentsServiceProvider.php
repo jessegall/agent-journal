@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Providers;
 
 use App\Actors\Contracts\ActorProviderRegistration;
+use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\AgentRequests\Actions\SendAgentRequests;
@@ -78,8 +79,12 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->singleton(PendingWorkSources::class);
     }
 
-    public function boot(AssignmentRegistration $assignments, ActorProviderRegistration $actors, ActiveActorCounterRegistry $presentActors): void
-    {
+    public function boot(
+        AssignmentRegistration $assignments,
+        ActorProviderRegistration $actors,
+        ActiveActorCounterRegistry $presentActors,
+        AuthorizerProviderRegistration $authorizers,
+    ): void {
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);

@@ -29,7 +29,7 @@ final readonly class ReadShareController
         try {
             $permit = $this->issue($request, $permits, $limits);
             $limits->admitRead($permit->shareId);
-            $page = $actors->actAsSystem(fn () => $bus->run(new ReadShare($permit->reference, $request->sharePath(), $request->cursor(), $request->wantsHeadOnly())));
+            $page = $actors->actAsSystem('share read', fn () => $bus->run(new ReadShare($permit->reference, $request->sharePath(), $request->cursor(), $request->wantsHeadOnly())));
         } finally {
             $permits->clear();
         }

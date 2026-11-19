@@ -9,6 +9,7 @@ use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use Tests\Fixtures\Profiles\TestLaunchPolicies;
@@ -52,6 +53,7 @@ final class ProfilesExportsTest extends TestCase
             'skillAllowlist' => null,
             'requiredSkills' => [],
             'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
+            'authorization' => BuiltInAuthorizations::for(ProfileType::ReadOnlyHelper),
         ]);
         $none = ProfileSnapshot::from([
             ...$absent->all(),

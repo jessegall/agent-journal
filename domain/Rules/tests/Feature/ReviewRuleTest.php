@@ -6,6 +6,7 @@ namespace Domain\Rules\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Rules\Api\Events\RuleApproved;
 use Domain\Rules\Api\Events\RuleDenied;
@@ -39,7 +40,7 @@ final class ReviewRuleTest extends TestCase
         parent::setUp();
 
         Event::fake([RuleApproved::class, RuleDenied::class]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
         $this->proposed = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
     }
 

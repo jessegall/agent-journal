@@ -6,6 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Records\Support\RecordIdentity;
@@ -59,7 +60,7 @@ final class SharingListenerTest extends TestCase
         config(['sharing.rate_limit_store' => 'array']);
 
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
@@ -131,7 +132,7 @@ final class SharingListenerTest extends TestCase
 
     public function test_a_script_and_a_javascript_link_render_inert_and_only_manifest_files_are_served(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Tricks', 'Inert', "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) [other](/s/elsewhere)\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $token = $this->activeShareOf(Document::query()->where('number', 2)->sole()->shareIdentity());

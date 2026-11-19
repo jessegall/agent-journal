@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\CreateTask;
 use Domain\Tasks\Commands\EditTask;
@@ -43,7 +44,7 @@ final class TaskAuthoringTest extends TestCase
 
     public function test_create_task_records_its_brief_and_creator(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
 
         $task = Task::query()->findOrFail($this->app->make(CommandBus::class)->run(new CreateTask('Write the brief', 'What it asks.')));
 
@@ -125,7 +126,7 @@ final class TaskAuthoringTest extends TestCase
         $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
 
         $this->signed($launch, '/agent/tasks/edit', ['taskId' => $task->id, 'expectedRevision' => 1, 'brief' => 'Route brief'])->assertOk()->assertJson(['taskId' => $task->id, 'revision' => 2]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
         $revision = $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, brief: 'Bus brief'));
 
         $this->assertSame(3, $revision);

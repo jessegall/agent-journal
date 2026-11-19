@@ -76,6 +76,7 @@ use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Records\Commands\LinkRecords;
@@ -205,6 +206,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReopenSharedGateways::class,
             PruneShareAudit::class,
             ActivateProfiles::class,
+            InstallBuiltInProfiles::class,
             RevokeProfiles::class,
             LaunchProfileMain::class,
             ProposeCommandRule::class,
@@ -254,6 +256,7 @@ final class CoreCommandsTest extends CommandBusTestCase
         }
 
         $this->assertSame([
+            InstallBuiltInProfiles::class,
             ReadShare::class,
             ExpireShares::class,
             ClaimGatewayOperation::class,

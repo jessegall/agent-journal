@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Contracts;
 
 use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 
@@ -26,4 +27,13 @@ interface ProfileResolver
     public function snapshotAt(ProfileKey $key, int $revision): ProfileSnapshot;
 
     public function has(ProfileKey $key): bool;
+
+    /**
+     * A launch's pinned revision, refused when the profile is no longer admitted; a pin older than the current
+     * revision stays valid, and the current revision never replaces it.
+     *
+     * @throws ProfileRetired
+     * @throws ProfileMissing
+     */
+    public function admittedPin(ProfileKey $key, int $revision): ProfileSnapshot;
 }

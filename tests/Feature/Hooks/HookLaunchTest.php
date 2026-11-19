@@ -6,11 +6,13 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\CredentialRejected;
+use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -22,7 +24,6 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\StackStatus;
-use App\Hooks\Exceptions\UnknownReadyState;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
@@ -81,7 +82,7 @@ final class HookLaunchTest extends TestCase
         try {
             $this->launch('hooks.ready');
             $this->fail('A launch with an unknown role went through.');
-        } catch (UnknownReadyState) {
+        } catch (LaunchRefused) {
             $this->assertSame(0, AgentSession::query()->count());
             $this->assertSame(0, DB::table('agent_stacks')->count());
         }
@@ -181,7 +182,7 @@ final class HookLaunchTest extends TestCase
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
             null,
         ));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), new TrustedEntryAuthority('test'));
 
         try {
             return $work();

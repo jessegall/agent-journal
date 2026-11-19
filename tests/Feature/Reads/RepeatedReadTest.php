@@ -6,6 +6,7 @@ namespace Tests\Feature\Reads;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Exceptions\RepeatedReadRefused;
 use App\Reads\Support\ScopedReadMeter;
@@ -28,7 +29,7 @@ final class RepeatedReadTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)), new TrustedEntryAuthority('test'));
         Task::factory()->create(['title' => 'First']);
         Task::factory()->create(['title' => 'Second']);
     }

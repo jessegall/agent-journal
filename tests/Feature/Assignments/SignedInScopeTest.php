@@ -35,7 +35,7 @@ final class SignedInScopeTest extends TestCase
         $store = $this->app->make(ActorStore::class);
 
         $this->assertCount(1, AssignmentRecord::query()->get());
-        $this->assertCount(0, $store->actAsSystem(fn () => AssignmentRecord::query()->get()));
+        $this->assertCount(0, $store->actAsSystem('test', fn () => AssignmentRecord::query()->get()));
 
         $this->app->forgetScopedInstances();
         $this->startRequestAs(TestIds::of(2), TestIds::of(20));

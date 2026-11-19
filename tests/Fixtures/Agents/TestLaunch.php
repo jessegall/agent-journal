@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
+use Illuminate\Container\Container;
+use App\AgentRequests\Support\LaunchProfilePin;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
@@ -12,7 +15,6 @@ use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Enums\DriverType;
-use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -34,7 +36,8 @@ final readonly class TestLaunch
     public static function start(string $role = 'hooks.main_ready'): self
     {
         $agent = Agent::named('Test agent', AgentRole::from($role));
-        $session = new AgentSessions(new AgentLifecycle())->start($agent, TestSelections::of(), TestSelections::requestId());
+        $sessions = Container::getInstance()->make(AgentSessions::class);
+        $session = $sessions->start($agent, TestSelections::of(), TestSelections::requestId());
 
         return new self($agent, $session, new LaunchCredentials()->issue($session));
     }
@@ -48,7 +51,7 @@ final readonly class TestLaunch
         $context = new AgentContext($this->agent->id, $this->session->id, $this->agent->role, $call, null);
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
-        $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id));
+        $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), new TrustedEntryAuthority('test'));
     }
 
     /**
@@ -76,7 +79,9 @@ final readonly class TestLaunch
     public function serverHeaders(string $body, string $callId = 'call-1', int|null $issuedAt = null, string|null $signingToken = null, string $method = 'POST', string $target = '/'): array
     {
         $issuedAt ??= time();
-        $signature = SignedCall::signatureFor($signingToken ?? $this->token, $method, $target, $callId, $issuedAt, $body);
+        $pin = $this->pin();
+        $token = $signingToken ?? $this->token;
+        $signature = SignedCall::agentSignatureFor($token, $method, $target, $callId, $issuedAt, $body, $pin);
 
         return [
             'HTTP_AUTHORIZATION' => "Bearer {$this->token}",
@@ -84,8 +89,18 @@ final readonly class TestLaunch
             'HTTP_X_JOURNAL_CALL_ISSUED_AT' => (string) $issuedAt,
             'HTTP_X_JOURNAL_CALL_SIGNATURE' => $signature,
             'HTTP_X_JOURNAL_PROTOCOL' => SignedCall::PROTOCOL,
+            'HTTP_X_JOURNAL_PROFILE' => $pin->key,
+            'HTTP_X_JOURNAL_PROFILE_REVISION' => (string) $pin->revision,
             'CONTENT_TYPE' => 'application/json',
             'HTTP_ACCEPT' => 'application/json',
         ];
+    }
+
+    /**
+     * The profile this launch was pinned to, as its calls sign it.
+     */
+    public function pin(): LaunchProfilePin
+    {
+        return new LaunchProfilePin((string) $this->session->profile_key, (int) $this->session->profile_revision);
     }
 }

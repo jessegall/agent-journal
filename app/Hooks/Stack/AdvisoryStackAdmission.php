@@ -66,7 +66,7 @@ final class AdvisoryStackAdmission implements StackAdmission
      */
     public function admitCaller(OperationDeadline $deadline, Closure $work): mixed
     {
-        if (! $this->actors->isSignedIn() || $this->actors->actor()->type !== ActorType::Agent) {
+        if (! $this->actors->hasActor() || $this->actors->actor()->type !== ActorType::Agent) {
             return $work();
         }
 

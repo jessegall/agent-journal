@@ -14,18 +14,27 @@ use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorResolver;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\ActorVisibilityProvider;
+use App\Actors\Contracts\AuthoritySource;
+use App\Actors\Contracts\Authorizer;
+use App\Actors\Contracts\AuthorizerProvider;
+use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
+use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use App\Actors\Exceptions\ActorContextMissing;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Exceptions\AgentActorRequired;
+use App\Actors\Exceptions\AuthorizerProviderRepeated;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\EngineActorRequired;
 use App\Actors\Exceptions\InvalidActorText;
@@ -35,7 +44,10 @@ use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorLabelSet;
+use App\Actors\Support\AllowsEverything;
 use App\Actors\Support\CurrentUser;
+use App\Actors\Values\OwnerAuthority;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
@@ -508,6 +520,7 @@ use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
+use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Enums\ProfileType;
@@ -526,9 +539,12 @@ use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Support\TypeOverride;
+use App\Profiles\Values\AbilityGrant;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\FieldOrigin;
+use App\Profiles\Values\LaunchProfileAuthority;
 use App\Profiles\Values\ProfileActivation;
+use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileLaunchPolicy;
@@ -883,6 +899,13 @@ final class CoreApi
                 ActorProvider::class,
                 ActorProviderRegistration::class,
                 ActorLabels::class,
+                Policy::class,
+                Authorizer::class,
+                AuthorizerProvider::class,
+                AuthorizerProviderRegistration::class,
+                CurrentAuthorizer::class,
+                TargetAuthorizer::class,
+                AuthoritySource::class,
                 ActorLabelProvider::class,
                 ActorVisibility::class,
                 ActorVisibilityProvider::class,
@@ -1173,6 +1196,10 @@ final class CoreApi
                 ToolOutcome::class,
                 ActorIdentity::class,
                 ActorLabelSet::class,
+                AllowsEverything::class,
+                LaunchProfileAuthority::class,
+                OwnerAuthority::class,
+                TrustedEntryAuthority::class,
                 RecordIdentity::class,
                 AssigneeRegistration::class,
                 Assignment::class,
@@ -1327,6 +1354,9 @@ final class CoreApi
                 ProfileType::class,
                 ProfileSnapshot::class,
                 ProfileLaunchPolicy::class,
+                ProfileAuthorization::class,
+                AbilityGrant::class,
+                AuthorizationType::class,
                 ProfileProvenance::class,
                 ProfileSelection::class,
                 ProfileProposal::class,
@@ -1503,6 +1533,8 @@ final class CoreApi
                 ActorContextMissing::class,
                 UserActorRequired::class,
                 CrossOwnerReadRefused::class,
+                ActorNotAllowed::class,
+                AuthorizerProviderRepeated::class,
                 StateTypeRepeated::class,
                 StateTypesFrozen::class,
                 UnknownLinkType::class,

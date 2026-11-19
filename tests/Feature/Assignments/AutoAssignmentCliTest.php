@@ -46,7 +46,7 @@ final class AutoAssignmentCliTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->main = TestLaunch::start('hooks.main_ready');
         $this->worker = TestLaunch::start('hooks.writing_helper_ready');
-        $this->runCommandsAs($this->main->token);
+        $this->runCommandsAs($this->main);
     }
 
     public function test_a_main_agent_enables_named_tasks_by_number_and_shows_the_status(): void

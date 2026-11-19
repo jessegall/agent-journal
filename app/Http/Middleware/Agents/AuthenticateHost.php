@@ -47,7 +47,7 @@ final readonly class AuthenticateHost
         $this->container->instance(HostContext::class, $context);
 
         try {
-            return $this->actors->actAsSystem(fn (): Response => $next($request));
+            return $this->actors->actAsSystem('host request', fn (): Response => $next($request));
         } finally {
             $this->container->forgetInstance(HostContext::class);
         }

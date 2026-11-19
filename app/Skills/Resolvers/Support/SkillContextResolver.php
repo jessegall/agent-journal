@@ -8,7 +8,6 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Profiles\Contracts\ProfileResolver;
@@ -45,7 +44,7 @@ final readonly class SkillContextResolver
     {
         $session = AgentSession::byId($this->session->sessionId());
 
-        return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session);
+        return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session, $this->profileOf($session));
     }
 
     /**
@@ -75,7 +74,7 @@ final readonly class SkillContextResolver
 
         $session = AgentSession::latestOf($agent->id) ?? throw SkillContextUnavailable::neverLaunched($agent->id);
 
-        return $this->contextOf($agent, $session);
+        return $this->contextOf($agent, $session, $this->profileOf($session));
     }
 
     /**
@@ -85,7 +84,7 @@ final readonly class SkillContextResolver
      */
     public function forSession(AgentSession $session): SkillContext
     {
-        return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session);
+        return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session, $this->profileOf($session));
     }
 
     /**
@@ -100,11 +99,15 @@ final readonly class SkillContextResolver
     {
         $agentIds = array_map(fn (AgentSession $session) => $session->agent_id, $sessions);
         $agents = Agent::byIds(array_values(array_unique($agentIds)));
+        $profiles = [];
         $contexts = [];
 
         foreach ($sessions as $session) {
+            $pin = "{$session->profile_key}#{$session->profile_revision}";
+            $profiles[$pin] ??= $this->profileOf($session);
+
             try {
-                $contexts[$session->id] = $this->contextOf($agents[$session->agent_id], $session);
+                $contexts[$session->id] = $this->contextOf($agents[$session->agent_id], $session, $profiles[$pin]);
             } catch (SkillContextUnavailable) {
                 continue;
             }
@@ -113,7 +116,7 @@ final readonly class SkillContextResolver
         return $contexts;
     }
 
-    private function contextOf(Agent $agent, AgentSession $session): SkillContext
+    private function contextOf(Agent $agent, AgentSession $session, LaunchProfile $profile): SkillContext
     {
         $program = LaunchProgram::of($session->program);
 
@@ -122,36 +125,20 @@ final readonly class SkillContextResolver
             agentRole: $agent->agentRole(),
             sessionId: $session->id,
             environment: self::ENVIRONMENT,
-            profile: $this->profileOf($agent, $session),
+            profile: $profile,
             program: $program->program,
             provider: $program->provider,
         );
     }
 
     /**
-     * @throws SkillContextUnavailable when a helper was launched without a profile
+     * The profile revision the session was pinned to; sessions pinned alike share one read.
      */
-    private function profileOf(Agent $agent, AgentSession $session): LaunchProfile
+    private function profileOf(AgentSession $session): LaunchProfile
     {
-        if ($session->profile_key === null || $session->profile_revision === null) {
-            return $this->profileFreeFor($agent);
-        }
-
         return LaunchProfile::of($this->profiles->snapshotAt(
             ProfileKey::from($session->profile_key),
             $session->profile_revision,
         ));
-    }
-
-    /**
-     * @throws SkillContextUnavailable when a helper was launched without a profile
-     */
-    private function profileFreeFor(Agent $agent): LaunchProfile
-    {
-        if ($agent->agentRole() !== AgentRole::MainAgent) {
-            throw SkillContextUnavailable::profileRequired($agent->id);
-        }
-
-        return LaunchProfile::profileFree();
     }
 }

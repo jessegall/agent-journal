@@ -7,6 +7,7 @@ namespace App\Skills\Support;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\OwnerAuthority;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Data\SkillWriteReceipt;
 use App\Skills\Enums\SkillOrigin;
@@ -44,7 +45,7 @@ final readonly class SkillAuthoring
     public function actAsOwner(): void
     {
         $owner = $this->access->allowedUserIds()[0] ?? throw SkillPreviewRefused::noOwner();
-        $this->actors->set(ActorContext::forUser($owner));
+        $this->actors->set(ActorContext::forUser($owner), new OwnerAuthority('skill authoring'));
     }
 
     /**

@@ -23,13 +23,9 @@ interface CurrentActor
     public function hasActor(): bool;
 
     /**
-     * Whether a signed-in user or agent acts, the only actors ordinary content scopes admit.
+     * Where the acting actor's authority comes from, installed with it.
+     *
+     * @throws ActorContextMissing when no entry point set an actor for this request
      */
-    public function isSignedIn(): bool;
-
-    /**
-     * Whether the journal itself acts, as the system or the engine, which sees no row through an ordinary content
-     * scope.
-     */
-    public function isJournalActor(): bool;
+    public function authority(): AuthoritySource;
 }

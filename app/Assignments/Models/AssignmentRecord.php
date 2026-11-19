@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Models;
 
+use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
@@ -99,7 +100,10 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     protected static function booted(): void
     {
         self::addGlobalScope(
-            new SignedInScope(static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class)),
+            new SignedInScope(
+                static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
+                static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
+            ),
         );
     }
 

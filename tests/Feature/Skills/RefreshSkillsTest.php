@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorStore;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
@@ -76,7 +77,7 @@ final class RefreshSkillsTest extends TestCase
         $this->refresh();
         SkillPublication::query()->where('session_id', $session->id)->firstOrFail()->supersede();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')));
 
         $pending = SkillPublication::query()->where('session_id', $session->id)->where('state', PublicationState::Pending->value)->firstOrFail();
@@ -87,7 +88,7 @@ final class RefreshSkillsTest extends TestCase
 
     public function test_only_the_system_refreshes(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new TrustedEntryAuthority('test'));
 
         $this->expectException(SystemActorRequired::class);
 
@@ -98,7 +99,7 @@ final class RefreshSkillsTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->app->make(ActorStore::class)->actAsSystem(fn () => $this->app->make(CommandBus::class)->run(new RefreshSkills()));
+        return $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run(new RefreshSkills()));
     }
 
     private function launch(): AgentSession

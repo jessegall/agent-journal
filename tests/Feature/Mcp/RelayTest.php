@@ -130,6 +130,8 @@ final class RelayTest extends TestCase
         return new Process([PHP_BINARY, base_path('artisan'), 'mcp:relay'], base_path(), [
             'JOURNAL_URL' => "http://127.0.0.1:{$this->port}",
             'JOURNAL_LAUNCH_TOKEN' => 'test-launch-token',
+            'JOURNAL_PROFILE' => 'main-agent',
+            'JOURNAL_PROFILE_REVISION' => '1',
         ], timeout: 60);
     }
 

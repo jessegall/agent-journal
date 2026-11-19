@@ -73,6 +73,7 @@ final readonly class PolicyResolver
             $profile->skillAllowlist,
             $profile->requiredSkills,
             $launch,
+            BuiltInAuthorizations::for($profile->type),
         );
     }
 

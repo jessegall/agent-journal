@@ -35,6 +35,8 @@ final readonly class ClaimLaunchGrantHandler implements CommandHandler
         $additions = new LaunchAdditions();
         $this->events->dispatch(new LaunchGrantRequested($runtime->agent_session_id, $additions));
 
-        return new LaunchGrant($token, $additions->folders());
+        $session = $runtime->load('session')->session;
+
+        return new LaunchGrant($token, $additions->folders(), $session->profile_key, $session->profile_revision);
     }
 }

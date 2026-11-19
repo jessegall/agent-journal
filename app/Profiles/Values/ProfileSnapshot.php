@@ -26,5 +26,6 @@ final class ProfileSnapshot extends Data
         public readonly array|null $skillAllowlist,
         public readonly array $requiredSkills,
         public readonly ProfileLaunchPolicy $launch,
+        public readonly ProfileAuthorization $authorization,
     ) {}
 }

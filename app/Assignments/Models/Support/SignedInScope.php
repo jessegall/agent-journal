@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Models\Support;
 
+use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,16 +22,21 @@ final readonly class SignedInScope implements Scope
 {
     /**
      * @param  Closure(): CurrentActor  $actors
+     * @param  Closure(): ActorVisibility  $visibility
      */
-    public function __construct(private Closure $actors) {}
+    public function __construct(private Closure $actors, private Closure $visibility) {}
 
     /**
      * @param  Builder<covariant Model>  $builder
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if (! ($this->actors)()->isSignedIn()) {
+        if (! ($this->actors)()->hasActor()) {
             $builder->whereKey([]);
+
+            return;
         }
+
+        ($this->visibility)()->ownRows($builder, function (): void {});
     }
 }

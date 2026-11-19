@@ -57,6 +57,7 @@ final class BindingRulesTest extends TestCase
         'app/Processes/Console/ProcessReconcileCommand.php',
         'app/Skills/Support/SkillPublishing.php',
         'app/Skills/Listeners/RefreshOnSkillsChanged.php',
+        'app/Profiles/Support/BuiltInProfilePins.php',
     ];
 
     /**

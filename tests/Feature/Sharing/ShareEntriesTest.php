@@ -6,6 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\CommandRegistry;
 use App\Sharing\Commands\ApproveShareRequest;
@@ -58,7 +59,7 @@ final class ShareEntriesTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
@@ -85,7 +86,7 @@ final class ShareEntriesTest extends TestCase
     public function test_the_agent_cli_requests_a_share_and_prints_number_and_state_only(): void
     {
         $launch = TestLaunch::start();
-        $this->runCommandsAs($launch->token);
+        $this->runCommandsAs($launch);
 
         $this->artisan('share:request', ['alias' => 'doc', 'number' => '1', '--json' => true])
             ->expectsOutputToContain('"state":"proposed"')
@@ -98,7 +99,7 @@ final class ShareEntriesTest extends TestCase
 
     public function test_the_owner_lists_creates_revokes_and_prints_an_address_from_the_cli(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new TrustedEntryAuthority('test'));
         $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->document->shareIdentity()->type, $this->document->id, [], $this->configuration->id));
         $this->app->make(CurrentActorSetter::class)->clear();
         $preview = SharePreview::query()->sole();

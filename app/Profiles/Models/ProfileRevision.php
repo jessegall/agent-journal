@@ -7,10 +7,12 @@ namespace App\Profiles\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Profiles\Casts\ProfileAuthorizationCast;
 use App\Profiles\Casts\ProfileLaunchPolicyCast;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
+use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileLaunchPolicy;
@@ -38,6 +40,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<string>|null $skill_allowlist
  * @property list<string> $required_skills
  * @property ProfileLaunchPolicy $launch_policy
+ * @property ProfileAuthorization $authorization
  * @property ActorType $author_type
  * @property string $author_id
  * @property CarbonImmutable $created_at
@@ -51,6 +54,7 @@ use Illuminate\Database\Eloquent\Model;
     'skill_allowlist',
     'required_skills',
     'launch_policy',
+    'authorization',
     'author_type',
     'author_id',
 ])]
@@ -73,6 +77,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'skill_allowlist' => 'array',
             'required_skills' => 'array',
             'launch_policy' => ProfileLaunchPolicyCast::class,
+            'authorization' => ProfileAuthorizationCast::class,
             'author_type' => ActorType::class,
             'created_at' => 'immutable_datetime',
         ];
@@ -100,6 +105,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'skill_allowlist' => $definition->skillAllowlist,
             'required_skills' => $definition->requiredSkills,
             'launch_policy' => $definition->launch,
+            'authorization' => $definition->authorization,
             'author_type' => $author->type,
             'author_id' => $author->id,
         ]);
@@ -135,6 +141,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'skillAllowlist' => $this->skill_allowlist,
             'requiredSkills' => $this->required_skills,
             'launch' => $this->launch_policy,
+            'authorization' => $this->authorization,
         ]);
     }
 

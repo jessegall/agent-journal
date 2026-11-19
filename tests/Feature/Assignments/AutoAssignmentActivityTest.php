@@ -6,6 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Actions\AgentSessions;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -78,8 +79,7 @@ final class AutoAssignmentActivityTest extends TestCase
 
     private function runningSession(Agent $agent): AgentSession
     {
-        $session = new AgentSession();
-        $session->startFor($agent, null, TestSelections::of(), TestSelections::requestId());
+        $session = $this->app->make(AgentSessions::class)->start($agent, TestSelections::of(), TestSelections::requestId());
 
         return $session;
     }

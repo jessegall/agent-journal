@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Actors\Contracts\ActorVisibilityProvider;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
@@ -30,5 +31,14 @@ final readonly class UserVisibility implements ActorVisibilityProvider
     public function readAcrossOwners(Builder $query, string $ownerScope): void
     {
         $query->withoutGlobalScope($ownerScope);
+    }
+
+    /**
+     * @param  Builder<covariant Model>  $query
+     * @param  Closure(Builder<covariant Model>): void  $narrowToOwnRows
+     */
+    public function ownRows(Builder $query, Closure $narrowToOwnRows): void
+    {
+        $narrowToOwnRows($query);
     }
 }

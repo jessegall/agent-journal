@@ -39,7 +39,8 @@ final readonly class AgentRequestClient
      */
     public function prepareWithId(AgentClientSettings $settings, string $path, string $body, string $callId, int $issuedAt): PreparedAgentCall
     {
-        $signature = SignedCall::signatureFor($settings->token, 'POST', $settings->journalUrl.$path, $callId, $issuedAt, $body);
+        $url = $settings->journalUrl.$path;
+        $signature = SignedCall::agentSignatureFor($settings->token, 'POST', $url, $callId, $issuedAt, $body, $settings->profile);
 
         return new PreparedAgentCall($settings, $path, $body, $callId, $issuedAt, $signature);
     }

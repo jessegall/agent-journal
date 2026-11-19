@@ -11,6 +11,7 @@ use App\Actors\Exceptions\SystemNotAllowed;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorStore;
+use App\Actors\Values\TrustedEntryAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\EngineNotAllowed;
 use App\Engine\Support\EngineActor;
@@ -53,7 +54,7 @@ final class CommandActorTest extends CommandBusTestCase
     {
         $this->installCommandModules();
 
-        $this->assertThrows(fn () => $this->app->make(ActorStore::class)->actAsSystem(fn () => $this->app->make(CommandBus::class)->run(new WriteNote('never'))), SystemNotAllowed::class);
+        $this->assertThrows(fn () => $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run(new WriteNote('never'))), SystemNotAllowed::class);
         $this->assertSame(0, DB::table('module_command_rows')->count());
     }
 
@@ -61,7 +62,7 @@ final class CommandActorTest extends CommandBusTestCase
     {
         $this->installCommandModules();
 
-        $this->assertSame(4, $this->app->make(ActorStore::class)->actAsSystem(fn () => $this->app->make(CommandBus::class)->run(new SystemNote('ping'))));
+        $this->assertSame(4, $this->app->make(ActorStore::class)->actAsSystem('test', fn () => $this->app->make(CommandBus::class)->run(new SystemNote('ping'))));
 
         $this->startRequestAs(TestIds::of(7), TestIds::of(70));
 
@@ -122,6 +123,6 @@ final class CommandActorTest extends CommandBusTestCase
 
     private function actAsEngine(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()), new TrustedEntryAuthority('test'));
     }
 }

@@ -56,7 +56,7 @@ final class LaunchAgentTest extends TestCase
     {
         $this->expectException(QueryException::class);
 
-        DB::table('agent_sessions')->insert(['id' => (string) Str::ulid(), 'agent_id' => $this->agent->id, 'program' => 'claude-code', 'status' => 'active']);
+        DB::table('agent_sessions')->insert(['id' => (string) Str::ulid(), 'agent_id' => $this->agent->id, 'program' => 'claude-code', 'status' => 'active', 'profile_key' => 'main-agent', 'profile_revision' => 1]);
     }
 
     public function test_repeating_a_request_id_returns_the_same_session(): void

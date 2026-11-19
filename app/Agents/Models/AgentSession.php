@@ -41,8 +41,8 @@ use Illuminate\Support\Carbon;
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
  * @property ProgramSourceType $program_source
- * @property string|null $profile_key
- * @property int|null $profile_revision
+ * @property string $profile_key
+ * @property int $profile_revision
  * @property string $launch_request_id
  * @property string|null $skill_generation_id
  * @property SessionStatus $status
@@ -164,6 +164,14 @@ final class AgentSession extends Model implements ReadableModel
     public static function byId(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->firstOrFail();
+    }
+
+    /**
+     * The agent's most recent running session, or null when none runs.
+     */
+    public static function liveOf(string $agentId): self|null
+    {
+        return self::query()->runningFor($agentId)->orderByDesc('created_at')->orderByDesc('id')->first();
     }
 
     /**

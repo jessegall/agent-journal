@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Engine\Providers;
 
+use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Enums\ActorType;
 use App\Engine\Console\TickCommand;
 use App\Engine\Contracts\EngineLock;
 use App\Engine\Contracts\MonotonicClock;
@@ -12,6 +14,7 @@ use App\Engine\Contracts\Watchdog;
 use App\Engine\Support\AdvisoryEngineLock;
 use App\Engine\Support\AlarmWatchdog;
 use App\Engine\Support\EngineAccess;
+use App\Engine\Support\EngineAuthorizerProvider;
 use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineLoop;
 use App\Engine\Support\EngineSettings;
@@ -59,8 +62,12 @@ final class EngineServiceProvider extends ServiceProvider
         $this->app->scoped(TickDelivery::class);
     }
 
-    public function boot(SelfMeasuredCommands $selfMeasured, EngineListenerSet $listeners): void
-    {
+    public function boot(
+        SelfMeasuredCommands $selfMeasured,
+        EngineListenerSet $listeners,
+        AuthorizerProviderRegistration $authorizers,
+    ): void {
+        $authorizers->register(ActorType::Engine, EngineAuthorizerProvider::class);
         $listeners->add(MarkSilentSessionsOnTick::class);
         $selfMeasured->add('engine:tick');
         $this->commands([TickCommand::class]);

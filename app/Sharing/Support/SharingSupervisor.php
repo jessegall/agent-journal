@@ -161,6 +161,6 @@ final class SharingSupervisor
      */
     private function asSystem(Command $command): mixed
     {
-        return $this->actors->actAsSystem(fn () => $this->commands->run($command));
+        return $this->actors->actAsSystem('sharing supervisor', fn () => $this->commands->run($command));
     }
 }

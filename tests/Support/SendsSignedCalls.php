@@ -29,9 +29,13 @@ trait SendsSignedCalls
         return $this->call('POST', $path, server: $launch->serverHeaders($content, 'call-'.bin2hex(random_bytes(4)), target: $path), content: $content);
     }
 
-    private function runCommandsAs(string $token): void
+    /**
+     * Runs the agent's console commands as the launch, signing with its pin; a token names another credential.
+     */
+    private function runCommandsAs(TestLaunch $launch, string|null $token = null): void
     {
-        $this->app->instance(AgentClientSettings::class, new AgentClientSettings('http://journal.test', $token));
+        $settings = new AgentClientSettings('http://journal.test', $token ?? $launch->token, $launch->pin());
+        $this->app->instance(AgentClientSettings::class, $settings);
         Http::fake(function (Request $request) {
             $server = ['CONTENT_TYPE' => 'application/json'];
 
