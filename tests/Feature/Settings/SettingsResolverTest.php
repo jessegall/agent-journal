@@ -27,7 +27,7 @@ use Tests\Fixtures\Domains\Reviews\Enums\ReviewLevel;
 use Tests\Fixtures\Domains\Reviews\Enums\ReviewMode;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
-use Tests\Support\AssertsReadBudget;
+use Tests\Support\CountsReads;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -37,7 +37,7 @@ use Tests\TestCase;
  */
 final class SettingsResolverTest extends TestCase
 {
-    use AssertsReadBudget;
+    use CountsReads;
     use RefreshHookDatabase;
 
     private SettingRegistry $registry;

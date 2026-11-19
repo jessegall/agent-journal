@@ -18,8 +18,8 @@ use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\GroupReference;
 use Tests\Support\ActsAsActors;
 use Tests\Support\ActsAsTestOwner;
-use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\CountsReads;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -31,8 +31,8 @@ final class DomainAvailabilityTest extends TestCase
 {
     use ActsAsActors;
     use ActsAsTestOwner;
-    use AssertsReadBudget;
     use CommitsHookRows;
+    use CountsReads;
 
     /**
      * The bus commits the switch commands for real, so this table is emptied around each test.

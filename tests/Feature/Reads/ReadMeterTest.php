@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reads;
 
-use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadMeter;
 use Domain\Access\Models\User;
 use Illuminate\Database\QueryException;
-use Tests\Support\AssertsReadBudget;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -18,7 +16,6 @@ use Tests\TestCase;
  */
 final class ReadMeterTest extends TestCase
 {
-    use AssertsReadBudget;
     use RefreshHookDatabase;
 
     public function test_a_measurement_counts_the_queries_of_its_work_and_keeps_its_value(): void
@@ -93,20 +90,6 @@ final class ReadMeterTest extends TestCase
 
         $this->assertNotSame($first, $this->meter());
         $this->assertSame(0, $this->meter()->current()->queriesRun);
-    }
-
-    public function test_a_reader_call_is_held_to_its_declared_budget_in_one_line(): void
-    {
-        User::factory()->create();
-
-        $this->assertWithinReadBudget(fn () => $this->countUsers(), [self::class, 'countUsers']);
-        $this->assertSame(1, $this->readCounts(fn () => $this->countUsers())->queriesRun);
-    }
-
-    #[ReadBudget(queries: 1, models: 0)]
-    public function countUsers(): int
-    {
-        return User::query()->count();
     }
 
     private function meter(): ReadMeter

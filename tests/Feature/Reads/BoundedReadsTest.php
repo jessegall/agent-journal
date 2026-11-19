@@ -11,7 +11,7 @@ use App\Reads\Exceptions\ReadShapeUnsupported;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
-use Tests\Support\AssertsReadBudget;
+use Tests\Support\CountsReads;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -23,7 +23,7 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 10, reason: 'It creates sixty numbered tasks.')]
 final class BoundedReadsTest extends TestCase
 {
-    use AssertsReadBudget;
+    use CountsReads;
     use RefreshHookDatabase;
 
     /**

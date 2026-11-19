@@ -2717,7 +2717,6 @@ class	QueueWordSegments
 class	RaisePlanProgressChanged
 class	RawRowAccess
 class	ReadAndOrPipeline
-class	ReadBudget
 class	ReadBuilder
 class	ReadCommandPipeline
 class	ReadCompoundPipeline
@@ -11266,7 +11265,6 @@ method	RawRowAccess::isRowQuery()
 method	RawRowAccess::key()
 method	RawRowAccess::violation()
 method	ReadAndOrPipeline::pipes()
-method	ReadBudget::__construct()
 method	ReadBuilder::applyReadPolicy()
 method	ReadBuilder::chunk()
 method	ReadBuilder::chunkById()
@@ -19022,9 +19020,6 @@ property	PushState::$state
 property	PushTaskState::$tasks
 property	PushTaskState::$workStack
 property	RaisePlanProgressChanged::$events
-property	ReadBudget::$formula
-property	ReadBudget::$models
-property	ReadBudget::$queries
 property	ReadBuilder::$completeRelationMax
 property	ReadBuilder::$mode
 property	ReadBuilder::$namedLimit

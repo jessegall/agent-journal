@@ -10,7 +10,7 @@ use App\Reads\Exceptions\QueryInValueRead;
 use App\Reads\Support\ScopedReadMeter;
 use Domain\Access\Models\User;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Support\AssertsReadBudget;
+use Tests\Support\CountsReads;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -19,7 +19,7 @@ use Tests\TestCase;
  */
 final class ValueReadsTest extends TestCase
 {
-    use AssertsReadBudget;
+    use CountsReads;
     use RefreshHookDatabase;
 
     public function test_touching_an_unloaded_relation_on_one_model_is_refused_before_a_query(): void

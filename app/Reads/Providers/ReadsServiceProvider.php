@@ -26,6 +26,7 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\ServiceProvider;
+use WeakMap;
 
 /**
  * Counts every query on every connection, the open one and each opened later, into the read meter of the request,
@@ -34,6 +35,13 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ReadsServiceProvider extends ServiceProvider
 {
+    /**
+     * The connections already counted: Laravel announces a reconnected connection as established again.
+     *
+     * @var WeakMap<Connection, true>|null
+     */
+    private static WeakMap|null $countedConnections = null;
+
     public function register(): void
     {
         $this->app->bind(LogsReads::class, ReadLog::class);
@@ -112,6 +120,13 @@ final class ReadsServiceProvider extends ServiceProvider
 
     private static function countQueriesOn(Connection $connection): void
     {
+        self::$countedConnections ??= new WeakMap();
+
+        if (isset(self::$countedConnections[$connection])) {
+            return;
+        }
+
+        self::$countedConnections[$connection] = true;
         $connection->beforeExecuting(
             static fn (
                 string $query,

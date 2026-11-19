@@ -63,4 +63,3 @@ skills. Every write is a new revision; a retry with the same request id returns 
 
 - [Operations and recovery](operations.md)
 - [Skill delivery per program](program-support.md)
-- [Read budgets](performance.md)

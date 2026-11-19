@@ -763,7 +763,6 @@ use App\Programs\Exceptions\ProviderKeyInvalid;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
 use App\Queries\Support\TextSearch;
-use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Enums\ReadMode;
@@ -1344,7 +1343,6 @@ final class CoreApi
                 ReadOrder::class,
                 PageSize::class,
                 RelationRead::class,
-                ReadBudget::class,
                 ReadCounts::class,
                 Measurement::class,
                 ActorType::class,

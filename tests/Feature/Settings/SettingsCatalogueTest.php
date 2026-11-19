@@ -16,8 +16,8 @@ use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Storage\SettingsDocument;
 use Closure;
-use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\CountsReads;
 use Tests\Support\Settings\UsesReviewsSettings;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
@@ -30,8 +30,8 @@ use Tests\TestCase;
  */
 final class SettingsCatalogueTest extends TestCase
 {
-    use AssertsReadBudget;
     use CommitsHookRows;
+    use CountsReads;
     use UsesReviewsSettings;
 
     /**
