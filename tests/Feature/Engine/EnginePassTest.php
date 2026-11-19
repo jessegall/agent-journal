@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FakeMonotonicClock;
+use Tests\Support\SimulatedFailure;
 use Tests\TestCase;
 
 /**
@@ -72,7 +73,7 @@ final class EnginePassTest extends TestCase
             $passMeter = ScopedReadMeter::ofCurrentScope();
             $this->app->make(DatabaseManager::class)->connection()->beginTransaction();
 
-            throw new RuntimeException('The pass failed.');
+            throw SimulatedFailure::of('The pass failed.');
         };
 
         $this->assertThrows(fn () => $this->app->make(EnginePass::class)->run($failingPass), RuntimeException::class);

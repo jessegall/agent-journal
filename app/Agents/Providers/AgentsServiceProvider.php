@@ -15,10 +15,13 @@ use App\AgentRequests\Console\GenerateCallsCommand;
 use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Contracts\LaunchCredentialSource;
 use App\AgentRequests\Contracts\RegistersCalls;
+use App\AgentRequests\Contracts\SendsAgentRequests;
 use App\AgentRequests\Support\AgentClientSettings;
+use App\AgentRequests\Support\AgentRequestClient;
 use App\AgentRequests\Support\CallRoutes;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\AgentRequests\Support\SendSignedCalls;
+use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Console\CancelDriverRequestCommand;
 use App\Agents\Console\CancelKeyScriptCommand;
 use App\Agents\Console\EnrollHostCommand;
@@ -37,6 +40,7 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
+use App\Agents\Contracts\RecordsLaunchHeartbeats;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
@@ -79,6 +83,8 @@ final class AgentsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(SendsAgentRequests::class, AgentRequestClient::class);
+        $this->app->bind(RecordsLaunchHeartbeats::class, LaunchHeartbeats::class);
         $this->app->scoped(ActorRuntimeResolver::class, CurrentAgentRuntimes::class);
         $this->app->scoped(ActorAttention::class, CurrentRuntimeAttention::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());

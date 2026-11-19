@@ -7,7 +7,7 @@ namespace App\Desks\Support;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Models\Agent;
-use App\Assignments\Storage\AssignmentStore;
+use App\Assignments\Contracts\AssignmentStorage;
 use App\Desks\Contracts\SeatingWriter;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
@@ -21,7 +21,7 @@ final readonly class MainTakeover implements MainSeatTakeover
 {
     public function __construct(
         private SeatingWriter $seating,
-        private AssignmentStore $store,
+        private AssignmentStorage $store,
     ) {}
 
     public function takeOver(Agent $agent): void

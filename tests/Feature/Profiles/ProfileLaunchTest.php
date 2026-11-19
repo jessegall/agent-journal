@@ -56,9 +56,10 @@ final class ProfileLaunchTest extends TestCase
 
         $this->assertSame('opus', $receipt->selection->model);
         $this->assertSame(HookProgram::ClaudeCode, $receipt->selection->program);
-        $this->assertSame(ProgramSourceType::Profile, $receipt->selection->source->programSource);
-        $this->assertSame('journal-main', $receipt->selection->source->profileKey);
-        $this->assertSame(1, $receipt->selection->source->profileRevision);
+        $source = $receipt->selection->source;
+        $this->assertSame(ProgramSourceType::Profile, $source->programSource);
+        $this->assertSame('journal-main', $source->profileKey);
+        $this->assertSame(1, $source->profileRevision);
     }
 
     public function test_a_pinned_program_refuses_another(): void

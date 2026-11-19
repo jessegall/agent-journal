@@ -8,6 +8,7 @@ use App\Ui\Contracts\PageResolver;
 use App\Ui\Contracts\SectionResolver;
 use App\Ui\Declarations\ResolverDefinition;
 use App\Ui\Exceptions\UiResolverInvalid;
+use App\Web\Contracts\ListsReaderRequests;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ use ReflectionNamedType;
  * same user and route, validated through the framework's usual pipeline and handed to the reader's constructor. The
  * shared request and actor bindings are never replaced.
  */
-final readonly class ReaderRequests
+final readonly class ReaderRequests implements ListsReaderRequests
 {
     public function __construct(
         private Container $container,
