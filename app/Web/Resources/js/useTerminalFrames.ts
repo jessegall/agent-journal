@@ -2,6 +2,7 @@ import type { ScreenFrameData, TerminalFrameData } from '@generated/types/core';
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { deleteLeaving, pollJson, postJson, putJson } from '@/composables/jsonRequests';
 import { close, frame, open, renew } from '@/routes/agents/terminal';
+import { supersedes } from './terminalFrameOrder';
 
 /**
  * How often the browser asks for a newer frame, and how often it renews its view.
@@ -18,13 +19,6 @@ const SILENT_MILLISECONDS = 15_000;
  * Where the view stands: opening, refused with a message, or showing the screen as live, ended or just restarted.
  */
 export type TerminalViewState = 'opening' | 'refused' | 'live' | 'ended' | 'restarted';
-
-/**
- * Whether a frame should replace the one drawn: a new host process starts afresh, and a late frame is ignored.
- */
-export function supersedes(next: ScreenFrameData, drawn: ScreenFrameData | null): boolean {
-    return drawn === null || next.epoch !== drawn.epoch || next.sequence > drawn.sequence;
-}
 
 /**
  * Holds a viewer's lease on an agent's terminal and polls its frames: opens on mount, renews every 10 seconds,
