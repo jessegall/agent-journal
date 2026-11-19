@@ -182,6 +182,11 @@ func (driver *TerminalDriver) RunKeyScript(
 	return contracts.OperationResult{Request: request.Request, Progress: contracts.ProgressApplying, Script: &result}, err
 }
 
+// Reread reads a stalled key script's screen afresh, as the host does before it sends a raise again.
+func (driver *TerminalDriver) Reread(stalled keyscripts.Uncertainty) (keyscripts.Uncertainty, bool) {
+	return driver.runtime.Runner.Reread(stalled)
+}
+
 // run starts the script from its first step, or goes on from the step a stopped attempt reached.
 func (driver *TerminalDriver) run(
 	script keyscripts.KeyScript,

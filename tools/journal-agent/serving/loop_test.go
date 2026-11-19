@@ -18,6 +18,31 @@ type fakeJournal struct {
 	activity []string
 	holds    []string
 	exits    int
+	raises   []client.NavigationRaise
+	// answers are the replies to the raises in turn; past the last one a raise is opened.
+	answers []raiseReply
+}
+
+// raiseReply is one reply of the journal to a raise: an answer, or the error its call ended with.
+type raiseReply struct {
+	answer client.NavigationAnswer
+	err    error
+}
+
+func (journal *fakeJournal) RaiseNavigation(
+	_ context.Context,
+	_ string,
+	raise client.NavigationRaise,
+) (client.NavigationAnswer, error) {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	journal.raises = append(journal.raises, raise)
+	if len(journal.answers) == 0 {
+		return client.NavigationAnswer{Answer: client.NavigationOpened}, nil
+	}
+	reply := journal.answers[0]
+	journal.answers = journal.answers[1:]
+	return reply.answer, reply.err
 }
 
 func (journal *fakeJournal) LaunchGrant(context.Context, string) (client.Grant, error) {

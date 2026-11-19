@@ -202,6 +202,19 @@ func (runner *Runner) unmatched(index int, step KeyStep, seen screen.Classificat
 	return failed
 }
 
+// Reread forgets what the screen showed and reads the stalled step's screen afresh, for the same reason; readable is
+// false when the screen now may not leave the host.
+func (runner *Runner) Reread(stalled Uncertainty) (fresh Uncertainty, readable bool) {
+	runner.screen.Forget()
+	seen := runner.screen.Classify(runner.clock.Now())
+	snapshot := runner.screen.Snapshot()
+	if !runner.program.Layout.Exportable(snapshot) {
+		return Uncertainty{}, false
+	}
+
+	return runner.uncertainty(stalled.Reason, stalled.Step, KeyStep{Name: stalled.StepName}, seen, snapshot), true
+}
+
 // uncertainty is the stable screen the run stopped on, as the main agent may see it.
 func (runner *Runner) uncertainty(
 	reason UncertaintyReason,

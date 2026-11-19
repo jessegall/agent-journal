@@ -5,9 +5,12 @@ package serving
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
+	"time"
 
 	"journal-agent/client"
 	"journal-agent/drivers/contracts"
@@ -21,7 +24,12 @@ type Journal interface {
 	ReportRequest(ctx context.Context, report client.RequestReport) error
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
+	RaiseNavigation(ctx context.Context, runtimeID string, raise client.NavigationRaise) (client.NavigationAnswer, error)
 }
+
+// raiseAttempts is how many times a raise is sent, its screen read afresh before each later one, while its answer is
+// lost; after that the runtime stays held.
+const raiseAttempts = 3
 
 // Runtime is a running program's driver as the loop uses it: the six operations, the process generation its reports
 // carry, and when the current turn ends.
@@ -41,6 +49,8 @@ type Loop struct {
 	scheduler *host.Scheduler
 	mutex     sync.Mutex
 	runtimes  map[string]*liveRuntime
+	// raiseRetryDelay is how long a raise whose answer was lost waits before it is sent again.
+	raiseRetryDelay time.Duration
 }
 
 // liveRuntime is a runtime the host runs: its driver, the turns it started, the requests of the running turn and
@@ -58,7 +68,13 @@ type liveRuntime struct {
 
 // NewLoop returns a loop that reports to the journal and opens drivers with open.
 func NewLoop(journal Journal, open Opener) *Loop {
-	return &Loop{journal: journal, open: open, scheduler: host.NewScheduler(), runtimes: map[string]*liveRuntime{}}
+	return &Loop{
+		journal:         journal,
+		open:            open,
+		scheduler:       host.NewScheduler(),
+		runtimes:        map[string]*liveRuntime{},
+		raiseRetryDelay: time.Second,
+	}
 }
 
 // Take files the claimed requests and runs whatever each touched runtime may run now.
@@ -238,7 +254,7 @@ func (loop *Loop) startScript(ctx context.Context, runtime *liveRuntime, request
 func (loop *Loop) runScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
 	result, err := loop.scriptResult(ctx, runtime, request)
 	if err == nil && result.Hold == contracts.HoldNavigationNeeded {
-		loop.holdForNavigation(ctx, runtime, request, *result.Script.Uncertainty)
+		loop.raiseNavigation(ctx, runtime, request, *result.Script.Uncertainty)
 	} else {
 		loop.reportResult(ctx, request, result, err)
 	}
@@ -279,10 +295,111 @@ func (loop *Loop) scriptResult(
 	return scriptEnd(*result.Script), nil
 }
 
-// holdForNavigation ends a script that stopped on a menu it could not be certain of: its request ends
-// entry_unavailable at the stalled step with only the reason as evidence, never the screen's rows, and the runtime
-// holds navigation_needed so no other work types into that menu.
-func (loop *Loop) holdForNavigation(
+// raiseNavigation asks the journal what to do with a script stopped on a menu it could not be certain of, sending the
+// same raise again, its screen read afresh, while the answer is lost; no key is sent meanwhile and the runtime stays
+// held. A refusal ends the script as one the person holds.
+func (loop *Loop) raiseNavigation(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+) {
+	loop.holdRuntime(runtime)
+	for attempt := 1; ; attempt++ {
+		answer, err := loop.journal.RaiseNavigation(ctx, runtime.id, raiseOf(request, uncertainty))
+		if err == nil {
+			loop.answerNavigation(ctx, runtime, request, uncertainty, answer)
+			return
+		}
+		if errors.Is(err, client.ErrRefused) {
+			log.Printf("the raise of request %s was refused: %v", request.RequestID, err)
+			loop.endForNavigation(ctx, runtime, request, uncertainty)
+			return
+		}
+		rereader, rereads := runtime.driver.(screenRereader)
+		if attempt == raiseAttempts || !rereads {
+			log.Printf("the raise of request %s got no answer; the runtime stays held: %v", request.RequestID, err)
+			return
+		}
+		fresh, readable := rereader.Reread(uncertainty)
+		if !readable {
+			log.Printf("the screen of request %s may no longer leave the host; the runtime stays held", request.RequestID)
+			return
+		}
+		uncertainty = fresh
+		time.Sleep(loop.raiseRetryDelay)
+	}
+}
+
+// screenRereader is a driver that reads a stalled key script's screen afresh.
+type screenRereader interface {
+	Reread(stalled keyscripts.Uncertainty) (keyscripts.Uncertainty, bool)
+}
+
+// answerNavigation carries out the journal's answer to a raise: an opened request leaves the script stopped and
+// resumable at its step, the runtime held for the main agent; the person's own hold ends the script as before; a
+// wait keeps the runtime held until it asks again.
+func (loop *Loop) answerNavigation(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+	answer client.NavigationAnswer,
+) {
+	switch answer.Answer {
+	case client.NavigationOpened:
+		report := client.RequestReport{
+			RequestID: request.RequestID,
+			Attempt:   request.Attempt,
+			Progress:  string(contracts.ProgressApplying),
+			Script:    navigationEvidence(runtime, uncertainty),
+		}
+		if err := loop.journal.ReportRequest(ctx, report); err != nil {
+			log.Printf("the stop of request %s for navigation could not be reported: %v", request.RequestID, err)
+		}
+	case client.NavigationWait:
+		log.Printf("request %s waits behind another runtime's navigation of the same menu", request.RequestID)
+	default:
+		loop.endForNavigation(ctx, runtime, request, uncertainty)
+	}
+}
+
+// raiseOf is the raise of a stopped script: named by its request, attempt and stalled step, so a repeated send is the
+// same raise.
+func raiseOf(request client.ClaimedRequest, uncertainty keyscripts.Uncertainty) client.NavigationRaise {
+	return client.NavigationRaise{
+		OperationKey: fmt.Sprintf("%s:%d:%d", request.RequestID, request.Attempt, uncertainty.Step),
+		RequestID:    request.RequestID,
+		Attempt:      request.Attempt,
+		Step:         uncertainty.Step,
+		Reason:       string(uncertainty.Reason),
+		Fingerprint:  uncertainty.Fingerprint,
+		Rows:         uncertainty.Rows,
+		Highlight:    uncertainty.Highlight,
+		Generation:   uncertainty.Generation,
+	}
+}
+
+// navigationEvidence is the stalled step as a report shows it: the reason only, never the screen's rows.
+func navigationEvidence(runtime *liveRuntime, uncertainty keyscripts.Uncertainty) *client.ScriptReport {
+	return &client.ScriptReport{
+		Step:       uncertainty.Step,
+		Generation: runtime.driver.Generation(),
+		Evidence:   "navigation-needed: " + string(uncertainty.Reason),
+	}
+}
+
+// holdRuntime holds the runtime navigation_needed, so no other work types into the menu its script stopped on.
+func (loop *Loop) holdRuntime(runtime *liveRuntime) {
+	loop.mutex.Lock()
+	runtime.hold = contracts.HoldNavigationNeeded
+	loop.mutex.Unlock()
+	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.Hold() })
+}
+
+// endForNavigation ends a script that stopped on a menu the person holds: its request ends entry_unavailable at the
+// stalled step with only the reason as evidence, never the screen's rows, and the runtime stays held.
+func (loop *Loop) endForNavigation(
 	ctx context.Context,
 	runtime *liveRuntime,
 	request client.ClaimedRequest,
@@ -294,19 +411,12 @@ func (loop *Loop) holdForNavigation(
 		Attempt:   request.Attempt,
 		Progress:  string(contracts.ProgressFailed),
 		Outcome:   &outcome,
-		Script: &client.ScriptReport{
-			Step:       uncertainty.Step,
-			Generation: runtime.driver.Generation(),
-			Evidence:   "navigation-needed: " + string(uncertainty.Reason),
-		},
+		Script:    navigationEvidence(runtime, uncertainty),
 	}
 	if err := loop.journal.ReportRequest(ctx, report); err != nil {
 		log.Printf("the stop of request %s for navigation could not be reported: %v", request.RequestID, err)
 	}
-	loop.mutex.Lock()
-	runtime.hold = contracts.HoldNavigationNeeded
-	loop.mutex.Unlock()
-	loop.scheduler.With(runtime.id, func(queue *host.RuntimeQueue) { queue.Hold() })
+	loop.holdRuntime(runtime)
 }
 
 // stepReporter is a driver whose key scripts report each step they confirm.

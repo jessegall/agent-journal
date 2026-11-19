@@ -66,6 +66,36 @@ type ScriptReport struct {
 	Evidence   string `json:"evidence"`
 }
 
+// NavigationRaise mirrors App\Http\Data\Agents\NavigationRaiseData: a key script run stopped at a point it could not
+// be certain of, the stalled request, attempt and step, why, and the stable screen, its rows redacted on the host.
+// The operation key names the raise, so a repeated send is the same raise.
+type NavigationRaise struct {
+	OperationKey string   `json:"operation_key"`
+	RequestID    string   `json:"request_id"`
+	Attempt      int      `json:"attempt"`
+	Step         int      `json:"step"`
+	Reason       string   `json:"reason"`
+	Fingerprint  string   `json:"fingerprint"`
+	Rows         []string `json:"rows"`
+	Highlight    int      `json:"highlight"`
+	Generation   uint64   `json:"generation"`
+}
+
+// The answers to a raise, as App\Agents\Enums\NavigationRaiseOutcome names them.
+const (
+	NavigationOpened = "opened"
+	NavigationHeld   = "held"
+	NavigationWait   = "wait"
+)
+
+// NavigationAnswer mirrors App\Agents\Support\NavigationRaiseAnswer: a navigation request is open, the person holds
+// the runtime, or the host waits and asks again.
+type NavigationAnswer struct {
+	Answer            string  `json:"answer"`
+	RequestID         *string `json:"requestId"`
+	RetryAfterSeconds *int    `json:"retryAfterSeconds"`
+}
+
 // ActivityReport mirrors App\Http\Data\Agents\RuntimeActivityReportData.
 type ActivityReport struct {
 	RuntimeID         string `json:"runtime_id"`
@@ -173,6 +203,16 @@ func (grant Grant) ProfileEnvironment() []string {
 func (client *Client) LaunchGrant(ctx context.Context, runtimeID string) (Grant, error) {
 	var answer Grant
 	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/launch", nil, &answer)
+}
+
+// RaiseNavigation asks the journal what to do at a point a key script run could not be certain of.
+func (client *Client) RaiseNavigation(
+	ctx context.Context,
+	runtimeID string,
+	raise NavigationRaise,
+) (NavigationAnswer, error) {
+	var answer NavigationAnswer
+	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/navigation", raise, &answer)
 }
 
 // ReportRequest, ReportActivity, ReportTurn, ReportHeartbeat and ReportExit send one typed report each.

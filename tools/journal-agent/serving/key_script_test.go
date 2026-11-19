@@ -2,6 +2,8 @@ package serving
 
 import (
 	"context"
+	"errors"
+	"reflect"
 	"sync"
 	"testing"
 
@@ -16,8 +18,9 @@ type scriptRuntime struct {
 	fakeRuntime
 	mutex    sync.Mutex
 	runs     []contracts.KeyScriptRequest
-	receiver func(keyscripts.Progress)
-	release  chan keyscripts.Result
+	receiver    func(keyscripts.Progress)
+	release     chan keyscripts.Result
+	rereadCount int
 }
 
 func newScriptRuntime() *scriptRuntime {
@@ -49,6 +52,20 @@ func (runtime *scriptRuntime) RunKeyScript(
 	result := <-runtime.release
 
 	return contracts.OperationResult{Request: request.Request, Progress: contracts.ProgressApplying, Script: &result}, nil
+}
+
+// Reread reads the stalled screen afresh: the same screen, counted.
+func (runtime *scriptRuntime) Reread(stalled keyscripts.Uncertainty) (keyscripts.Uncertainty, bool) {
+	runtime.mutex.Lock()
+	defer runtime.mutex.Unlock()
+	runtime.rereadCount++
+	return stalled, true
+}
+
+func (runtime *scriptRuntime) rereads() int {
+	runtime.mutex.Lock()
+	defer runtime.mutex.Unlock()
+	return runtime.rereadCount
 }
 
 func (runtime *scriptRuntime) runCount() int {
@@ -165,30 +182,81 @@ func TestAStopIsTakenWhileAScriptWaitsForItsScreen(t *testing.T) {
 	runtime.release <- keyscripts.Result{Outcome: keyscripts.Paused, Step: 2}
 }
 
-func TestARunThatNeedsNavigationEndsEntryUnavailableAndHoldsTheRuntimeWithoutRows(t *testing.T) {
-	journal := &fakeJournal{}
+// navigationLoop runs a key script that stops for navigation on a picker, with the journal's replies to its raises.
+func navigationLoop(t *testing.T, replies ...raiseReply) (*fakeJournal, *scriptRuntime) {
+	t.Helper()
+	journal := &fakeJournal{answers: replies}
 	runtime := newScriptRuntime()
 	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
-	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.NoEntry, Step: 1, Rows: []string{"Pick a colour"}}
+	loop.raiseRetryDelay = 0
+	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.LabelMissing, Step: 1, Fingerprint: "fp1:a",
+		Rows: []string{"Pick a model", "> GPT-5"}, Highlight: 1, Generation: 7}
 	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
-
 	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
-	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
 
-	last := journal.reportsOf("script")[3]
-	want := client.ScriptReport{Step: 1, Generation: 1, Evidence: "navigation-needed: no-entry"}
-	if last.Progress != "failed" || last.Outcome == nil || *last.Outcome != "entry_unavailable" ||
-		last.Script == nil || *last.Script != want {
-		t.Fatalf("a run that needs navigation was reported %+v", last)
-	}
-	waitFor(t, func() bool {
-		journal.mutex.Lock()
-		defer journal.mutex.Unlock()
-		return len(journal.holds) == 2
-	})
+	return journal, runtime
+}
+
+func (journal *fakeJournal) raiseCount() int {
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
-	if journal.holds[1] != "navigation_needed" || journal.activity[1] != "idle" {
-		t.Fatalf("the runtime was reported %v holding %v", journal.activity, journal.holds)
+	return len(journal.raises)
+}
+
+func (journal *fakeJournal) lastHold() string {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if len(journal.holds) == 0 {
+		return ""
+	}
+	return journal.holds[len(journal.holds)-1]
+}
+
+func TestAStoppedRunRaisesOnceAndStaysApplyingWhenARequestOpens(t *testing.T) {
+	journal, _ := navigationLoop(t)
+	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
+
+	raise := journal.raises[0]
+	want := client.NavigationRaise{OperationKey: "script:1:1", RequestID: "script", Attempt: 1, Step: 1,
+		Reason: "label-missing", Fingerprint: "fp1:a", Rows: []string{"Pick a model", "> GPT-5"}, Highlight: 1,
+		Generation: 7}
+	if journal.raiseCount() != 1 || !reflect.DeepEqual(raise, want) {
+		t.Fatalf("the host raised %+v", journal.raises)
+	}
+	last := journal.reportsOf("script")[3]
+	evidence := client.ScriptReport{Step: 1, Generation: 1, Evidence: "navigation-needed: label-missing"}
+	if last.Progress != "applying" || last.Outcome != nil || last.Script == nil || *last.Script != evidence {
+		t.Fatalf("an opened request was reported %+v", last)
+	}
+	waitFor(t, func() bool { return journal.lastHold() == "navigation_needed" })
+}
+
+func TestALostAnswerRereadsTheScreenAndSendsTheSameRaiseAgain(t *testing.T) {
+	lost := raiseReply{err: errors.New("connection reset")}
+	journal, runtime := navigationLoop(t, lost)
+	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
+
+	if journal.raiseCount() != 2 || journal.raises[0].OperationKey != journal.raises[1].OperationKey {
+		t.Fatalf("the host raised %+v", journal.raises)
+	}
+	if runtime.rereads() != 1 || runtime.stopped {
+		t.Fatalf("the screen was read afresh %d times before the raise was sent again", runtime.rereads())
+	}
+}
+
+func TestAHeldAnswerEndsTheRunEntryUnavailableAndAWaitKeepsTheHold(t *testing.T) {
+	held := raiseReply{answer: client.NavigationAnswer{Answer: client.NavigationHeld}}
+	journal, _ := navigationLoop(t, held)
+	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
+	last := journal.reportsOf("script")[3]
+	if last.Progress != "failed" || last.Outcome == nil || *last.Outcome != "entry_unavailable" {
+		t.Fatalf("a held answer was reported %+v", last)
+	}
+
+	waiting := raiseReply{answer: client.NavigationAnswer{Answer: client.NavigationWait}}
+	journal, _ = navigationLoop(t, waiting)
+	waitFor(t, func() bool { return journal.lastHold() == "navigation_needed" })
+	if reports := journal.reportsOf("script"); len(reports) != 3 {
+		t.Fatalf("a wait was reported %+v", reports)
 	}
 }

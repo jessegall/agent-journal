@@ -52,3 +52,21 @@ func TestAReportCarriesItsScriptOnlyWhenItHasOne(t *testing.T) {
 		t.Fatalf("a report with a script wrote %s", scripted)
 	}
 }
+
+func TestARaiseIsSentAsTheJournalReadsItAndItsAnswerIsRead(t *testing.T) {
+	raise, _ := json.Marshal(NavigationRaise{OperationKey: "q1:2:1", RequestID: "q1", Attempt: 2, Step: 1,
+		Reason: "no-entry", Fingerprint: "fp1:a", Rows: []string{"Pick"}, Highlight: -1, Generation: 7})
+	want := `{"operation_key":"q1:2:1","request_id":"q1","attempt":2,"step":1,"reason":"no-entry",` +
+		`"fingerprint":"fp1:a","rows":["Pick"],"highlight":-1,"generation":7}`
+	if string(raise) != want {
+		t.Fatalf("the raise was sent as %s", raise)
+	}
+
+	var answer NavigationAnswer
+	if err := json.Unmarshal([]byte(`{"answer":"wait","requestId":null,"retryAfterSeconds":30}`), &answer); err != nil {
+		t.Fatal(err)
+	}
+	if answer.Answer != NavigationWait || answer.RequestID != nil || *answer.RetryAfterSeconds != 30 {
+		t.Fatalf("the answer was read as %+v", answer)
+	}
+}
