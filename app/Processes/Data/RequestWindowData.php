@@ -6,12 +6,14 @@ namespace App\Processes\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One command request as the owner reviews it (doc 21 revision 6, sections 51 and 71): its state and next step, the
  * proposals with every revision, the samples, the readers with their proofs and the exit statuses still without a
  * sample.
  */
+#[TypeScript]
 final class RequestWindowData extends Data
 {
     /**

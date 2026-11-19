@@ -6,11 +6,13 @@ namespace App\Processes\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The review list of the current project: its command requests, its active and retired rules, and the module bundles
  * waiting for activation.
  */
+#[TypeScript]
 final class RequestListData extends Data
 {
     /**

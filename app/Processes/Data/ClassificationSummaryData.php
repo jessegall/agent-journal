@@ -6,10 +6,12 @@ namespace App\Processes\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * A line's classification as plain data: whether every part is known, the classes the line needs and each part.
  */
+#[TypeScript]
 final class ClassificationSummaryData extends Data
 {
     /**

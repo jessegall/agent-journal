@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Processes\Data;
 
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * A draft reader of the request and, when the journal proved it, the proof with the exit branches it covers.
  */
+#[TypeScript]
 final class ReaderProofData extends Data
 {
     /**

@@ -6,11 +6,13 @@ namespace App\Processes\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * What a shell line is, read without running it: its outcome, a diagnostic when it did not read, its nodes in order
  * and how many of them are commands the shell would run.
  */
+#[TypeScript]
 final class ExplanationData extends Data
 {
     /**

@@ -10,12 +10,14 @@ use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\RuleExample;
 use App\Processes\Values\RuleReference;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One revision of a proposed declaration as the owner reviews it: canonical and original names, owner, purpose and
  * full-output requirement, effects with what it adds and removes against the active rule, binding, replacement,
  * contract, examples, evidence and the fields a draft still lacks.
  */
+#[TypeScript]
 final class DeclarationData extends Data
 {
     /**
