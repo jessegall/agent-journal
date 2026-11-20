@@ -11,8 +11,11 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class ScriptDiagnostic extends Data
 {
     public function __construct(
+        public readonly string $code,
         public readonly string $message,
-        public readonly int $start,
-        public readonly int $end,
+        public readonly int $line,
+        public readonly int $column,
+        public readonly int $length,
+        public readonly string $expectedForm,
     ) {}
 }

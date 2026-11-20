@@ -35,7 +35,7 @@ final readonly class CheckEntry implements CommandMiddleware
         $entry = $this->registry->entryOf($call->name());
 
         if ($entry === CommandEntry::Application && $this->isEngineMaintenance()) {
-            if (! $this->registry->allowsEngine($call->name())) {
+            if (! $this->registry->isEngineAllowed($call->name())) {
                 throw CommandNotRegistered::for($call->name());
             }
 

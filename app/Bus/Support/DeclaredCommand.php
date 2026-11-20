@@ -62,7 +62,7 @@ final readonly class DeclaredCommand
         return $this->reflection()->getAttributes(RepeatableRead::class) !== [];
     }
 
-    public function allowsEngine(): bool
+    public function isEngineAllowed(): bool
     {
         return $this->reflection()->getAttributes(AllowsEngine::class) !== [];
     }

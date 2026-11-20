@@ -33,6 +33,6 @@ final class ScriptFixtureDomain extends Domain implements ScriptKeywordProvider,
 
     public function scriptKeywords(): array
     {
-        return [new ExampleScriptKeyword()];
+        return [ExampleScriptKeyword::definition()];
     }
 }

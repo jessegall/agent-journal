@@ -87,7 +87,7 @@ type NavigationReport struct {
 	Rows       []string       `json:"rows"`
 	Highlight  int            `json:"highlight"`
 	Generation uint64         `json:"generation"`
-	ProofSeen  bool           `json:"proof_seen"`
+	HasObservedProof bool     `json:"has_observed_proof"`
 	Actions    []ActionReport `json:"actions,omitempty"`
 	Refusal    *string        `json:"refusal"`
 	// Steps are the proven path as a library entry keeps it, sent when the round's proof showed.

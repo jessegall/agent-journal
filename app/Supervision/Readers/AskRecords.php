@@ -65,15 +65,21 @@ final readonly class AskRecords implements AskReader
         $assignments = $this->assignments->assignmentsFor($records);
         $replies = AskHop::repliesTo(array_map(fn (Ask $ask) => $ask->id, $asks));
 
-        return array_map(fn (Ask $ask) => AskCard::from([
-            'id' => $ask->id,
-            'type' => $ask->type_key,
-            'body' => $ask->body,
-            'open' => $ask->open,
-            'obligation' => $assignments->forRecord($ask->assignmentIdentity())
-                ->map(fn (Assignment $assignment) => $assignment->holder()->isSameAs($holder))
-                ->getOrElse(false),
-            'reply' => $replies[$ask->id] ?? null,
-        ]), $asks);
+        return array_map(function (Ask $ask) use ($assignments, $holder, $replies): AskCard {
+            $assigned = $assignments->forRecord($ask->assignmentIdentity())
+                ->map(fn (Assignment $assignment) => $assignment->holder());
+            $current = $assigned->getOrElse(null);
+
+            return AskCard::from([
+                'id' => $ask->id,
+                'type' => $ask->type_key,
+                'body' => $ask->body,
+                'open' => $ask->open,
+                'obligation' => $current?->isSameAs($holder) === true,
+                'reply' => $replies[$ask->id] ?? null,
+                'holderType' => $current?->type,
+                'holderId' => $current?->id,
+            ]);
+        }, $asks);
     }
 }

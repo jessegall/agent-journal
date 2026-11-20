@@ -25,7 +25,7 @@ final readonly class VisibleAskSubjects implements AskSubjectResolver
             return new AskSubject($type, WorkReference::forRecord($work));
         }
 
-        if ($type->requiresWork) {
+        if ($type->isWorkRequired) {
             throw AskRefused::workRequired($type);
         }
 

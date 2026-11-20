@@ -16,7 +16,7 @@ final readonly class MaintenanceProgress
     public function __construct(
         public array $runningSessionIds,
         public int $cancelledStarts,
-        public bool $signInWriting,
+        public bool $isCredentialWriteInProgress,
         public bool $settled,
     ) {}
 }

@@ -31,7 +31,7 @@ final readonly class RegisterCommands implements Pipe
                 owner: $declared->owner->name,
                 exported: $declared->owner->exportsCommand($declared->command),
                 repeatableRead: $declared->needsRepeatableRead(),
-                allowsEngine: $declared->allowsEngine(),
+                isEngineAllowed: $declared->isEngineAllowed(),
                 effect: $declared->effect(),
                 operation: $declared->operation(),
                 requiresRequestKey: $declared->isRequestKeyRequired(),

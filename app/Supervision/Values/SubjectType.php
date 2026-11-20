@@ -6,5 +6,5 @@ namespace App\Supervision\Values;
 
 final readonly class SubjectType
 {
-    public function __construct(public string $key, public bool $requiresWork = true) {}
+    public function __construct(public string $key, public bool $isWorkRequired = true) {}
 }

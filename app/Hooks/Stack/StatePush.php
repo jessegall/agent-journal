@@ -27,7 +27,18 @@ final readonly class StatePush
         $this->lifecycle->assertNotInCallbacks($target);
         $before = $this->restorer->restore($row->frames);
         $after = $before->withoutExposedInactive()->withStateOnTop($reference);
+        $this->save($target, $row, $before, $after);
+    }
 
+    public function prune(StackTarget $target, AgentStackRow $row): void
+    {
+        $this->lifecycle->assertNotInCallbacks($target);
+        $before = $this->restorer->restore($row->frames);
+        $this->save($target, $row, $before, $before->withoutExposedInactive());
+    }
+
+    private function save(StackTarget $target, AgentStackRow $row, AgentStack $before, AgentStack $after): void
+    {
         if ($after->frameIds() === $before->frameIds()) {
             return;
         }

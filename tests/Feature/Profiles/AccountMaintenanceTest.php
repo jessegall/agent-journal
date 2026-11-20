@@ -117,7 +117,7 @@ final class AccountMaintenanceTest extends TestCase
 
         $progress = $this->maintenance()->advance($this->account->id);
 
-        $this->assertSame([true, false], [$progress->signInWriting, $progress->settled]);
+        $this->assertSame([true, false], [$progress->isCredentialWriteInProgress, $progress->settled]);
     }
 
     public function test_a_retired_agents_unclaimed_start_never_runs(): void

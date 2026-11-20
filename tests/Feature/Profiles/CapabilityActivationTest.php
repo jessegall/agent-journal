@@ -101,12 +101,12 @@ final class CapabilityActivationTest extends TestCase
     private function recordCapabilities(CapabilityStatusType $runtime): void
     {
         $this->mock(HostCapabilities::class)->shouldReceive('capability')->andReturnUsing(
-            fn (HostCapabilityQuery $query) => new HostCapability(
-                $query,
-                $query->capability === HostCapabilityType::ContainerRuntime ? $runtime : CapabilityStatusType::Supported,
-                'Test evidence',
-                'Recorded for the test.',
-            ),
+            function (HostCapabilityQuery $query) use ($runtime): HostCapability {
+                $status = $query->capability === HostCapabilityType::ContainerRuntime
+                    ? $runtime : CapabilityStatusType::Supported;
+
+                return new HostCapability($query, $status, 'Test evidence', 'Recorded for the test.');
+            },
         );
     }
 }

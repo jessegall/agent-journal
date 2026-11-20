@@ -48,6 +48,7 @@ return new class extends Migration
             $table->unsignedInteger('route_version');
             $table->timestampTz('accepted_at');
             $table->text('result')->nullable();
+            $table->string('wake')->nullable();
             $table->string('attention')->nullable();
             $table->timestampsTz();
             $table->unique(['ask_id', 'version']);
