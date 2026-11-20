@@ -23,10 +23,13 @@ $options = array_values(array_filter($arguments, fn (string $argument) => str_st
 $command = ['php', 'artisan', 'test', '--parallel', '--recreate-databases', ...$options];
 
 if (count($paths) <= 1) {
-    exit((int) run([...$command, ...$paths], $environment, $root, false));
+    $exitCode = (int) run([...$command, ...$paths], $environment, $root, false);
+    dropRunDatabase($root);
+    exit($exitCode);
 }
 
 $configuration = configurationFor($root, $paths);
 $exitCode = (int) run([...$command, "--configuration={$configuration}"], $environment, $root, false);
 @unlink($configuration);
+dropRunDatabase($root);
 exit($exitCode);

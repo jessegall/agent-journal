@@ -95,4 +95,5 @@ $exitCode = (int) run(
     false,
 );
 @unlink($configuration);
+dropRunDatabase($root);
 exit($exitCode);
