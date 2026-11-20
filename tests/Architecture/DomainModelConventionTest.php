@@ -45,7 +45,7 @@ final class DomainModelConventionTest extends TestCase
 
         $this->assertSame(
             ['forceCreate()', 'forceFill()', 'guard()', 'mergeFillable()', 'fillable()', 'unguard()', 'unguarded()'],
-            array_map(fn (Violation $violation) => $violation->used, $violations),
+            array_map(fn (Violation $violation) => $violation->subject, $violations),
         );
     }
 
@@ -66,7 +66,7 @@ final class DomainModelConventionTest extends TestCase
         $this->assertSame(
             ['IntegerKeyModel', 'UnlinkedModel'],
             array_values(
-                array_unique(array_map(fn (Violation $violation) => class_basename($violation->used), $violations)),
+                array_unique(array_map(fn (Violation $violation) => class_basename($violation->subject), $violations)),
             ),
         );
     }
@@ -96,7 +96,7 @@ final class DomainModelConventionTest extends TestCase
         $types = [];
 
         foreach ($violations as $violation) {
-            $types[class_basename($violation->used)] = $violation->type->value;
+            $types[class_basename($violation->subject)] = $violation->type->value;
         }
 
         ksort($types);

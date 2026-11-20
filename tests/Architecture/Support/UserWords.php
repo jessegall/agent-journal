@@ -47,9 +47,12 @@ final readonly class UserWords
     private static function linesOf(string $path): array
     {
         $lines = file($path, FILE_IGNORE_NEW_LINES) ?: [];
-        $said = array_filter($lines, fn (string $line): bool => preg_match(self::WORD, $line) === 1);
+        $forbiddenWordLines = array_filter($lines, fn (string $line): bool => preg_match(self::WORD, $line) === 1);
 
-        return array_map(fn (int $index): string => sprintf('%s:%d', $path, $index + 1), array_keys($said));
+        return array_map(
+            fn (int $index): string => sprintf('%s:%d', $path, $index + 1),
+            array_keys($forbiddenWordLines),
+        );
     }
 
     /**
@@ -63,7 +66,7 @@ final readonly class UserWords
         $paths = [];
 
         foreach ($files as $file) {
-            if ($file instanceof SplFileInfo && self::isJudged($file)) {
+            if ($file instanceof SplFileInfo && self::isScannedSourceFile($file)) {
                 $paths[] = $file->getPathname();
             }
         }
@@ -71,7 +74,7 @@ final readonly class UserWords
         return $paths;
     }
 
-    private static function isJudged(SplFileInfo $file): bool
+    private static function isScannedSourceFile(SplFileInfo $file): bool
     {
         $path = $file->getPathname();
         $isGenerated = array_any(self::GENERATED, fn (string $folder): bool => str_contains($path, $folder));

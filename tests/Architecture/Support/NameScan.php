@@ -123,9 +123,9 @@ final class NameScan
         };
     }
 
-    private static function classConstantType(Expr\ClassConstFetch $fetch): NameType
+    private static function classConstantType(Expr\ClassConstFetch $constantAccess): NameType
     {
-        if ($fetch->name instanceof Identifier && $fetch->name->toLowerString() === 'class') {
+        if ($constantAccess->name instanceof Identifier && $constantAccess->name->toLowerString() === 'class') {
             return NameType::ClassName;
         }
 

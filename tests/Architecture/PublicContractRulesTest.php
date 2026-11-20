@@ -96,10 +96,10 @@ final class PublicContractRulesTest extends TestCase
             ViolationType::PrivateTypeInSignature => sprintf(
                 '%s shows %s, private to %s',
                 $violation->detail,
-                $violation->used,
+                $violation->subject,
                 $violation->owner,
             ),
-            default => "{$violation->used} is {$violation->detail}",
+            default => "{$violation->subject} is {$violation->detail}",
         };
     }
 }

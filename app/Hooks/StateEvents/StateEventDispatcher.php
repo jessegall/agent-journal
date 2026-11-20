@@ -41,14 +41,14 @@ final class StateEventDispatcher extends Dispatcher
         return $wrapped;
     }
 
-    public function dispatch($event, $payload = [], $halt = false)
+    public function dispatch($event, $eventArguments = [], $halt = false)
     {
         if (! $event instanceof Event || ! $this->hasBridge($event::class)) {
-            return parent::dispatch($event, $payload, $halt);
+            return parent::dispatch($event, $eventArguments, $halt);
         }
 
-        if ($payload instanceof StateEventPayload && $payload->hasKey($this->payloadKey)) {
-            return parent::dispatch($event, $payload, $halt);
+        if ($eventArguments instanceof StateEventPayload && $eventArguments->hasKey($this->payloadKey)) {
+            return parent::dispatch($event, $eventArguments, $halt);
         }
 
         $dispatch = ($this->scope)()->capture($event);
@@ -59,14 +59,14 @@ final class StateEventDispatcher extends Dispatcher
     /**
      * @return array{string, array<array-key, mixed>}
      */
-    protected function parseEventAndPayload($event, $payload): array
+    protected function parseEventAndPayload($event, $eventArguments): array
     {
-        [$name, $arguments] = parent::parseEventAndPayload($event, $payload);
+        [$name, $arguments] = parent::parseEventAndPayload($event, $eventArguments);
 
-        if ($payload instanceof StateEventPayload && $event === $payload->dispatch->event) {
-            $arguments[] = $this->awaitsCommit($payload->dispatch->event)
-                ? $payload->scheduledAfterCommit()
-                : $payload;
+        if ($eventArguments instanceof StateEventPayload && $event === $eventArguments->dispatch->event) {
+            $arguments[] = $this->awaitsCommit($eventArguments->dispatch->event)
+                ? $eventArguments->scheduledAfterCommit()
+                : $eventArguments;
         }
 
         return [$name, $arguments];
@@ -75,17 +75,17 @@ final class StateEventDispatcher extends Dispatcher
     /**
      * @return mixed The first listener result when halting, otherwise the list of responses.
      */
-    protected function invokeListeners($event, $payload, $halt = false): mixed
+    protected function invokeListeners($event, $eventArguments, $halt = false): mixed
     {
         if (! is_string($event) || ! $this->hasBridge($event)) {
-            return parent::invokeListeners($event, $payload, $halt);
+            return parent::invokeListeners($event, $eventArguments, $halt);
         }
 
         $scope = ($this->scope)();
-        $captured = $payload[1] ?? null;
+        $captured = $eventArguments[1] ?? null;
 
         if (! $captured instanceof StateEventPayload || ! $captured->hasKey($this->payloadKey)) {
-            return $scope->deliverWithoutScope(fn () => parent::invokeListeners($event, $payload, $halt));
+            return $scope->deliverWithoutScope(fn () => parent::invokeListeners($event, $eventArguments, $halt));
         }
 
         $dispatch = $captured->dispatch;

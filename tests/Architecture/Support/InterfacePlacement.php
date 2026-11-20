@@ -23,9 +23,9 @@ final class InterfacePlacement
         $paths = array_values(
             array_filter(DomainFiles::in($folders), fn (string $path) => basename(dirname($path)) !== 'Contracts'),
         );
-        $misplaced = ScanCache::findings(new InterfacesDeclared(), $paths);
-        sort($misplaced);
+        $misplacedInterfaces = ScanCache::findings(new InterfacesDeclared(), $paths);
+        sort($misplacedInterfaces);
 
-        return $misplaced;
+        return $misplacedInterfaces;
     }
 }

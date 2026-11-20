@@ -40,18 +40,18 @@ final class DocblockScan extends NodeVisitorAbstract
     public static function of(ParsedFile $file): array
     {
         $config = new ParserConfig(['lines' => true]);
-        $constants = new ConstExprParser($config);
+        $constantParser = new ConstExprParser($config);
         $resolver = new NameResolver(null, ['replaceNodes' => false]);
-        $scan = new self(
+        $docblockScan = new self(
             $file,
             $resolver,
             new Lexer($config),
-            new PhpDocParser($config, new TypeParser($config, $constants), $constants),
+            new PhpDocParser($config, new TypeParser($config, $constantParser), $constantParser),
         );
 
-        new NodeTraverser($resolver, $scan)->traverse($file->statements);
+        new NodeTraverser($resolver, $docblockScan)->traverse($file->statements);
 
-        return array_merge(...array_values($scan->usesByDocblock));
+        return array_merge(...array_values($docblockScan->usesByDocblock));
     }
 
     public function enterNode(Node $node): null
@@ -70,17 +70,17 @@ final class DocblockScan extends NodeVisitorAbstract
     /**
      * @return list<NameUse>
      */
-    private function typesIn(Doc $doc): array
+    private function typesIn(Doc $docComment): array
     {
-        $docblock = $this->parser->parse(new TokenIterator($this->lexer->tokenize($doc->getText())));
-        $collector = new DocblockTypeCollector(
+        $docblock = $this->parser->parse(new TokenIterator($this->lexer->tokenize($docComment->getText())));
+        $typeCollector = new DocblockTypeCollector(
             $this->file->path,
-            $doc->getStartLine(),
+            $docComment->getStartLine(),
             $this->resolver->getNameContext(),
         );
 
-        new DocblockTraverser([$collector])->traverse([$docblock]);
+        new DocblockTraverser([$typeCollector])->traverse([$docblock]);
 
-        return $collector->uses;
+        return $typeCollector->uses;
     }
 }

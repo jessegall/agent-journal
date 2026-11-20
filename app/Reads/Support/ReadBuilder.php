@@ -45,12 +45,12 @@ class ReadBuilder extends Builder
      * row created at the same moment by another writer fails the command with its unique violation.
      *
      * @param  array<string, mixed>  $attributes
-     * @param  (Closure(): array<string, mixed>)|array<string, mixed>  $values
+     * @param  (Closure(): array<string, mixed>)|array<string, mixed>  $creationAttributes
      * @return TModel
      */
-    public function createOrFirst(array $attributes = [], Closure|array $values = [])
+    public function createOrFirst(array $attributes = [], Closure|array $creationAttributes = [])
     {
-        return $this->create(array_merge($attributes, value($values)));
+        return $this->create(array_merge($attributes, value($creationAttributes)));
     }
 
     /**

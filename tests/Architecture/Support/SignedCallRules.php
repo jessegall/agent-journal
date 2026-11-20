@@ -33,10 +33,10 @@ final readonly class SignedCallRules
         $wrong = [];
 
         foreach ($controllers as $controller) {
-            $invoke = new ReflectionClass($controller)->getMethod('__invoke');
-            $first = ($invoke->getParameters()[0] ?? null)?->getType();
-            $returned = $invoke->getReturnType();
-            $call = $first instanceof ReflectionNamedType ? $first->getName() : '';
+            $controllerMethod = new ReflectionClass($controller)->getMethod('__invoke');
+            $callParameterType = ($controllerMethod->getParameters()[0] ?? null)?->getType();
+            $returnType = $controllerMethod->getReturnType();
+            $call = $callParameterType instanceof ReflectionNamedType ? $callParameterType->getName() : '';
 
             if (! is_subclass_of($call, JournalCall::class)) {
                 $wrong[] = "{$controller}: its first parameter is no call";
@@ -46,7 +46,7 @@ final readonly class SignedCallRules
 
             $answer = CallDeclaration::of($call)->endpoint->answer;
 
-            if (! $returned instanceof ReflectionNamedType || $returned->getName() !== $answer) {
+            if (! $returnType instanceof ReflectionNamedType || $returnType->getName() !== $answer) {
                 $wrong[] = "{$controller}: it does not return {$answer}";
             }
         }
@@ -66,10 +66,10 @@ final readonly class SignedCallRules
 
         foreach ($calls as $call) {
             $class = new ReflectionClass($call);
-            preg_match('/@implements\s+JournalCall<(\w+)>/', (string) $class->getDocComment(), $implemented);
+            preg_match('/@implements\s+JournalCall<(\w+)>/', (string) $class->getDocComment(), $callContractMatch);
             $answer = CallDeclaration::of($call)->endpoint->answer;
 
-            if (($implemented[1] ?? '') !== new ReflectionClass($answer)->getShortName()) {
+            if (($callContractMatch[1] ?? '') !== new ReflectionClass($answer)->getShortName()) {
                 $wrong[] = $call;
             }
         }

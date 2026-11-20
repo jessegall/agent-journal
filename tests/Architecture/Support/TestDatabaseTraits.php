@@ -34,7 +34,7 @@ final class TestDatabaseTraits
     public static function offendersIn(array $folders, array $skipped): array
     {
         $traitsByFile = ScanCache::findingsInFolders(new TraitsUsed(), $folders);
-        $offenders = array_filter(
+        $filesWithConflictingTraits = array_filter(
             array_keys($traitsByFile),
             fn (string $path) => ! self::isSkipped($path, $skipped) && array_intersect(
                 $traitsByFile[$path],
@@ -42,7 +42,7 @@ final class TestDatabaseTraits
             ) !== [],
         );
 
-        return array_values($offenders);
+        return array_values($filesWithConflictingTraits);
     }
 
     /**
