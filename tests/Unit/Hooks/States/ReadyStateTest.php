@@ -24,6 +24,7 @@ use App\Processes\Values\CommandPart;
 use App\Processes\Values\ShellCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestActors;
@@ -40,8 +41,8 @@ final class ReadyStateTest extends TestCase
      */
     public static function roles(): iterable
     {
-        yield 'a profile that edits files' => [new ReadyState(new FixedOperationPolicy(true))];
-        yield 'a profile that edits none' => [new ReadyState(new FixedOperationPolicy(false))];
+        yield 'a profile that edits files' => [new ReadyState(new FixedOperationPolicy(true), new AllowedStops())];
+        yield 'a profile that edits none' => [new ReadyState(new FixedOperationPolicy(false), new AllowedStops())];
     }
 
     /**
@@ -83,13 +84,13 @@ final class ReadyStateTest extends TestCase
 
         $this->assertSame(
             AnswerType::Allow,
-            new ReadyState(new FixedOperationPolicy(true))->onFileEdit($edit)->answerType(),
+            new ReadyState(new FixedOperationPolicy(true), new AllowedStops())->onFileEdit($edit)->answerType(),
         );
     }
 
     public function test_a_profile_without_file_changes_refuses_the_whole_edit_by_its_first_path(): void
     {
-        $decision = new ReadyState(new FixedOperationPolicy(false))->onFileEdit(
+        $decision = new ReadyState(new FixedOperationPolicy(false), new AllowedStops())->onFileEdit(
             $this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']),
         );
 

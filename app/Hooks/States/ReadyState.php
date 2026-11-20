@@ -7,6 +7,7 @@ namespace App\Hooks\States;
 use App\Agents\Values\Operation;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\OperationPolicy;
+use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileEditRequested;
@@ -21,13 +22,17 @@ use App\Hooks\Inputs\ToolRequested;
 /**
  * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states. It allows a file
  * change or another tool call only when the agent's policy grants it, never by the agent's role, and a call with one
- * refused operation is refused whole; a shell line is left to Core's admission, which judges every part of it.
+ * refused operation is refused whole; a shell line is left to Core's admission, which judges every part of it. A stop
+ * waits on the stop conditions the session was started under.
  */
 class ReadyState extends AgentState
 {
     public const string TYPE_KEY = 'hooks.ready';
 
-    public function __construct(private readonly OperationPolicy $policy) {}
+    public function __construct(
+        private readonly OperationPolicy $policy,
+        private readonly StopConditionGate $stops,
+    ) {}
 
     public function onSessionStart(SessionStarted $input): Decision
     {
@@ -58,7 +63,7 @@ class ReadyState extends AgentState
 
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::allow();
+        return $this->stops->answer($input->hook);
     }
 
     public function onCompaction(ContextCompacted $input): Decision

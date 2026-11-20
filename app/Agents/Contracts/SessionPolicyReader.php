@@ -12,4 +12,9 @@ use App\Agents\Support\StartPolicy;
 interface SessionPolicyReader
 {
     public function policyFor(string $sessionId): StartPolicy;
+
+    /**
+     * Whether the session was started under a frozen policy; a session the journal did not start has none.
+     */
+    public function isFrozenFor(string $sessionId): bool;
 }

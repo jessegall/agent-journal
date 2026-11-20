@@ -282,6 +282,23 @@ final class ProcessStart extends Model implements ReadableModel
     }
 
     /**
+     * The sessions of the host's starts that may still have a process, the only sessions whose stop attempts it runs.
+     *
+     * @return list<string>
+     */
+    public static function unresolvedSessionIdsOn(string $hostId): array
+    {
+        $sessionIds = self::supervised()
+            ->where('host_id', $hostId)
+            ->unresolved()
+            ->orderBy('created_at')
+            ->readAll('a host runs the stop conditions of every session it may still run')
+            ->pluck('session_id');
+
+        return array_values(array_unique(array_map(strval(...), $sessionIds->all())));
+    }
+
+    /**
      * Cancels the account's starts that no host has claimed yet, so they never make a process, and answers how many.
      */
     public static function cancelPendingOf(RecordIdentity $account): int

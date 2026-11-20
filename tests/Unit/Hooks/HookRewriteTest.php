@@ -21,6 +21,7 @@ use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
@@ -152,7 +153,7 @@ final class HookRewriteTest extends TestCase
 
     private function stack(AgentState $rewriter, MarkedShellState ...$guards): AgentStack
     {
-        $ready = new ReadyState(new FixedOperationPolicy());
+        $ready = new ReadyState(new FixedOperationPolicy(), new AllowedStops());
         $factory = new InMemoryStateFactory(['guide' => fn () => ScriptedState::delegating()]);
 
         return new AgentStack([

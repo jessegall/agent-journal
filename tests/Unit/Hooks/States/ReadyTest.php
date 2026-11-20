@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
+use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 
@@ -43,7 +44,7 @@ final class ReadyTest extends TestCase
     {
         $this->assertSame(
             AnswerType::Allow,
-            $input->answerBy(new ReadyState(new FixedOperationPolicy()))->answerType(),
+            $input->answerBy(new ReadyState(new FixedOperationPolicy(), new AllowedStops()))->answerType(),
         );
     }
 
@@ -55,7 +56,7 @@ final class ReadyTest extends TestCase
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void
     {
-        $this->assertFalse(new ReadyState(new FixedOperationPolicy())->isFinished());
+        $this->assertFalse(new ReadyState(new FixedOperationPolicy(), new AllowedStops())->isFinished());
     }
 
     /**

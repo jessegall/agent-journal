@@ -28,6 +28,7 @@ use Domain\Plans\States\WorkingOnPlanState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
+use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
@@ -153,7 +154,7 @@ final class TransparentFramesTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy()),
+            new ReadyState(new FixedOperationPolicy(), new AllowedStops()),
             CarbonImmutable::now(),
             bottom: true,
         );

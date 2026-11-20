@@ -24,6 +24,7 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Values\ProfileBase;
+use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\TestCase;
 
 /**
@@ -123,7 +124,7 @@ final class OperationPolicyTest extends TestCase
             {
                 return $this->access->decide($operation);
             }
-        });
+        }, new AllowedStops());
     }
 
     private function hook(): HookIdentity

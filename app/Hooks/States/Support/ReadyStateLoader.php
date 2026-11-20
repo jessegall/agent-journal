@@ -6,6 +6,7 @@ namespace App\Hooks\States\Support;
 
 use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Contracts\StateLoader;
+use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\States\ReadyState;
@@ -25,7 +26,10 @@ final readonly class ReadyStateLoader implements StateLoader
 
     public function statesFor(StateReferences $references): StateSet
     {
-        return StateSet::build($references, fn () => new ReadyState($this->container->make(OperationPolicy::class)));
+        return StateSet::build($references, fn () => new ReadyState(
+            $this->container->make(OperationPolicy::class),
+            $this->container->make(StopConditionGate::class),
+        ));
     }
 
     public function schemaVersion(): int

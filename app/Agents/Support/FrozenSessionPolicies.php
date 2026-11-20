@@ -16,4 +16,9 @@ final readonly class FrozenSessionPolicies implements SessionPolicyReader
     {
         return SessionPolicy::query()->where('session_id', $sessionId)->sole()->policy();
     }
+
+    public function isFrozenFor(string $sessionId): bool
+    {
+        return SessionPolicy::query()->where('session_id', $sessionId)->exists();
+    }
 }

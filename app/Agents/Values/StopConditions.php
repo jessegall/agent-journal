@@ -61,6 +61,27 @@ final readonly class StopConditions
         return new self($conditions, $attemptSeconds);
     }
 
+    public function isEmpty(): bool
+    {
+        return $this->conditions === [];
+    }
+
+    /**
+     * Every condition's key with the hash of its definition, in declaration order.
+     *
+     * @return array<string, string>
+     */
+    public function definitionHashes(): array
+    {
+        $hashes = [];
+
+        foreach ($this->conditions as $condition) {
+            $hashes[$condition->key] = $condition->definitionHash();
+        }
+
+        return $hashes;
+    }
+
     /**
      * @param  list<string>  $keys  the keys of the conditions before this one
      *

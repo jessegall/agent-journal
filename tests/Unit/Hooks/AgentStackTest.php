@@ -40,6 +40,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
+use Tests\Fixtures\Hooks\AllowedStops;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
@@ -151,7 +152,7 @@ final class AgentStackTest extends TestCase
         $ready = new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState($policy),
+            new ReadyState($policy, new AllowedStops()),
             CarbonImmutable::now(),
             bottom: true,
         );
@@ -239,7 +240,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_bottom_state_that_delegates_fails_with_the_steps_it_took(): void
     {
-        $delegatingBottom = new class(new FixedOperationPolicy()) extends ReadyState
+        $delegatingBottom = new class(new FixedOperationPolicy(), new AllowedStops()) extends ReadyState
         {
             public function onStop(StopRequested $input): Decision
             {
@@ -507,7 +508,7 @@ final class AgentStackTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedOperationPolicy($mayChangeFiles)),
+            new ReadyState(new FixedOperationPolicy($mayChangeFiles), new AllowedStops()),
             CarbonImmutable::now(),
             bottom: true,
         );

@@ -36,11 +36,22 @@ trait SendsHostCalls
      */
     private function hostCall(EnrolledHost $host, string $target, array|null $body = null): TestResponse
     {
-        $callId = (string) Str::uuid();
-        $issuedAt = CarbonImmutable::now()->getTimestamp();
         $content = $body === null ? '' : (json_encode((object) $body) ?: '{}');
 
-        return $this->call('POST', $target, server: [
+        return $this->signedHostCall($host, 'POST', $target, $content);
+    }
+
+    private function hostRead(EnrolledHost $host, string $target): TestResponse
+    {
+        return $this->signedHostCall($host, 'GET', $target, '');
+    }
+
+    private function signedHostCall(EnrolledHost $host, string $method, string $target, string $content): TestResponse
+    {
+        $callId = (string) Str::uuid();
+        $issuedAt = CarbonImmutable::now()->getTimestamp();
+
+        return $this->call($method, $target, server: [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_ACCEPT' => 'application/json',
             'HTTP_AUTHORIZATION' => "Bearer {$host->secret}",
@@ -48,7 +59,7 @@ trait SendsHostCalls
             'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::ISSUED_AT_HEADER)) => (string) $issuedAt,
             'HTTP_'.strtoupper(str_replace('-', '_', SignedCall::SIGNATURE_HEADER)) => SignedCall::signatureFor(
                 $host->secret,
-                'POST',
+                $method,
                 $target,
                 $callId,
                 $issuedAt,

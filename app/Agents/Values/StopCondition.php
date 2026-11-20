@@ -35,6 +35,22 @@ final readonly class StopCondition
     ) {}
 
     /**
+     * A hash of everything the host runs for this condition, so its results name the definition they ran.
+     */
+    public function definitionHash(): string
+    {
+        return hash('sha256', json_encode([
+            $this->key,
+            $this->executable,
+            $this->arguments,
+            array_map(fn (AccessType $type): string => $type->value, $this->accessTypes),
+            $this->directory,
+            $this->timeoutSeconds,
+            $this->outputBytes,
+        ], JSON_THROW_ON_ERROR));
+    }
+
+    /**
      * The built-in check every writing helper must pass: no tracked or untracked change is left uncommitted.
      */
     public static function cleanWorktree(): self

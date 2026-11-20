@@ -42,6 +42,11 @@ final class StopAttempt extends Model implements ReadableModel
     use Linkable;
 
     /**
+     * The workspace generation every attempt is asked under until the host counts the changes it admits.
+     */
+    public const int FIRST_GENERATION = 0;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -84,6 +89,24 @@ final class StopAttempt extends Model implements ReadableModel
             ->where('session_id', $stop->sessionId)
             ->where('stop_id', $stop->hookId)
             ->sole();
+    }
+
+    /**
+     * The attempts of these sessions still waiting for the host's results, oldest first.
+     *
+     * @param  list<string>  $sessionIds
+     * @return list<self>
+     */
+    public static function pendingOf(array $sessionIds): array
+    {
+        return array_values(self::query()
+            ->withoutGlobalScope(AgentSessionScope::class)
+            ->whereIn('session_id', $sessionIds)
+            ->where('state', StopAttemptState::Pending->value)
+            ->orderBy('created_at')
+            ->readLimit(50)
+            ->get()
+            ->all());
     }
 
     /**

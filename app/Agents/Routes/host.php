@@ -21,6 +21,7 @@ use App\Http\Controllers\Agents\Host\ScreenReportController;
 use App\Http\Controllers\Agents\Host\StaleEntryController;
 use App\Http\Controllers\Agents\Host\StartGrantController;
 use App\Http\Controllers\Agents\Host\TurnReportController;
+use App\Http\Controllers\Hooks\Host\PendingStopAttemptsController;
 use App\Http\Controllers\Hooks\Host\StopResultsController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,7 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/reports/heartbeat', HeartbeatReportController::class)->name('reports.heartbeat');
     Route::post('/reports/exit', ExitReportController::class)->name('reports.exit');
     Route::post('/reports/screen', ScreenReportController::class)->name('reports.screen');
+    Route::get('/stop-attempts', PendingStopAttemptsController::class)->name('stop-attempts.pending');
     Route::post('/stop-attempts/{attempt}/results', StopResultsController::class)->name('stop-attempts.results');
     Route::post('/starts/claim', ClaimStartController::class)->name('starts.claim');
     Route::get('/starts', [ReconcileStartsController::class, 'index'])->name('starts.unresolved');

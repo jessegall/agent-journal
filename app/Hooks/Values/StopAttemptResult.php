@@ -22,4 +22,20 @@ final readonly class StopAttemptResult
         public array $statuses,
         public array $summaries,
     ) {}
+
+    /**
+     * What the conditions that refused the stop said, one line each, for the helper to act on.
+     */
+    public function failureSummary(): string
+    {
+        $lines = ['A stop condition refused the stop:'];
+
+        foreach ($this->statuses as $key => $status) {
+            if ($status->refusesStop()) {
+                $lines[] = sprintf('- %s (%s): %s', $key, $status->value, $this->summaries[$key]);
+            }
+        }
+
+        return implode(PHP_EOL, $lines);
+    }
 }

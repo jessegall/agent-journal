@@ -28,6 +28,7 @@ use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Contracts\RunsStackTransactions;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StateFactory;
+use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Declarations\StateMethods;
@@ -53,6 +54,7 @@ use App\Hooks\Support\PendingAgentMessages;
 use App\Hooks\Support\ProtectedAccounts;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
+use App\Hooks\Support\StopAttemptGate;
 use App\Hooks\Support\WorkStackPushes;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
@@ -98,6 +100,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bind(ProgramAdapters::class, SupportedProgramAdapters::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->scoped(StopEvidence::class, StopAttemptRecords::class);
+        $this->app->scoped(StopConditionGate::class, StopAttemptGate::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
             $this->app->make('config')->integer('hooks.hook_call_days'),
