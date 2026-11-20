@@ -2796,7 +2796,6 @@ class	NamesUsedAnywhere
 class	NamespacesDeclared
 class	NativeTurns
 class	NavigationAdmission
-class	NavigationAdmissionPipeline
 class	NavigationAnswer
 class	NavigationAnswerCheck
 class	NavigationAnswerRefused
@@ -3566,6 +3565,7 @@ class	RefusalReplayed
 class	RefuseArrayAssignment
 class	RefuseStaleRuns
 class	RefuseWritesDuringEvaluation
+class	RegisterAnsweringAskState
 class	RegisterAnsweringState
 class	RegisterAssignables
 class	RegisterAwaitingSkillsState
@@ -3779,6 +3779,7 @@ class	ResetUserPassword
 class	ResolveDriverDelivery
 class	ResolveDriverDeliveryCommand
 class	ResolveDriverDeliveryHandler
+class	ResolveNavigationAdmissionPipeline
 class	ResolveRuntimeRequestController
 class	ResolvedDestinations
 class	ResolvedPipe
@@ -4970,7 +4971,6 @@ class	VerifyRestoredOutput
 class	VerifyRestoredOutputHandler
 class	Violation
 class	VisibilityChecks
-class	VisibleActorScope
 class	VisibleAskSubjects
 class	VisibleRecords
 class	VisibleTasks
@@ -9850,6 +9850,7 @@ method	DraftRecords::__construct()
 method	DraftRecords::current()
 method	DraftRecords::stateOf()
 method	DraftReference::__construct()
+method	DraftReference::target()
 method	DraftRequest::documentNumber()
 method	DraftRequest::mode()
 method	DraftRequest::rules()
@@ -11945,7 +11946,6 @@ method	NativeTurns::checkGeneration()
 method	NativeTurns::recordPrompt()
 method	NavigationAdmission::__construct()
 method	NavigationAdmission::fingerprint()
-method	NavigationAdmissionPipeline::pipes()
 method	NavigationAnswer::__construct()
 method	NavigationAnswer::choose()
 method	NavigationAnswer::confirm()
@@ -14338,6 +14338,8 @@ method	RefusesOtherDrafts::assertDraftEditor()
 method	RefusesOtherRuns::assertCurrentTaskRun()
 method	RefusesStaleGatewayRuns::assertCurrentGatewayRun()
 method	RefusesUnusableSessions::assertUsableSession()
+method	RegisterAnsweringAskState::__construct()
+method	RegisterAnsweringAskState::handle()
 method	RegisterAnsweringState::__construct()
 method	RegisterAnsweringState::handle()
 method	RegisterAssignables::__construct()
@@ -14844,6 +14846,7 @@ method	ResolveDriverDelivery::subject()
 method	ResolveDriverDeliveryCommand::handle()
 method	ResolveDriverDeliveryHandler::__construct()
 method	ResolveDriverDeliveryHandler::handle()
+method	ResolveNavigationAdmissionPipeline::pipes()
 method	ResolveRuntimeRequestController::__invoke()
 method	ResolvedDestinations::__construct()
 method	ResolvedDestinations::assignee()
@@ -18685,8 +18688,6 @@ method	ViolationType::reason()
 method	VisibilityCheck::allows()
 method	VisibilityChecks::__construct()
 method	VisibilityChecks::allow()
-method	VisibleActorScope::__construct()
-method	VisibleActorScope::apply()
 method	VisibleAskSubjects::__construct()
 method	VisibleAskSubjects::resolve()
 method	VisibleRecords::__construct()
@@ -19915,7 +19916,6 @@ parameter	$linkIds
 parameter	$linkType
 parameter	$linked
 parameter	$links
-parameter	$list
 parameter	$listCursor
 parameter	$listName
 parameter	$listRead
@@ -20243,7 +20243,6 @@ parameter	$pathsByConversation
 parameter	$pattern
 parameter	$patterns
 parameter	$pause
-parameter	$payload	app/Hooks/StateEvents/StateEventDispatcher.php
 parameter	$payloadDigest
 parameter	$pending
 parameter	$pendingCleanups
@@ -21076,7 +21075,6 @@ parameter	$value	app/Sharing/Casts/SelectedTargetsCast.php
 parameter	$value	app/Skills/Casts/SkillSectionsCast.php
 parameter	$valueClass
 parameter	$valueClasses
-parameter	$values	app/Reads/Support/ReadBuilder.php
 parameter	$variableText
 parameter	$variables
 parameter	$vendorSessionId
@@ -25756,6 +25754,7 @@ property	RefusalReplayed::$storedCode
 property	RefusalReplayed::$storedDetails
 property	RefuseStaleRuns::$commands
 property	RefuseWritesDuringEvaluation::$guard
+property	RegisterAnsweringAskState::$states
 property	RegisterAnsweringState::$factory
 property	RegisterAssignables::$assignments
 property	RegisterAwaitingSkillsState::$factory
@@ -28370,8 +28369,6 @@ property	Violation::$type
 property	Violation::$usingDomain
 property	VisibilityChecks::$actors
 property	VisibilityChecks::$container
-property	VisibleActorScope::$actors
-property	VisibleActorScope::$visibility
 property	VisibleAskSubjects::$records
 property	VisibleRecords::$providers
 property	VisibleTasks::$actors
@@ -28664,6 +28661,7 @@ variable	$block
 variable	$body
 variable	$bodyDigest
 variable	$bodyEnd
+variable	$bodyPosition
 variable	$bodyStart
 variable	$bootstrapper
 variable	$bottom
@@ -28817,6 +28815,7 @@ variable	$controller
 variable	$controllerMethod
 variable	$conversation
 variable	$conversationId
+variable	$conversationPair
 variable	$conversations
 variable	$cookie
 variable	$coreExports
@@ -28922,6 +28921,7 @@ variable	$edit
 variable	$editing
 variable	$editor
 variable	$effect
+variable	$elapsedMicroseconds
 variable	$elapsedSinceBaseline
 variable	$eligible
 variable	$elseLine
@@ -29231,7 +29231,6 @@ variable	$linkOfTarget
 variable	$linkType
 variable	$linked
 variable	$links
-variable	$list
 variable	$listed
 variable	$listedClasses
 variable	$listener
@@ -29550,6 +29549,7 @@ variable	$published
 variable	$publishedAt
 variable	$publishedChange
 variable	$publishedPlanIds
+variable	$publishedRevision
 variable	$pump
 variable	$purpose
 variable	$purposeConversations
@@ -29838,6 +29838,7 @@ variable	$stopReports
 variable	$stopped
 variable	$stored
 variable	$storedOwner
+variable	$storedValues
 variable	$stream
 variable	$streams
 variable	$string
