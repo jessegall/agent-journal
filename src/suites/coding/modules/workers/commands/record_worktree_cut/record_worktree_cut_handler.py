@@ -38,13 +38,7 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
         worktree = self.rows.required(Worktree, command.worktree_id)
         cut = self.repository.save_change(worktree, replace(worktree.cut(context.timestamp, context.actor, command.base_commit, len(command.task_ids)), library_links=command.library_links, library_copies=command.library_copies), context)
         with self.scopes.row_scope(worktree):
-            for assigned in command.task_sources:
-                if assigned.task_id not in command.task_ids or assigned.source.environment_id != worktree.environment_id:
-                    raise Refusal("the task request snapshot belongs to another assignment")
-                self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=assigned.task_id,
-                                                      source_message_id=assigned.source.message_id,
-                                                      source_version=assigned.source.version, source_unavailable=assigned.source.unavailable, started_at=context.timestamp), context)
-                self.sources.use_copy(assigned.source, replace(context, environment_id=worktree.environment_id))
+            self.record_task_sources(command, worktree, replace(context, environment_id=worktree.environment_id))
         tasks = self.queries.query(Task).find_many(command.task_ids)
         self.task_assignments.keep_rows(Task, command.task_ids)
         for task in tasks:
@@ -54,3 +48,15 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
         if AssignableTasks.has_open(list(tasks)):
             self.bus.dispatch(StartTask(command.task_ids[0]), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
         return cut
+
+    def record_task_sources(self, command: RecordWorktreeCut, worktree: Worktree, context: Context) -> None:
+        if any(assigned.task_id not in command.task_ids or assigned.source.environment_id != worktree.environment_id for assigned in command.task_sources):
+            raise Refusal("the task request snapshot belongs to another assignment")
+        self.repository.insert_many([
+            WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=assigned.task_id,
+                             source_message_id=assigned.source.message_id, source_version=assigned.source.version,
+                             source_unavailable=assigned.source.unavailable, started_at=context.timestamp)
+            for assigned in command.task_sources
+        ], context)
+        for source in dict.fromkeys(assigned.source for assigned in command.task_sources):
+            self.sources.use_copy(source, context)

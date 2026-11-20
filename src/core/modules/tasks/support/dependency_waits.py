@@ -4,6 +4,7 @@ from engine.command.context import Context
 from engine.database.kept_rows import KeptRows
 from engine.listener.rows.event_rows import EventRows
 from engine.query.conditions.among import Among
+from engine.query.conditions.disjunction import Disjunction
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -25,12 +26,9 @@ class DependencyWaits:
         self.queries, self.repository, self.waits, self.kept, self.rows = queries, repository, waits, kept, rows
 
     def pairs(self, task_ids: Sequence[int]) -> tuple[TaskDependency, ...]:
-        return self.kept.owner_read(self.queries.query(TaskDependency), lambda: self.read_pairs(task_ids), name=f"tasks.dependency_pairs:{sorted(task_ids)}")
-
-    def read_pairs(self, task_ids: Sequence[int]) -> tuple[TaskDependency, ...]:
-        dependencies = self.queries.query(TaskDependency)
-        pairs = {pair.id: pair for column in ("task_id", "dependency_id") for pair in dependencies.matching(Among(column, task_ids)).every_row(PAIRS_REASON)}
-        return tuple(pairs[pair_id] for pair_id in sorted(pairs))
+        ids = tuple(sorted(set(task_ids)))
+        dependencies = self.queries.query(TaskDependency).matching(Disjunction([Among("task_id", ids), Among("dependency_id", ids)])).ordered("id")
+        return self.kept.owner_read(dependencies, lambda: tuple(dependencies.every_row(PAIRS_REASON)), name="tasks.dependency_pairs")
 
     def update_wait(self, task_id: int, dependency_id: int, context: Context) -> None:
         if self.queries.query(OpenDependency).filter(task_id=task_id, dependency_id=dependency_id).exists():
@@ -40,6 +38,8 @@ class DependencyWaits:
 
     def update_tasks(self, task_ids: Sequence[int], context: Context) -> None:
         pairs = self.pairs(task_ids)
+        if not pairs:
+            return
         open_ids = {row.id for row in self.queries.query(OpenDependency).matching(Among("id", tuple(pair.id for pair in pairs))).every_row(PAIRS_REASON)}
         task_ids_waiting = tuple({pair.task_id for pair in pairs})
         tasks = {task.id: task for task in self.queries.query(Task).matching(Among("id", task_ids_waiting)).every_row(PAIRS_REASON)}
