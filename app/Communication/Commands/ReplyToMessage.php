@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Communication\Commands;
 
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\Effect;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -23,6 +25,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(ReplyToMessageHandler::class)]
+#[Effect(CommandEffectType::Recovery)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
 #[RepeatableRead]
 #[RetainedActorRequestKey]

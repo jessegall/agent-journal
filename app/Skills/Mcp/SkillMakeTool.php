@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -20,6 +21,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_make: stores a new skill under a user- key, as skill:make does.
  */
 #[Name('skills_make')]
+#[WritesCommand(CreateSkill::class)]
 #[Description('Store a new skill under a user- key from a Markdown body; the condition is JSON, everyone when left out. Send the request_id again to retry; it is answered once.')]
 final class SkillMakeTool extends JournalWriteTool
 {

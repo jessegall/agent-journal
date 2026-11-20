@@ -16,12 +16,11 @@ final readonly class CapabilitiesResolver
 {
     public const string CONTRACT_VERSION = '1.0.0';
 
-    private const string MAIN_PROFILE = 'main';
-
     private const string PROTOCOL_HEADER = 'MCP-Protocol-Version';
 
     public function __construct(
         private McpCatalogue $catalogue,
+        private JobPermissionReader $permissions,
         private Repository $config,
         private Request $request,
     ) {}
@@ -32,8 +31,8 @@ final readonly class CapabilitiesResolver
             'contract_version' => self::CONTRACT_VERSION,
             'server_build' => $this->config->string('app.version', 'unknown'),
             'protocol_version' => $this->request->header(self::PROTOCOL_HEADER),
-            'job_profile' => self::MAIN_PROFILE,
-            'tools' => $this->catalogue->toolNames(),
+            'job_profile' => $this->permissions->profileKey(),
+            'tools' => $this->catalogue->toolNamesFor($this->permissions),
         ], []);
     }
 }

@@ -17,6 +17,7 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Lifecycle\LifecycleContext;
+use App\Hooks\Stack\StackVerdict;
 
 /**
  * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and
@@ -34,6 +35,11 @@ abstract class AgentState implements HookAnswerer
     public function isFinished(): bool
     {
         return false;
+    }
+
+    public function workPermission(): StackVerdict
+    {
+        return StackVerdict::allow();
     }
 
     /**

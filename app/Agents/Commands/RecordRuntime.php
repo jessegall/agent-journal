@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Handlers\RecordRuntimeHandler;
@@ -24,7 +25,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(RecordRuntimeHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-final readonly class RecordRuntime extends Command implements HasAuthorizationSubject
+final readonly class RecordRuntime extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(
         public string $agentId,

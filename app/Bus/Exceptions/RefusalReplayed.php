@@ -6,6 +6,7 @@ namespace App\Bus\Exceptions;
 
 use App\Bus\Contracts\AnswersFromReceipt;
 use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
@@ -15,23 +16,52 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * The refusal a write got the first time, given again to a retry with the same request key.
  */
-final class RefusalReplayed extends RuntimeException implements AnswersFromReceipt, CodedRefusal, CommandRefusal
+final class RefusalReplayed extends RuntimeException implements
+    AnswersFromReceipt,
+    CodedRefusal,
+    CommandRefusal,
+    RefusalDetails
 {
     use RendersRefusal;
 
-    private function __construct(private readonly RefusalCode $storedCode, string $message)
-    {
+    /**
+     * @param  array<string, mixed>  $storedDetails
+     */
+    private function __construct(
+        private readonly RefusalCode $storedCode,
+        string $message,
+        private readonly array $storedDetails,
+    ) {
         parent::__construct($message);
     }
 
-    public static function of(RefusalCode $code, string $message): self
+    /**
+     * @param  array<string, mixed>  $details
+     */
+    public static function of(RefusalCode $code, string $message, array $details): self
     {
-        return new self($code, $message);
+        return new self($code, $message, $details);
     }
 
     public function refusalCode(): RefusalCode
     {
         return $this->storedCode;
+    }
+
+    public function refusalDetails(): array
+    {
+        $details = $this->storedDetails;
+
+        if (isset($details['next_action']['arguments'])) {
+            $details['next_action']['arguments'] = (object) $details['next_action']['arguments'];
+        }
+
+        return $details;
+    }
+
+    protected function details(): array
+    {
+        return $this->refusalDetails();
     }
 
     protected function status(): int

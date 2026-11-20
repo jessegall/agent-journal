@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Agents\Commands\ProveNavigation;
 use App\Agents\Enums\NavigationCompletion;
 use App\Bus\Contracts\CommandBus;
@@ -17,6 +18,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * navigation_done: the main agent says its rounds reached the goal or repaired the step, with the text that shows it.
  */
 #[Name('navigation_done')]
+#[WritesCommand(ProveNavigation::class)]
 #[Description(
     'Say a navigation request is done: completes goal (the whole goal shows) or step (only the stalled step is '
     .'repaired), and a proof, text that now shows on the screen and did not when the request was raised. The host '

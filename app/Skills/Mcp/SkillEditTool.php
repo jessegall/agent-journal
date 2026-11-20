@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -20,6 +21,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_edit: saves a new revision of a stored skill against the revision read, as skill:edit does.
  */
 #[Name('skills_edit')]
+#[WritesCommand(ReviseSkill::class)]
 #[Description('Save a new revision of a stored skill against the revision you read; what you leave out stays as it was. A stale expected_revision is refused naming the latest.')]
 final class SkillEditTool extends JournalWriteTool
 {

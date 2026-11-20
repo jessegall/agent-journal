@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -19,6 +20,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_restore: saves an earlier revision's content as a new revision, as skill:restore does.
  */
 #[Name('skills_restore')]
+#[WritesCommand(RestoreSkill::class)]
 #[Description("Save an earlier revision of a stored skill as its newest revision, checked against today's rules; history stays.")]
 final class SkillRestoreTool extends JournalWriteTool
 {

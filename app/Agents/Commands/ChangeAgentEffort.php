@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\ChangeAgentEffortHandler;
 use App\Agents\Models\Agent;
@@ -22,7 +23,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(ChangeAgentEffortHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class ChangeAgentEffort extends Command implements HasAuthorizationSubject
+final readonly class ChangeAgentEffort extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(
         public string $agentId,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
@@ -13,6 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('messages_send')]
+#[WritesCommand(SendMessage::class)]
 #[Description('Send a note from one of your inboxes to another inbox; nobody has to answer it.')]
 final class MessageSendTool extends MessageWriteTool
 {

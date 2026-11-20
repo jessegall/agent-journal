@@ -8,6 +8,7 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Bus\Contracts\AnswersFromReceipt;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\CommandCall;
@@ -46,7 +47,7 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
             } catch (Throwable $failure) {
                 if ($key !== null && $this->isFirstRefusal($failure)) {
                     $code = self::codeOf($failure);
-                    $caller = $this->callers->of($call->actor());
+                    $caller = $this->callers->forCommand($call->name(), $call->actor());
                     CommandReceipt::recordRefusal(
                         $caller,
                         $key,
@@ -54,6 +55,7 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
                         $this->registry->retentionOf($call->name()),
                         $code,
                         $failure->getMessage(),
+                        $failure instanceof RefusalDetails ? $failure->refusalDetails() : [],
                     );
                 }
 

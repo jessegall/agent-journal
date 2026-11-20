@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -19,6 +20,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_retire: retires a stored skill its owner names, as skill:retire does.
  */
 #[Name('skills_retire')]
+#[WritesCommand(RetireSkill::class)]
 #[Description('Retire a stored skill you own; it leaves every selection and its revisions stay readable.')]
 final class SkillRetireTool extends JournalWriteTool
 {

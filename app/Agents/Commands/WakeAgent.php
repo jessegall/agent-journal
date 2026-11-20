@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
+use App\Agents\Contracts\TargetsAgentStack;
 use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\WakeAgentHandler;
 use App\Agents\Models\Agent;
@@ -22,7 +23,7 @@ use App\Bus\Support\Command;
  */
 #[HandledBy(WakeAgentHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Work)]
-final readonly class WakeAgent extends Command implements HasAuthorizationSubject
+final readonly class WakeAgent extends Command implements HasAuthorizationSubject, TargetsAgentStack
 {
     public function __construct(
         public string $agentId,

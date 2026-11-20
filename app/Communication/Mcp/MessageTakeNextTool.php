@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\RequestKey;
 use App\Communication\Commands\TakeNextMessages;
@@ -13,6 +14,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('messages_take_next')]
+#[WritesCommand(TakeNextMessages::class, readOnlyHelper: true)]
 #[Description('Take up the oldest questions nobody has taken up in one of your inboxes.')]
 final class MessageTakeNextTool extends MessageWriteTool
 {

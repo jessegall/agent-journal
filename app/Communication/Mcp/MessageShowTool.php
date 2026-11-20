@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Agents\Values\ReadRequest;
 use App\Communication\Contracts\ConversationResolver;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -23,6 +24,13 @@ final class MessageShowTool extends JournalReadTool
         return [
             'message_id' => $schema->string()->max(26)->required(),
         ];
+    }
+
+    public function readRequest(ToolArguments|null $arguments = null): ReadRequest
+    {
+        return $arguments === null
+            ? parent::readRequest()
+            : new ReadRequest($this->name(), arguments: ['message_id' => $arguments->text('message_id')]);
     }
 
     protected function read(ToolArguments $arguments): ToolResult

@@ -4,26 +4,42 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Agents\Support\ReadGrant;
+use App\Mcp\Attributes\WritesCommand;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\ToolArguments;
+use App\Mcp\Support\JobPermissionReader;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
+use ReflectionClass;
 
 /**
  * The base of every journal tool: a strict published schema and arguments limited to the fields it declares.
  */
 abstract class JournalTool extends Tool
 {
-    /**
-     * Whether the calling job may see this tool; every job may until job permissions narrow it.
-     */
-    public function shouldRegister(): bool
+    final public function shouldRegister(JobPermissionReader $permissions): bool
     {
-        return true;
+        return $permissions->allows($this);
+    }
+
+    /**
+     * @return Option<WritesCommand>
+     */
+    final public function writeDeclaration(): Option
+    {
+        foreach (new ReflectionClass($this)->getAttributes(WritesCommand::class) as $declaration) {
+            return new Some($declaration->newInstance());
+        }
+
+        return None::create();
     }
 
     /**
@@ -37,9 +53,17 @@ abstract class JournalTool extends Tool
         return $tool;
     }
 
-    final public function handle(Request $request, McpCall $call): ResponseFactory
+    final public function handle(Request $request, McpCall $call, ReadGrant $reads): ResponseFactory
     {
-        return $call->answerTool($this->name(), fn () => $this->answer($this->arguments($request)));
+        return $call->answerTool($this->name(), function () use ($request, $reads): ToolResult {
+            $arguments = $this->arguments($request);
+
+            if ($this instanceof JournalReadTool) {
+                $reads->requireAllowed($this->readRequest($arguments));
+            }
+
+            return $this->answer($arguments);
+        });
     }
 
     /**

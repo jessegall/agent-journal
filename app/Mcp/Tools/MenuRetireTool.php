@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Attributes\WritesCommand;
 use App\Agents\Commands\RetireMenuEntry;
 use App\Agents\Enums\MenuEntryState;
 use App\Bus\Contracts\CommandBus;
@@ -17,6 +18,7 @@ use Laravel\Mcp\Server\Attributes\Name;
  * menu_retire: retires a menu library entry in the state the caller read, as the owner only may.
  */
 #[Name('menu_retire')]
+#[WritesCommand(RetireMenuEntry::class)]
 #[Description(
     'Retire a menu library entry in the state you read; the next uncertain point of any runtime asks the main agent '
     .'instead.',

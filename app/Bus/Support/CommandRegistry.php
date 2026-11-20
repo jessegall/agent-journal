@@ -6,6 +6,7 @@ namespace App\Bus\Support;
 
 use App\Actors\Contracts\Policy;
 use App\Bus\Attributes\Authorize;
+use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -15,6 +16,7 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\DeclaresClassLevelAbilities;
 use App\Bus\Contracts\HasAuthorizationSubject;
+use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
@@ -91,6 +93,7 @@ final readonly class CommandRegistry
                 owner: $owner->name,
                 exported: $owner->exportsCommand($command),
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
+                effect: self::effectDeclaredBy($reflection),
                 requiresRequestKey: self::requiresKey($reflection),
                 actorScopedReceipt: $reflection->getAttributes(RetainedActorRequestKey::class) !== [],
                 retention: self::declaredRetentionOf($reflection),
@@ -176,6 +179,11 @@ final readonly class CommandRegistry
     public function needsRepeatableRead(string $command): bool
     {
         return $this->entry($command)->repeatableRead;
+    }
+
+    public function effectOf(string $command): CommandEffectType
+    {
+        return $this->entry($command)->effect;
     }
 
     public function requiresRequestKey(string $command): bool
@@ -292,6 +300,7 @@ final readonly class CommandRegistry
 
         $attributes = [
             RepeatableRead::class,
+            Effect::class,
             RequiresRequestKey::class,
             RetainedActorRequestKey::class,
             Authorize::class,
@@ -390,6 +399,18 @@ final readonly class CommandRegistry
         }
 
         return CommandEntry::Application;
+    }
+
+    /**
+     * @param  ReflectionClass<object>  $command
+     */
+    private static function effectDeclaredBy(ReflectionClass $command): CommandEffectType
+    {
+        foreach ($command->getAttributes(Effect::class) as $declared) {
+            return $declared->newInstance()->type;
+        }
+
+        return CommandEffectType::StateChange;
     }
 
     /**

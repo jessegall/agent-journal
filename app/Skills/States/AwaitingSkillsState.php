@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Skills\States;
 
+use App\Bus\Values\RecoveryCall;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\Stack\StackVerdict;
 use App\Hooks\States\AgentState;
 use App\Skills\Enums\PublicationState;
 
@@ -24,6 +26,11 @@ final class AwaitingSkillsState extends AgentState
     public function isFinished(): bool
     {
         return ! $this->publication->awaitsDelivery();
+    }
+
+    public function workPermission(): StackVerdict
+    {
+        return StackVerdict::refuse($this->reason(), new RecoveryCall('overview_read'));
     }
 
     #[StackWide]
