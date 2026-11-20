@@ -19,10 +19,9 @@ use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
+require __DIR__.'/models.php';
 
 const SECTIONS = ['Constructors', 'Queries', 'Mutations', 'Answers', 'Relations', 'Internals', 'Scopes'];
-
-const MODEL_PARENTS = ['Model', 'Pivot', 'MorphPivot', 'Authenticatable', 'PackagePasskey'];
 
 const RELATIONS = [
     'BelongsTo', 'BelongsToMany', 'HasMany', 'HasOne', 'HasManyThrough', 'HasOneThrough', 'MorphTo', 'MorphMany',
@@ -34,34 +33,6 @@ const MARKER = '/^\s*\/\/ -+\[ (\w+) \]-+\s*$/';
 const ROW_WRITES = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore)\(/';
 
 const ROW_MAKES = '/(self|static)::(create|forceCreate|firstOrCreate|updateOrCreate|insert)\(|->(save|create)\(|new (self|static)\b/';
-
-/**
- * @return list<string>
- */
-function phpFiles(string $path): array
-{
-    if (is_file($path)) {
-        return [$path];
-    }
-
-    $files = [];
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
-
-    foreach ($iterator as $file) {
-        if ($file->getExtension() === 'php') {
-            $files[] = $file->getPathname();
-        }
-    }
-
-    sort($files);
-
-    return $files;
-}
-
-function isModel(Class_ $class): bool
-{
-    return $class->extends !== null && in_array($class->extends->getLast(), MODEL_PARENTS, true);
-}
 
 /**
  * The section a method belongs in, read from its name, visibility, return type and what its body does.

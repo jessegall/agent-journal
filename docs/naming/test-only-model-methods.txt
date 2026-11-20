@@ -1,0 +1,12 @@
+AgentRuntime::requestEffort
+AgentRuntime::terminalViews
+MenuEntry::isCurrentOn
+RevisionFence::isPending
+StartRecord::replyInboxId
+AssignmentRecord::stillExists
+AgentStackRow::holdForInvestigation
+ProcessRun::mayAnswer
+Skill::allForMaintenance
+HelperPurpose::forSubject
+SequenceRun::written
+TaskRun::replyInboxId
