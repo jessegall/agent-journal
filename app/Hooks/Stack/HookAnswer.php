@@ -67,13 +67,7 @@ final readonly class HookAnswer
      */
     public function acceptedWith(self $replacement): self
     {
-        return new self(
-            $this->decision,
-            [...$this->context, ...$replacement->context],
-            [...$this->steps, ...$replacement->steps],
-            $replacement->stack,
-            [...$this->messages, ...$replacement->messages],
-        );
+        return $this->withFollowingWalk($replacement)->replacedBy($this->decision, $replacement->stack);
     }
 
     /**
@@ -81,6 +75,15 @@ final readonly class HookAnswer
      */
     public function refusedOn(AgentStack $stackBefore, self $rewrite): self
     {
-        return clone ($this, ['steps' => [...$rewrite->steps, ...$this->steps], 'stack' => $stackBefore]);
+        return $rewrite->withFollowingWalk($this)->replacedBy($this->decision, $stackBefore);
+    }
+
+    private function withFollowingWalk(self $following): self
+    {
+        return clone ($this, [
+            'context' => [...$this->context, ...$following->context],
+            'steps' => [...$this->steps, ...$following->steps],
+            'messages' => [...$this->messages, ...$following->messages],
+        ]);
     }
 }

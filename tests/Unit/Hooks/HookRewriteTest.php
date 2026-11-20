@@ -17,12 +17,14 @@ use App\Hooks\Stack\HookRewrite;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
+use Tests\Fixtures\Hooks\MarkedShellState;
 use Tests\Fixtures\Hooks\RewritingState;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\TestActors;
@@ -38,7 +40,7 @@ final class HookRewriteTest extends TestCase
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame('journal run tests', $answer->decision->replacementLine());
         $this->assertSame(
-            ['rewriter rewrite keep', 'rewriter delegate keep', 'ready allow keep'],
+            ['rewriter rewrite keep', 'rewriter delegate keep'],
             $this->stepsOf($answer),
         );
         $this->assertSame(2, $rewriter->askedCount);
@@ -52,8 +54,10 @@ final class HookRewriteTest extends TestCase
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame('The replacement is refused.', $answer->decision->refusalReason());
-        $steps = ['rewriter rewrite keep', 'rewriter delegate keep', 'ready deny keep'];
+        $steps = ['rewriter rewrite keep', 'guard rewrite keep', 'rewriter delegate keep', 'guard deny keep'];
         $this->assertSame($steps, $this->stepsOf($answer));
+        $this->assertSame(['Original context.', 'Refusal context.'], $answer->context);
+        $this->assertSame(['Original context.', 'Refusal context.'], $answer->messages);
     }
 
     public function test_a_refused_replacement_leaves_no_child_the_rewrite_pushed(): void
@@ -63,7 +67,7 @@ final class HookRewriteTest extends TestCase
         $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command('composer test'));
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
-        $this->assertSame(['ready', 'rewriter'], $answer->stack->frameIds());
+        $this->assertSame(['ready', 'guard', 'rewriter'], $answer->stack->frameIds());
     }
 
     public function test_an_admitted_replacement_keeps_the_child_the_rewrite_pushed(): void
@@ -75,7 +79,7 @@ final class HookRewriteTest extends TestCase
         $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame(['ready', 'rewriter', 'pushed-1'], $answer->stack->frameIds());
         $this->assertSame(
-            ['rewriter rewrite push', 'pushed-1 delegate keep', 'rewriter delegate keep', 'ready allow keep'],
+            ['rewriter rewrite push', 'pushed-1 delegate keep'],
             $this->stepsOf($answer),
         );
     }
@@ -99,33 +103,84 @@ final class HookRewriteTest extends TestCase
         $this->assertSame(1, $rewriter->askedCount);
     }
 
+    public function test_marked_delegate_replaces_a_rewrite_before_the_parser_is_called(): void
+    {
+        $rewriter = new RewritingState(['composer test' => 'git status']);
+        $guard = new MarkedShellState(fn () => Decision::message('Continue with the original line.'));
+        $parser = $this->createMock(ShellCommandParser::class);
+        $parser->expects($this->never())->method('parse');
+
+        $answer = new HookRewrite($parser)->answer($this->stack($rewriter, $guard), $this->command('composer test'));
+
+        $this->assertTrue($answer->isAllowed());
+        $this->assertSame(['rewriter rewrite keep', 'guard delegate keep'], $this->stepsOf($answer));
+        $this->assertSame(['Continue with the original line.'], $answer->messages);
+        $this->assertSame(1, $rewriter->askedCount);
+    }
+
+    public function test_marked_denial_keeps_the_original_input_and_stops_rewrite_parsing(): void
+    {
+        $rewriter = new RewritingState(['composer test' => 'git status']);
+        $guard = new MarkedShellState(fn (ShellCommandRequested $input) => Decision::deny($input->command->source));
+        $parser = $this->createMock(ShellCommandParser::class);
+        $parser->expects($this->never())->method('parse');
+
+        $answer = new HookRewrite($parser)->answer($this->stack($rewriter, $guard), $this->command('composer test'));
+
+        $this->assertSame('composer test', $answer->decision->refusalReason());
+        $this->assertSame(['rewriter rewrite keep', 'guard deny keep'], $this->stepsOf($answer));
+    }
+
+    public function test_an_accepted_rewrite_keeps_both_walks_context_and_messages(): void
+    {
+        $rewriter = new MarkedShellState(fn (ShellCommandRequested $input) => match ($input->command->source) {
+            'composer test' => Decision::rewrite('git status')->withMessage('Original context.'),
+            default => Decision::allow()->withMessage('Accepted context.'),
+        });
+
+        $answer = $this->rewrite()->answer($this->stack($rewriter), $this->command('composer test'));
+
+        $this->assertTrue($answer->isRewrite());
+        $this->assertSame(['Original context.', 'Accepted context.'], $answer->context);
+        $this->assertSame($answer->context, $answer->messages);
+    }
+
     private function rewrite(): HookRewrite
     {
         return new HookRewrite(new ListedCommandParser());
     }
 
-    private function stack(RewritingState $rewriter): AgentStack
+    private function stack(AgentState $rewriter, MarkedShellState ...$guards): AgentStack
     {
-        return $this->stackOn(ReadyState::TYPE_KEY, new ReadyState(new FixedOperationPolicy()), $rewriter);
-    }
-
-    /**
-     * A stack whose bottom frame refuses every line, so only a rewrite above it answers the original line.
-     */
-    private function refusingStack(RewritingState $rewriter): AgentStack
-    {
-        return $this->stackOn('refusing', new ScriptedState(Decision::deny('The replacement is refused.')), $rewriter);
-    }
-
-    private function stackOn(string $bottomTypeKey, AgentState $bottom, RewritingState $rewriter): AgentStack
-    {
-        $noSubject = fn (string $typeKey) => new StateReference($typeKey, NoSubject::None);
+        $ready = new ReadyState(new FixedOperationPolicy());
         $factory = new InMemoryStateFactory(['guide' => fn () => ScriptedState::delegating()]);
 
         return new AgentStack([
-            new Frame('ready', $noSubject($bottomTypeKey), $bottom, CarbonImmutable::now(), bottom: true),
-            new Frame('rewriter', $noSubject('rewriter'), $rewriter, CarbonImmutable::now()),
+            $this->frame('ready', $ready, bottom: true),
+            ...array_map(fn (MarkedShellState $guard) => $this->frame('guard', $guard), $guards),
+            $this->frame('rewriter', $rewriter),
         ], $factory);
+    }
+
+    private function refusingStack(RewritingState $rewriter): AgentStack
+    {
+        $guard = new MarkedShellState(fn (ShellCommandRequested $input) => match ($input->command->source) {
+            'composer test' => Decision::rewrite('journal run tests --write')->withMessage('Original context.'),
+            default => Decision::deny('The replacement is refused.')->withMessage('Refusal context.'),
+        });
+
+        return $this->stack($rewriter, $guard);
+    }
+
+    private function frame(string $id, AgentState $state, bool $bottom = false): Frame
+    {
+        return new Frame(
+            $id,
+            new StateReference($id, NoSubject::None),
+            $state,
+            CarbonImmutable::now(),
+            bottom: $bottom,
+        );
     }
 
     private function guide(): StateReference

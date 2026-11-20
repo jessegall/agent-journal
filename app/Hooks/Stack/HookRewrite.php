@@ -24,16 +24,12 @@ final readonly class HookRewrite
             return $first;
         }
 
-        $replacement = $input->replacedBy(
-            $this->parser->parse($first->decision->replacementLine(), $input->command->dialect),
-        );
+        $line = $first->decision->replacementLine();
+        $replacement = $input->replacedBy($this->parser->parse($line, $input->command->dialect));
         $second = $first->stack->answer($replacement);
 
         if ($second->isRewrite()) {
-            throw RepeatedCommandRewrite::for($first->decision
-                ->replacementLine(), $second
-                ->decision
-                ->replacementLine());
+            throw RepeatedCommandRewrite::for($line, $second->decision->replacementLine());
         }
 
         if ($second->isAllowed()) {

@@ -52,16 +52,7 @@ final class HookWalk
         $decision = $frame->answer($input);
         $answer = $decision->answerType();
 
-        $this->steps[] = WalkStep::from([
-            'frameId' => $frame->id,
-            'stateType' => $frame->typeKey(),
-            'hookMethod' => $selected->method->name,
-            'answer' => $answer,
-            'change' => $decision->transition->type(),
-            'contextCount' => count($decision->context),
-            'selectionReason' => $selected->reason,
-            'denialReason' => $answer === AnswerType::Deny ? $decision->refusalReason() : null,
-        ]);
+        $this->steps[] = WalkStep::fromDecision($selected, $decision);
 
         if ($frame->isBottom() && $decision->isDelegating()) {
             throw BottomStateDelegated::for($frame->typeKey(), $input->methodName(), $this->visitedFrames());

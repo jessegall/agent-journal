@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Hooks\Storage;
 
+use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\SelectionReason;
 use App\Hooks\Enums\TransitionType;
+use App\Hooks\Stack\SelectedStateMethod;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
@@ -27,4 +29,18 @@ final class WalkStep extends Data
         public readonly SelectionReason|null $selectionReason = null,
         public readonly string|null $denialReason = null,
     ) {}
+
+    public static function fromDecision(SelectedStateMethod $selected, Decision $decision): self
+    {
+        return new self(
+            frameId: $selected->frame->id,
+            stateType: $selected->frame->typeKey(),
+            hookMethod: $selected->method->name,
+            answer: $decision->answerType(),
+            transition: $decision->transition->type(),
+            contextCount: count($decision->context),
+            selectionReason: $selected->reason,
+            denialReason: $decision->answerType() === AnswerType::Deny ? $decision->refusalReason() : null,
+        );
+    }
 }
