@@ -51,6 +51,21 @@ final readonly class ToolArguments
         return self::within($tool, $request->all(), $fields);
     }
 
+    /** @param list<string> $fields */
+    public static function query(string $resource, Request $request, array $fields): self
+    {
+        parse_str((string) parse_url((string) $request->uri(), PHP_URL_QUERY), $query);
+
+        return self::within($resource, $query, $fields);
+    }
+
+    public static function uriId(Request $request): string
+    {
+        $path = (string) parse_url((string) $request->uri(), PHP_URL_PATH);
+
+        return new self(['id' => basename($path)])->ulid('id');
+    }
+
     /**
      * @param  array<array-key, mixed>  $arguments
      * @param  list<string>  $fields
@@ -256,6 +271,16 @@ final readonly class ToolArguments
         }
 
         return $case;
+    }
+
+    /**
+     * @template T of BackedEnum
+     * @param T $default
+     * @return T
+     */
+    public function enumOr(string $name, BackedEnum $default): BackedEnum
+    {
+        return array_key_exists($name, $this->arguments) ? $this->enum($name, $default::class) : $default;
     }
 
     /**

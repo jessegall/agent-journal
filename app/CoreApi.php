@@ -274,6 +274,7 @@ use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\RankedLaunchCandidate;
+use App\Agents\Support\ReadGrant;
 use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
@@ -295,6 +296,7 @@ use App\Agents\Values\NavigationRoundReport;
 use App\Agents\Values\NavigationScreen;
 use App\Agents\Values\Operation as PolicyOperation;
 use App\Agents\Values\OperationGrant;
+use App\Agents\Values\ReadRequest;
 use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\ScriptGoal;
 use App\Agents\Values\ScriptParameter;
@@ -400,6 +402,7 @@ use App\Bus\Contracts\HasAuthorizationSubject;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\CommandEffectType;
 use App\Supervision\Commands\ChangeSupervisor;
@@ -625,9 +628,13 @@ use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Exceptions\ResourceMimeTypeRefused;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
+use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
+use App\Mcp\Support\Continuation;
+use App\Mcp\Support\Continuations;
+use App\Mcp\Support\TextChunk;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
@@ -1246,6 +1253,7 @@ final class CoreApi
                 CommandHandler::class,
                 ProvidesCommands::class,
                 ProvidesMcpTools::class,
+                RefusalDetails::class,
                 McpCall::class,
                 NumberedPages::class,
                 ProvidesCommandMiddleware::class,
@@ -1381,6 +1389,9 @@ final class CoreApi
                 OwnerStartRequest::class,
                 OwnerStartReceipt::class,
                 ToolArguments::class,
+                ReadRequest::class,
+                Continuation::class,
+                TextChunk::class,
                 Dispatches::class,
                 RecoveryCall::class,
                 RecordCard::class,
@@ -2091,6 +2102,7 @@ final class CoreApi
                 ExecutionPolicyInvalid::class,
                 ExecutionBudgetInvalid::class,
                 ToolArgumentInvalid::class,
+                ContinuationStale::class,
                 ToolArgumentUnknown::class,
                 ContinuationInvalid::class,
                 ContinuationStale::class,
@@ -2137,6 +2149,8 @@ final class CoreApi
                 JournalWriteTool::class,
                 ReadsAssignmentArguments::class,
                 RequestKey::class,
+                ReadGrant::class,
+                Continuations::class,
                 JournalResource::class,
                 RendersRefusal::class,
                 RunsCallPipelines::class,

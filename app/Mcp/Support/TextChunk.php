@@ -33,7 +33,7 @@ final readonly class TextChunk
     /**
      * The chunk of the text from the line and character offset given.
      */
-    public static function of(string $text, int $lineStart, int $characterStart): self
+    public static function of(string $text, int $lineStart, int $characterStart, int $byteLimit = self::MAX_BYTES): self
     {
         $lines = explode("\n", $text);
         $parts = [];
@@ -43,7 +43,11 @@ final readonly class TextChunk
 
         while ($line <= count($lines) && count($parts) < self::MAX_LINES) {
             $rest = mb_substr($lines[$line - 1], $character, null, self::ENCODING);
-            $room = self::MAX_BYTES - $bytes;
+            $room = $byteLimit - $bytes - (int) ($parts !== []);
+
+            if ($room < 0) {
+                break;
+            }
 
             if (strlen($rest) > $room) {
                 $part = mb_strcut($rest, 0, $room, self::ENCODING);
@@ -60,7 +64,7 @@ final readonly class TextChunk
             }
 
             $parts[] = $rest;
-            $bytes += strlen($rest) + 1;
+            $bytes += strlen($rest) + (int) (count($parts) > 1);
             $line++;
             $character = 0;
         }

@@ -30,6 +30,11 @@ final class ContinuationStale extends RuntimeException implements CodedRefusal, 
         );
     }
 
+    public static function textChanged(): self
+    {
+        return new self('The text changed. Start the read again from its first page.');
+    }
+
     public function refusalCode(): RefusalCode
     {
         return RefusalCode::StaleContinuation;

@@ -5,23 +5,32 @@ declare(strict_types=1);
 namespace Domain\Tasks\Exceptions;
 
 use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
+use App\Bus\Values\RecoveryCall;
 use App\Contracts\CommandRefusal;
+use Domain\Tasks\Models\Task;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * A task run another session owns, which a start may not take.
  */
-final class TaskRunTaken extends RuntimeException implements CodedRefusal, CommandRefusal
+final class TaskRunTaken extends RuntimeException implements CodedRefusal, CommandRefusal, RefusalDetails
 {
     use RendersRefusal;
 
-    public static function forTask(int $taskNumber): self
+    private function __construct(string $message, private readonly string $taskId)
+    {
+        parent::__construct($message);
+    }
+
+    public static function forTask(Task $task): self
     {
         return new self(
-            "Task {$taskNumber} is being worked on by another session; it cannot be started until that run ends.",
+            "Task {$task->number} is being worked on by another session. It can be started when that run ends.",
+            $task->id,
         );
     }
 
@@ -33,5 +42,15 @@ final class TaskRunTaken extends RuntimeException implements CodedRefusal, Comma
     protected function status(): int
     {
         return Response::HTTP_CONFLICT;
+    }
+
+    public function refusalDetails(): array
+    {
+        return ['next_action' => new RecoveryCall('tasks_read', ['task_id' => $this->taskId])->toArray()];
+    }
+
+    protected function details(): array
+    {
+        return $this->refusalDetails();
     }
 }
