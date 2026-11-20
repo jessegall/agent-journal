@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Actors\Contracts\CurrentActor;
-use App\Agents\Support\ReadGrant;
+use App\Agents\Contracts\ReadGrant;
 use App\Agents\Values\Operation;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandRegistry;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
@@ -43,7 +43,7 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
         $authority = $this->actors->authority();
 
         if (! $authority instanceof StartProfileAuthority) {
-            return ! $this->actors->actor()->type->isAgent();
+            return ! $this->actors->actor()->isAgent();
         }
 
         $write = $tool->writeDeclaration();
@@ -54,7 +54,7 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
     public function profileKey(): string
     {
         if ($this->actors->hasActor() && ($authority = $this->actors->authority()) instanceof StartProfileAuthority) {
-            return $authority->profile->key->key;
+            return $authority->profileKey();
         }
 
         return DiscoveryProfile::MainAgent->value;
@@ -64,14 +64,14 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
     {
         $declaration = $this->commands->operationOf($write->command);
 
-        if ($declaration !== null && ! $authority->profile->start->access->decide(
+        if ($declaration !== null && ! $authority->profile->allowsOperation(
             Operation::journal($declaration->name, $declaration->area, $declaration->accessTypes),
-        )->allowed) {
+        )) {
             return false;
         }
 
         return $this->commands->authorizationOf($write->command)->map(
-            fn (CommandAuthorization $authorization): bool => $authority->profile->authorization->grants(
+            fn (CommandAuthorization $authorization): bool => $authority->profile->grants(
                 $authorization->policy,
                 $authorization->ability,
             ),
@@ -109,7 +109,7 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
         foreach (new ReflectionClass($tool)->getAttributes(Authorize::class) as $attribute) {
             $declaration = $attribute->newInstance();
 
-            return $authority->profile->authorization->grants($declaration->policy, $declaration->ability);
+            return $authority->profile->grants($declaration->policy, $declaration->ability);
         }
 
         return true;

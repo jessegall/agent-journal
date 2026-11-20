@@ -13,11 +13,16 @@ final readonly class ScriptSource
     /**
      * @param list<NamedCommand> $commands
      */
-    public function __construct(public string $text = '', public array $commands = [])
+    public function __construct(public string $text, public array $commands = [])
     {
         if (strlen($text) > self::MAX_BYTES || count($commands) > 64) {
             throw ProfileDraftRefused::oversized();
         }
+    }
+
+    public static function empty(): self
+    {
+        return new self('');
     }
 
     /**

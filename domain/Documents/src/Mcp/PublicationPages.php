@@ -23,8 +23,13 @@ final readonly class PublicationPages
     ) {}
 
     /** @param array<string, mixed> $card */
-    public function summary(MarkdownText $body, string $abstract, Continuation $read, string $key, array $card): ToolResult
-    {
+    public function summary(
+        MarkdownText $body,
+        string $abstract,
+        Continuation $read,
+        string $key,
+        array $card,
+    ): ToolResult {
         $outline = $body->outline();
         $entries = [];
         $length = strlen(json_encode($abstract, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));

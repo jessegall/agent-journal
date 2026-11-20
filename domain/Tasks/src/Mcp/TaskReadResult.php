@@ -49,7 +49,8 @@ final readonly class TaskReadResult
             return ToolResult::ok([...$summary, ...$text]);
         }
 
-        $position = $this->fields->start(new Continuation(self::TOOL, $taskId, [], 1, revision: $task->revision), $text);
+        $read = new Continuation(self::TOOL, $taskId, [], 1, revision: $task->revision);
+        $position = $this->fields->start($read, $text);
 
         return $this->fields->page($summary, $text, $position, 'task_id');
     }

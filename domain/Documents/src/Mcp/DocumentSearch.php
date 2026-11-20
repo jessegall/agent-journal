@@ -9,12 +9,14 @@ use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\SearchPage;
 use App\Operations\Enums\ResourceAreaType;
-use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Data\DocumentCard;
+use Domain\Documents\Data\DocumentFilters;
+use Domain\Documents\Enums\AttentionFilter;
 
 final readonly class DocumentSearch implements SearchContribution
 {
-    public function __construct(private DocumentReader $documents) {}
+    public function __construct(private DocumentResolver $documents) {}
 
     public function recordType(): string
     {
@@ -28,7 +30,12 @@ final readonly class DocumentSearch implements SearchContribution
 
     public function search(string $query, int $page): SearchPage
     {
-        $matches = $this->documents->list($query, $page, self::PAGE_SIZE);
+        $matches = $this->documents->list(DocumentFilters::from([
+            'attention' => AttentionFilter::All,
+            'query' => $query,
+            'page' => $page,
+            'perPage' => self::PAGE_SIZE,
+        ]));
         $hits = array_map(fn (DocumentCard $doc) => SearchHit::matching(
             $this->recordType(),
             $doc->id,

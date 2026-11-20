@@ -12,7 +12,7 @@ use App\Profiles\Casts\ProfileBaseCast;
 use App\Profiles\Casts\ProfileStartPolicyCast;
 use App\Profiles\Casts\SupervisorRoutesCast;
 use App\Profiles\Exceptions\ProfileMissing;
-use App\Profiles\Exceptions\ProfileRevisionImmutable;
+use App\Profiles\Models\Concerns\PreventsRevisionUpdates;
 use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
@@ -75,7 +75,7 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 final class ProfileRevision extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads, HasUlids, Linkable, PreventsRevisionUpdates;
 
     public const string LINK_TYPE = 'core.profile-revision';
 
@@ -99,11 +99,6 @@ final class ProfileRevision extends Model implements ReadableModel
             'author_type' => ActorType::class,
             'created_at' => 'immutable_datetime',
         ];
-    }
-
-    protected static function booted(): void
-    {
-        self::updating(fn (self $revision) => throw ProfileRevisionImmutable::for($revision->id));
     }
 
     /**

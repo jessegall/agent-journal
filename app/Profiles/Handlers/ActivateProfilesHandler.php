@@ -91,7 +91,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
                 Profile::activate($definition, $author, $source)->revision,
                 $change,
                 $coverage[$definition->key->key],
-                new ScriptDiff($current[$definition->key->key] ?? new ScriptSource(), $source),
+                new ScriptDiff($current[$definition->key->key] ?? ScriptSource::empty(), $source),
             ),
             $definitions,
             $changes,

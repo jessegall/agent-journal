@@ -81,7 +81,7 @@ final class ProfileDraft extends Model implements ReadableModel
             throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
         }
 
-        return $this->currentRevision?->scriptSource() ?? new ScriptSource();
+        return $this->currentRevision?->scriptSource() ?? ScriptSource::empty();
     }
 
     public static function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int

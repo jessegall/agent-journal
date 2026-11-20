@@ -89,27 +89,16 @@ final readonly class PlanReadResult
         int $nextPhase,
         int $phaseCount,
     ): Continuation|null {
-        if ($nextPhase < $phaseCount) {
-            return $this->phasePosition($plan, $position, $position->offset, $nextPhase);
+        $hasMorePhases = $nextPhase < $phaseCount;
+        $taskOffset = $hasMorePhases ? $position->offset : $plan->nextTaskOffset;
+        if ($taskOffset === null) {
+            return null;
         }
 
-        if ($plan->nextTaskOffset !== null) {
-            return $this->phasePosition($plan, $position, $plan->nextTaskOffset, 0);
-        }
-
-        return null;
-    }
-
-    private function phasePosition(
-        PlanDetails $plan,
-        Continuation $position,
-        int $taskOffset,
-        int $phaseOffset,
-    ): Continuation {
         return new Continuation(
             self::TOOL,
             $plan->id,
-            [...$position->filters, 'phase_offset' => $phaseOffset],
+            [...$position->filters, 'phase_offset' => $hasMorePhases ? $nextPhase : 0],
             $taskOffset,
             revision: $plan->revision,
         );
