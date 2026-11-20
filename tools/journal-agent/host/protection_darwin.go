@@ -4,8 +4,8 @@ package host
 
 // platformMechanisms is what the pinned clients can apply on macOS before their tools run. A mechanism listed here
 // still needs native evidence before the item counts as enforced.
-func platformMechanisms() map[string]map[BoundaryItem]BoundaryMechanism {
-	return map[string]map[BoundaryItem]BoundaryMechanism{
+func platformMechanisms() map[string]ProgramMechanisms {
+	return map[string]ProgramMechanisms{
 		"claude": {
 			AccountSecrets: native("sandbox.enabled with permissions.deny Read on the account's sign-in items: " +
 				"the Seatbelt profile for Bash and its children, the permission check for file tools"),

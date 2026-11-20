@@ -245,10 +245,9 @@ type Claim struct {
 // Claim long-polls for up to waitSeconds and returns at most limit requests of this host's runtimes; the poll answers
 // at once when the watched list's version differs from watchedVersion, the last one the host saw.
 func (client *Client) Claim(ctx context.Context, limit, waitSeconds, watchedVersion int) (Claim, error) {
-	var answer Claim
 	target := "/host/claim?limit=" + strconv.Itoa(limit) + "&wait=" + strconv.Itoa(waitSeconds) +
 		"&watched_version=" + strconv.Itoa(watchedVersion)
-	return answer, client.call(ctx, target, nil, &answer)
+	return answerOf[Claim](ctx, client, target, nil)
 }
 
 // ScreenReport is one frame of a watched runtime's screen.
@@ -296,6 +295,24 @@ type StartFolder struct {
 	Arguments []string    `json:"arguments"`
 }
 
+// Paths are the folder's name and the path of each of its files, every path the host writes for it.
+func (folder StartFolder) Paths() []string {
+	paths := []string{folder.Name}
+	for _, file := range folder.Files {
+		paths = append(paths, file.Path)
+	}
+	return paths
+}
+
+// ArgumentsAt are the arguments that point the program at the folder written at the absolute path; none when the
+// folder takes no arguments.
+func (folder StartFolder) ArgumentsAt(absolute string) []string {
+	if len(folder.Arguments) == 0 {
+		return nil
+	}
+	return append(append([]string{}, folder.Arguments...), absolute)
+}
+
 // Grant is a runtime's start token and the folders its start needs, which the journal hands out once.
 type Grant struct {
 	Token           string        `json:"token"`
@@ -319,6 +336,11 @@ type RuntimeStart struct {
 	Effort            *string `json:"effort"`
 }
 
+// ProgramBuild is the build of the program the grant starts.
+func (grant Grant) ProgramBuild() string {
+	return grant.Runtime.ProgramBuild
+}
+
 // ProfileEnvironment is the start's pinned authorization profile as environment entries; none when it has no pin.
 func (grant Grant) ProfileEnvironment() []string {
 	if grant.ProfileKey == "" {
@@ -335,8 +357,7 @@ func (grant Grant) ProfileEnvironment() []string {
 // StartGrant takes a runtime's grant; the journal refuses it while what the start needs, such as its skills, is not
 // ready.
 func (client *Client) StartGrant(ctx context.Context, runtimeID string) (Grant, error) {
-	var answer Grant
-	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/start", nil, &answer)
+	return answerOf[Grant](ctx, client, "/host/runtimes/"+runtimeID+"/start", nil)
 }
 
 // RaiseNavigation asks the journal what to do at a point a key script run could not be certain of.
@@ -345,8 +366,7 @@ func (client *Client) RaiseNavigation(
 	runtimeID string,
 	raise NavigationRaise,
 ) (NavigationAnswer, error) {
-	var answer NavigationAnswer
-	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/navigation", raise, &answer)
+	return answerOf[NavigationAnswer](ctx, client, "/host/runtimes/"+runtimeID+"/navigation", raise)
 }
 
 // ReportReplayed reports that the replay of a library entry worked on the runtime, under the replay's key.
@@ -384,6 +404,12 @@ func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport
 
 func (client *Client) ReportExit(ctx context.Context, report LivenessReport) error {
 	return client.call(ctx, "/host/reports/exit", report, nil)
+}
+
+// answerOf posts the body to the target and decodes the journal's answer as an A.
+func answerOf[A any](ctx context.Context, client *Client, target string, body any) (A, error) {
+	var answer A
+	return answer, client.call(ctx, target, body, &answer)
 }
 
 func (client *Client) call(ctx context.Context, target string, body any, answer any) error {

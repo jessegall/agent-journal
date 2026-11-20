@@ -63,7 +63,7 @@ func TestRunningTurnStagesEffortAndAdmitsTheDeliveryAfterIt(t *testing.T) {
 	queue.Add(request(1, operationChangeEffort), request(2, operationDeliver), request(3, operationWake))
 
 	whileBusy := queue.Next()
-	if !equal(sequences(whileBusy.Staged), []int{1}) || whileBusy.StartsTurn() {
+	if !equal(sequences(whileBusy.Staged), []int{1}) || whileBusy.ShouldStartTurn() {
 		t.Fatalf("while busy got %+v", whileBusy)
 	}
 
@@ -169,7 +169,7 @@ func TestAKeyScriptRunsAloneAfterTheLeadingSettingsAndBeforeTheContentBehindIt(t
 
 	admission := queue.Next()
 	if admission.Script == nil || admission.Script.Sequence != 2 || !equal(sequences(admission.Staged), []int{1}) ||
-		admission.StartsTurn() {
+		admission.ShouldStartTurn() {
 		t.Fatalf("the first admission is %+v", admission)
 	}
 

@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+// ErrUnknownAction refuses a key script step whose action the runner does not know.
+var ErrUnknownAction = errors.New("the key script step has an action the runner does not know")
+
 // ErrUnknownScript refuses a script name nobody registered for the profile.
 var ErrUnknownScript = errors.New("no key script of that name is registered for the profile")
 

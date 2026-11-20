@@ -69,6 +69,15 @@ export function connectUser(
 }
 
 /**
+ * The journal refused to sign the browser in to a private channel.
+ */
+class ChannelSignInRefused extends Error {
+    static for(status: number): ChannelSignInRefused {
+        return new ChannelSignInRefused(`The channel sign-in was refused with ${status}.`);
+    }
+}
+
+/**
  * Asks the server whether this tab may listen on a private channel, with the session's current XSRF token read at
  * that moment, so a sign-in after a reconnect uses a fresh one.
  */
@@ -92,9 +101,7 @@ async function signInToChannel(
     });
 
     if (!response.ok) {
-        throw new Error(
-            `The channel sign-in was refused with ${response.status}.`,
-        );
+        throw ChannelSignInRefused.for(response.status);
     }
 
     return (await response.json()) as { auth: string };

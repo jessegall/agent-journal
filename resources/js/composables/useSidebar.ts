@@ -1,4 +1,5 @@
 import { onMounted, ref } from 'vue';
+import { keepStored, readStored } from '@/composables/browserStorage';
 
 const STORAGE_KEY = 'sidebar-mini';
 
@@ -12,19 +13,11 @@ export function useSidebar() {
     function toggle(): void {
         isMini.value = !isMini.value;
 
-        try {
-            localStorage.setItem(STORAGE_KEY, isMini.value ? '1' : '0');
-        } catch {
-            // Storage can be unavailable in a private window; the sidebar still switches for this visit.
-        }
+        keepStored('local', STORAGE_KEY, isMini.value ? '1' : '0');
     }
 
     onMounted(() => {
-        try {
-            isMini.value = localStorage.getItem(STORAGE_KEY) === '1';
-        } catch {
-            isMini.value = false;
-        }
+        isMini.value = readStored('local', STORAGE_KEY) === '1';
     });
 
     return { isMini, toggle };

@@ -8,7 +8,7 @@ import {
     dockWindow,
 } from '@/components/panes/arrangement';
 import type { DetachedWindow } from '@/components/panes/arrangement';
-import { usePaneLayout } from '@/composables/usePaneLayout';
+import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import MenuList from './MenuList.vue';
 
 /**

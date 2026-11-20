@@ -433,17 +433,15 @@ func printScreen(folder string) error {
 	if err != nil {
 		return err
 	}
-	for _, chunk := range fixture.Output {
-		if err := reader.Feed(chunk.Bytes); err != nil {
-			return err
-		}
+	if err := fixture.FeedScreen(reader); err != nil {
+		return err
 	}
 
 	snapshot := reader.Snapshot()
 	for _, row := range snapshot.Rows {
 		fmt.Println(row)
 	}
-	fmt.Printf("-- cursor %d,%d visible %v, %s buffer, exit %d\n", snapshot.Cursor.Row, snapshot.Cursor.Column, snapshot.Cursor.Visible, snapshot.Buffer, fixture.ExitCode)
+	fmt.Printf("-- %s, exit %d\n", snapshot.Status(), fixture.ExitCode)
 
 	return nil
 }
@@ -463,24 +461,8 @@ func annotate(folder string) error {
 	if err != nil {
 		return err
 	}
-
-	fixture.Checkpoints = nil
-	next := 0
-	for _, input := range fixture.Inputs {
-		until := input.Offset + settleTime
-		for ; next < len(fixture.Output) && fixture.Output[next].Offset <= until; next++ {
-			if err := reader.Feed(fixture.Output[next].Bytes); err != nil {
-				return err
-			}
-		}
-
-		snapshot := reader.Snapshot()
-		fixture.Checkpoints = append(fixture.Checkpoints, recording.ScreenCheckpoint{
-			Offset:       until,
-			Rows:         snapshot.Rows,
-			CursorRow:    snapshot.Cursor.Row,
-			CursorColumn: snapshot.Cursor.Column,
-		})
+	if err := fixture.MarkCheckpoints(reader, settleTime); err != nil {
+		return err
 	}
 
 	return fixture.Save(folder)

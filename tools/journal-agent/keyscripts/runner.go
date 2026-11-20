@@ -2,6 +2,7 @@ package keyscripts
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"journal-agent/screen"
@@ -78,12 +79,20 @@ const pollInterval = 50 * time.Millisecond
 
 // Runner runs key scripts one step at a time through the input gate, reporting each confirmed step.
 type Runner struct {
-	gate    *terminal.InputGate
+	gate    Gate
 	screen  Screen
 	clock   Clock
 	view    View
 	program Program
 	report  func(Progress)
+}
+
+// Gate is the input gate a run sends its keys through: it counts the user's inputs and says who holds the
+// composer, so a run stops for a user who types.
+type Gate interface {
+	Keys(keys string) error
+	HumanInputs() uint64
+	Owner() terminal.Owner
 }
 
 // View is what a run reads besides the screen's kind: the screen's rows and the entries of the menu on it, none
@@ -96,7 +105,7 @@ type View interface {
 // NewRunner runs scripts of the program through the gate, reading the screen's kind from screen and its words and
 // menus from view.
 func NewRunner(
-	gate *terminal.InputGate,
+	gate Gate,
 	screen Screen,
 	clock Clock,
 	view View,
@@ -424,7 +433,9 @@ func (runner *Runner) act(step KeyStep, values map[string]string) error {
 		}
 
 		return runner.gate.Keys(enterKey)
-	default:
+	case WaitForScreen, WaitForHuman:
 		return nil
+	default:
+		return fmt.Errorf("%w: %q in step %s", ErrUnknownAction, step.Action, step.Name)
 	}
 }

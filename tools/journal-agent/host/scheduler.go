@@ -44,8 +44,8 @@ func (admission Admission) IsEmpty() bool {
 		len(admission.Wakes) == 0 && admission.Script == nil && admission.Navigation == nil
 }
 
-// StartsTurn says whether the admission starts a turn of the program.
-func (admission Admission) StartsTurn() bool {
+// ShouldStartTurn says whether the admission starts a turn of the program.
+func (admission Admission) ShouldStartTurn() bool {
 	return len(admission.Deliveries) > 0 || len(admission.Wakes) > 0
 }
 

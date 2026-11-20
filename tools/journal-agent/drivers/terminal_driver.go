@@ -228,7 +228,7 @@ func (driver *TerminalDriver) NavigateRound(round keyscripts.Round) keyscripts.R
 			Completes: round.Completes,
 			NextStep:  round.NextStep,
 		}
-		if entry, err := keyscripts.EntryFromActions(path); err == nil {
+		if entry, err := path.Entry(); err == nil {
 			result.Path = entry.Steps
 		}
 	}

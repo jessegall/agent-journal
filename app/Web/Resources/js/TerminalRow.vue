@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CSSProperties } from 'vue';
 import type { ScreenRunData, ScreenStyleData } from '@generated/types/core';
 
 /**
@@ -9,7 +10,7 @@ defineProps<{ runs: ScreenRunData[]; plain: boolean }>();
 function styleOf(
     style: ScreenStyleData,
     plain: boolean,
-): Record<string, string> {
+): CSSProperties {
     if (plain) {
         return {};
     }

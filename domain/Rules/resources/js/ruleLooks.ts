@@ -12,9 +12,14 @@ export const ruleStateLook: Record<RuleState, { label: string; tone: string }> =
     };
 
 /**
+ * The rules window's filters as the page's query string reads them.
+ */
+export type RuleQuery = { q?: string; page?: number; rule?: string };
+
+/**
  * The rules window's filters as a query: no empty search and no first page.
  */
-export function ruleQuery(filters: RuleFiltersData): Record<string, string | number | undefined> {
+export function ruleQuery(filters: RuleFiltersData): RuleQuery {
     return {
         q: filters.q || undefined,
         page: filters.page > 1 ? filters.page : undefined,

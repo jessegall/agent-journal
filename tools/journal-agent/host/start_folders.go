@@ -14,40 +14,41 @@ import (
 // earlier copy, and returns the arguments that point the program at them. A name or path that would leave the
 // settings folder is refused before anything is written.
 func WriteStartFolders(settingsFolder string, folders []client.StartFolder) ([]string, error) {
-	arguments := []string{}
-
 	for _, folder := range folders {
-		if err := checkInside(folder.Name); err != nil {
-			return nil, err
-		}
-		for _, file := range folder.Files {
-			if err := checkInside(file.Path); err != nil {
+		for _, path := range folder.Paths() {
+			if err := checkInside(path); err != nil {
 				return nil, err
 			}
 		}
 	}
 
+	arguments := []string{}
 	for _, folder := range folders {
 		absolute := filepath.Join(settingsFolder, folder.Name)
-		if err := os.RemoveAll(absolute); err != nil {
+		if err := writeStartFiles(absolute, folder.Files); err != nil {
 			return nil, err
 		}
-		for _, file := range folder.Files {
-			target := filepath.Join(absolute, file.Path)
-			if err := os.MkdirAll(filepath.Dir(target), 0o700); err != nil {
-				return nil, err
-			}
-			if err := os.WriteFile(target, []byte(file.Content), 0o600); err != nil {
-				return nil, err
-			}
-		}
-		if len(folder.Arguments) > 0 {
-			arguments = append(arguments, folder.Arguments...)
-			arguments = append(arguments, absolute)
-		}
+		arguments = append(arguments, folder.ArgumentsAt(absolute)...)
 	}
 
 	return arguments, nil
+}
+
+// writeStartFiles writes the files into the folder, replacing any earlier copy of it.
+func writeStartFiles(folder string, files []client.StartFile) error {
+	if err := os.RemoveAll(folder); err != nil {
+		return err
+	}
+	for _, file := range files {
+		target := filepath.Join(folder, file.Path)
+		if err := os.MkdirAll(filepath.Dir(target), 0o700); err != nil {
+			return err
+		}
+		if err := os.WriteFile(target, []byte(file.Content), 0o600); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // RequireNoLinks refuses a settings folder with a link anywhere from the state folder down to it: a link there

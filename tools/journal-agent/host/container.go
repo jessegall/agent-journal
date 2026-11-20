@@ -60,11 +60,17 @@ func RequireContainerTransport(arrangement string) error {
 	return fmt.Errorf("%w: %s", ErrContainerTransportUnsupported, arrangement)
 }
 
+// IsSafe is whether the manifest may start a container: unprivileged, with no capabilities or published ports, an
+// exact image digest, one workspace mount and a named user.
+func (manifest ContainerManifest) IsSafe() bool {
+	isConfined := !manifest.Privileged && len(manifest.Capabilities) == 0 && len(manifest.PublishedPorts) == 0
+	return isConfined && strings.Contains(manifest.Image, "@sha256:") && len(manifest.Mounts) == 1 && manifest.User != ""
+}
+
 // DockerCreateArguments are the arguments of `docker create` for the manifest: its exact image digest, the
 // unprivileged user, a read-only root, no capabilities, one workspace mount and the bounded resources.
-func DockerCreateArguments(manifest ContainerManifest, name string) ([]string, error) {
-	if manifest.Privileged || len(manifest.Capabilities) > 0 || len(manifest.PublishedPorts) > 0 ||
-		!strings.Contains(manifest.Image, "@sha256:") || len(manifest.Mounts) != 1 || manifest.User == "" {
+func (manifest ContainerManifest) DockerCreateArguments(name string) ([]string, error) {
+	if !manifest.IsSafe() {
 		return nil, ErrManifestUnsafe
 	}
 	arguments := []string{
@@ -100,7 +106,7 @@ type Containers struct {
 
 // Create creates the container from the manifest and answers its id.
 func (containers Containers) Create(ctx context.Context, manifest ContainerManifest, name string) (string, error) {
-	arguments, err := DockerCreateArguments(manifest, name)
+	arguments, err := manifest.DockerCreateArguments(name)
 	if err != nil {
 		return "", err
 	}
@@ -123,7 +129,7 @@ func (containers Containers) IsRunning(ctx context.Context, id string) (bool, er
 	return strings.TrimSpace(string(output)) == "true", nil
 }
 
-// Stop stops the container within the bound and answers only once inspect shows it no longer runs.
+// Stop stops the container within the bound and answers only once inspect shows it stopped.
 func (containers Containers) Stop(ctx context.Context, id string, seconds int) error {
 	if err := exec.CommandContext(ctx, containers.Docker, "stop", "--time", strconv.Itoa(seconds), id).Run(); err != nil {
 		return err

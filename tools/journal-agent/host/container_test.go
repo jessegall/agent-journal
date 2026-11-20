@@ -16,7 +16,7 @@ func manifest() ContainerManifest {
 }
 
 func TestAManifestBecomesABoundedUnprivilegedContainer(t *testing.T) {
-	arguments, err := DockerCreateArguments(manifest(), "helper-7")
+	arguments, err := manifest().DockerCreateArguments("helper-7")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func TestAManifestAskingForMoreThanAHelperMayHaveIsRefused(t *testing.T) {
 		changed := manifest()
 		change(&changed)
 
-		if _, err := DockerCreateArguments(changed, "helper-7"); !errors.Is(err, ErrManifestUnsafe) {
+		if _, err := changed.DockerCreateArguments("helper-7"); !errors.Is(err, ErrManifestUnsafe) {
 			t.Fatalf("an unsafe manifest gave %v", err)
 		}
 	}

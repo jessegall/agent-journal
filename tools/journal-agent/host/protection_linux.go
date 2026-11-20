@@ -7,8 +7,8 @@ import "os/exec"
 // platformMechanisms is what the pinned clients can apply on Linux before their tools run. Claude Code's sandbox
 // needs bubblewrap and socat on the host; without them it has no mechanism at all. A mechanism listed here still
 // needs native evidence before the item counts as enforced.
-func platformMechanisms() map[string]map[BoundaryItem]BoundaryMechanism {
-	return map[string]map[BoundaryItem]BoundaryMechanism{
+func platformMechanisms() map[string]ProgramMechanisms {
+	return map[string]ProgramMechanisms{
 		"claude": claudeOnLinux(),
 		"codex": {
 			AccountSecrets: unavailable("the workspace-write Landlock sandbox limits writes only, " +

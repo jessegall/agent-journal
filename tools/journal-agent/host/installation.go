@@ -240,7 +240,7 @@ func requireSealedFile(path string, artifact Artifact) error {
 // requireUnchangeableAncestors refuses a folder that is a link, or that has a folder above it others may write
 // into. A root-owned shared folder with the sticky bit, such as /tmp, lets nobody else rename what is inside it.
 func requireUnchangeableAncestors(folder string) error {
-	for path := folder; ; path = filepath.Dir(path) {
+	for _, path := range folderAndAncestors(folder) {
 		info, err := os.Lstat(path)
 		if err != nil {
 			return err
@@ -251,10 +251,18 @@ func requireUnchangeableAncestors(folder string) error {
 		if info.Mode().Perm()&0o022 != 0 && !stickyRootFolder(info) {
 			return fmt.Errorf("%w: others may write into %s", ErrInstallationWritable, path)
 		}
-		if path == filepath.Dir(path) {
-			return nil
-		}
 	}
+	return nil
+}
+
+// folderAndAncestors is the folder and every folder above it, up to the root.
+func folderAndAncestors(folder string) []string {
+	paths := []string{folder}
+	for path := folder; path != filepath.Dir(path); {
+		path = filepath.Dir(path)
+		paths = append(paths, path)
+	}
+	return paths
 }
 
 func stickyRootFolder(info os.FileInfo) bool {

@@ -23,6 +23,11 @@ type PreparedStart struct {
 	Claim client.ClaimedStart
 }
 
+// ProgramBuild is the build of the program the grant starts.
+func (prepared PreparedStart) ProgramBuild() string {
+	return prepared.Grant.ProgramBuild()
+}
+
 // RelayVariables tell the program's hook relay the start's key and where its sealed output grants are.
 func (prepared PreparedStart) RelayVariables(runtimeFolder string) []string {
 	return []string{

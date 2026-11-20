@@ -24,6 +24,16 @@ export type Split = {
 
 export type LayoutNode = Pane | Split;
 
+/** Whether the node is the pane with that id. */
+function isPane(node: LayoutNode, paneId: string): node is Pane {
+    return node.type === 'pane' && node.id === paneId;
+}
+
+/** Whether the node is the split with that id. */
+function isSplit(node: LayoutNode, splitId: string): node is Split {
+    return node.type === 'split' && node.id === splitId;
+}
+
 /**
  * A window a pane can hold: its key in the layout, and the title, icon and count its tab shows.
  */
@@ -56,12 +66,8 @@ export const SNAP_DISTANCE = 14;
 /** The arrow keys move a splitter by this share of its space. */
 export const KEYBOARD_STEP = 0.05;
 
-let nextId = 0;
-
 function newId(prefix: string): string {
-    nextId += 1;
-
-    return `${prefix}-${Date.now().toString(36)}-${nextId}`;
+    return `${prefix}-${crypto.randomUUID()}`;
 }
 
 export function pane(windows: string[], id: string = newId('pane')): Pane {
@@ -117,7 +123,7 @@ export function withRatio(
     spaceSize: number,
 ): LayoutNode {
     return mapNodes(node, (each) =>
-        each.type === 'split' && each.id === splitId
+        isSplit(each, splitId)
             ? { ...each, ratio: settledRatio(ratio, spaceSize) }
             : each,
     );
@@ -128,7 +134,7 @@ export function withRatio(
  */
 export function centreSplit(node: LayoutNode, splitId: string): LayoutNode {
     return mapNodes(node, (each) =>
-        each.type === 'split' && each.id === splitId
+        isSplit(each, splitId)
             ? { ...each, ratio: 0.5 }
             : each,
     );
@@ -140,9 +146,7 @@ export function activate(
     windowKey: string,
 ): LayoutNode {
     return mapNodes(node, (each) =>
-        each.type === 'pane' &&
-        each.id === paneId &&
-        each.windows.includes(windowKey)
+        isPane(each, paneId) && each.windows.includes(windowKey)
             ? { ...each, active: windowKey }
             : each,
     );
@@ -153,7 +157,7 @@ export function activate(
  */
 export function toggleLimitWidth(node: LayoutNode, paneId: string): LayoutNode {
     return mapNodes(node, (each) =>
-        each.type === 'pane' && each.id === paneId
+        isPane(each, paneId)
             ? { ...each, limitWidth: !each.limitWidth }
             : each,
     );
@@ -185,11 +189,11 @@ export function closePane(node: LayoutNode, paneId: string): LayoutNode {
         return node;
     }
 
-    if (node.first.type === 'pane' && node.first.id === paneId) {
+    if (isPane(node.first, paneId)) {
         return node.second;
     }
 
-    if (node.second.type === 'pane' && node.second.id === paneId) {
+    if (isPane(node.second, paneId)) {
         return node.first;
     }
 

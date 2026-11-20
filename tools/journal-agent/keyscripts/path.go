@@ -28,16 +28,16 @@ type ProvenPath struct {
 	NextStep  *int
 }
 
-// EntryFromActions turns a proven path into the steps of a library entry: each choice becomes a Choose step with the
+// Entry turns a proven path into the steps of a library entry: each choice becomes a Choose step with the
 // label seen before its confirming key and the fingerprint before it, each confirmation key a Key step, and the
 // moves of the highlight are dropped. The last step carries the proof; the first step's fingerprint finds the entry.
-func EntryFromActions(path ProvenPath) (Entry, error) {
+func (path ProvenPath) Entry() (Entry, error) {
 	if path.Secret {
 		return Entry{}, ErrSecretPath
 	}
 	var steps []EntryStep
 	for _, action := range path.Actions {
-		if action.Kind == "key" && highlightKeys[action.Key] {
+		if action.movesHighlight() {
 			continue
 		}
 		step, err := stepOf(action)
@@ -53,6 +53,11 @@ func EntryFromActions(path ProvenPath) (Entry, error) {
 	steps[len(steps)-1].Proof = &proof
 
 	return Entry{Steps: steps, Completes: path.Completes, NextStep: path.NextStep, Proof: path.Proof}, nil
+}
+
+// movesHighlight is whether the action only moved the highlight, which a library entry drops.
+func (action ActionRecord) movesHighlight() bool {
+	return action.Kind == "key" && highlightKeys[action.Key]
 }
 
 func stepOf(action ActionRecord) (EntryStep, error) {

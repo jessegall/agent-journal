@@ -1,6 +1,8 @@
 // Package contracts holds the interfaces of screen reading.
 package contracts
 
+import "fmt"
+
 // Buffer is which screen buffer a terminal shows: the normal one with scrollback, or the alternate one full-screen
 // programs draw on.
 type Buffer string
@@ -24,6 +26,12 @@ type Snapshot struct {
 	Buffer  Buffer
 	Columns int
 	Height  int
+}
+
+// Status describes the cursor and the buffer in one line, as "cursor 3,4 visible true, normal buffer".
+func (snapshot Snapshot) Status() string {
+	return fmt.Sprintf("cursor %d,%d visible %v, %s buffer",
+		snapshot.Cursor.Row, snapshot.Cursor.Column, snapshot.Cursor.Visible, snapshot.Buffer)
 }
 
 // ScreenReader turns a program's raw terminal output into the screen a person would see. Feeding bytes in any

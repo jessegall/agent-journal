@@ -41,11 +41,7 @@ type Markers struct{ Folder string }
 // Write saves the marker before the program starts, replacing the old one in one step; Started records the process
 // once it runs.
 func (markers Markers) Write(marker StartMarker) error {
-	content, err := json.Marshal(marker)
-	if err != nil {
-		return err
-	}
-	return writePrivateFile(markers.pathOf(marker.RuntimeID), content)
+	return writePrivateJSON(markers.pathOf(marker.RuntimeID), marker)
 }
 
 // Started records the running process and its start identity on the runtime's marker.
@@ -61,11 +57,7 @@ func (markers Markers) Started(marker StartMarker, processID int) error {
 
 // Remove drops the marker of a runtime whose program ended.
 func (markers Markers) Remove(runtimeID string) error {
-	err := os.Remove(markers.pathOf(runtimeID))
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	return err
+	return removePrivateFile(markers.pathOf(runtimeID))
 }
 
 // Reconcile reads every marker after a restart and says, per runtime, what still runs. It never starts anything.

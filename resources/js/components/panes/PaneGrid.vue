@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { usePaneLayout } from '@/composables/usePaneLayout';
+import { usePaneLayout } from '@/components/panes/usePaneLayout';
 import DetachedWindowFrame from './DetachedWindowFrame.vue';
 import DragGhost from './DragGhost.vue';
 import PaneFrame from './PaneFrame.vue';

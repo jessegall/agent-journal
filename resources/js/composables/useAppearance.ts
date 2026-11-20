@@ -1,4 +1,5 @@
 import { onMounted, ref } from 'vue';
+import { keepStored, readStored } from '@/composables/browserStorage';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
@@ -24,12 +25,12 @@ export function useAppearance() {
 
     function update(value: Appearance): void {
         appearance.value = value;
-        localStorage.setItem(STORAGE_KEY, value);
+        keepStored('local', STORAGE_KEY, value);
         apply(value);
     }
 
     onMounted(() => {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = readStored('local', STORAGE_KEY);
 
         appearance.value =
             stored === 'light' || stored === 'dark' ? stored : 'system';

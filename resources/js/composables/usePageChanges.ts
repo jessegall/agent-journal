@@ -10,51 +10,78 @@ type Reload = () => void;
 
 const coalesceMilliseconds = 250;
 
-let currentReload: Reload | undefined;
-
 /**
- * The window and section props on screen now, each counted by the hosts that show it; only these are read again on a
- * change, so a hidden or closed window is never asked for.
+ * The reloads of the page on screen: the mounted page's reload, the props shown now, the forms being sent, and
+ * whether a reload waits for them.
  */
-const shownProps = new Map<string, number>();
-let formsSending = 0;
-let reloadWaiting = false;
-let timer: ReturnType<typeof setTimeout> | undefined;
+class PageReloads {
+    current: Reload | undefined;
 
-function reloadNow(): void {
-    reloadWaiting = false;
+    /**
+     * The window and section props on screen now, each counted by the hosts that show it; only these are read again
+     * on a change, so a hidden or closed window is never asked for.
+     */
+    readonly shownProps = new Map<string, number>();
 
-    if (formsSending > 0) {
-        reloadWaiting = true;
+    private formsSending = 0;
+    private isWaiting = false;
+    private timer: ReturnType<typeof setTimeout> | undefined;
 
-        return;
+    /** Reloads after a short pause, so a burst of changes becomes one reload. */
+    schedule(): void {
+        clearTimeout(this.timer);
+        this.isWaiting = true;
+        this.timer = setTimeout(() => this.reloadNow(), coalesceMilliseconds);
     }
 
-    currentReload?.();
+    forget(): void {
+        clearTimeout(this.timer);
+        this.isWaiting = false;
+        this.formsSending = 0;
+    }
+
+    formStarted(): void {
+        this.formsSending++;
+    }
+
+    formFinished(): void {
+        this.formsSending = Math.max(0, this.formsSending - 1);
+
+        if (this.formsSending === 0 && this.isWaiting) {
+            this.schedule();
+        }
+    }
+
+    private reloadNow(): void {
+        this.isWaiting = this.formsSending > 0;
+
+        if (!this.isWaiting) {
+            this.current?.();
+        }
+    }
 }
+
+const reloads = new PageReloads();
 
 /**
  * Called by the shell's connection for every change and after a lost connection came back.
  */
 export function pageChanged(): void {
-    clearTimeout(timer);
-    reloadWaiting = true;
-    timer = setTimeout(reloadNow, coalesceMilliseconds);
+    reloads.schedule();
 }
 
 /**
  * Called by the shell when the user signs out or changes: nothing waits any more.
  */
 export function forgetPageChanges(): void {
-    clearTimeout(timer);
-    reloadWaiting = false;
-    formsSending = 0;
+    reloads.forget();
 }
 
 /**
  * Called by a window or section host while its prop is on screen; the function it answers takes the prop off again.
  */
 export function showProp(name: string): () => void {
+    const shownProps = reloads.shownProps;
     shownProps.set(name, (shownProps.get(name) ?? 0) + 1);
 
     return () => {
@@ -74,22 +101,20 @@ export function showProp(name: string): () => void {
  */
 export function useLiveReload(): void {
     const page = usePage();
-    const reload: Reload = () =>
-        router.reload({
-            only: [
-                'page',
-                ...shownProps.keys(),
-                'navigation',
-                'navigationCounts',
-                ...(page.props.inspector === undefined || page.props.inspector === null ? [] : ['inspector']),
-            ],
-            preserveUrl: true,
-        });
+    const reload: Reload = () => {
+        const only = ['page', ...reloads.shownProps.keys(), 'navigation', 'navigationCounts'];
 
-    onMounted(() => (currentReload = reload));
+        if (page.props.inspector !== undefined && page.props.inspector !== null) {
+            only.push('inspector');
+        }
+
+        router.reload({ only, preserveUrl: true });
+    };
+
+    onMounted(() => (reloads.current = reload));
     onBeforeUnmount(() => {
-        if (currentReload === reload) {
-            currentReload = undefined;
+        if (reloads.current === reload) {
+            reloads.current = undefined;
         }
     });
 }
@@ -102,15 +127,7 @@ export function formSendingHooks(): {
     onFinish: () => void;
 } {
     return {
-        onStart: () => {
-            formsSending++;
-        },
-        onFinish: () => {
-            formsSending = Math.max(0, formsSending - 1);
-
-            if (formsSending === 0 && reloadWaiting) {
-                pageChanged();
-            }
-        },
+        onStart: () => reloads.formStarted(),
+        onFinish: () => reloads.formFinished(),
     };
 }

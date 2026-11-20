@@ -109,14 +109,20 @@ func (watcher *ScreenWatcher) stopped(runtimeID string, ended *screenWatch) {
 	}
 }
 
+// screenCapture is one read of a runtime's screen: the reader it came from and the screen version it read.
+type screenCapture struct {
+	reader  *screen.EmulatorReader
+	version uint64
+}
+
 // screenSender is one runtime's capture loop and what it last sent.
 type screenSender struct {
-	watcher      *ScreenWatcher
-	runtimeID    string
-	sequence     uint64
-	reader       *screen.EmulatorReader
-	version      uint64
-	captured     bool
+	watcher   *ScreenWatcher
+	runtimeID string
+	sequence  uint64
+	// lastCapture is the screen version last read and from which reader; nil until a capture reads, and after a
+	// failed send, so the next round reads again.
+	lastCapture  *screenCapture
 	lastSent     screen.Frame
 	lastSentAt   time.Time
 	sentAny      bool
@@ -158,7 +164,7 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 		return true
 	}
 	if err != nil {
-		sender.captured = false
+		sender.lastCapture = nil
 		sender.logFailure(now, err)
 		return false
 	}
@@ -173,25 +179,26 @@ func (sender *screenSender) tick(ctx context.Context) bool {
 func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 	reader, found := sender.watcher.readers.ReaderFor(sender.runtimeID)
 	if !found {
-		sender.reader, sender.captured = nil, false
+		sender.lastCapture = nil
 		marker := sender.marker(now)
 		marker.NoTerminal = true
 		return marker, true
 	}
 
 	if reader.Unreadable() {
-		sender.captured = false
+		sender.lastCapture = nil
 		marker := sender.marker(now)
 		marker.Unreadable = true
 		return marker, true
 	}
 
 	version := reader.Version()
-	unchanged := sender.captured && reader == sender.reader && version == sender.version
+	capture := screenCapture{reader: reader, version: version}
+	unchanged := sender.lastCapture != nil && *sender.lastCapture == capture
 	if unchanged && !sender.signOfLifeDue(now) {
 		return screen.Frame{}, false
 	}
-	sender.reader, sender.version, sender.captured = reader, version, true
+	sender.lastCapture = &capture
 
 	return reader.Frame(sender.watcher.epoch, sender.sequence+1, now).Bounded(screen.FrameLimit), true
 }

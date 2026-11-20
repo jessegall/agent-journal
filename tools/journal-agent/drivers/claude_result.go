@@ -39,11 +39,16 @@ func CheckClaudeSignIn(ctx context.Context, executable string, environment []str
 	if err := json.Unmarshal(output, &status); err != nil {
 		return errors.Join(ErrNotSignedIn, err)
 	}
-	if !status.LoggedIn || status.AuthMethod != "claude.ai" ||
-		filepath.Clean(status.ConfigDirectory) != filepath.Clean(accountFolder) {
+	if !status.isSignedInAt(accountFolder) {
 		return ErrNotSignedIn
 	}
 	return nil
+}
+
+// isSignedInAt is whether the status is a claude.ai sign-in kept in the account's own folder.
+func (status claudeAuthStatus) isSignedInAt(accountFolder string) bool {
+	return status.LoggedIn && status.AuthMethod == "claude.ai" &&
+		filepath.Clean(status.ConfigDirectory) == filepath.Clean(accountFolder)
 }
 
 // claudeResult is the last result line of a stream-json turn.
