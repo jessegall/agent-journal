@@ -87,6 +87,25 @@ final readonly class AreaCycles
     }
 
     /**
+     * Each use by which an area reaches one it must never name, as 'from -> to (use)'.
+     *
+     * @param  array<string, list<string>>  $forbidden  for each area, the areas it must not name
+     * @return list<string>
+     */
+    public function forbiddenUses(array $forbidden): array
+    {
+        $uses = [];
+
+        foreach ($forbidden as $from => $areas) {
+            foreach (array_intersect_key($this->edges[$from] ?? [], array_flip($areas)) as $to => $exampleUse) {
+                $uses[] = "{$from} -> {$to} ({$exampleUse})";
+            }
+        }
+
+        return $uses;
+    }
+
+    /**
      * Every group of two or more areas that reach each other, each with the uses that close it.
      *
      * @return list<string>

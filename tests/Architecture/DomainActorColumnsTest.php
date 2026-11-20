@@ -47,6 +47,24 @@ final class DomainActorColumnsTest extends TestCase
         );
     }
 
+    /**
+     * Rule 37 holds for Core's areas above Agents and Hooks too (task 955): their tables name actors, never agents.
+     */
+    public function test_no_core_table_above_agents_and_hooks_names_an_agent_or_a_session(): void
+    {
+        $columns = [];
+
+        foreach (['Supervision', 'Scripts', 'Profiles'] as $area) {
+            $folder = app_path("{$area}/Database/Migrations");
+
+            if (is_dir($folder)) {
+                array_push($columns, ...AgentReferences::columnsIn($folder));
+            }
+        }
+
+        $this->assertSame([], $columns, 'A Core table above Agents and Hooks names an agent or a session; name an actor.');
+    }
+
     public function test_no_domain_model_takes_or_returns_a_stack_target_or_agent_context(): void
     {
         $methods = [];
