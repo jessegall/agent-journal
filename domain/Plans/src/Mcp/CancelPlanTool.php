@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Enums\PlanTextLimit;
+use Domain\Plans\Api\PlanTextLimit;
 use Domain\Plans\Commands\CancelPlan;
 use Domain\Plans\Enums\PlanState;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

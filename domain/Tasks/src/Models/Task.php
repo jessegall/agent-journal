@@ -26,7 +26,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
-use Domain\Tasks\Enums\TaskTextLimit;
+use Domain\Tasks\Api\TaskTextLimit;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
