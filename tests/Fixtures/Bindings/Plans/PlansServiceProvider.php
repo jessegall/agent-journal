@@ -19,6 +19,6 @@ final class PlansServiceProvider extends ServiceProvider
         $this->app->bind(TaskResolver::class, PlanParser::class);
         $this->app->bind(PlanCounter::class, TaskList::class);
         $this->app->singleton(ShellCommandParser::class, PlanParser::class);
-        $this->app->bind(...);
+        $this->app->bind(...); // @phpstan-ignore method.resultUnused (the callable form the binding scan must skip)
     }
 }

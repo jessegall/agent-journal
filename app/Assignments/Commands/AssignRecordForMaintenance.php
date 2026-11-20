@@ -19,8 +19,8 @@ use App\Records\Support\RecordIdentity;
 /** @extends Command<AssignmentResult> */
 #[RepeatableRead]
 #[Entry(CommandEntry::EngineMaintenance)]
-#[HandledBy(AssignRecordForMaintenanceHandler::class)]
 #[Effect(CommandEffectType::AssignmentChange)]
+#[HandledBy(AssignRecordForMaintenanceHandler::class)]
 final readonly class AssignRecordForMaintenance extends Command
 {
     public const string FILL_SCOPE = 'assignments.fill';
