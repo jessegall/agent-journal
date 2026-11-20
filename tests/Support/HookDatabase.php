@@ -98,6 +98,22 @@ final class HookDatabase
     /**
      * Whether this process is a worker of a parallel run, which Laravel gives its own copy of the test database.
      */
+    /**
+     * A fingerprint of every migration file the application runs, so a database built from other files is known.
+     */
+    public static function migrationFingerprint(Application $app): string
+    {
+        $migrator = $app->make('migrator');
+        $files = $migrator->getMigrationFiles([database_path('migrations'), ...$migrator->paths()]);
+        ksort($files);
+
+        return hash('sha256', implode("\n", array_map(
+            fn (string $name, string $path): string => $name.' '.hash_file('sha256', $path),
+            array_keys($files),
+            $files,
+        )));
+    }
+
     public static function isParallelWorker(Application $app): bool
     {
         return $app->make(ParallelTesting::class)->token() !== false;

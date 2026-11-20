@@ -68,7 +68,7 @@ trait RefreshHookDatabase
             return;
         }
 
-        $fingerprint = $this->migrationFingerprint();
+        $fingerprint = HookDatabase::migrationFingerprint($this->app);
         $stored = $connection->scalar(
             "select shobj_description(oid, 'pg_database') from pg_database where datname = current_database()",
         );
@@ -86,18 +86,6 @@ trait RefreshHookDatabase
         self::$checkedDatabase = $database;
     }
 
-    private function migrationFingerprint(): string
-    {
-        $migrator = $this->app->make('migrator');
-        $files = $migrator->getMigrationFiles([database_path('migrations'), ...$migrator->paths()]);
-        ksort($files);
-
-        return hash('sha256', implode("\n", array_map(
-            fn (string $name, string $path): string => $name.' '.hash_file('sha256', $path),
-            array_keys($files),
-            $files,
-        )));
-    }
 
     /**
      * The connections whose work is rolled back after each test; the default connection unless a test commits.

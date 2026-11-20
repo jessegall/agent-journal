@@ -83,8 +83,9 @@ fwrite(STDOUT, $folders === AffectedTests::EVERYTHING
     ? "Running every test: the change reaches an area everything stands on.\n"
     : 'Running the tests of: '.implode(', ', $folders)."\n");
 
+prepareWorkerDatabases($root, $environment, []);
 $exitCode = (int) run(
-    ['php', 'artisan', 'test', '--parallel', '--recreate-databases', "--configuration={$configuration}"],
+    ['php', 'artisan', 'test', '--parallel', "--configuration={$configuration}"],
     $environment,
     $root,
     false,

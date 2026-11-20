@@ -20,7 +20,8 @@ $environment = [...getenv(), 'APP_ENV' => 'testing'];
 $arguments = array_slice($_SERVER['argv'] ?? [], 1);
 $paths = array_values(array_filter($arguments, fn (string $argument) => ! str_starts_with($argument, '-')));
 $options = array_values(array_filter($arguments, fn (string $argument) => str_starts_with($argument, '-')));
-$command = ['php', 'artisan', 'test', '--parallel', '--recreate-databases', ...$options];
+$command = ['php', 'artisan', 'test', '--parallel', ...$options];
+prepareWorkerDatabases($root, $environment, $options);
 
 if (count($paths) <= 1) {
     $exitCode = (int) run([...$command, ...$paths], $environment, $root, false);
