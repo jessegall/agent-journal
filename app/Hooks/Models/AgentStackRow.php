@@ -202,9 +202,9 @@ final class AgentStackRow extends Model implements ReadableModel
             return [];
         }
 
-        return self::query()->historyOf($actor)->whereIn('session_id', $sessions)
+        return array_values(self::query()->historyOf($actor)->whereIn('session_id', $sessions)
             ->where('status', StackStatus::Active->value)
-            ->orderBy('session_id')->lockForUpdate()->readLimit(count($sessions))->get()->all();
+            ->orderBy('session_id')->lockForUpdate()->readLimit(count($sessions))->get()->all());
     }
 
     public function isActive(): bool

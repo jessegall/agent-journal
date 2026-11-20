@@ -17,10 +17,9 @@ final readonly class ScriptLine
     {
         $body = ltrim($line);
         $column = mb_strlen($line) - mb_strlen($body) + 1;
-        $parts = preg_split('/\h+/u', rtrim($body), 2, PREG_SPLIT_OFFSET_CAPTURE);
-        $token = $parts[0][0];
-        $operand = $parts[1][0] ?? '';
-        $offset = $parts[1][1] ?? strlen($token);
+        $statement = rtrim($body);
+        [$token, $operand] = array_pad(preg_split('/\h+/u', $statement, 2) ?: [$statement], 2, '');
+        $offset = $operand === '' ? strlen($token) : strlen($statement) - strlen($operand);
 
         return new self(
             $token,
