@@ -2,10 +2,10 @@
 package profiles
 
 import (
-	"journal-agent/recording"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"journal-agent/recording"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -198,6 +198,7 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 func startsJournalServer(start contracts.Start) bool {
 	return start.Account != nil && start.Account.Transport != contracts.CliTransport
 }
+
 // journalDescriptor is the launch's MCP configuration: the journal's server alone, started by absolute path, with
 // no token, environment or placeholder in it.
 func journalDescriptor(start contracts.Start) ([]byte, error) {

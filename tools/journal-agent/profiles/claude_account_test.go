@@ -1,9 +1,9 @@
 package profiles
 
 import (
-	"journal-agent/recording"
 	"encoding/json"
 	"errors"
+	"journal-agent/recording"
 	"slices"
 	"strings"
 	"testing"

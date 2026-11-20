@@ -6,7 +6,6 @@ import (
 	"journal-agent/screen"
 )
 
-
 // Start is what one start of a program needs: its isolated settings folder and the exact conversation it starts
 // or resumes. A resume always names its conversation; "the latest" is never resumed.
 type Start struct {

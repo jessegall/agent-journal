@@ -1,11 +1,11 @@
 package profiles
 
 import (
-	"journal-agent/recording"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"journal-agent/recording"
 	"log"
 	"os"
 	"path/filepath"

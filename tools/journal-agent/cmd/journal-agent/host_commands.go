@@ -1,7 +1,6 @@
 package main
 
 import (
-	"journal-agent/recording"
 	"bufio"
 	"context"
 	"crypto/rand"
@@ -9,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"journal-agent/recording"
 	"log"
 	"net"
 	"os"
