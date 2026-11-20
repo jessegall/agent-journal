@@ -6,7 +6,9 @@ namespace App\Agents\Contracts;
 
 use App\Records\Support\RecordIdentity;
 
-/** The visible source selected by the caller for their current request. */
+/**
+ * The visible source selected by the caller for their current request.
+ */
 interface RequestSource
 {
     public function selectedSource(): RecordIdentity|null;

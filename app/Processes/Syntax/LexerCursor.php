@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Syntax;
 
 use App\Processes\Enums\AnalysisLimit;
+use App\Processes\Enums\RedirectType;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\TokenType;
 use App\Processes\Enums\WordSegmentType;
@@ -20,16 +21,14 @@ final class LexerCursor
 {
     public int $position = 0;
 
+    public readonly HereDocumentQueue $hereDocuments;
+
     /**
      * @var list<Token>
      */
     private array $tokens = [];
 
-    public readonly HereDocumentQueue $hereDocuments;
-
     private int $steps = 0;
-
-    private readonly int $length;
 
     public function __construct(
         public readonly string $source,
@@ -37,7 +36,6 @@ final class LexerCursor
         private readonly TimeBudget $budget,
     ) {
         $this->hereDocuments = new HereDocumentQueue();
-        $this->length = strlen($source);
     }
 
     public function fork(): self
@@ -47,7 +45,7 @@ final class LexerCursor
 
     public function hasBytes(): bool
     {
-        return $this->position < $this->length;
+        return $this->position < strlen($this->source);
     }
 
     public function current(): string
@@ -126,5 +124,149 @@ final class LexerCursor
         if (++$this->steps % 256 === 0 && $this->budget->isSpent()) {
             throw ShellLineUnreadable::pastLimit(AnalysisLimit::Milliseconds, $this->position);
         }
+    }
+
+    /**
+     * Reads an operator or a redirect at the position; answers false when a word starts here instead.
+     */
+    public function readOperator(): bool
+    {
+        $start = $this->position;
+        $extended = $this->dialect !== ShellDialect::Sh;
+        $digits = strspn($this->source, '0123456789', $start);
+        $afterDigits = $this->at($start + $digits);
+
+        if (($afterDigits === '<' || $afterDigits === '>')
+            && ! ($extended && $this->at($start + $digits + 1) === '(' && $digits === 0)) {
+            return $this->readRedirect($start, $digits);
+        }
+        if ($digits > 0) {
+            return false;
+        }
+
+        if ($this->source[$start] === '(' && $this->at($start + 1) === '(' && $this->atCommandStart()) {
+            $this->readArithmeticCommand($start);
+
+            return true;
+        }
+
+        foreach ($this->operators($extended) as $text => $type) {
+            if (substr_compare($this->source, $text, $start, strlen($text)) !== 0) {
+                continue;
+            }
+            if ($type === TokenType::Bang && ! $this->isNegation()) {
+                return false;
+            }
+            $this->position += strlen($text);
+            if ($type === TokenType::Redirect) {
+                $redirect = $text === '&>>' ? RedirectType::Append : RedirectType::Output;
+                $this->emitRedirect($redirect, 1, $start);
+
+                return true;
+            }
+            $this->emit($type, $start, $this->position);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isNegation(): bool
+    {
+        return $this->atCommandStart() && in_array($this->at($this->position + 1), [' ', "\t", "\n", ''], true);
+    }
+
+    /**
+     * @return array<string, TokenType>
+     */
+    private function operators(bool $extended): array
+    {
+        $operators = ['&&' => TokenType::AndIf, '||' => TokenType::OrIf];
+        if ($extended) {
+            $operators += ['|&' => TokenType::PipeBoth, '&>>' => TokenType::Redirect, '&>' => TokenType::Redirect];
+        }
+
+        return $operators + [
+            ';' => TokenType::Semicolon,
+            '&' => TokenType::Background,
+            '|' => TokenType::Pipe,
+            '!' => TokenType::Bang,
+            '(' => TokenType::OpenParen,
+            ')' => TokenType::CloseParen,
+        ];
+    }
+
+    private function readRedirect(int $start, int $digits): bool
+    {
+        $this->position = $start + $digits;
+        $descriptor = $digits > 0 ? (int) substr($this->source, $start, $digits) : null;
+        $extended = $this->dialect !== ShellDialect::Sh;
+
+        $forms = [
+            '<<<' => $extended ? RedirectType::HereString : null,
+            '<<-' => RedirectType::HereDocument,
+            '<<' => RedirectType::HereDocument,
+            '<>' => RedirectType::ReadWrite,
+            '<&' => RedirectType::DuplicateInput,
+            '<' => RedirectType::Input,
+            '>>' => RedirectType::Append,
+            '>|' => RedirectType::Clobber,
+            '>&' => RedirectType::DuplicateOutput,
+            '>' => RedirectType::Output,
+        ];
+        foreach ($forms as $text => $type) {
+            if ($type === null || substr_compare($this->source, $text, $this->position, strlen($text)) !== 0) {
+                continue;
+            }
+            $this->position += strlen($text);
+            if ($type->isDuplicate() && $this->at($this->position) === '-') {
+                $this->position++;
+                $type = RedirectType::Close;
+            }
+            $this->emitRedirect($type, $descriptor ?? ($text[0] === '<' ? 0 : 1), $start);
+            if ($type === RedirectType::HereDocument) {
+                $this->hereDocuments->expectDelimiter($text === '<<-');
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Reads (( ... )) up to its closing parentheses as one literal word, so nothing inside, such as <<, is lexed as
+     * shell syntax; the grammar names it an unsupported arithmetic command.
+     *
+     * @throws ShellLineUnreadable
+     */
+    private function readArithmeticCommand(int $start): void
+    {
+        $depth = 0;
+        $length = strlen($this->source);
+        for ($index = $start; $index < $length; $index++) {
+            $this->assertWithinBudget();
+            $character = $this->source[$index];
+            if ($character === '(') {
+                $depth++;
+            } elseif ($character === ')' && --$depth === 0) {
+                $this->emitLiteralWord($start, $index + 1);
+
+                return;
+            }
+        }
+
+        throw ShellLineUnreadable::unfinished('an arithmetic command', $start);
+    }
+
+    private function emitRedirect(RedirectType $type, int $descriptor, int $start): void
+    {
+        $this->append(new Token(
+            TokenType::Redirect,
+            new SourceRange($start, $this->position),
+            redirect: $type,
+            descriptor: $descriptor,
+        ));
     }
 }

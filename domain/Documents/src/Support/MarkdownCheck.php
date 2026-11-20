@@ -106,7 +106,9 @@ final class MarkdownCheck
         return true;
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private static function cells(string $line): array
     {
         return preg_split('/(?<!\\\\)\|/', trim(trim($line), '|')) ?: [''];

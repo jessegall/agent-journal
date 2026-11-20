@@ -69,7 +69,9 @@ final class ProfileDraft extends Model implements ReadableModel
             ->all();
     }
 
-    /** @return BelongsTo<ProfileDraftRevision, $this> */
+    /**
+     * @return BelongsTo<ProfileDraftRevision, $this>
+     */
     public function currentRevision(): BelongsTo
     {
         return $this->belongsTo(ProfileDraftRevision::class, 'current_revision_id');
@@ -81,7 +83,7 @@ final class ProfileDraft extends Model implements ReadableModel
             throw ProfileDraftRefused::stale(ProfileKey::from($this->profile_key), $expected, $this->revision);
         }
 
-        return $this->currentRevision?->scriptSource() ?? new ScriptSource();
+        return $this->currentRevision?->scriptSource() ?? ScriptSource::empty();
     }
 
     public static function saveFor(ProfileKey $profile, int $expected, ScriptSource $source, ActorIdentity $author): int

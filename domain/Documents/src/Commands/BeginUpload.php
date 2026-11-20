@@ -18,7 +18,9 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
-/** @extends Command<string> */
+/**
+ * @extends Command<string>
+ */
 #[HandledBy(BeginUploadHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('begin_upload', ResourceAreaType::JournalContent, AccessType::Create)]

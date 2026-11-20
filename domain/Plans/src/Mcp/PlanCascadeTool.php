@@ -19,7 +19,9 @@ use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\ObjectType;
 
-/** Summarizes a plan or phase cascade and links to its complete receipted outcomes. */
+/**
+ * Summarizes a plan or phase cascade and links to its complete receipted outcomes.
+ */
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 abstract class PlanCascadeTool extends JournalWriteTool
 {
@@ -49,7 +51,9 @@ abstract class PlanCascadeTool extends JournalWriteTool
         return new RecordIdentity($type, $root->ulid('id'));
     }
 
-    /** @param AssignmentResult $assignmentResult */
+    /**
+     * @param AssignmentResult $assignmentResult
+     */
     final protected function present(mixed $assignmentResult): ToolResult
     {
         return ToolResult::ok([

@@ -22,7 +22,9 @@ final readonly class SearchHit
         return new self($type, $id, self::preview($title, 80), self::preview($excerpt, 160));
     }
 
-    /** @return array{type: string, id: string, title: string, excerpt: string} */
+    /**
+     * @return array{type: string, id: string, title: string, excerpt: string}
+     */
     public function card(): array
     {
         return ['type' => $this->type, 'id' => $this->id, 'title' => $this->title, 'excerpt' => $this->excerpt];

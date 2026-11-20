@@ -9,7 +9,9 @@ use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 
-/** The unread and pending messages in the caller's inboxes. */
+/**
+ * The unread and pending messages in the caller's inboxes.
+ */
 final readonly class PendingMessagesOverview implements OverviewContribution
 {
     public function __construct(private AgentMessageReader $messages) {}

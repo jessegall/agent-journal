@@ -41,7 +41,10 @@ final readonly class TaskAssignments implements AssignableProvider
             array_map(fn (RecordIdentity $record) => $record->id, $records),
         )->readLimit(count($records))->pluck('id')->all();
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $visibleTaskIds, true)));
+        return array_values(array_filter(
+            $records,
+            fn (RecordIdentity $record) => in_array($record->id, $visibleTaskIds, true),
+        ));
     }
 
     /**

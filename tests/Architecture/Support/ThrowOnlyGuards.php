@@ -65,7 +65,7 @@ final readonly class ThrowOnlyGuards implements FileScan
      */
     private static function onlyThrows(array $statements): bool
     {
-        return array_all($statements, fn (Stmt $statement): bool => self::isThrowOnly($statement));
+        return array_all($statements, fn (Stmt $statement) => self::isThrowOnly($statement));
     }
 
     private static function isThrowOnly(Stmt $statement): bool
@@ -87,7 +87,7 @@ final readonly class ThrowOnlyGuards implements FileScan
             $arms[] = $branch->else->stmts;
         }
 
-        return array_all($arms, fn (array $statements): bool => self::onlyThrows($statements));
+        return array_all($arms, fn (array $statements) => self::onlyThrows($statements));
     }
 
     /**

@@ -17,7 +17,9 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\TextUpload;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 
-/** @extends Command<void> */
+/**
+ * @extends Command<void>
+ */
 #[HandledBy(AppendUploadHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
 #[Operation('append_upload', ResourceAreaType::JournalContent, AccessType::Edit)]

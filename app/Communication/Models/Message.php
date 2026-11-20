@@ -128,7 +128,9 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $query->withoutGlobalScope(MessageVisibility::class);
     }
 
-    /** @param Builder<self> $query */
+    /**
+     * @param Builder<self> $query
+     */
     #[Scope]
     protected function matchingBody(Builder $query, string $words): void
     {
@@ -165,7 +167,9 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return $message;
     }
 
-    /** @return Builder<self> */
+    /**
+     * @return Builder<self>
+     */
     public static function sourceConversation(string $sessionId): Builder
     {
         return self::query()->acrossInboxes()
@@ -183,7 +187,9 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return $this->state_version + 1;
     }
 
-    /** @param Builder<self> $messages */
+    /**
+     * @param Builder<self> $messages
+     */
     #[Scope]
     protected function forInboxState(Builder $messages, AgentInboxState $state): void
     {

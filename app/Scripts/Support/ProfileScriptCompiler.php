@@ -52,7 +52,9 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         return $compiled;
     }
 
-    /** @return list<Operation> */
+    /**
+     * @return list<Operation>
+     */
     private function operations(string $token, object $operand): array
     {
         if ($operand instanceof NamedCommand) {

@@ -9,7 +9,9 @@ use App\Mcp\Support\Continuation;
 
 interface TextFields
 {
-    /** @param array<string, string> $text */
+    /**
+     * @param array<string, string> $text
+     */
     public function start(Continuation $record, array $text): Continuation;
 
     /**

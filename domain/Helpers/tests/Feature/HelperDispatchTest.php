@@ -73,6 +73,7 @@ final class HelperDispatchTest extends TestCase
         $this->chooseActiveAccounts();
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
+        $this->supportContainers();
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('plan-reviewer', ProfileBase::readOnlyHelper()),
             TestProposals::profile('journal-main', ProfileBase::mainAgent()),

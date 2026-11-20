@@ -16,7 +16,9 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Records\Support\RecordIdentity;
 
-/** @extends Command<AssignmentResult> */
+/**
+ * @extends Command<AssignmentResult>
+ */
 #[RepeatableRead]
 #[Entry(CommandEntry::EngineMaintenance)]
 #[Effect(CommandEffectType::AssignmentChange)]

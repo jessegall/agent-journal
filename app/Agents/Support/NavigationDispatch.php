@@ -42,10 +42,10 @@ final readonly class NavigationDispatch
      * waits, given to the desk, for whoever sits down or for its expiry. A host's raise has no bus receipt, so the
      * raise's own operation key names where the wake came from.
      */
-    public function deliver(NavigationRequest $request, int $round): void
+    public function deliver(NavigationRequest $request, int|null $round = null): void
     {
         $this->mainDesk->receive($request);
-        $origin = AttentionOrigin::navigation($request->id, $round, $request->operation_key);
+        $origin = AttentionOrigin::navigation($request->id, $round ?? $request->row_version, $request->operation_key);
 
         foreach ($this->mainDesk->occupant() as $occupant) {
             $this->attention->request($occupant, $origin);

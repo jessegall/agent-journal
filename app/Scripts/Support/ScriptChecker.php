@@ -39,7 +39,9 @@ final readonly class ScriptChecker implements ScriptChecks
         return new ScriptCheck([], $tokens, $compiled, $source->hash(), $catalogue);
     }
 
-    /** @return list<ScriptLine> */
+    /**
+     * @return list<ScriptLine>
+     */
     private static function lines(string $text): array
     {
         $source = preg_split('/\R/u', $text);

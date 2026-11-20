@@ -49,7 +49,9 @@ final class TaskRunTaken extends RuntimeException implements CodedRefusal, Comma
         return ['next_action' => new RecoveryCall('tasks_read', ['task_id' => $this->taskId])->toArray()];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     protected function details(): array
     {
         return $this->refusalDetails();

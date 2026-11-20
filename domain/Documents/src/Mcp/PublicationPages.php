@@ -11,6 +11,8 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Contracts\Continuations;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
+use Domain\Documents\Values\DocumentReadCard;
+use Domain\Documents\Values\ReportReadCard;
 
 final readonly class PublicationPages
 {
@@ -22,9 +24,13 @@ final readonly class PublicationPages
         private PublicationChunks $chunks,
     ) {}
 
-    /** @param array<string, mixed> $card */
-    public function summary(MarkdownText $body, string $abstract, Continuation $position, string $key, array $card): ToolResult
-    {
+    public function summary(
+        MarkdownText $body,
+        string $abstract,
+        Continuation $position,
+        string $key,
+        DocumentReadCard|ReportReadCard $card,
+    ): ToolResult {
         $outline = $body->outline();
         $entries = [];
         $length = strlen(json_encode($abstract, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
@@ -43,23 +49,26 @@ final readonly class PublicationPages
         ), $key)] : [];
 
         return ToolResult::ok([
-            ...$card,
+            ...$card->toArray(),
             'abstract' => $abstract,
             'outline' => $entries,
         ], $actions);
     }
 
-    /** @param array<string, mixed> $card */
-    public function comments(RecordIdentity $record, Continuation $position, string $key, array $card): ToolResult
-    {
+    public function comments(
+        RecordIdentity $record,
+        Continuation $position,
+        string $key,
+        DocumentReadCard|ReportReadCard $card,
+    ): ToolResult {
         $page = $this->comments->list($record, new Page($position->filters['after_comment'] ?? null, 1));
         $entry = $page->items[0] ?? null;
         if ($entry === null) {
-            return ToolResult::ok([...$card, 'comments' => []]);
+            return ToolResult::ok([...$card->toArray(), 'comments' => []]);
         }
         $comment = $entry->comment;
         $commentPage = $this->chunks->page($comment->body, $position, $key, [
-            ...$card,
+            ...$card->toArray(),
             'comment' => [
                 'id' => $comment->id,
                 'author_type' => $comment->authorType->value,

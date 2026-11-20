@@ -48,8 +48,8 @@ final class MemoriesListTool extends JournalReadTool
         return $this->pages->answer(
             $this->name(),
             $arguments,
-            fn (ToolArguments $first) => ['page' => $first->positiveIntegerOr('page', 1)],
-            fn (array $filters) => $this->page($filters['page']),
+            fn (ToolArguments $initialArguments) => ['page' => $initialArguments->positiveIntegerOr('page', 1)],
+            fn (ToolArguments $filters) => $this->page($filters->positiveInteger('page')),
         );
     }
 

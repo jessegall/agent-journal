@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Scripts\Providers;
 
 use App\Profiles\Contracts\ScriptCompilation;
+use App\Scripts\Contracts\ScriptKeywordRegistration;
+use App\Scripts\Contracts\ScriptObjectRegistration;
 use App\Scripts\Enums\SyntaxForm;
 use App\Scripts\Keywords\CheckKeyword;
-use App\Scripts\Keywords\IfKeyword;
+use App\Scripts\Keywords\ConditionalKeyword;
 use App\Scripts\Keywords\RunKeyword;
 use App\Scripts\Keywords\StopTrigger;
 use App\Scripts\Keywords\YieldKeyword;
@@ -24,6 +26,8 @@ final class ScriptsServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ObjectRegistry::class);
         $this->app->singleton(KeywordRegistry::class);
+        $this->app->alias(ObjectRegistry::class, ScriptObjectRegistration::class);
+        $this->app->alias(KeywordRegistry::class, ScriptKeywordRegistration::class);
         // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
         $this->app->bind(ScriptCompilation::class, ProfileScriptCompiler::class);
     }
@@ -38,7 +42,7 @@ final class ScriptsServiceProvider extends ServiceProvider
         $keywords->register(KeywordDefinition::negation());
         $keywords->register(RunKeyword::definition());
         $keywords->register(CheckKeyword::definition());
-        $keywords->register(IfKeyword::definition());
+        $keywords->register(ConditionalKeyword::definition());
         $keywords->register(YieldKeyword::definition());
     }
 }

@@ -11,7 +11,9 @@ final readonly class ScriptCompiler
 {
     public function __construct(private KeywordRegistry $keywords, private ObjectRegistry $objects) {}
 
-    /** @param list<\App\Scripts\Values\ScriptHandler> $handlers */
+    /**
+     * @param list<\App\Scripts\Values\ScriptHandler> $handlers
+     */
     public function compile(ScriptSource $source, array $handlers): CompiledScript
     {
         $graph = new ScriptGraph();
@@ -25,13 +27,12 @@ final readonly class ScriptCompiler
             $graph->addTerminal($policy->fallthrough);
             $graph->addTerminal($policy->failure);
             $graph->addTerminal($policy->returnToActor);
-            $context = new CompileContext(
+            $context = CompileContext::forHandler(
                 $this->keywords,
                 $this->objects,
                 $graph,
                 $source->definitions(),
                 $policy,
-                $policy->fallthrough,
             );
             $entries[$trigger->token] = [
                 'entry' => $context->compileBlock($handler->statements),

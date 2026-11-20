@@ -107,7 +107,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
                 $definition,
                 $author,
                 $change,
-                new ScriptDiff($current[$definition->key->key] ?? new ScriptSource(), $source),
+                new ScriptDiff($current[$definition->key->key] ?? ScriptSource::empty(), $source),
                 $script,
                 $coverage[$definition->key->key],
             ),
@@ -134,7 +134,9 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         return $sources;
     }
 
-    /** @param list<\App\Profiles\Values\SupervisorCoverage> $coverage */
+    /**
+     * @param list<\App\Profiles\Values\SupervisorCoverage> $coverage
+     */
     private function publish(
         ProfileDefinition $definition,
         ActorIdentity $author,
@@ -145,11 +147,11 @@ final readonly class ActivateProfilesHandler implements CommandHandler
     ): ActivatedProfile {
         $revision = Profile::activate($definition, $author, $diff->after, $script)->revision;
 
-        if ($change === ProfileChangeType::Unchanged && $diff->before != $diff->after) {
-            $change = ProfileChangeType::Changed;
-        }
+        $publishedChange = $change === ProfileChangeType::Unchanged && $diff->before != $diff->after
+            ? ProfileChangeType::Changed
+            : $change;
 
-        return new ActivatedProfile($definition->key, $revision, $change, $coverage, $diff);
+        return new ActivatedProfile($definition->key, $revision, $publishedChange, $coverage, $diff);
     }
 
     private function changeOf(ProfileDefinition $definition): ProfileChangeType

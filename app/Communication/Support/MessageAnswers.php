@@ -10,7 +10,9 @@ use App\Communication\Models\Message;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 
-/** Closes a question with its durable reply and releases its claim. */
+/**
+ * Closes a question with its durable reply and releases its claim.
+ */
 final readonly class MessageAnswers
 {
     public function __construct(private MessageClaims $claims, private Dispatcher $events) {}

@@ -8,24 +8,26 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\ToolArguments;
-use Domain\Documents\Contracts\DocumentReader;
-use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentCard;
+use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\ReportCard;
+use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\ReportState;
 
 final readonly class PublicationLists
 {
     public function __construct(
-        private DocumentReader $documents,
-        private ReportReader $reports,
+        private DocumentResolver $documents,
+        private ReportResolver $reports,
         private Continuations $continuations,
     ) {}
 
     public function documents(ToolArguments $arguments): ToolResult
     {
         $position = $this->position('docs_list', $arguments);
-        $page = $this->documents->list($position->filters['search'], $position->offset);
+        $page = $this->documents->list($this->filters($position, AttentionFilter::All));
 
         return $this->page($page->rows, $page->hasNextPage, $position);
     }
@@ -33,9 +35,20 @@ final readonly class PublicationLists
     public function reports(ToolArguments $arguments): ToolResult
     {
         $position = $this->position('reports_list', $arguments, $arguments->enumOr('state', ReportState::Open));
-        $page = $this->reports->list($position->filters['search'], ReportState::from($position->filters['state']), $position->offset);
+        $state = ReportState::from($position->filters['state']);
+        $page = $this->reports->list($this->filters($position, $state->attention()));
 
         return $this->page($page->rows, $page->hasNextPage, $position);
+    }
+
+    private function filters(Continuation $position, AttentionFilter $attention): DocumentFilters
+    {
+        return DocumentFilters::from([
+            'attention' => $attention,
+            'query' => $position->filters['search'],
+            'page' => $position->offset,
+            'perPage' => 8,
+        ]);
     }
 
     private function position(string $tool, ToolArguments $arguments, ReportState|null $state = null): Continuation
@@ -51,10 +64,12 @@ final readonly class PublicationLists
         ], $arguments->positiveIntegerOr('page', 1, 1_000_000));
     }
 
-    /** @param list<DocumentCard|ReportCard> $cards */
+    /**
+     * @param list<DocumentCard|ReportCard> $cards
+     */
     private function page(array $cards, bool $hasNext, Continuation $position): ToolResult
     {
-        $entries = array_map(fn (DocumentCard|ReportCard $card): array => [
+        $entries = array_map(fn (DocumentCard|ReportCard $card) => [
             'id' => (int) $card->number,
             'record_id' => $card->id,
             'title' => mb_strcut($card->title, 0, 100),

@@ -27,6 +27,8 @@ interface CurrentState
      */
     public function top(StackTarget $target): Option;
 
-    /** @return Option<RecordIdentity> */
+    /**
+     * @return Option<RecordIdentity>
+     */
     public function record(StackTarget $target): Option;
 }

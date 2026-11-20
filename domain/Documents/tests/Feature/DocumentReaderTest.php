@@ -67,7 +67,10 @@ final class DocumentReaderTest extends TestCase
         $this->publish($number, 'Replacement.');
 
         $currentCursor = $current->nextActions[0]->arguments['continuation'];
-        $this->assertThrows(fn () => $this->read($number, ['continuation' => $currentCursor]), ContinuationStale::class);
+        $this->assertThrows(
+            fn () => $this->read($number, ['continuation' => $currentCursor]),
+            ContinuationStale::class,
+        );
         $pinnedCursor = $pinned->nextActions[0]->arguments['continuation'];
         $continued = $this->read($number, ['continuation' => $pinnedCursor]);
         $this->assertSame([2, 2, 4096], [
@@ -105,7 +108,9 @@ final class DocumentReaderTest extends TestCase
         $bus->run(new CloseDocument(new DraftTarget((string) $number, $draft->token)));
     }
 
-    /** @param array<string, mixed> $arguments */
+    /**
+     * @param array<string, mixed> $arguments
+     */
     private function read(int $number, array $arguments): ToolResult
     {
         $fields = ['view', 'revision', 'section', 'line_start', 'line_end', 'character_offset', 'continuation'];

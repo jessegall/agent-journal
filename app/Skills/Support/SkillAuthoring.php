@@ -22,7 +22,6 @@ use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Text\Support\MarkdownText;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
 
 /**
@@ -34,7 +33,7 @@ final readonly class SkillAuthoring
 {
     public function __construct(
         private ConsoleOwner $console,
-        private Container $container,
+        private SkillResolver $skills,
     ) {}
 
     /**
@@ -68,9 +67,7 @@ final readonly class SkillAuthoring
             return $stored;
         }
 
-        return $this->container->make(
-            SkillResolver::class,
-        )->find($key)->origin === SkillOrigin::Shipped
+        return $this->skills->find($key)->origin === SkillOrigin::Shipped
             ? throw ShippedSkillReadOnly::for($key->key)
             : throw SkillMissing::for($key);
     }

@@ -30,7 +30,10 @@ final readonly class TaskRunAssignments implements AssignableProvider
             ->pluck('id')
             ->all();
 
-        return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $visibleRunIds, true)));
+        return array_values(array_filter(
+            $records,
+            fn (RecordIdentity $record) => in_array($record->id, $visibleRunIds, true),
+        ));
     }
 
     public function finishedRecords(array $records): array

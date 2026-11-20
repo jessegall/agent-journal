@@ -12,15 +12,12 @@ use App\Mcp\Support\ToolArguments;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
 use Domain\Documents\Contracts\DocumentReader;
-use Domain\Documents\Contracts\DocumentResolver;
-use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\DocumentList;
-use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\PublicationView;
 use Domain\Documents\Mcp\PublicationChunks;
 use Domain\Documents\Mcp\PublicationPages;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
+use Domain\Documents\Values\DocumentReadCard;
 
 final readonly class DocumentPages implements DocumentReader
 {
@@ -31,16 +28,10 @@ final readonly class DocumentPages implements DocumentReader
     private const int REVISIONS = 8;
 
     public function __construct(
-        private DocumentResolver $documents,
         private Continuations $continuations,
         private PublicationChunks $chunks,
         private PublicationPages $pages,
     ) {}
-
-    public function list(string $search, int $page, int $size = 8): DocumentList
-    {
-        return $this->documents->list(new DocumentFilters(AttentionFilter::All, $page, $size, $search));
-    }
 
     public function document(int|string $id, ToolArguments $arguments): ToolResult
     {
@@ -58,7 +49,7 @@ final readonly class DocumentPages implements DocumentReader
             (string) $position->revision,
         );
         $view = PublicationView::from($position->filters['view']);
-        $card = ['doc_id' => $document->number, 'document_id' => $document->id, 'revision' => $revision->number];
+        $card = new DocumentReadCard($document->number, $document->id, $revision->number);
 
         return match ($view) {
             PublicationView::Summary => $this->pages->summary(
@@ -98,22 +89,20 @@ final readonly class DocumentPages implements DocumentReader
         );
     }
 
-    /** @param array<string, mixed> $card */
     private function body(
         DocumentRevision $revision,
         Continuation $position,
         ToolArguments $arguments,
-        array $card,
+        DocumentReadCard $card,
     ): ToolResult {
         $position = $arguments->continuation() === null
             ? $this->chunks->range($position, MarkdownText::body($revision->body), $arguments)
             : $position;
 
-        return $this->chunks->page($revision->body, $position, self::KEY, $card);
+        return $this->chunks->page($revision->body, $position, self::KEY, $card->toArray());
     }
 
-    /** @param array<string, mixed> $card */
-    private function revisions(Document $document, Continuation $position, array $card): ToolResult
+    private function revisions(Document $document, Continuation $position, DocumentReadCard $card): ToolResult
     {
         $matching = $document->revisions()->sharedPublished()->orderBy('number')
             ->where('number', '>=', $position->offset)->limit(self::REVISIONS + 1)->get();
@@ -128,8 +117,8 @@ final readonly class DocumentPages implements DocumentReader
         ), self::KEY)] : [];
 
         return ToolResult::ok([
-            ...$card,
-            'revisions' => $page->map(fn (DocumentRevision $revision): array => [
+            ...$card->toArray(),
+            'revisions' => $page->map(fn (DocumentRevision $revision) => [
                 'revision' => $revision->number,
                 'title' => mb_strcut($revision->title, 0, 100),
                 'author_type' => $revision->author_type->value,

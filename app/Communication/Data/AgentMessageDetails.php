@@ -6,7 +6,9 @@ namespace App\Communication\Data;
 
 use App\Mcp\Support\TextChunk;
 
-/** One message summary or a bounded body, with a cursor for an omitted body or ancestor. */
+/**
+ * One message summary or a bounded body, with a cursor for an omitted body or ancestor.
+ */
 final readonly class AgentMessageDetails
 {
     public function __construct(

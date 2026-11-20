@@ -13,13 +13,17 @@ use Illuminate\JsonSchema\Types\Type;
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 abstract class TaskWriteTool extends JournalWriteTool
 {
-    /** @return array<string, Type> */
+    /**
+     * @return array<string, Type>
+     */
     final protected function taskSchema(JsonSchema $schema): array
     {
         return ['task_id' => $schema->string()->max(26)->required()];
     }
 
-    /** @return array<string, Type> */
+    /**
+     * @return array<string, Type>
+     */
     final protected function runSchema(JsonSchema $schema): array
     {
         return [

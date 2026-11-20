@@ -23,13 +23,13 @@ final readonly class RulesListResult
         return $this->pages->answer(
             self::TOOL,
             $arguments,
-            fn (ToolArguments $first) => [
-                'state' => $first->enumOr('state', RuleState::Active)->value,
-                'page' => $first->positiveIntegerOr('page', 1),
+            fn (ToolArguments $initialArguments) => [
+                'state' => $initialArguments->enumOr('state', RuleState::Active)->value,
+                'page' => $initialArguments->positiveIntegerOr('page', 1),
             ],
-            fn (array $filters) => $this->page(new RuleFilters(
-                page: $filters['page'],
-                state: RuleState::from($filters['state']),
+            fn (ToolArguments $filters) => $this->page(new RuleFilters(
+                page: $filters->positiveInteger('page'),
+                state: $filters->enum('state', RuleState::class),
             )),
         );
     }

@@ -8,10 +8,14 @@ use App\Profiles\Exceptions\ProfileDraftRefused;
 
 final readonly class DraftExpectations
 {
-    /** @param list<ExpectedDraftRevision> $revisions */
+    /**
+     * @param list<ExpectedDraftRevision> $revisions
+     */
     public function __construct(public array $revisions = []) {}
 
-    /** @param list<string> $options */
+    /**
+     * @param list<string> $options
+     */
     public static function fromOptions(array $options): self
     {
         $revisions = [];

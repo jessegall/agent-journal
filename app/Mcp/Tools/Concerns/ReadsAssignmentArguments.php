@@ -12,7 +12,9 @@ use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\ObjectType;
 
-/** Reads the recipient and expected assignment common to assignment changes. */
+/**
+ * Reads the recipient and expected assignment common to assignment changes.
+ */
 trait ReadsAssignmentArguments
 {
     final protected function assigneeSchema(JsonSchema $schema): ObjectType

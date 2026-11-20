@@ -33,7 +33,7 @@ final readonly class PlanSearch implements SearchContribution
             return new SearchPage([], false);
         }
 
-        $hits = array_map(fn (PlanCard $plan): SearchHit => SearchHit::matching(
+        $hits = array_map(fn (PlanCard $plan) => SearchHit::matching(
             $this->recordType(), $plan->id, $plan->title, $plan->title, $query,
         ), $matches->cards);
 

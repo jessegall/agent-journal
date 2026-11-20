@@ -49,7 +49,9 @@ final class AssignmentRootFinished extends RuntimeException implements CodedRefu
         return $this->recovery === null ? [] : ['next_action' => $this->recovery->toArray()];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     protected function details(): array
     {
         return $this->refusalDetails();

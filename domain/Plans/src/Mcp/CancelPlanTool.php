@@ -8,7 +8,7 @@ use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Api\PlanTextLimits;
+use Domain\Plans\Api\PlanTextLimit;
 use Domain\Plans\Commands\CancelPlan;
 use Domain\Plans\Enums\PlanState;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -29,7 +29,7 @@ final class CancelPlanTool extends PlanWriteTool
     {
         return [
             ...$this->planRevisionSchema($schema),
-            'reason' => $schema->string()->max(PlanTextLimits::NOTE)->required(),
+            'reason' => $schema->string()->max(PlanTextLimit::Note->value)->required(),
         ];
     }
 

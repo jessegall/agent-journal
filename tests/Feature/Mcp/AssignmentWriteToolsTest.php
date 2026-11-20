@@ -149,7 +149,9 @@ final class AssignmentWriteToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.holder', null);
     }
 
-    /** @return array{id: string, holder: array{type: string, id: string}} */
+    /**
+     * @return array{id: string, holder: array{type: string, id: string}}
+     */
     private function assignFirst(): array
     {
         return $this->callMcpTool($this->caller, 'assignments_assign', [
@@ -177,13 +179,17 @@ final class AssignmentWriteToolsTest extends TestCase
             ->json('result.structuredContent.assignment');
     }
 
-    /** @return array{record_type: string, record_id: string} */
+    /**
+     * @return array{record_type: string, record_id: string}
+     */
     private function record(): array
     {
         return ['record_type' => 'tasks.task', 'record_id' => $this->task->id];
     }
 
-    /** @return array{type: string, id: string} */
+    /**
+     * @return array{type: string, id: string}
+     */
     private function recipient(TestStart $start): array
     {
         return ['type' => 'agent', 'id' => $start->agent->id];

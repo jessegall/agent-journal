@@ -60,7 +60,10 @@ final readonly class PlanShareProvider implements ShareRecordProvider
         return new ShareRecords(
             $cards,
             array_values(
-                array_filter($read->targets, fn (RecordIdentity $target) => ! in_array($target->id, $publishedPlanIds, true)),
+                array_filter(
+                    $read->targets,
+                    fn (RecordIdentity $target) => ! in_array($target->id, $publishedPlanIds, true),
+                ),
             ),
             null,
         );

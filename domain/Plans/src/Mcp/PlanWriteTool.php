@@ -15,7 +15,9 @@ use Illuminate\JsonSchema\Types\Type;
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 abstract class PlanWriteTool extends JournalWriteTool
 {
-    /** @return array<string, Type> */
+    /**
+     * @return array<string, Type>
+     */
     final protected function planRevisionSchema(JsonSchema $schema): array
     {
         return [

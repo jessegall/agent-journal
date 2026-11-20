@@ -18,7 +18,9 @@ final readonly class Refusal
 
     public string $message;
 
-    /** @param array<string, mixed> $details */
+    /**
+     * @param array<string, mixed> $details
+     */
     private function __construct(
         public RefusalCode $code,
         string $message,

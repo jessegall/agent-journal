@@ -31,7 +31,9 @@ final readonly class KeywordDefinition implements ScriptKeywordDefinition
         return new self($token, KeywordCategory::Structure, $form, $documentation, null);
     }
 
-    /** @param class-string<ScriptTrigger> $implementation */
+    /**
+     * @param class-string<ScriptTrigger> $implementation
+     */
     public static function trigger(string $token, string $implementation): self
     {
         return new self($token, KeywordCategory::Trigger, SyntaxForm::Trigger, 'Run on this trigger.', $implementation);

@@ -19,7 +19,9 @@ use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Data;
 
-/** @implements JournalCall<AskCard> */
+/**
+ * @implements JournalCall<AskCard>
+ */
 #[Endpoint('asks/reply', 'POST', AskCard::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class ReplyToAskCall extends Data implements JournalCall
 {

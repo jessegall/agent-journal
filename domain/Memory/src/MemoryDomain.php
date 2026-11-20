@@ -23,12 +23,7 @@ use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
-use Domain\Memory\Mcp\EditMemoryTool;
-use Domain\Memory\Mcp\MemoriesListTool;
-use Domain\Memory\Mcp\MemoryReadTool;
 use Domain\Memory\Mcp\MemoryResource;
-use Domain\Memory\Mcp\RemoveMemoryTool;
-use Domain\Memory\Mcp\SaveMemoryTool;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Skills\MemorySkill;
@@ -82,17 +77,6 @@ final class MemoryDomain extends Domain implements
     public function skills(): array
     {
         return [MemorySkill::class];
-    }
-
-    public function mcpTools(): array
-    {
-        return [
-            MemoriesListTool::class,
-            MemoryReadTool::class,
-            SaveMemoryTool::class,
-            EditMemoryTool::class,
-            RemoveMemoryTool::class,
-        ];
     }
 
     public function mcpResources(): array

@@ -7,7 +7,7 @@ namespace Domain\Tasks\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Tasks\Api\TaskTextLimits;
+use Domain\Tasks\Api\TaskTextLimit;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Enums\TaskState;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -27,7 +27,7 @@ final class BlockTaskTool extends TaskWriteTool
     {
         return [
             ...$this->runSchema($schema),
-            'reason' => $schema->string()->max(TaskTextLimits::NOTE)->required(),
+            'reason' => $schema->string()->max(TaskTextLimit::Note->value)->required(),
         ];
     }
 

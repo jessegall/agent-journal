@@ -92,7 +92,9 @@ final class AskHop extends Model implements ReadableModel
         $this->save();
     }
 
-    /** @param Builder<self> $query */
+    /**
+     * @param Builder<self> $query
+     */
     #[Scope]
     protected function currentHops(Builder $query): void
     {
@@ -129,7 +131,9 @@ final class AskHop extends Model implements ReadableModel
             ->oldest('ask_hops.accepted_at')->orderBy('ask_hops.id')->first();
     }
 
-    /** @param Closure(self): void $recover */
+    /**
+     * @param Closure(self): void $recover
+     */
     public static function recoverEach(Closure $recover): void
     {
         self::query()->where(fn (Builder $waiting) => $waiting

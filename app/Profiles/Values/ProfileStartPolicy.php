@@ -7,7 +7,9 @@ namespace App\Profiles\Values;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
+use App\Agents\Support\StartPolicy;
 use App\Agents\Values\AccessPolicy;
+use App\Agents\Values\Operation;
 use App\Agents\Values\StopConditions;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Programs\Enums\HookProgram;
@@ -83,5 +85,22 @@ final readonly class ProfileStartPolicy
     public function configurationHash(): string
     {
         return $this->provenance->configurationHash;
+    }
+
+    public function allowsOperation(Operation $operation): bool
+    {
+        return $this->access->allows($operation);
+    }
+
+    public function freeze(string|null $profileKey, int|null $revision): StartPolicy
+    {
+        return new StartPolicy(
+            $this->access,
+            $this->stopConditions,
+            $this->execution,
+            $profileKey,
+            $revision,
+            $this->configurationHash(),
+        );
     }
 }

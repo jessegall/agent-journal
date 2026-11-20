@@ -12,7 +12,9 @@ use RuntimeException;
 
 final class DraftMarkdownInvalid extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    /** @param list<int> $lines */
+    /**
+     * @param list<int> $lines
+     */
     public static function onLines(array $lines): self
     {
         return new self('Fix the Markdown on lines '.implode(', ', $lines).' before publishing.');

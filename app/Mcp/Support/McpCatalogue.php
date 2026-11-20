@@ -48,13 +48,19 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private array $overviewContributions = [];
 
-    /** @var array<string, class-string<SearchContribution>> */
+    /**
+     * @var array<string, class-string<SearchContribution>>
+     */
     private array $searchContributions = [];
 
-    /** @var array<string, int> */
+    /**
+     * @var array<string, int>
+     */
     private array $toolBytes = [];
 
-    /** @var array<string, int> */
+    /**
+     * @var array<string, int>
+     */
     private array $toolCounts = [];
 
     public function __construct(private readonly CommandRegistry $commands) {}
@@ -169,7 +175,9 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         $this->searchContributions[$type] = $className;
     }
 
-    /** @return array<string, class-string<SearchContribution>> */
+    /**
+     * @return array<string, class-string<SearchContribution>>
+     */
     public function searchContributionClasses(): array
     {
         return $this->searchContributions;
@@ -220,7 +228,9 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         return $this->overviewContributions;
     }
 
-    /** @return array<string, array<string, mixed>> */
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function toolDefinitionsFor(DiscoveryProfile $profile): array
     {
         $definitions = [];
@@ -242,7 +252,9 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         return $definitions;
     }
 
-    /** @return array<string, array<string, mixed>> */
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function resourceDefinitions(): array
     {
         $definitions = [];

@@ -104,6 +104,35 @@ final class DocumentEditTest extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_signed_text_replacement_accepts_the_old_and_new_wire_fields(): void
+    {
+        $author = TestStart::start('writing-helper');
+        $author->startRequest($this->app);
+        $commands = $this->app->make(CommandBus::class);
+        $document = $commands->run(new CreateDocument('Design', 'Current design.', 'Original text.'));
+        $draft = $commands->run(new OpenDocument($document->id, 1));
+
+        $this->signed($author, '/agent/docs/edit', [
+            'number' => (string) $document->number,
+            'token' => $draft->token,
+            'version' => 1,
+            'mode' => 'text',
+            'section' => null,
+            'body' => null,
+            'old' => 'Original text.',
+            'new' => 'Replacement text.',
+            'title' => null,
+            'abstract' => null,
+            'request_key' => 'replace-design-words',
+        ])->assertOk();
+
+        $author->startRequest($this->app);
+        $this->assertSame(
+            'Replacement text.',
+            $this->app->make(DraftResolver::class)->current($document->number)->body,
+        );
+    }
+
     public function test_the_signed_comment_route_posts_on_the_document(): void
     {
         $author = TestStart::start();

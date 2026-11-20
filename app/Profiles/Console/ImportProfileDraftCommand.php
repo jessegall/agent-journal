@@ -57,7 +57,9 @@ final class ImportProfileDraftCommand extends Command
         return $contents;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private static function readCommands(string $path): array
     {
         try {

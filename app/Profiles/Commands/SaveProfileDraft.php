@@ -18,7 +18,9 @@ use App\Profiles\Policies\ProfileAdministrationPolicy;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ScriptSource;
 
-/** @extends Command<int> */
+/**
+ * @extends Command<int>
+ */
 #[HandledBy(SaveProfileDraftHandler::class)]
 #[Authorize(ProfileAdministrationPolicy::class, ProfileAbility::EditDraft)]
 #[Operation('save_profile_draft', ResourceAreaType::JournalWork, AccessType::Edit)]
@@ -30,7 +32,9 @@ final readonly class SaveProfileDraft extends Command implements AuthorizedComma
         public ScriptSource $source,
     ) {}
 
-    /** @return class-string<Profile> */
+    /**
+     * @return class-string<Profile>
+     */
     public function subject(): string
     {
         return Profile::class;

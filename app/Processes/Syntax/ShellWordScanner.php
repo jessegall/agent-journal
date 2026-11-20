@@ -67,12 +67,7 @@ final readonly class ShellWordScanner
                 && $cursor->position === $start) {
                 $word->add(
                     $cursor->position,
-                    $this->expansions->readBalanced(
-                        $cursor,
-                        $cursor->position,
-                        $cursor->position + 2,
-                        'a process substitution',
-                    ),
+                    $this->expansions->readBalanced($cursor, 'a process substitution'),
                 );
 
                 continue;
@@ -140,14 +135,13 @@ final readonly class ShellWordScanner
      */
     private function readExpansionOrDollar(LexerCursor $cursor, WordBuilder $word, string $character): void
     {
-        $expansionStart = $cursor->position;
         $expansion = $this->expansions->read($cursor);
         if ($expansion === null) {
             $word->addCharacter($character, $cursor->position++);
 
             return;
         }
-        $word->add($expansionStart, $expansion);
+        $word->add($expansion->range->start, $expansion);
     }
 
     /**

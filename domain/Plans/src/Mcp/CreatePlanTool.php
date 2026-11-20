@@ -7,7 +7,7 @@ namespace Domain\Plans\Mcp;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use Domain\Plans\Api\PlanTextLimits;
+use Domain\Plans\Api\PlanTextLimit;
 use Domain\Plans\Commands\CreatePlan;
 use Domain\Plans\Enums\PlanType;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -26,8 +26,8 @@ final class CreatePlanTool extends PlanWriteTool
     protected function writeSchema(JsonSchema $schema): array
     {
         return [
-            'title' => $schema->string()->max(PlanTextLimits::TITLE)->required(),
-            'brief' => $schema->string()->max(PlanTextLimits::BRIEF)->required(),
+            'title' => $schema->string()->max(PlanTextLimit::Title->value)->required(),
+            'brief' => $schema->string()->max(PlanTextLimit::Brief->value)->required(),
             'type' => $this->typeSchema($schema)->required(),
         ];
     }

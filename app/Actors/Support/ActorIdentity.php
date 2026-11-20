@@ -67,4 +67,12 @@ final readonly class ActorIdentity
     {
         return ["{$prefix}_type" => $this->type->value, "{$prefix}_id" => $this->id];
     }
+
+    /**
+     * @return array{type: string, id: string}
+     */
+    public function toArray(): array
+    {
+        return ['type' => $this->type->value, 'id' => $this->id];
+    }
 }

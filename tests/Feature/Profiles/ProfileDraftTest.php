@@ -56,7 +56,7 @@ final class ProfileDraftTest extends TestCase
         $draft = ScriptSource::fromDefinitions('RUN tests', self::COMMANDS);
         $this->assertSame(2, $commands->run(new SaveProfileDraft($profile, 1, $draft)));
         $this->assertThrows(
-            fn () => $commands->run(new SaveProfileDraft($profile, 1, new ScriptSource())),
+            fn () => $commands->run(new SaveProfileDraft($profile, 1, ScriptSource::empty())),
             ProfileDraftRefused::class,
             'revision 2',
         );
@@ -76,7 +76,7 @@ final class ProfileDraftTest extends TestCase
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('draft-test');
 
-        $commands->run(new SaveProfileDraft($profile, 0, new ScriptSource()));
+        $commands->run(new SaveProfileDraft($profile, 0, ScriptSource::empty()));
         $activation = new ActivateProfiles($this->proposal(), DraftExpectations::fromOptions(['draft-test=1']));
         $first = $commands->run($activation);
         $this->assertTrue($first->profiles[0]->script->after->isEmpty());

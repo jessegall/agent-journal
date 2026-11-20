@@ -58,7 +58,9 @@ final class Ask extends Model implements Assignable, ReadableModel
         return new AskReference(new self()->newUniqueId());
     }
 
-    /** @return Option<self> */
+    /**
+     * @return Option<self>
+     */
     public static function submission(ActorIdentity $actor, string $key): Option
     {
         return Option::fromValue(self::query()->ownedBy($actor)->where('submission_key', $key)->first());

@@ -20,7 +20,16 @@ enum SyntaxForm: string
     {
         return match ($this) {
             self::CommandKey, self::Expression, self::Text, self::Block => true,
-            default => false,
+            self::Handler, self::ElseBlock, self::EndBlock, self::Trigger, self::Negation => false,
+        };
+    }
+
+    public function isStatementBoundary(): bool
+    {
+        return match ($this) {
+            self::ElseBlock, self::EndBlock => true,
+            self::Handler, self::Trigger, self::Negation, self::CommandKey, self::Expression, self::Text,
+            self::Block => false,
         };
     }
 }

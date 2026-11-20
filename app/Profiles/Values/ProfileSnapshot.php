@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
+use App\Actors\Contracts\Policy;
+use App\Agents\Values\Operation;
 use App\Processes\Values\ProcessGrants;
+use BackedEnum;
 use Spatie\LaravelData\Data;
 
 /**
@@ -36,5 +39,18 @@ final class ProfileSnapshot extends Data
     public function processGrants(): ProcessGrants
     {
         return $this->start->access->processes;
+    }
+
+    public function allowsOperation(Operation $operation): bool
+    {
+        return $this->start->allowsOperation($operation);
+    }
+
+    /**
+     * @param  class-string<Policy>  $policy
+     */
+    public function grants(string $policy, BackedEnum $ability): bool
+    {
+        return $this->authorization->grants($policy, $ability);
     }
 }
