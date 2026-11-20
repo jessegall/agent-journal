@@ -9,11 +9,11 @@ use App\Actors\Values\PolicyRegistration;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\MiddlewareDeclaration;
-use App\Bus\Support\PropertyRules;
 use App\CoreCommands;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Numbers\Support\NumberedTypeRegistry;
+use App\Pipelines\Contracts\RunsPipelines;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Bus\Enums\FixtureAbility;
@@ -83,7 +83,7 @@ trait InstallsCommandModules
 
         $this->app->instance(CommandRegistry::class, CommandRegistry::from(
             [CoreCommands::owner(), ...$owners],
-            $this->app->make(PropertyRules::class),
+            $this->app->make(RunsPipelines::class),
         ));
         $this->registerPoliciesOf($domains, [CardsDomain::class, LedgerDomain::class, NotesDomain::class]);
         $this->app->forgetScopedInstances();
@@ -134,7 +134,7 @@ trait InstallsCommandModules
         $this->app->instance(DomainRegistry::class, $domains);
         $this->app->instance(CommandRegistry::class, $domains->commandDeclarations(
             CoreCommands::owner(),
-            $this->app->make(PropertyRules::class),
+            $this->app->make(RunsPipelines::class),
         ));
 
         foreach ($moduleClasses as $moduleClass) {

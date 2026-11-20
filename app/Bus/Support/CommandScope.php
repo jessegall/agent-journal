@@ -16,6 +16,14 @@ final readonly class CommandScope
         public string $target,
     ) {}
 
+    /**
+     * What makes two scopes the same: their type and target.
+     */
+    public function identity(): string
+    {
+        return sprintf('%s|%s', $this->type->value, $this->target);
+    }
+
     public static function all(): self
     {
         return new self(CommandScopeType::All, '');

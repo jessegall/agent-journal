@@ -16,7 +16,7 @@ use Tests\Fixtures\Pipelines\Words;
 
 /**
  * A pipeline hands each step's stage to the next, nests pipelines, repeats rounds and chooses steps, is resolved once,
- * and names a step that stands out of order.
+ * runs steps listed inline, and names a step that stands out of order.
  */
 final class PipelinesTest extends TestCase
 {
@@ -30,6 +30,17 @@ final class PipelinesTest extends TestCase
 
         $this->assertSame([3, 2], [$first->count, $second->count]);
         $this->assertSame(1, CountWords::$built);
+    }
+
+    public function test_steps_listed_inline_run_in_order_with_no_definition_class(): void
+    {
+        $pipelines = new Pipelines(new Container());
+
+        $counted = $pipelines->runSteps([CountWords::class], new Words('three small words'), Counted::class);
+
+        $this->assertSame(3, $counted->count);
+        $this->expectException(StepOutOfOrder::class);
+        $pipelines->runSteps([CountWords::class], new Words('a b'), Words::class);
     }
 
     public function test_a_pipe_handed_a_stage_it_does_not_take_is_named(): void
