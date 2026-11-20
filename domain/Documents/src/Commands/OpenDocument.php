@@ -25,7 +25,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
  */
 #[HandledBy(OpenDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('open_document', ResourceAreaType::JournalContent, AccessType::Create)]
+#[Operation('open_document', ResourceAreaType::JournalDocuments, AccessType::Create)]
 final readonly class OpenDocument extends Command implements AuthorizedCommand
 {
     public function __construct(

@@ -12,7 +12,7 @@ use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Enums\DocumentAbility;
-use Domain\Documents\Handlers\SettleReportHandler;
+use Domain\Documents\Handlers\CloseReportHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -23,13 +23,13 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  *
  * @extends Command<null>
  */
-#[HandledBy(SettleReportHandler::class)]
+#[HandledBy(CloseReportHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('settle_report', ResourceAreaType::JournalContent, AccessType::Edit)]
-final readonly class SettleReport extends Command implements AuthorizedCommand
+#[Operation('close_report', ResourceAreaType::JournalContent, AccessType::Edit)]
+final readonly class CloseReport extends Command implements AuthorizedCommand
 {
     public function __construct(
-        public int $reportNumber,
+        public int|string $reportReference,
         #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)]
         public string $reason,
     ) {}

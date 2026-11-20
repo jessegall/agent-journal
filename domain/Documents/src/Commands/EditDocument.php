@@ -21,7 +21,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 /** @extends Command<DraftReference> */
 #[HandledBy(EditDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('edit_document', ResourceAreaType::JournalContent, AccessType::Edit)]
+#[Operation('edit_document', ResourceAreaType::JournalDocuments, AccessType::Edit)]
 final readonly class EditDocument extends Command implements AuthorizedCommand
 {
     public function __construct(

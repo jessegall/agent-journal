@@ -26,7 +26,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
  */
 #[HandledBy(CloseDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('close_document', ResourceAreaType::JournalContent, AccessType::Edit)]
+#[Operation('close_document', ResourceAreaType::JournalDocuments, AccessType::Edit)]
 final readonly class CloseDocument extends Command implements AuthorizedCommand
 {
     public function __construct(public DraftTarget $draft) {}

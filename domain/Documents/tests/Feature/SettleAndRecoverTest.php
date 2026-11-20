@@ -23,7 +23,7 @@ use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
-use Domain\Documents\Commands\SettleReport;
+use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\AttentionState;
@@ -118,7 +118,7 @@ final class SettleAndRecoverTest extends TestCase
         $tooLong = str_repeat('a', Document::SETTLEMENT_REASON_CHARACTERS + 1);
 
         $this->assertThrows(fn () => $this->bus()->run(new SettleDocument(1, 1, $tooLong)), CommandInputInvalid::class);
-        $this->assertThrows(fn () => $this->bus()->run(new SettleReport(1, $tooLong)), CommandInputInvalid::class);
+        $this->assertThrows(fn () => $this->bus()->run(new CloseReport(1, $tooLong)), CommandInputInvalid::class);
         $this->assertSame(
             [AttentionState::Active, AttentionState::Active],
             [Document::query()->sole()->attention, Report::query()->sole()->attention],
@@ -153,7 +153,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $this->actAsAgent(9, 90);
         $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
-        $this->bus()->run(new SettleReport(1, 'Checked.'));
+        $this->bus()->run(new CloseReport(1, 'Checked.'));
         $this->assertSame(AttentionState::Settled, Report::query()->sole()->attention);
 
         $this->actAsUser(1);
@@ -161,7 +161,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->actAsAgent(8, 80);
         $this->expectException(ActorNotAllowed::class);
 
-        $this->bus()->run(new SettleReport(2, 'Not mine.'));
+        $this->bus()->run(new CloseReport(2, 'Not mine.'));
     }
 
     public function test_a_user_recovers_an_agents_draft_and_the_revision_keeps_the_agent_as_author(): void

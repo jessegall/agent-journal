@@ -46,6 +46,7 @@ final readonly class ProfileBase
         return new self('main-agent', 'Main agent', 'opus', [
             new ClassGrant(ResourceAreaType::Workspace, [...self::looking(), ...self::changing(), ...self::running()]),
             new ClassGrant(ResourceAreaType::JournalContent, [...self::looking(), ...self::changing()]),
+            new ClassGrant(ResourceAreaType::JournalDocuments, [...self::looking(), ...self::changing()]),
             new ClassGrant(
                 ResourceAreaType::JournalWork,
                 [...self::looking(), ...self::changing(), AccessType::Delegate],
@@ -75,6 +76,7 @@ final readonly class ProfileBase
             new ClassGrant(ResourceAreaType::Workspace, [...self::looking(), ...self::changing(), ...self::running()]),
             new ClassGrant(ResourceAreaType::Scratch, [...self::looking(), ...self::changing(), ...self::running()]),
             new ClassGrant(ResourceAreaType::JournalContent, self::journalWork()),
+            new ClassGrant(ResourceAreaType::JournalDocuments, self::journalWork()),
             new ClassGrant(ResourceAreaType::JournalWork, self::journalWork()),
         ], ExecutionModeType::RequiredContainer, true, [
             StopCondition::cleanWorktree(),

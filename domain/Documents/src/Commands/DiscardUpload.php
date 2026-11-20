@@ -19,7 +19,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 /** @extends Command<void> */
 #[HandledBy(DiscardUploadHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('discard_upload', ResourceAreaType::JournalContent, AccessType::Delete)]
+#[Operation('discard_upload', ResourceAreaType::JournalContent, AccessType::Edit)]
 final readonly class DiscardUpload extends Command implements AuthorizedCommand
 {
     public function __construct(

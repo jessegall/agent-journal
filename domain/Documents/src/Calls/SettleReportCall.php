@@ -24,7 +24,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
  *
  * @implements JournalCall<CallAccepted>
  */
-#[Endpoint('reports/settle', 'POST', CallAccepted::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
+#[Endpoint('reports/close', 'POST', CallAccepted::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class SettleReportCall extends Data implements JournalCall
 {
     public function __construct(

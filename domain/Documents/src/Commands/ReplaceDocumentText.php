@@ -25,7 +25,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
  */
 #[HandledBy(ReplaceDocumentTextHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('replace_document_text', ResourceAreaType::JournalContent, AccessType::Edit)]
+#[Operation('replace_document_text', ResourceAreaType::JournalDocuments, AccessType::Edit)]
 final readonly class ReplaceDocumentText extends Command implements AuthorizedCommand
 {
     public function __construct(

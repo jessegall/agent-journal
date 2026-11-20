@@ -52,7 +52,7 @@ use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Commands\ReplaceDocumentBody;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
-use Domain\Documents\Commands\SettleReport;
+use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Contracts\ReportResolver;
@@ -189,7 +189,7 @@ final class DocumentsDomain extends Domain implements
                 ChangeDocumentDetails::class,
                 CloseDocument::class,
                 SettleDocument::class,
-                SettleReport::class,
+                CloseReport::class,
                 RecoverDocument::class,
             )
             ->exceptions(

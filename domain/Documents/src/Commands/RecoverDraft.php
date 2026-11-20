@@ -20,7 +20,7 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 /** @extends Command<DraftReference> */
 #[HandledBy(RecoverDraftHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('recover_draft', ResourceAreaType::JournalContent, AccessType::Edit)]
+#[Operation('recover_draft', ResourceAreaType::JournalDocuments, AccessType::Edit)]
 final readonly class RecoverDraft extends Command implements AuthorizedCommand
 {
     public function __construct(public string $draftId, public int $expectedRevision) {}
