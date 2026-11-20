@@ -49,6 +49,8 @@ class ClaimAgentWakeHandler(Handler[ClaimAgentWake, AgentWake | None]):
 
     def handle(self, command: ClaimAgentWake, context: Context) -> AgentWake | None:
         wake = self.queries.query(AgentWake).find(command.wake_id)
+        if not wake.is_due_for_claim(context.timestamp):
+            return None
         agent = self.agents.find(wake.session_agent_id)
         if agent.retired_at is not None:
             self.repository.update(wake, context, state=WakeState.CANCELLED, failure="the agent was retired")

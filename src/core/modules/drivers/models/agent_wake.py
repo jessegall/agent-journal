@@ -27,3 +27,14 @@ class AgentWake(EnvironmentScoped, Model):
     next_attempt_at: Timestamp | None = None
     failure: str = ""
     acknowledged_at: Timestamp | None = None
+
+    def is_due_for_claim(self, timestamp: Timestamp) -> bool:
+        match self.state:
+            case WakeState.OPEN:
+                return True
+            case WakeState.CLAIMED:
+                return self.lease_ends_at is None or self.lease_ends_at.value <= timestamp.value
+            case WakeState.DELIVERED:
+                return self.next_attempt_at is None or self.next_attempt_at.value <= timestamp.value
+            case _:
+                return False

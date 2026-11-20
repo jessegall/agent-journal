@@ -29,7 +29,7 @@ class AgentWakeDelivery:
         timestamp = container.get(Clock).timestamp()
         wakes = container.get(Queries).query(AgentWake).all_environments(DUE_WAKES_REASON).matching(Among("state", [state.value for state in MOVING_STATES])).every_row(DUE_WAKES_REASON)
         for wake in wakes:
-            if not self.requires_move(wake, timestamp):
+            if not wake.is_due_for_claim(timestamp):
                 continue
             try:
                 self.moved(container, wake)
@@ -53,11 +53,3 @@ class AgentWakeDelivery:
             bus.run(ReopenAgentWake(claimed.id, UNTYPED_WAKE_FAILURE), Actor.core(), environment_id=claimed.environment_id)
             return
         bus.run(RecordWakeDelivery(claimed.id), Actor.core(), environment_id=claimed.environment_id)
-
-    @staticmethod
-    def requires_move(wake: AgentWake, timestamp) -> bool:
-        if wake.state is WakeState.OPEN:
-            return True
-        if wake.state is WakeState.CLAIMED:
-            return wake.lease_ends_at is None or wake.lease_ends_at.value <= timestamp.value
-        return wake.next_attempt_at is None or wake.next_attempt_at.value <= timestamp.value
