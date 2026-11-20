@@ -22,7 +22,7 @@ final readonly class EventCommands
      * @param list<string> $messages
      */
     private function __construct(
-        private array $commands,
+        public array $commands,
         public array $context = [],
         public array $messages = [],
     ) {}

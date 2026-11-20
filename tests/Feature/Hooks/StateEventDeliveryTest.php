@@ -45,14 +45,22 @@ final class StateEventDeliveryTest extends TestCase
 {
     use CommittedHookStack {
         setUpCommittedHookStack as private setUpBaseStack;
+        tearDownCommittedHookStack as private tearDownBaseStack;
     }
     use InstallsCommandModules, RegistersNoteStates;
 
     protected function setUpCommittedHookStack(): void
     {
-        $this->installCommandRegistry();
+        $this->installCommandModules();
+        $this->emptyTables('module_command_rows');
         $this->providerWithNotes()->boot();
         $this->setUpBaseStack();
+    }
+
+    protected function tearDownCommittedHookStack(): void
+    {
+        $this->emptyTables('module_command_rows');
+        $this->tearDownBaseStack();
     }
 
     public function test_an_empty_highest_result_shadows_lower_ordinary_listeners_and_keeps_the_marked_context(): void

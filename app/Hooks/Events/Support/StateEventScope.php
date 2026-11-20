@@ -92,7 +92,7 @@ final class StateEventScope
      */
     public function currentDispatch(): Option
     {
-        return Option::fromNullable($this->dispatches[0] ?? null);
+        return Option::fromValue($this->dispatches[0] ?? null);
     }
 
     /**
