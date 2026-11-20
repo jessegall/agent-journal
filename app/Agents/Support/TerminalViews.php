@@ -46,7 +46,7 @@ final readonly class TerminalViews implements TerminalViewCloser
             throw TerminalViewRefused::tooManyViews();
         }
 
-        return $this->receiptOf(TerminalView::open($viewer, $runtime, $intervalMs, $now));
+        return $this->receiptOf(TerminalView::create($viewer, $runtime, $intervalMs, $now));
     }
 
     /**

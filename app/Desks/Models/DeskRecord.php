@@ -215,7 +215,7 @@ final class DeskRecord extends Model implements Desk, ReadableModel
         $desk->id = (string) Str::ulid();
         $desk->name = $name;
         $desk->label = $label;
-        $desk->inbox_id = InboxRecord::openFor(self::INBOX_PROVIDER, $desk->id)->id;
+        $desk->inbox_id = InboxRecord::create(self::INBOX_PROVIDER, $desk->id)->id;
         $desk->seat_count = $seatCount;
         $desk->forwards_occupants = $forwardsOccupants;
         $desk->seating_revision = 0;
@@ -227,7 +227,7 @@ final class DeskRecord extends Model implements Desk, ReadableModel
     private function openSeats(): void
     {
         foreach (range(1, $this->seat_count) as $number) {
-            DeskSeat::openAt($this, $number);
+            DeskSeat::create($this, $number);
         }
     }
 

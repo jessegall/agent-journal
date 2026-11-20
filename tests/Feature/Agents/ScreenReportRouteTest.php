@@ -97,7 +97,7 @@ final class ScreenReportRouteTest extends TestCase
     private function watchedRuntimeOn(EnrolledHost $host): AgentRuntime
     {
         $runtime = $this->runtimeOn($host->hostId);
-        TerminalView::open(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
 
         return $runtime;
     }

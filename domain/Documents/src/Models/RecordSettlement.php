@@ -49,7 +49,7 @@ final class RecordSettlement extends Model implements ReadableModel
         ];
     }
 
-    public static function record(
+    public static function create(
         string $parentType,
         string $parentId,
         Actor $actor,

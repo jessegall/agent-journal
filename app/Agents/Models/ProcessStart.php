@@ -81,7 +81,7 @@ final class ProcessStart extends Model implements ReadableModel
     /**
      * A new start of the session's start on the selected account, waiting for its host.
      */
-    public static function register(
+    public static function create(
         AgentSession $session,
         SelectedAccount $account,
         TransportProfileType $transport = TransportProfileType::Mcp,

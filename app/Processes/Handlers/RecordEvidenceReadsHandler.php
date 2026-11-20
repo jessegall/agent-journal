@@ -18,7 +18,7 @@ final readonly class RecordEvidenceReadsHandler implements CommandHandler
         $run = ProcessRun::query()->whereKey($command->processRunId)->sole();
 
         foreach ($command->ranges as $range) {
-            EvidenceRead::record($run, $reader, $range);
+            EvidenceRead::create($run, $reader, $range);
         }
 
         return count($command->ranges);

@@ -58,7 +58,7 @@ final class TaskRun extends Model implements Assignable, ReadableModel
      *
      * @param  Option<string>  $replyInboxId
      */
-    public static function startFor(Task $task, int $number, ActorIdentity $starter, Option $replyInboxId): self
+    public static function create(Task $task, int $number, ActorIdentity $starter, Option $replyInboxId): self
     {
         $run = new self([
             'task_id' => $task->id,
@@ -83,7 +83,7 @@ final class TaskRun extends Model implements Assignable, ReadableModel
     public static function currentFor(Task $task, ActorIdentity $starter, Option $replyInboxId): self
     {
         return self::ofTask($task, $task->run_number)
-            ?? self::startFor($task, $task->run_number, $starter, $replyInboxId);
+            ?? self::create($task, $task->run_number, $starter, $replyInboxId);
     }
 
     /**

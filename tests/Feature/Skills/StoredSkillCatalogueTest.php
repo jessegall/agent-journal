@@ -38,7 +38,7 @@ final class StoredSkillCatalogueTest extends TestCase
         parent::setUp();
 
         $author = TestActors::userIdentity(7);
-        $skill = Skill::start(SkillKey::from('user-review-notes'), $author, null);
+        $skill = Skill::create(SkillKey::from('user-review-notes'), $author, null);
         $skill->appendRevision(
             new SkillDraft(
                 'Review notes',

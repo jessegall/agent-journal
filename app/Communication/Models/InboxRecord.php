@@ -30,7 +30,7 @@ final class InboxRecord extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function openFor(string $providerKey, string $providerId): self
+    public static function create(string $providerKey, string $providerId): self
     {
         $inbox = new self([
             'provider_key' => $providerKey,

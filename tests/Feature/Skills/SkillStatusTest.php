@@ -10,6 +10,7 @@ use App\Agents\Enums\SessionStatus;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Skills\Contracts\SkillPublisher;
+use App\Skills\Enums\GenerationState;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Models\SkillGeneration;
@@ -114,7 +115,7 @@ final class SkillStatusTest extends TestCase
 
     private function openAgentSession(string $name, string $profileKey): AgentSession
     {
-        $agent = Agent::named($name, $profileKey);
+        $agent = Agent::create($name, $profileKey);
         $session = new AgentSession(TestSelections::sessionColumns());
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;
@@ -131,13 +132,13 @@ final class SkillStatusTest extends TestCase
         {$text}
 
         TEXT;
-        $generation = SkillGeneration::ready(hash('sha256', $text), str_repeat('e', 64), [[
+        $generation = SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, hash('sha256', $text), [[
             'key' => 'journal',
             'owner' => 'Core',
             'revision' => null,
             'markdown' => $markdown,
             'digest' => hash('sha256', $markdown),
-        ]]);
+        ]], null);
         $publication = SkillPublication::intend(
             $session->id,
             'claude-code',

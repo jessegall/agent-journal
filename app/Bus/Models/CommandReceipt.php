@@ -111,7 +111,7 @@ final class CommandReceipt extends Model implements ReadableModel
     /**
      * Takes the key for a command that is about to run.
      */
-    public static function take(
+    public static function create(
         ReceiptCaller $caller,
         string $requestKey,
         object $command,

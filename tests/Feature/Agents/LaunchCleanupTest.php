@@ -161,7 +161,7 @@ final class LaunchCleanupTest extends TestCase
             StartPolicy::withoutProfile(TestSelections::onHost()),
         );
         StartRecord::accept($request, ActorIdentity::system(), None::create())->startedAs($launch->session);
-        SessionPolicy::freeze($launch->session, $request->policy);
+        SessionPolicy::create($launch->session, $request->policy);
 
         return $launch;
     }

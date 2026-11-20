@@ -64,7 +64,7 @@ final class ResumeTaskRunTest extends TestCase
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();
-        AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat(
@@ -94,7 +94,7 @@ final class ResumeTaskRunTest extends TestCase
     {
         $worker = $this->started('Third');
         $task = Task::factory()->create();
-        $holding = AssignmentRecord::holding(
+        $holding = AssignmentRecord::create(
             $task->assignmentIdentity(),
             AssigneeIdentity::of($worker->agent()->firstOrFail()),
         );
@@ -102,7 +102,7 @@ final class ResumeTaskRunTest extends TestCase
         $run = TaskRun::query()->where('task_id', $task->id)->sole();
 
         $holding->delete();
-        AssignmentRecord::holding($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
+        AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::of($worker->agent()->firstOrFail()));
 
         $this->assertNull($this->holderOf($run));
         $this->assertSame(1, $this->runAs($worker, new ResumeTaskRun($run->id)));
@@ -125,7 +125,7 @@ final class ResumeTaskRunTest extends TestCase
     private function started(string $name): AgentSession
     {
         return $this->app->make(StartSessions::class)
-            ->start(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
+            ->start(Agent::create($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

@@ -120,7 +120,7 @@ final class HelperSelectionTest extends TestCase
     public function test_a_helper_with_open_work_is_not_offered(): void
     {
         $busy = $this->declareHelper('read-only-helper');
-        HelperJob::accept(
+        HelperJob::create(
             $busy,
             $this->review,
             $this->parent,
@@ -162,7 +162,7 @@ final class HelperSelectionTest extends TestCase
             SelectedProgram::resolve($program->value, ModelSelection::named($model), null, null),
             TestSelections::requestId(),
         )->session;
-        $conversation = ProgramConversation::begin($session, 'settings', (string) Str::uuid(), $this->review->id);
+        $conversation = ProgramConversation::create($session, 'settings', (string) Str::uuid(), $this->review->id);
         ConversationVisit::appendOnce($session, $conversation, 'event-1', $finishedAt);
         $session->endAt($finishedAt);
 
@@ -172,7 +172,7 @@ final class HelperSelectionTest extends TestCase
     private function helperWithJob(CarbonImmutable $finishedAt): HelperIdentity
     {
         $identity = $this->declareHelper('read-only-helper');
-        $job = HelperJob::accept(
+        $job = HelperJob::create(
             $identity,
             $this->review,
             $this->parent,
@@ -189,9 +189,9 @@ final class HelperSelectionTest extends TestCase
 
     private function declareHelper(string $profileKey): HelperIdentity
     {
-        $agent = Agent::named('Helper '.Str::random(6), $profileKey);
+        $agent = Agent::create('Helper '.Str::random(6), $profileKey);
 
-        return HelperIdentity::declare($this->parent, ActorIdentity::of($agent), $profileKey, $profileKey);
+        return HelperIdentity::create($this->parent, ActorIdentity::of($agent), $profileKey, $profileKey);
     }
 
     /**

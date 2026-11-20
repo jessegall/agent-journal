@@ -28,7 +28,7 @@ final readonly class UploadStore implements SealedUploads
             throw UploadLimitReached::forSession();
         }
 
-        $upload = TextUpload::begin($type, $bytes, $digest);
+        $upload = TextUpload::create($type, $bytes, $digest);
         $this->provenance->record($upload);
 
         return $upload->id;

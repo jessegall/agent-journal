@@ -74,7 +74,7 @@ final class SessionPolicy extends Model implements ReadableModel
     /**
      * Freezes the start's policy with the session it started.
      */
-    public static function freeze(AgentSession $session, StartPolicy $policy): self
+    public static function create(AgentSession $session, StartPolicy $policy): self
     {
         $frozen = new self();
         $frozen->session_id = $session->id;

@@ -115,7 +115,7 @@ final class StartSkillsTest extends TestCase
 
     public function test_a_program_without_a_skill_adapter_is_refused_by_name(): void
     {
-        $session = $this->sessionRow(Agent::named('Other program', 'main-agent'), 'gemini-cli', null);
+        $session = $this->sessionRow(Agent::create('Other program', 'main-agent'), 'gemini-cli', null);
 
         $this->expectException(StartRefused::class);
         $this->expectExceptionMessage('gemini-cli');
@@ -126,7 +126,7 @@ final class StartSkillsTest extends TestCase
     public function test_a_required_skill_outside_the_selection_refuses_the_start_with_its_key(): void
     {
         $this->activateReviewer(['journal-plans']);
-        $session = $this->sessionRow(Agent::named('Reviewer', 'read-only-helper'), 'claude-code', 1);
+        $session = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper'), 'claude-code', 1);
 
         $this->expectException(SkillSelectionConflict::class);
         $this->expectExceptionMessage('journal-plans');
@@ -138,8 +138,8 @@ final class StartSkillsTest extends TestCase
     public function test_two_sessions_in_one_work_folder_keep_their_own_sets_and_never_a_union(): void
     {
         $this->activateReviewer([]);
-        $main = $this->sessionRow(Agent::named('Main', 'main-agent'), 'claude-code', null);
-        $reviewer = $this->sessionRow(Agent::named('Reviewer', 'read-only-helper'), 'claude-code', 1);
+        $main = $this->sessionRow(Agent::create('Main', 'main-agent'), 'claude-code', null);
+        $reviewer = $this->sessionRow(Agent::create('Reviewer', 'read-only-helper'), 'claude-code', 1);
 
         $this->started($main);
         $this->started($reviewer);
@@ -178,7 +178,7 @@ final class StartSkillsTest extends TestCase
     private function openCodexRuntime(): array
     {
         $host = $this->asSystem(new EnrollHost('test host', [self::FOLDER]));
-        $agent = Agent::named('Codex agent', 'main-agent');
+        $agent = Agent::create('Codex agent', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $opened = $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,

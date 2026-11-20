@@ -70,7 +70,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
             [...SupervisorLink::graphRoutes(), SupervisorTarget::forActor($command->actor)->key => $routes],
         );
         $link->change($routes, $type);
-        SupervisorChange::record(
+        SupervisorChange::create(
             $link,
             $author,
             $type,

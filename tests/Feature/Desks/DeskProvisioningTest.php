@@ -81,8 +81,8 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_losing_the_only_seat_gives_a_new_desk_and_retiring_gives_none(): void
     {
-        $builder = ActorIdentity::of(Agent::named('Builder', 'read-only-helper'));
-        $reviewer = ActorIdentity::of(Agent::named('Reviewer', 'read-only-helper'));
+        $builder = ActorIdentity::of(Agent::create('Builder', 'read-only-helper'));
+        $reviewer = ActorIdentity::of(Agent::create('Reviewer', 'read-only-helper'));
         $first = $this->provision($builder);
         $this->provision($reviewer);
 
@@ -102,8 +102,8 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_restoring_an_actor_whose_old_seat_was_taken_gives_it_a_new_desk(): void
     {
-        $builder = ActorIdentity::of(Agent::named('Builder', 'read-only-helper'));
-        $reviewer = ActorIdentity::of(Agent::named('Reviewer', 'read-only-helper'));
+        $builder = ActorIdentity::of(Agent::create('Builder', 'read-only-helper'));
+        $reviewer = ActorIdentity::of(Agent::create('Reviewer', 'read-only-helper'));
         $old = $this->provision($builder);
         $this->app->make(CommandBus::class)->run(new RetireAgent($builder->id));
         $this->inTransaction(fn () => $this->app->make(DeskSeating::class)->seat($old->deskId, $reviewer));

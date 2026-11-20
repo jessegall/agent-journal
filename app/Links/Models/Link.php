@@ -67,7 +67,7 @@ final class Link extends MorphPivot implements ReadableModel
     /**
      * A link stored as given, between two records named by their link type and id.
      */
-    public static function recorded(string $sourceType, string $sourceId, string $targetType, string $targetId): self
+    public static function create(string $sourceType, string $sourceId, string $targetType, string $targetId): self
     {
         $link = new self();
         $link->source_type = $sourceType;
@@ -88,7 +88,7 @@ final class Link extends MorphPivot implements ReadableModel
     public static function connectKey(Model $source, string $targetType, string $targetId): self
     {
         return self::query()->touching($source)->touchingKey($targetType, $targetId)->first()
-            ?? self::recorded($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
+            ?? self::create($source->getMorphClass(), (string) $source->getKey(), $targetType, $targetId);
     }
 
     /**

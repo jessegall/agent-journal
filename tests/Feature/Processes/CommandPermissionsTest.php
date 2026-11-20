@@ -70,7 +70,7 @@ final class CommandPermissionsTest extends TestCase
     public function test_a_deny_beats_a_class_allow_and_a_revocation_narrows_the_next_admission(): void
     {
         $main = CommandPermissions::granted('role:main', ProcessGrants::everything());
-        PermissionRevocation::revoke(
+        PermissionRevocation::create(
             $main->source,
             CommandClassSet::of(CommandClass::Delete),
             CommandPatternSet::of(),

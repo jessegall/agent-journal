@@ -15,6 +15,7 @@ use App\Sharing\Exceptions\ShareQuotaReached;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareInstallation;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareRecordRegistry;
 use Carbon\CarbonImmutable;
@@ -39,15 +40,15 @@ final readonly class RequestShareHandler implements CommandHandler
         $this->shareable->requireShareable($root->type);
         $this->records->requireReadable($root);
 
-        ShareInstallation::lockForAdmission();
+        ShareInstallation::create();
 
         if (Share::proposedCount() >= Share::PROPOSED_LIMIT) {
             throw ShareQuotaReached::forProposals(Share::PROPOSED_LIMIT);
         }
 
         $expiry = CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS);
-        $proposal = Share::propose($root, ActorIdentity::of($agent), $expiry);
-        ShareAudit::recordFor($proposal, ShareAuditType::Created, ActorIdentity::of($agent), null);
+        $proposal = Share::create($root, $expiry, new ShareProposal(ActorIdentity::of($agent)));
+        ShareAudit::create($proposal, ShareAuditType::Created, ActorIdentity::of($agent), null);
         $this->events->dispatch(new ShareRequested($proposal->fact()));
 
         return $proposal->proposalStatus();

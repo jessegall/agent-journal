@@ -55,7 +55,7 @@ final readonly class RuleApprovals
         $classification->assertExpectedRevision($approval->expectedActiveRevision);
         $request = $proposal->commandRequest()->lockForUpdate()->first();
 
-        $approved = RuleRevision::approve($declaration, $proposal->project_key, $approver, $approval->readers, []);
+        $approved = RuleRevision::create($declaration, $proposal->project_key, $approver, $approval->readers, []);
         $classification->activate($approved, $approval->expectedActiveRevision);
         $proposal->approve();
 

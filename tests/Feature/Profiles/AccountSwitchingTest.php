@@ -108,7 +108,7 @@ final class AccountSwitchingTest extends TestCase
 
     private function account(string $label): Account
     {
-        return Account::signedIn(HookProgram::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
+        return Account::create(HookProgram::ClaudeCode, AccountLabel::from($label), '/journal/accounts/'.$label);
     }
 
     private function actAsOwner(): void

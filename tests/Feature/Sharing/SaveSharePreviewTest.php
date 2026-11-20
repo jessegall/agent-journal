@@ -56,13 +56,13 @@ final class SaveSharePreviewTest extends TestCase
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->publications = new BinderPublications();
         $this->app->instance(BinderPublications::class, $this->publications);
-        $this->configuration = ShareGatewayConfiguration::configure(
+        $this->configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
         $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102, 103] as $number) {
-            Link::recorded($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
     }
 

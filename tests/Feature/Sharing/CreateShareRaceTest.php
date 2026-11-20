@@ -63,14 +63,14 @@ final class CreateShareRaceTest extends TestCase
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->instance(BinderPublications::class, new BinderPublications());
-        $first = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $second = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $first = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+        $second = ShareGatewayConfiguration::create(FakeShareGateway::settings());
 
         for ($index = 1; $index < Share::LIVE_LIMIT; $index++) {
             TestShares::grantForADay(TestActors::record('binders.binder', 1000 + $index), $first);
         }
 
-        DB::transaction(fn () => ShareInstallation::lockForAdmission());
+        DB::transaction(fn () => ShareInstallation::create());
         $this->startTestUserRequest(9);
         $saved = $this->app->make(CommandBus::class)->run(
             new SaveSharePreview('binders.binder', TestIds::of(1), [], $second->id),

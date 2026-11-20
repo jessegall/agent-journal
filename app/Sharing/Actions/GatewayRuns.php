@@ -23,7 +23,7 @@ final readonly class GatewayRuns
      */
     public function hold(string $runId): void
     {
-        if (! ShareInstallation::lockForAdmission()->holdFor($runId)) {
+        if (! ShareInstallation::create()->holdFor($runId)) {
             return;
         }
 

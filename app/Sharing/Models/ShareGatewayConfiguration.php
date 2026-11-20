@@ -63,7 +63,7 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      * revisions stay for the shares that pin them. A command calls it under the installation lock, so two revisions
      * never take one number.
      */
-    public static function configure(GatewaySettings $settings): self
+    public static function create(GatewaySettings $settings): self
     {
         $latest = self::query()->forGateway($settings->gatewayKey)->max('configuration_version');
         $configuration = new self();

@@ -86,7 +86,7 @@ class User extends Authenticatable implements
     /**
      * A new user with a name, an email and a password the hashed cast hashes.
      */
-    public static function register(string $name, string $email, string $password): self
+    public static function create(string $name, string $email, string $password): self
     {
         return self::query()->create(['name' => $name, 'email' => $email, 'password' => $password]);
     }

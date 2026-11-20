@@ -94,7 +94,7 @@ final class ShareEntriesTest extends TestCase
         TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
     }
 
     public function test_an_agent_requests_a_share_and_reads_its_status_without_an_address(): void

@@ -38,7 +38,7 @@ final class RecordedRunEvents implements RunEvents
             return;
         }
 
-        $this->parts[$part->name()] = PartRun::queue($this->run, $part);
+        $this->parts[$part->name()] = PartRun::create($this->run, $part);
     }
 
     public function started(PartKey $part, int $pid, string $host): void

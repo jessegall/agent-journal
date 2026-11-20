@@ -12,6 +12,7 @@ use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ReadPermits;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
@@ -36,15 +37,13 @@ final class ReadPermitsTest extends TestCase
         parent::setUp();
 
         $this->token = ShareToken::generate();
-        $configuration = ShareGatewayConfiguration::configure(
+        $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
-        $this->share = Share::grant(
+        $this->share = Share::create(
             TestActors::record('documents.document', 1),
-            TestIds::of(9),
-            $configuration,
-            $this->token,
             CarbonImmutable::now()->subMinute(),
+            new ShareGrant(TestIds::of(9), $configuration->id, $configuration->configuration_version, $this->token),
         );
     }
 

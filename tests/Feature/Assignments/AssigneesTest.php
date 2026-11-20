@@ -48,7 +48,7 @@ final class AssigneesTest extends TestCase
 
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->builder = Agent::named('Builder', 'main-agent');
+        $this->builder = Agent::create('Builder', 'main-agent');
         $this->startUserRequestAs($this->owner->id);
     }
 
@@ -98,8 +98,8 @@ final class AssigneesTest extends TestCase
     public function test_eligible_lists_page_by_id_and_names_keep_a_retired_agent_and_show_no_email(): void
     {
         $registry = $this->app->make(AssignmentRegistry::class);
-        $second = Agent::named('Reviewer', 'read-only-helper');
-        $retired = Agent::named('Gone', 'read-only-helper');
+        $second = Agent::create('Reviewer', 'read-only-helper');
+        $retired = Agent::create('Gone', 'read-only-helper');
         $retired->retireAt(CarbonImmutable::now());
 
         $firstPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new Page(null, 1));

@@ -158,7 +158,7 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_retirement_is_open_to_the_user_over_the_web_and_to_a_main_agent_over_a_signed_call(): void
     {
-        $spare = Agent::named('Spare', 'read-only-helper');
+        $spare = Agent::create('Spare', 'read-only-helper');
         $this->actingAs($this->owner)->postJson(
             '/assignments/assign',
             [

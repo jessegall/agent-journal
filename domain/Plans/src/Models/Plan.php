@@ -118,7 +118,7 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     /**
      * A new plan an actor drafts, with its title, brief and type.
      */
-    public static function draft(string $title, string $brief, PlanType $type, Actor $creator): self
+    public static function create(string $title, string $brief, PlanType $type, Actor $creator): self
     {
         return self::query()->create([
             'title' => $title,

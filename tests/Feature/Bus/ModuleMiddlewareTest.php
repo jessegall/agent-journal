@@ -61,6 +61,7 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\TrimMessages;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\WritesInboxMessages;
@@ -173,7 +174,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $bus->run(
             new ApproveRule(
-                Rule::proposed(
+                Rule::create(
                     'Every phase ends with its tests.',
                     'Phases ended untested.',
                     null,
@@ -197,7 +198,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         $this->installCommandModules();
         $this->startTestUserRequest(1);
-        $settled = Rule::holding('Already active.');
+        $settled = HoldingRules::create('Already active.');
 
         try {
             $this->app->make(CommandBus::class)->run(new ApproveRule($settled->id));
@@ -216,7 +217,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     private function startedSession(): AgentSession
     {
         return $this->app->make(StartSessions::class)->start(
-            Agent::named('Reader', 'main-agent'),
+            Agent::create('Reader', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;
@@ -302,7 +303,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->installCommandModules(
             MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)),
         );
-        $helper = Agent::named('Helper', 'read-only-helper');
+        $helper = Agent::create('Helper', 'read-only-helper');
         $task = Task::factory()->create(['title' => 'Held']);
         $this->startTestUserRequest(1);
         $bus = $this->app->make(CommandBus::class);

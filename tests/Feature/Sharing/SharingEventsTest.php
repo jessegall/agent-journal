@@ -89,9 +89,9 @@ final class SharingEventsTest extends TestCase
         parent::setUp();
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->share = TestShares::grantForADay(TestActors::record('binders.binder', 1), $this->configuration);
-        ShareGatewayOperation::request($this->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
         Event::listen([ShareActivated::class, ShareRevoked::class], function (object $event): void {
             $this->received[] = $event;
         });

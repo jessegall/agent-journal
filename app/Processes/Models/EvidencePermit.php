@@ -85,33 +85,22 @@ final class EvidencePermit extends Model implements ReadableModel
     }
 
     /**
-     * The owner's permit to run one exact line once under the runner's actor, within the limits.
+     * The permit to run one exact line once under the runner's actor, within the limits: the owner's own, or, for a
+     * request, the permit for one sample of its line, classified with the declarations the owner approved for it.
+     *
+     * @param  list<CommandRule>  $candidateRules
      */
-    public static function issue(
+    public static function create(
         string $projectKey,
         PermittedLine $line,
         ActorIdentity $runner,
         PermitLimits $limits,
+        CommandRequest|null $request,
+        array $candidateRules,
     ): self {
         $permit = self::filled($projectKey, $line, $runner, $limits);
-        $permit->candidate_rules = [];
-        $permit->save();
-
-        return $permit;
-    }
-
-    /**
-     * The permit for one sample of a request's line, classified with the declaration the owner approved for sampling.
-     */
-    public static function forRequest(
-        CommandRequest $request,
-        PermittedLine $line,
-        CommandRule $proposed,
-        PermitLimits $limits,
-    ): self {
-        $permit = self::filled($request->project_key, $line, $request->actor(), $limits);
-        $permit->command_request_id = $request->id;
-        $permit->candidate_rules = [$proposed];
+        $permit->command_request_id = $request?->id;
+        $permit->candidate_rules = $candidateRules;
         $permit->save();
 
         return $permit;

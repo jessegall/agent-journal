@@ -71,7 +71,7 @@ final class PlanRecordsTest extends TestCase
 
     public function test_an_assigned_agent_is_named_and_the_plan_its_stack_works_on_comes_first(): void
     {
-        $agent = Agent::named('Planner', 'main-agent');
+        $agent = Agent::create('Planner', 'main-agent');
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
         $this->app->instance(
             CurrentState::class,

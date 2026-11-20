@@ -90,13 +90,13 @@ final class ProcessRecordsTest extends TestCase
 
     private function admittedRun(RunMode $mode = RunMode::Normal, string $admission = 'admission-1'): ProcessRun
     {
-        return ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of(admissionId: $admission, mode: $mode));
+        return ProcessRun::create(ActorIdentity::system(), TestRunAdmissions::of(admissionId: $admission, mode: $mode));
     }
 
     private function part(string $partId = 'first'): PartRun
     {
         $run = $this->admittedRun(RunMode::Normal, "admission-{$partId}");
 
-        return PartRun::queue($run, new PartKey(1, 1, 'core.ls'));
+        return PartRun::create($run, new PartKey(1, 1, 'core.ls'));
     }
 }

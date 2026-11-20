@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support\Skills;
 
+use App\Skills\Enums\GenerationState;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use Tests\Support\TestIds;
@@ -22,19 +23,15 @@ trait IntendsSkillPublications
         {$text}
 
         TEXT;
-        $generation = SkillGeneration::ready(
-            hash('sha256', $text),
-            str_repeat('e', 64),
+        $generation = SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, hash('sha256', $text), [
             [
-                [
-                    'key' => 'journal',
-                    'owner' => 'Core',
-                    'revision' => null,
-                    'markdown' => $markdown,
-                    'digest' => hash('sha256', $markdown),
-                ],
+                'key' => 'journal',
+                'owner' => 'Core',
+                'revision' => null,
+                'markdown' => $markdown,
+                'digest' => hash('sha256', $markdown),
             ],
-        );
+        ], null);
 
         return SkillPublication::intend(
             TestIds::of(1),

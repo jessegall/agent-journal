@@ -89,7 +89,7 @@ final class StaleAdmissionTest extends TestCase
 
     private function admit(ActorIdentity $actor, string $line): ProcessRun
     {
-        return ProcessRun::admit(
+        return ProcessRun::create(
             $actor,
             TestRunAdmissions::of(projectKey: (string) config('processes.project_key'), line: $line),
         );

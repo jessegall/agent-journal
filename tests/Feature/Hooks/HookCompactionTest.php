@@ -23,6 +23,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -40,13 +41,13 @@ final class HookCompactionTest extends TestCase
 
         $this->task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($this->task->id));
-        $this->run = SequenceRun::written('Close a task', ['Read the brief.', 'Run the phase tests.']);
+        $this->run = SequenceRun::create('Close a task', ['Read the brief.', 'Run the phase tests.']);
         $this->app->make(CommandBus::class)->run(new StartSequence($this->run->id, $this->target->sessionId));
 
         $this->remember('Use plain words.', 2);
         $this->remember('Question 10 is still open.', 1);
-        Rule::holding('No phase waits on the user.');
-        Rule::holding('An old rule.')->remove();
+        HoldingRules::create('No phase waits on the user.');
+        HoldingRules::create('An old rule.')->remove();
     }
 
     public function test_the_reminders_come_from_the_current_records_and_the_current_step(): void

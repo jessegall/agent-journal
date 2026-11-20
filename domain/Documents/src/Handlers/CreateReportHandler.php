@@ -29,7 +29,7 @@ final readonly class CreateReportHandler extends DocumentCommandHandler
     {
         $actor = $command->dispatchedBy();
         $body = $this->bodies->read($command->body, $command->uploadId, UploadType::ReportBody);
-        $report = Report::file($command->title, $command->abstract, MarkdownText::body($body), $actor);
+        $report = Report::create($command->title, $command->abstract, MarkdownText::body($body), $actor);
         $this->provenance->record($report);
         $this->links->linkFrom($report, $command->relatedRecords);
         $this->events->dispatch(new ReportFiled($report->id, $report->number, $actor));

@@ -84,7 +84,7 @@ final class AgentRuntime extends Model implements ReadableModel
         ];
     }
 
-    public static function forIntent(AgentSession $session, RuntimeIntent $intent): self
+    public static function create(AgentSession $session, RuntimeIntent $intent): self
     {
         $runtime = new self();
         $runtime->agent_session_id = $session->id;

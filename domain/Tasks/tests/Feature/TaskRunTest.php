@@ -106,7 +106,7 @@ final class TaskRunTest extends TestCase
         $leaving = $this->started('First');
         $arriving = $this->started('Second');
         $task = Task::factory()->create();
-        AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
         $this->startUserRequestAs($this->owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat(
@@ -142,7 +142,7 @@ final class TaskRunTest extends TestCase
     private function started(string $name): AgentSession
     {
         return $this->app->make(StartSessions::class)
-            ->start(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
+            ->start(Agent::create($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

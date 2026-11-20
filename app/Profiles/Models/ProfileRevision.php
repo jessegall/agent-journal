@@ -120,7 +120,7 @@ final class ProfileRevision extends Model implements ReadableModel
      * Appends the definition as the profile's next revision, numbered after every earlier one; the caller holds the
      * profile's lock, so two revisions never take one number.
      */
-    public static function appendTo(
+    public static function create(
         Profile $profile,
         ProfileDefinition $definition,
         ActorIdentity $author,

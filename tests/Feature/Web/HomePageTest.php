@@ -14,10 +14,10 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\HoldingRules;
 use Tests\Support\TestIds;
 use Tests\Support\WritesInboxMessages;
 use Tests\TestCase;
@@ -62,7 +62,7 @@ final class HomePageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $agent = Agent::named('Builder', 'main-agent');
+        $agent = Agent::create('Builder', 'main-agent');
         $this->session = $this->app->make(StartSessions::class)->start(
             $agent,
             TestSelections::of('claude-code'),
@@ -105,8 +105,8 @@ final class HomePageTest extends TestCase
 
     public function test_the_rules_window_reads_its_own_search_and_page_beside_the_plans_window(): void
     {
-        Rule::holding('Every phase ends with its tests.');
-        Rule::holding('Write all code in plain English.');
+        HoldingRules::create('Every phase ends with its tests.');
+        HoldingRules::create('Write all code in plain English.');
 
         $this->actingAs(
             $this->owner,

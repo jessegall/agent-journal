@@ -58,7 +58,7 @@ final class MessageAttention extends Model implements ReadableModel
         return ['wake_sequence' => 'integer'];
     }
 
-    public static function record(
+    public static function create(
         AttentionOrigin $origin,
         string $inboxId,
         ActorIdentity $actor,

@@ -84,7 +84,7 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     /**
      * A new report, filed now with the given text.
      */
-    public static function file(string $title, string $abstract, MarkdownText $body, Actor $author): self
+    public static function create(string $title, string $abstract, MarkdownText $body, Actor $author): self
     {
         return self::query()->create([
             'title' => trim($title),

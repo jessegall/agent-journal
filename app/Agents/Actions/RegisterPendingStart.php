@@ -29,7 +29,7 @@ final readonly class RegisterPendingStart
     {
         $this->links->link($session, $account->record);
         $transport = TransportProfileType::from($this->config->string('agents.transport_profile'));
-        $start = ProcessStart::register($session, $account, $transport);
+        $start = ProcessStart::create($session, $account, $transport);
         $this->events->dispatch(new AccountUseChanged($account->record));
 
         return $start;

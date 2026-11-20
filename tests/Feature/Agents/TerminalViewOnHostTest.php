@@ -51,7 +51,7 @@ final class TerminalViewOnHostTest extends TestCase
     {
         $host = $this->enrolledHost();
         $runtime = $this->runtimeOn($host->hostId);
-        TerminalView::open(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
         $watched = $this->app->make(WatchedRuntimes::class);
 
         $response = $this->hostCall($host, '/host/claim?limit=5&wait=10&watched_version=0');
@@ -92,9 +92,9 @@ final class TerminalViewOnHostTest extends TestCase
         $lapsing = $this->runtimeOn('host-1');
         $stopping = $this->runtimeOn('host-2');
         $kept = $this->runtimeOn('host-3');
-        $lapsed = TerminalView::open(TestActors::userIdentity(1), $lapsing, 500, CarbonImmutable::now()->subMinute());
-        $ofStopped = TerminalView::open(TestActors::userIdentity(1), $stopping, 500, CarbonImmutable::now());
-        $live = TerminalView::open(TestActors::userIdentity(1), $kept, 500, CarbonImmutable::now());
+        $lapsed = TerminalView::create(TestActors::userIdentity(1), $lapsing, 500, CarbonImmutable::now()->subMinute());
+        $ofStopped = TerminalView::create(TestActors::userIdentity(1), $stopping, 500, CarbonImmutable::now());
+        $live = TerminalView::create(TestActors::userIdentity(1), $kept, 500, CarbonImmutable::now());
         $stopping->closeAfterExit();
         $versions = [$watched->version('host-1'), $watched->version('host-2'), $watched->version('host-3')];
 
@@ -117,9 +117,9 @@ final class TerminalViewOnHostTest extends TestCase
     public function test_an_engine_pass_deletes_views_ended_more_than_a_day_ago_and_keeps_fresh_ones(): void
     {
         $runtime = $this->runtimeOn('host-1');
-        $old = TerminalView::open(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now()->subDays(2));
+        $old = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now()->subDays(2));
         $old->close(CarbonImmutable::now()->subDays(2));
-        $fresh = TerminalView::open(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now()->subHour());
+        $fresh = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now()->subHour());
         $fresh->close(CarbonImmutable::now()->subHour());
 
         $this->pass(fn () => $this->app->make(EngineTickedDelivery::class)->deliver(

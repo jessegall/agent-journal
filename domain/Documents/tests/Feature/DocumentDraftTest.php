@@ -52,7 +52,7 @@ final class DocumentDraftTest extends TestCase
     {
         $parent = TestStart::start();
         $other = TestStart::start();
-        $child = Agent::named('Document editor', 'writing-helper');
+        $child = Agent::create('Document editor', 'writing-helper');
         $session = $this->app->make(AgentSessions::class)->start(
             $child,
             TestSelections::of(),
@@ -101,7 +101,7 @@ final class DocumentDraftTest extends TestCase
         $grant = new OperationGrant('docs_drafts_read', [$source]);
         $access = new AccessPolicy([], [], $start->access->processes, [$grant]);
 
-        SessionPolicy::freeze($parent->session, new StartPolicy(
+        SessionPolicy::create($parent->session, new StartPolicy(
             $access,
             $start->stopConditions,
             $start->execution,

@@ -64,7 +64,7 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     /**
      * A new endpoint version of the configuration, opening under the run on the configuration's public origin.
      */
-    public static function openFor(ShareGatewayConfiguration $configuration, int $version, string $runId): self
+    public static function create(ShareGatewayConfiguration $configuration, int $version, string $runId): self
     {
         $endpoint = new self();
         $endpoint->share_gateway_configuration_id = $configuration->id;
@@ -146,7 +146,7 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     {
         $latest = self::query()->ofConfiguration($configuration->id)->max('endpoint_version');
 
-        return self::openFor($configuration, (is_numeric($latest) ? (int) $latest : 0) + 1, $runId);
+        return self::create($configuration, (is_numeric($latest) ? (int) $latest : 0) + 1, $runId);
     }
 
     /**
@@ -167,7 +167,9 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
         return self::query()->ofConfiguration($configurationId)->where(
             'endpoint_version',
             $version,
-        )->ofRun($runId)->lockForUpdate()->firstOr(fn () => throw GatewayLeaseRefused::forEndpoint($configurationId, $version));
+        )->ofRun($runId)->lockForUpdate()->firstOr(
+            fn () => throw GatewayLeaseRefused::forEndpoint($configurationId, $version),
+        );
     }
 
     // ----------[ Mutations ]----------

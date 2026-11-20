@@ -39,8 +39,8 @@ final class ActivityProjectionTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         Event::fake([RunChanged::class]);
-        $run = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of());
-        $this->part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
+        $run = ProcessRun::create(ActorIdentity::system(), TestRunAdmissions::of());
+        $this->part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
         $this->part->start('host', 1);
         $bytes = <<<TEXT
         first

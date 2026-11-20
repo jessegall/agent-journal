@@ -169,7 +169,7 @@ final class StartRecordTest extends TestCase
 
     private function agent(string $name): Agent
     {
-        return Agent::named($name, 'main-agent');
+        return Agent::create($name, 'main-agent');
     }
 
     private function request(

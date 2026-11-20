@@ -28,7 +28,7 @@ final class SharingHealthTest extends TestCase
 
         $this->assertSame(1, $this->health(), 'No supervisor holds the gateways.');
 
-        ShareInstallation::lockForAdmission()->holdFor(self::RUN);
+        ShareInstallation::create()->holdFor(self::RUN);
         $this->assertSame(0, $this->health());
 
         fclose($server);

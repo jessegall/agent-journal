@@ -99,7 +99,7 @@ final class RuleRevision extends Model implements ReadableModel
      *
      * @throws RuleRevisionInvalid when the readers do not match the rule's purpose
      */
-    public static function approve(
+    public static function create(
         RuleProposalRevision $proposed,
         string $projectKey,
         ActorIdentity $approver,

@@ -62,32 +62,25 @@ final class SkillGeneration extends Model implements ReadableModel
     }
 
     /**
+     * The generation one refresh made: Ready with the catalogue's digest and its definitions, or Failed with the
+     * reason, an empty digest and no definitions; a Ready one has no error.
+     *
      * @param  list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>  $definitions
      */
-    public static function ready(string $catalogueDigest, string $registrationDigest, array $definitions): self
-    {
+    public static function create(
+        string $registrationDigest,
+        GenerationState $state,
+        string $catalogueDigest,
+        array $definitions,
+        string|null $errorReason,
+    ): self {
         return self::query()->create(
             [
                 'catalogue_digest' => $catalogueDigest,
                 'registration_digest' => $registrationDigest,
                 'entries' => $definitions,
-                'state' => GenerationState::Ready,
-            ],
-        );
-    }
-
-    /**
-     * A generation that could not be made, with the owner and key that stopped it; it holds no entries.
-     */
-    public static function failed(string $registrationDigest, string $reason): self
-    {
-        return self::query()->create(
-            [
-                'catalogue_digest' => '',
-                'registration_digest' => $registrationDigest,
-                'entries' => [],
-                'state' => GenerationState::Failed,
-                'error_reason' => $reason,
+                'state' => $state,
+                'error_reason' => $errorReason,
             ],
         );
     }

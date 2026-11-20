@@ -49,7 +49,7 @@ final class ContinueStartTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->startUserRequestAs($this->owner->id);
-        $this->agent = Agent::named('Researcher', 'read-only-helper');
+        $this->agent = Agent::create('Researcher', 'read-only-helper');
     }
 
     public function test_continuing_twice_gives_one_successor_on_the_account_chosen_now(): void
@@ -59,7 +59,7 @@ final class ContinueStartTest extends TestCase
         $oldAccount = Account::query()->withoutGlobalScopes()->where('program', 'claude-code')->sole();
         $session->endAt(CarbonImmutable::now());
         $label = AccountLabel::from('Second');
-        $newAccount = Account::signedIn(HookProgram::ClaudeCode, $label, '/journal/accounts/second');
+        $newAccount = Account::create(HookProgram::ClaudeCode, $label, '/journal/accounts/second');
         ActiveAccount::lockedFor(HookProgram::ClaudeCode)->select($newAccount);
 
         $successor = $this->bus()->run(new ContinueStart($first, $this->agent->id));
@@ -76,7 +76,7 @@ final class ContinueStartTest extends TestCase
     public function test_a_session_of_another_agent_cannot_be_continued(): void
     {
         $first = $this->startFirst();
-        $other = Agent::named('Other', 'read-only-helper');
+        $other = Agent::create('Other', 'read-only-helper');
 
         $this->expectException(StartRefused::class);
 

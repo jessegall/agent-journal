@@ -24,7 +24,7 @@ final class TextUploadChunk extends Model implements ReadableModel
 
     // ----------[ Constructors ]----------
 
-    public static function store(TextUpload $upload, int $position, string $text): void
+    public static function create(TextUpload $upload, int $position, string $text): void
     {
         self::query()->create([
             'upload_id' => $upload->id,

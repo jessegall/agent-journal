@@ -8,6 +8,7 @@ use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\ShareGatewayRegistry;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -122,12 +123,15 @@ final class GatewaySettingsPageTest extends TestCase
     {
         $this->configure(FakeShareGateway::KEY, FakeShareGateway::PUBLIC_ORIGIN, [])->assertStatus(303);
         $configuration = ShareGatewayConfiguration::query()->sole();
-        $share = Share::grant(
+        $share = Share::create(
             TestActors::record('binders.binder', 1),
-            $this->owner->id,
-            $configuration,
-            ShareToken::generate(),
             CarbonImmutable::now()->addDay(),
+            new ShareGrant(
+                $this->owner->id,
+                $configuration->id,
+                $configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
 
         $this->actingAs($this->owner)->get('/sharing/gateways')->assertOk()->assertInertia(fn (

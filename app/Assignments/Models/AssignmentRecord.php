@@ -82,7 +82,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         ]);
     }
 
-    public static function holding(RecordIdentity $record, AssigneeIdentity $holder): self
+    public static function create(RecordIdentity $record, AssigneeIdentity $holder): self
     {
         return self::query()->create([
             'record_type' => $record->type,

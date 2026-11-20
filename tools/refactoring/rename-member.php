@@ -14,7 +14,9 @@ declare(strict_types=1);
  *   php tools/refactoring/rename-member.php ... --dry-run
  *   php tools/refactoring/rename-member.php --test
  *
- * A member is renamed in the class, in every project class, interface and trait it is related to by extends,
+ * A static method is renamed at every static call that resolves to its class or a class extending it, by the class
+ * the call names or by self, static and parent inside one of them, however many other classes share its name.
+ * Any other member is renamed in the class, in every project class, interface and trait it is related to by extends,
  * implements or use (an override keeps its parent's name), and at every call, access, constant fetch and named
  * argument. Instance calls and accesses are found by name, because their receiver's class is not always written, so
  * the rename is refused when another unrelated project class declares a member of the same name: name it with
@@ -102,7 +104,10 @@ final class DeclaringTypeMarker extends NodeVisitorAbstract
             $this->types[] = $node->namespacedName?->toString() ?? '';
         }
 
-        if ($this->types !== [] && ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\PropertyItem || $node instanceof Node\Const_)) {
+        $declares = $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\PropertyItem
+            || $node instanceof Node\Const_ || $node instanceof Node\Expr\StaticCall;
+
+        if ($this->types !== [] && $declares) {
             $node->setAttribute('declaringType', end($this->types));
         }
 
@@ -138,7 +143,10 @@ foreach ($arguments as $argument) {
     match (true) {
         $argument === '--dry-run' => null,
         str_starts_with($argument, '--root=') => $root = rtrim(substr($argument, 7), '/'),
-        str_starts_with($argument, '--with=') => $with = [...$with, ...array_map(static fn (string $name) => ltrim($name, '\\'), explode(',', substr($argument, 7)))],
+        str_starts_with($argument, '--with=') => $with = [
+            ...$with,
+            ...array_map(static fn (string $name) => ltrim($name, '\\'), explode(',', substr($argument, 7))),
+        ],
         str_starts_with($argument, '--list=') => $renames = [...$renames, ...listedRenames(substr($argument, 7))],
         default => $words[] = $argument,
     };
@@ -159,7 +167,13 @@ $failed = 0;
 foreach ($renames as $rename) {
     try {
         $changes = renameMember($root, $rename, $with, $dry);
-        printf("%s %s: %d change(s) in %d file(s)\n", $dry ? 'Would rename' : 'Renamed', implode(' ', $rename), array_sum(array_map('count', $changes['edits'])), count($changes['edits']));
+        printf(
+            "%s %s: %d change(s) in %d file(s)\n",
+            $dry ? 'Would rename' : 'Renamed',
+            implode(' ', $rename),
+            array_sum(array_map('count', $changes['edits'])),
+            count($changes['edits']),
+        );
 
         foreach ($changes['edits'] as $file => $edits) {
             printf("  %s: %d\n", $file, count($edits));
@@ -203,7 +217,11 @@ function renameMember(string $root, array $rename, array $with, bool $dry): arra
 {
     [$what, $owner, $old, $new] = array_pad($rename, 4, '');
 
-    if (! in_array($what, ['method', 'property', 'constant', 'variable'], true) || $owner === '' || $old === '' || $new === '') {
+    if (! in_array(
+        $what,
+        ['method', 'property', 'constant', 'variable'],
+        true,
+    ) || $owner === '' || $old === '' || $new === '') {
         throw RenameRefused::malformed();
     }
 
@@ -258,14 +276,20 @@ function parsedFiles(string $root, array $folders): array
         foreach ($entries as $file) {
             $name = $file->getPathname();
 
-            if ($file->getExtension() !== 'php' || array_filter(SKIPPED, static fn (string $skip): bool => str_contains($name, '/'.$skip.'/')) !== []) {
+            if ($file->getExtension() !== 'php' || array_filter(
+                SKIPPED,
+                static fn (string $skip): bool => str_contains($name, '/'.$skip.'/'),
+            ) !== []) {
                 continue;
             }
 
             $code = (string) file_get_contents($name);
             $statements = $parser->parse($code) ?? [];
             $traverser = new NodeTraverser(new NameResolver(), new DeclaringTypeMarker());
-            $files[substr($name, strlen($root) + 1)] = ['code' => $code, 'statements' => $traverser->traverse($statements)];
+            $files[substr($name, strlen($root) + 1)] = [
+                'code' => $code,
+                'statements' => $traverser->traverse($statements),
+            ];
         }
     }
 
@@ -292,6 +316,7 @@ function typeIndex(array $files): array
             }
 
             $related = [];
+            $parent = $type instanceof Node\Stmt\Class_ ? $type->extends?->toString() : null;
 
             if ($type instanceof Node\Stmt\Class_) {
                 $related = array_map(
@@ -311,7 +336,10 @@ function typeIndex(array $files): array
             $properties = [];
 
             foreach ($type->getProperties() as $property) {
-                array_push($properties, ...array_map(static fn (Node\PropertyItem $item) => $item->name->toString(), $property->props));
+                array_push(
+                    $properties,
+                    ...array_map(static fn (Node\PropertyItem $item) => $item->name->toString(), $property->props),
+                );
             }
 
             foreach ($type->getMethod('__construct')?->params ?? [] as $param) {
@@ -323,12 +351,23 @@ function typeIndex(array $files): array
             $constants = [];
 
             foreach ($type->getConstants() as $constant) {
-                array_push($constants, ...array_map(static fn (Node\Const_ $const) => $const->name->toString(), $constant->consts));
+                array_push(
+                    $constants,
+                    ...array_map(static fn (Node\Const_ $const) => $const->name->toString(), $constant->consts),
+                );
             }
 
             $index[$type->namespacedName->toString()] = [
                 'related' => $related,
-                'method' => array_map(static fn (Node\Stmt\ClassMethod $method) => $method->name->toString(), $type->getMethods()),
+                'method' => array_map(
+                    static fn (Node\Stmt\ClassMethod $method) => $method->name->toString(),
+                    $type->getMethods(),
+                ),
+                'static' => array_values(array_map(
+                    static fn (Node\Stmt\ClassMethod $method) => $method->name->toString(),
+                    array_filter($type->getMethods(), static fn (Node\Stmt\ClassMethod $method) => $method->isStatic()),
+                )),
+                'parent' => $parent,
                 'property' => $properties,
                 'constant' => $constants,
             ];
@@ -369,6 +408,28 @@ function familyOf(array $index, string $class): array
 }
 
 /**
+ * The class and every project class that extends it, directly or further down: the classes a static call through
+ * one of them can reach. Interfaces and traits play no part, as a static call always names its class.
+ *
+ * @param  array<string, array{parent: string|null}>  $index
+ * @return list<string>
+ */
+function descendantsOf(array $index, string $class): array
+{
+    $line = [$class];
+
+    for ($at = 0; $at < count($line); $at++) {
+        foreach ($index as $other => $entry) {
+            if ($entry['parent'] === $line[$at] && ! in_array($other, $line, true)) {
+                $line[] = $other;
+            }
+        }
+    }
+
+    return $line;
+}
+
+/**
  * The edits renaming a method, property or constant of the class and its family everywhere it is named.
  *
  * @param  array<string, array{code: string, statements: list<Node>}>  $files
@@ -383,10 +444,13 @@ function memberEdits(array $files, string $what, string $class, string $old, str
         throw RenameRefused::undeclaredClass($class);
     }
 
+    // a static call names its class, so a static method is renamed at the calls that resolve to it, however many
+    // other classes declare a method of the same name
+    $static = $what === 'method' && in_array($old, $index[$class]['static'], true);
     $family = [];
 
     foreach ([$class, ...$with] as $start) {
-        foreach (familyOf($index, $start) as $member) {
+        foreach ($static ? descendantsOf($index, $start) : familyOf($index, $start) as $member) {
             $family[$member] = true;
         }
     }
@@ -395,9 +459,11 @@ function memberEdits(array $files, string $what, string $class, string $old, str
         throw RenameRefused::noMember($class, $what, $old);
     }
 
-    $others = array_keys(array_filter($index, static fn (array $entry, string $type) => ! isset($family[$type]) && in_array($old, $entry[$what], true), ARRAY_FILTER_USE_BOTH));
+    $others = array_keys(
+        array_filter($index, static fn (array $entry, string $type) => ! isset($family[$type]) && in_array($old, $entry[$what], true), ARRAY_FILTER_USE_BOTH),
+    );
 
-    if ($what !== 'constant' && $others !== []) {
+    if ($what !== 'constant' && ! $static && $others !== []) {
         throw RenameRefused::sharedName($what, $old, $others);
     }
 
@@ -414,7 +480,7 @@ function memberEdits(array $files, string $what, string $class, string $old, str
         $found = [];
 
         foreach ($finder->find($file['statements'], static fn (Node $node) => true) as $node) {
-            array_push($found, ...memberSites($node, $what, $old, $new, $family));
+            array_push($found, ...memberSites($node, $what, $old, $new, $family, $static));
         }
 
         if ($what === 'property') {
@@ -436,12 +502,22 @@ function memberEdits(array $files, string $what, string $class, string $old, str
  * @param  array<string, true>  $family
  * @return list<array{int, int, string}>
  */
-function memberSites(Node $node, string $what, string $old, string $new, array $family): array
+function memberSites(Node $node, string $what, string $old, string $new, array $family, bool $static = false): array
 {
     $sites = [];
-    $inFamily = static fn (Node|null $class): bool => $class instanceof Node\Name && (isset($family[$class->toString()]) || in_array($class->toLowerString(), ['self', 'static', 'parent'], true));
+    $inFamily = static fn (Node|null $class): bool => $class instanceof Node\Name && (isset($family[$class->toString()]) || in_array(
+        $class->toLowerString(),
+        ['self', 'static', 'parent'],
+        true,
+    ));
 
-    if ($what === 'method') {
+    if ($what === 'method' && $static) {
+        $named = match (true) {
+            $node instanceof Node\Stmt\ClassMethod => isset($family[declaringType($node)]) ? $node->name : null,
+            $node instanceof Node\Expr\StaticCall => staticCallReaches($node, $family) ? $node->name : null,
+            default => null,
+        };
+    } elseif ($what === 'method') {
         $named = match (true) {
             $node instanceof Node\Stmt\ClassMethod => isset($family[declaringType($node)]) ? $node->name : null,
             $node instanceof Node\Expr\MethodCall, $node instanceof Node\Expr\NullsafeMethodCall => $node->name,
@@ -472,6 +548,25 @@ function memberSites(Node $node, string $what, string $old, string $new, array $
     }
 
     return $sites;
+}
+
+/**
+ * Whether a static call reaches the class or one of its descendants: by the class it names, or by self, static or
+ * parent inside one of them.
+ *
+ * @param  array<string, true>  $family
+ */
+function staticCallReaches(Node\Expr\StaticCall $call, array $family): bool
+{
+    if (! $call->class instanceof Node\Name) {
+        return false;
+    }
+
+    if (in_array($call->class->toLowerString(), ['self', 'static', 'parent'], true)) {
+        return isset($family[declaringType($call)]);
+    }
+
+    return isset($family[$call->class->toString()]);
 }
 
 /**
@@ -556,7 +651,10 @@ function variableEdits(array $files, string $old, string $new, int $line): array
             $found[] = [$variable->getStartFilePos(), $variable->getEndFilePos(), '$'.$new];
         }
 
-        foreach ($finder->find($statements, static fn (Node $node) => $node instanceof Node\FunctionLike) as $function) {
+        foreach ($finder->find(
+            $statements,
+            static fn (Node $node) => $node instanceof Node\FunctionLike,
+        ) as $function) {
             array_push($found, ...docSites($function->getDocComment(), $old, $new));
         }
 
@@ -605,7 +703,10 @@ function docSites(Doc|null $doc, string $old, string $new): array
 
     preg_match_all('/\$'.preg_quote($old, '/').'\b/', $doc->getText(), $matches, PREG_OFFSET_CAPTURE);
 
-    return array_map(static fn (array $match) => [$doc->getStartFilePos() + $match[1], $doc->getStartFilePos() + $match[1] + strlen($match[0]) - 1, '$'.$new], $matches[0]);
+    return array_map(
+        static fn (array $match) => [$doc->getStartFilePos() + $match[1], $doc->getStartFilePos() + $match[1] + strlen($match[0]) - 1, '$'.$new],
+        $matches[0],
+    );
 }
 
 /**
@@ -725,36 +826,93 @@ function testCases(): array
         PHP;
 
     return [
-        ['a property, its promoted parameter, accesses and named arguments', ['property', 'App\\Ids\\Identity', 'kind', 'type'], [],
+        ['a property, its promoted parameter, accesses and named arguments', [
+            'property',
+            'App\\Ids\\Identity',
+            'kind',
+            'type',
+        ], [],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
-            ['app/Ids/Identity.php' => str_replace(['public string $kind', '$this->check($kind)', '@param  string  $kind', '$this->kind', '$other->kind'], ['public string $type', '$this->check($type)', '@param  string  $type', '$this->type', '$other->type'], $identity),
-                'app/Use/run.php' => str_replace(['$one->kind', 'kind: \'a\''], ['$one->type', 'type: \'a\''], $user)], false],
+            ['app/Ids/Identity.php' => str_replace(
+                ['public string $kind', '$this->check($kind)', '@param  string  $kind', '$this->kind', '$other->kind'],
+                ['public string $type', '$this->check($type)', '@param  string  $type', '$this->type', '$other->type'],
+                $identity,
+            ),
+                'app/Use/run.php' => str_replace(
+                    ['$one->kind', 'kind: \'a\''],
+                    ['$one->type', 'type: \'a\''],
+                    $user,
+                )], false],
         ['a method and its calls', ['method', 'App\\Ids\\Identity', 'isSameAs', 'matches'], [],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
-            ['app/Ids/Identity.php' => str_replace('function isSameAs', 'function matches', $identity), 'app/Use/run.php' => str_replace('->isSameAs(', '->matches(', $user)], false],
+            [
+                'app/Ids/Identity.php' => str_replace('function isSameAs', 'function matches', $identity),
+                'app/Use/run.php' => str_replace('->isSameAs(', '->matches(', $user),
+            ], false],
         ['a constant and its fetches', ['constant', 'App\\Ids\\Identity', 'KIND_COUNT', 'TYPE_COUNT'], [],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
-            ['app/Ids/Identity.php' => str_replace('KIND_COUNT', 'TYPE_COUNT', $identity), 'app/Use/run.php' => str_replace('KIND_COUNT', 'TYPE_COUNT', $user)], false],
+            [
+                'app/Ids/Identity.php' => str_replace('KIND_COUNT', 'TYPE_COUNT', $identity),
+                'app/Use/run.php' => str_replace('KIND_COUNT', 'TYPE_COUNT', $user),
+            ], false],
         ['a variable in a folder, its parameter and its @param line', ['variable', 'app/Use', 'kind', 'type'], [],
             ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => $user],
-            ['app/Ids/Identity.php' => $identity, 'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user)], false],
+            [
+                'app/Ids/Identity.php' => $identity,
+                'app/Use/run.php' => str_replace(['$kind = ', '? $kind.'], ['$type = ', '? $type.'], $user),
+            ], false],
         ['a variable in one file leaves its neighbour alone', ['variable', 'app/Use/one.php', 'count', 'itemCount'], [],
             ['app/Use/one.php' => $closures, 'app/Use/two.php' => $closures],
             [
                 'app/Use/one.php' => str_replace('$count', '$itemCount', $closures),
                 'app/Use/two.php' => $closures,
             ], false],
-        ['a variable in one closure leaves its neighbour alone', ['variable', 'app/Use/one.php:2', 'count', 'copyCount'], [],
+        ['a variable in one closure leaves its neighbour alone', [
+            'variable',
+            'app/Use/one.php:2',
+            'count',
+            'copyCount',
+        ], [],
             ['app/Use/one.php' => $closures], ['app/Use/one.php' => $renamedClosure], false],
         ['a closure rename refuses a malformed line', ['variable', 'app/Use/one.php:line', 'count', 'copyCount'], [],
             ['app/Use/one.php' => $closures], ['app/Use/one.php' => $closures], true],
-        ['a closure rename refuses a name outside its parameters', ['variable', 'app/Use/one.php:2', 'join', 'joinText'], [],
+        ['a closure rename refuses a name outside its parameters', [
+            'variable',
+            'app/Use/one.php:2',
+            'join',
+            'joinText',
+        ], [],
             ['app/Use/one.php' => $closures], ['app/Use/one.php' => $closures], true],
         ['a property another class also declares is refused', ['property', 'App\\Ids\\Identity', 'kind', 'type'], [],
-            ['app/Ids/Identity.php' => $identity, 'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$kind = '';\n}\n"],
+            [
+                'app/Ids/Identity.php' => $identity,
+                'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$kind = '';\n}\n",
+            ],
             ['app/Ids/Identity.php' => $identity], true],
-        ['naming the other class with --with renames both', ['property', 'App\\Ids\\Identity', 'kind', 'type'], ['App\\Ids\\Other'],
-            ['app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$kind = '';\n}\n", 'app/Ids/Identity.php' => $identity],
-            ['app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$type = '';\n}\n"], false],
+        ['a static method is renamed only at the calls of its own class',
+            ['method', 'App\\Ids\\Note', 'keep', 'create'], [],
+            [
+                'app/Ids/Note.php' => "<?php\nnamespace App\\Ids;\nfinal class Note\n{\n    public static function keep(): self\n    {\n        return new self();\n    }\n\n    public static function again(): self\n    {\n        return self::keep();\n    }\n}\n",
+                'app/Ids/Ledger.php' => "<?php\nnamespace App\\Ids;\nfinal class Ledger\n{\n    public static function keep(): self\n    {\n        return self::keep();\n    }\n}\n",
+                'app/Use/note.php' => "<?php\nuse App\\Ids\\Ledger;\nuse App\\Ids\\Note;\nNote::keep();\nLedger::keep();\n",
+            ],
+            [
+                'app/Ids/Note.php' => "<?php\nnamespace App\\Ids;\nfinal class Note\n{\n    public static function create(): self\n    {\n        return new self();\n    }\n\n    public static function again(): self\n    {\n        return self::create();\n    }\n}\n",
+                'app/Ids/Ledger.php' => "<?php\nnamespace App\\Ids;\nfinal class Ledger\n{\n    public static function keep(): self\n    {\n        return self::keep();\n    }\n}\n",
+                'app/Use/note.php' => "<?php\nuse App\\Ids\\Ledger;\nuse App\\Ids\\Note;\nNote::create();\nLedger::keep();\n",
+            ], false],
+        ['naming the other class with --with renames both', [
+            'property',
+            'App\\Ids\\Identity',
+            'kind',
+            'type',
+        ], ['App\\Ids\\Other'],
+            [
+                'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$kind = '';\n}\n",
+                'app/Ids/Identity.php' => $identity,
+            ],
+            [
+                'app/Ids/Other.php' => "<?php\nnamespace App\\Ids;\nfinal class Other\n{\n    public string \$type = '';\n}\n",
+            ], false],
     ];
 }

@@ -37,7 +37,7 @@ final class InboxProviderContractTest extends MessagingTestCase
         $roster = new TeamRoster();
         $this->app->instance(TeamRoster::class, $roster);
         $this->app->make(InboxRegistration::class)->register('team', TeamInboxProvider::class, TeamInboxAccess::class);
-        $this->team = InboxRecord::openFor('team', 'alpha');
+        $this->team = InboxRecord::create('team', 'alpha');
         $roster->join($this->team->id, $this->actorOf($this->builder));
     }
 

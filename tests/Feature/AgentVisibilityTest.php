@@ -13,6 +13,7 @@ use Domain\Sequences\Resolvers\Support\SequenceRecords;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Tests\Support\HoldingRules;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
@@ -34,7 +35,7 @@ final class AgentVisibilityTest extends TestCase
         new Memory(['text' => 'Kept by agent 1', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
         new Memory(['text' => 'Kept by agent 2', 'weight' => 3])->saveFor(TestActors::agentIdentity(2));
         Task::factory()->create(['title' => 'Write the walk'])->start();
-        Rule::holding('No phase waits on the user.');
+        HoldingRules::create('No phase waits on the user.');
     }
 
     public function test_an_agent_sees_its_own_runs_and_memories_in_every_session(): void
@@ -145,7 +146,7 @@ final class AgentVisibilityTest extends TestCase
     private function giveWorkTo(int $agent, int $session): void
     {
         $target = TestActors::stack($agent, $session);
-        SequenceRun::written("Run of agent {$agent}", ['Read the brief.'])->startFor($target->actorIdentity());
+        SequenceRun::create("Run of agent {$agent}", ['Read the brief.'])->startFor($target->actorIdentity());
     }
 
     /**

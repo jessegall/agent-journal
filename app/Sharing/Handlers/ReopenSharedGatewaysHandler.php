@@ -32,7 +32,7 @@ final readonly class ReopenSharedGatewaysHandler implements CommandHandler
                 continue;
             }
 
-            ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
+            ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
             $requested++;
         }
 

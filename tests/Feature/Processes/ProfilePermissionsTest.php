@@ -34,7 +34,7 @@ final class ProfilePermissionsTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $helper = Agent::named('Reader', 'read-only-helper');
+        $helper = Agent::create('Reader', 'read-only-helper');
         $this->app->make(StartSessions::class)
             ->start($helper, TestSelections::of('claude-code'), TestSelections::requestId());
         $this->startUserRequestAs($owner->id);

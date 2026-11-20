@@ -34,8 +34,12 @@ final readonly class SteerHelperHandler extends HelperCommandHandler
 
         $suggestedCommand = $latest !== null && $latest->state === JobState::Unfinished
             ? $this->starts->continueCommand($latest)
-            : sprintf('journal helper send %s --brief %s', escapeshellarg($identity->id), escapeshellarg($command->text));
-        $message = HelperMessage::keep(
+            : sprintf(
+                'journal helper send %s --brief %s',
+                escapeshellarg($identity->id),
+                escapeshellarg($command->text),
+            );
+        $message = HelperMessage::create(
             ActorIdentity::of($command->dispatchedBy()),
             $identity,
             $command->text,

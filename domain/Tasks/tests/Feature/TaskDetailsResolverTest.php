@@ -152,7 +152,7 @@ final class TaskDetailsResolverTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
 
         return $this->app->make(StartSessions::class)->start(
-            Agent::named($name, 'main-agent'),
+            Agent::create($name, 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         )->session;

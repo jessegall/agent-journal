@@ -15,6 +15,7 @@ use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\HoldingRules;
 use Tests\Support\TestIds;
 use Tests\Support\WatchesPageChanges;
 
@@ -34,7 +35,7 @@ final class RulePageChangeTest extends TestCase
 
     public function test_an_approved_rule_tells_the_owner_once_on_their_private_channel(): void
     {
-        $rule = Rule::proposed(
+        $rule = Rule::create(
             'Every phase ends with its tests.',
             'Agents keep forgetting it.',
             null,
@@ -51,7 +52,7 @@ final class RulePageChangeTest extends TestCase
 
     public function test_a_removed_rule_changes_the_page_too(): void
     {
-        $this->app->make(CommandBus::class)->run(new RemoveRule(Rule::holding('Old rule.')->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRule(HoldingRules::create('Old rule.')->id));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
@@ -60,7 +61,7 @@ final class RulePageChangeTest extends TestCase
     {
         $this->app->instance(AccessSettings::class, new AccessSettings(null));
 
-        $this->app->make(CommandBus::class)->run(new RemoveRule(Rule::holding('Old rule.')->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRule(HoldingRules::create('Old rule.')->id));
 
         Event::assertNotDispatched(PageChanged::class);
     }

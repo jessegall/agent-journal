@@ -137,7 +137,7 @@ final class RuntimesPageTest extends TestCase
     private function openRuntime(): void
     {
         $host = $this->throughEntry(new EnrollHost('test host', ['/work/project']));
-        $agent = Agent::named('Driven agent', 'main-agent');
+        $agent = Agent::create('Driven agent', 'main-agent');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,

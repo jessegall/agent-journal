@@ -25,7 +25,7 @@ final readonly class NavigationLibrary
         if ($entry === null) {
             $completes = $navigation->completes ?? NavigationCompletion::Goal;
             $proof = (string) $navigation->proof;
-            $entry = MenuEntry::proven($navigation->actor(), $navigation, $steps, $completes, $proof);
+            $entry = MenuEntry::create($navigation->actor(), $navigation, $steps, $completes, $proof);
         } else {
             $entry->provenOn($navigation->build);
         }

@@ -19,6 +19,7 @@ use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\HoldingRules;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -36,7 +37,7 @@ final class SessionContextTest extends TestCase
     {
         parent::setUp();
 
-        $this->rule = Rule::holding('No phase waits on the user.');
+        $this->rule = HoldingRules::create('No phase waits on the user.');
         new Memory(['text' => 'Use plain words.', 'weight' => 3])->saveFor(TestActors::agentIdentity(1));
     }
 

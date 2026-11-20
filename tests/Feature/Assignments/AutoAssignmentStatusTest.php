@@ -63,7 +63,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
     public function test_an_agent_without_a_running_session_is_inactive(): void
     {
-        $idle = Agent::named('Idle', 'writing-helper');
+        $idle = Agent::create('Idle', 'writing-helper');
         $this->key = new AutoAssignmentKey(ActorIdentity::of($idle), TaskType::VALUE);
         $this->enable(self::open(), 2);
 
@@ -161,7 +161,7 @@ final class AutoAssignmentStatusTest extends TestCase
     private function hold(TaskState $state): void
     {
         $task = Task::factory()->create(['state' => $state]);
-        AssignmentRecord::holding($task->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($this->key->actor));
+        AssignmentRecord::create($task->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($this->key->actor));
     }
 
     private function currentStatus(): AutoAssignmentStatus

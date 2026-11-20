@@ -170,7 +170,7 @@ final class CommentsAndReadsTest extends TestCase
 
     public function test_an_agent_comments_as_itself(): void
     {
-        $agent = Agent::named('Commenter', 'read-only-helper');
+        $agent = Agent::create('Commenter', 'read-only-helper');
         $this->startRequestAs($agent->id, TestIds::of(9));
 
         $this->comment('From an agent.', WholeRecord::Record);

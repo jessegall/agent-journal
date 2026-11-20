@@ -41,7 +41,7 @@ trait RaisesNavigationRequests
             new NavigationScreen(['Model: GPT-5', '❯ GPT-6'], 1, 7),
         );
 
-        return NavigationRequest::raised(
+        return NavigationRequest::create(
             $stalled,
             new ActorIdentity(ActorType::User, 'owner'),
             $uncertainty,

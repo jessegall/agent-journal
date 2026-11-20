@@ -37,7 +37,7 @@ final readonly class SpoolRecorder implements OutputRecorder
             STR_PAD_LEFT,
         ).'.chunk';
         $this->write($this->disks->disk(self::DISK)->path($relative), $chunk->bytes);
-        $stored = OutputChunk::record($chunk, $offset, $relative);
+        $stored = OutputChunk::create($chunk, $offset, $relative);
         $chunk->part->captureUpTo($stored);
         $this->events->dispatch(new OutputChunkCommitted($chunk->part->id, $stream, $offset, $stored->length));
 

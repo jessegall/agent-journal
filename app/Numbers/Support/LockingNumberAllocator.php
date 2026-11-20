@@ -51,7 +51,7 @@ final readonly class LockingNumberAllocator
             return $group;
         }
 
-        NumberGroup::open($key[0], $key[1], $recordType);
+        NumberGroup::create($key[0], $key[1], $recordType);
 
         return NumberGroup::query()->forRecords(...$key)->locked()->sole();
     }

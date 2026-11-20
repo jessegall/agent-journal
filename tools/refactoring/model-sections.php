@@ -32,8 +32,6 @@ const MARKER = '/^\s*\/\/ -+\[ (\w+) \]-+\s*$/';
 
 const ROW_WRITES = '/->(save|update|delete|forceDelete|increment|decrement|forceFill|fill|touch|push|restore)\(/';
 
-const ROW_MAKES = '/(self|static)::(create|forceCreate|firstOrCreate|updateOrCreate|insert)\(|->(save|create)\(|new (self|static)\b/';
-
 /**
  * The section a method belongs in, read from its name, visibility, return type and what its body does.
  */
@@ -134,7 +132,9 @@ function sorted(string $source, Class_ $class): string
 
     foreach ($class->stmts as $member) {
         if (! $member instanceof ClassMethod && $member->getStartLine() > $methods[0]->getStartLine()) {
-            throw new RuntimeException("A member below the first method stays put; move it up: line {$member->getStartLine()}");
+            throw new RuntimeException(
+                "A member below the first method stays put; move it up: line {$member->getStartLine()}",
+            );
         }
     }
 

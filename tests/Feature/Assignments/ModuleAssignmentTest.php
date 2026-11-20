@@ -54,8 +54,8 @@ final class ModuleAssignmentTest extends TestCase
         $this->createNotesTables();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::named('Main', 'main-agent');
-        $this->writer = Agent::named('Writer', 'read-only-helper');
+        $this->main = Agent::create('Main', 'main-agent');
+        $this->writer = Agent::create('Writer', 'read-only-helper');
     }
 
     protected function tearDown(): void

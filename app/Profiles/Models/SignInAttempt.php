@@ -96,49 +96,31 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * A new attempt, started by an actor, to sign in a new account by one of its program's methods.
+     * A new attempt, started by an actor, to sign in by a method into its own new staging folder: a new account of a
+     * program, or an existing account again, in the sign-in generation that account is in. No host takes a sign-in
+     * again while a process may still run on the account's folder.
      */
-    public static function forNewAccount(
+    public static function create(
         ActorIdentity $starter,
-        HookProgram $program,
+        Account|HookProgram $accountOrProgram,
         SignInMethod $method,
         string $directory,
         string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
         $attempt = new self([
-            'program' => $program->value,
+            'program' => $accountOrProgram instanceof Account ? $accountOrProgram->program : $accountOrProgram->value,
             'method' => $method,
             ...$starter->asColumns('actor'),
         ]);
-        $attempt->directory = $directory;
-        $attempt->begin($requestKey, $expiresAt);
 
-        return $attempt;
-    }
+        if ($accountOrProgram instanceof Account) {
+            $attempt->account_id = $accountOrProgram->id;
+            $attempt->generation = $accountOrProgram->sign_in_generation;
+            $attempt->waits_for_uses = true;
+        }
 
-    /**
-     * A new attempt, started by an actor, to sign an existing account in again by a method, into its own new staging
-     * folder, in the sign-in generation the account is in. No host takes it while a process may still run on the
-     * account's folder.
-     */
-    public static function forAccount(
-        ActorIdentity $starter,
-        Account $account,
-        SignInMethod $method,
-        string $directory,
-        string $requestKey,
-        CarbonImmutable $expiresAt,
-    ): self {
-        $attempt = new self([
-            'program' => $account->program,
-            'method' => $method,
-            ...$starter->asColumns('actor'),
-        ]);
-        $attempt->account_id = $account->id;
-        $attempt->generation = $account->sign_in_generation;
         $attempt->directory = $directory;
-        $attempt->waits_for_uses = true;
         $attempt->begin($requestKey, $expiresAt);
 
         return $attempt;

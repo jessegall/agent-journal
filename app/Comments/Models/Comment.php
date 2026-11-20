@@ -81,44 +81,31 @@ final class Comment extends Model implements ReadableModel, Shareable
     }
 
     /**
-     * A comment about the whole record.
+     * A comment about the whole record, or, with an anchor, about an exact place in one version of its text.
      */
-    public static function postOnRecord(
+    public static function create(
         Model $target,
         ActorIdentity $author,
         string|null $sessionId,
         string $body,
+        TextAnchor|null $anchor,
         string $key,
         string $hash,
     ): self {
         $comment = self::draft($target, $author, $sessionId, $body, $key, $hash);
-        $comment->save();
 
-        return $comment;
-    }
+        if ($anchor !== null) {
+            $comment->version_id = $anchor->versionId;
+            $comment->version_label = $anchor->versionLabel;
+            $comment->anchor_type = $anchor->type->value;
+            $comment->section_number = $anchor->sectionNumber === 0 ? null : $anchor->sectionNumber;
+            $comment->first_line = $anchor->firstLine;
+            $comment->last_line = $anchor->lastLine;
+            $comment->quote = $anchor->quote === '' ? null : $anchor->quote;
+            $comment->start_offset = $anchor->quote === '' ? null : $anchor->startOffset;
+            $comment->end_offset = $anchor->quote === '' ? null : $anchor->endOffset;
+        }
 
-    /**
-     * A comment about an exact place in one version of the record's text.
-     */
-    public static function postOnText(
-        Model $target,
-        ActorIdentity $author,
-        string|null $sessionId,
-        string $body,
-        TextAnchor $anchor,
-        string $key,
-        string $hash,
-    ): self {
-        $comment = self::draft($target, $author, $sessionId, $body, $key, $hash);
-        $comment->version_id = $anchor->versionId;
-        $comment->version_label = $anchor->versionLabel;
-        $comment->anchor_type = $anchor->type->value;
-        $comment->section_number = $anchor->sectionNumber === 0 ? null : $anchor->sectionNumber;
-        $comment->first_line = $anchor->firstLine;
-        $comment->last_line = $anchor->lastLine;
-        $comment->quote = $anchor->quote === '' ? null : $anchor->quote;
-        $comment->start_offset = $anchor->quote === '' ? null : $anchor->startOffset;
-        $comment->end_offset = $anchor->quote === '' ? null : $anchor->endOffset;
         $comment->save();
 
         return $comment;

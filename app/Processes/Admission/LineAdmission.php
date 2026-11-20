@@ -265,7 +265,7 @@ final readonly class LineAdmission implements ShellAdmission
         $plan = $this->planner->plan($tree, $classification);
         $policy = $this->permissions->forActor($actor);
         $references = array_map(fn (ClassFact $fact): string => $fact->origin->reference(), $classification->facts());
-        $stored = ProcessRun::admit($actor, new RunAdmission(
+        $stored = ProcessRun::create($actor, new RunAdmission(
             $requestKey,
             RunMode::Normal,
             $this->projects->current(),

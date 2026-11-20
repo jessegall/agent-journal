@@ -282,12 +282,12 @@ final readonly class HelperDispatch
 
         $designated->forAll(fn (HelperIdentity $retired) => $retired->releaseDesignation());
 
-        return HelperIdentity::declareDesignated(
+        return HelperIdentity::create(
             $this->designatedHolder($request),
             $this->newActor($request, $profile),
             $request->profileKey,
             $profile->base->key,
-        );
+        )->designate();
     }
 
     /**
@@ -333,7 +333,7 @@ final readonly class HelperDispatch
     {
         $actor = $this->newActor($request, $profile);
 
-        return HelperIdentity::declare($request->parent, $actor, $request->profileKey, $profile->base->key);
+        return HelperIdentity::create($request->parent, $actor, $request->profileKey, $profile->base->key);
     }
 
     /**
@@ -350,7 +350,7 @@ final readonly class HelperDispatch
         $helper = $identity->helperActor();
         $this->reserve($identity);
         $this->assertNoOpenJob($identity);
-        $job = HelperJob::accept(
+        $job = HelperJob::create(
             $identity,
             $purpose,
             $request->parent,

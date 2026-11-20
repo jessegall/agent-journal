@@ -24,6 +24,7 @@ use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Models\ShareMember;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareDuration;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareSummary;
 use Carbon\CarbonImmutable;
@@ -63,11 +64,11 @@ final class ShareRefreshAndRetryTest extends TestCase
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->instance(BinderPublications::class, new BinderPublications());
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102] as $number) {
-            Link::recorded($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
     }
 
@@ -139,10 +140,10 @@ final class ShareRefreshAndRetryTest extends TestCase
         $revoked = $this->share([]);
         $revoked->state = ShareState::Revoked;
         $revoked->save();
-        $proposal = Share::propose(
+        $proposal = Share::create(
             $this->root,
-            TestActors::agentIdentity(5),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+            new ShareProposal(TestActors::agentIdentity(5)),
         );
 
         foreach ([$expired, $revoked, $proposal] as $share) {

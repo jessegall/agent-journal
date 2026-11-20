@@ -34,7 +34,7 @@ final class EngineAssignmentTest extends TestCase
     public function test_fill_scope_can_assign_but_cannot_reassign_or_unassign(): void
     {
         $record = Task::factory()->create()->assignmentIdentity();
-        $holder = Agent::named('Recipient', 'writing-helper')->assigneeIdentity();
+        $holder = Agent::create('Recipient', 'writing-helper')->assigneeIdentity();
         $this->actAsEngine();
         $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecordForMaintenance::FILL_SCOPE);
         $this->app->make(RequestKey::class)->set('engine-fill');
@@ -67,7 +67,7 @@ final class EngineAssignmentTest extends TestCase
     public function test_a_missing_or_different_maintenance_scope_writes_nothing(): void
     {
         $record = Task::factory()->create()->assignmentIdentity();
-        $holder = Agent::named('Recipient', 'writing-helper')->assigneeIdentity();
+        $holder = Agent::create('Recipient', 'writing-helper')->assigneeIdentity();
         $this->actAsEngine();
         $bus = $this->app->make(CommandBus::class);
         $assign = fn () => $this->app->make(CommandEntrance::class)->through(

@@ -67,7 +67,7 @@ final class EvidenceRead extends Model implements ReadableModel
         ];
     }
 
-    public static function record(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
+    public static function create(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
     {
         return self::query()->create([
             'project_key' => $run->project_key,

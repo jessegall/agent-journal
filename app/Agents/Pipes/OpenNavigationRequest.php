@@ -29,7 +29,7 @@ final readonly class OpenNavigationRequest implements Pipe
         $raise->request->recordScriptProgress(
             new ScriptProgress($uncertainty->stalledStep, $uncertainty->screen->generation, 'navigation requested'),
         );
-        $navigation = NavigationRequest::raised(
+        $navigation = NavigationRequest::create(
             $raise->request,
             $raise->owner,
             $uncertainty,

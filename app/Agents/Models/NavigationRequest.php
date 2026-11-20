@@ -125,7 +125,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
      * The request the host raised for a stalled key script, open for the main agent; the same raise sent again by
      * the host, under the same operation key, is the request it raised before.
      */
-    public static function raised(
+    public static function create(
         DriverRequest $request,
         ActorIdentity $owner,
         NavigationUncertainty $uncertainty,

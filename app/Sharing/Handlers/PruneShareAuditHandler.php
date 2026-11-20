@@ -47,7 +47,7 @@ final readonly class PruneShareAuditHandler implements CommandHandler
         }
 
         ShareAudit::removeAll(array_map(fn (ShareAudit $audit) => $audit->id, $batch));
-        ShareAudit::recordForInstallation(ShareAuditType::AuditPruned, ActorIdentity::system(), (string) count($batch));
+        ShareAudit::create(null, ShareAuditType::AuditPruned, ActorIdentity::system(), (string) count($batch));
 
         return new AuditPruning(count($batch), count($due) > self::MOST_PER_RUN);
     }

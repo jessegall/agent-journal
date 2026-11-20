@@ -64,7 +64,7 @@ final class ChatWindowTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $agent = Agent::named('Builder', 'main-agent');
+        $agent = Agent::create('Builder', 'main-agent');
         $this->session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

@@ -34,7 +34,7 @@ final class HostBridgeTest extends TestCase
         $this->mock(ActiveAccountReader::class)->shouldNotReceive('forStart');
         $this->mock(StartExecutor::class)->shouldNotReceive('start');
         $commands = $this->app->make(CommandBus::class);
-        $actor = Agent::named('Builder', 'writing-helper');
+        $actor = Agent::create('Builder', 'writing-helper');
 
         foreach (HookProgram::cases() as $program) {
             $this->assertThrows(

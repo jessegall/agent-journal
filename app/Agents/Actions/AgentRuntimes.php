@@ -23,7 +23,7 @@ final readonly class AgentRuntimes
      */
     public function open(AgentSession $session, RuntimeIntent $intent, string $startToken): array
     {
-        $runtime = AgentRuntime::forIntent($session, $intent);
+        $runtime = AgentRuntime::create($session, $intent);
         $runtime->begin();
         $runtime->holdStartGrant($startToken);
 
@@ -32,7 +32,7 @@ final readonly class AgentRuntimes
         }
 
         $firstRequestFields = DriverRequestPayload::message($intent->firstMessage);
-        $request = DriverRequest::queued($runtime, DriverOperation::Deliver, (string) Str::ulid(), $firstRequestFields);
+        $request = DriverRequest::create($runtime, DriverOperation::Deliver, (string) Str::ulid(), $firstRequestFields);
         $request->accept();
 
         return [$runtime, $request];

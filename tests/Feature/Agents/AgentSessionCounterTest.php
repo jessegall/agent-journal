@@ -37,7 +37,7 @@ final class AgentSessionCounterTest extends TestCase
         parent::setUp();
 
         $this->beat = CarbonImmutable::parse('2026-11-18 12:00:00');
-        $this->agent = Agent::named('Test agent', 'main-agent');
+        $this->agent = Agent::create('Test agent', 'main-agent');
     }
 
     public function test_a_beat_counts_until_its_window_ends_and_not_at_the_boundary(): void

@@ -75,7 +75,7 @@ final class ReaderReplayTest extends TestCase
         $evidence = $this->normalRun(0, self::PASSED_OUTPUT, RunMode::Evidence);
         $this->assertThrows(fn () => $this->asUser(new ReplayAssessment($evidence->id)), ReplayRefused::class);
 
-        $running = PartRun::queue(
+        $running = PartRun::create(
             ProcessRun::query()->withoutGlobalScopes()->findOrFail($evidence->process_run_id),
             new PartKey(2, 1, 'acme verify'),
         );

@@ -27,6 +27,7 @@ use App\Sharing\Models\ShareMember;
 use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareDuration;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareLinkResolver;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareSummary;
@@ -70,11 +71,11 @@ final class CreateShareTest extends TestCase
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->instance(BinderPublications::class, new BinderPublications());
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102] as $number) {
-            Link::recorded($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
+            Link::create($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
 
         $this->startTestUserRequest(9);
@@ -222,12 +223,15 @@ final class CreateShareTest extends TestCase
     public function test_an_expired_share_whose_state_has_not_caught_up_does_not_count(): void
     {
         for ($index = 0; $index < Share::LIVE_LIMIT; $index++) {
-            Share::grant(
+            Share::create(
                 TestActors::record('binders.binder', 1000 + $index),
-                TestIds::of(9),
-                $this->configuration,
-                ShareToken::generate(),
                 CarbonImmutable::now()->subMinute(),
+                new ShareGrant(
+                    TestIds::of(9),
+                    $this->configuration->id,
+                    $this->configuration->configuration_version,
+                    ShareToken::generate(),
+                ),
             );
         }
 

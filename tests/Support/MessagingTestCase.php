@@ -128,7 +128,7 @@ abstract class MessagingTestCase extends TestCase
 
     private function start(string $name): AgentSession
     {
-        $agent = Agent::named($name, 'main-agent');
+        $agent = Agent::create($name, 'main-agent');
         $session = $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;

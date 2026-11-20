@@ -137,7 +137,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
     private function enableFirst(AutoAssignmentInput $input, int $expectedRevision): AutoAssignmentChange
     {
         $this->unchangedMissing($expectedRevision);
-        $row = AutoAssignment::enableFirst($input);
+        $row = AutoAssignment::create($input);
 
         return new AutoAssignmentChange(true, $row->configuration_revision);
     }

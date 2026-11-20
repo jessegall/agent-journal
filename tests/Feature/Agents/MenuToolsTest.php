@@ -132,7 +132,7 @@ final class MenuToolsTest extends TestCase
         $source->cancel();
         $steps = [new MenuStep('fp1:first', 'GPT-6', null, null)];
 
-        return MenuEntry::proven(
+        return MenuEntry::create(
             new ActorIdentity(ActorType::User, $owner),
             $source,
             $steps,

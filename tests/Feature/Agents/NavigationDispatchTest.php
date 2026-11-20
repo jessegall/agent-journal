@@ -120,7 +120,7 @@ final class NavigationDispatchTest extends TestCase
 
     private function seatMain(): Agent
     {
-        $main = Agent::named('Main', 'main-agent');
+        $main = Agent::create('Main', 'main-agent');
         $this->seat($main);
 
         return $main;

@@ -46,7 +46,7 @@ final class DeskSeat extends Model implements Assignable, ReadableModel
         return ['number' => 'integer'];
     }
 
-    public static function openAt(Desk $desk, int $number): self
+    public static function create(Desk $desk, int $number): self
     {
         $seat = new self(['desk_id' => $desk->deskId(), 'number' => $number]);
         $seat->save();

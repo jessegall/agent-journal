@@ -19,7 +19,9 @@ use App\Sharing\Exceptions\ShareRetryRefused;
 use App\Sharing\Exceptions\ShareUnavailable;
 use App\Sharing\Models\Support\BelongsToOneRoot;
 use App\Sharing\Support\ShareFact;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareListFilters;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
@@ -128,37 +130,31 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * An agent's proposal to share the root: no token, no gateway, kept until the owner approves or it expires.
-     * The requesting actor is kept for attribution only, never as authority.
+     * A share of the root until its expiry. From an agent's request it is a proposal with no token and no gateway,
+     * kept until the owner approves it or it expires; from the owner's grant it holds a new token under a gateway
+     * configuration at its first scope version, waiting for its gateway.
      */
-    public static function propose(RecordIdentity $root, ActorIdentity $requester, CarbonImmutable $expiresAt): self
-    {
-        $share = self::forRoot($root, ShareState::Proposed, $expiresAt);
-        $share->requester_type = $requester->type;
-        $share->requester_id = $requester->id;
-        $share->save();
-
-        return $share;
-    }
-
-    /**
-     * The owner's grant to share the root under a gateway configuration with a new token, at its first scope version,
-     * waiting for its gateway.
-     */
-    public static function grant(
+    public static function create(
         RecordIdentity $root,
-        string $ownerUserId,
-        ShareGatewayConfiguration $configuration,
-        ShareToken $token,
         CarbonImmutable $expiresAt,
+        ShareProposal|ShareGrant $origin,
     ): self {
+        if ($origin instanceof ShareProposal) {
+            $share = self::forRoot($root, ShareState::Proposed, $expiresAt);
+            $share->requester_type = $origin->requester->type;
+            $share->requester_id = $origin->requester->id;
+            $share->save();
+
+            return $share;
+        }
+
         $share = self::forRoot($root, ShareState::Pending, $expiresAt);
-        $share->owner_user_id = $ownerUserId;
+        $share->owner_user_id = $origin->ownerUserId;
         $share->scope_version = self::FIRST_SCOPE_VERSION;
-        $share->share_gateway_configuration_id = $configuration->id;
-        $share->configuration_version = $configuration->configuration_version;
-        $share->token_digest = $token->digest;
-        $share->token_ciphertext = $token->token;
+        $share->share_gateway_configuration_id = $origin->configurationId;
+        $share->configuration_version = $origin->configurationVersion;
+        $share->token_digest = $origin->token->digest;
+        $share->token_ciphertext = $origin->token->token;
         $share->save();
 
         return $share;

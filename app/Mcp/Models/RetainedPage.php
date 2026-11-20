@@ -66,7 +66,7 @@ final class RetainedPage extends Model implements ReadableModel
      *
      * @param  list<string>  $references
      */
-    public static function keep(AgentContext $agent, array $references, CarbonImmutable $expiresAt): self
+    public static function create(AgentContext $agent, array $references, CarbonImmutable $expiresAt): self
     {
         return self::query()->create([
             'agent_id' => $agent->agentId,

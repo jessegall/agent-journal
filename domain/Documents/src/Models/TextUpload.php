@@ -57,7 +57,7 @@ final class TextUpload extends Model implements ReadableModel
         ];
     }
 
-    public static function begin(UploadType $type, int $bytes, string $digest): self
+    public static function create(UploadType $type, int $bytes, string $digest): self
     {
         if ($bytes < 1 || $bytes > self::BYTE_LIMIT || ! self::isDigest($digest)) {
             throw UploadInvalid::forDeclaration();
@@ -123,7 +123,7 @@ final class TextUpload extends Model implements ReadableModel
             throw UploadInvalid::forChunk();
         }
 
-        TextUploadChunk::store($this, $position, $text);
+        TextUploadChunk::create($this, $position, $text);
         $this->received_bytes += $bytes;
         $this->next_index++;
         $this->save();

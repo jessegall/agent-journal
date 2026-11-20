@@ -7,6 +7,7 @@ namespace App\Skills\Handlers;
 use App\Agents\Models\AgentSession;
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\RefreshSkills;
+use App\Skills\Enums\GenerationState;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSelectionConflict;
@@ -55,7 +56,13 @@ final readonly class RefreshSkillsHandler implements CommandHandler
                 $this->stored,
             );
         } catch (SkillDeclarationInvalid|SkillConflict $broken) {
-            $failed = SkillGeneration::failed($registrationDigest, $broken->getMessage());
+            $failed = SkillGeneration::create(
+                $registrationDigest,
+                GenerationState::Failed,
+                '',
+                [],
+                $broken->getMessage(),
+            );
 
             return new RefreshResult($failed->id, false, true, $broken->getMessage(), 0);
         }
@@ -66,7 +73,13 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         $reused = $previous !== null && $previous->catalogue_digest === $catalogueDigest;
         $generation = $reused
             ? $previous
-            : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($skillEntries));
+            : SkillGeneration::create(
+                $registrationDigest,
+                GenerationState::Ready,
+                $catalogueDigest,
+                $this->generationEntries($skillEntries),
+                null,
+            );
 
         return new RefreshResult(
             $generation->id,

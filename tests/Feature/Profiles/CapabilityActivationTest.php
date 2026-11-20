@@ -76,7 +76,7 @@ final class CapabilityActivationTest extends TestCase
 
     private function start(StartPolicy $policy): StartAgent
     {
-        $actor = Agent::named('Editor', self::PROFILE);
+        $actor = Agent::create('Editor', self::PROFILE);
 
         return new StartAgent(new StartRequest(
             TestSelections::requestId(),

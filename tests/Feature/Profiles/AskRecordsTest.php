@@ -74,8 +74,8 @@ final class AskRecordsTest extends TestCase
     public function test_the_internal_route_holds_an_ask_and_public_assignment_cannot_change_it(): void
     {
         $this->activateProfiles();
-        $requester = Agent::named('Requester', 'journal-worker');
-        $holder = Agent::named('Supervisor', 'journal-code-reviewer');
+        $requester = Agent::create('Requester', 'journal-worker');
+        $holder = Agent::create('Supervisor', 'journal-code-reviewer');
         $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
         $record = $ask->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
@@ -101,9 +101,9 @@ final class AskRecordsTest extends TestCase
     public function test_an_unrelated_actor_sees_nothing_while_a_former_holder_can_still_read_the_ask(): void
     {
         $this->activateProfiles();
-        $requester = Agent::named('Requester', 'journal-worker');
-        $holder = Agent::named('Supervisor', 'journal-code-reviewer');
-        $outsider = Agent::named('Other', 'journal-code-reviewer');
+        $requester = Agent::create('Requester', 'journal-worker');
+        $holder = Agent::create('Supervisor', 'journal-code-reviewer');
+        $outsider = Agent::create('Other', 'journal-code-reviewer');
         $ask = $this->retainFor($requester, SupervisorTarget::forActor(ActorIdentity::of($holder)));
         $reference = new AskReference($ask->id);
         $bus = $this->app->make(CommandBus::class);
@@ -120,7 +120,7 @@ final class AskRecordsTest extends TestCase
     public function test_a_symbolic_profile_keeps_the_ask_pending_and_the_submission_key_replays(): void
     {
         $this->activateProfiles();
-        $requester = Agent::named('Requester', 'journal-worker');
+        $requester = Agent::create('Requester', 'journal-worker');
         $target = SupervisorTarget::parse('profile:journal-code-reviewer');
         $ask = $this->retainFor($requester, $target);
         $again = $this->retainFor($requester, $target, routeVersion: 1);
@@ -179,8 +179,8 @@ final class AskRecordsTest extends TestCase
     public function test_replay_and_closing_asks_are_available_at_the_open_limit(): void
     {
         $this->activateProfiles();
-        $requester = Agent::named('Requester', 'journal-worker');
-        $recipient = Agent::named('Supervisor', 'journal-code-reviewer');
+        $requester = Agent::create('Requester', 'journal-worker');
+        $recipient = Agent::create('Supervisor', 'journal-code-reviewer');
         $this->startRequestAs($requester->id, TestIds::of(91));
         $commands = $this->app->make(CommandBus::class);
 
@@ -215,7 +215,7 @@ final class AskRecordsTest extends TestCase
     public function test_a_typed_review_still_requires_a_visible_work_record(): void
     {
         $this->activateProfiles();
-        $requester = Agent::named('Requester', 'journal-code-reviewer');
+        $requester = Agent::create('Requester', 'journal-code-reviewer');
         $this->startRequestAs($requester->id, TestIds::of(91));
         $commands = $this->app->make(CommandBus::class);
 
@@ -231,7 +231,7 @@ final class AskRecordsTest extends TestCase
         $this->activateProfiles();
         $start = TestStart::start('journal-code-reviewer');
         $start->startRequest($this->app);
-        $task = Task::file('Review a task', 'Check the expected result.', $start->agent);
+        $task = Task::create('Review a task', 'Check the expected result.', $start->agent);
         $task->start();
         $now = CarbonImmutable::now();
         new AgentStackRow()->startFor(
@@ -256,7 +256,7 @@ final class AskRecordsTest extends TestCase
     public function test_the_owner_sees_the_ask_card_on_the_inbox_page(): void
     {
         $this->activateProfiles();
-        $requester = Agent::named('Requester', 'journal-main');
+        $requester = Agent::create('Requester', 'journal-main');
         $owner = User::factory()->create();
         $this->startUserRequestAs($owner->id);
         $this->retainFor($requester, SupervisorTarget::parse('owner'));
@@ -322,7 +322,7 @@ final class AskRecordsTest extends TestCase
         $owner = User::factory()->create();
         $this->startUserRequestAs($owner->id);
         $this->mock(ActorAttention::class)->shouldNotReceive('request');
-        $requester = Agent::named('Requester', 'journal-main');
+        $requester = Agent::create('Requester', 'journal-main');
         $this->startRequestAs($requester->id, TestIds::of(99));
 
         $ask = $this->app->make(CommandBus::class)->run(new AskSupervisor('Check my result.', 'owner-question'));

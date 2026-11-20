@@ -32,7 +32,7 @@ trait BuildsTickingStacks
         CarbonImmutable $enteredAt,
         string $plainType = 'test.plain',
     ): AgentStackRow {
-        $agent = Agent::named('Ticking agent', 'main-agent');
+        $agent = Agent::create('Ticking agent', 'main-agent');
         $session = $this->app->make(AgentSessions::class)->start(
             $agent,
             TestSelections::of(),

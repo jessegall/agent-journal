@@ -57,7 +57,7 @@ trait WritesInboxMessages
     private function askBetween(DeskRecord $source, DeskRecord $destination, string $body): Message
     {
         $author = ActorContext::forAgent(TestIds::of(99));
-        $receipt = CommandReceipt::take(
+        $receipt = CommandReceipt::create(
             ReceiptCaller::withoutSession($author),
             (string) str()->ulid(),
             new stdClass(),
@@ -65,7 +65,7 @@ trait WritesInboxMessages
         );
         $envelope = MessageEnvelope::ask($source, $destination, ActorIdentity::of($author), MessageBody::from($body));
 
-        return Message::record($envelope, new AcceptedOperation($receipt->id));
+        return Message::create($envelope, new AcceptedOperation($receipt->id));
     }
 
     private function journalDesk(): DeskRecord

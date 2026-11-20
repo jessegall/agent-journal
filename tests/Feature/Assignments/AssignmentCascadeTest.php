@@ -58,8 +58,8 @@ final class AssignmentCascadeTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->builder = AssigneeIdentity::of(Agent::named('Builder', 'read-only-helper'));
-        $this->other = AssigneeIdentity::of(Agent::named('Other', 'read-only-helper'));
+        $this->builder = AssigneeIdentity::of(Agent::create('Builder', 'read-only-helper'));
+        $this->other = AssigneeIdentity::of(Agent::create('Other', 'read-only-helper'));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);
         $this->finished = Task::factory()->create(['title' => 'Finished']);

@@ -84,7 +84,7 @@ final class ContainerAccountTest extends TestCase
         $host = $this->enrollHost();
         $running = $this->open($host);
         $this->asSystem(new ClaimStart($host->hostId, $running->sessionId));
-        $second = Account::signedIn(HookProgram::ClaudeCode, AccountLabel::from('Second'), '/journal/accounts/second');
+        $second = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Second'), '/journal/accounts/second');
         $this->actAsOwner();
         $this->app->make(CommandBus::class)->run(new SwitchAccount($second->id));
 
@@ -130,7 +130,7 @@ final class ContainerAccountTest extends TestCase
     private function open(EnrolledHost $host): OpenedRuntime
     {
         $this->actAsOwner();
-        $agent = Agent::named('Helper '.Str::random(6), 'main-agent');
+        $agent = Agent::create('Helper '.Str::random(6), 'main-agent');
         $command = new OpenAgentRuntime(
             $agent->id,
             $host->hostId,

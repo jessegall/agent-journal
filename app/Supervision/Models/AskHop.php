@@ -55,7 +55,7 @@ final class AskHop extends Model implements ReadableModel
         return ['accepted_at' => 'immutable_datetime', 'version' => 'integer', 'route_version' => 'integer'];
     }
 
-    public static function recordAcceptance(Ask $ask, ActorIdentity $holder, int $routeVersion): self
+    public static function create(Ask $ask, ActorIdentity $holder, int $routeVersion): self
     {
         return self::query()->create([
             'ask_id' => $ask->id,

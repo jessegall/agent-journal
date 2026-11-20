@@ -22,17 +22,17 @@ final class InboxRegistrationTest extends TestCase
 
     public function test_a_provider_pair_opens_one_inbox(): void
     {
-        InboxRecord::openFor('team', TestIds::of(1));
+        InboxRecord::create('team', TestIds::of(1));
 
         $this->expectException(UniqueConstraintViolationException::class);
 
-        InboxRecord::openFor('team', TestIds::of(1));
+        InboxRecord::create('team', TestIds::of(1));
     }
 
     public function test_a_registered_provider_resolves_its_inbox_by_id(): void
     {
         $this->app->make(InboxRegistration::class)->register('team', TeamInboxProvider::class, TeamInboxAccess::class);
-        $record = InboxRecord::openFor('team', TestIds::of(2));
+        $record = InboxRecord::create('team', TestIds::of(2));
 
         $inbox = $this->app->make(InboxResolver::class)->resolve($record->id);
 

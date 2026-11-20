@@ -92,7 +92,7 @@ final readonly class StartAgentHandler implements CommandHandler
             $request->authorizedSource,
         );
         $this->pendingStarts->register($started->session, $account);
-        SessionPolicy::freeze($started->session, $request->policy);
+        SessionPolicy::create($started->session, $request->policy);
         $record->startedAs($started->session);
         $this->material->keep($request->requestId, $started);
         $this->events->dispatch(new StartAccepted(

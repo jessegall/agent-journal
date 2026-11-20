@@ -19,7 +19,7 @@ final readonly class HoldFailingJob implements Listener
     {
         foreach (JobStopEvidence::openJobs($event->work) as $job) {
             $job->hold(JobStopEvidence::referenceOf($event->attempt));
-            HelperNotice::leave($job, sprintf(
+            HelperNotice::create($job, sprintf(
                 'Helper %s failed its final checks on job %s three times the same way; the job is held for repair.',
                 $job->helper_identity_id,
                 $job->id,

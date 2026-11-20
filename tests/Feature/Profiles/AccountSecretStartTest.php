@@ -59,7 +59,7 @@ final class AccountSecretStartTest extends TestCase
     private function recipeFor(SignInMethod $method): AccountStartRecipe
     {
         $folder = '/journal/accounts/work';
-        $account = Account::signedIn(HookProgram::ClaudeCode, AccountLabel::from('Work '.$method->value), $folder);
+        $account = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Work '.$method->value), $folder);
         $account->forceFill(['method' => $method])->save();
         $settings = new AccountStartSettings();
         $event = new AccountSettingsRequested('claude-code', $account->recordIdentity(), $folder, $settings);

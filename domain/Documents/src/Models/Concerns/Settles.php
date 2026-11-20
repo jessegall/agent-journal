@@ -33,7 +33,7 @@ trait Settles
             throw SettlementDenied::settledFor((string) $last?->reason);
         }
 
-        RecordSettlement::record(static::LINK_TYPE, $this->id, $actor, $reason, $revisionNumber);
+        RecordSettlement::create(static::LINK_TYPE, $this->id, $actor, $reason, $revisionNumber);
         $this->attention = AttentionState::Settled;
         $this->save();
 

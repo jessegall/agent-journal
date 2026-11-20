@@ -135,7 +135,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     /**
      * A new open task an actor files, with its title and brief.
      */
-    public static function file(string $title, string $brief, Actor $creator): self
+    public static function create(string $title, string $brief, Actor $creator): self
     {
         return self::query()->create([
             'title' => $title,

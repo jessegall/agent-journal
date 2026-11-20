@@ -111,7 +111,7 @@ final class DriverRequest extends Model implements ReadableModel
     /**
      * The next request of the runtime, for the operation and its payload, not accepted yet.
      */
-    public static function queued(
+    public static function create(
         AgentRuntime $runtime,
         DriverOperation $operation,
         string $idempotencyKey,

@@ -31,7 +31,7 @@ final class AutoAssignmentActivityTest extends TestCase
 
     public function test_an_agent_takes_work_only_while_a_session_runs(): void
     {
-        $agent = Agent::named('Builder', 'writing-helper');
+        $agent = Agent::create('Builder', 'writing-helper');
         $actor = ActorIdentity::of($agent);
         $activity = $this->app->make(AssignmentProviders::class)->activity(ActorType::Agent);
 

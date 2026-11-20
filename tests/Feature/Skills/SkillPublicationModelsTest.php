@@ -130,18 +130,14 @@ final class SkillPublicationModelsTest extends TestCase
 
     private function generation(): SkillGeneration
     {
-        return SkillGeneration::ready(
-            str_repeat('d', 64),
-            str_repeat('e', 64),
+        return SkillGeneration::create(str_repeat('e', 64), GenerationState::Ready, str_repeat('d', 64), [
             [
-                [
-                    'key' => 'journal',
-                    'owner' => 'Core',
-                    'revision' => null,
-                    'markdown' => "# Journal\n",
-                    'digest' => hash('sha256', "# Journal\n"),
-                ],
+                'key' => 'journal',
+                'owner' => 'Core',
+                'revision' => null,
+                'markdown' => "# Journal\n",
+                'digest' => hash('sha256', "# Journal\n"),
             ],
-        );
+        ], null);
     }
 }

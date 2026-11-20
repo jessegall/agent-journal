@@ -32,7 +32,7 @@ final class PruneShareAuditTest extends TestCase
 
     public function test_rows_past_retention_go_counted_on_their_share_and_a_second_run_writes_nothing(): void
     {
-        $configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $live = TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
         $ended = TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
 
@@ -62,7 +62,7 @@ final class PruneShareAuditTest extends TestCase
 
     private function audit(Share $share, ShareAuditType $type): void
     {
-        ShareAudit::recordFor(
+        ShareAudit::create(
             $share,
             $type,
             $type->isRead() ? ActorIdentity::system() : TestActors::userIdentity(9),

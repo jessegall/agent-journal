@@ -65,7 +65,7 @@ final class AccountNoticesTest extends TestCase
 
     public function test_a_start_refused_for_want_of_an_account_leaves_one_counted_notice(): void
     {
-        $agent = Agent::named('Waiting agent', 'read-only-helper');
+        $agent = Agent::create('Waiting agent', 'read-only-helper');
 
         $this->refusedStart($agent);
         $this->refusedStart($agent);
@@ -90,7 +90,7 @@ final class AccountNoticesTest extends TestCase
         $codexNotice = AccountNotice::query()->where('program', 'codex')->sole();
 
         $this->app->make(CommandBus::class)->run(new DismissAccountNotice($codexNotice->id));
-        $account = Account::signedIn(HookProgram::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
+        $account = Account::create(HookProgram::ClaudeCode, AccountLabel::from('Work'), '/journal/accounts/work');
         $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
 
         $this->assertSame([], $this->section()->notices);

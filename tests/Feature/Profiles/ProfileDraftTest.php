@@ -48,7 +48,7 @@ final class ProfileDraftTest extends TestCase
         $this->startTestUserRequest(1);
         $commands = $this->app->make(CommandBus::class);
         $profile = ProfileKey::from('draft-test');
-        $actor = Agent::named('Editor', 'writing-helper');
+        $actor = Agent::create('Editor', 'writing-helper');
 
         $this->assertSame(1, $commands->run(new SaveProfileDraft($profile, 0, new ScriptSource('syntax error'))));
         $this->startRequestAs($actor->id, TestIds::of(87));
@@ -67,7 +67,10 @@ final class ProfileDraftTest extends TestCase
         $this->assertSame($actor->id, $latest->getAttribute('author_id'));
         $this->assertEquals($draft, $latest->scriptSource());
         $this->assertSame(CommandDirectory::Workspace, $latest->scriptSource()->definitions()['tests']->directory);
-        $this->assertThrows(fn () => $commands->run(new ActivateProfiles($this->proposal())), CommandAdmissionRefused::class);
+        $this->assertThrows(
+            fn () => $commands->run(new ActivateProfiles($this->proposal())),
+            CommandAdmissionRefused::class,
+        );
     }
 
     public function test_activation_refuses_the_whole_proposal_if_a_saved_draft_changed(): void

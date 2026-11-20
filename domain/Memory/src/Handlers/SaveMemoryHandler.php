@@ -16,6 +16,6 @@ final readonly class SaveMemoryHandler extends MemoryCommandHandler
 {
     public function handle(SaveMemory $command): string
     {
-        return Memory::keep(ActorIdentity::of($command->dispatchedBy()), $command->text, $command->weight)->id;
+        return Memory::create(ActorIdentity::of($command->dispatchedBy()), $command->text, $command->weight)->id;
     }
 }

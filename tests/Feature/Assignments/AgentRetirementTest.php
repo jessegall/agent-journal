@@ -71,8 +71,8 @@ final class AgentRetirementTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::named('Main', 'main-agent');
-        $this->helper = Agent::named('Helper', 'read-only-helper');
+        $this->main = Agent::create('Main', 'main-agent');
+        $this->helper = Agent::create('Helper', 'read-only-helper');
         $this->startUserRequestAs($this->owner->id);
     }
 

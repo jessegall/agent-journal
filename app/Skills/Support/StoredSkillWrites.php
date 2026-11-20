@@ -58,7 +58,7 @@ final readonly class StoredSkillWrites
         }
 
         $revision = $write();
-        SkillRequest::record($author, $requestId, $inputDigest, $revision);
+        SkillRequest::create($author, $requestId, $inputDigest, $revision);
         $this->events->dispatch(new SkillsChanged($revision->skill_id, $revision->revision));
 
         return $this->resultOf($revision, $requestId);

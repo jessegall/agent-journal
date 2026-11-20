@@ -70,7 +70,7 @@ final readonly class SignInCompletion
 
             $fallback = $attempt->method->accountNameFor($program->displayName());
             $proposed = AccountLabel::proposedFrom($identity->display, $fallback);
-            $account = Account::signedIn($program, Account::freeLabel($program, $proposed), $staging);
+            $account = Account::create($program, Account::freeLabel($program, $proposed), $staging);
             $attempt->end(SignInState::Complete);
         } else {
             $account = Account::lockedForJournal($attempt->account_id);

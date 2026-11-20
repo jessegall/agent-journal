@@ -148,7 +148,7 @@ final class MemoryCommandsTest extends TestCase
     public function test_an_edit_with_blank_text_or_nothing_to_change_is_refused_and_keeps_the_revision(): void
     {
         $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
-        $memory = Memory::keep(ActorIdentity::of($this->owner->agent), 'Keep me.', 4);
+        $memory = Memory::create(ActorIdentity::of($this->owner->agent), 'Keep me.', 4);
         $bus = $this->app->make(CommandBus::class);
 
         $blank = new EditMemory($memory->id, 1, '   ', null);
@@ -177,7 +177,7 @@ final class MemoryCommandsTest extends TestCase
     public function test_reading_one_memory_gives_its_revision_and_another_agents_is_unavailable(): void
     {
         $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
-        $memory = Memory::keep(ActorIdentity::of($this->owner->agent), 'Read me.', 4);
+        $memory = Memory::create(ActorIdentity::of($this->owner->agent), 'Read me.', 4);
         $resolver = $this->app->make(MemoryResolver::class);
 
         $this->assertSame(

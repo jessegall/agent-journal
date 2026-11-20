@@ -7,6 +7,7 @@ namespace Tests\Support\Sharing;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Support\TestIds;
@@ -20,12 +21,15 @@ final class TestShares
 
     public static function grantForADay(RecordIdentity $root, ShareGatewayConfiguration $configuration): Share
     {
-        return Share::grant(
+        return Share::create(
             $root,
-            TestIds::of(self::OWNER),
-            $configuration,
-            ShareToken::generate(),
             CarbonImmutable::now()->addDay(),
+            new ShareGrant(
+                TestIds::of(self::OWNER),
+                $configuration->id,
+                $configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
     }
 }

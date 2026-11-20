@@ -33,7 +33,7 @@ final class ActorResolverTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::named('Writer', 'read-only-helper');
+        $agent = Agent::create('Writer', 'read-only-helper');
         $resolver = $this->app->make(ActorResolver::class);
 
         $this->assertSame($owner->id, $resolver->get(ActorIdentity::of($owner))->actorId());
@@ -46,7 +46,7 @@ final class ActorResolverTest extends TestCase
         $owner = User::factory()->create();
         $stranger = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $retired = Agent::named('Gone', 'read-only-helper');
+        $retired = Agent::create('Gone', 'read-only-helper');
         $retired->forceFill(['retired_at' => now()])->save();
         $resolver = $this->app->make(ActorResolver::class);
 

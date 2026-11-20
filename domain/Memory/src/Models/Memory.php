@@ -62,7 +62,7 @@ final class Memory extends Model implements Numbered, ReadableModel
     /**
      * Keeps a new memory for its owner.
      */
-    public static function keep(ActorIdentity $owner, string $text, int $weight): self
+    public static function create(ActorIdentity $owner, string $text, int $weight): self
     {
         $memory = new self();
         $memory->text = $text;

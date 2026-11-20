@@ -34,7 +34,7 @@ trait WithActiveAccount
 
         foreach (HookProgram::cases() as $program) {
             $directory = "/journal/accounts/{$program->value}";
-            $account = Account::signedIn($program, AccountLabel::from('Test account'), $directory);
+            $account = Account::create($program, AccountLabel::from('Test account'), $directory);
             ActiveAccount::lockedFor($program)->select($account);
             $chosen[$program->value] = $account;
         }

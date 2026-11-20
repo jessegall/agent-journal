@@ -145,7 +145,7 @@ final class RuleRecordsTest extends TestCase
 
         $proposal = $this->open('request-1', $this->complete($rule));
         $proposed = $proposal->revisions()->firstOrFail();
-        $revision = RuleRevision::approve($proposed, self::PROJECT, $this->user(), [], [$script]);
+        $revision = RuleRevision::create($proposed, self::PROJECT, $this->user(), [], [$script]);
 
         $this->assertEquals([$replaced], $proposal->refresh()->replaces);
         $this->assertEquals([$script], $revision->refresh()->script_bindings);
@@ -205,7 +205,7 @@ final class RuleRecordsTest extends TestCase
     {
         $proposal = $this->open('request-'.RuleProposal::query()->count(), $this->complete($rule));
 
-        return RuleRevision::approve($proposal->revisions()->firstOrFail(), self::PROJECT, $this->user(), $readers, []);
+        return RuleRevision::create($proposal->revisions()->firstOrFail(), self::PROJECT, $this->user(), $readers, []);
     }
 
     private function open(string $requestId, ProposedRule $proposed): RuleProposal

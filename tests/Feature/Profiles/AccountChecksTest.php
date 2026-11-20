@@ -59,7 +59,7 @@ final class AccountChecksTest extends TestCase
             ActorContext::forUser(TestIds::of(1)),
             new OwnerAuthority('test'),
         );
-        $this->account = Account::signedIn(HookProgram::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
+        $this->account = Account::create(HookProgram::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
         ActiveAccount::lockedFor(HookProgram::Codex)->select($this->account);
     }
 

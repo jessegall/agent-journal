@@ -70,7 +70,7 @@ trait OpensLedgerRuntimes
 
     private function agent(): Agent
     {
-        return Agent::named('Driven agent '.Str::random(6), 'main-agent');
+        return Agent::create('Driven agent '.Str::random(6), 'main-agent');
     }
 
     private function agentIdOf(OpenedRuntime $opened): string

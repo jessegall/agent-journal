@@ -21,6 +21,7 @@ use Domain\Rules\Support\ActiveRules;
 use Domain\Rules\Tests\TestCase;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\HoldingRules;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
@@ -38,7 +39,7 @@ final class RuleProposalTest extends TestCase
     public function test_a_proposal_stores_its_reason_replaced_rule_and_proposer_and_is_not_enforced(): void
     {
         $start = TestStart::start();
-        $old = Rule::holding('Old rule.');
+        $old = HoldingRules::create('Old rule.');
         $this->startRequestAs($start->agent->id, $start->session->id);
 
         $id = $this->app->make(CommandBus::class)->run(
@@ -63,8 +64,8 @@ final class RuleProposalTest extends TestCase
     public function test_an_agent_is_refused_removal_approval_and_denial(): void
     {
         $start = TestStart::start();
-        $active = Rule::holding('Held rule.');
-        $proposed = Rule::proposed('Proposed rule.', 'A reason.', null, ActorContext::forUser(TestIds::of(7)));
+        $active = HoldingRules::create('Held rule.');
+        $proposed = Rule::create('Proposed rule.', 'A reason.', null, ActorContext::forUser(TestIds::of(7)));
         $this->startRequestAs($start->agent->id, $start->session->id);
         $bus = $this->app->make(CommandBus::class);
 
@@ -80,7 +81,7 @@ final class RuleProposalTest extends TestCase
 
     public function test_the_user_removes_a_rule(): void
     {
-        $active = Rule::holding('Held rule.');
+        $active = HoldingRules::create('Held rule.');
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),

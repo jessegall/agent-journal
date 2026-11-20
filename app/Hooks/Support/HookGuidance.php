@@ -20,7 +20,7 @@ final readonly class HookGuidance implements ActorGuidance
     public function retain(ActorIdentity $actor, string $guidance, string $key): void
     {
         $origin = AttentionOrigin::guidance($key);
-        PendingAgentMessage::keep($actor, $origin, [$guidance], requestsAttention: true);
+        PendingAgentMessage::create($actor, $origin, [$guidance], requestsAttention: true);
         $this->attention->request($actor, $origin);
     }
 }

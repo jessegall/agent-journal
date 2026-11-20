@@ -97,7 +97,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * A new document with the given text as its closed revision 1.
      */
-    public static function publish(string $title, string $abstract, MarkdownText $body, Actor $author): self
+    public static function create(string $title, string $abstract, MarkdownText $body, Actor $author): self
     {
         $document = self::query()->create([
             'creator_type' => $author->actorType(),

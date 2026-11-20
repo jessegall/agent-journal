@@ -56,7 +56,7 @@ final class ChatSwitchTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::named('Builder', 'main-agent');
+        $agent = Agent::create('Builder', 'main-agent');
         $this->app->make(StartSessions::class)
             ->start($agent, TestSelections::of('claude-code'), TestSelections::requestId());
         $ownInboxId = $this->inboxOf(ActorIdentity::of($owner))->inboxId();

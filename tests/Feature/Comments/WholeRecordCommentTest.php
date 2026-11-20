@@ -53,7 +53,7 @@ final class WholeRecordCommentTest extends TestCase
         $this->installNotesModule();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $writer = Agent::named('Writer', 'read-only-helper');
+        $writer = Agent::create('Writer', 'read-only-helper');
         $this->note = new Note(['text' => 'Check the lock order']);
         $this->note->saveFor($writer->id);
         $this->startUserRequestAs($this->owner->id);

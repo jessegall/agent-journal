@@ -18,6 +18,8 @@ use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Models\ShareMember;
 use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\ShareGrant;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -54,8 +56,8 @@ final class SharingModelsTest extends TestCase
 
     public function test_the_installation_row_is_made_once_and_locked_for_admission(): void
     {
-        $first = DB::transaction(fn () => ShareInstallation::lockForAdmission());
-        $second = DB::transaction(fn () => ShareInstallation::lockForAdmission());
+        $first = DB::transaction(fn () => ShareInstallation::create());
+        $second = DB::transaction(fn () => ShareInstallation::create());
 
         $this->assertSame($first->id, $second->id);
         $this->assertSame(1, ShareInstallation::query()->readAll('the installation has one row')->count());
@@ -64,8 +66,8 @@ final class SharingModelsTest extends TestCase
     public function test_a_gateway_configuration_endpoint_and_operation_are_made_through_their_methods(): void
     {
         $configuration = $this->configuration();
-        $endpoint = ShareGatewayEndpoint::openFor($configuration, 1, 'run-1');
-        $operation = ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
+        $endpoint = ShareGatewayEndpoint::create($configuration, 1, 'run-1');
+        $operation = ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
 
         $this->assertEquals(
             $configuration->settings,
@@ -83,8 +85,8 @@ final class SharingModelsTest extends TestCase
     {
         $configuration = $this->configuration();
         $target = new ShareSelectedTarget(TestActors::record('documents.document', 2), TestIds::of(3), '4');
-        $preview = SharePreview::createFor(TestIds::of(9), $this->root(), [$target], $configuration);
-        $other = SharePreview::createFor(TestIds::of(9), $this->root(), [], $configuration);
+        $preview = SharePreview::create(TestIds::of(9), $this->root(), [$target], $configuration);
+        $other = SharePreview::create(TestIds::of(9), $this->root(), [], $configuration);
 
         $this->assertEquals([$target], SharePreview::query()->findOrFail($preview->id)->selection);
         $this->assertSame(64, strlen($preview->checksum));
@@ -95,12 +97,15 @@ final class SharingModelsTest extends TestCase
     public function test_a_share_never_serializes_its_token_and_stores_it_encrypted(): void
     {
         $token = ShareToken::generate();
-        $share = Share::grant(
+        $share = Share::create(
             $this->root(),
-            TestIds::of(9),
-            $this->configuration(),
-            $token,
             CarbonImmutable::now()->addDays(7),
+            new ShareGrant(
+                TestIds::of(9),
+                $this->configuration()->id,
+                $this->configuration()->configuration_version,
+                $token,
+            ),
         );
         $stored = Share::query()->findOrFail($share->id);
 
@@ -115,18 +120,18 @@ final class SharingModelsTest extends TestCase
 
     public function test_a_proposal_member_and_audit_are_made_through_their_methods(): void
     {
-        $proposal = Share::propose($this->root(), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(7));
-        $member = ShareMember::approve(
+        $proposal = Share::create(
+            $this->root(),
+            CarbonImmutable::now()->addDays(7),
+            new ShareProposal(TestActors::agentIdentity(5)),
+        );
+        $member = ShareMember::create(
             $proposal,
             $this->root(),
             new ShareSelectedTarget(TestActors::record('documents.report', 7), TestIds::of(8), '1'),
         );
-        $audit = ShareAudit::recordFor($proposal, ShareAuditType::Created, TestActors::agentIdentity(5), null);
-        $change = ShareAudit::recordForInstallation(
-            ShareAuditType::GatewayChanged,
-            TestActors::userIdentity(9),
-            'disabled',
-        );
+        $audit = ShareAudit::create($proposal, ShareAuditType::Created, TestActors::agentIdentity(5), null);
+        $change = ShareAudit::create(null, ShareAuditType::GatewayChanged, TestActors::userIdentity(9), 'disabled');
 
         $this->assertSame(ShareState::Proposed, $proposal->fresh()?->state);
         $this->assertNull($proposal->token_digest);
@@ -144,7 +149,7 @@ final class SharingModelsTest extends TestCase
 
     private function configuration(): ShareGatewayConfiguration
     {
-        return ShareGatewayConfiguration::configure(
+        return ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, ['press-login']),
         );
     }

@@ -24,7 +24,7 @@ final readonly class RetainedPages
      */
     public function keep(array $references): string
     {
-        return RetainedPage::keep(
+        return RetainedPage::create(
             $this->agent,
             $references,
             CarbonImmutable::now()->addMinutes(Continuations::LIFETIME_MINUTES),

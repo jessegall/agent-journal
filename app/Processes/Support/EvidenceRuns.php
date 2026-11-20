@@ -55,7 +55,7 @@ final readonly class EvidenceRuns
     ): EvidencePermit {
         $permitted = $this->permitted($line, $workingFolder, $runner, []);
 
-        return EvidencePermit::issue($this->projects->current(), $permitted, $runner, $limits);
+        return EvidencePermit::create($this->projects->current(), $permitted, $runner, $limits, null, []);
     }
 
     /**
@@ -68,7 +68,14 @@ final readonly class EvidenceRuns
     {
         $permitted = $this->permitted($request->source_line, $request->working_folder, $request->actor(), [$proposed]);
 
-        return EvidencePermit::forRequest($request, $permitted, $proposed, PermitLimits::forSample());
+        return EvidencePermit::create(
+            $request->project_key,
+            $permitted,
+            $request->actor(),
+            PermitLimits::forSample(),
+            $request,
+            [$proposed],
+        );
     }
 
     /**
@@ -106,7 +113,7 @@ final readonly class EvidenceRuns
         }
 
         $plan = $this->planner->plan($classification->tree, $classification);
-        $run = ProcessRun::admit($runner, new RunAdmission(
+        $run = ProcessRun::create($runner, new RunAdmission(
             "evidence-{$permit->id}",
             RunMode::Evidence,
             $permit->project_key,

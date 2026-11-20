@@ -49,10 +49,10 @@ final class DeskModelsTest extends TestCase
     public function test_the_inbox_admits_a_seated_actor_by_its_seat_assignment_and_refuses_others(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 3, false);
-        $seated = Agent::named('Seated', 'read-only-helper');
-        $stranger = Agent::named('Stranger', 'read-only-helper');
+        $seated = Agent::create('Seated', 'read-only-helper');
+        $stranger = Agent::create('Stranger', 'read-only-helper');
         $seat = DeskSeat::query()->ofDesk($desk)->where('number', 2)->sole();
-        $held = AssignmentRecord::holding($seat->assignmentIdentity(), AssigneeIdentity::of($seated));
+        $held = AssignmentRecord::create($seat->assignmentIdentity(), AssigneeIdentity::of($seated));
         $access = $this->app->make(DeskInboxAccess::class);
 
         $membership = $access->membership($desk, $seated);

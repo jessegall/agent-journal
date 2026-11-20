@@ -31,7 +31,7 @@ final class HelperRecordsTest extends TestCase
     {
         $parent = $this->actAsUser('parent');
         [$helper, $purpose] = $this->helperFor($parent);
-        HelperJob::accept(
+        HelperJob::create(
             $helper,
             $purpose,
             $parent,
@@ -73,7 +73,7 @@ final class HelperRecordsTest extends TestCase
     {
         $parent = $this->actAsUser('parent');
         [$helper, $purpose] = $this->helperFor($parent);
-        $job = HelperJob::accept(
+        $job = HelperJob::create(
             $helper,
             $purpose,
             $parent,
@@ -97,9 +97,9 @@ final class HelperRecordsTest extends TestCase
     private function helperFor(ActorIdentity $parent): array
     {
         return [
-            HelperIdentity::declare(
+            HelperIdentity::create(
                 $parent,
-                ActorIdentity::of(Agent::named('Helper '.Str::random(6), 'read-only-helper')),
+                ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'read-only-helper')),
                 'read-only-helper',
                 'read-only-helper',
             ),

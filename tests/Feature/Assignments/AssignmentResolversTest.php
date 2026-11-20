@@ -44,7 +44,7 @@ final class AssignmentResolversTest extends TestCase
 
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->helper = AssigneeIdentity::of(Agent::named('Helper', 'read-only-helper'));
+        $this->helper = AssigneeIdentity::of(Agent::create('Helper', 'read-only-helper'));
         $this->startUserRequestAs($this->owner->id);
     }
 

@@ -151,7 +151,7 @@ final class ReaderProposalTest extends TestCase
 
     private function sampleRun(): ProcessRun
     {
-        $run = ProcessRun::admit(
+        $run = ProcessRun::create(
             new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             TestRunAdmissions::of(
                 admissionId: 'sample',
@@ -159,7 +159,7 @@ final class ReaderProposalTest extends TestCase
                 projectKey: $this->request->project_key,
             ),
         );
-        $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
+        $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
         $part->start('host', 1);
         $recorder = $this->app->make(SpoolRecorder::class);
         $now = CarbonImmutable::now();

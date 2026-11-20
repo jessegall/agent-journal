@@ -170,7 +170,7 @@ final class ProfileRun extends Model implements ReadableModel
             throw ProfileRunRefused::stepNotAwaited($this->id, $reference);
         }
 
-        $result = ProfileStepResult::record($this, $reference, $outcome);
+        $result = ProfileStepResult::create($this, $reference, $outcome);
         $this->state = ProfileRunState::Running;
         $this->awaited_step = null;
         $this->save();
@@ -187,7 +187,7 @@ final class ProfileRun extends Model implements ReadableModel
             return;
         }
 
-        ProfileStepResult::record($this, $reference, $outcome);
+        ProfileStepResult::create($this, $reference, $outcome);
     }
 
     /**

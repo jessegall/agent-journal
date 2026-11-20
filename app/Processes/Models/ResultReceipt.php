@@ -73,7 +73,7 @@ final class ResultReceipt extends Model implements ReadableModel
     /**
      * The receipt of a verified output, bound to its run, part, revisions, manifest and assessment.
      */
-    public static function publish(VerifiedOutput $verified, string $exitPolicyDigest): self
+    public static function create(VerifiedOutput $verified, string $exitPolicyDigest): self
     {
         return self::query()->create([
             'project_key' => $verified->run->project_key,

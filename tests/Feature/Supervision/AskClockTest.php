@@ -69,8 +69,8 @@ final class AskClockTest extends TestCase
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(ProfileProposal::fromConfiguration(
             (array) config('profiles'),
         )));
-        $this->requester = Agent::named('Requester', 'journal-worker');
-        $this->holder = Agent::named('Reviewer', 'journal-code-reviewer');
+        $this->requester = Agent::create('Requester', 'journal-worker');
+        $this->holder = Agent::create('Reviewer', 'journal-code-reviewer');
         $this->superviseWith($this->requester, SupervisorTarget::forActor(ActorIdentity::of($this->holder)));
     }
 

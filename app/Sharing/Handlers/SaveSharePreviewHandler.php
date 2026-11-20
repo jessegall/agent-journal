@@ -33,7 +33,7 @@ final readonly class SaveSharePreviewHandler implements CommandHandler
             : ShareGatewayConfiguration::usable($command->gatewayConfigurationId);
         $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
         $selection = $candidates->selection($command->selectedIds);
-        $preview = SharePreview::createFor($owner->actorId(), $root, $selection, $configuration);
+        $preview = SharePreview::create($owner->actorId(), $root, $selection, $configuration);
 
         return new SavedSharePreview($preview->id, $preview->checksum, $candidates);
     }

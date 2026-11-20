@@ -26,7 +26,7 @@ final readonly class ReceiptPublisher
             ->where('part_run_id', $checked->part->id)
             ->lockForUpdate()
             ->first();
-        $receipt = ResultReceipt::publish($checked, $this->exitPolicyDigest($checked));
+        $receipt = ResultReceipt::create($checked, $this->exitPolicyDigest($checked));
         $earlier?->supersedeBy($receipt);
 
         return $receipt;

@@ -15,6 +15,8 @@ use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\OwnerSharePolicy;
+use App\Sharing\Support\ShareGrant;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -86,17 +88,20 @@ final class OwnerSharePolicyTest extends TestCase
     public function test_an_owner_change_ends_earlier_grants_and_the_new_owner_still_manages(): void
     {
         $policy = $this->app->make(OwnerSharePolicy::class);
-        $share = Share::grant(
+        $share = Share::create(
             TestActors::record('pamphlets.pamphlet', 4),
-            $this->ownerId,
-            $this->configuration(),
-            ShareToken::generate(),
             CarbonImmutable::now()->addDays(7),
+            new ShareGrant(
+                $this->ownerId,
+                $this->configuration()->id,
+                $this->configuration()->configuration_version,
+                ShareToken::generate(),
+            ),
         );
-        $proposal = Share::propose(
+        $proposal = Share::create(
             TestActors::record('pamphlets.pamphlet', 4),
-            TestActors::agentIdentity(5),
             CarbonImmutable::now()->addDays(7),
+            new ShareProposal(TestActors::agentIdentity(5)),
         );
 
         $this->assertTrue($policy->grantHolds($share));
@@ -121,7 +126,7 @@ final class OwnerSharePolicyTest extends TestCase
 
     private function configuration(): ShareGatewayConfiguration
     {
-        return ShareGatewayConfiguration::configure(
+        return ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
     }

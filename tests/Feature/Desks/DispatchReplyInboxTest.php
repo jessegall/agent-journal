@@ -116,7 +116,7 @@ final class DispatchReplyInboxTest extends TestCase
         $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
         $first = $this->started('First');
         $second = $this->started('Second');
-        $helper = Agent::named('Researcher', 'read-only-helper');
+        $helper = Agent::create('Researcher', 'read-only-helper');
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat(
@@ -157,7 +157,7 @@ final class DispatchReplyInboxTest extends TestCase
     private function started(string $name): AgentSession
     {
         return $this->app->make(StartSessions::class)
-            ->start(Agent::named($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
+            ->start(Agent::create($name, 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())
             ->session;
     }
 }

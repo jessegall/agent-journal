@@ -125,7 +125,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     /**
      * A new message from its envelope, accepted under the bus receipt of the operation that sent it.
      */
-    public static function record(
+    public static function create(
         MessageEnvelope $envelope,
         AcceptedOperation $operation,
         string|null $senderSessionId = null,

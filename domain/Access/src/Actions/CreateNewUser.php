@@ -37,7 +37,7 @@ final class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         return $this->assignments->run(function () use ($input): User {
-            $user = User::register($input['name'], $input['email'], $input['password']);
+            $user = User::create($input['name'], $input['email'], $input['password']);
             $this->desks->provision(ActorIdentity::of($user), $user->name);
 
             return $user;

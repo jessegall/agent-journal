@@ -52,7 +52,7 @@ final class RunReconcileTest extends TestCase
         $admission = $admissions->admit('cat composer.json', ShellDialect::Bash, $context, 'key-1');
         $this->run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($admission->runId);
         $this->run->consumeFor('test-key', (string) config('app.key'));
-        $this->part = PartRun::queue($this->run, new PartKey(1, 1, 'cat'));
+        $this->part = PartRun::create($this->run, new PartKey(1, 1, 'cat'));
         $this->part->start('host', 1);
     }
 

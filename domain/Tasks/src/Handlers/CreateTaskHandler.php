@@ -14,6 +14,6 @@ final readonly class CreateTaskHandler extends TaskCommandHandler
     {
         $creator = $command->dispatchedBy();
 
-        return Task::file($command->title, $command->brief, $creator)->id;
+        return Task::create($command->title, $command->brief, $creator)->id;
     }
 }

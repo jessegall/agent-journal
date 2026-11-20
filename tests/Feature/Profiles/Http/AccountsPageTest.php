@@ -91,6 +91,6 @@ final class AccountsPageTest extends TestCase
 
     private function account(string $label, string $directory): Account
     {
-        return Account::signedIn(HookProgram::ClaudeCode, AccountLabel::from($label), $directory);
+        return Account::create(HookProgram::ClaudeCode, AccountLabel::from($label), $directory);
     }
 }

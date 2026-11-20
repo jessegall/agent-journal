@@ -133,7 +133,7 @@ final class LinkableTest extends TestCase
      */
     private function insertRawLink(Model $source, Model $target): void
     {
-        Link::recorded(
+        Link::create(
             $source->getMorphClass(),
             (string) $source->getKey(),
             $target->getMorphClass(),

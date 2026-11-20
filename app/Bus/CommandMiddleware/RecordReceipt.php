@@ -54,7 +54,7 @@ final readonly class RecordReceipt implements CommandMiddleware
             return $receipt->replay();
         }
 
-        $receipt = CommandReceipt::take($caller, $key, $call->command(), $this->registry->retentionOf($call->name()));
+        $receipt = CommandReceipt::create($caller, $key, $call->command(), $this->registry->retentionOf($call->name()));
         $this->accepted->accept($receipt->id);
         $commandReply = $next($call);
         $receipt->complete($commandReply);

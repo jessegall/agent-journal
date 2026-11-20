@@ -42,8 +42,8 @@ final class AutoAssignmentAccessTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->dispatcher = $this->started(Agent::named('Main', 'main-agent'));
-        $this->worker = $this->started(Agent::named('Worker', 'writing-helper'));
+        $this->dispatcher = $this->started(Agent::create('Main', 'main-agent'));
+        $this->worker = $this->started(Agent::create('Worker', 'writing-helper'));
         $this->access = $this->app->make(AutoAssignmentAccess::class);
     }
 
@@ -93,7 +93,7 @@ final class AutoAssignmentAccessTest extends TestCase
 
     public function test_a_worker_writes_nobody_and_reads_only_its_own_without_totals(): void
     {
-        $other = Agent::named('Other', 'writing-helper');
+        $other = Agent::create('Other', 'writing-helper');
 
         $this->access->assertMayRead($this->worker, ActorIdentity::of($this->worker));
 

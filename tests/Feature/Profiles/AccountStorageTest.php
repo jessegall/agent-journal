@@ -76,7 +76,7 @@ final class AccountStorageTest extends TestCase
     public function test_a_second_start_rejoins_the_writer_and_only_a_new_writer_starts_a_generation(): void
     {
         $account = $this->account('Work');
-        $first = SignInAttempt::forAccount(
+        $first = SignInAttempt::create(
             ActorIdentity::system(),
             $account,
             SignInMethod::OAuth,
@@ -84,7 +84,7 @@ final class AccountStorageTest extends TestCase
             'request-1',
             CarbonImmutable::now()->addMinutes(10),
         );
-        $second = SignInAttempt::forAccount(
+        $second = SignInAttempt::create(
             ActorIdentity::system(),
             $account,
             SignInMethod::OAuth,
@@ -159,7 +159,7 @@ final class AccountStorageTest extends TestCase
     public function test_the_private_folder_and_references_never_serialize(): void
     {
         $account = $this->account('Work');
-        $attempt = SignInAttempt::forNewAccount(
+        $attempt = SignInAttempt::create(
             ActorIdentity::system(),
             HookProgram::Codex,
             SignInMethod::OAuth,
@@ -178,7 +178,7 @@ final class AccountStorageTest extends TestCase
     {
         $directory = '/journal/accounts/'.Str::lower($label);
 
-        return Account::signedIn(HookProgram::ClaudeCode, AccountLabel::from($label), $directory);
+        return Account::create(HookProgram::ClaudeCode, AccountLabel::from($label), $directory);
     }
 
     private function actAsOwner(): void

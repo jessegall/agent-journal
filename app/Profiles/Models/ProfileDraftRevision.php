@@ -40,7 +40,7 @@ final class ProfileDraftRevision extends Model implements ReadableModel
         return ['revision' => 'integer', 'commands' => 'array', 'author_type' => ActorType::class];
     }
 
-    public static function appendTo(ProfileDraft $draft, ScriptSource $script, ActorIdentity $author): self
+    public static function create(ProfileDraft $draft, ScriptSource $script, ActorIdentity $author): self
     {
         return self::query()->create([
             'profile_key' => $draft->profile_key,

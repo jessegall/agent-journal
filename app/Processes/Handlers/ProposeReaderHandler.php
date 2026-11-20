@@ -58,6 +58,6 @@ final readonly class ProposeReaderHandler implements CommandHandler
 
         $label = $contracts[0]->output->label();
 
-        return ReaderRevision::propose($request, $declaration->revision, $label, $command->definition, $actor)->id;
+        return ReaderRevision::create($request, $declaration->revision, $label, $command->definition, $actor)->id;
     }
 }

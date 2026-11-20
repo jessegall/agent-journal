@@ -139,7 +139,7 @@ final class UserStacksTest extends TestCase
      */
     private function start(): StartedAgent
     {
-        $agent = Agent::named('Test agent', 'main-agent');
+        $agent = Agent::create('Test agent', 'main-agent');
 
         return $this->app->make(StartSessions::class)->start(
             $agent,

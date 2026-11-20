@@ -38,7 +38,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
 
     public function handle(RecordGatewayOutcome $command): void
     {
-        $this->assertCurrentGatewayRun(ShareInstallation::lockForAdmission(), $command->runId);
+        $this->assertCurrentGatewayRun(ShareInstallation::create(), $command->runId);
         $claimed = ShareGatewayOperation::of($command->operationId);
         $configuration = ShareGatewayConfiguration::lockById($claimed->share_gateway_configuration_id);
         $endpoint = ShareGatewayEndpoint::lockHeldBy($configuration->id, $command->endpointVersion, $command->runId);
@@ -87,12 +87,12 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
 
         foreach ($shares as $share) {
             $share->activate();
-            ShareAudit::recordFor($share, ShareAuditType::Activated, ActorIdentity::system(), null);
+            ShareAudit::create($share, ShareAuditType::Activated, ActorIdentity::system(), null);
             $this->events->dispatch(new ShareActivated($share->fact()));
         }
 
         if (! Share::anyLiveOn($configuration->id)) {
-            ShareGatewayOperation::request($configuration, GatewayOperationType::Close);
+            ShareGatewayOperation::create($configuration, GatewayOperationType::Close);
         }
     }
 
@@ -111,7 +111,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
             }
 
             $share->failActivation();
-            ShareAudit::recordFor(
+            ShareAudit::create(
                 $share,
                 ShareAuditType::ActivationFailed,
                 ActorIdentity::system(),

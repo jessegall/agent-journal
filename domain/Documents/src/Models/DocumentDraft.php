@@ -79,7 +79,7 @@ final class DocumentDraft extends Model implements ReadableModel
     /**
      * Opens the draft of a locked document for this editor, starting from its current revision.
      */
-    public static function openFor(Document $document, DocumentRevision $baseRevision, ActorIdentity $editor): self
+    public static function create(Document $document, DocumentRevision $baseRevision, ActorIdentity $editor): self
     {
         return self::query()->create([
             'document_id' => $document->id,
@@ -127,7 +127,7 @@ final class DocumentDraft extends Model implements ReadableModel
             $this->author_type,
             $this->author_id,
         )->number : $baseRevision->number;
-        $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
+        $close = DocumentClose::create($this, $resultNumber, $cause, $closer, $reason, $published);
 
         if ($published) {
             $document->reactivate();

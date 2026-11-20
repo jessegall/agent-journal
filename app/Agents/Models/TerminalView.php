@@ -84,7 +84,7 @@ final class TerminalView extends Model implements ReadableModel
     /**
      * Opens the viewer's lease on the runtime as it runs now, live for one lease from now.
      */
-    public static function open(
+    public static function create(
         ActorIdentity $viewer,
         AgentRuntime $runtime,
         int $intervalMs,

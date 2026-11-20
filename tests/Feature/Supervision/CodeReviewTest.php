@@ -117,7 +117,9 @@ final class CodeReviewTest extends TestCase
         $this->handOff('pass-1');
 
         $this->reviewer->startRequest($this->app);
-        rescue(fn () => $this->app->make(CommandBus::class)->run(new ReplyToAsk($this->reviewAsk()->reference(), 'approved')));
+        rescue(
+            fn () => $this->app->make(CommandBus::class)->run(new ReplyToAsk($this->reviewAsk()->reference(), 'approved')),
+        );
 
         $this->assertSame(0, ReviewDecision::query()->count());
         $this->assertSame(0, Ask::query()->acrossActors()->where('type_key', 'merge.ready')->count());
@@ -128,7 +130,7 @@ final class CodeReviewTest extends TestCase
      */
     private function workRecord(): RecordIdentity
     {
-        return Task::file('Fix the failing test', 'Make the suite pass.', $this->worker->agent)->assignmentIdentity();
+        return Task::create('Fix the failing test', 'Make the suite pass.', $this->worker->agent)->assignmentIdentity();
     }
 
     private function reviewAsk(): Ask

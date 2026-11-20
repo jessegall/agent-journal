@@ -79,7 +79,7 @@ final readonly class AssignmentStore implements AssignmentStorage
         $this->assertInTransaction();
         AssignmentRecord::query()->forRecord($current->record)->whereKey($current->reference->id)->delete();
 
-        return AssignmentRecord::holding($current->record, $holder)->toAssignment();
+        return AssignmentRecord::create($current->record, $holder)->toAssignment();
     }
 
     public function remove(Assignment $current): void

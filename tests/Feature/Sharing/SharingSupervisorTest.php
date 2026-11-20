@@ -15,6 +15,7 @@ use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareLinkResolver;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\SharingSupervisor;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
@@ -61,7 +62,7 @@ final class SharingSupervisorTest extends TestCase
         $this->app->instance(FakeShareGateway::class, $this->gateway);
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
     }
 
     public function test_a_run_activates_a_pending_share(): void
@@ -121,10 +122,10 @@ final class SharingSupervisorTest extends TestCase
 
     public function test_proposals_and_ended_shares_never_open_a_tunnel(): void
     {
-        Share::propose(
+        Share::create(
             TestActors::record('binders.binder', 1),
-            TestActors::agentIdentity(5),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+            new ShareProposal(TestActors::agentIdentity(5)),
         );
         $revoked = TestShares::grantForADay(TestActors::record('binders.binder', 2), $this->configuration);
         $revoked->end(ShareState::Revoked);
@@ -153,7 +154,7 @@ final class SharingSupervisorTest extends TestCase
     {
         $rootId = TestIds::of($rootIdNumber);
         $share = TestShares::grantForADay(new RecordIdentity('binders.binder', $rootId), $this->configuration);
-        ShareGatewayOperation::request($this->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($this->configuration, GatewayOperationType::Open);
 
         return $share;
     }

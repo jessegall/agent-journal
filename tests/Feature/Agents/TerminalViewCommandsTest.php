@@ -77,7 +77,7 @@ final class TerminalViewCommandsTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
 
         for ($view = 0; $view < TerminalView::MAX_PER_VIEWER; $view++) {
-            TerminalView::open($this->owner(), $runtime, 500, CarbonImmutable::now());
+            TerminalView::create($this->owner(), $runtime, 500, CarbonImmutable::now());
         }
 
         $this->assertRefused(
@@ -134,7 +134,7 @@ final class TerminalViewCommandsTest extends TestCase
     {
         $runtime = $this->runtimeOn('host-1');
         $watched = $this->app->make(WatchedRuntimes::class);
-        $other = TerminalView::open(TestActors::userIdentity(2), $runtime, 1000, CarbonImmutable::now());
+        $other = TerminalView::create(TestActors::userIdentity(2), $runtime, 1000, CarbonImmutable::now());
         $this->asOwner($this->open($runtime));
 
         $this->asOwner($this->close($runtime));
@@ -150,9 +150,9 @@ final class TerminalViewCommandsTest extends TestCase
         $watched = $this->app->make(WatchedRuntimes::class);
         $first = $this->runtimeOn('host-1');
         $elsewhere = $this->runtimeOn('host-2');
-        TerminalView::open(TestActors::userIdentity(1), $first, 1000, CarbonImmutable::now());
-        TerminalView::open(TestActors::userIdentity(2), $first, 500, CarbonImmutable::now());
-        TerminalView::open(TestActors::userIdentity(1), $elsewhere, 1000, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(1), $first, 1000, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(2), $first, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(1), $elsewhere, 1000, CarbonImmutable::now());
 
         $listed = $watched->forHost('host-1');
 
@@ -162,15 +162,15 @@ final class TerminalViewCommandsTest extends TestCase
         $this->assertSame(WatchedRuntimes::versionOf($listed), $watched->version('host-1'));
         $this->assertSame(0, $watched->version('host-3'));
         $otherVersion = $watched->version('host-2');
-        TerminalView::open(TestActors::userIdentity(3), $first, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(3), $first, 500, CarbonImmutable::now());
         $this->assertSame($otherVersion, $watched->version('host-2'));
     }
 
     public function test_the_runtime_status_counts_its_watchers_and_names_its_driver(): void
     {
         $runtime = $this->runtimeOn('host-1');
-        $first = TerminalView::open(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
-        TerminalView::open(TestActors::userIdentity(2), $runtime, 500, CarbonImmutable::now());
+        $first = TerminalView::create(TestActors::userIdentity(1), $runtime, 500, CarbonImmutable::now());
+        TerminalView::create(TestActors::userIdentity(2), $runtime, 500, CarbonImmutable::now());
 
         $read = AgentRuntime::query()->withWatchers()->with('session')->findOrFail($runtime->id);
         $status = $read->status(CarbonImmutable::now());

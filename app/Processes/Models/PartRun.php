@@ -94,7 +94,7 @@ final class PartRun extends Model implements ReadableModel
     /**
      * The run of one part of a process run, queued and not yet started.
      */
-    public static function queue(ProcessRun $run, PartKey $part): self
+    public static function create(ProcessRun $run, PartKey $part): self
     {
         return self::query()->create([
             'process_run_id' => $run->id,

@@ -12,6 +12,7 @@ use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\HoldingRules;
 use Tests\Support\TestIds;
 
 /**
@@ -38,8 +39,8 @@ final class RulesPageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->active = Rule::holding('Write all code in plain English.');
-        $this->proposed = Rule::proposed(
+        $this->active = HoldingRules::create('Write all code in plain English.');
+        $this->proposed = Rule::create(
             "Every phase ends with its tests.\n  - run them once",
             'Agents keep forgetting it.',
             null,

@@ -83,7 +83,7 @@ final class SharePreview extends Model implements ReadableModel
      *
      * @param  list<ShareSelectedTarget>  $selection
      */
-    public static function createFor(
+    public static function create(
         string $ownerUserId,
         RecordIdentity $root,
         array $selection,

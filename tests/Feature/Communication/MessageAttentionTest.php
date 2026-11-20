@@ -62,8 +62,8 @@ final class MessageAttentionTest extends TestCase
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
         $deskId = $this->app->make(CommandBus::class)->run(new CreateDesk('Team', 3, false));
         $desk = DeskRecord::query()->whereKey($deskId)->sole();
-        $running = [Agent::named('First', 'main-agent'), Agent::named('Second', 'main-agent')];
-        $idle = Agent::named('Idle', 'main-agent');
+        $running = [Agent::create('First', 'main-agent'), Agent::create('Second', 'main-agent')];
+        $idle = Agent::create('Idle', 'main-agent');
 
         foreach ([...$running, $idle] as $agent) {
             $this->app->make(AssignmentTransaction::class)->run(

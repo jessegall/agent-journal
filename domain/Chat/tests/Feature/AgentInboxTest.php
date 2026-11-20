@@ -105,7 +105,7 @@ final class AgentInboxTest extends TestCase
         $parent->startRequest($this->app);
         AgentSession::selectMessage($parent->session->id, $first->id);
         $source = $this->app->make(RequestSource::class)->selectedSource();
-        $child = Agent::named('Child', 'writing-helper');
+        $child = Agent::create('Child', 'writing-helper');
         $started = $this->app->make(StartSessions::class)->start(
             $child,
             TestSelections::of(),

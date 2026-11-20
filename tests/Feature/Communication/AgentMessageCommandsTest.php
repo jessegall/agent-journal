@@ -105,7 +105,7 @@ final class AgentMessageCommandsTest extends MessagingTestCase
     private function recordReply(Message $original): Message
     {
         $actor = ActorContext::forAgent($this->builder->agent_id);
-        $receipt = CommandReceipt::take(
+        $receipt = CommandReceipt::create(
             ReceiptCaller::inSession($actor, $this->builder->id),
             (string) Str::ulid(),
             new stdClass(),
@@ -113,7 +113,7 @@ final class AgentMessageCommandsTest extends MessagingTestCase
         );
         $inboxes = $this->app->make(InboxResolver::class);
 
-        return Message::record(
+        return Message::create(
             MessageEnvelope::reply(
                 $inboxes->resolve($original->destination_inbox_id),
                 $inboxes->resolve($original->source_inbox_id),

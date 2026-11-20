@@ -53,8 +53,8 @@ final class DeskSeatingTest extends TestCase
 
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->builder = ActorIdentity::of(Agent::named('Builder', 'read-only-helper'));
-        $this->reviewer = ActorIdentity::of(Agent::named('Reviewer', 'read-only-helper'));
+        $this->builder = ActorIdentity::of(Agent::create('Builder', 'read-only-helper'));
+        $this->reviewer = ActorIdentity::of(Agent::create('Reviewer', 'read-only-helper'));
         $this->startUserRequestAs($owner->id);
     }
 

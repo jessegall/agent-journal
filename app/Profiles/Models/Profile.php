@@ -70,7 +70,7 @@ final class Profile extends Model implements ReadableModel
         $profile->retired_at = null;
         $profile->save();
 
-        $revision = ProfileRevision::appendTo($profile, $definition, $author, $source, $compiled);
+        $revision = ProfileRevision::create($profile, $definition, $author, $source, $compiled);
         $profile->current_revision_id = $revision->id;
         $profile->save();
 

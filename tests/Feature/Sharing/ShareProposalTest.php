@@ -28,6 +28,7 @@ use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ProposalStatusResolver;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareDuration;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareProposalStatus;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -108,7 +109,7 @@ final class ShareProposalTest extends TestCase
         TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $this->start = TestStart::start();
     }
 
@@ -249,10 +250,10 @@ final class ShareProposalTest extends TestCase
      */
     private function proposeMany(int $count): void
     {
-        $first = Share::propose(
+        $first = Share::create(
             $this->root,
-            new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+            new ShareProposal(new ActorIdentity(ActorType::Agent, $this->start->agent->id)),
         );
         $now = CarbonImmutable::now();
         $rows = [];

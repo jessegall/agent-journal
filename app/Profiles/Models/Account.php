@@ -106,7 +106,7 @@ final class Account extends Model implements ReadableModel
      * A new account a completed sign-in made, signed in, in the folder that sign-in wrote; it starts the account's
      * first sign-in generation.
      */
-    public static function signedIn(HookProgram $program, AccountLabel $label, string $directory): self
+    public static function create(HookProgram $program, AccountLabel $label, string $directory): self
     {
         $account = new self(['program' => $program->value]);
         $account->name($label);

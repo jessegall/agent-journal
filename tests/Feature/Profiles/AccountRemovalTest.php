@@ -84,7 +84,7 @@ final class AccountRemovalTest extends TestCase
 
     public function test_removal_cancels_a_running_sign_in_and_leaves_no_replacement_chosen(): void
     {
-        Account::signedIn(HookProgram::Codex, AccountLabel::from('Home'), '/journal/accounts/home');
+        Account::create(HookProgram::Codex, AccountLabel::from('Home'), '/journal/accounts/home');
         $this->asOwner(new BeginSignInAgain($this->account->id, 'again'));
         $generation = $this->account->refresh()->sign_in_generation;
 

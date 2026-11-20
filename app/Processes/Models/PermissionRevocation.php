@@ -53,7 +53,7 @@ final class PermissionRevocation extends Model implements ReadableModel
         return ['revoked_classes' => 'array', 'revoked_patterns' => 'array', 'revoked_at' => 'immutable_datetime'];
     }
 
-    public static function revoke(
+    public static function create(
         string $source,
         CommandClassSet $classes,
         CommandPatternSet $patterns,

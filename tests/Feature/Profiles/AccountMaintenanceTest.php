@@ -114,7 +114,7 @@ final class AccountMaintenanceTest extends TestCase
 
     public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void
     {
-        $attempt = SignInAttempt::forAccount(
+        $attempt = SignInAttempt::create(
             ActorIdentity::system(),
             $this->account,
             SignInMethod::OAuth,
@@ -154,7 +154,7 @@ final class AccountMaintenanceTest extends TestCase
     private function open(EnrolledHost $host): OpenedRuntime
     {
         $this->actAsOwner();
-        $agent = Agent::named('Held agent '.Str::random(6), 'main-agent');
+        $agent = Agent::create('Held agent '.Str::random(6), 'main-agent');
         $command = new OpenAgentRuntime(
             $agent->id,
             $host->hostId,

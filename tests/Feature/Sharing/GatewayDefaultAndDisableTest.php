@@ -97,7 +97,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
     public function test_disabling_a_gateway_revokes_its_three_shares_before_one_close(): void
     {
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
-        ShareGatewayEndpoint::openFor($configuration, 1, self::RUN)->moveTo(GatewayEndpointState::Open);
+        ShareGatewayEndpoint::create($configuration, 1, self::RUN)->moveTo(GatewayEndpointState::Open);
 
         foreach ([1, 2, 3] as $number) {
             $share = TestShares::grantForADay(TestActors::record('binders.binder', $number), $configuration);
@@ -139,7 +139,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
     {
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->configure()->configurationId);
         $share = TestShares::grantForADay($this->root, $configuration);
-        ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
         $this->asSystem(new ClaimGatewayOperation(self::RUN));
         $share->activate();
 
@@ -150,7 +150,7 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $configuration->disabled_at = null;
         $configuration->save();
         TestShares::grantForADay(TestActors::record('binders.binder', 2), $configuration);
-        ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
 
         $this->assertSame(2, $this->asSystem(new ClaimGatewayOperation(self::RUN))?->operation->endpointVersion);
     }

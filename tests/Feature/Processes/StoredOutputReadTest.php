@@ -40,11 +40,11 @@ final class StoredOutputReadTest extends TestCase
 
         Storage::fake(SpoolRecorder::DISK);
         $this->start = TestStart::start();
-        $this->run = ProcessRun::admit(
+        $this->run = ProcessRun::create(
             new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             TestRunAdmissions::of(admissionId: 'stored-output'),
         );
-        $part = PartRun::queue($this->run, new PartKey(1, 1, 'tool'));
+        $part = PartRun::create($this->run, new PartKey(1, 1, 'tool'));
         $part->start('host', 1);
         $lines = implode(
             '',

@@ -66,7 +66,7 @@ final class ReviewDecision extends Model implements ReadableModel
     /**
      * Records the reviewer's decision on the exact base and head the review was opened on.
      */
-    public static function decide(
+    public static function create(
         CodeReview $review,
         ReviewDecisionType $decision,
         ActorIdentity $reviewer,

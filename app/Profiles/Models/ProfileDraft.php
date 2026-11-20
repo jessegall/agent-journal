@@ -53,7 +53,7 @@ final class ProfileDraft extends Model implements ReadableModel
     {
         $draft = self::lockForProfiles([$profile->key])[$profile->key];
         $draft->sourceAt($expected);
-        $revision = ProfileDraftRevision::appendTo($draft, $source, $author);
+        $revision = ProfileDraftRevision::create($draft, $source, $author);
         $draft->revision = $revision->revision;
         $draft->current_revision_id = $revision->id;
         $draft->save();

@@ -111,7 +111,7 @@ final class ProcessChannelTest extends TestCase
             $this->app->make(CommandClassifier::class)->classify($tree, $context),
         );
 
-        return ProcessRun::admit(
+        return ProcessRun::create(
             new ActorIdentity(ActorType::Agent, $this->start->agent->id),
             TestRunAdmissions::of(line: $line, plan: $plan, workingFolder: $this->folder),
         );

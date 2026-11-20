@@ -46,8 +46,8 @@ final class AssignedListsTest extends TestCase
     {
         parent::setUp();
 
-        $this->main = Agent::named('Main', 'main-agent');
-        $this->other = Agent::named('Other', 'read-only-helper');
+        $this->main = Agent::create('Main', 'main-agent');
+        $this->other = Agent::create('Other', 'read-only-helper');
         $this->startRequestAs($this->main->id, TestIds::of(1));
     }
 

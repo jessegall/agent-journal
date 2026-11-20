@@ -55,7 +55,7 @@ final class OutputChunk extends Model implements ReadableModel
     /**
      * The record of a captured chunk written to the spool at its offset in its stream.
      */
-    public static function record(CapturedChunk $chunk, int $offset, string $storagePath): self
+    public static function create(CapturedChunk $chunk, int $offset, string $storagePath): self
     {
         return self::query()->create([
             'part_run_id' => $chunk->part->id,

@@ -54,7 +54,7 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
             throw DraftHeld::elsewhere($otherDocumentDraft->document->number);
         }
 
-        $draft = DocumentDraft::openFor($document, $baseRevision, $editor);
+        $draft = DocumentDraft::create($document, $baseRevision, $editor);
         $this->provenance->record($draft);
         $this->events->dispatch(new DocumentOpened($document->id, $document->number));
 

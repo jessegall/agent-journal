@@ -16,7 +16,7 @@ final readonly class RevokeCommandPermissionsHandler implements CommandHandler
     public function handle(RevokeCommandPermissions $command): string
     {
 
-        return PermissionRevocation::revoke(
+        return PermissionRevocation::create(
             $command->source,
             CommandClassSet::of(...$command->classes),
             CommandPatternSet::of(...$command->patterns),

@@ -49,7 +49,7 @@ final class SkillRequest extends Model implements ReadableModel
         ];
     }
 
-    public static function record(
+    public static function create(
         ActorIdentity $actor,
         string $requestId,
         string $inputDigest,

@@ -100,7 +100,7 @@ final class StopConditionRunnerTest extends TestCase
     {
         $unfrozen = TestStart::start('writing-helper');
         $empty = TestStart::start('writing-helper');
-        SessionPolicy::freeze($empty->session, StartPolicy::mainOnHost('/workspace'));
+        SessionPolicy::create($empty->session, StartPolicy::mainOnHost('/workspace'));
 
         $this->assertSame(AnswerType::Allow, $this->stop($unfrozen, 'stop-1')->answerType());
         $this->assertSame(AnswerType::Allow, $this->stop($empty, 'stop-1')->answerType());
@@ -114,7 +114,7 @@ final class StopConditionRunnerTest extends TestCase
     {
         $start = TestStart::start('writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
-        SessionPolicy::freeze($start->session, new StartPolicy(
+        SessionPolicy::create($start->session, new StartPolicy(
             $policy->access,
             StopConditions::make([StopCondition::cleanWorktree()]),
             $policy->execution,
@@ -163,7 +163,7 @@ final class StopConditionRunnerTest extends TestCase
             '/accounts/a',
             1,
         );
-        ProcessStart::register($start->session, $account);
+        ProcessStart::create($start->session, $account);
         ProcessStart::claimFor($hostId, $start->session->id);
     }
 }

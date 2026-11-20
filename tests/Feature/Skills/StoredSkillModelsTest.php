@@ -35,8 +35,8 @@ final class StoredSkillModelsTest extends TestCase
             $this->assertTrue(Schema::hasTable($table), $table);
         }
 
-        $first = Skill::start(SkillKey::from('user-review-notes'), $this->author(), null);
-        $second = Skill::start(SkillKey::from('user-other-notes'), $this->author(), null);
+        $first = Skill::create(SkillKey::from('user-review-notes'), $this->author(), null);
+        $second = Skill::create(SkillKey::from('user-other-notes'), $this->author(), null);
 
         $this->assertGreaterThan(0, $first->number);
         $this->assertSame($first->number + 1, $second->number);
@@ -44,7 +44,7 @@ final class StoredSkillModelsTest extends TestCase
 
     public function test_revisions_append_in_order_keep_their_content_and_refuse_updates(): void
     {
-        $skill = Skill::start(SkillKey::from('user-review-notes'), $this->author(), SkillContextResolver::ENVIRONMENT);
+        $skill = Skill::create(SkillKey::from('user-review-notes'), $this->author(), SkillContextResolver::ENVIRONMENT);
         $first = $skill->appendRevision($this->draft('First.'), Conditions::everyone(), $this->author());
         $second = $skill->appendRevision($this->draft('Second.'), Conditions::dispatchesWork(), $this->author());
 
@@ -68,9 +68,9 @@ final class StoredSkillModelsTest extends TestCase
 
     public function test_a_request_id_remembers_its_input_digest_and_result(): void
     {
-        $skill = Skill::start(SkillKey::from('user-review-notes'), $this->author(), null);
+        $skill = Skill::create(SkillKey::from('user-review-notes'), $this->author(), null);
         $revision = $skill->appendRevision($this->draft('First.'), Conditions::everyone(), $this->author());
-        SkillRequest::record($this->author(), 'request-1', $this->draft('First.')->digest(), $revision);
+        SkillRequest::create($this->author(), 'request-1', $this->draft('First.')->digest(), $revision);
 
         $earlier = SkillRequest::earlier($this->author(), 'request-1');
 
@@ -82,9 +82,9 @@ final class StoredSkillModelsTest extends TestCase
 
     public function test_visibility_keeps_another_environment_out(): void
     {
-        Skill::start(SkillKey::from('user-everywhere'), $this->author(), null);
-        Skill::start(SkillKey::from('user-here'), $this->author(), SkillContextResolver::ENVIRONMENT);
-        Skill::start(SkillKey::from('user-elsewhere'), $this->author(), 'other');
+        Skill::create(SkillKey::from('user-everywhere'), $this->author(), null);
+        Skill::create(SkillKey::from('user-here'), $this->author(), SkillContextResolver::ENVIRONMENT);
+        Skill::create(SkillKey::from('user-elsewhere'), $this->author(), 'other');
 
         $this->assertSame(
             ['user-everywhere', 'user-here'],

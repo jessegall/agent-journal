@@ -59,7 +59,7 @@ final class DockedRecord extends Model implements ReadableModel
     /**
      * Docks the record in the conversation for the owner; docking it again shows the one placement again.
      */
-    public static function dockFor(
+    public static function create(
         ActorIdentity $owner,
         ConversationPair $conversation,
         RecordIdentity $record,

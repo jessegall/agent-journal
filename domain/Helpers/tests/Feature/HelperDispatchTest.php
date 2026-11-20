@@ -193,7 +193,7 @@ final class HelperDispatchTest extends TestCase
 
     public function test_a_second_transaction_cannot_take_a_reserved_helper_start(): void
     {
-        $helper = Agent::named('Helper', 'read-only-helper');
+        $helper = Agent::create('Helper', 'read-only-helper');
         $databases = $this->app->make(DatabaseManager::class);
         $default = (string) config('database.default');
         config(['database.connections.competing' => config(sprintf('database.connections.%s', $default))]);

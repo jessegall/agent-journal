@@ -37,7 +37,7 @@ final class SessionSelectionReadTest extends TestCase
     {
         parent::setUp();
 
-        $agent = Agent::named('Researcher', 'read-only-helper');
+        $agent = Agent::create('Researcher', 'read-only-helper');
         $selection = SelectedProgram::resolve(
             null,
             ModelSelection::fromInput('default'),

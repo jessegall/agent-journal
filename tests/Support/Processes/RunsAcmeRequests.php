@@ -98,7 +98,7 @@ trait RunsAcmeRequests
     {
         $permit = $this->asUser(new ApproveSample($this->requestId, 1, $this->request()->source_digest));
         $runId = $this->runAsAgent(new StartSample($this->requestId, $permit, "sample-{$status}"));
-        $part = PartRun::queue(
+        $part = PartRun::create(
             ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId),
             new PartKey(1, 1, 'acme verify'),
         );
@@ -140,8 +140,8 @@ trait RunsAcmeRequests
     {
         $actor = new ActorIdentity(ActorType::Agent, $this->start->agent->id);
         $projectKey = (string) config('processes.project_key');
-        $run = ProcessRun::admit($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
-        $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
+        $run = ProcessRun::create($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
+        $part = PartRun::create($run, new PartKey(1, 1, 'acme verify'));
         $part->start('host', 1);
         $recorder = $this->app->make(SpoolRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));

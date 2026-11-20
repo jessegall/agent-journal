@@ -139,7 +139,10 @@ final class PipelineAndStopTest extends TestCase
             $tree,
             $this->app->make(CommandClassifier::class)->classify($tree, $context),
         );
-        $this->processRun = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of(line: $line, plan: $plan));
+        $this->processRun = ProcessRun::create(
+            ActorIdentity::system(),
+            TestRunAdmissions::of(line: $line, plan: $plan),
+        );
 
         return $this->app->make(Supervisor::class)->run(
             new RecordedRunEvents($this->processRun, $this->output),

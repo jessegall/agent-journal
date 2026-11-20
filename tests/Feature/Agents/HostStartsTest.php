@@ -218,7 +218,7 @@ final class HostStartsTest extends TestCase
     {
         $host = $this->enrollHost();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
-        $agent = Agent::named('Started agent '.Str::random(6), 'main-agent');
+        $agent = Agent::create('Started agent '.Str::random(6), 'main-agent');
         $command = new OpenAgentRuntime(
             $agent->id,
             $host->hostId,

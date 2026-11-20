@@ -85,7 +85,7 @@ final class InboxMessageSchemaTest extends TestCase
 
     private function ask(): Message
     {
-        $receipt = CommandReceipt::take(
+        $receipt = CommandReceipt::create(
             ReceiptCaller::withoutSession(ActorContext::forAgent(TestIds::of(7))),
             (string) str()->ulid(),
             new stdClass(),
@@ -98,7 +98,7 @@ final class InboxMessageSchemaTest extends TestCase
             MessageBody::from('Can you look?'),
         );
 
-        return Message::record($envelope, new AcceptedOperation($receipt->id));
+        return Message::create($envelope, new AcceptedOperation($receipt->id));
     }
 
     private function holder(): AssigneeIdentity

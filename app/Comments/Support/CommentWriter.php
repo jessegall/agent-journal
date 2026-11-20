@@ -59,7 +59,7 @@ final readonly class CommentWriter
         }
 
         $comment = $subject instanceof TextRange
-            ? Comment::postOnText(
+            ? Comment::create(
                 $target,
                 $author,
                 $sessionId,
@@ -68,7 +68,7 @@ final readonly class CommentWriter
                 $submissionKey,
                 $hash,
             )
-            : Comment::postOnRecord($target, $author, $sessionId, $body, $submissionKey, $hash);
+            : Comment::create($target, $author, $sessionId, $body, null, $submissionKey, $hash);
         $this->events->posted(new CommentPosted($comment->id, $targetIdentity));
 
         return $comment->id;

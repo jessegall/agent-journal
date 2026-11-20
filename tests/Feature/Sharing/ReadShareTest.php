@@ -21,6 +21,7 @@ use App\Sharing\Models\ShareMember;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ReadPermits;
 use App\Sharing\Support\SharedPage;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -89,7 +90,7 @@ final class ReadShareTest extends TestCase
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->plan->linkTo($this->document);
-        $this->configuration = ShareGatewayConfiguration::configure(
+        $this->configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
     }
@@ -142,7 +143,7 @@ final class ReadShareTest extends TestCase
 
         $this->assertFalse($this->read($token, $step)->allowed);
 
-        ShareMember::approve(
+        ShareMember::create(
             $share,
             $this->plan->shareIdentity(),
             new ShareSelectedTarget($this->document->shareIdentity(), $linkId, '1'),
@@ -203,7 +204,7 @@ final class ReadShareTest extends TestCase
             $link = $links->sole(
                 fn (Link $link) => in_array($document->id, [$link->target_id, $link->source_id], true),
             );
-            ShareMember::approve(
+            ShareMember::create(
                 $share,
                 $this->plan->shareIdentity(),
                 new ShareSelectedTarget($document->shareIdentity(), $link->id, '1'),
@@ -261,7 +262,16 @@ final class ReadShareTest extends TestCase
     private function activeShare(RecordIdentity $root, CarbonImmutable $expiresAt): string
     {
         $token = ShareToken::generate();
-        $share = Share::grant($root, TestIds::of(9), $this->configuration, $token, $expiresAt);
+        $share = Share::create(
+            $root,
+            $expiresAt,
+            new ShareGrant(
+                TestIds::of(9),
+                $this->configuration->id,
+                $this->configuration->configuration_version,
+                $token,
+            ),
+        );
         $share->state = ShareState::Active;
         $share->save();
 

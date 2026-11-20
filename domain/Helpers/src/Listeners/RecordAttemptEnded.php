@@ -24,7 +24,7 @@ final readonly class RecordAttemptEnded implements Listener
     {
         foreach (JobStopEvidence::openJobs($event->work) as $job) {
             $job->markUnfinished(self::ENDED_REFERENCE);
-            HelperNotice::leave($job, sprintf(
+            HelperNotice::create($job, sprintf(
                 'Helper %s stopped before job %s was finished. Continue it with: %s',
                 $job->helper_identity_id,
                 $job->id,

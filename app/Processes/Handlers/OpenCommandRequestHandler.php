@@ -30,6 +30,6 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
             return $open->id;
         }
 
-        return CommandRequest::open($projectKey, $actor, $command)->id;
+        return CommandRequest::create($projectKey, $actor, $command)->id;
     }
 }

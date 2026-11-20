@@ -71,7 +71,7 @@ final class AutoAssignment extends Model implements ReadableModel
      * Enables the actor's first auto-assignment of the type at revision 1 with one insert that does nothing when a row
      * is already there, so the unique key decides between two writers; answers the row, locked.
      */
-    public static function enableFirst(AutoAssignmentInput $input): self
+    public static function create(AutoAssignmentInput $input): self
     {
         $key = $input->key;
         $row = new self([

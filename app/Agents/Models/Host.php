@@ -47,7 +47,7 @@ final class Host extends Model implements ReadableModel
      *
      * @param  list<string>  $startRoots
      */
-    public static function enroll(string $installationName, string $secret, array $startRoots): self
+    public static function create(string $installationName, string $secret, array $startRoots): self
     {
         return self::query()->create([
             'installation_name' => $installationName,

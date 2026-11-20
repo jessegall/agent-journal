@@ -100,7 +100,7 @@ final class SequenceStateContributionTest extends TestCase
 
     private function newRun(): SequenceRun
     {
-        return SequenceRun::written('Close a task', ['Read the brief.', 'Run the phase tests.']);
+        return SequenceRun::create('Close a task', ['Read the brief.', 'Run the phase tests.']);
     }
 
     /**

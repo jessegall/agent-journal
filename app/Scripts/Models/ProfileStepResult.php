@@ -45,7 +45,7 @@ final class ProfileStepResult extends Model implements ReadableModel
         return ['status' => StepStatus::class];
     }
 
-    public static function record(ProfileRun $run, string $reference, StepOutcome $outcome): self
+    public static function create(ProfileRun $run, string $reference, StepOutcome $outcome): self
     {
         $result = new self();
         $result->profile_run_id = $run->id;

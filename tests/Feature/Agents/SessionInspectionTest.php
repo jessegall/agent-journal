@@ -42,7 +42,7 @@ final class SessionInspectionTest extends TestCase
         $writer = TestStart::start('writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
         $revision = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('writing-helper'))->revision;
-        SessionPolicy::freeze($writer->session, new StartPolicy(
+        SessionPolicy::create($writer->session, new StartPolicy(
             $policy->access,
             StopConditions::make([StopCondition::cleanWorktree()]),
             $policy->execution,
@@ -76,7 +76,7 @@ final class SessionInspectionTest extends TestCase
     public function test_a_session_without_a_stop_shows_no_results(): void
     {
         $session = TestStart::start('writing-helper')->session;
-        SessionPolicy::freeze($session, StartPolicy::mainOnHost('/workspace'));
+        SessionPolicy::create($session, StartPolicy::mainOnHost('/workspace'));
 
         $this->assertSame([], $this->app->make(SessionInspections::class)->of($session->id)->lastStop);
     }

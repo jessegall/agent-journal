@@ -71,7 +71,7 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     /**
      * An unclaimed request to open or close the endpoint of the configuration at its current version.
      */
-    public static function request(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
+    public static function create(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
     {
         $operation = new self();
         $operation->share_gateway_configuration_id = $configuration->id;

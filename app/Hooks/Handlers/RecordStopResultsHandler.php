@@ -40,7 +40,7 @@ final readonly class RecordStopResultsHandler implements CommandHandler
         }
 
         foreach ($command->stopReports as $stopReport) {
-            StopResult::record($attempt, $stopReport);
+            StopResult::create($attempt, $stopReport);
         }
 
         $state = StopAttemptState::settledBy(

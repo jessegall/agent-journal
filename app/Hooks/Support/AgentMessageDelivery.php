@@ -41,7 +41,7 @@ final readonly class AgentMessageDelivery
 
         $actor = $target->actorIdentity();
         $origin = AttentionOrigin::stateEvent($dispatch->id);
-        PendingAgentMessage::keep($actor, $origin, $context->lines, $context->requestsAttention());
+        PendingAgentMessage::create($actor, $origin, $context->lines, $context->requestsAttention());
 
         if ($context->requestsAttention()) {
             $this->attention->request($actor, $origin);
@@ -57,7 +57,7 @@ final readonly class AgentMessageDelivery
         $origin = AttentionOrigin::agentMessages($input->identity()->hookId);
 
         foreach ($messages as $text) {
-            PendingAgentMessage::keep($agent, $origin, [$text], requestsAttention: true);
+            PendingAgentMessage::create($agent, $origin, [$text], requestsAttention: true);
         }
 
         $this->attention->request($agent, $origin);

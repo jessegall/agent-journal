@@ -68,7 +68,7 @@ final class DocumentClose extends Model implements ReadableModel
         ];
     }
 
-    public static function record(
+    public static function create(
         DocumentDraft $draft,
         int $resultNumber,
         CloseCause $cause,

@@ -58,7 +58,7 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     /**
      * A new agent that starts with the profile of this key unless a start names another.
      */
-    public static function named(string $name, string $profileKey): self
+    public static function create(string $name, string $profileKey): self
     {
         return self::query()->create(['name' => $name, 'profile_key' => $profileKey]);
     }

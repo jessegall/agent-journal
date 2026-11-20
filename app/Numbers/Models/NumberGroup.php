@@ -58,7 +58,7 @@ final class NumberGroup extends Model implements ReadableModel
     /**
      * Opens the numbering of one record type for one holder.
      */
-    public static function open(string $holderType, string $holderId, string $recordType): void
+    public static function create(string $holderType, string $holderId, string $recordType): void
     {
         self::query()->create(['holder_type' => $holderType, 'holder_id' => $holderId, 'record_type' => $recordType]);
     }

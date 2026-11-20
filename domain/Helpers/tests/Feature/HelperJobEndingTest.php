@@ -71,15 +71,15 @@ final class HelperJobEndingTest extends TestCase
     private function job(): HelperJob
     {
         $parent = $this->actAsUser('parent');
-        $helper = HelperIdentity::declare(
+        $helper = HelperIdentity::create(
             $parent,
-            ActorIdentity::of(Agent::named('Helper '.Str::random(6), 'writing-helper')),
+            ActorIdentity::of(Agent::create('Helper '.Str::random(6), 'writing-helper')),
             'writing-helper',
             'writing-helper',
         );
         $purpose = HelperPurpose::free($parent, 'writing-helper', 'General work '.Str::random(6));
 
-        return HelperJob::accept(
+        return HelperJob::create(
             $helper,
             $purpose,
             $parent,

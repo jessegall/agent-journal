@@ -12,6 +12,7 @@ use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareMember;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ShareCandidates;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareSelectedTarget;
@@ -43,21 +44,24 @@ final class LinkRemovalTest extends TestCase
     {
         parent::setUp();
 
-        $this->source = Agent::named('Source', 'read-only-helper');
-        $this->target = Agent::named('Target', 'read-only-helper');
+        $this->source = Agent::create('Source', 'read-only-helper');
+        $this->target = Agent::create('Target', 'read-only-helper');
         $this->source->linkTo($this->target);
         $link = Link::query()->between($this->source, $this->target)->sole();
-        $configuration = ShareGatewayConfiguration::configure(
+        $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
-        $share = Share::grant(
+        $share = Share::create(
             $this->identityOf($this->source),
-            TestIds::of(9),
-            $configuration,
-            ShareToken::generate(),
             CarbonImmutable::now()->addDays(7),
+            new ShareGrant(
+                TestIds::of(9),
+                $configuration->id,
+                $configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
-        $this->member = ShareMember::approve(
+        $this->member = ShareMember::create(
             $share,
             $this->identityOf($this->source),
             new ShareSelectedTarget($this->identityOf($this->target), $link->id, '1'),

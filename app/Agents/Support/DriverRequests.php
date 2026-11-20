@@ -44,7 +44,7 @@ final readonly class DriverRequests
             throw DriverRequestRefused::stopping($target);
         }
 
-        $request = DriverRequest::queued($runtime, $operation, $idempotencyKey, $envelope);
+        $request = DriverRequest::create($runtime, $operation, $idempotencyKey, $envelope);
         $request->accept();
 
         return $request;

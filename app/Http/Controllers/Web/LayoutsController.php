@@ -23,7 +23,7 @@ final readonly class LayoutsController
 
     public function store(LayoutRequest $request): RedirectResponse
     {
-        Layout::saveFor($this->users->currentUser()->get()->id, $request->layoutName(), $request->shape());
+        Layout::create($this->users->currentUser()->get()->id, $request->layoutName(), $request->shape());
 
         return $this->redirect->back(303);
     }

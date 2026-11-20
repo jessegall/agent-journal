@@ -43,9 +43,9 @@ final class SeatLossTest extends TestCase
     public function test_replacing_a_seat_ends_its_claims_and_keeps_the_others(): void
     {
         $desk = DeskRecord::openNamed('team', 'Team', 2, false);
-        $leaving = ActorIdentity::of(Agent::named('Leaving', 'read-only-helper'));
-        $staying = ActorIdentity::of(Agent::named('Staying', 'read-only-helper'));
-        $arriving = ActorIdentity::of(Agent::named('Arriving', 'read-only-helper'));
+        $leaving = ActorIdentity::of(Agent::create('Leaving', 'read-only-helper'));
+        $staying = ActorIdentity::of(Agent::create('Staying', 'read-only-helper'));
+        $arriving = ActorIdentity::of(Agent::create('Arriving', 'read-only-helper'));
         $leavingSeat = $this->seat($desk, $leaving);
         $stayingSeat = $this->seat($desk, $staying);
         $lostClaims = array_map(fn (int $number) => $this->claim($number, $leaving, $leavingSeat), [1, 2, 3]);
@@ -60,7 +60,7 @@ final class SeatLossTest extends TestCase
         }
 
         $this->assertTrue(AssignmentRecord::stillExists($keptClaim->id));
-        $taken = AssignmentRecord::holding(
+        $taken = AssignmentRecord::create(
             TestActors::record('communication.message', 1),
             AssigneeIdentity::ofActorIdentity($arriving),
         );
@@ -76,7 +76,7 @@ final class SeatLossTest extends TestCase
 
     private function claim(int $number, ActorIdentity $actor, SeatChangeResult $seat): AssignmentReference
     {
-        $claim = AssignmentRecord::holding(
+        $claim = AssignmentRecord::create(
             TestActors::record('communication.message', $number),
             AssigneeIdentity::ofActorIdentity($actor),
         )->toAssignment()->reference;

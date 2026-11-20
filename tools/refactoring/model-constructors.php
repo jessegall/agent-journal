@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Checks that every Eloquent model makes its new rows through one static create (rule 40): it prints
+ * "file:line<TAB>Model::method" for a public static method that saves one new row under another name, and fails
+ * while there is one. A method that may hand back a row that exists (a find-or-create), writes several rows or only
+ * some (insert, insertOrIgnore, a loop), or changes a row it locked is no constructor and keeps its name.
+ *
+ *   php tools/refactoring/model-constructors.php app domain
+ */
+
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\NodeFinder;
+use PhpParser\ParserFactory;
+
+require dirname(__DIR__, 2).'/vendor/autoload.php';
+require __DIR__.'/models.php';
+
+$parser = new ParserFactory()->createForHostVersion();
+$finder = new NodeFinder();
+$faults = 0;
+
+foreach (array_slice($argv, 1) as $path) {
+    foreach (phpFiles($path) as $file) {
+        $code = (string) file_get_contents($file);
+
+        foreach ($finder->findInstanceOf($parser->parse($code) ?? [], Class_::class) as $class) {
+            if (! isModel($class)) {
+                continue;
+            }
+
+            foreach ($class->getMethods() as $method) {
+                $body = substr(
+                    $code,
+                    $method->getStartFilePos(),
+                    $method->getEndFilePos() - $method->getStartFilePos() + 1,
+                );
+                $makesRow = preg_match(ROW_SAVES_NEW, $body) === 1 && preg_match(ROW_NOT_ONE_NEW, $body) === 0;
+
+                if (! $method->isStatic() || ! $method->isPublic() || ! $makesRow || $method->name->toString() === 'create') {
+                    continue;
+                }
+
+                echo "{$file}:{$method->getStartLine()}\t{$class->name}::{$method->name}\n";
+                $faults++;
+            }
+        }
+    }
+}
+
+exit($faults > 0 ? 1 : 0);

@@ -26,6 +26,6 @@ final readonly class DockRecordHandler extends ChatCommandHandler
     {
         $this->dockable->requireIn($command->conversation(), $command->record);
         $owner = ActorIdentity::of($command->dispatchedBy());
-        DockedRecord::dockFor($owner, $command->conversation(), $command->record);
+        DockedRecord::create($owner, $command->conversation(), $command->record);
     }
 }

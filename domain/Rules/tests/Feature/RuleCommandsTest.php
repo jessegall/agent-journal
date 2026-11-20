@@ -20,6 +20,7 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\HoldingRules;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
@@ -62,7 +63,7 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
-        $rule = Rule::holding('Old rule.');
+        $rule = HoldingRules::create('Old rule.');
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($rule->id));
 
@@ -76,7 +77,7 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forAgent(TestIds::of(3)),
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
-        $rule = Rule::proposed(
+        $rule = Rule::create(
             'No phase waits on the user.',
             'Agents keep forgetting it.',
             null,
@@ -97,7 +98,7 @@ final class RuleCommandsTest extends TestCase
             ActorContext::forAgent(TestIds::of(3)),
             TestStartAuthority::forAgent(TestIds::of(3)),
         );
-        $rule = Rule::proposed(
+        $rule = Rule::create(
             'No phase waits on the user.',
             'Agents keep forgetting it.',
             null,

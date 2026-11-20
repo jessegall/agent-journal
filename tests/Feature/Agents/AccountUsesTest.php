@@ -83,7 +83,7 @@ final class AccountUsesTest extends TestCase
         parent::setUp();
 
         $this->app->make(LinkTypeRegistry::class)->register([self::ACCOUNT_TYPE => Note::class]);
-        $this->agent = Agent::named('Test agent', 'main-agent');
+        $this->agent = Agent::create('Test agent', 'main-agent');
         $this->actAsOwner();
     }
 

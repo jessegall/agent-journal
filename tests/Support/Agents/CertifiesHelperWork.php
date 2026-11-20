@@ -92,7 +92,7 @@ trait CertifiesHelperWork
         );
         $start = StartRecord::accept($request, ActorIdentity::system(), None::create());
         $start->startedAs($launch->session);
-        SessionPolicy::freeze($launch->session, $request->policy);
+        SessionPolicy::create($launch->session, $request->policy);
 
         return CertifiedWork::record($start->refresh(), $certificate);
     }

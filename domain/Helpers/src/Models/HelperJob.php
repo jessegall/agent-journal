@@ -81,7 +81,7 @@ final class HelperJob extends Model implements Assignable, ReadableModel
     /**
      * @param  array{subjects: list<string>}  $sourceSnapshot
      */
-    public static function accept(
+    public static function create(
         HelperIdentity $helper,
         HelperPurpose $purpose,
         ActorIdentity $parent,

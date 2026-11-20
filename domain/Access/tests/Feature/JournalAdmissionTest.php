@@ -62,7 +62,7 @@ final class JournalAdmissionTest extends TestCase
     public function test_users_and_agents_act_through_the_actor_interface_and_only_the_owner_user_is_let_in(): void
     {
         $owner = User::factory()->create();
-        $agent = Agent::named('Planner', 'main-agent');
+        $agent = Agent::create('Planner', 'main-agent');
         $this->configureOwner($owner->id);
         $admission = $this->app->make(JournalAdmission::class);
 

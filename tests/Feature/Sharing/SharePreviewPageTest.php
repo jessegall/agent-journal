@@ -76,7 +76,7 @@ final class SharePreviewPageTest extends TestCase
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->plan->linkTo($this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
-        $configuration = ShareGatewayConfiguration::configure(
+        $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
         $configuration->is_default = true;

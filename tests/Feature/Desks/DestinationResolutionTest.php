@@ -42,7 +42,7 @@ final class DestinationResolutionTest extends TestCase
     public function test_an_actor_seated_at_main_resolves_to_main_and_main_resolves_to_itself(): void
     {
         $main = DeskRecord::query()->named('main')->sole();
-        $agent = Agent::named('Main', 'main-agent');
+        $agent = Agent::create('Main', 'main-agent');
         $this->provision($agent);
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
@@ -56,7 +56,7 @@ final class DestinationResolutionTest extends TestCase
 
     public function test_an_actor_without_a_forwarding_seat_resolves_to_itself_whatever_its_name(): void
     {
-        $agent = Agent::named('main', 'read-only-helper');
+        $agent = Agent::create('main', 'read-only-helper');
         $personal = $this->provision($agent);
 
         $this->assertSame($agent->id, $this->holderId($agent->assigneeIdentity()));

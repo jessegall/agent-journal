@@ -25,6 +25,7 @@ use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\ConsumedPreview;
 use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareDuration;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareScope;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -49,14 +50,17 @@ final readonly class ShareGrants
     {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
         $this->assertLiveSlotFree();
-        $share = Share::grant(
+        $share = Share::create(
             $consumed->root,
-            $owner->actorId(),
-            $consumed->configuration,
-            ShareToken::generate(),
             $duration->deadlineFrom(CarbonImmutable::now()),
+            new ShareGrant(
+                $owner->actorId(),
+                $consumed->configuration->id,
+                $consumed->configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
-        ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $share, $consumed, ShareAuditType::Created);
         $this->events->dispatch(new ShareCreated($share->fact()));
@@ -88,7 +92,7 @@ final readonly class ShareGrants
             ShareToken::generate(),
             $duration->deadlineFrom(CarbonImmutable::now()),
         );
-        ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($consumed->configuration, GatewayOperationType::Open);
 
         $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
         $this->events->dispatch(new ShareCreated($proposal->fact()));
@@ -132,7 +136,7 @@ final readonly class ShareGrants
         $this->policy->assertManager($owner);
         $configurationId = SharePreview::of($previewId)->share_gateway_configuration_id;
 
-        ShareInstallation::lockForAdmission();
+        ShareInstallation::create();
         $configuration = ShareGatewayConfiguration::lockUsable($configurationId);
         $preview = SharePreview::lockFor($previewId);
         $candidates = $this->scope->discover($preview->root(), MeteredShareBudget::forPreview($this->meter));
@@ -156,9 +160,9 @@ final readonly class ShareGrants
     private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): void
     {
         foreach ($consumed->selection as $target) {
-            ShareMember::approve($share, $consumed->candidates->sourceOf($target), $target);
+            ShareMember::create($share, $consumed->candidates->sourceOf($target), $target);
         }
 
-        ShareAudit::recordFor($share, $type, ActorIdentity::of($owner), null);
+        ShareAudit::create($share, $type, ActorIdentity::of($owner), null);
     }
 }

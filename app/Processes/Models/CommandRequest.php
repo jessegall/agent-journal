@@ -83,7 +83,7 @@ final class CommandRequest extends Model implements ReadableModel
     /**
      * A new request holding the actor's command line in the project, collecting its declaration first.
      */
-    public static function open(string $projectKey, ActorIdentity $actor, OpenCommandRequest $command): self
+    public static function create(string $projectKey, ActorIdentity $actor, OpenCommandRequest $command): self
     {
         return self::query()->create([
             'project_key' => $projectKey,

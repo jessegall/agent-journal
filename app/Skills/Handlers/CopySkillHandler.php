@@ -43,7 +43,7 @@ final readonly class CopySkillHandler implements CommandHandler
             $draft = $source->copyDraft();
             $author = $this->writes->author();
 
-            return Skill::start($key, $author, SkillContextResolver::ENVIRONMENT)->appendRevision(
+            return Skill::create($key, $author, SkillContextResolver::ENVIRONMENT)->appendRevision(
                 $draft,
                 $this->writes->checkedCondition($key->key, $draft),
                 $author,

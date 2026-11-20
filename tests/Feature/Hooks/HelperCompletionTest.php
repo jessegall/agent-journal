@@ -154,7 +154,7 @@ final class HelperCompletionTest extends TestCase
     {
         Event::fake([HelperCompletionCertified::class]);
         $start = TestStart::start('read-only-helper');
-        SessionPolicy::freeze($start->session, StartPolicy::mainOnHost('/workspace'));
+        SessionPolicy::create($start->session, StartPolicy::mainOnHost('/workspace'));
         $this->startedFor($start);
 
         $decision = $this->stop($start, 'stop-1');
@@ -214,7 +214,7 @@ final class HelperCompletionTest extends TestCase
     {
         $start = TestStart::start('writing-helper');
         $policy = StartPolicy::mainOnHost('/workspace');
-        SessionPolicy::freeze($start->session, new StartPolicy(
+        SessionPolicy::create($start->session, new StartPolicy(
             $policy->access,
             StopConditions::make([StopCondition::cleanWorktree()]),
             $policy->execution,

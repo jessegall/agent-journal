@@ -83,7 +83,7 @@ final readonly class ReadShareHandler implements CommandHandler
         }
 
         $page = $this->read($share, $path->target($root), $path, $command);
-        ShareAudit::recordFor($share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
+        ShareAudit::create($share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
 
         return $page;
     }
@@ -221,7 +221,7 @@ final readonly class ReadShareHandler implements CommandHandler
 
     private function deny(Share $share, string $reason): SharedPage
     {
-        ShareAudit::recordFor($share, ShareAuditType::ReadDenied, ActorIdentity::system(), $reason);
+        ShareAudit::create($share, ShareAuditType::ReadDenied, ActorIdentity::system(), $reason);
 
         return SharedPage::denied();
     }

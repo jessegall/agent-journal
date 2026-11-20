@@ -44,7 +44,7 @@ final class ReviewRuleTest extends TestCase
             ActorContext::forUser(TestIds::of(7)),
             new OwnerAuthority('test'),
         );
-        $this->proposed = Rule::proposed(
+        $this->proposed = Rule::create(
             'No phase waits on the user.',
             'Agents keep forgetting it.',
             null,

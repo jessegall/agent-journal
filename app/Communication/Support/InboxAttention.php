@@ -32,7 +32,7 @@ final readonly class InboxAttention
                 continue;
             }
 
-            MessageAttention::record($origin, $inbox->inboxId(), $actor, $this->attention->request($actor, $origin));
+            MessageAttention::create($origin, $inbox->inboxId(), $actor, $this->attention->request($actor, $origin));
         }
     }
 }

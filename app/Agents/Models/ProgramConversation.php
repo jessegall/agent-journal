@@ -40,7 +40,7 @@ final class ProgramConversation extends Model implements ReadableModel
     /**
      * The conversation a session first enters, under the host settings it ran with.
      */
-    public static function begin(
+    public static function create(
         AgentSession $session,
         string $settingsIdentity,
         string $nativeId,

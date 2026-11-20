@@ -69,7 +69,7 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
      *
      * @param  list<string>  $steps
      */
-    public static function written(string $name, array $steps): self
+    public static function create(string $name, array $steps): self
     {
         $run = new self();
         $run->name = $name;

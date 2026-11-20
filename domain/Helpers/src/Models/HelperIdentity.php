@@ -67,7 +67,7 @@ final class HelperIdentity extends Model implements ReadableModel
      * Declares the parent's helper for the agent actor it represents; Agents offers it only while that actor is an
      * agent with the same profile key.
      */
-    public static function declare(
+    public static function create(
         ActorIdentity $parent,
         ActorIdentity $helper,
         string $profileKey,
@@ -79,23 +79,6 @@ final class HelperIdentity extends Model implements ReadableModel
         $identity->helper_actor_type = $helper->type->value;
         $identity->helper_actor_id = $helper->id;
         $identity->belongTo($parent);
-        $identity->save();
-
-        return $identity;
-    }
-
-    /**
-     * Declares the one helper the whole installation keeps for a profile whose instances are single; the unique
-     * designation refuses a second one.
-     */
-    public static function declareDesignated(
-        ActorIdentity $parent,
-        ActorIdentity $helper,
-        string $profileKey,
-        string $profileBase,
-    ): self {
-        $identity = self::declare($parent, $helper, $profileKey, $profileBase);
-        $identity->designated_profile = $profileKey;
         $identity->save();
 
         return $identity;
@@ -114,6 +97,18 @@ final class HelperIdentity extends Model implements ReadableModel
     }
 
     // ----------[ Mutations ]----------
+
+    /**
+     * Makes this the one helper the whole installation keeps for a profile whose instances are single; the unique
+     * designation refuses a second one.
+     */
+    public function designate(): self
+    {
+        $this->designated_profile = $this->profile_key;
+        $this->save();
+
+        return $this;
+    }
 
     /**
      * Gives up this helper's designation once its agent retired, so a replacement can take it; a designation another

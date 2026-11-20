@@ -48,7 +48,7 @@ final readonly class ProveReaderHandler implements CommandHandler
         }
 
         $branches = $this->check->prove($request, $reader, $declaration->payload->contracts[0], $command->runIds);
-        $proof = ReaderProof::record($reader, $declaration, $branches, ActorIdentity::of($command->dispatchedBy()));
+        $proof = ReaderProof::create($reader, $declaration, $branches, ActorIdentity::of($command->dispatchedBy()));
         $request->prove();
 
         return $proof->id;

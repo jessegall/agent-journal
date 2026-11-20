@@ -106,7 +106,7 @@ final class SkillPreviewTest extends TestCase
 
     private function start(string $name, string $profileKey, int|null $profileRevision): Agent
     {
-        $agent = Agent::named($name, $profileKey);
+        $agent = Agent::create($name, $profileKey);
         $session = new AgentSession(
             [
                 ...TestSelections::sessionColumns(),

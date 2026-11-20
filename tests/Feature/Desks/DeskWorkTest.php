@@ -46,9 +46,9 @@ final class DeskWorkTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $desk = DeskRecord::openNamed('team', 'Team', 2, false);
-        $first = Agent::named('First', 'read-only-helper');
-        $second = Agent::named('Second', 'read-only-helper');
-        $outsider = Agent::named('Outsider', 'read-only-helper');
+        $first = Agent::create('First', 'read-only-helper');
+        $second = Agent::create('Second', 'read-only-helper');
+        $outsider = Agent::create('Outsider', 'read-only-helper');
 
         foreach ([$first, $second] as $agent) {
             $this->app->make(AssignmentTransaction::class)->run(
@@ -58,8 +58,8 @@ final class DeskWorkTest extends TestCase
 
         $task = Task::factory()->create();
         $plan = Plan::factory()->create();
-        AssignmentRecord::holding($task->assignmentIdentity(), $desk->assigneeIdentity());
-        AssignmentRecord::holding($plan->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::create($task->assignmentIdentity(), $desk->assigneeIdentity());
+        AssignmentRecord::create($plan->assignmentIdentity(), $desk->assigneeIdentity());
         $assignments = $this->app->make(AssignmentResolver::class);
 
         foreach ([$first, $second] as $agent) {

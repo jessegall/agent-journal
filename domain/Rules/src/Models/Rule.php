@@ -75,23 +75,10 @@ final class Rule extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * A rule that holds at once, as one a user writes.
-     */
-    public static function holding(string $text): self
-    {
-        $rule = new self();
-        $rule->text = $text;
-        $rule->state = RuleState::Active;
-        $rule->save();
-
-        return $rule;
-    }
-
-    /**
      * A rule proposed with its reason, the rule it would replace if any, and who proposed it; it holds only once the
      * user approves it.
      */
-    public static function proposed(
+    public static function create(
         string $text,
         string $reason,
         string|null $replacesRuleId,

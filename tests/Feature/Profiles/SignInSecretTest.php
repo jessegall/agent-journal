@@ -120,7 +120,7 @@ final class SignInSecretTest extends TestCase
      */
     private function verifiedKey(string $requestKey, string $key): SignInAttempt
     {
-        $attempt = SignInAttempt::forNewAccount(
+        $attempt = SignInAttempt::create(
             ActorIdentity::of(ActorContext::forUser(TestIds::of(1))),
             HookProgram::ClaudeCode,
             SignInMethod::ApiKey,
@@ -141,7 +141,7 @@ final class SignInSecretTest extends TestCase
 
     private function attempt(HookProgram $program, SignInMethod $method, string $requestKey): SignInAttempt
     {
-        return SignInAttempt::forNewAccount(
+        return SignInAttempt::create(
             ActorIdentity::system(),
             $program,
             $method,

@@ -53,7 +53,7 @@ final class DeskPlanAssignmentTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $main = DeskRecord::openNamed('main', 'Main inbox', 1, true);
-        $agent = Agent::named('Main', 'main-agent');
+        $agent = Agent::create('Main', 'main-agent');
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
         );

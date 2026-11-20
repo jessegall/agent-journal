@@ -74,7 +74,7 @@ final class PageChangeTest extends TestCase
 
     public function test_choosing_an_account_changes_the_accounts_page_once(): void
     {
-        $account = Account::signedIn(HookProgram::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
+        $account = Account::create(HookProgram::Codex, AccountLabel::from('Work'), '/journal/accounts/work');
 
         $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));
         $this->app->make(CommandBus::class)->run(new SwitchAccount($account->id));

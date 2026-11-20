@@ -99,7 +99,7 @@ final class SkillRevision extends Model implements ReadableModel
      * Appends the draft as the skill's next revision, numbered after every earlier one; the caller holds the skill's
      * lock, so two revisions never take one number.
      */
-    public static function appendTo(
+    public static function create(
         Skill $skill,
         SkillDraft $draft,
         SkillCondition $condition,

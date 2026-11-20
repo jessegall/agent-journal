@@ -51,7 +51,7 @@ final class HelperNotice extends Model implements ReadableModel
         return ['job_state' => JobState::class, 'delivered_at' => 'immutable_datetime'];
     }
 
-    public static function leave(HelperJob $job, string $text): self
+    public static function create(HelperJob $job, string $text): self
     {
         $notice = new self();
         $notice->helper_identity_id = $job->helper_identity_id;

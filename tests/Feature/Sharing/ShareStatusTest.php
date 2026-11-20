@@ -13,6 +13,7 @@ use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareMember;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -77,7 +78,7 @@ final class ShareStatusTest extends TestCase
         TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
-        $this->configuration = ShareGatewayConfiguration::configure(
+        $this->configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
     }
@@ -89,24 +90,30 @@ final class ShareStatusTest extends TestCase
 
         $this->assertFalse($status->isPubliclyShared($this->document->shareIdentity()));
 
-        $expired = Share::grant(
+        $expired = Share::create(
             $this->document->shareIdentity(),
-            $this->owner->id,
-            $this->configuration,
-            ShareToken::generate(),
             CarbonImmutable::now()->subMinute(),
+            new ShareGrant(
+                $this->owner->id,
+                $this->configuration->id,
+                $this->configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
 
         $this->assertFalse($status->isPubliclyShared($expired->root()));
 
-        $share = Share::grant(
+        $share = Share::create(
             $root,
-            $this->owner->id,
-            $this->configuration,
-            ShareToken::generate(),
             CarbonImmutable::now()->addDays(7),
+            new ShareGrant(
+                $this->owner->id,
+                $this->configuration->id,
+                $this->configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
-        ShareMember::approve(
+        ShareMember::create(
             $share,
             $root,
             new ShareSelectedTarget($this->document->shareIdentity(), TestIds::of(6), '1'),
@@ -122,12 +129,15 @@ final class ShareStatusTest extends TestCase
             fn (AssertableInertia $page) => $page->where('page.data.record.publiclyShared', false),
         );
 
-        Share::grant(
+        Share::create(
             $this->document->shareIdentity(),
-            $this->owner->id,
-            $this->configuration,
-            ShareToken::generate(),
             CarbonImmutable::now()->addDays(7),
+            new ShareGrant(
+                $this->owner->id,
+                $this->configuration->id,
+                $this->configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
 
         $this->actingAs($this->owner)->get('/documents/docs/1')->assertOk()->assertInertia(

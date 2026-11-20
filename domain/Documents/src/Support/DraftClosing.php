@@ -68,7 +68,7 @@ final readonly class DraftClosing
         try {
             $this->closeLocked($document, $held, CloseCause::Lifecycle, null, null);
         } catch (DraftMarkdownInvalid $invalid) {
-            $kept = RetainedDraft::keep($held, $invalid->getMessage());
+            $kept = RetainedDraft::create($held, $invalid->getMessage());
             $this->provenance->inherit($kept, $held);
             $held->delete();
             $this->events->dispatch(new DraftKept($kept->id, $document->id, $this->provenance->parentOf($kept)));

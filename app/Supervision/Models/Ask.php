@@ -189,7 +189,7 @@ final class Ask extends Model implements Assignable, ReadableModel
         $this->pending_target = null;
         $this->save();
 
-        return AskHop::recordAcceptance($this, $holder, $routeVersion);
+        return AskHop::create($this, $holder, $routeVersion);
     }
 
     /**

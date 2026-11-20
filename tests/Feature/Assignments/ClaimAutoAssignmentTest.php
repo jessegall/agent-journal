@@ -63,7 +63,7 @@ final class ClaimAutoAssignmentTest extends TestCase
     {
         $this->assertSame(AutoAssignmentClaimType::Off, $this->claim($this->key)->type);
         $this->startUserRequestAs($this->owner->id);
-        $inactive = ActorIdentity::of(Agent::named('Inactive', 'writing-helper'));
+        $inactive = ActorIdentity::of(Agent::create('Inactive', 'writing-helper'));
         $key = new AutoAssignmentKey($inactive, $this->key->assignableType);
         $this->enable($key);
         $this->enable($this->key);

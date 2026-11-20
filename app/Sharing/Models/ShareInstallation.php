@@ -59,7 +59,7 @@ final class ShareInstallation extends Model implements ReadableModel
      * The installation row, locked until the transaction ends. It is made by an insert that does nothing when it
      * exists, so two first writers never abort each other.
      */
-    public static function lockForAdmission(): self
+    public static function create(): self
     {
         $now = CarbonImmutable::now();
 

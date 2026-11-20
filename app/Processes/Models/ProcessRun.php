@@ -106,7 +106,7 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * A run admitted for the actor, queued with its plan and nothing started yet.
      */
-    public static function admit(ActorIdentity $actor, RunAdmission $admission): self
+    public static function create(ActorIdentity $actor, RunAdmission $admission): self
     {
         $run = new self();
         $run->admission_id = $admission->admissionId;

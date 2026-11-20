@@ -63,7 +63,7 @@ final class SessionPolicyTest extends TestCase
 
     private function startUnder(StartPolicy $policy): StartReceipt
     {
-        $agent = Agent::named('Frozen policy agent', 'read-only-helper');
+        $agent = Agent::create('Frozen policy agent', 'read-only-helper');
 
         return $this->app->make(CommandBus::class)->run(new StartAgent(new StartRequest(
             TestSelections::requestId(),

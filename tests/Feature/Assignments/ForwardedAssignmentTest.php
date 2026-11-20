@@ -48,7 +48,7 @@ final class ForwardedAssignmentTest extends TestCase
     public function test_a_task_given_to_the_actor_at_main_is_held_by_main_and_names_both(): void
     {
         $main = DeskRecord::query()->named('main')->sole();
-        $agent = $this->withDesk(Agent::named('Main', 'main-agent'));
+        $agent = $this->withDesk(Agent::create('Main', 'main-agent'));
         $this->app->make(AssignmentTransaction::class)->run(
             fn () => $this->app->make(DeskSeating::class)->seat($main->id, ActorIdentity::of($agent)),
         );
@@ -65,7 +65,7 @@ final class ForwardedAssignmentTest extends TestCase
 
     public function test_an_actor_without_a_forwarding_seat_keeps_the_task(): void
     {
-        $agent = $this->withDesk(Agent::named('Builder', 'read-only-helper'));
+        $agent = $this->withDesk(Agent::create('Builder', 'read-only-helper'));
         $task = Task::factory()->create()->assignmentIdentity();
 
         $this->app->make(RequestKey::class)->set((string) Str::ulid());
@@ -77,7 +77,7 @@ final class ForwardedAssignmentTest extends TestCase
 
     public function test_a_retry_with_the_same_key_returns_the_first_result_after_the_assignment_was_removed(): void
     {
-        $agent = $this->withDesk(Agent::named('Builder', 'read-only-helper'));
+        $agent = $this->withDesk(Agent::create('Builder', 'read-only-helper'));
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-the-builder');
@@ -94,8 +94,8 @@ final class ForwardedAssignmentTest extends TestCase
 
     public function test_a_changed_recipient_under_the_same_key_conflicts(): void
     {
-        $builder = $this->withDesk(Agent::named('Builder', 'read-only-helper'));
-        $reviewer = $this->withDesk(Agent::named('Reviewer', 'read-only-helper'));
+        $builder = $this->withDesk(Agent::create('Builder', 'read-only-helper'));
+        $reviewer = $this->withDesk(Agent::create('Reviewer', 'read-only-helper'));
         $task = Task::factory()->create()->assignmentIdentity();
         $bus = $this->app->make(CommandBus::class);
         $this->app->make(RequestKey::class)->set('assign-once');

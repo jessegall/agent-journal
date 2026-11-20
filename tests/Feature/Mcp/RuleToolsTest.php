@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use Domain\Rules\Models\Rule;
 use Tests\Fixtures\Agents\TestStart;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\HoldingRules;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -24,7 +24,7 @@ final class RuleToolsTest extends TestCase
     public function test_an_agent_proposes_a_rule_and_reads_both_rule_states(): void
     {
         $caller = TestStart::start();
-        $active = Rule::holding('Use a named request key.');
+        $active = HoldingRules::create('Use a named request key.');
 
         $proposal = $this->callMcpTool($caller, 'rules_propose', [
             'text' => 'Use the same request key on retry.',
@@ -65,7 +65,7 @@ final class RuleToolsTest extends TestCase
         $this->assertEqualsCanonicalizing(['rules_list', 'rules_read', 'rules_propose'], $ruleTools);
         $this->sendMcp($caller, 'tools/call', [
             'name' => 'rules_approve',
-            'arguments' => ['rule_id' => Rule::holding('A rule.')->id],
+            'arguments' => ['rule_id' => HoldingRules::create('A rule.')->id],
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
     }
 }

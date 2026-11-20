@@ -175,7 +175,7 @@ final class SignInAgainTest extends TestCase
     public function test_a_key_another_account_already_holds_ends_already_added(): void
     {
         $this->account->forceFill(['method' => SignInMethod::ApiKey, 'fingerprint' => 'old'])->save();
-        $other = Account::signedIn(HookProgram::Codex, AccountLabel::from('Other'), '/journal/accounts/other');
+        $other = Account::create(HookProgram::Codex, AccountLabel::from('Other'), '/journal/accounts/other');
         $other->forceFill(['fingerprint' => 'shared'])->save();
         $saved = $this->account->directory;
         [$attemptId] = $this->waitingReconnect();

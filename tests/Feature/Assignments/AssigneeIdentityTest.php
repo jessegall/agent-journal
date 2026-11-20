@@ -42,7 +42,7 @@ final class AssigneeIdentityTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::named('Builder', 'read-only-helper');
+        $agent = Agent::create('Builder', 'read-only-helper');
         $task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($owner->id);
         $bus = $this->app->make(CommandBus::class);

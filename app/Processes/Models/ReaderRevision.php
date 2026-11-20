@@ -67,7 +67,7 @@ final class ReaderRevision extends Model implements ReadableModel
     /**
      * A draft reader for the request's operation, written for one declaration revision and its output contract.
      */
-    public static function propose(
+    public static function create(
         CommandRequest $request,
         int $declarationRevision,
         string $contractLabel,

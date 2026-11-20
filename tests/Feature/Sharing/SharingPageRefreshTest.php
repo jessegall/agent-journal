@@ -85,9 +85,9 @@ final class SharingPageRefreshTest extends TestCase
     public function test_activating_a_share_sends_the_owner_a_page_change_with_nothing_in_it(): void
     {
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-        $configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         TestShares::grantForADay(TestActors::record('binders.binder', 1), $configuration);
-        ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
+        ShareGatewayOperation::create($configuration, GatewayOperationType::Open);
         $claim = $this->asSystem(new ClaimGatewayOperation(self::RUN));
         $this->assertInstanceOf(ClaimedGatewayOperation::class, $claim);
         Event::fake([PageChanged::class]);

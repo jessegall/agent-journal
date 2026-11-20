@@ -29,7 +29,7 @@ final readonly class CreateDocumentHandler extends DocumentCommandHandler
     {
         $actor = $command->dispatchedBy();
         $body = $this->bodies->read($command->body, $command->uploadId, UploadType::DocumentBody);
-        $document = Document::publish($command->title, $command->abstract, MarkdownText::body($body), $actor);
+        $document = Document::create($command->title, $command->abstract, MarkdownText::body($body), $actor);
         $this->provenance->record($document);
         $this->provenance->record($document->currentRevisionOrFail());
         $this->links->linkFrom($document, $command->relatedRecords);

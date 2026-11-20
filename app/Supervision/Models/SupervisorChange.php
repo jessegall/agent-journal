@@ -33,7 +33,7 @@ final class SupervisorChange extends Model implements ReadableModel
         self::updating(fn () => throw SupervisorRouteRefused::historyEdited());
     }
 
-    public static function record(
+    public static function create(
         SupervisorLink $link,
         ActorIdentity $author,
         AskTypeKey|null $type,

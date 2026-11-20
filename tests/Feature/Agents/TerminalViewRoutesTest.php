@@ -84,7 +84,7 @@ final class TerminalViewRoutesTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
 
         for ($view = 0; $view < TerminalView::MAX_PER_VIEWER; $view++) {
-            TerminalView::open($this->viewerOf($this->owner), $runtime, 500, CarbonImmutable::now());
+            TerminalView::create($this->viewerOf($this->owner), $runtime, 500, CarbonImmutable::now());
         }
 
         $this->assertRefusal($runtime->session->agent_id, 429, 'You may have at most 20 terminal views open');
@@ -112,7 +112,7 @@ final class TerminalViewRoutesTest extends TestCase
         $runtime = $this->runtimeOn('host-1');
         $agentId = $runtime->session->agent_id;
         $viewer = TestActors::agentIdentity(9);
-        $view = TerminalView::open($viewer, $runtime, 500, CarbonImmutable::now());
+        $view = TerminalView::create($viewer, $runtime, 500, CarbonImmutable::now());
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($viewer->id),
             TestStartAuthority::forAgent($viewer->id),

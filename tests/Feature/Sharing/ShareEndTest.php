@@ -17,7 +17,9 @@ use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Support\ShareExpiry;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareLinkResolver;
+use App\Sharing\Support\ShareProposal;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -49,7 +51,7 @@ final class ShareEndTest extends TestCase
         parent::setUp();
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
     }
 
     public function test_a_revoke_while_the_gateway_is_offline_commits_and_leaves_a_pending_close(): void
@@ -89,10 +91,10 @@ final class ShareEndTest extends TestCase
 
     public function test_a_revoke_dismisses_a_proposal_without_a_close(): void
     {
-        $proposal = Share::propose(
+        $proposal = Share::create(
             TestActors::record('binders.binder', 1),
-            TestActors::agentIdentity(5),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+            new ShareProposal(TestActors::agentIdentity(5)),
         );
 
         $this->assertSame(ShareState::Revoked, $this->revoke($proposal, '01JD8X0G9M3QZ6V4K2REVOKE01')->state);
@@ -112,10 +114,10 @@ final class ShareEndTest extends TestCase
     public function test_expire_shares_run_twice_audits_each_expiry_once(): void
     {
         $overdue = $this->activeShare(CarbonImmutable::now()->subMinute());
-        $proposal = Share::propose(
+        $proposal = Share::create(
             TestActors::record('binders.binder', 2),
-            TestActors::agentIdentity(5),
             CarbonImmutable::now()->subMinute(),
+            new ShareProposal(TestActors::agentIdentity(5)),
         );
         $current = $this->activeShare(CarbonImmutable::now()->addDay());
 
@@ -133,10 +135,10 @@ final class ShareEndTest extends TestCase
     public function test_expire_shares_takes_at_most_a_hundred_and_says_more_wait(): void
     {
         for ($index = 0; $index <= 100; $index++) {
-            Share::propose(
+            Share::create(
                 TestActors::record('binders.binder', 1000 + $index),
-                TestActors::agentIdentity(5),
                 CarbonImmutable::now()->subMinute(),
+                new ShareProposal(TestActors::agentIdentity(5)),
             );
         }
 
@@ -156,12 +158,15 @@ final class ShareEndTest extends TestCase
 
     private function activeShare(CarbonImmutable $expiresAt): Share
     {
-        $share = Share::grant(
+        $share = Share::create(
             TestActors::record('binders.binder', 1),
-            TestIds::of(9),
-            $this->configuration,
-            ShareToken::generate(),
             $expiresAt,
+            new ShareGrant(
+                TestIds::of(9),
+                $this->configuration->id,
+                $this->configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
         $share->state = ShareState::Active;
         $share->save();

@@ -63,7 +63,7 @@ final class ReaderProof extends Model implements ReadableModel
     /**
      * @param  list<ProvenBranch>  $branches
      */
-    public static function record(
+    public static function create(
         ReaderRevision $reader,
         RuleProposalRevision $declaration,
         array $branches,

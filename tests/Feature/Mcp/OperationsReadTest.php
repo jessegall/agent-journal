@@ -135,7 +135,7 @@ final class OperationsReadTest extends TestCase
 
     private function receipt(string $sessionId, CascadeResult $result): void
     {
-        CommandReceipt::take(
+        CommandReceipt::create(
             ReceiptCaller::inSession(ActorContext::forAgent($this->start->agent->id), $sessionId),
             self::KEY,
             new stdClass(),

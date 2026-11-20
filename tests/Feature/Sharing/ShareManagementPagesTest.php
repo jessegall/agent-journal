@@ -16,6 +16,7 @@ use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Models\SharePreview;
+use App\Sharing\Support\ShareProposal;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -92,7 +93,7 @@ final class ShareManagementPagesTest extends TestCase
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->plan->linkTo($this->document);
         $this->app->make(CurrentActorSetter::class)->clear();
-        $configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
+        $configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
         $configuration->is_default = true;
         $configuration->save();
     }
@@ -168,10 +169,10 @@ final class ShareManagementPagesTest extends TestCase
 
     public function test_the_owner_approves_a_proposal_from_a_saved_preview(): void
     {
-        $proposal = Share::propose(
+        $proposal = Share::create(
             $this->plan->shareIdentity(),
-            new ActorIdentity(ActorType::Agent, $this->owner->id),
             CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+            new ShareProposal(new ActorIdentity(ActorType::Agent, $this->owner->id)),
         );
         $this->savePreview();
 
@@ -195,10 +196,10 @@ final class ShareManagementPagesTest extends TestCase
         $share = $this->createShare();
 
         for ($index = 0; $index < 26; $index++) {
-            Share::propose(
+            Share::create(
                 $this->plan->shareIdentity(),
-                new ActorIdentity(ActorType::Agent, $this->owner->id),
                 CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+                new ShareProposal(new ActorIdentity(ActorType::Agent, $this->owner->id)),
             );
         }
 

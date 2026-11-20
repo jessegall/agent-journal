@@ -70,7 +70,7 @@ final class StopResult extends Model implements ReadableModel
         ];
     }
 
-    public static function record(StopAttempt $attempt, StopResultReport $report): self
+    public static function create(StopAttempt $attempt, StopResultReport $report): self
     {
         $stopRecord = new self();
         $stopRecord->stop_attempt_id = $attempt->id;

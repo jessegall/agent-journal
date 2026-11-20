@@ -100,7 +100,7 @@ final class MenuEntry extends Model implements ReadableModel
      *
      * @param  non-empty-list<MenuStep>  $steps
      */
-    public static function proven(
+    public static function create(
         ActorIdentity $owner,
         NavigationRequest $source,
         array $steps,

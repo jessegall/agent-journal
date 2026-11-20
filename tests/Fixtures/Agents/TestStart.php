@@ -37,7 +37,7 @@ final readonly class TestStart
 
     public static function start(string $profileKey = 'main-agent'): self
     {
-        $agent = Agent::named('Test agent', $profileKey);
+        $agent = Agent::create('Test agent', $profileKey);
         $sessions = Container::getInstance()->make(AgentSessions::class);
         $session = $sessions->start($agent, TestSelections::of(), TestSelections::requestId());
 
@@ -54,9 +54,9 @@ final readonly class TestStart
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
         $app->make(CurrentActorSetter::class)->set(
-ActorContext::forAgent($this->agent->id),
- TestStartAuthority::forAgent($this->agent->id),
-);
+            ActorContext::forAgent($this->agent->id),
+            TestStartAuthority::forAgent($this->agent->id),
+        );
     }
 
     /**
@@ -89,14 +89,13 @@ ActorContext::forAgent($this->agent->id),
      * @return array<string, string>
      */
     public function serverHeaders(
-string $body,
- string $callId = 'call-1',
- int|null $issuedAt = null,
- string|null $signingToken = null,
- string $method = 'POST',
- string $target = '/',
-): array
-    {
+        string $body,
+        string $callId = 'call-1',
+        int|null $issuedAt = null,
+        string|null $signingToken = null,
+        string $method = 'POST',
+        string $target = '/',
+    ): array {
         $issuedAt ??= time();
         $pin = $this->pin();
         $token = $signingToken ?? $this->token;

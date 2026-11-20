@@ -15,6 +15,7 @@ use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Support\ShareAuditResolver;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -48,22 +49,25 @@ final class ShareAuditViewTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->share = Share::grant(
+        $this->configuration = ShareGatewayConfiguration::create(FakeShareGateway::settings());
+        $this->share = Share::create(
             TestActors::record('binders.binder', 1),
-            $this->owner->id,
-            $this->configuration,
-            ShareToken::generate(),
             CarbonImmutable::now()->addDay(),
+            new ShareGrant(
+                $this->owner->id,
+                $this->configuration->id,
+                $this->configuration->configuration_version,
+                ShareToken::generate(),
+            ),
         );
-        ShareAudit::recordFor(
+        ShareAudit::create(
             $this->share,
             ShareAuditType::Created,
             new ActorIdentity(ActorType::User, $this->owner->id),
             null,
         );
-        ShareAudit::recordFor($this->share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
-        ShareAudit::recordFor($this->share, ShareAuditType::ReadDenied, ActorIdentity::system(), 'rate_limited');
+        ShareAudit::create($this->share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
+        ShareAudit::create($this->share, ShareAuditType::ReadDenied, ActorIdentity::system(), 'rate_limited');
     }
 
     public function test_reads_show_an_unknown_visitor_apart_from_the_lifecycle(): void
@@ -85,7 +89,7 @@ final class ShareAuditViewTest extends TestCase
     public function test_the_audit_pages_on_and_carries_the_pruned_totals(): void
     {
         for ($index = 0; $index < 50; $index++) {
-            ShareAudit::recordFor($this->share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
+            ShareAudit::create($this->share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
         }
 
         $this->share->pruned_allowed_reads = 7;
@@ -111,8 +115,8 @@ final class ShareAuditViewTest extends TestCase
             ->where('page.data.runtime.isOffline', true)
             ->where('page.data.runtime.endpointVersion', null));
 
-        ShareInstallation::lockForAdmission()->holdFor(self::RUN);
-        $endpoint = ShareGatewayEndpoint::openFor($this->configuration, 1, self::RUN);
+        ShareInstallation::create()->holdFor(self::RUN);
+        $endpoint = ShareGatewayEndpoint::create($this->configuration, 1, self::RUN);
         $endpoint->moveTo(GatewayEndpointState::Open);
         $endpoint->recordHealthy();
 

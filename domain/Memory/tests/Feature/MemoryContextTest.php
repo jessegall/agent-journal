@@ -38,7 +38,7 @@ final class MemoryContextTest extends TestCase
     {
         parent::setUp();
 
-        $this->memory = Memory::keep(
+        $this->memory = Memory::create(
             new ActorIdentity(ActorType::Agent, TestIds::of(1)),
             'Run migrate:fresh after a create-migration edit.',
             6,

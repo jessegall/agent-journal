@@ -13,6 +13,7 @@ use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\ShareGrant;
 use App\Sharing\Support\ShareReadLimits;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -83,7 +84,7 @@ final class SharingListenerTest extends TestCase
 
         TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
-        $configuration = ShareGatewayConfiguration::configure(
+        $configuration = ShareGatewayConfiguration::create(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
         );
         $this->configuration = $configuration;
@@ -236,7 +237,16 @@ final class SharingListenerTest extends TestCase
     private function activeShareOf(RecordIdentity $root): string
     {
         $token = ShareToken::generate();
-        $share = Share::grant($root, TestIds::of(9), $this->configuration, $token, CarbonImmutable::now()->addDay());
+        $share = Share::create(
+            $root,
+            CarbonImmutable::now()->addDay(),
+            new ShareGrant(
+                TestIds::of(9),
+                $this->configuration->id,
+                $this->configuration->configuration_version,
+                $token,
+            ),
+        );
         $share->state = ShareState::Active;
         $share->save();
 

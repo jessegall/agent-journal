@@ -116,7 +116,7 @@ final class RecordHeartbeatTest extends TestCase
     private function start(): StartedAgent
     {
         $started = $this->app->make(StartSessions::class)->start(
-            Agent::named('Test agent', 'main-agent'),
+            Agent::create('Test agent', 'main-agent'),
             TestSelections::of('claude-code'),
             TestSelections::requestId(),
         );

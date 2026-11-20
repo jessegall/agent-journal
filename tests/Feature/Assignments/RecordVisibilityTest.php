@@ -44,8 +44,8 @@ final class RecordVisibilityTest extends TestCase
         $this->installNotesModule();
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $this->writer = Agent::named('Writer', 'main-agent');
-        $this->resolver = Agent::named('Reader', 'main-agent');
+        $this->writer = Agent::create('Writer', 'main-agent');
+        $this->resolver = Agent::create('Reader', 'main-agent');
         $this->note = new Note(['text' => 'Check the lock order']);
         $this->note->saveFor($this->writer->id);
     }

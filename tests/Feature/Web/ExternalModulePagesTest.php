@@ -52,7 +52,7 @@ final class ExternalModulePagesTest extends TestCase
     public function test_the_modules_page_and_record_page_are_served_and_listed_like_any_domains(): void
     {
         $this->installNotes();
-        $writer = Agent::named('Writer', 'read-only-helper');
+        $writer = Agent::create('Writer', 'read-only-helper');
         $note = new Note(['text' => 'Check the lock order']);
         $note->saveFor($writer->id);
         $month = $note->created_at?->format('Y-m');

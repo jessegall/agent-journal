@@ -45,7 +45,7 @@ final readonly class CodeReviewDecisions
         $ask = $this->asks->lock($reference);
         $this->admission->requireCurrent($reference, CoreAskType::ReviewReady->requiredCommand(), $expectedVersion);
         $review = CodeReview::openFor($reference);
-        $made = ReviewDecision::decide($review, $decision, $reviewer, $findings);
+        $made = ReviewDecision::create($review, $decision, $reviewer, $findings);
         $hop = AskHop::currentFor($ask);
         $this->attention->retainReply($ask, $hop, "Review {$decision->value}: {$findings}");
         $this->assignments->releaseForJournal($ask->assignmentIdentity());

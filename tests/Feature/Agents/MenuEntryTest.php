@@ -114,7 +114,7 @@ final class MenuEntryTest extends TestCase
     {
         $source = $this->raise($this->stalledScript(), 'raise-1');
 
-        return MenuEntry::proven(
+        return MenuEntry::create(
             new ActorIdentity(ActorType::User, 'owner'),
             $source,
             $this->steps(),

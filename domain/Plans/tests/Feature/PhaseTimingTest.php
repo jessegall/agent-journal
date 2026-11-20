@@ -44,7 +44,7 @@ final class PhaseTimingTest extends TestCase
     {
         parent::setUp();
 
-        $this->agent = Agent::named('Worker', 'writing-helper');
+        $this->agent = Agent::create('Worker', 'writing-helper');
         $this->plan = Plan::factory()->create(['title' => 'Phase timing', 'state' => PlanState::Started]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
         $this->plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));

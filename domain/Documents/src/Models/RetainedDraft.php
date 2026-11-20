@@ -51,7 +51,7 @@ final class RetainedDraft extends Model implements ReadableModel
         self::updating(fn () => throw RecordImmutable::for('retained draft'));
     }
 
-    public static function keep(DocumentDraft $draft, string $reason): self
+    public static function create(DocumentDraft $draft, string $reason): self
     {
         return self::query()->create([
             'document_id' => $draft->document_id,
