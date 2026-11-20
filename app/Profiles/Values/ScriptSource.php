@@ -10,7 +10,9 @@ final readonly class ScriptSource
 {
     public const int MAX_BYTES = 262144;
 
-    /** @param list<NamedCommand> $commands */
+    /**
+     * @param list<NamedCommand> $commands
+     */
     public function __construct(public string $text = '', public array $commands = [])
     {
         if (strlen($text) > self::MAX_BYTES || count($commands) > 64) {
@@ -18,7 +20,9 @@ final readonly class ScriptSource
         }
     }
 
-    /** @param array<string, mixed> $commands */
+    /**
+     * @param array<string, mixed> $commands
+     */
     public static function fromDefinitions(string $text, array $commands): self
     {
         $definitions = [];
@@ -32,7 +36,9 @@ final readonly class ScriptSource
         return new self($text, array_values($definitions));
     }
 
-    /** @return array<string, NamedCommand> */
+    /**
+     * @return array<string, NamedCommand>
+     */
     public function definitions(): array
     {
         return array_column($this->commands, null, 'key');

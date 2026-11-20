@@ -18,7 +18,9 @@ use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Http\Data\TaskExecutionData;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 
-/** Reads a page of task cards, with the continuation of a shortened page. */
+/**
+ * Reads a page of task cards, with the continuation of a shortened page.
+ */
 abstract class TaskListTool extends JournalReadTool
 {
     public function __construct(private readonly NumberedPages $pages) {}

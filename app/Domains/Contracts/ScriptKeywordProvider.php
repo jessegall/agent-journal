@@ -8,6 +8,8 @@ use App\Scripts\Contracts\ScriptKeywordDefinition;
 
 interface ScriptKeywordProvider
 {
-    /** @return list<ScriptKeywordDefinition> */
+    /**
+     * @return list<ScriptKeywordDefinition>
+     */
     public function scriptKeywords(): array;
 }

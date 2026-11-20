@@ -73,7 +73,9 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
         return $agents->keyBy('id')->all();
     }
 
-    /** @return Option<ActorIdentity> */
+    /**
+     * @return Option<ActorIdentity>
+     */
     public static function soleActorForProfile(string $profile): Option
     {
         $matches = self::query()

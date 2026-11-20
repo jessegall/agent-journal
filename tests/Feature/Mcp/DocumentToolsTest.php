@@ -80,7 +80,10 @@ final class DocumentToolsTest extends TestCase
         ])->assertBadRequest()->assertJsonPath('error.code', -32602);
 
         $id = $this->callMcpTool($reviewer, 'reports_create', [
-            'title' => 'Evidence', 'abstract' => 'First report.', 'body' => '# Findings', 'request_key' => 'first-report',
+            'title' => 'Evidence',
+            'abstract' => 'First report.',
+            'body' => '# Findings',
+            'request_key' => 'first-report',
         ])->assertJsonPath('result.isError', false)->json('result.structuredContent.report_id');
         $this->callMcpTool($reviewer, 'reports_read', ['report_id' => $id, 'view' => 'body'])
             ->assertJsonPath('result.structuredContent.body', '# Findings');
@@ -109,7 +112,10 @@ final class DocumentToolsTest extends TestCase
     private function upload(TestStart $caller, string $type, string $body, string $key): string
     {
         $upload = $this->callMcpTool($caller, 'uploads_begin', [
-            'type' => $type, 'bytes' => strlen($body), 'digest' => hash('sha256', $body), 'request_key' => $key.'-begin',
+            'type' => $type,
+            'bytes' => strlen($body),
+            'digest' => hash('sha256', $body),
+            'request_key' => $key.'-begin',
         ])->assertJsonPath('result.isError', false)->json('result.structuredContent.upload_id');
         foreach (str_split($body, 48 * 1024) as $index => $part) {
             $this->callMcpTool($caller, 'uploads_append', [
@@ -123,7 +129,9 @@ final class DocumentToolsTest extends TestCase
         return $upload;
     }
 
-    /** @return list<array<string, mixed>> */
+    /**
+     * @return list<array<string, mixed>>
+     */
     private function catalogue(TestStart $caller): array
     {
         $tools = [];

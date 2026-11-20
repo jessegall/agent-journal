@@ -10,7 +10,9 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class VisibleToProfiles
 {
-    /** @var list<DiscoveryProfile> */
+    /**
+     * @var list<DiscoveryProfile>
+     */
     public array $profiles;
 
     public function __construct(DiscoveryProfile ...$profiles)

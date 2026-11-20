@@ -15,7 +15,9 @@ final class NavigationScreenCast implements CastsAttributes
 {
     public function get(Model $model, string $key, mixed $value, array $attributes): NavigationScreen
     {
-        /** @var array{rows: list<string>, highlight: int|null, generation: int} $screen */
+        /**
+         * @var array{rows: list<string>, highlight: int|null, generation: int} $screen
+         */
         $screen = json_decode((string) $value, true, flags: JSON_THROW_ON_ERROR);
 
         return new NavigationScreen($screen['rows'], $screen['highlight'], $screen['generation']);

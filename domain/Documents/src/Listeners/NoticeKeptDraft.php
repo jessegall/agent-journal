@@ -16,7 +16,8 @@ final readonly class NoticeKeptDraft implements Listener
     {
         $this->notices->sendFromJournal(
             $event->parent,
-            "An unpublished draft of document {$event->documentId} was kept. Read draft {$event->draftId} to recover it.",
+            "An unpublished draft of document {$event->documentId} was kept. "
+                ."Read draft {$event->draftId} to recover it.",
             'draft-kept-'.$event->draftId,
         );
     }

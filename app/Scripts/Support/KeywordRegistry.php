@@ -13,7 +13,9 @@ use Illuminate\Contracts\Container\Container;
 
 final readonly class KeywordRegistry
 {
-    /** @var Registry<RegisteredKeyword> */
+    /**
+     * @var Registry<RegisteredKeyword>
+     */
     private Registry $keywords;
 
     public function __construct(private Container $container)
@@ -44,7 +46,9 @@ final readonly class KeywordRegistry
         return $this->keywords->get($token);
     }
 
-    /** @return list<RegisteredKeyword> */
+    /**
+     * @return list<RegisteredKeyword>
+     */
     public function all(): array
     {
         return array_values($this->keywords->all());

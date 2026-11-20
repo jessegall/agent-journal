@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** @property string $encoded_text */
+/**
+ * @property string $encoded_text
+ */
 #[Fillable(['upload_id', 'position', 'encoded_text'])]
 final class TextUploadChunk extends Model implements ReadableModel
 {
@@ -27,7 +29,9 @@ final class TextUploadChunk extends Model implements ReadableModel
         ]);
     }
 
-    /** @return BelongsTo<TextUpload, $this> */
+    /**
+     * @return BelongsTo<TextUpload, $this>
+     */
     public function upload(): BelongsTo
     {
         return $this->belongsTo(TextUpload::class, 'upload_id');

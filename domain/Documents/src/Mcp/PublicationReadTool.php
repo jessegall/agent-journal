@@ -22,7 +22,9 @@ abstract class PublicationReadTool extends JournalReadTool
             : new ReadRequest($this->name(), ResourceAreaType::JournalContent);
     }
 
-    /** @return array<string, \Illuminate\JsonSchema\Types\Type> */
+    /**
+     * @return array<string, \Illuminate\JsonSchema\Types\Type>
+     */
     protected function rangeSchema(JsonSchema $schema): array
     {
         return [

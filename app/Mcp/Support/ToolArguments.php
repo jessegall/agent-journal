@@ -54,7 +54,9 @@ final readonly class ToolArguments
         return self::within($tool, $request->all(), $fields);
     }
 
-    /** @param list<string> $fields */
+    /**
+     * @param list<string> $fields
+     */
     public static function query(string $resource, Request $request, array $fields): self
     {
         parse_str((string) parse_url((string) $request->uri(), PHP_URL_QUERY), $query);
@@ -88,7 +90,9 @@ final readonly class ToolArguments
         return new self($declared);
     }
 
-    /** @param list<string> $fields */
+    /**
+     * @param list<string> $fields
+     */
     public function object(string $name, array $fields): self
     {
         $value = $this->arguments[$name] ?? null;
@@ -100,7 +104,9 @@ final readonly class ToolArguments
         return self::within($name, $value, $fields);
     }
 
-    /** @param list<string> $fields */
+    /**
+     * @param list<string> $fields
+     */
     public function optionalObject(string $name, array $fields): self|null
     {
         return array_key_exists($name, $this->arguments) ? $this->object($name, $fields) : null;
@@ -130,13 +136,17 @@ final readonly class ToolArguments
         return $this->ulid($name);
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     public function optionalList(string $name): array
     {
         return array_key_exists($name, $this->arguments) ? $this->list($name) : [];
     }
 
-    /** @return non-empty-list<string> */
+    /**
+     * @return non-empty-list<string>
+     */
     public function ulids(string $name): array
     {
         $ids = $this->list($name);

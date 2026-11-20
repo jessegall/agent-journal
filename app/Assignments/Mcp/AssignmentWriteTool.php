@@ -15,13 +15,17 @@ use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
 
-/** Maps single-record assignment arguments and outcomes for MCP. */
+/**
+ * Maps single-record assignment arguments and outcomes for MCP.
+ */
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 abstract class AssignmentWriteTool extends JournalWriteTool
 {
     use ReadsAssignmentArguments;
 
-    /** @return array<string, Type> */
+    /**
+     * @return array<string, Type>
+     */
     final protected function recordSchema(JsonSchema $schema): array
     {
         return [
@@ -35,7 +39,9 @@ abstract class AssignmentWriteTool extends JournalWriteTool
         return new RecordIdentity($arguments->text('record_type'), $arguments->ulid('record_id'));
     }
 
-    /** @param AssignmentResult $result */
+    /**
+     * @param AssignmentResult $result
+     */
     final protected function present(mixed $result): ToolResult
     {
         $outcome = $result->outcomes[0];

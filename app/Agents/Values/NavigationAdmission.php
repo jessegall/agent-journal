@@ -22,4 +22,9 @@ final readonly class NavigationAdmission
         public ActorIdentity $owner,
         public NavigationDispatch $dispatch,
     ) {}
+
+    public function fingerprint(): string
+    {
+        return $this->command->uncertainty->fingerprint;
+    }
 }

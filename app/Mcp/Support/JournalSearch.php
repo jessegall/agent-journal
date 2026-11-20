@@ -62,7 +62,9 @@ final readonly class JournalSearch
         ], $next);
     }
 
-    /** @param list<string> $registered */
+    /**
+     * @param list<string> $registered
+     */
     private function firstPage(ToolArguments $arguments, array $registered): Continuation
     {
         $query = trim($arguments->text('query'));

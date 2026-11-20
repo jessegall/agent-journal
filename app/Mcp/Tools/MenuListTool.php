@@ -17,7 +17,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
-/** Lists the entries in the journal owner's menu library, newest first. */
+/**
+ * Lists the entries in the journal owner's menu library, newest first.
+ */
 #[IsReadOnly]
 #[Name('menu_list')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]

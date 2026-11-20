@@ -30,6 +30,8 @@ interface ActorWorkStacks
      */
     public function current(string $typeKey): Option;
 
-    /** @return Option<RecordIdentity> */
+    /**
+     * @return Option<RecordIdentity>
+     */
     public function currentRecord(): Option;
 }

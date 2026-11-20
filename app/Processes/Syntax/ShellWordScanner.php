@@ -140,14 +140,13 @@ final readonly class ShellWordScanner
      */
     private function readExpansionOrDollar(LexerCursor $cursor, WordBuilder $word, string $character): void
     {
-        $expansionStart = $cursor->position;
         $expansion = $this->expansions->read($cursor);
         if ($expansion === null) {
             $word->addCharacter($character, $cursor->position++);
 
             return;
         }
-        $word->add($expansionStart, $expansion);
+        $word->add($expansion->range->start, $expansion);
     }
 
     /**

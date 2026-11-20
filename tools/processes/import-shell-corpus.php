@@ -156,7 +156,7 @@ function main(array $arguments): void
         $cases->add($source, DIALECT, ['type' => 'generated', 'seed' => 7, 'index' => $index], [
             'shapes_say' => $row['forms'] ?? null,
             'version5_read' => $row['observed'] ?? null,
-            'known_difference' => is_array($differences) ? ($differences[$source] ?? null) : null,
+            'known_difference' => $differences[$source] ?? null,
         ]);
     }
 
@@ -346,13 +346,18 @@ function readJsonLines(string $path): array
     return $rows;
 }
 
-function readJson(string $path): mixed
+/**
+ * @return array<array-key, mixed>
+ */
+function readJson(string $path): array
 {
     try {
-        return json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+        $decoded = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
     } catch (JsonException $error) {
         fail(basename($path).' is not JSON: '.$error->getMessage());
     }
+
+    return is_array($decoded) ? $decoded : fail(basename($path).' is not a JSON array or object');
 }
 
 /**

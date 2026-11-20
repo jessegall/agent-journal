@@ -20,7 +20,9 @@ final readonly class ObjectReflection
 {
     public function __construct(private OperationNames $operations) {}
 
-    /** @param class-string $class */
+    /**
+     * @param class-string $class
+     */
     public function describe(string $class, string $owner): ObjectDefinition
     {
         if (! class_exists($class)) {
@@ -77,7 +79,9 @@ final readonly class ObjectReflection
         return new ObjectMember($property->getName(), new OperationKey($member->read));
     }
 
-    /** @param ReflectionClass<object> $class */
+    /**
+     * @param ReflectionClass<object> $class
+     */
     private function contextParameter(ReflectionClass $class): string
     {
         $constructor = $class->getConstructor();

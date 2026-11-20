@@ -19,7 +19,9 @@ use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
-/** @implements JournalCall<MessageNamed> */
+/**
+ * @implements JournalCall<MessageNamed>
+ */
 #[MapName(SnakeCaseMapper::class)]
 #[Endpoint('communication/question', 'POST', MessageNamed::class, CallEffect::KeyedWrite, ReceiptOwner::CommandBus)]
 final class AskQuestionCall extends Data implements JournalCall
