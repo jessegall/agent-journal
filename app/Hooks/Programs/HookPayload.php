@@ -176,12 +176,14 @@ final class HookPayload extends Data
      */
     public function startSource(): ContextStartType
     {
-        return match ($this->required($this->source, 'source')) {
+        $source = $this->required($this->source, 'source');
+
+        return match ($source) {
             'startup' => ContextStartType::Start,
             'resume' => ContextStartType::Resume,
             'clear' => ContextStartType::Clear,
             'compact' => ContextStartType::Compact,
-            default => throw UnreadablePayload::forValue('source', (string) $this->source),
+            default => throw UnreadablePayload::forValue('source', $source),
         };
     }
 
