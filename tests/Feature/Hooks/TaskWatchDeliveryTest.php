@@ -61,13 +61,13 @@ final class TaskWatchDeliveryTest extends TestCase
         $this->app->instance(ActorAttention::class, $attention);
         $trace = [];
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->method('debug')->willReturnCallback(static function (string $message, array $context) use (
-            &$trace,
-        ): void {
-            if ($message === 'Calling a state event method.') {
-                $trace[] = [$context['event'], $context['selection'], $context['frame']];
-            }
-        });
+        $logger->expects($this->exactly(4))->method('debug')->willReturnCallback(
+            static function (string $message, array $context) use (&$trace): void {
+                if ($message === 'Calling a state event method.') {
+                    $trace[] = [$context['event'], $context['selection'], $context['frame']];
+                }
+            },
+        );
         $this->app->instance(LoggerInterface::class, $logger);
 
         $dispatcher = $this->app->make(Dispatcher::class);
@@ -104,7 +104,7 @@ final class TaskWatchDeliveryTest extends TestCase
             $stdout,
         );
         $steps = HookCall::query()->forHookId('call-1')->sole()->steps->steps;
-        $this->assertSame([AnswerType::Allow->value, AnswerType::Deny->value], array_column($steps, 'answer'));
+        $this->assertSame([AnswerType::Allow, AnswerType::Deny], array_column($steps, 'answer'));
     }
 
     private function dispatch(Event $event): void
