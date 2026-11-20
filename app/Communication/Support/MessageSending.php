@@ -7,6 +7,7 @@ namespace App\Communication\Support;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
+use App\Agents\Contracts\CurrentSession;
 use App\Bus\Support\AcceptedReceipt;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\SendMessage;
@@ -31,6 +32,7 @@ final readonly class MessageSending
         private AcceptedReceipt $accepted,
         private InboxAttention $attention,
         private Dispatcher $events,
+        private CurrentSession $session,
     ) {}
 
     public function send(SendMessage $command): string
@@ -50,18 +52,28 @@ final readonly class MessageSending
 
     public function ask(AskMessage $command): string
     {
-        return $this->deliver(
+        return $this->question(
             $command->sourceInboxId,
             $command->destinationInboxId,
+            $command->body,
             $command->dispatchedBy(),
-            function (Inbox $source, Inbox $destination, ActorIdentity $author) use ($command): MessageEnvelope {
+        )->id;
+    }
+
+    public function question(string $sourceInboxId, string $destinationInboxId, string $body, ActorContext $actor): Message
+    {
+        return $this->deliver(
+            $sourceInboxId,
+            $destinationInboxId,
+            $actor,
+            function (Inbox $source, Inbox $destination, ActorIdentity $author) use ($body): MessageEnvelope {
                 if ($this->inboxes->membersOf($destination) === []) {
                     throw AnswerImpossible::forInbox($destination->inboxId());
                 }
 
-                return MessageEnvelope::ask($source, $destination, $author, MessageBody::from($command->body));
+                return MessageEnvelope::ask($source, $destination, $author, MessageBody::from($body));
             },
-        )->id;
+        );
     }
 
     /**
@@ -101,6 +113,7 @@ final readonly class MessageSending
         $message = Message::record(
             $envelope($source, $destination, ActorIdentity::of($author)),
             new AcceptedOperation($this->accepted->requireFor(self::class)),
+            $author->type->isAgent() && $this->session->hasSession() ? $this->session->sessionId() : null,
         );
         $this->attention->requestFor($destination, AttentionOrigin::message($message->id, $message->origin_receipt_id));
         $this->events->dispatch(new MessageSent(

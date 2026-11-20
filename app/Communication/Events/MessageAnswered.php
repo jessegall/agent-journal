@@ -8,11 +8,12 @@ use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
 use App\Contracts\ListenerFailureLog;
 use App\Ui\Contracts\UserInterfaceUpdater;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * A message was answered; raised once that has committed.
  */
-final readonly class MessageAnswered implements Event, ListenerFailureLog, UserInterfaceUpdater
+final readonly class MessageAnswered implements Event, ListenerFailureLog, ShouldDispatchAfterCommit, UserInterfaceUpdater
 {
     public function __construct(
         public string $messageId,

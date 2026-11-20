@@ -47,6 +47,7 @@ use Spatie\LaravelData\Optional;
  * @property string $destination_inbox_id
  * @property string $sender_type
  * @property string $sender_id
+ * @property string|null $sender_session_id
  * @property string $conversation_id
  * @property bool $is_question
  * @property string $body
@@ -72,6 +73,7 @@ use Spatie\LaravelData\Optional;
     'destination_inbox_id',
     'sender_type',
     'sender_id',
+    'sender_session_id',
     'conversation_id',
     'is_question',
     'body',
@@ -127,13 +129,17 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     /**
      * A new message from its envelope, accepted under the bus receipt of the operation that sent it.
      */
-    public static function record(MessageEnvelope $envelope, AcceptedOperation $operation): self
-    {
+    public static function record(
+        MessageEnvelope $envelope,
+        AcceptedOperation $operation,
+        string|null $senderSessionId = null,
+    ): self {
         $author = $envelope->author;
         $message = new self([
             'source_inbox_id' => $envelope->source->inboxId(),
             'destination_inbox_id' => $envelope->destination->inboxId(),
             ...$author->asColumns('sender'),
+            'sender_session_id' => $senderSessionId,
             'body' => $envelope->body->text,
             'state' => $envelope->state,
             'is_question' => $envelope->state === MessageState::WaitingForAnswer,
@@ -310,6 +316,13 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     public function isWrittenBy(ActorIdentity $actor): bool
     {
         return $this->sender_type === $actor->type->value && $this->sender_id === $actor->id;
+    }
+
+    public function isReplyBy(self $original, ActorIdentity $actor, string|null $sessionId): bool
+    {
+        return $this->reply_to_id === $original->id
+            && $this->isWrittenBy($actor)
+            && $this->sender_session_id === $sessionId;
     }
 
     /**

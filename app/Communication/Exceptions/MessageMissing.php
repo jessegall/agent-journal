@@ -8,12 +8,13 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
+use Throwable;
 
 final class MessageMissing extends RuntimeException implements CodedRefusal, CommandRefusal
 {
-    public static function forId(string $messageId): self
+    public static function forId(string $messageId, Throwable|null $previous = null): self
     {
-        return new self("Message {$messageId} does not exist.");
+        return new self("Message {$messageId} does not exist.", previous: $previous);
     }
 
     public function refusalCode(): RefusalCode

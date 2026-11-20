@@ -1,0 +1,140 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Chat\Tests\Feature;
+
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Models\MessageSelection;
+use App\Bus\Models\CommandReceipt;
+use App\Bus\Support\ReceiptCaller;
+use App\Bus\Support\ReceiptRetention;
+use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\ReplyToMessage;
+use App\Communication\Commands\SelectMessage;
+use App\Communication\Contracts\InboxResolver;
+use App\Communication\Enums\MessageState;
+use App\Communication\Events\MessageAnswered;
+use App\Communication\Exceptions\MessageMissing;
+use App\Communication\Models\Message;
+use App\Communication\Support\AcceptedOperation;
+use App\Communication\Support\MessageBody;
+use App\Communication\Support\MessageEnvelope;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Str;
+use stdClass;
+use Tests\Fixtures\Agents\TestStart;
+use Tests\Support\MessagingTestCase;
+use Tests\Support\SendsSignedCalls;
+
+final class AgentMessageCommandsTest extends MessagingTestCase
+{
+    use SendsSignedCalls;
+
+    protected function tearDown(): void
+    {
+        $this->emptyTables('chat_selections', 'chat_job_sources');
+
+        parent::tearDown();
+    }
+
+    public function test_select_changes_only_the_callers_selection_and_hides_other_messages(): void
+    {
+        $question = $this->ownerAsks($this->inboxIdOf($this->builder), 'Choose this request.');
+        $this->asAgent($this->builder);
+        $this->assertSame($question, $this->runOnBus(new SelectMessage($question)));
+
+        $this->asAgent($this->reviewer);
+        $this->assertThrows(fn () => $this->runOnBus(new SelectMessage($question)), MessageMissing::class);
+        $this->assertSame($question, MessageSelection::messageFor($this->builder->id));
+        $this->assertNull(MessageSelection::messageFor($this->reviewer->id));
+        $this->assertNull($this->stored($question)->read_at);
+        $this->assertSame(MessageState::WaitingForAnswer, $this->stored($question)->state);
+    }
+
+    public function test_a_keyed_reply_preserves_the_author_session_and_sends_only_once(): void
+    {
+        $question = $this->ownerAsks($this->inboxIdOf($this->builder), 'Can you build it?');
+        $this->asAgent($this->builder);
+        $command = new ReplyToMessage($question, 0, 'I will build it.');
+        $reply = $this->runOnBus($command, 'reply-once');
+
+        $this->assertSame($reply, $this->runOnBus($command, 'reply-once'));
+        $this->assertSame(1, Message::query()->acrossInboxes()->where('reply_to_id', $question)->count());
+        $stored = $this->stored($reply);
+        $this->assertSame($question, $stored->reply_to_id);
+        $this->assertSame($this->builder->agent_id, $stored->sender_id);
+        $this->assertSame($this->builder->id, $stored->sender_session_id);
+    }
+
+    public function test_only_the_recipient_can_link_its_durable_reply_to_a_waiting_question(): void
+    {
+        $question = $this->ownerAsks($this->inboxIdOf($this->builder), 'Is the work ready?');
+        $this->asAgent($this->builder);
+        $reply = $this->recordReply($this->stored($question));
+        Event::fake([MessageAnswered::class]);
+
+        $this->asAgent($this->reviewer);
+        $this->assertThrows(fn () => $this->runOnBus(new AnswerMessage($question, $reply->id)), MessageMissing::class);
+        $this->assertThrows(fn () => $this->runOnBus(new DismissMessage($question, 'Guess.')), MessageMissing::class);
+        Event::assertNotDispatched(MessageAnswered::class);
+
+        $this->asAgent($this->builder);
+        $this->assertSame($reply->id, $this->runOnBus(new AnswerMessage($question, $reply->id)));
+        $this->assertSame($reply->id, $this->runOnBus(new AnswerMessage($question, $reply->id)));
+        $this->assertSame(MessageState::Answered, $this->stored($question)->state);
+        $this->assertSame($reply->id, $this->stored($question)->answer_message_id);
+        Event::assertDispatchedTimes(MessageAnswered::class, 1);
+    }
+
+    public function test_a_signed_question_is_addressed_to_the_owner_and_can_be_dismissed_with_a_reason(): void
+    {
+        $caller = TestStart::start();
+        $this->inboxOf(ActorIdentity::of($caller->agent));
+        $destination = $this->ownerInboxId();
+        $question = $this->signed($caller, '/agent/communication/question', [
+            'body' => 'Which release should I prepare?',
+            'request_key' => 'ask-owner',
+        ])->assertOk()->json('message_id');
+
+        $this->asOwner();
+        $message = Message::visibleById($question);
+        $this->assertTrue($message->is_question);
+        $this->assertSame($destination, $message->destination_inbox_id);
+        $this->assertSame('Which release should I prepare?', $message->body);
+
+        $this->runOnBus(new DismissMessage($message->id, 'Already decided.'));
+        $this->assertSame('Already decided.', $this->stored($message->id)->dismissal_reason);
+    }
+
+    private function recordReply(Message $original): Message
+    {
+        $actor = ActorContext::forAgent($this->builder->agent_id);
+        $receipt = CommandReceipt::take(
+            ReceiptCaller::inSession($actor, $this->builder->id),
+            (string) Str::ulid(),
+            new stdClass(),
+            ReceiptRetention::standard(),
+        );
+        $inboxes = $this->app->make(InboxResolver::class);
+
+        return Message::record(
+            MessageEnvelope::reply(
+                $inboxes->resolve($original->destination_inbox_id),
+                $inboxes->resolve($original->source_inbox_id),
+                ActorIdentity::of($actor),
+                MessageBody::from('Ready.'),
+                $original->id,
+            ),
+            new AcceptedOperation($receipt->id),
+            $this->builder->id,
+        );
+    }
+
+    private function stored(string $messageId): Message
+    {
+        return Message::query()->acrossInboxes()->findOrFail($messageId);
+    }
+}

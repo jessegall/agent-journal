@@ -17,6 +17,7 @@ use App\Communication\Data\MessageReadResult;
 use App\Communication\Events\MessageRead;
 use App\Communication\Events\MessageTakenUp;
 use App\Communication\Exceptions\InboxUnavailable;
+use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -49,6 +50,17 @@ final readonly class MessageReading
         $access->lockShared($inbox);
 
         return [$inbox, $access->membership($inbox, $reader)];
+    }
+
+    public function recipientOf(string $messageId, ActorContext $actor): InboxMembership
+    {
+        $destination = Message::visibleById($messageId)->destination_inbox_id;
+
+        try {
+            return $this->admit($destination, $actor)[1];
+        } catch (InboxUnavailable $failure) {
+            throw MessageMissing::forId($messageId, $failure);
+        }
     }
 
     /**

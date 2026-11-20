@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Exceptions\ActorNotAllowed;
 use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
+use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
 use Tests\Support\MessagingTestCase;
 
@@ -55,7 +55,7 @@ final class DismissMessageTest extends MessagingTestCase
         $questionId = $this->ownerAsks($this->inboxIdOf($this->builder), 'Can you?');
         $this->asAgent($this->reviewer);
 
-        $this->expectException(ActorNotAllowed::class);
+        $this->expectException(MessageMissing::class);
 
         $this->runOnBus(new DismissMessage($questionId, 'Not mine.'));
     }

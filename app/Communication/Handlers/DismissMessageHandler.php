@@ -66,6 +66,10 @@ final readonly class DismissMessageHandler implements CommandHandler
             return DismissalType::Declined;
         }
 
+        if ($actor->actorType()->isAgent()) {
+            throw MessageMissing::forId($message->id);
+        }
+
         $this->authorizer->authorize(MessagePolicy::class, Message::class, MessageAbility::Inspect);
 
         return DismissalType::Cancelled;

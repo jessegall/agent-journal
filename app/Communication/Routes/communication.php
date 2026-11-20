@@ -28,6 +28,9 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         $calls = Container::getInstance()->make(CallRoutes::class);
         $calls->register(Calls\SendMessageController::class)->name('send');
         $calls->register(Calls\AskMessageController::class)->name('ask');
+        $calls->register(Calls\AskQuestionController::class)->name('question');
+        $calls->register(Calls\SelectMessageController::class)->name('select');
+        $calls->register(Calls\AnswerMessageController::class)->name('answer');
         $calls->register(Calls\ReplyToMessageController::class)->name('reply');
         $calls->register(Calls\RequireMessageAnswerController::class)->name('require-answer');
         $calls->register(Calls\ReadMessagesController::class)->name('read');

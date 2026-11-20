@@ -464,12 +464,15 @@ use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
 use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskQuestion;
+use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Commands\ReleaseMessageClaim;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\SelectMessage;
 use App\Communication\Commands\TakeNextMessages;
 use App\Communication\Contracts\ActorInboxResolver;
 use App\Communication\Contracts\AgentMessageReader;
@@ -1825,6 +1828,9 @@ final class CoreApi
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
+                SelectMessage::class,
+                AskQuestion::class,
+                AnswerMessage::class,
                 AskMessage::class,
                 ReadMessages::class,
                 TakeNextMessages::class,

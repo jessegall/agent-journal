@@ -19,6 +19,7 @@ return new class extends Migration
             $table->ulid('destination_inbox_id');
             $table->string('sender_type', 16);
             $table->string('sender_id', 64);
+            $table->ulid('sender_session_id')->nullable();
             $table->ulid('conversation_id')->index();
             $table->text('body');
             $table->boolean('is_question')->default(false);
