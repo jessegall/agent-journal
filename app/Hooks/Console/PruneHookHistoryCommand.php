@@ -16,7 +16,12 @@ final class PruneHookHistoryCommand extends Command
     public function handle(PruneHookHistory $pruning): int
     {
         $pruned = $pruning->prune();
-        $this->info("Removed {$pruned->hookCalls} hook calls and {$pruned->closedStacks} closed stacks.");
+        $this->info(sprintf(
+            'Removed %d hook calls and %d closed stacks, and the raw output of %d stop results.',
+            $pruned->hookCalls,
+            $pruned->closedStacks,
+            $pruned->stopOutputs,
+        ));
 
         return self::SUCCESS;
     }

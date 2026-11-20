@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Hooks\Values;
+
+use App\Hooks\Enums\StopAttemptState;
+use App\Hooks\Enums\StopResultType;
+
+/**
+ * Where a stop attempt stands and how each of its conditions ended, by condition key, with the summaries a helper
+ * reads; never the raw output.
+ */
+final readonly class StopAttemptResult
+{
+    /**
+     * @param  array<string, StopResultType>  $statuses  condition key => how it ended
+     * @param  array<string, string>  $summaries  condition key => its short summary
+     */
+    public function __construct(
+        public StopAttemptState $state,
+        public array $statuses,
+        public array $summaries,
+    ) {}
+}

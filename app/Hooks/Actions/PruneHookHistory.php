@@ -6,6 +6,7 @@ namespace App\Hooks\Actions;
 
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
+use App\Hooks\Models\StopResult;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\PrunedHistory;
 use App\Hooks\Support\RetentionPeriods;
@@ -15,8 +16,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Removes hook calls and closed stacks past their retention, in bounded batches, with their links. It keeps active
- * stacks and held ones, and refuses to run when a pruned call could still be retried as new.
+ * Removes hook calls and closed stacks past their retention, in bounded batches, with their links, and forgets the
+ * raw output of old stop results. It keeps active stacks and held ones, and refuses to run when a pruned call could
+ * still be retried as new.
  */
 final readonly class PruneHookHistory
 {
@@ -37,6 +39,7 @@ final readonly class PruneHookHistory
             $this->deleteInBatches(
                 fn () => AgentStackRow::query()->prunableBefore($now->subDays($this->periods->closedStackDays)),
             ),
+            StopResult::forgetOutputBefore($now->subDays($this->periods->stopOutputDays)),
         );
     }
 

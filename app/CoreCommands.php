@@ -21,6 +21,7 @@ use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Engine\CommandMiddleware\GuardTickOrigin;
+use App\Hooks\Commands\RecordStopResults;
 use App\Processes\Commands\ApproveRuleBundle;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
@@ -106,6 +107,7 @@ final class CoreCommands
             ClaimStart::class,
             ReportRunning::class,
             ReportStopped::class,
+            RecordStopResults::class,
             ReportFailure::class,
             ReconcileStarts::class,
             PublishSignInChallenge::class,

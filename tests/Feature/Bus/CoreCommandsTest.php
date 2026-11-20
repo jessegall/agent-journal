@@ -16,6 +16,7 @@ use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\CoreCommands;
+use App\Hooks\Commands\RecordStopResults;
 use App\Processes\Commands\ApproveRuleBundle;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
@@ -111,6 +112,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             ClaimStart::class,
             ReportRunning::class,
             ReportStopped::class,
+            RecordStopResults::class,
             ReportFailure::class,
             ReconcileStarts::class,
             PublishSignInChallenge::class,

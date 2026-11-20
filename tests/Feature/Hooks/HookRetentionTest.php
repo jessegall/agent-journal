@@ -142,7 +142,7 @@ final class HookRetentionTest extends TestCase
         }
         $this->moveDays(8);
 
-        $this->artisan('hooks:prune')->expectsOutput('Removed 5 hook calls and 0 closed stacks.')->assertSuccessful();
+        $this->artisan('hooks:prune')->expectsOutput('Removed 5 hook calls and 0 closed stacks, and the raw output of 0 stop results.')->assertSuccessful();
     }
 
     /**
