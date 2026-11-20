@@ -1035,8 +1035,11 @@ use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
+use App\Supervision\Commands\AskSupervisor;
 use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\ReplyToAsk;
 use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Commands\WithdrawAsk;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextResolver;
 use App\Text\Data\TextSections;
@@ -1855,6 +1858,9 @@ final class CoreApi
                 DismissMessage::class,
                 ChangeSupervisor::class,
                 RouteAsk::class,
+                AskSupervisor::class,
+                ReplyToAsk::class,
+                WithdrawAsk::class,
                 RetireAgent::class,
                 StartAgent::class,
                 StartOwnedAgent::class,

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Supervision\Support;
 
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Models\Agent;
 use App\Profiles\Values\SupervisorTarget;
-use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
 
@@ -15,15 +15,14 @@ final readonly class SupervisorRecipients
     public function __construct(private SupervisorOwner $owner) {}
 
     /**
-     * The one actor the target names: none for a profile, which has no single recipient, or for an owner route with
-     * no owner.
+     * The actor the target names when one exists and the target resolves uniquely.
      *
      * @return Option<ActorIdentity>
      */
     public function resolve(SupervisorTarget $target): Option
     {
         if ($target->isProfile()) {
-            return None::create();
+            return Agent::soleActorForProfile($target->profileKey());
         }
 
         if ($target->isOwner()) {

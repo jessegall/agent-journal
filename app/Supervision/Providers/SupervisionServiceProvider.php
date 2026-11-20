@@ -8,16 +8,19 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Enums\AssignmentPurpose;
+use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
 use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Values\AskTypeKey;
 use App\Supervision\Contracts\AskAdmission;
+use App\Supervision\Contracts\AskReader;
 use App\Supervision\Enums\AskAbility;
 use App\Supervision\Enums\SupervisorAbility;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Policies\SupervisorPolicy;
+use App\Supervision\Readers\AskRecords;
 use App\Supervision\Support\AskAssignments;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
@@ -26,6 +29,7 @@ use App\Supervision\Types\CodeReviewType;
 use App\Supervision\Types\MergeReadyType;
 use App\Supervision\Types\QuestionType;
 use App\Supervision\Types\StuckType;
+use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,6 +40,7 @@ final class SupervisionServiceProvider extends ServiceProvider
         // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
         $this->app->bind(SupervisorDefinitions::class, SupervisorRouting::class);
         $this->app->bind(AskAdmission::class, CurrentAskAdmission::class);
+        $this->app->bind(AskReader::class, AskRecords::class);
         $this->app->singleton(AskTypeRegistry::class);
     }
 
@@ -46,6 +51,8 @@ final class SupervisionServiceProvider extends ServiceProvider
         AskTypeRegistry $types,
         Repository $config,
     ): void {
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/asks.php');
+        $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $policies->register('Core', new PolicyRegistration(
             SupervisorLink::class,
             SupervisorPolicy::class,

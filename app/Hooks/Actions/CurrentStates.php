@@ -6,10 +6,14 @@ namespace App\Hooks\Actions;
 
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Contracts\StateTypes;
+use App\Hooks\Contracts\WorkRecordLoader;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\StackRestorer;
+use App\Records\Support\RecordIdentity;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;
@@ -19,7 +23,7 @@ use PhpOption\Option;
  */
 final readonly class CurrentStates implements CurrentState
 {
-    public function __construct(private StackRestorer $restorer) {}
+    public function __construct(private StackRestorer $restorer, private StateTypes $types) {}
 
     public function of(StackTarget $target, string $typeKey): Option
     {
@@ -33,6 +37,39 @@ final readonly class CurrentStates implements CurrentState
 
             return $stack->top()->reference;
         });
+    }
+
+    public function record(StackTarget $target): Option
+    {
+        return AgentStackRow::activeFor($target)->flatMap(function (AgentStackRow $row): Option {
+            $frames = $this->restorer->restore($row->frames)->frames();
+
+            foreach (array_reverse($frames) as $frame) {
+                $record = $this->workRecord($frame);
+
+                if ($record->isDefined()) {
+                    return $record;
+                }
+            }
+
+            return None::create();
+        });
+    }
+
+    /** @return Option<RecordIdentity> */
+    private function workRecord(Frame $frame): Option
+    {
+        $subject = $frame->reference->subject;
+
+        if (! $frame->isLive() || ! $subject instanceof SubjectReference) {
+            return None::create();
+        }
+
+        $loader = $this->types->registry()->get($frame->typeKey());
+
+        return $loader instanceof WorkRecordLoader
+            ? Option::fromValue($loader->recordOf($subject))
+            : None::create();
     }
 
     /**

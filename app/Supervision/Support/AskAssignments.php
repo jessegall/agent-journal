@@ -12,7 +12,9 @@ use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\JournalAssignment;
 use App\Bus\Support\CommandNesting;
 use App\Records\Support\RecordIdentity;
+use App\Supervision\Commands\ReplyToAsk;
 use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Commands\WithdrawAsk;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Models\Ask;
 use App\Supervision\Values\AskReference;
@@ -56,6 +58,19 @@ final readonly class AskAssignments implements JournalAssignableProvider
     public function requireAssignable(RecordIdentity $record): Assignable
     {
         return $this->asks->read(new AskReference($record->id));
+    }
+
+    public function assertJournalRelease(RecordIdentity $record): void
+    {
+        if (! $this->nesting->runs(ReplyToAsk::class) && ! $this->nesting->runs(WithdrawAsk::class)) {
+            throw AskRefused::routeChanged();
+        }
+
+        $ask = $this->asks->read(new AskReference($record->id));
+
+        if (! $ask->open) {
+            throw AskRefused::routeChanged();
+        }
     }
 
     public function visibleRecords(array $records): array

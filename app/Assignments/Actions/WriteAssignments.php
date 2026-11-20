@@ -103,6 +103,20 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
         return $this->replaceAdmitted($this->journalAdmission->admit($assignment, $expected), $expected);
     }
 
+    public function releaseForJournal(RecordIdentity $record): void
+    {
+        $this->transaction->requireOpen();
+        $this->providers->journalProvider($record->type)->assertJournalRelease($record);
+        $current = $this->store->lockCurrent($record);
+
+        if ($current->isEmpty()) {
+            return;
+        }
+
+        $this->store->remove($current->get());
+        $this->changed(AssignmentReason::Unassigned, $record, $current->get(), null);
+    }
+
     private function replaceAdmitted(AdmittedAssignment $admitted, AssignmentReference $expected): AssignmentResult
     {
         $current = $this->store->lockExpected($admitted->record, $expected);

@@ -35,4 +35,9 @@ $this->frames[$typeKey],
 $this->frames[array_key_last($this->frames)],
 ) : None::create();
     }
+
+    public function record(StackTarget $target): Option
+    {
+        return None::create();
+    }
 }

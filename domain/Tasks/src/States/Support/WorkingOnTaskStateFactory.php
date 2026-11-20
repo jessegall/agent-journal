@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\States\Support;
 
-use App\Hooks\Contracts\StateLoader;
+use App\Hooks\Contracts\WorkRecordLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
+use App\Records\Support\RecordIdentity;
+use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\Support\TaskRecords;
 use Domain\Tasks\States\WorkingOnTaskState;
 
 /**
  * Builds the working-on-task state from the task as it is now; it keeps no task between calls.
  */
-final readonly class WorkingOnTaskStateFactory implements StateLoader
+final readonly class WorkingOnTaskStateFactory implements WorkRecordLoader
 {
     public function __construct(private TaskRecords $tasks) {}
 
@@ -44,5 +46,10 @@ final readonly class WorkingOnTaskStateFactory implements StateLoader
     public function schemaVersion(): int
     {
         return 1;
+    }
+
+    public function recordOf(SubjectReference $subject): RecordIdentity
+    {
+        return new RecordIdentity(Task::LINK_TYPE, $subject->id);
     }
 }

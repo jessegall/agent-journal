@@ -17,6 +17,7 @@ use App\Web\Http\Controllers\Runtimes\ReleaseRuntimeHoldController;
 use App\Web\Http\Controllers\Runtimes\ResolveRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\ResumeScriptRuntimeRequestController;
 use App\Web\Http\Controllers\Runtimes\RetryRuntimeRequestController;
+use App\Web\Resolvers\AskInboxResolver;
 use App\Web\Resolvers\HomeWindowResolver;
 use App\Web\Resolvers\RuntimeStatusResolver;
 
@@ -32,6 +33,7 @@ final class WebPages implements PageProvider
             Page::make('home', 'Home', Icon::Home, HomeWindowResolver::class, 'Home.vue')
                 ->at('')
                 ->slots(Slot::make('bar', SlotContextType::Session)),
+            Page::make('asks', 'Asks', Icon::Chat, AskInboxResolver::class, 'Asks.vue')->at('asks'),
             Page::make('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusResolver::class, 'Runtimes.vue')
                 ->at('runtimes')
                 ->actions(

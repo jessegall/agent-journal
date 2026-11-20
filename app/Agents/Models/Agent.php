@@ -8,11 +8,13 @@ use App\Actors\Contracts\MessageRecipient;
 use App\Actors\Contracts\MessageSender;
 use App\Actors\Contracts\SeatedActor;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\RunningRuntime;
 use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Links\Support\Linkable;
+use App\Profiles\Values\ProfileKey;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonInterface;
@@ -70,6 +72,22 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
         $agents = self::query()->whereKey($agentIds)->readLimit(max(1, count($agentIds)))->get();
 
         return $agents->keyBy('id')->all();
+    }
+
+    /** @return Option<ActorIdentity> */
+    public static function soleActorForProfile(ProfileKey $profile): Option
+    {
+        $matches = self::query()
+            ->where('profile_key', $profile->key)
+            ->whereNull('retired_at')
+            ->readLimit(2)
+            ->get();
+
+        if ($matches->count() !== 1) {
+            return None::create();
+        }
+
+        return Some::create(ActorIdentity::of($matches->sole()));
     }
 
     /**

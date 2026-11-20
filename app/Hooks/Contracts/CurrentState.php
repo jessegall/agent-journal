@@ -6,6 +6,7 @@ namespace App\Hooks\Contracts;
 
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
+use App\Records\Support\RecordIdentity;
 use PhpOption\Option;
 
 /**
@@ -25,4 +26,7 @@ interface CurrentState
      * @return Option<StateReference> none when the stack is closed or holds no live frame
      */
     public function top(StackTarget $target): Option;
+
+    /** @return Option<RecordIdentity> */
+    public function record(StackTarget $target): Option;
 }
