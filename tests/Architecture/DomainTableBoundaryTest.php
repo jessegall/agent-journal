@@ -61,7 +61,7 @@ final class DomainTableBoundaryTest extends TestCase
 
         $this->assertSame(
             ['DB::table()', 'DB::select()', '->table()'],
-            array_map(fn (Violation $violation) => $violation->used, $violations),
+            array_map(fn (Violation $violation) => $violation->subject, $violations),
         );
     }
 }

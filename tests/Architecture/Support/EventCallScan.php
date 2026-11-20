@@ -201,15 +201,15 @@ final readonly class EventCallScan implements FileScan
         };
     }
 
-    private static function holdsOnlyStrings(Expr\Array_ $array): bool
+    private static function holdsOnlyStrings(Expr\Array_ $eventNames): bool
     {
-        foreach ($array->items as $item) {
-            if (! $item->value instanceof String_) {
+        foreach ($eventNames->items as $eventNameItem) {
+            if (! $eventNameItem->value instanceof String_) {
                 return false;
             }
         }
 
-        return $array->items !== [];
+        return $eventNames->items !== [];
     }
 
     /**

@@ -12,7 +12,7 @@ final readonly class Violation
     public function __construct(
         public string $file,
         public int $line,
-        public string $used,
+        public string $subject,
         public string $usingDomain,
         public string $owner,
         public ViolationType $type,

@@ -45,15 +45,15 @@ final readonly class AreaCycles
     {
         $edges = [];
 
-        $namesOfFile = ScanCache::findingsInFolders(
+        $nameUsesByFile = ScanCache::findingsInFolders(
             new NamesUsed(),
             [$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []],
         );
 
-        foreach ($namesOfFile as $path => $names) {
-            $user = self::areaOfFile($path, $appFolder, $domainFolder);
+        foreach ($nameUsesByFile as $path => $names) {
+            $sourceArea = self::areaOfFile($path, $appFolder, $domainFolder);
 
-            if (in_array($user, [self::CORE_ROOT, self::ENTRY_AREA], true)) {
+            if (in_array($sourceArea, [self::CORE_ROOT, self::ENTRY_AREA], true)) {
                 continue;
             }
 
@@ -64,10 +64,10 @@ final readonly class AreaCycles
                     continue;
                 }
 
-                $used = $area->get();
+                $dependencyArea = $area->get();
 
-                if ($used !== $user && ! isset($edges[$user][$used])) {
-                    $edges[$user][$used] = substr(
+                if ($dependencyArea !== $sourceArea && ! isset($edges[$sourceArea][$dependencyArea])) {
+                    $edges[$sourceArea][$dependencyArea] = substr(
                         $path,
                         strlen(dirname($appFolder)) + 1,
                     ).":{$use->line} uses {$use->name}";
@@ -100,8 +100,8 @@ final readonly class AreaCycles
             $uses = [];
 
             foreach ($group as $from) {
-                foreach (array_intersect_key($this->edges[$from] ?? [], array_flip($group)) as $to => $example) {
-                    $uses[] = "{$from} -> {$to} ({$example})";
+                foreach (array_intersect_key($this->edges[$from] ?? [], array_flip($group)) as $to => $exampleUse) {
+                    $uses[] = "{$from} -> {$to} ({$exampleUse})";
                 }
             }
 
@@ -122,28 +122,28 @@ final readonly class AreaCycles
     {
         $index = 0;
         $indexes = [];
-        $lowest = [];
+        $lowLinks = [];
         $stack = [];
-        $onStack = [];
+        $areasOnStack = [];
         $groups = [];
 
-        $visit = function (
+        $visitArea = function (
             string $area,
-        ) use (&$visit, &$index, &$indexes, &$lowest, &$stack, &$onStack, &$groups): void {
-            $indexes[$area] = $lowest[$area] = $index++;
+        ) use (&$visitArea, &$index, &$indexes, &$lowLinks, &$stack, &$areasOnStack, &$groups): void {
+            $indexes[$area] = $lowLinks[$area] = $index++;
             $stack[] = $area;
-            $onStack[$area] = true;
+            $areasOnStack[$area] = true;
 
             foreach (array_keys($this->edges[$area] ?? []) as $next) {
                 if (! isset($indexes[$next])) {
-                    $visit($next);
-                    $lowest[$area] = min($lowest[$area], $lowest[$next]);
-                } elseif ($onStack[$next] ?? false) {
-                    $lowest[$area] = min($lowest[$area], $indexes[$next]);
+                    $visitArea($next);
+                    $lowLinks[$area] = min($lowLinks[$area], $lowLinks[$next]);
+                } elseif ($areasOnStack[$next] ?? false) {
+                    $lowLinks[$area] = min($lowLinks[$area], $indexes[$next]);
                 }
             }
 
-            if ($lowest[$area] !== $indexes[$area]) {
+            if ($lowLinks[$area] !== $indexes[$area]) {
                 return;
             }
 
@@ -151,7 +151,7 @@ final readonly class AreaCycles
 
             do {
                 $member = array_pop($stack);
-                $onStack[$member] = false;
+                $areasOnStack[$member] = false;
                 $group[] = $member;
             } while ($member !== $area);
 
@@ -162,7 +162,7 @@ final readonly class AreaCycles
 
         foreach (array_keys($this->edges) as $area) {
             if (! isset($indexes[$area])) {
-                $visit($area);
+                $visitArea($area);
             }
         }
 
