@@ -1,6 +1,7 @@
 package profiles
 
 import (
+	"journal-agent/recording"
 	"strings"
 	"testing"
 
@@ -8,7 +9,7 @@ import (
 )
 
 func TestTheCodexSettingsNameNoSignIn(t *testing.T) {
-	for _, mode := range []contracts.Mode{contracts.ProcessMode, contracts.TerminalMode} {
+	for _, mode := range []recording.Mode{recording.ProcessMode, recording.TerminalMode} {
 		files, err := Codex{}.SettingsFiles(contracts.Start{Mode: mode, SettingsFolder: t.TempDir()})
 		if err != nil {
 			t.Fatal(err)

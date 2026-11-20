@@ -1,6 +1,7 @@
 package main
 
 import (
+	"journal-agent/recording"
 	"bufio"
 	"context"
 	"crypto/rand"
@@ -546,7 +547,7 @@ func startOf(
 		return host.AttachRequest{}, err
 	}
 	start := contracts.Start{
-		Mode:           contracts.TerminalMode,
+		Mode:           recording.TerminalMode,
 		SettingsFolder: filepath.Join(stateFolder, "runtimes", runtimeID),
 		SessionID:      conversationID,
 		HookCommand:    hookCommand,

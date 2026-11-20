@@ -1,6 +1,7 @@
 package profiles
 
 import (
+	"journal-agent/recording"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -53,7 +54,7 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 	}
 
 	arguments := []string{}
-	if start.Mode == contracts.ProcessMode {
+	if start.Mode == recording.ProcessMode {
 		arguments = append(arguments, "exec")
 	}
 	if start.Resume {
@@ -67,7 +68,7 @@ func (Codex) Arguments(start contracts.Start) ([]string, error) {
 	if start.Effort != "" {
 		arguments = append(arguments, "-c", "model_reasoning_effort="+start.Effort)
 	}
-	if start.Mode == contracts.ProcessMode {
+	if start.Mode == recording.ProcessMode {
 		arguments = append(arguments, "--json", "--skip-git-repo-check")
 	}
 	for _, feature := range codexAgentFeatures {

@@ -1,6 +1,7 @@
 package profiles
 
 import (
+	"journal-agent/recording"
 	"encoding/json"
 	"errors"
 	"slices"
@@ -17,7 +18,7 @@ const accountProtection = `{"permissions":{"deny":["Read(//accounts/a/.credentia
 
 func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing.T) {
 	start := contracts.Start{
-		Mode: contracts.ProcessMode, SettingsFolder: "/state/runtimes/r1", SessionID: "session",
+		Mode: recording.ProcessMode, SettingsFolder: "/state/runtimes/r1", SessionID: "session",
 		Account: &contracts.AccountStart{
 			Folder: "/accounts/a", Protection: accountProtection, JournalServer: &journalServer, LaunchReference: "r1",
 		},
@@ -61,7 +62,7 @@ func TestAnAccountStartMergesTheAccountProtectionIntoTheStartSettings(t *testing
 
 func TestAnAccountSettingThatWouldReplaceTheStartsOwnIsRefused(t *testing.T) {
 	start := contracts.Start{
-		Mode: contracts.ProcessMode, SettingsFolder: "/state", SessionID: "session", Effort: "high",
+		Mode: recording.ProcessMode, SettingsFolder: "/state", SessionID: "session", Effort: "high",
 		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: `{"effortLevel":"low"}`, JournalServer: &journalServer},
 	}
 
@@ -72,7 +73,7 @@ func TestAnAccountSettingThatWouldReplaceTheStartsOwnIsRefused(t *testing.T) {
 
 func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T) {
 	start := contracts.Start{
-		Mode: contracts.ProcessMode, SettingsFolder: "/state", SessionID: "session",
+		Mode: recording.ProcessMode, SettingsFolder: "/state", SessionID: "session",
 		Account: &contracts.AccountStart{Folder: "/accounts/a", Protection: `{"sandbox":{"enabled":false}}`, JournalServer: &journalServer},
 	}
 
@@ -83,7 +84,7 @@ func TestAnAccountStartWhoseProtectionLeavesTheSandboxOffIsRefused(t *testing.T)
 
 func accountStartWith(server *contracts.JournalServer, hookCommand string) contracts.Start {
 	return contracts.Start{
-		Mode: contracts.ProcessMode, SettingsFolder: "/state/runtimes/r1", SessionID: "session", HookCommand: hookCommand,
+		Mode: recording.ProcessMode, SettingsFolder: "/state/runtimes/r1", SessionID: "session", HookCommand: hookCommand,
 		Account: &contracts.AccountStart{
 			Folder: "/accounts/a", Protection: accountProtection, JournalServer: server, LaunchReference: "r1",
 		},

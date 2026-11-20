@@ -138,7 +138,7 @@ func record(arguments []string) (int, error) {
 			}
 			hookCommand = self + " capture-hook " + capture
 		}
-		started, start, err := profiledCommand(profile, contracts.Mode(*mode), *out, *sessionID, *resume, strings.Join(command, " "), hookCommand)
+		started, start, err := profiledCommand(profile, recording.Mode(*mode), *out, *sessionID, *resume, strings.Join(command, " "), hookCommand)
 		if err != nil {
 			return 2, err
 		}
@@ -322,7 +322,7 @@ func exitCodeOf(err error) (int, error) {
 
 // profiledCommand builds the start of a program through its pinned profile: it refuses another build, writes the
 // isolated settings files into the recording folder and gives the full command line with the start it made.
-func profiledCommand(profile contracts.ProgramProfile, mode contracts.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Start, error) {
+func profiledCommand(profile contracts.ProgramProfile, mode recording.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Start, error) {
 	start := contracts.Start{Mode: mode, SessionID: sessionID, Resume: resume, Prompt: prompt, HookCommand: hookCommand}
 
 	if err := profile.CheckBuild(programVersion(profile.Program())); err != nil {

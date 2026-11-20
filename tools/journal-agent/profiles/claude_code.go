@@ -2,6 +2,7 @@
 package profiles
 
 import (
+	"journal-agent/recording"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -103,7 +104,7 @@ func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
 		arguments = append(arguments, "--session-id", start.SessionID)
 	}
 
-	if start.Mode == contracts.ProcessMode {
+	if start.Mode == recording.ProcessMode {
 		arguments = append(arguments, "--print", "--output-format", "stream-json", "--verbose")
 	}
 

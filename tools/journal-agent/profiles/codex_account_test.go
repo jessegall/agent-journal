@@ -1,6 +1,7 @@
 package profiles
 
 import (
+	"journal-agent/recording"
 	"slices"
 	"strings"
 	"testing"
@@ -10,7 +11,7 @@ import (
 
 func TestACodexAccountStartUsesTheAccountHomeAndWritesNoSettings(t *testing.T) {
 	start := contracts.Start{
-		Mode: contracts.ProcessMode, SettingsFolder: "/state/runtimes/r1",
+		Mode: recording.ProcessMode, SettingsFolder: "/state/runtimes/r1",
 		Account: &contracts.AccountStart{Folder: "/accounts/codex-a"},
 	}
 

@@ -1,20 +1,16 @@
 // Package contracts holds the interfaces of start profiles.
 package contracts
 
-import "journal-agent/screen"
-
-// Mode is how a program is started: one child per turn, or one persistent terminal.
-type Mode string
-
-const (
-	ProcessMode  Mode = "process"
-	TerminalMode Mode = "terminal"
+import (
+	"journal-agent/recording"
+	"journal-agent/screen"
 )
+
 
 // Start is what one start of a program needs: its isolated settings folder and the exact conversation it starts
 // or resumes. A resume always names its conversation; "the latest" is never resumed.
 type Start struct {
-	Mode           Mode
+	Mode           recording.Mode
 	SettingsFolder string
 	SessionID      string
 	Resume         bool

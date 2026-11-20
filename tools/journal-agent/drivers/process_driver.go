@@ -3,6 +3,7 @@
 package drivers
 
 import (
+	"journal-agent/recording"
 	"context"
 	"errors"
 	"os"
@@ -137,7 +138,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 	}
 
 	start := profilecontracts.Start{
-		Mode:           profilecontracts.ProcessMode,
+		Mode:           recording.ProcessMode,
 		SettingsFolder: driver.runtime.SettingsFolder,
 		SessionID:      driver.runtime.ConversationID,
 		Resume:         driver.turns > 0,
