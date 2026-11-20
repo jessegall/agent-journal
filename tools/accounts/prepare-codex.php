@@ -7,13 +7,15 @@ declare(strict_types=1);
  * It reads one JSON line: the account directory, the journal's working roots folder, the new root's name and the
  * hook tables the host generated. It makes the empty root, trusts exactly that root and adds the file sign-in store
  * and the hook tables to the account's config.toml under the account's short lock, keeping every entry already there,
- * so threads already running are left alone. The root is sealed read-only: no agent writes into it. It prints the
+ * so threads already running are left alone, and puts in the journal's MCP entry whole: this installation's PHP
+ * running its bin/journal-mcp. The root is sealed read-only: no agent writes into it. It prints the
  * root's path.
  *
  *   echo '{"account":"...","working_roots":"...","root":"...","tables":["..."]}' | php tools/accounts/prepare-codex.php
  */
 
 use App\Hooks\Programs\CodexFolderTrust;
+use App\Hooks\Programs\CodexJournalServer;
 use App\Hooks\Support\AccountConfigurationWrite;
 use App\Hooks\Support\ProgramCompatibility;
 use App\Programs\Enums\HookProgram;
@@ -45,6 +47,7 @@ new AccountConfigurationWrite()->prepare(
     $settings,
     array_values(array_map(strval(...), (array) ($request['tables'] ?? []))),
     CodexFolderTrust::forWorkingRoot($workingRoots, $root),
+    [CodexJournalServer::of(PHP_BINARY, (string) realpath(__DIR__.'/../../bin/journal-mcp'))->tomlTable()],
 );
 chmod($root, 0o555);
 

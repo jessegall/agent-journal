@@ -1360,6 +1360,7 @@ class	CloseTerminalViewController
 class	CloseTerminalViewHandler
 class	CodexAdapter
 class	CodexFolderTrust
+class	CodexJournalServer
 class	CodexSkills
 class	CollectListItems
 class	Command
@@ -2102,6 +2103,7 @@ class	JournalResource
 class	JournalRoute
 class	JournalRoutes
 class	JournalServer
+class	JournalServerUnresolved
 class	JournalSkill
 class	JournalTool
 class	JournalToolCall
@@ -4356,6 +4358,10 @@ constant	ClientOutOfDate::CODE
 constant	CodexAdapter::PATCH_FILE_LINE
 constant	CodexAdapter::PATCH_MOVED_FILE
 constant	CodexAdapter::PROGRAM
+constant	CodexJournalServer::HEADER
+constant	CodexJournalServer::PASSED_VARIABLES
+constant	CodexJournalServer::STARTUP_TIMEOUT_SECONDS
+constant	CodexJournalServer::TOOL_TIMEOUT_SECONDS
 constant	CodexSkills::FOLDER
 constant	CommandFrame::FIRST
 constant	CommandFrame::INSIDE
@@ -5424,6 +5430,7 @@ method	AccountConfigurationWrite::prepare()
 method	AccountConfigurationWrite::replace()
 method	AccountConfigurationWrite::withSettings()
 method	AccountConfigurationWrite::withTables()
+method	AccountConfigurationWrite::withoutTables()
 method	AccountContainerUnsupported::for()
 method	AccountContainerUnsupported::reason()
 method	AccountOwnerDrain::drain()
@@ -6947,6 +6954,10 @@ method	CodexAdapter::toolCall()
 method	CodexFolderTrust::__construct()
 method	CodexFolderTrust::forWorkingRoot()
 method	CodexFolderTrust::tomlTable()
+method	CodexJournalServer::__construct()
+method	CodexJournalServer::isFixedPath()
+method	CodexJournalServer::of()
+method	CodexJournalServer::tomlTable()
 method	CodexSkills::delivery()
 method	CodexSkills::instruction()
 method	CodexSkills::reloadMode()
@@ -9536,6 +9547,7 @@ method	JournalRoutes::names()
 method	JournalRoutes::routeOf()
 method	JournalServer::__construct()
 method	JournalServer::boot()
+method	JournalServerUnresolved::for()
 method	JournalSkill::condition()
 method	JournalSkill::description()
 method	JournalSkill::key()
@@ -17124,6 +17136,8 @@ property	CodexAdapter::$files
 property	CodexAdapter::$journalTools
 property	CodexAdapter::$parser
 property	CodexFolderTrust::$folder
+property	CodexJournalServer::$command
+property	CodexJournalServer::$relay
 property	Command::$dispatchingActor
 property	CommandAuthorization::$ability
 property	CommandAuthorization::$policy

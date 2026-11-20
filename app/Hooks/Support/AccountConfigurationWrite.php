@@ -22,20 +22,27 @@ final readonly class AccountConfigurationWrite
      */
     public function addTrust(string $accountDirectory, CodexFolderTrust $trust): bool
     {
-        return $this->prepare($accountDirectory, [], [], $trust);
+        return $this->prepare($accountDirectory, [], [], $trust, []);
     }
 
     /**
-     * Adds, in one locked write, each top-level setting and each table the file lacks and the root's trust, and
-     * answers whether it changed the file. A setting or table already there is left exactly as it is.
+     * Adds, in one locked write, each top-level setting and each table the file lacks and the root's trust, puts each
+     * replaced table in whole, and answers whether it changed the file. A setting or added table already there is
+     * left exactly as it is; trust is only ever added.
      *
      * @param  array<string, string>  $settings  top-level keys and their TOML values, such as the file sign-in store
      * @param  list<string>  $tables  whole TOML tables, each known by its header line
+     * @param  list<string>  $replacedTables  whole TOML tables that take the place of one with the same header
      *
      * @throws AccountConfigurationUnwritten
      */
-    public function prepare(string $accountDirectory, array $settings, array $tables, CodexFolderTrust $trust): bool
-    {
+    public function prepare(
+        string $accountDirectory,
+        array $settings,
+        array $tables,
+        CodexFolderTrust $trust,
+        array $replacedTables,
+    ): bool {
         $path = rtrim($accountDirectory, '/').'/config.toml';
         $lock = fopen($path.'.lock', 'c');
 
@@ -45,7 +52,8 @@ final readonly class AccountConfigurationWrite
 
         try {
             $current = is_file($path) ? (string) file_get_contents($path) : '';
-            $prepared = $this->withTables($this->withSettings($current, $settings), [...$tables, $trust->tomlTable()]);
+            $added = $this->withTables($this->withSettings($current, $settings), [...$tables, $trust->tomlTable()]);
+            $prepared = $this->withTables($this->withoutTables($added, $replacedTables), $replacedTables);
 
             if ($prepared === $current) {
                 return false;
@@ -100,6 +108,23 @@ final readonly class AccountConfigurationWrite
                 default => "\n\n",
             };
             $prepared .= $separator.trim($table)."\n";
+        }
+
+        return $prepared;
+    }
+
+    /**
+     * The configuration without the tables that carry the same header lines, each up to the next table.
+     *
+     * @param  list<string>  $tables
+     */
+    private function withoutTables(string $current, array $tables): string
+    {
+        $prepared = $current;
+
+        foreach ($tables as $table) {
+            $header = preg_quote(explode("\n", trim($table))[0], '/');
+            $prepared = (string) preg_replace('/^'.$header.'\R(?:(?!\[).*\R?)*/m', '', $prepared);
         }
 
         return $prepared;
