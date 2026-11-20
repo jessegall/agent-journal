@@ -5,20 +5,24 @@ declare(strict_types=1);
 namespace App\Assignments\Storage;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\AutoAssignmentStatuses;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Exceptions\AutoAssignmentMissing;
 use App\Assignments\Exceptions\AutoAssignmentRevisionChanged;
 use App\Assignments\Models\AutoAssignment;
 use App\Assignments\Support\AutoAssignmentChange;
 use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
+use App\Assignments\Support\AutoAssignmentOutcome;
 use App\Assignments\Support\AutoAssignmentPage;
 use App\Assignments\Support\AutoAssignmentStatus;
 use App\Assignments\Support\Page;
+use Closure;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -27,13 +31,14 @@ use PhpOption\Some;
  * The auto-assignments kept in their table: read by key or by page, and changed only inside the bus's repeatable-read
  * transaction against the revision the caller read.
  */
-final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver
+final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, AutoAssignmentWriter
 {
     public function __construct(
         private AssignmentTransaction $transaction,
         private CurrentActor $actors,
         private AutoAssignmentAccess $access,
         private AutoAssignmentStatuses $statuses,
+        private ServerClock $clock,
     ) {}
 
     public function forActor(AutoAssignmentKey $key): Option
@@ -105,6 +110,25 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver
         $changed = $row->configure(false, $row->pool, $row->size);
 
         return new AutoAssignmentChange($changed, $row->configuration_revision);
+    }
+
+    public function claim(AutoAssignmentKey $key, Closure $claim): AutoAssignmentOutcome
+    {
+        $this->transaction->requireOpen();
+        $row = AutoAssignment::lockedFor($key);
+
+        if ($row->isEmpty() || ! $row->get()->enabled) {
+            return AutoAssignmentOutcome::off();
+        }
+
+        $assignment = $row->get();
+        $outcome = $claim($assignment->toFact());
+
+        if ($outcome->isAssigned()) {
+            $assignment->markServedAt($this->clock->now());
+        }
+
+        return $outcome;
     }
 
     /**

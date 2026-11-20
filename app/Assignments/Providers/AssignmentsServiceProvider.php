@@ -22,6 +22,7 @@ use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentResolver;
+use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\ClaimRelease;
 use App\Assignments\Contracts\PublishesAssignmentFacts;
 use App\Assignments\Contracts\RecordVisibility;
@@ -76,6 +77,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AssignmentQuery::class, DatabaseAssignmentQuery::class);
         $this->app->scoped(AssignedWorkResolver::class, RegisteredAssignedWork::class);
         $this->app->scoped(AutoAssignmentResolver::class, DatabaseAutoAssignments::class);
+        $this->app->alias(DatabaseAutoAssignments::class, AutoAssignmentWriter::class);
         $this->app->scoped(SizeAssignmentRoom::class);
         $this->app->scoped(DatabaseAutoAssignments::class);
     }
