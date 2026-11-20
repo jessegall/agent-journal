@@ -7,6 +7,7 @@ namespace App\Engine\Providers;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\MaintenanceAdmission;
+use App\Bus\Contracts\StopTimes;
 use App\Engine\Console\TickCommand;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Contracts\Sleeper;
@@ -23,6 +24,7 @@ use App\Engine\Support\EngineTickedDelivery;
 use App\Engine\Support\ExpireNavigationRequestsOnTick;
 use App\Engine\Support\FrameBaselines;
 use App\Engine\Support\MarkSilentSessionsOnTick;
+use App\Engine\Support\MonotonicStops;
 use App\Engine\Support\SystemMonotonicClock;
 use App\Engine\Support\SystemSleeper;
 use App\Engine\Support\TickCandidates;
@@ -57,6 +59,7 @@ final class EngineServiceProvider extends ServiceProvider
         // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
         $this->app->bind(MaintenanceAdmission::class, fn (Application $app) => $app->make(EngineAccess::class));
         $this->app->singleton(MonotonicClock::class, SystemMonotonicClock::class);
+        $this->app->bind(StopTimes::class, MonotonicStops::class);
         $this->app->singleton(EngineListenerSet::class);
         $this->app->scoped(EngineTickedDelivery::class);
         $this->app->singleton(Sleeper::class, SystemSleeper::class);

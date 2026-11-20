@@ -294,6 +294,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         return $this->build($this->autoAssigners->get($type)->assignerClass, AutoAssigner::class);
     }
 
+    public function autoAssignerClass(string $type): string
+    {
+        return $this->autoAssigners->get($type)->assignerClass;
+    }
+
     /**
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid

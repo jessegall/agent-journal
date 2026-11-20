@@ -14,13 +14,22 @@ final readonly class AutoAssignmentAvailability
 
     public function allows(AutoAssignmentFact $fact): bool
     {
+        return $this->domainsEnabled($fact) && $this->isActive($fact);
+    }
+
+    public function domainsEnabled(AutoAssignmentFact $fact): bool
+    {
         $owners = array_unique([
             $this->providers->recordOwner($fact->key->assignableType),
             $this->providers->poolOwner($fact->pool->type),
         ]);
+        return array_all($owners, $this->domains->isEnabled(...));
+    }
+
+    public function isActive(AutoAssignmentFact $fact): bool
+    {
         $actor = $fact->key->actor;
 
-        return array_all($owners, $this->domains->isEnabled(...))
-            && $this->providers->activity($actor->type)->mayTakeWork($actor);
+        return $this->providers->activity($actor->type)->mayTakeWork($actor);
     }
 }
