@@ -125,7 +125,7 @@ final readonly class StartAgentHandler implements CommandHandler
     }
 
     /**
-     * A required container start needs a proven container runtime, a proven account transport and the verified
+     * A required container start needs a proven account transport, a proven container runtime and the verified
      * image before it reserves its share of the host; it never falls back to the host.
      *
      * @throws ContainerUnavailable
@@ -135,7 +135,7 @@ final readonly class StartAgentHandler implements CommandHandler
      */
     private function admitContainer(StartRequest $request): void
     {
-        foreach ([HostCapabilityType::ContainerRuntime, HostCapabilityType::AccountTransport] as $capability) {
+        foreach ([HostCapabilityType::AccountTransport, HostCapabilityType::ContainerRuntime] as $capability) {
             $query = new HostCapabilityQuery(
                 $capability,
                 $request->selection->program,

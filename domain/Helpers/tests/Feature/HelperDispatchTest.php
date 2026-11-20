@@ -11,7 +11,7 @@ use App\Agents\Contracts\StartReservations;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Exceptions\ContainerUnavailable;
+use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\StartRecord;
@@ -194,7 +194,7 @@ final class HelperDispatchTest extends TestCase
             fn () => $this->app->make(DatabaseManager::class)->connection()->transaction(
                 fn () => $this->start('request-1', 'Review plan 7'),
             ),
-            ContainerUnavailable::class,
+            AccountContainerUnsupported::class,
         );
 
         $this->assertSame(0, HelperJob::query()->count());
