@@ -33,22 +33,22 @@ require dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/promoted-parameters.php';
 
 /**
- * One name the code declares: what kind of thing it names, the name, and where it is declared.
+ * One name the code declares: what type of declaration it is, the name, and where it is declared.
  */
 final readonly class DeclaredName
 {
     public function __construct(
-        public string $kind,
+        public string $declarationType,
         public string $name,
         public string $place,
     ) {}
 
     /**
-     * The name as the review file keeps it, without its place: `kind<TAB>Name`.
+     * The name as the review file keeps it, without its place: `type<TAB>Name`.
      */
     public function reviewLine(): string
     {
-        return "{$this->kind}\t{$this->name}";
+        return "{$this->declarationType}\t{$this->name}";
     }
 }
 
@@ -88,7 +88,7 @@ echo count($unreviewed)." declared names were not reviewed yet; read each, renam
 
 foreach ($names as $declared) {
     if (in_array($declared->reviewLine(), $unreviewed, true)) {
-        echo "  {$declared->kind} {$declared->name} ({$declared->place})\n";
+        echo "  {$declared->declarationType} {$declared->name} ({$declared->place})\n";
     }
 }
 

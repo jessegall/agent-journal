@@ -236,8 +236,8 @@ export function splitPane(
 ): LayoutNode {
     const withoutWindow = closeWindow(node, windowKey);
 
-    return mapNodes(withoutWindow, (each) => {
-        if (each.type !== 'pane' || each.id !== paneId) {
+    return mapNodes(withoutWindow, (each): LayoutNode => {
+        if (!isPane(each, paneId)) {
             return each;
         }
 
