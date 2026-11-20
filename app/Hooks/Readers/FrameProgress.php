@@ -19,15 +19,18 @@ final readonly class FrameProgress implements WorkProgress
         }
 
         $earliestEntry = null;
-        AgentStackRow::query()->historyOf($actor)->readInChunks(50, function ($stacks) use ($work, &$earliestEntry): void {
-            foreach ($stacks as $stack) {
-                $entry = $stack->frames->entryFor($work);
+        AgentStackRow::query()->historyOf($actor)->readInChunks(
+            50,
+            function ($stacks) use ($work, &$earliestEntry): void {
+                foreach ($stacks as $stack) {
+                    $entry = $stack->frames->entryFor($work);
 
-                if ($entry !== null && ($earliestEntry === null || $entry->lessThan($earliestEntry))) {
-                    $earliestEntry = $entry;
+                    if ($entry !== null && ($earliestEntry === null || $entry->lessThan($earliestEntry))) {
+                        $earliestEntry = $entry;
+                    }
                 }
-            }
-        });
+            },
+        );
 
         return $earliestEntry;
     }

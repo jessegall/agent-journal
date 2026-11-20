@@ -49,7 +49,10 @@ final readonly class CheckEntry implements CommandMiddleware
             throw CommandNotRegistered::for($call->name());
         }
 
-        if ($entry === CommandEntry::Application && ! $isNestedApplicationCall && ! $this->mayRunApplicationCommands()) {
+        if ($entry === CommandEntry::Application
+            && ! $isNestedApplicationCall
+            && ! $this->mayRunApplicationCommands()
+        ) {
             throw CommandNotRegistered::for($call->name());
         }
 
