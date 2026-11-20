@@ -4,32 +4,28 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
-use App\Mcp\Attributes\WritesCommand;
-use App\Bus\Contracts\CommandBus;
-use App\Mcp\Data\ToolResult;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalWriteTool;
 use App\Skills\Commands\CopySkill;
-use App\Skills\Support\SkillAuthoring;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 /**
  * skills_copy: copies a skill into a new stored skill under a user- key, as skill:copy does.
  */
+#[IsIdempotent]
 #[Name('skills_copy')]
-#[WritesCommand(CopySkill::class)]
-#[Description('Copy a skill you may read, shipped or stored, into a new stored skill under a user- key; the copy is a snapshot of its text.')]
-final class SkillCopyTool extends JournalWriteTool
+#[IsDestructive(false)]
+#[Dispatches(CopySkill::class)]
+#[Description(
+    'Copy a readable shipped or stored skill under a new user- key. The copy is a snapshot of its text.',
+)]
+final class SkillCopyTool extends SkillWriteTool
 {
-    public function __construct(
-        private readonly SkillAuthoring $authoring,
-        private readonly CommandBus $commands,
-    ) {}
-
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'key' => $schema->string()->max(64)->required(),
@@ -38,11 +34,9 @@ final class SkillCopyTool extends JournalWriteTool
         ];
     }
 
-    protected function write(ToolArguments $arguments): ToolResult
+    protected function command(ToolArguments $arguments): CopySkill
     {
-        $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
-        $result = $this->commands->run(new CopySkill($arguments->text('key'), $arguments->text('new_key'), $requestId));
-
-        return ToolResult::ok($this->authoring->receipt($result, $requestId), []);
+        $requestId = $this->requestId($arguments);
+        return new CopySkill($arguments->text('key'), $arguments->text('new_key'), $requestId);
     }
 }

@@ -4,32 +4,29 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
-use App\Mcp\Attributes\WritesCommand;
-use App\Bus\Contracts\CommandBus;
-use App\Mcp\Data\ToolResult;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalWriteTool;
 use App\Skills\Commands\RestoreSkill;
-use App\Skills\Support\SkillAuthoring;
+use App\Skills\Values\SkillReference;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 /**
  * skills_restore: saves an earlier revision's content as a new revision, as skill:restore does.
  */
+#[IsIdempotent]
+#[IsDestructive(true)]
 #[Name('skills_restore')]
-#[WritesCommand(RestoreSkill::class)]
-#[Description("Save an earlier revision of a stored skill as its newest revision, checked against today's rules; history stays.")]
-final class SkillRestoreTool extends JournalWriteTool
+#[Dispatches(RestoreSkill::class)]
+#[Description(
+    "Save an earlier skill revision as its newest revision, checked against today's rules. History stays.",
+)]
+final class SkillRestoreTool extends SkillWriteTool
 {
-    public function __construct(
-        private readonly SkillAuthoring $authoring,
-        private readonly CommandBus $commands,
-    ) {}
-
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'skill' => $schema->string()->max(64)->required(),
@@ -39,19 +36,13 @@ final class SkillRestoreTool extends JournalWriteTool
         ];
     }
 
-    protected function write(ToolArguments $arguments): ToolResult
+    protected function command(ToolArguments $arguments): RestoreSkill
     {
-        $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
-        $skill = $this->authoring->stored($arguments->text('skill'));
-        $result = $this->commands->run(
-            new RestoreSkill(
-                $skill->id,
-                $arguments->positiveInteger('revision'),
-                $arguments->positiveInteger('expected_revision'),
-                $requestId,
-            ),
+        return new RestoreSkill(
+            new SkillReference($arguments->text('skill')),
+            $arguments->positiveInteger('revision'),
+            $arguments->positiveInteger('expected_revision'),
+            $this->requestId($arguments),
         );
-
-        return ToolResult::ok($this->authoring->receipt($result, $requestId), []);
     }
 }

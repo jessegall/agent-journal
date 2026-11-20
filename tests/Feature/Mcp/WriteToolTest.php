@@ -1,0 +1,135 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Mcp;
+
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\CommandRegistry;
+use App\Bus\Support\CommandScope;
+use App\Bus\Support\MiddlewareDeclaration;
+use App\Bus\Support\RequestKey;
+use App\Mcp\Exceptions\McpCommandMissing;
+use App\Mcp\Support\McpCatalogue;
+use Domain\Access\Support\AccessSettings;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Tests\Feature\Bus\CommandBusTestCase;
+use Tests\Fixtures\Agents\TestStart;
+use Tests\Fixtures\Mcp\WriteNoteTool;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefuseNoteAtQuota;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\SendsMcpFrames;
+use Tests\Support\SendsSignedCalls;
+use Tests\Support\TestActors;
+
+final class WriteToolTest extends CommandBusTestCase
+{
+    use SendsMcpFrames;
+    use SendsSignedCalls;
+
+    private const string PATH = '/agent/test/notes/write';
+
+    protected function tearDown(): void
+    {
+        $this->emptyTables('command_receipts', 'start_tokens', 'agent_stacks', 'agent_sessions', 'agents');
+
+        parent::tearDown();
+    }
+
+    public function test_mcp_and_the_agent_route_each_run_the_same_note_handler_once(): void
+    {
+        $start = $this->startWithNotes();
+        Route::middleware('journal.agent')->post(
+            self::PATH,
+            static fn (Request $request, CommandBus $bus): array => [
+                'note_id' => $bus->run(new WriteNote($request->string('text')->toString())),
+            ],
+        );
+
+        $note = ['text' => 'A note from either transport.', 'request_key' => 'mcp-note-1'];
+        $mcpId = $this->callMcpTool($start, 'write_note', $note)
+            ->assertJsonPath('result.isError', false)
+            ->json('result.structuredContent.note_id');
+        $this->assertSame(1, $this->rowCount());
+        $this->assertSame($note['text'], $this->rowText($mcpId));
+
+        $routeId = $this->signed($start, self::PATH, [...$note, 'request_key' => 'route-note-1'])
+            ->assertOk()->json('note_id');
+        $this->assertSame(2, $this->rowCount());
+        $this->assertSame($this->rowText($mcpId), $this->rowText($routeId));
+
+        $this->callMcpTool($start, 'write_note', $note)->assertJsonPath('result.structuredContent.note_id', $mcpId);
+        $this->signed($start, self::PATH, $note)->assertOk()->assertJsonPath('note_id', $mcpId);
+        $this->assertSame(2, $this->rowCount());
+    }
+
+    public function test_an_unregistered_command_prevents_registration_and_names_both_classes(): void
+    {
+        $catalogue = new McpCatalogue(CommandRegistry::of([]));
+
+        $this->assertThrows(
+            fn () => $catalogue->registerTool(WriteNoteTool::class),
+            McpCommandMissing::class,
+            'The MCP write tool '.WriteNoteTool::class.' declares command '.WriteNote::class
+                .', which has no registered handler.',
+        );
+        $this->assertSame([], $catalogue->toolClasses());
+    }
+
+    public function test_a_module_middleware_preserves_its_coded_refusal(): void
+    {
+        $start = $this->startWithNotes(
+            MiddlewareDeclaration::around(RefuseNoteAtQuota::class, CommandScope::command(WriteNote::class)),
+        );
+
+        $this->callMcpTool($start, 'write_note', ['text' => 'Over quota.', 'request_key' => 'quota-1'])
+            ->assertJsonPath('result.isError', true)
+            ->assertJsonPath('result.structuredContent.code', 'conflict')
+            ->assertJsonPath('result.structuredContent.message', 'The note quota is full.');
+        $this->assertSame(0, $this->rowCount());
+    }
+
+    public function test_a_plain_command_refusal_is_forbidden_with_its_message(): void
+    {
+        $start = $this->startWithNotes(
+            MiddlewareDeclaration::around(RefusesAll::class, CommandScope::command(WriteNote::class)),
+        );
+
+        $this->callMcpTool($start, 'write_note', ['text' => 'Refused.', 'request_key' => 'refusal-1'])
+            ->assertJsonPath('result.isError', true)
+            ->assertJsonPath('result.structuredContent.code', 'forbidden')
+            ->assertJsonPath('result.structuredContent.message', 'Refused by the test middleware.');
+        $this->assertSame(0, $this->rowCount());
+    }
+
+    public function test_a_write_requires_a_bounded_request_key_and_publishes_its_hints(): void
+    {
+        $start = $this->startWithNotes();
+        $tool = new WriteNoteTool()->toArray();
+        $this->assertContains('request_key', $tool['inputSchema']['required']);
+        $this->assertSame(RequestKey::LONGEST, $tool['inputSchema']['properties']['request_key']['maxLength']);
+        $this->assertFalse($tool['annotations']['destructiveHint']);
+        $this->assertTrue($tool['annotations']['idempotentHint']);
+
+        $this->callMcpTool($start, 'write_note', ['text' => 'No key.'])
+            ->assertJsonPath('result.structuredContent.code', 'invalid_input');
+        $this->callMcpTool($start, 'write_note', [
+            'text' => 'Long key.',
+            'request_key' => str_repeat('a', RequestKey::LONGEST + 1),
+        ])->assertJsonPath('result.structuredContent.code', 'invalid_input');
+        $this->assertSame(0, $this->rowCount());
+    }
+
+    private function startWithNotes(MiddlewareDeclaration ...$middleware): TestStart
+    {
+        $this->installCommandModules(...$middleware);
+        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
+        $catalogue = new McpCatalogue($this->app->make(CommandRegistry::class));
+        $catalogue->registerTool(WriteNoteTool::class);
+        $this->app->instance(McpCatalogue::class, $catalogue);
+
+        return TestStart::start();
+    }
+}

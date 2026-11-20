@@ -8,7 +8,7 @@ use App\Bus\Contracts\Command;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-final readonly class WritesCommand
+final readonly class Dispatches
 {
     /**
      * @param  class-string<Command<mixed>>  $command

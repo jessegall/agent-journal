@@ -16,6 +16,8 @@ use App\Skills\Handlers\ReviseSkillHandler;
 use App\Skills\Models\Skill;
 use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Values\SkillDraft;
+use App\Skills\Values\SkillDraftChanges;
+use App\Skills\Values\SkillReference;
 use App\Skills\Values\SkillRevisionResult;
 
 /**
@@ -30,10 +32,10 @@ use App\Skills\Values\SkillRevisionResult;
 final readonly class ReviseSkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        public string $skillId,
+        public string|SkillReference $skill,
         public int $expectedRevision,
         public string $requestId,
-        public SkillDraft $draft,
+        public SkillDraft|SkillDraftChanges $draft,
     ) {}
 
     /**

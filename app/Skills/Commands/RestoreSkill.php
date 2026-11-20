@@ -15,6 +15,7 @@ use App\Skills\Enums\SkillAbility;
 use App\Skills\Handlers\RestoreSkillHandler;
 use App\Skills\Models\Skill;
 use App\Skills\Policies\SkillAuthoringPolicy;
+use App\Skills\Values\SkillReference;
 use App\Skills\Values\SkillRevisionResult;
 
 /**
@@ -28,7 +29,7 @@ use App\Skills\Values\SkillRevisionResult;
 final readonly class RestoreSkill extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        public string $skillId,
+        public string|SkillReference $skill,
         public int $revision,
         public int $expectedRevision,
         public string $requestId,

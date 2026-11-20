@@ -4,33 +4,30 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
-use App\Mcp\Attributes\WritesCommand;
-use App\Bus\Contracts\CommandBus;
-use App\Mcp\Data\ToolResult;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalWriteTool;
 use App\Skills\Commands\CreateSkill;
-use App\Skills\Support\SkillAuthoring;
-use App\Skills\Values\SkillDraft;
+use App\Skills\Values\SkillDraftText;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 /**
  * skills_make: stores a new skill under a user- key, as skill:make does.
  */
+#[IsIdempotent]
 #[Name('skills_make')]
-#[WritesCommand(CreateSkill::class)]
-#[Description('Store a new skill under a user- key from a Markdown body; the condition is JSON, everyone when left out. Send the request_id again to retry; it is answered once.')]
-final class SkillMakeTool extends JournalWriteTool
+#[IsDestructive(false)]
+#[Dispatches(CreateSkill::class)]
+#[Description(
+    'Store a new skill under a user- key from Markdown. The JSON condition defaults to everyone. '
+    .'To retry, send the same request_key.',
+)]
+final class SkillMakeTool extends SkillWriteTool
 {
-    public function __construct(
-        private readonly SkillAuthoring $authoring,
-        private readonly CommandBus $commands,
-    ) {}
-
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'key' => $schema->string()->max(64)->required(),
@@ -42,25 +39,24 @@ final class SkillMakeTool extends JournalWriteTool
                 ->required(),
             'conditions' => $schema->string()
                 ->max(32768)
-                ->description('The condition as JSON, such as {"type":"profile-bases","version":1,"keys":["main-agent"]}.'),
+                ->description(
+                    'A JSON condition, such as {"type":"profile-bases","version":1,"keys":["main-agent"]}.',
+                ),
             'request_id' => $schema->string()->max(64),
         ];
     }
 
-    protected function write(ToolArguments $arguments): ToolResult
+    protected function command(ToolArguments $arguments): CreateSkill
     {
-        $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
+        $requestId = $this->requestId($arguments);
         $key = $arguments->text('key');
-        $draft = new SkillDraft(
+        $draft = new SkillDraftText(
             $arguments->optionalText('name') ?? $key,
             $arguments->text('description'),
-            $this->authoring->sectionsOf($arguments->text('body')),
-            $this->authoring->conditionOf($arguments->optionalText('conditions'), []),
+            $arguments->text('body'),
+            $arguments->textOr('conditions', ''),
         );
 
-        return ToolResult::ok(
-            $this->authoring->receipt($this->commands->run(new CreateSkill($key, $requestId, $draft)), $requestId),
-            [],
-        );
+        return new CreateSkill($key, $requestId, $draft);
     }
 }

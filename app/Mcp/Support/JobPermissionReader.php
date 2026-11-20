@@ -9,7 +9,7 @@ use App\Agents\Support\ReadGrant;
 use App\Agents\Values\Operation;
 use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandRegistry;
-use App\Mcp\Attributes\WritesCommand;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
@@ -53,7 +53,7 @@ final readonly class JobPermissionReader
         return DiscoveryProfile::MainAgent->value;
     }
 
-    private function allowsCommand(StartProfileAuthority $authority, WritesCommand $write): bool
+    private function allowsCommand(StartProfileAuthority $authority, Dispatches $write): bool
     {
         $profile = DiscoveryProfile::from($authority->profile->base->key);
 

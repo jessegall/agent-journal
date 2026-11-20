@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Agents\Support\ReadGrant;
 use App\Agents\Values\ReadRequest;
+use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\ResponseFactory;
 
 /**
  * A journal tool that only reads: it hands its checked arguments to one reader and answers with what that returns.
@@ -19,9 +23,14 @@ abstract class JournalReadTool extends JournalTool
         return $arguments === null ? ReadRequest::forDiscovery($this->name()) : new ReadRequest($this->name());
     }
 
-    final protected function answer(ToolArguments $arguments): ToolResult
+    final public function handle(Request $request, McpCall $call, ReadGrant $reads): ResponseFactory
     {
-        return $this->read($arguments);
+        return $call->answerTool($this->name(), function () use ($request, $reads): ToolResult {
+            $arguments = $this->arguments($request);
+            $reads->requireAllowed($this->readRequest($arguments));
+
+            return $this->read($arguments);
+        });
     }
 
     abstract protected function read(ToolArguments $arguments): ToolResult;

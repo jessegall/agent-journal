@@ -53,7 +53,10 @@ class DomainServiceProvider extends ServiceProvider
                 $app->make(PipelineRunner::class),
             ),
         );
-        $this->app->singleton(McpCatalogue::class, fn () => $this->mcpCatalogue($registry));
+        $this->app->singleton(
+            McpCatalogue::class,
+            fn (Application $app) => $this->mcpCatalogue($registry, $app->make(CommandRegistry::class)),
+        );
         $this->app->singleton(
             CommandRuleRegistry::class,
             fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()),
@@ -122,9 +125,9 @@ class DomainServiceProvider extends ServiceProvider
     /**
      * Core's MCP tools and resources first, then each domain's in bootstrap/domains.php order.
      */
-    private function mcpCatalogue(DomainRegistry $registry): McpCatalogue
+    private function mcpCatalogue(DomainRegistry $registry, CommandRegistry $commands): McpCatalogue
     {
-        $catalogue = new McpCatalogue();
+        $catalogue = new McpCatalogue($commands);
         CoreMcpTools::registerIn($catalogue);
         $registry->registerMcpToolsIn($catalogue);
 

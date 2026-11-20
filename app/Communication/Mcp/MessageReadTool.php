@@ -4,26 +4,28 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
-use App\Mcp\Attributes\WritesCommand;
 use App\Bus\Contracts\Command;
-use App\Bus\Support\RequestKey;
 use App\Communication\Commands\ReadMessages;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
+#[IsIdempotent]
+#[IsDestructive(false)]
 #[Name('messages_read')]
-#[WritesCommand(ReadMessages::class, readOnlyHelper: true)]
+#[Dispatches(ReadMessages::class, readOnlyHelper: true)]
 #[Description('Read messages in one of your inboxes; the first reader of a question takes it up.')]
 final class MessageReadTool extends MessageWriteTool
 {
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'inbox_id' => $schema->string()->max(26)->required(),
             'message_ids' => $schema->array()->items($schema->string()->max(26))->required(),
-            'request_key' => $schema->string()->max(RequestKey::LONGEST)->required(),
         ];
     }
 

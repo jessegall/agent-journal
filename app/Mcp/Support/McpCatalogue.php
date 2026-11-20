@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Bus\Support\CommandRegistry;
 use App\Hooks\Contracts\JournalToolNames;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\McpBudgetExceeded;
 use App\Mcp\Exceptions\McpClassInvalid;
+use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Exceptions\McpResourceUriTaken;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
+use App\Mcp\Tools\JournalWriteTool;
 use Laravel\Mcp\Server\Attributes\Name;
 use ReflectionClass;
 
@@ -48,8 +51,11 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     /** @var array<string, int> */
     private array $toolCounts = [];
 
+    public function __construct(private readonly CommandRegistry $commands) {}
+
     /**
      * @throws McpClassInvalid
+     * @throws McpCommandMissing
      * @throws McpToolNameInvalid
      * @throws McpToolNameTaken
      * @throws McpBudgetExceeded
@@ -67,8 +73,17 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         }
 
         $tool = $this->definitionOf($className);
-        $bytes = strlen(json_encode($tool->toArray(), JSON_THROW_ON_ERROR));
         $write = $tool->writeDeclaration();
+
+        if ($tool instanceof JournalWriteTool && $write->isEmpty()) {
+            throw McpCommandMissing::undeclared($className);
+        }
+
+        if ($write->isDefined() && ! $this->commands->has($write->get()->command)) {
+            throw McpCommandMissing::for($className, $write->get()->command);
+        }
+
+        $bytes = strlen(json_encode($tool->toArray(), JSON_THROW_ON_ERROR));
         $counts = $this->toolCounts;
         $sizes = $this->toolBytes;
 

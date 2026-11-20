@@ -9,6 +9,7 @@ use App\Skills\Commands\RestoreSkill;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Resolvers\Support\SkillContextResolver;
+use App\Skills\Support\SkillAuthoring;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillRevisionResult;
 
@@ -16,16 +17,17 @@ final readonly class RestoreSkillHandler implements CommandHandler
 {
     public function __construct(
         private StoredSkillWrites $writes,
+        private SkillAuthoring $authoring,
     ) {}
 
     public function handle(RestoreSkill $command): SkillRevisionResult
     {
-
+        $skillId = $this->authoring->storedId($command->skill);
         return $this->writes->once($command->requestId, hash(
             'sha256',
-            "{$command->skillId}|{$command->revision}|{$command->expectedRevision}",
-        ), function () use ($command) {
-            $skill = Skill::lockVisible($command->skillId, SkillContextResolver::ENVIRONMENT);
+            "{$skillId}|{$command->revision}|{$command->expectedRevision}",
+        ), function () use ($command, $skillId) {
+            $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
             $skill->checkWritableAt($command->expectedRevision);
             $earlier = SkillRevision::numbered($skill, $command->revision);
 

@@ -18,7 +18,7 @@ final readonly class RetireMenuEntryHandler implements CommandHandler
     /**
      * @throws MenuEntryRefused
      */
-    public function handle(RetireMenuEntry $command): void
+    public function handle(RetireMenuEntry $command): string
     {
         $entry = MenuEntry::query()
             ->ownedBy(ActorIdentity::of($this->admission->owner()))
@@ -31,5 +31,7 @@ final readonly class RetireMenuEntryHandler implements CommandHandler
         }
 
         $entry->retire();
+
+        return $entry->id;
     }
 }

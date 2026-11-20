@@ -4,32 +4,27 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
-use App\Mcp\Attributes\WritesCommand;
-use App\Bus\Contracts\CommandBus;
-use App\Mcp\Data\ToolResult;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalWriteTool;
 use App\Skills\Commands\RetireSkill;
-use App\Skills\Support\SkillAuthoring;
+use App\Skills\Values\SkillReference;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 /**
  * skills_retire: retires a stored skill its owner names, as skill:retire does.
  */
+#[IsIdempotent]
+#[IsDestructive(true)]
 #[Name('skills_retire')]
-#[WritesCommand(RetireSkill::class)]
+#[Dispatches(RetireSkill::class)]
 #[Description('Retire a stored skill you own; it leaves every selection and its revisions stay readable.')]
-final class SkillRetireTool extends JournalWriteTool
+final class SkillRetireTool extends SkillWriteTool
 {
-    public function __construct(
-        private readonly SkillAuthoring $authoring,
-        private readonly CommandBus $commands,
-    ) {}
-
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'skill' => $schema->string()->max(64)->required(),
@@ -38,14 +33,12 @@ final class SkillRetireTool extends JournalWriteTool
         ];
     }
 
-    protected function write(ToolArguments $arguments): ToolResult
+    protected function command(ToolArguments $arguments): RetireSkill
     {
-        $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
-        $skill = $this->authoring->stored($arguments->text('skill'));
-        $result = $this->commands->run(
-            new RetireSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId),
+        return new RetireSkill(
+            new SkillReference($arguments->text('skill')),
+            $arguments->positiveInteger('expected_revision'),
+            $this->requestId($arguments),
         );
-
-        return ToolResult::ok($this->authoring->receipt($result, $requestId), []);
     }
 }

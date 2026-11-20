@@ -4,33 +4,31 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
-use App\Mcp\Attributes\WritesCommand;
-use App\Bus\Contracts\CommandBus;
-use App\Mcp\Data\ToolResult;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalWriteTool;
 use App\Skills\Commands\ReviseSkill;
-use App\Skills\Support\SkillAuthoring;
-use App\Skills\Values\SkillDraft;
+use App\Skills\Values\SkillDraftChanges;
+use App\Skills\Values\SkillReference;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 /**
  * skills_edit: saves a new revision of a stored skill against the revision read, as skill:edit does.
  */
+#[IsIdempotent]
 #[Name('skills_edit')]
-#[WritesCommand(ReviseSkill::class)]
-#[Description('Save a new revision of a stored skill against the revision you read; what you leave out stays as it was. A stale expected_revision is refused naming the latest.')]
-final class SkillEditTool extends JournalWriteTool
+#[IsDestructive(true)]
+#[Dispatches(ReviseSkill::class)]
+#[Description(
+    'Save a new revision of a stored skill against the revision you read. Omitted fields keep their values. '
+    .'A stale expected_revision is refused with the latest revision.',
+)]
+final class SkillEditTool extends SkillWriteTool
 {
-    public function __construct(
-        private readonly SkillAuthoring $authoring,
-        private readonly CommandBus $commands,
-    ) {}
-
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'skill' => $schema->string()->max(64)->description('The skill number or key.')->required(),
@@ -43,28 +41,18 @@ final class SkillEditTool extends JournalWriteTool
         ];
     }
 
-    protected function write(ToolArguments $arguments): ToolResult
+    protected function command(ToolArguments $arguments): ReviseSkill
     {
-        $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
-        $skill = $this->authoring->stored($arguments->text('skill'));
-        $current = $this->authoring->currentDraft($skill);
-        $body = $arguments->optionalText('body');
-        $conditions = $arguments->optionalText('conditions');
-        $draft = new SkillDraft(
-            $arguments->optionalText('name') ?? $current->name,
-            $arguments->optionalText('description') ?? $current->description,
-            $body === null ? $current->sections : $this->authoring->sectionsOf($body),
-            $conditions === null ? $current->condition : $this->authoring->conditionOf($conditions, []),
-        );
-
-        return ToolResult::ok(
-            $this->authoring->receipt(
-                $this->commands->run(
-                    new ReviseSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId, $draft),
-                ),
-                $requestId,
+        return new ReviseSkill(
+            new SkillReference($arguments->text('skill')),
+            $arguments->positiveInteger('expected_revision'),
+            $this->requestId($arguments),
+            new SkillDraftChanges(
+                $arguments->optionalText('name'),
+                $arguments->optionalText('description'),
+                $arguments->optionalText('body'),
+                $arguments->optionalText('conditions'),
             ),
-            [],
         );
     }
 }

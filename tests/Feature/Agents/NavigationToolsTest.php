@@ -90,11 +90,13 @@ final class NavigationToolsTest extends TestCase
         $navigation = $this->raise($this->stalledScript(), 'raise-1');
         $round = ['request' => $navigation->id, 'version' => $navigation->row_version, 'generation' => 7];
 
-        $this->callMcpTool($this->main, 'navigation_answer', [...$round, 'version' => 9, 'keys' => ['down']])
-            ->assertJsonPath('result.isError', true);
-        $this->callMcpTool($this->main, 'navigation_answer', [...$round, 'keys' => ['ctrl-c']])
-            ->assertJsonPath('result.isError', true);
-        $this->callMcpTool($this->main, 'navigation_answer', [...$round, 'keys' => ['down']])
+        $this->callMcpTool($this->main, 'navigation_answer', [
+            ...$round, 'request_key' => 'stale', 'version' => 9, 'keys' => ['down'],
+        ])->assertJsonPath('result.isError', true);
+        $this->callMcpTool($this->main, 'navigation_answer', [
+            ...$round, 'request_key' => 'invalid-key', 'keys' => ['ctrl-c'],
+        ])->assertJsonPath('result.isError', true);
+        $this->callMcpTool($this->main, 'navigation_answer', [...$round, 'request_key' => 'answer', 'keys' => ['down']])
             ->assertJsonPath('result.isError', false);
 
         $this->assertSame(NavigationState::Answering, $navigation->fresh()?->state);
@@ -105,6 +107,7 @@ final class NavigationToolsTest extends TestCase
         $proved = $this->raise($this->stalledScript(), 'raise-1');
         $this->callMcpTool($this->main, 'navigation_answer', [
             'request' => $proved->id,
+            'request_key' => 'proof',
             'version' => $proved->row_version,
             'generation' => 7,
             'keys' => ['down'],
@@ -113,12 +116,14 @@ final class NavigationToolsTest extends TestCase
 
         $this->callMcpTool($this->main, 'navigation_done', [
             'request' => $proved->id,
+            'request_key' => 'complete',
             'version' => NavigationRequest::query()->acrossActors()->findOrFail($proved->id)->row_version,
             'completes' => 'goal',
             'proof' => 'Set model to GPT-6',
         ])->assertJsonPath('result.isError', false);
         $this->callMcpTool($this->main, 'navigation_give_up', [
             'request' => $abandoned->id,
+            'request_key' => 'abandon',
             'version' => $abandoned->row_version,
             'reason' => 'the picker shows no such model',
         ])->assertJsonPath('result.isError', false);
