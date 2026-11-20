@@ -58,26 +58,25 @@ final class PlanCascadeToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.skipped_finished', 1)
             ->assertJsonPath('result.structuredContent.next_actions.0.tool', 'operations_read')
             ->json('result.structuredContent');
-        $operations = $this->callMcpTool(
-            $this->caller,
-            'operations_read',
-            $summary['next_actions'][0]['arguments'],
-        );
-        $this->assertFalse($operations->json('result.isError'), $operations->getContent());
-        $first = $operations->assertJsonPath('result.structuredContent.outcome_count', 23)
-            ->json('result.structuredContent');
-        $last = $this->callMcpTool(
-            $this->caller,
-            'operations_read',
-            $first['next_actions'][0]['arguments'],
-        )->assertJsonPath('result.structuredContent.next_actions', [])->json('result.structuredContent');
-        $outcomes = [...$first['outcomes'], ...$last['outcomes']];
+        $outcomes = [];
+        $actions = $summary['next_actions'];
+        for ($page = 0; $page < 23 && $actions !== []; $page++) {
+            $reply = $this->callMcpTool($this->caller, $actions[0]['tool'], $actions[0]['arguments']);
+            $this->assertFalse($reply->json('result.isError'), $reply->getContent());
+            $receipt = $reply->assertJsonPath('result.structuredContent.outcome_count', 23)
+                ->assertJsonPath('result.structuredContent.outcome_offset', count($outcomes))
+                ->json('result.structuredContent');
+            $this->assertNotEmpty($receipt['outcomes']);
+            $outcomes = [...$outcomes, ...$receipt['outcomes']];
+            $actions = $receipt['next_actions'];
+        }
+        $this->assertSame([], $actions);
 
         $this->assertEqualsCanonicalizing(
             [$plan->id, $phase->id, ...$tasks->modelKeys(), $finished->id],
             array_column(array_column($outcomes, 'record'), 'id'),
         );
-        $this->assertSame(22, AssignmentRecord::query()->count());
+        $this->assertDatabaseCount('assignments', 22);
     }
 
     public function test_reassign_and_unassign_use_the_expected_root_reference(): void

@@ -41,6 +41,7 @@ final class PlanToolsTest extends TestCase
 
     public function test_an_agent_builds_starts_reads_and_finishes_a_plan_across_the_two_surfaces(): void
     {
+        $this->caller->openStack($this->app);
         $create = [
             'title' => 'Release', 'brief' => 'Ship the release.', 'type' => 'build', 'request_key' => 'make-plan',
         ];

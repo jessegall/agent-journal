@@ -134,6 +134,7 @@ final class TaskToolsTest extends TestCase
 
     private function start(Task $task): int
     {
+        $this->caller->openStack($this->app);
         $response = $this->callMcpTool(
             $this->caller,
             'tasks_start',

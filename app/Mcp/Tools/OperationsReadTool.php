@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  */
 #[IsReadOnly]
 #[Name('operations_read')]
-#[Description('What became of your write sent with a request_key: completed with its result, refused with the refusal, or unknown when it never ran. Outcomes come 20 at a time; send request_key with the continuation a result gave.')]
+#[Description('What became of your write sent with a request_key: completed with its result, refused with the refusal, or unknown when it never ran. Send request_key with the continuation to read more outcomes.')]
 final class OperationsReadTool extends JournalReadTool
 {
     protected array|null $meta = ['anthropic/alwaysLoad' => true];
