@@ -25,10 +25,12 @@ trait PrintsComments
         ]);
 
         return $this->runReport(function () use ($call): CommandReport {
-            $list = $this->sendCall($call);
-            $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $list->comments);
+            $commentPage = $this->sendCall($call);
+            $report = $this->commentsReport(CommandReport::ending(self::SUCCESS), $commentPage->comments);
 
-            return $list->nextAfter === null ? $report : $report->line("More: --after={$list->nextAfter}");
+            return $commentPage->nextAfter === null
+                ? $report
+                : $report->line("More: --after={$commentPage->nextAfter}");
         });
     }
 

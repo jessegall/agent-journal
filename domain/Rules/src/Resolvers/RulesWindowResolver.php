@@ -26,14 +26,14 @@ final readonly class RulesWindowResolver implements PageResolver
     public function read(): RuleListData
     {
         $filters = $this->request->filters();
-        $list = $this->records->list($filters->toDomain());
+        $rulePage = $this->records->list($filters->toDomain());
 
         return RuleListData::from([
-            'rows' => RuleRowData::collect($list->rules),
-            'filters' => $filters->onPage($list->page),
-            'pagination' => RulePaginationData::fromRuleList($list),
-            'selectionMissing' => $list->selectionMissing,
-            'selected' => $list->selection()->map(RuleReaderData::from(...))->getOrElse(Optional::create()),
+            'rows' => RuleRowData::collect($rulePage->rules),
+            'filters' => $filters->onPage($rulePage->page),
+            'pagination' => RulePaginationData::fromRuleList($rulePage),
+            'selectionMissing' => $rulePage->selectionMissing,
+            'selected' => $rulePage->selection()->map(RuleReaderData::from(...))->getOrElse(Optional::create()),
         ]);
     }
 }

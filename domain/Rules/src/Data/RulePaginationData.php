@@ -22,8 +22,8 @@ final class RulePaginationData extends Data
         public readonly int $total,
     ) {}
 
-    public static function fromRuleList(RuleList $list): self
+    public static function fromRuleList(RuleList $rulePage): self
     {
-        return self::from(['page' => $list->page, 'lastPage' => $list->lastPage, 'total' => $list->total]);
+        return self::from(['page' => $rulePage->page, 'lastPage' => $rulePage->lastPage, 'total' => $rulePage->total]);
     }
 }

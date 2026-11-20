@@ -18973,6 +18973,7 @@ parameter	$assets
 parameter	$assignableType
 parameter	$assigned
 parameter	$assignedIds
+parameter	$assignedPlanPage
 parameter	$assignee
 parameter	$assigneeType
 parameter	$assignees
@@ -20234,6 +20235,7 @@ parameter	$plain
 parameter	$plan
 parameter	$planId
 parameter	$planNumber
+parameter	$planPage
 parameter	$planTitle
 parameter	$planner
 parameter	$plans
@@ -20566,6 +20568,7 @@ parameter	$rowVersion
 parameter	$rows
 parameter	$rule
 parameter	$ruleId
+parameter	$rulePage
 parameter	$rules
 parameter	$run
 parameter	$runId
@@ -28547,6 +28550,8 @@ variable	$assessedUnder
 variable	$assessment
 variable	$assignables
 variable	$assigned
+variable	$assignedPlanPage
+variable	$assignedTaskPage
 variable	$assignee
 variable	$assigneePage
 variable	$assignees
@@ -29367,6 +29372,7 @@ variable	$placement
 variable	$placements
 variable	$plan
 variable	$planId
+variable	$planPage
 variable	$planPhases
 variable	$plans
 variable	$plugin
@@ -29565,6 +29571,7 @@ variable	$rowVersion
 variable	$rows
 variable	$rowsOfShare
 variable	$rule
+variable	$rulePage
 variable	$rules
 variable	$run
 variable	$runFailures

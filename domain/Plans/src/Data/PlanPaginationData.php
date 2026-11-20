@@ -22,8 +22,8 @@ final class PlanPaginationData extends Data
         public readonly int $total,
     ) {}
 
-    public static function fromPlanList(PlanList $list): self
+    public static function fromPlanList(PlanList $planPage): self
     {
-        return self::from(['page' => $list->page, 'lastPage' => $list->lastPage, 'total' => $list->total]);
+        return self::from(['page' => $planPage->page, 'lastPage' => $planPage->lastPage, 'total' => $planPage->total]);
     }
 }

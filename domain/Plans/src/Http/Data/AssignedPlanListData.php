@@ -26,13 +26,13 @@ final class AssignedPlanListData extends Data
         public readonly int $total,
     ) {}
 
-    public static function fromList(AssignedPlanList $list): self
+    public static function fromList(AssignedPlanList $assignedPlanPage): self
     {
         return self::from([
-            'cards' => AssignedPlanCardData::collect($list->cards),
-            'page' => $list->page->number,
-            'perPage' => $list->page->size,
-            'total' => $list->total,
+            'cards' => AssignedPlanCardData::collect($assignedPlanPage->cards),
+            'page' => $assignedPlanPage->page->number,
+            'perPage' => $assignedPlanPage->page->size,
+            'total' => $assignedPlanPage->total,
         ]);
     }
 }

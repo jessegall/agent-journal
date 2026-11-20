@@ -40,7 +40,7 @@ final class AssignedPlansCommand extends Command
         }
 
         return $this->runReport(function () use ($plans, $call): int {
-            $list = $plans->listAssignedPlans($call->search, $call->states, $call->page, $call->perPage);
+            $assignedPlanPage = $plans->listAssignedPlans($call->search, $call->states, $call->page, $call->perPage);
             $headers = ['Id', 'Title', 'Type', 'State', 'Holder', 'Reference'];
             $this->table($headers, array_map(fn (AssignedPlanCardData $card) => [
                 $card->id,
@@ -49,8 +49,10 @@ final class AssignedPlansCommand extends Command
                 $card->state->value,
                 $card->holder->label(),
                 $card->holder->reference,
-            ], $list->cards));
-            $this->line("Page {$list->page}: ".count($list->cards)." of {$list->total}");
+            ], $assignedPlanPage->cards));
+            $this->line(
+                "Page {$assignedPlanPage->page}: ".count($assignedPlanPage->cards)." of {$assignedPlanPage->total}",
+            );
 
             return self::SUCCESS;
         });

@@ -118,9 +118,9 @@ final class PlanRecordsTest extends TestCase
 
     public function test_a_page_past_the_end_becomes_the_last_page(): void
     {
-        $list = $this->records()->list(new PlanFilters(page: 99));
+        $planPage = $this->records()->list(new PlanFilters(page: 99));
 
-        $this->assertSame([1, 1, 2], [$list->page, $list->lastPage, count($list->cards)]);
+        $this->assertSame([1, 1, 2], [$planPage->page, $planPage->lastPage, count($planPage->cards)]);
     }
 
     public function test_a_selected_plan_stays_readable_outside_the_filter_and_says_so(): void
