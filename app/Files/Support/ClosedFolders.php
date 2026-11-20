@@ -31,7 +31,7 @@ final readonly class ClosedFolders
      *
      * @return list<string>
      */
-    private function closedIn(Place $place): array
+    public function closedIn(Place $place): array
     {
         $folders = $place === Place::Project ? $this->config->array('files.closed_folders') : [];
         $root = $this->roots->root($place);

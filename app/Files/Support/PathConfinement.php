@@ -6,6 +6,7 @@ namespace App\Files\Support;
 
 use App\Files\Exceptions\FileMissing;
 use App\Files\Exceptions\FileUnreadable;
+use App\Files\Exceptions\FolderMissing;
 use App\Files\Exceptions\LinkLeavesPlace;
 use App\Files\Exceptions\LinkLoop;
 use App\Files\Values\FilePath;
@@ -30,15 +31,33 @@ final readonly class PathConfinement
     {
         $this->closed->assertNotClosed($file);
         $root = $this->roots->root($file->place);
-        $path = $this->absolutePath($root, $file);
-        clearstatcache(true, $path);
-        $real = realpath($path);
+        $real = $this->freshRealPath($root, $file);
 
         if ($real === false) {
-            throw $this->unresolved($file, $root);
+            throw $this->loopOf($file, $root) ?? FileMissing::at($file);
         }
 
         return $this->confined($file, $root, $real);
+    }
+
+    /**
+     * The real path of an existing folder; FolderMissing when nothing, or a file, is there.
+     */
+    public function resolvedFolder(FilePath $folder): string
+    {
+        $this->closed->assertNotClosed($folder);
+        $root = $this->roots->root($folder->place);
+        $real = $this->freshRealPath($root, $folder);
+
+        if ($real === false) {
+            throw $this->loopOf($folder, $root) ?? FolderMissing::at($folder);
+        }
+
+        if (! is_dir($real)) {
+            throw FolderMissing::at($folder);
+        }
+
+        return $this->confined($folder, $root, $real);
     }
 
     /**
@@ -111,6 +130,17 @@ final readonly class PathConfinement
     }
 
     /**
+     * The real path, read past PHP's realpath and stat caches, so a link re-pointed while the worker runs is seen.
+     */
+    private function freshRealPath(string $root, FilePath $file): string|false
+    {
+        $path = $this->absolutePath($root, $file);
+        clearstatcache(true, $path);
+
+        return realpath($path);
+    }
+
+    /**
      * A real path, refused when it leaves the place root or lies in a closed folder once its links are followed.
      */
     private function confined(FilePath $file, string $root, string $real): string
@@ -125,10 +155,10 @@ final readonly class PathConfinement
     }
 
     /**
-     * Why a path does not resolve: its links lead round in a loop, or a name on its way is missing. The links are
-     * walked by hand, since PHP reports no reason when a path does not resolve.
+     * The loop a path that does not resolve runs into, if its links lead round in one; none when a name on its way is
+     * missing. The links are walked by hand, since PHP reports no reason when a path does not resolve.
      */
-    private function unresolved(FilePath $file, string $root): LinkLoop|FileMissing
+    private function loopOf(FilePath $file, string $root): LinkLoop|null
     {
         $names = explode('/', $file->relative);
         $current = $root;
@@ -153,12 +183,12 @@ final readonly class PathConfinement
             }
 
             if (! file_exists($next)) {
-                return FileMissing::at($file);
+                return null;
             }
 
             $current = $next;
         }
 
-        return $links > self::LINK_LIMIT ? LinkLoop::at($file) : FileMissing::at($file);
+        return $links > self::LINK_LIMIT ? LinkLoop::at($file) : null;
     }
 }

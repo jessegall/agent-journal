@@ -35,6 +35,21 @@ final readonly class Fingerprint
         return new self($realPath, $stat['ino'], $stat['size'], $stat['mtime'], $stat['ctime']);
     }
 
+    /**
+     * The fingerprint of a link itself, read with one lstat, never following it.
+     */
+    public static function ofLink(FilePath $link, string $path): self
+    {
+        clearstatcache(true, $path);
+        $stat = @lstat($path);
+
+        if ($stat === false) {
+            throw FileMissing::at($link);
+        }
+
+        return new self($path, $stat['ino'], $stat['size'], $stat['mtime'], $stat['ctime']);
+    }
+
     public function key(): string
     {
         return "{$this->realPath}|{$this->inode}|{$this->size}|{$this->modifiedAt}|{$this->changedAt}";
