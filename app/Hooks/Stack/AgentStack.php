@@ -6,20 +6,15 @@ namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\StateFactory;
-use App\Hooks\Decisions\Decision;
+use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Enums\AnswerType;
 use App\Hooks\Exceptions\BottomStateCannotFinish;
-use App\Hooks\Exceptions\BottomStateDelegated;
-use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\MissingBottomState;
-use App\Hooks\Exceptions\NonBottomStateAllowed;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 
 /**
- * The states of one agent, bottom first. A hook walks them from the top until one gives a real answer;
- * the answer carries the stack as the walk left it, and this stack never changes.
+ * The immutable frame order of an agent's stack, with hook decisions collected from its live snapshot.
  */
 final readonly class AgentStack
 {
@@ -34,34 +29,30 @@ final readonly class AgentStack
     public function __construct(
         private array $frames,
         private StateFactory $factory,
+        private StateMethodSelector $selector = new StateMethodSelector(new StateMethods()),
     ) {}
 
     public function answer(HookInput $input): HookAnswer
     {
-        $walkFrames = array_reverse($this->frames);
+        $bottom = $this->frames[0] ?? null;
 
-        if ($walkFrames === []) {
+        if ($bottom === null || ! $bottom->isBottom() || ! $bottom->isLive()) {
             throw MissingBottomState::for($input->methodName());
         }
 
-        $walk = new HookWalk($input->methodName(), $this, $this->top());
+        $selected = $this->selector->forHook($this, $input);
 
-        foreach ($walkFrames as $frame) {
-            if (! $frame->isLive()) {
-                continue;
-            }
-
-            $decision = $frame->answer($input);
-            $walk->record($frame, $decision);
-            $this->checkDecision($frame, $input, $decision, $walk);
-            $decision->transition->applyTo(new FrameEditor($walk, $frame));
-
-            if (! $decision->isDelegating()) {
-                return $walk->finish($decision);
-            }
+        if ($selected === []) {
+            throw MissingBottomState::for($input->methodName());
         }
 
-        throw MissingBottomState::for($input->methodName());
+        $walk = new HookWalk($this, $this->top());
+
+        foreach ($selected as $handler) {
+            $walk->collect($handler, $input);
+        }
+
+        return $walk->finish();
     }
 
     /**
@@ -87,7 +78,7 @@ final readonly class AgentStack
             return $this;
         }
 
-        return new self([...$this->frames, $frame], $this->factory);
+        return clone ($this, ['frames' => [...$this->frames, $frame]]);
     }
 
     /**
@@ -99,10 +90,9 @@ final readonly class AgentStack
             throw BottomStateCannotFinish::for($frame->typeKey());
         }
 
-        return new self(
-            array_values(array_filter($this->frames, fn (Frame $candidate) => $candidate->id !== $frame->id)),
-            $this->factory,
-        );
+        return clone ($this, [
+            'frames' => array_values(array_filter($this->frames, fn (Frame $candidate) => $candidate->id !== $frame->id)),
+        ]);
     }
 
     /**
@@ -121,7 +111,7 @@ final readonly class AgentStack
             array_pop($frames);
         }
 
-        return new self($frames, $this->factory);
+        return clone ($this, ['frames' => $frames]);
     }
 
     /**
@@ -210,20 +200,5 @@ final readonly class AgentStack
             ),
             $this->frames,
         ));
-    }
-
-    private function checkDecision(Frame $frame, HookInput $input, Decision $decision, HookWalk $walk): void
-    {
-        if ($frame->isBottom() && $decision->isDelegating()) {
-            throw BottomStateDelegated::for($frame->typeKey(), $input->methodName(), $walk->visitedFrames());
-        }
-
-        if (! $frame->isBottom() && $decision->answerType() === AnswerType::Allow) {
-            throw NonBottomStateAllowed::for($frame->typeKey(), $input->methodName());
-        }
-
-        if (! $input->accepts($decision->answerType())) {
-            throw InvalidHookAnswer::for($input->methodName(), $decision->answerType()->value);
-        }
     }
 }

@@ -11,12 +11,12 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\Enums\SelectionReason;
 use App\Hooks\Enums\TransitionType;
 use App\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Hooks\Exceptions\BottomStateDelegated;
 use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\MissingBottomState;
-use App\Hooks\Exceptions\NonBottomStateAllowed;
 use App\Hooks\Exceptions\StateBelowTopPushed;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Stack\AgentStack;
@@ -36,6 +36,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Fixtures\Hooks\MarkedStopState;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\TestCase;
@@ -96,7 +97,7 @@ final class AgentStackTest extends TestCase
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_every_hook_walks_down_from_the_top_until_the_first_answer(HookInput $input): void
+    public function test_a_delegating_match_shadows_ordinary_methods_below_it(HookInput $input): void
     {
         $top = ScriptedState::delegating();
         $middle = ScriptedState::delegating();
@@ -104,8 +105,9 @@ final class AgentStackTest extends TestCase
 
         $answer = $stack->answer($input);
 
-        $this->assertSame(['top delegate keep', 'middle delegate keep', 'ready allow keep'], $this->stepsOf($answer));
-        $this->assertSame([1, 1], [$top->askedCount, $middle->askedCount]);
+        $this->assertSame(['top delegate keep'], $this->stepsOf($answer));
+        $this->assertTrue($answer->isAllowed());
+        $this->assertSame([1, 0], [$top->askedCount, $middle->askedCount]);
         $this->assertSame($input->methodName(), $answer->steps[0]->hookMethod);
     }
 
@@ -128,20 +130,21 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->stack(
             $this->ready(),
-            $this->frame('middle', new ScriptedState(Decision::addContext('From the middle.'))),
+            $this->frame('middle', new MarkedStopState(Decision::addContext('From the middle.'))),
             $this->frame('top', new ScriptedState(Decision::addContext('From the top.'))),
         );
 
         $this->assertSame(['From the top.', 'From the middle.'], $stack->answer($this->stop())->context);
     }
 
-    public function test_a_pop_removes_the_state_and_the_walk_goes_on(): void
+    public function test_a_delegating_pop_removes_its_origin_and_resolves_to_allow(): void
     {
         $stack = $this->stack($this->ready(), $this->frame('guide', new ScriptedState(Decision::pop())));
 
         $answer = $stack->answer($this->stop());
 
-        $this->assertSame(['guide delegate pop_self', 'ready allow keep'], $this->stepsOf($answer));
+        $this->assertSame(['guide delegate pop_self'], $this->stepsOf($answer));
+        $this->assertTrue($answer->isAllowed());
         $this->assertSame(['ready'], $answer->stack->frameIds());
         $this->assertSame(['ready', 'guide'], $stack->frameIds());
     }
@@ -177,14 +180,14 @@ final class AgentStackTest extends TestCase
         };
         $stack = $this->stack(
             new Frame('ready', $this->reference('ready'), $delegatingBottom, CarbonImmutable::now(), bottom: true),
-            $this->frame('top', ScriptedState::delegating()),
+            $this->frame('top', new SwitchableState(true)),
         );
 
         try {
             $stack->answer($this->stop());
             $this->fail('The delegating bottom state was not refused.');
         } catch (BottomStateDelegated $failure) {
-            $this->assertSame(['top', 'ready'], $failure->visitedFrames);
+            $this->assertSame(['ready'], $failure->visitedFrames);
         }
     }
 
@@ -195,13 +198,78 @@ final class AgentStackTest extends TestCase
         $this->stack()->answer($this->stop());
     }
 
-    public function test_an_activity_may_not_allow(): void
+    public function test_a_non_bottom_handler_may_allow(): void
     {
         $stack = $this->stack($this->ready(), $this->frame('top', new ScriptedState(Decision::allow())));
 
-        $this->expectException(NonBottomStateAllowed::class);
+        $this->assertTrue($stack->answer($this->stop())->isAllowed());
+    }
 
-        $stack->answer($this->stop());
+    public function test_every_selected_answer_is_recorded_and_the_latest_denial_survives(): void
+    {
+        $firstDenial = Decision::deny('First denial.')->withMessage('Repeated.');
+        $lateDenial = Decision::deny('Later denial.')->withContext('Later context.');
+        $stack = $this->stack(
+            $this->ready(),
+            $this->frame('delegate', new MarkedStopState(Decision::message('Final context.'))),
+            $this->frame('late-denial', new MarkedStopState($lateDenial)),
+            $this->frame('allow', new MarkedStopState(Decision::allow()->withMessage('Repeated.'))),
+            $this->frame('first-denial', new ScriptedState($firstDenial)),
+        );
+
+        $answer = $stack->answer($this->stop());
+
+        $this->assertSame('Later denial.', $answer->decision->refusalReason());
+        $this->assertSame(['Repeated.', 'Repeated.', 'Later context.', 'Final context.'], $answer->context);
+        $this->assertSame(['Repeated.', 'Repeated.', 'Final context.'], $answer->messages);
+        $this->assertSame(['First denial.', null, 'Later denial.', null], array_column($answer->steps, 'denialReason'));
+        $this->assertSame(
+            [
+                SelectionReason::FirstMatch,
+                SelectionReason::StackWide,
+                SelectionReason::StackWide,
+                SelectionReason::StackWide,
+            ],
+            array_column($answer->steps, 'selectionReason'),
+        );
+    }
+
+    public function test_invalid_selected_answers_prevent_earlier_transitions_from_running(): void
+    {
+        $loaded = 0;
+        $factory = new InMemoryStateFactory(['guide' => function () use (&$loaded): ScriptedState {
+            $loaded++;
+
+            return ScriptedState::delegating();
+        }]);
+        $stack = new AgentStack([
+            $this->ready(),
+            $this->frame('invalid', new MarkedStopState(Decision::rewrite('ls'))),
+            $this->frame('top', new ScriptedState(Decision::allow()->withPush($this->reference('guide')))),
+        ], $factory);
+
+        try {
+            $stack->answer($this->stop());
+            $this->fail('The invalid selected step was accepted.');
+        } catch (InvalidHookAnswer) {
+            $this->assertSame(0, $loaded);
+        }
+    }
+
+    public function test_a_lower_marked_pop_and_a_top_push_both_apply_to_their_origins(): void
+    {
+        $guide = ScriptedState::delegating();
+        $stack = new AgentStack([
+            $this->ready(),
+            $this->frame('lower', new MarkedStopState(Decision::pop())),
+            $this->frame('top', new ScriptedState(Decision::push($this->reference('guide')))),
+        ], new InMemoryStateFactory(['guide' => fn () => $guide]));
+
+        $answer = $stack->answer($this->stop());
+
+        $this->assertSame(['top delegate push', 'lower delegate pop_self'], $this->stepsOf($answer));
+        $this->assertSame(['ready', 'top', 'pushed-1'], $answer->stack->frameIds());
+        $this->assertSame(0, $guide->askedCount);
     }
 
     public function test_a_hook_refuses_an_answer_it_cannot_take(): void
@@ -246,7 +314,7 @@ final class AgentStackTest extends TestCase
         $factory = new InMemoryStateFactory(['guide' => fn () => ScriptedState::delegating()]);
         $stack = new AgentStack([
             $this->ready(),
-            $this->frame('covered', new ScriptedState(Decision::push($this->reference('guide')))),
+            $this->frame('covered', new MarkedStopState(Decision::push($this->reference('guide')))),
             $this->frame('top', new ScriptedState(Decision::pop())),
         ], $factory);
 

@@ -45,7 +45,7 @@ final class TransparentFramesTest extends TestCase
 
         $answer = $stack->answer($this->input('stop'));
 
-        $this->assertSame(['plan', 'ready'], $this->visited($answer->steps));
+        $this->assertSame(['ready'], $this->visited($answer->steps));
         $this->assertSame('plan', $stack->top()->id);
         $this->assertSame(['ready', 'plan', 'task'], $answer->stack->frameIds());
     }
@@ -58,7 +58,7 @@ final class TransparentFramesTest extends TestCase
         $read = $stack->answer($this->readOnlyShellLine());
 
         $this->assertSame(['message'], $this->visited($edit->steps));
-        $this->assertSame(['message', 'plan', 'ready'], $this->visited($read->steps));
+        $this->assertSame(['message'], $this->visited($read->steps));
         $this->assertSame('message', $stack->top()->id);
         $this->assertSame(['ready', 'plan', 'task', 'message'], $read->stack->frameIds());
     }
@@ -71,7 +71,7 @@ final class TransparentFramesTest extends TestCase
         $edit = $stack->answer($this->input('file edit'));
 
         $this->assertSame(['task'], $this->visited($stop->steps));
-        $this->assertSame(['task', 'plan', 'ready'], $this->visited($edit->steps));
+        $this->assertSame(['ready'], $this->visited($edit->steps));
         $this->assertSame(['ready', 'plan', 'message', 'task'], $edit->stack->frameIds());
     }
 

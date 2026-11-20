@@ -6,6 +6,7 @@ namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateFactory;
+use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Exceptions\StateSchemaUnknown;
@@ -21,6 +22,7 @@ final readonly class StackRestorer
     public function __construct(
         private StateTypes $types,
         private StateFactory $factory,
+        private StateMethodSelector $selector = new StateMethodSelector(new StateMethods()),
     ) {}
 
     public function restore(FrameRecords $records): AgentStack
@@ -60,7 +62,7 @@ final readonly class StackRestorer
 
         ksort($frames);
 
-        return new AgentStack(array_values($frames), $this->factory);
+        return new AgentStack(array_values($frames), $this->factory, $this->selector);
     }
 
     /**

@@ -30,6 +30,7 @@ use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Contracts\UserStack;
+use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Inspection\StackInspectionQuery;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\FailureReceipt;
@@ -75,6 +76,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(IncomingWorkList::class);
         $this->app->singleton(IncomingWorkRegistration::class, IncomingWorkList::class);
         $this->app->singleton(StateTypes::class);
+        $this->app->singleton(StateMethods::class);
         $this->app->bind(StartTransaction::class, StackTransaction::class);
         $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
             $app->make(Repository::class)->string('accounts.root'),

@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Enums\AnswerType;
+use App\Hooks\Exceptions\BottomStateDelegated;
+use App\Hooks\Exceptions\InvalidHookAnswer;
 use App\Hooks\Exceptions\StateBelowTopPushed;
 use App\Hooks\Storage\WalkStep;
+use Closure;
 
 /**
- * Collects the context, the steps and the stack changes of one walk while it runs, and builds its answer at the end.
+ * Folds the selected decisions and stages their stack changes in call order.
  */
 final class HookWalk
 {
@@ -29,37 +34,52 @@ final class HookWalk
      */
     private array $steps = [];
 
-    private AgentStack $stack;
-
     /**
-     * @param  Frame  $walkTop  the highest live frame when the walk began, the only one that may push
+     * @var list<Closure(): void>
      */
-    public function __construct(
-        private readonly string $hookMethod,
-        AgentStack $stack,
-        private readonly Frame $walkTop,
-    ) {
-        $this->stack = $stack;
+    private array $transitions = [];
+
+    private Decision $retained;
+
+    public function __construct(private AgentStack $stack, private readonly Frame $walkTop)
+    {
+        $this->retained = Decision::delegate();
     }
 
-    public function record(Frame $frame, Decision $decision): void
+    public function collect(SelectedStateMethod $selected, HookInput $input): void
     {
+        $frame = $selected->frame;
+        $decision = $frame->answer($input);
+        $answer = $decision->answerType();
+
+        $this->steps[] = WalkStep::from([
+            'frameId' => $frame->id,
+            'stateType' => $frame->typeKey(),
+            'hookMethod' => $selected->method->name,
+            'answer' => $answer,
+            'change' => $decision->transition->type(),
+            'contextCount' => count($decision->context),
+            'selectionReason' => $selected->reason,
+            'denialReason' => $answer === AnswerType::Deny ? $decision->refusalReason() : null,
+        ]);
+
+        if ($frame->isBottom() && $decision->isDelegating()) {
+            throw BottomStateDelegated::for($frame->typeKey(), $input->methodName(), $this->visitedFrames());
+        }
+
+        if (! $input->accepts($answer)) {
+            throw InvalidHookAnswer::for($input->methodName(), $answer->value);
+        }
+
         $this->context = [...$this->context, ...$decision->context];
         $this->messages = [...$this->messages, ...$decision->messages];
-        $this->steps[] = new WalkStep(
-            $frame->id,
-            $frame->typeKey(),
-            $this->hookMethod,
-            $decision->answerType(),
-            $decision->transition->type(),
-            count($decision->context),
-        );
+        $this->transitions[] = fn () => $decision->transition->applyTo(new FrameEditor($this, $frame));
+
+        if ($answer === AnswerType::Deny || $this->retained->answerType() !== AnswerType::Deny) {
+            $this->retained = $decision;
+        }
     }
 
-    /**
-     * The frame's explicit pop: it leaves with the inactive frames it exposed. The walk itself goes on from the frame's
-     * next lower place in the stack it started with.
-     */
     public function removeFrame(Frame $frame): void
     {
         $this->stack = $this->stack->poppedOf($frame);
@@ -74,17 +94,21 @@ final class HookWalk
         $this->stack = $this->stack->withoutExposedInactive()->withStateOnTop($state);
     }
 
-    public function finish(Decision $decision): HookAnswer
+    public function finish(): HookAnswer
     {
+        foreach ($this->transitions as $apply) {
+            $apply();
+        }
+
+        $decision = $this->retained->isDelegating() ? Decision::allow() : $this->retained;
+
         return new HookAnswer($decision, $this->context, $this->steps, $this->stack, $this->messages);
     }
 
     /**
-     * The frames this walk asked, top first.
-     *
      * @return list<string>
      */
-    public function visitedFrames(): array
+    private function visitedFrames(): array
     {
         return array_map(fn (WalkStep $step) => $step->frameId, $this->steps);
     }
