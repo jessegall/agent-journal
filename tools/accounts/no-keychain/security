@@ -1,0 +1,4 @@
+#!/bin/sh
+# Stands in for macOS security(1) on the PATH of Claude Code sign-ins and starts: every Keychain call fails, so
+# Claude Code keeps its login in .credentials.json in the account folder, as it does on Linux and in containers.
+exit 1

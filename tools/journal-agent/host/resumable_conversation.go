@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 )
 
 // conversationIDPattern is the shape of a native conversation id: nothing that could leave a folder.
@@ -28,8 +27,7 @@ func (prepared PreparedStart) ResumableConversation(workFolder string) (string, 
 // projects/<the workspace path with separators as dashes>/<id>.jsonl, Codex under sessions/ in a rollout file whose
 // name ends with the id.
 func transcriptIn(accountFolder string, workFolder string, conversationID string) bool {
-	project := strings.NewReplacer("/", "-", ".", "-").Replace(filepath.Clean(workFolder))
-	if regularFile(filepath.Join(accountFolder, "projects", project, conversationID+".jsonl")) {
+	if regularFile(filepath.Join(ClaudeProjectFolder(accountFolder, workFolder), conversationID+".jsonl")) {
 		return true
 	}
 	rollouts, err := filepath.Glob(filepath.Join(accountFolder, "sessions", "*", "*", "*", "rollout-*-"+conversationID+".jsonl"))

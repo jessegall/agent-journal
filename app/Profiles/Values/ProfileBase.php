@@ -62,7 +62,7 @@ final readonly class ProfileBase
     {
         return new self('read-only-helper', 'Read-only helper', 'sonnet', [
             new ClassGrant(ResourceAreaType::Workspace, [...self::looking(), AccessType::Execute]),
-            new ClassGrant(ResourceAreaType::JournalContent, self::journalWork()),
+            new ClassGrant(ResourceAreaType::JournalContent, [...self::journalWork(), AccessType::Delete]),
             new ClassGrant(ResourceAreaType::JournalWork, self::journalWork()),
         ], ExecutionModeType::RequiredContainer, false, [], OfflineReplyMode::Refuse, false);
     }
@@ -75,7 +75,7 @@ final readonly class ProfileBase
         return new self('writing-helper', 'Writing helper', 'sonnet', [
             new ClassGrant(ResourceAreaType::Workspace, [...self::looking(), ...self::changing(), ...self::running()]),
             new ClassGrant(ResourceAreaType::Scratch, [...self::looking(), ...self::changing(), ...self::running()]),
-            new ClassGrant(ResourceAreaType::JournalContent, self::journalWork()),
+            new ClassGrant(ResourceAreaType::JournalContent, [...self::journalWork(), AccessType::Delete]),
             new ClassGrant(ResourceAreaType::JournalDocuments, self::journalWork()),
             new ClassGrant(ResourceAreaType::JournalWork, self::journalWork()),
         ], ExecutionModeType::RequiredContainer, true, [

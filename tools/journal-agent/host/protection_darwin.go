@@ -9,13 +9,13 @@ func platformMechanisms() map[string]ProgramMechanisms {
 		"claude": {
 			AccountSecrets: native("sandbox.enabled with permissions.deny Read on the account's sign-in items: " +
 				"the Seatbelt profile for Bash and its children, the permission check for file tools"),
-			ForeignHistory: unavailable("every session of an account keeps its history in one projects folder, " +
-				"and a native read rule cannot tell this session's history from another's"),
+			ForeignHistory: native("the host's session Seatbelt profile (sandbox-exec) around the program: only the " +
+				"projects folder of the session's own workspace can be read or written"),
 			Keychain: native("sandbox.enabled Seatbelt profile with allowUnsandboxedCommands false, " +
 				"and permissions.deny on Bash(security:*)"),
 			ControlSockets: native("sandbox.enabled Seatbelt profile with no allowed Unix sockets"),
-			ProcessInspection: unavailable("Claude Code's Seatbelt profile has no setting that hides the other " +
-				"processes of the same user"),
+			ProcessInspection: native("the host's session Seatbelt profile (sandbox-exec) around the program: no " +
+				"process information about or signal to a process outside the session"),
 			InstallWrites: native("sandbox.enabled writes only in the work folder, and permissions.deny Edit " +
 				"on the accounts folder"),
 		},

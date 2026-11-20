@@ -19,6 +19,12 @@ use Illuminate\Contracts\Config\Repository;
  */
 final readonly class ClaudeSignIn implements SignInProtocol
 {
+    /**
+     * A folder whose security(1) always fails, put first on the PATH so Claude Code never reaches a macOS Keychain
+     * and keeps its login in the account folder's .credentials.json on every host.
+     */
+    private const string NO_KEYCHAIN = 'tools/accounts/no-keychain';
+
     public function __construct(private Repository $config) {}
 
     public function begin(string $directory): PrivateAccountProcess
@@ -103,7 +109,7 @@ final readonly class ClaudeSignIn implements SignInProtocol
     private function environment(string $directory): array
     {
         return [
-            'PATH' => (string) getenv('PATH'),
+            'PATH' => base_path(self::NO_KEYCHAIN).PATH_SEPARATOR.(string) getenv('PATH'),
             'HOME' => $directory,
             'CLAUDE_CONFIG_DIR' => $directory,
         ];

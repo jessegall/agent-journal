@@ -15,6 +15,11 @@ var platformVariables = []string{
 	"LANG", "LC_ALL", "LC_CTYPE", "LC_MESSAGES", "TERM", "COLORTERM", "TZ", "USER", "LOGNAME", "SHELL",
 }
 
+// noKeychainFolder holds the installation's stand-in for macOS security(1), first on every start's PATH: every
+// Keychain call of Claude Code fails, so it reads its login from the account folder's .credentials.json, the same
+// on a Mac, on Linux and in a container.
+const noKeychainFolder = "journal/tools/accounts/no-keychain"
+
 // systemPath is the part of a prepared start's PATH outside the protected installation.
 const systemPath = "/usr/bin:/bin:/usr/sbin:/sbin"
 
@@ -42,7 +47,8 @@ func CleanEnvironment(inherited []string, recipe client.AccountRecipe, folders S
 	}
 	environment = append(environment,
 		"HOME="+folders.Home,
-		"PATH="+filepath.Join(folders.Installation, "bin")+":"+systemPath,
+		"PATH="+filepath.Join(folders.Installation, noKeychainFolder)+":"+
+			filepath.Join(folders.Installation, "bin")+":"+systemPath,
 	)
 	for _, name := range recipe.EmptyFolderVariables {
 		folder := filepath.Join(folders.EmptyFolders, name)

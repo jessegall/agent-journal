@@ -33,7 +33,7 @@ func TestAPreparedStartKeepsOnlyPlatformVariablesAndItsRecipe(t *testing.T) {
 	want := []string{
 		"LANG=en_US.UTF-8",
 		"HOME=" + filepath.Join(folder, "home"),
-		"PATH=/opt/journal/bin:" + systemPath,
+		"PATH=/opt/journal/" + noKeychainFolder + ":/opt/journal/bin:" + systemPath,
 		"ANTHROPIC_CONFIG_DIR=" + filepath.Join(folder, "empty", "ANTHROPIC_CONFIG_DIR"),
 		"CLAUDE_CONFIG_DIR=/accounts/a",
 	}

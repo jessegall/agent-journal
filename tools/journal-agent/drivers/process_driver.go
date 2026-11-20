@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"syscall"
 
@@ -214,6 +215,17 @@ func (driver *ProcessDriver) command(start profilecontracts.Start) (*exec.Cmd, e
 	command.Dir = driver.runtime.WorkingFolder
 	command.Env = profile.Environment(WithoutJournalVariables(driver.runtime.Environment), start)
 	command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	if driver.claudeAccountStart() && runtime.GOOS == "darwin" {
+		sandbox, err := host.WriteSessionSandbox(
+			start.SettingsFolder,
+			driver.runtime.Account.Folder,
+			driver.runtime.WorkingFolder,
+		)
+		if err != nil {
+			return nil, err
+		}
+		sandbox.Wrap(command)
+	}
 	return command, nil
 }
 
