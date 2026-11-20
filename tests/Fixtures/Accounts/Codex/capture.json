@@ -9,6 +9,12 @@
     "CODEX_HOME": "<empty directory>"
   },
   "login_status_signed_out": {"stdout": "Not logged in", "exit": 1},
+  "login_status_api_key": {
+    "stdout": "API key configured - ***",
+    "note": "login --with-api-key reads the key on stdin; Authentication is checked when you send a request",
+    "read_from": "codex-cli 0.170.0 with a dummy key in a scratch CODEX_HOME, 2026-11-20"
+  },
+  "login_status_chatgpt": {"stdout": "Logged in using ChatGPT", "exit": 0},
   "exec_signed_out": {"exit": 0, "last_event": "turn.failed", "reconnect_attempts": 5, "reaches_network": true},
   "login_options": ["--with-api-key", "--with-access-token", "--device-auth", "-c"],
   "app_server": {
@@ -38,6 +44,12 @@
     "account_read_params": ["refreshToken"],
     "account_read_response": ["account", "requiresOpenaiAuth"],
     "account_types": ["apiKey", "chatgpt", "amazonBedrock", "gcp"],
+    "account_chatgpt_fields": {
+      "fields": ["type", "email", "planType", "workspaceName"],
+      "required": ["type", "email", "planType"],
+      "stable_subject_or_workspace": "none: workspaceName is a name that can change, so subject and workspace stay unset",
+      "read_from": "codex app-server generate-json-schema, GetAccountResponse, codex-cli 0.170.0, 2026-11-20"
+    },
     "execution_requests": ["thread/start", "thread/resume", "thread/fork", "turn/start", "turn/steer", "turn/interrupt"],
     "execution_notifications": ["thread/started", "thread/closed", "turn/started", "turn/completed"],
     "turn_start_required": ["input", "threadId"],

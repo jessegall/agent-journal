@@ -8,12 +8,15 @@ use App\AgentRequests\Support\SignedCall;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\CleanupTarget;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Values\ClaimedAccountCheck;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInIdentity;
+use App\Profiles\Values\SignInPoll;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Response;
@@ -41,18 +44,22 @@ final readonly class SignedSignInHost implements SignInHost
         return new ClaimedSignIn(
             (string) $response->json('attempt_id'),
             (string) $response->json('program'),
+            SignInMethod::from((string) $response->json('method')),
             (string) $response->json('directory'),
             (int) $response->json('generation'),
             (string) $response->json('expires_at'),
         );
     }
 
-    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, string|null $identity): void
+    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, SignInIdentity $identity): void
     {
         $body = (string) json_encode([
             'outcome' => $outcome->value,
             'generation' => $claimed->generation,
-            'identity' => $identity,
+            'display' => $identity->display,
+            'subject' => $identity->subject,
+            'workspace' => $identity->workspace,
+            'expires_at' => $identity->expiresAt,
         ]);
         $this->send('profiles.sign-in-host.report', ['attempt' => $claimed->attemptId], $body);
     }
@@ -63,11 +70,13 @@ final readonly class SignedSignInHost implements SignInHost
         $this->send('profiles.sign-in-host.challenge', ['attempt' => $claimed->attemptId], $body);
     }
 
-    public function pendingCode(ClaimedSignIn $claimed): string|null
+    public function poll(ClaimedSignIn $claimed): SignInPoll
     {
-        $response = $this->send('profiles.sign-in-host.code', ['attempt' => $claimed->attemptId], '');
+        $body = (string) json_encode(['generation' => $claimed->generation]);
+        $response = $this->send('profiles.sign-in-host.code', ['attempt' => $claimed->attemptId], $body);
+        $code = $response->json('code');
 
-        return $response->status() === 204 ? null : (string) $response->json('code');
+        return new SignInPoll($response->json('live') === true, is_string($code) ? $code : null);
     }
 
     public function claimCheck(): ClaimedAccountCheck|null

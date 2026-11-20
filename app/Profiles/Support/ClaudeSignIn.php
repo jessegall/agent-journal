@@ -8,8 +8,8 @@ use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Values\SignInChallenge;
 use App\Profiles\Values\SignInCode;
+use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInVerification;
-use Illuminate\Contracts\Config\Repository;
 
 /**
  * Claude Code's own sign-in on the host, into one private account folder: `claude auth login --claudeai` with the
@@ -19,21 +19,11 @@ use Illuminate\Contracts\Config\Repository;
  */
 final readonly class ClaudeSignIn implements SignInProtocol
 {
-    /**
-     * A folder whose security(1) always fails, put first on the PATH so Claude Code never reaches a macOS Keychain
-     * and keeps its login in the account folder's .credentials.json on every host.
-     */
-    private const string NO_KEYCHAIN = 'tools/accounts/no-keychain';
-
-    public function __construct(private Repository $config) {}
+    public function __construct(private ClaudeProgram $claude) {}
 
     public function begin(string $directory): PrivateAccountProcess
     {
-        return PrivateAccountProcess::start(
-            [$this->program(), 'auth', 'login', '--claudeai'],
-            $this->environment($directory),
-            $directory,
-        );
+        return $this->claude->start(['auth', 'login', '--claudeai'], $directory);
     }
 
     public function challengeFrom(PrivateAccountProcess $process): SignInChallenge|null
@@ -53,30 +43,35 @@ final readonly class ClaudeSignIn implements SignInProtocol
         return ! $process->isRunning();
     }
 
+    /**
+     * Signed in only when the login itself exited cleanly and the status then names a claude.ai login in exactly this
+     * folder; the email is shown to the user and is never the account's subject.
+     */
+    public function prove(PrivateAccountProcess $process, string $directory): SignInVerification
+    {
+        $verification = $this->verify($directory);
+
+        if ($process->exitCode() === 0) {
+            return $verification;
+        }
+
+        return new SignInVerification(false, SignInIdentity::unproved(), $verification->isCertain);
+    }
+
     public function verify(string $directory): SignInVerification
     {
-        $status = PrivateAccountProcess::start(
-            [$this->program(), 'auth', 'status', '--json'],
-            $this->environment($directory),
-            $directory,
-        );
-        $decoded = json_decode($status->finish(), true);
-        $report = is_array($decoded) ? $decoded : [];
-        $configDirectory = $report['configDirectory'] ?? $directory;
-        $isSignedIn = ($report['loggedIn'] ?? false) === true
-            && ($report['authMethod'] ?? null) === 'claude.ai'
-            && $configDirectory === $directory;
-        $email = $report['email'] ?? null;
+        $status = $this->claude->status($directory);
+        $isSignedIn = $status->isSignedInBy('claude.ai', $directory);
+        $identity = $isSignedIn
+            ? new SignInIdentity($status->email, null, null, $status->expiresAt)
+            : SignInIdentity::unproved();
 
-        $identity = $isSignedIn && is_string($email) ? $email : null;
-
-        return new SignInVerification($isSignedIn, $identity, is_array($decoded));
+        return new SignInVerification($isSignedIn, $identity, $status->isReadable);
     }
 
     public function signOut(string $directory): void
     {
-        PrivateAccountProcess::start([$this->program(), 'auth', 'logout'], $this->environment($directory), $directory)
-            ->finish();
+        $this->claude->start(['auth', 'logout'], $directory)->finish();
     }
 
     /**
@@ -96,22 +91,5 @@ final readonly class ClaudeSignIn implements SignInProtocol
     public function submitCode(PrivateAccountProcess $process, string $code): void
     {
         $process->send(SignInCode::from($code)->code);
-    }
-
-    private function program(): string
-    {
-        return $this->config->string('accounts.claude_program');
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function environment(string $directory): array
-    {
-        return [
-            'PATH' => base_path(self::NO_KEYCHAIN).PATH_SEPARATOR.(string) getenv('PATH'),
-            'HOME' => $directory,
-            'CLAUDE_CONFIG_DIR' => $directory,
-        ];
     }
 }

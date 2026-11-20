@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
+use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Contracts\SignInHost;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\SignInOutcome;
@@ -12,12 +13,20 @@ use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInPoll;
 
 /**
  * A host that hands out one sign-in and remembers each report.
  */
 final class RecordingSignInHost implements SignInHost
 {
+    /**
+     * How many polls answer live before the journal is said to have ended the attempt.
+     */
+    public int $livePolls = PHP_INT_MAX;
+
+    public int $pollCount = 0;
+
     /**
      * @var list<SignInOutcome>
      */
@@ -95,14 +104,16 @@ final class RecordingSignInHost implements SignInHost
         $this->checks[] = $result;
     }
 
-    public function pendingCode(ClaimedSignIn $claimed): string|null
+    public function poll(ClaimedSignIn $claimed): SignInPoll
     {
-        return null;
+        $this->pollCount++;
+
+        return new SignInPoll($this->pollCount < $this->livePolls, null);
     }
 
-    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, string|null $identity): void
+    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, SignInIdentity $identity): void
     {
         $this->outcomes[] = $outcome;
-        $this->identities[] = $identity;
+        $this->identities[] = $identity->display;
     }
 }

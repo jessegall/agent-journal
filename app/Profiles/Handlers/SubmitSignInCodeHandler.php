@@ -10,21 +10,37 @@ use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\SignInChallenges;
 use App\Profiles\Values\SignInCode;
+use App\Profiles\Values\SignInSecret;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Config\Repository;
 
 final readonly class SubmitSignInCodeHandler implements CommandHandler
 {
-    public function __construct(private SignInChallenges $challenges) {}
+    public function __construct(private SignInChallenges $challenges, private Repository $config) {}
 
     public function handle(SubmitSignInCode $command): void
     {
-        $code = SignInCode::from($command->code);
         $attempt = SignInAttempt::lockedForOwner($command->attemptId);
 
         if (! $attempt->isLive() || $attempt->isExpiredAt(CarbonImmutable::now())) {
             throw SignInAttemptStale::for($attempt->id);
         }
 
-        $this->challenges->typeCode($attempt->id, $code->code, $attempt->expires_at);
+        $text = $attempt->method->isSecret()
+            ? $this->secretOf($attempt, $command->code)
+            : SignInCode::from($command->code)->code;
+        $this->challenges->typeCode($attempt->id, $text, $attempt->expires_at);
+    }
+
+    /**
+     * The key or token the owner gave, with its fingerprint kept on the attempt.
+     */
+    private function secretOf(SignInAttempt $attempt, string $text): string
+    {
+        $secret = SignInSecret::from($text);
+        $key = $this->config->string('app.key');
+        $attempt->keepFingerprint($secret->fingerprintFor($attempt->program, $attempt->method, $key));
+
+        return $secret->secret;
     }
 }

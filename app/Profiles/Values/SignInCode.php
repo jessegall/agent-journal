@@ -21,12 +21,22 @@ final readonly class SignInCode
      */
     public static function from(string $text): self
     {
-        $code = trim($text);
+        return new self(self::oneLine($text, 'sign-in code', self::LIMIT));
+    }
 
-        if ($code === '' || strlen($code) > self::LIMIT || preg_match('/[\p{Cc}]/u', $code) === 1) {
-            throw SignInCodeInvalid::make();
+    /**
+     * The text trimmed, when it is 1 to the limit's characters on one line with no control character.
+     *
+     * @throws SignInCodeInvalid
+     */
+    public static function oneLine(string $text, string $what, int $limit): string
+    {
+        $line = trim($text);
+
+        if ($line === '' || strlen($line) > $limit || preg_match('/[\p{Cc}]/u', $line) === 1) {
+            throw SignInCodeInvalid::make($what, $limit);
         }
 
-        return new self($code);
+        return $line;
     }
 }

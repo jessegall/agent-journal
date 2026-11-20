@@ -9,6 +9,7 @@ use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Profiles\Handlers\CompleteSignInHandler;
+use App\Profiles\Values\SignInIdentity;
 
 /**
  * The host reports a sign-in it verified outside any transaction, in the generation it ran in; the result is saved
@@ -24,6 +25,6 @@ final readonly class CompleteSignIn extends Command
     public function __construct(
         public string $attemptId,
         public int $generation,
-        public string|null $identity,
+        public SignInIdentity $identity,
     ) {}
 }

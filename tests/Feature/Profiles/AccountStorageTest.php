@@ -10,6 +10,7 @@ use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\StartUnavailableReason;
 use App\Agents\Exceptions\AccountUnavailable;
 use App\Profiles\Enums\AccountState;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Exceptions\AccountLabelInvalid;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
@@ -74,8 +75,8 @@ final class AccountStorageTest extends TestCase
     public function test_a_second_start_rejoins_the_writer_and_only_a_new_writer_starts_a_generation(): void
     {
         $account = $this->account('Work');
-        $first = SignInAttempt::forAccount($account, 'request-1', CarbonImmutable::now()->addMinutes(10));
-        $second = SignInAttempt::forAccount($account, 'request-2', CarbonImmutable::now()->addMinutes(10));
+        $first = SignInAttempt::forAccount($account, SignInMethod::OAuth, 'request-1', CarbonImmutable::now()->addMinutes(10));
+        $second = SignInAttempt::forAccount($account, SignInMethod::OAuth, 'request-2', CarbonImmutable::now()->addMinutes(10));
 
         $this->assertSame($first->id, $account->writerFor($first));
         $this->assertSame($first->id, $account->writerFor($second));
@@ -145,6 +146,7 @@ final class AccountStorageTest extends TestCase
         $account = $this->account('Work');
         $attempt = SignInAttempt::forNewAccount(
             HookProgram::Codex,
+            SignInMethod::OAuth,
             AccountLabel::from('Home'),
             '/journal/accounts/new-home',
             'request-1',

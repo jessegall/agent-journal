@@ -9,12 +9,14 @@ use App\Bus\Attributes\HandledBy;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Profiles\Handlers\TakeSignInCodeHandler;
+use App\Profiles\Values\SignInPoll;
 
 /**
- * The host's runner takes the code the user typed for the attempt it runs, once; nothing while none waits. Run for
+ * The host's runner asks, in the generation it runs in, whether its attempt is still live, and takes the code the
+ * user typed, once; an ended attempt forgets its code and challenge. Run for
  * an authenticated host by the journal itself (internal, not exported).
  *
- * @extends Command<string|null>
+ * @extends Command<SignInPoll>
  */
 #[Entry(CommandEntry::HostControl)]
 #[HandledBy(TakeSignInCodeHandler::class)]
@@ -23,5 +25,6 @@ final readonly class TakeSignInCode extends Command
     public function __construct(
         public string $hostId,
         public string $attemptId,
+        public int $generation,
     ) {}
 }

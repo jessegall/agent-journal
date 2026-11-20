@@ -6,16 +6,44 @@ case "$1" in
     --help) echo "Commands: exec app-server login mcp" ;;
     exec) echo "Options: --add-dir <DIR> --json" ;;
     login)
-        if [ -f "$CODEX_HOME/auth.json" ]; then echo "Logged in using ChatGPT"; else echo "Not logged in"; exit 1; fi
+        # login --with-api-key reads the key on stdin and keeps it when it starts with valid; login status names how the
+        # folder is signed in.
+        if [ "$2" = "--with-api-key" ]; then
+            read -r key
+            case "$key" in
+                valid*) echo '{"OPENAI_API_KEY":"kept"}' > "$CODEX_HOME/auth.json"; touch "$CODEX_HOME/api-key-mode" ;;
+                *) echo "Error: invalid API key" >&2; exit 1 ;;
+            esac
+            echo "API key saved."
+            exit 0
+        fi
+        if [ ! -f "$CODEX_HOME/auth.json" ]; then echo "Not logged in"; exit 1; fi
+        if [ -f "$CODEX_HOME/api-key-mode" ]; then echo "API key configured - ***"; else echo "Logged in using ChatGPT"; fi
+        ;;
+    logout)
+        rm -f "$CODEX_HOME/auth.json" "$CODEX_HOME/api-key-mode"
         ;;
     app-server)
-        # Answers the device-code start, then signs the folder in and announces it, and serves until stdin closes.
+        # Answers the device-code start, announces another login's completion first, then signs the folder in and
+        # announces its own, answers account/read, and serves until stdin closes. Files in CODEX_HOME change it:
+        # login-fails fails the login, only-other-login completes another login only, account-type names the
+        # account/read type and no-account-read ends without answering account/read.
         while read -r line; do
             case "$line" in
                 *account/login/start*)
                     echo '{"id":1,"result":{"type":"chatgptDeviceCode","loginId":"login-1","userCode":"ABCD-1234","verificationUrl":"https://auth.openai.com/codex/device"}}'
-                    echo '{"tokens":"fake-secret-token"}' > "$CODEX_HOME/auth.json"
-                    echo '{"method":"account/login/completed","params":{"success":true,"loginId":"login-1"}}'
+                    echo '{"method":"account/login/completed","params":{"success":true,"loginId":"login-0"}}'
+                    if [ -f "$CODEX_HOME/only-other-login" ]; then continue; fi
+                    success=true
+                    if [ -f "$CODEX_HOME/login-fails" ]; then success=false; fi
+                    if [ "$success" = true ]; then echo '{"tokens":"fake-secret-token"}' > "$CODEX_HOME/auth.json"; fi
+                    echo "{\"method\":\"account/login/completed\",\"params\":{\"success\":$success,\"loginId\":\"login-1\"}}"
+                    ;;
+                *account/read*)
+                    if [ -f "$CODEX_HOME/no-account-read" ]; then exit 0; fi
+                    type=chatgpt
+                    if [ -f "$CODEX_HOME/account-type" ]; then type=$(cat "$CODEX_HOME/account-type"); fi
+                    echo "{\"id\":2,\"result\":{\"account\":{\"type\":\"$type\",\"email\":\"user@example.test\",\"planType\":\"plus\"},\"requiresOpenaiAuth\":true}}"
                     ;;
             esac
         done

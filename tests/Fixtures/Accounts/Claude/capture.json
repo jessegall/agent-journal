@@ -38,5 +38,27 @@
     "migrationVersion", "opusProMigrationComplete", "seenNotifications", "sonnet1m45MigrationComplete"
   ],
   "home_after_runs": [],
-  "anthropic_config_directory_after_runs": []
+  "anthropic_config_directory_after_runs": [],
+  "auth_status_json": {
+    "signed_out_fields": [
+      "loggedIn", "authMethod", "apiProvider", "analyticsDisabled", "projectsDirectory", "configDirectory",
+      "loginExpiresAt"
+    ],
+    "signed_in_fields": "prerequisite missing: needs a real claude.ai sign-in; until recorded no field is a subject or workspace",
+    "checked_at": "2026-11-20"
+  },
+  "secret_methods": {
+    "api_key": {
+      "setting": "apiKeyHelper in the account folder's settings.json, a command that prints the key's file",
+      "auth_method": "api_key_helper",
+      "api_key_source": "apiKeyHelper"
+    },
+    "provider_token": {
+      "setting": "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR names a descriptor the token's file is opened on",
+      "auth_method": "oauth_token"
+    },
+    "status_proves_the_value": false,
+    "proof": "one claude -p call with no tools and no saved session; with a dummy key it retried past 90 seconds",
+    "checked_at": "2026-11-20"
+  }
 }

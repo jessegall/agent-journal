@@ -25,6 +25,7 @@ use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
@@ -102,7 +103,7 @@ final class SignInAgainTest extends TestCase
         $generation = $this->account->refresh()->sign_in_generation;
         SignInAttempt::query()->whereKey($attemptId)->sole()->waitForUser();
 
-        $this->asHost(new CompleteSignIn($attemptId, $generation, 'me@example.com'));
+        $this->asHost(new CompleteSignIn($attemptId, $generation, SignInIdentity::shown('me@example.com')));
 
         $this->account->refresh();
         $this->assertSame($generation + 1, $this->account->sign_in_generation);

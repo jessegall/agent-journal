@@ -1,0 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Profiles\Support;
+
+use App\Profiles\Values\ClaudeStatus;
+use Illuminate\Contracts\Config\Repository;
+
+/**
+ * Claude Code as every sign-in method runs it on the host: the configured program, with the account folder as its
+ * CLAUDE_CONFIG_DIR and HOME and nothing else of the host's configuration, and its status read from
+ * `claude auth status --json`.
+ */
+final readonly class ClaudeProgram
+{
+    /**
+     * A folder whose security(1) always fails, put first on the PATH so Claude Code never reaches a macOS Keychain
+     * and keeps its login in the account folder's .credentials.json on every host.
+     */
+    private const string NO_KEYCHAIN = 'tools/accounts/no-keychain';
+
+    public function __construct(private Repository $config) {}
+
+    /**
+     * Runs the program in the account folder, with extra variables that name no secret and files it reads on their
+     * own descriptors.
+     *
+     * @param  list<string>  $arguments
+     * @param  array<string, string>  $variables
+     * @param  array<int, string>  $readFiles
+     */
+    public function start(
+        array $arguments,
+        string $directory,
+        array $variables = [],
+        array $readFiles = [],
+    ): PrivateAccountProcess {
+        $command = [$this->config->string('accounts.claude_program'), ...$arguments];
+        $environment = $this->environment($directory) + $variables;
+
+        return PrivateAccountProcess::start($command, $environment, $directory, $readFiles);
+    }
+
+    /**
+     * @param  array<string, string>  $variables
+     * @param  array<int, string>  $readFiles
+     */
+    public function status(string $directory, array $variables = [], array $readFiles = []): ClaudeStatus
+    {
+        $process = $this->start(['auth', 'status', '--json'], $directory, $variables, $readFiles);
+
+        return ClaudeStatus::fromJson($process->finish());
+    }
+
+    /**
+     * Whether one short model call, with no tools and no saved session, answers without an error within the check's
+     * time limit: the only proof a key or token works, since the status trusts any value it is given.
+     *
+     * @param  array<string, string>  $variables
+     * @param  array<int, string>  $readFiles
+     */
+    public function answersModel(string $directory, array $variables = [], array $readFiles = []): bool
+    {
+        $arguments = ['-p', 'Reply with OK.', '--output-format', 'json', '--max-turns', '1', '--tools', '',
+            '--no-session-persistence'];
+        $process = $this->start($arguments, $directory, $variables, $readFiles);
+        $answer = json_decode($process->finish(), true);
+
+        return $process->exitCode() === 0 && is_array($answer) && ($answer['is_error'] ?? true) === false;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function environment(string $directory): array
+    {
+        return [
+            'PATH' => base_path(self::NO_KEYCHAIN).PATH_SEPARATOR.(string) getenv('PATH'),
+            'HOME' => $directory,
+            'CLAUDE_CONFIG_DIR' => $directory,
+        ];
+    }
+}

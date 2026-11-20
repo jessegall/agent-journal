@@ -24,6 +24,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\ProgramCompatibilities;
 use App\Hooks\Enums\ProgramEvidence;
 use App\Hooks\Support\ProgramCompatibility;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Support\AccountMaintenance;
@@ -112,7 +113,7 @@ final class AccountMaintenanceTest extends TestCase
 
     public function test_a_live_sign_in_writer_keeps_maintenance_from_settling(): void
     {
-        $attempt = SignInAttempt::forAccount($this->account, 'request-1', CarbonImmutable::now()->addMinutes(10));
+        $attempt = SignInAttempt::forAccount($this->account, SignInMethod::OAuth, 'request-1', CarbonImmutable::now()->addMinutes(10));
         $attempt->writeFolderOf($this->account);
 
         $progress = $this->maintenance()->advance($this->account->id);

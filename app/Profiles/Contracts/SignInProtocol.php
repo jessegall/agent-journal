@@ -35,7 +35,13 @@ interface SignInProtocol
     public function hasFinished(PrivateAccountProcess $process): bool;
 
     /**
-     * The program's own check of the folder, run after its sign-in process ended.
+     * The program's own proof that the sign-in it just ran succeeded in this folder, asked while its process is
+     * still open.
+     */
+    public function prove(PrivateAccountProcess $process, string $directory): SignInVerification;
+
+    /**
+     * The program's plain status check of the folder, for account checks and cleanup.
      */
     public function verify(string $directory): SignInVerification;
 

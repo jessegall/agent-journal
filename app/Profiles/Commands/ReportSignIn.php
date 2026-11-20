@@ -10,6 +10,7 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\Command;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Handlers\ReportSignInHandler;
+use App\Profiles\Values\SignInIdentity;
 
 /**
  * The host's sign-in runner reports a safe outcome of the attempt it runs, in the generation it ran in: waiting for
@@ -27,6 +28,6 @@ final readonly class ReportSignIn extends Command
         public string $attemptId,
         public int $generation,
         public SignInOutcome $outcome,
-        public string|null $identity = null,
+        public SignInIdentity $identity,
     ) {}
 }

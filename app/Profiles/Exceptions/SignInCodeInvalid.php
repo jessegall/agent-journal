@@ -11,15 +11,16 @@ use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
 /**
- * A sign-in code that is empty, too long or holds a control character, so it is never typed into the program.
+ * A sign-in code, key or token that is empty, too long or holds a control character, so it never reaches the
+ * program; the message never shows the value.
  */
 final class SignInCodeInvalid extends InvalidArgumentException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
-    public static function make(): self
+    public static function make(string $what, int $limit): self
     {
-        return new self('A sign-in code is 1 to 512 printable characters on one line.');
+        return new self("A {$what} is 1 to {$limit} printable characters on one line.");
     }
 
     protected function status(): int

@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Profiles\Contracts\SignInProtocol;
-use App\Profiles\Exceptions\SignInProtocolMissing;
+use App\Profiles\Enums\SignInMethod;
+use App\Profiles\Exceptions\SignInMethodMissing;
 use App\Registries\Support\Registry;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * The sign-in protocol of each program the host can sign in, registered by its adapter.
+ * The sign-in protocol of each method each program declares, registered by its adapter.
  */
 final class SignInProtocols
 {
@@ -21,30 +22,50 @@ final class SignInProtocols
 
     public function __construct(private readonly Container $container)
     {
-        $this->protocols = Registry::replacing(SignInProtocolMissing::for(...));
+        $this->protocols = Registry::replacing(SignInMethodMissing::forKey(...));
     }
 
     /**
      * @param  class-string<SignInProtocol>  $protocol
      */
-    public function register(string $program, string $protocol): void
+    public function register(string $program, SignInMethod $method, string $protocol): void
     {
-        $this->protocols->put($program, $protocol);
+        $this->protocols->put(self::keyOf($program, $method), $protocol);
     }
 
     /**
-     * Whether the host has a sign-in protocol for the program.
+     * The methods the program declares, in the order the sign-in form lists them, OAuth first.
+     *
+     * @return list<SignInMethod>
      */
-    public function supports(string $program): bool
+    public function methodsOf(string $program): array
     {
-        return $this->protocols->has($program);
+        return array_values(array_filter(
+            SignInMethod::cases(),
+            fn (SignInMethod $method) => $this->supports($program, $method),
+        ));
     }
 
     /**
-     * @throws SignInProtocolMissing
+     * Whether the host has a protocol for the program's method, OAuth when no method is named.
      */
-    public function for(string $program): SignInProtocol
+    public function supports(string $program, SignInMethod $method = SignInMethod::OAuth): bool
     {
-        return $this->container->make($this->protocols->get($program));
+        return $this->protocols->has(self::keyOf($program, $method));
+    }
+
+    /**
+     * The protocol of the program's method, OAuth when no method is named.
+     *
+     * @throws SignInMethodMissing
+     */
+    public function for(string $program, SignInMethod $method = SignInMethod::OAuth): SignInProtocol
+    {
+        return $this->container->make($this->protocols->get(self::keyOf($program, $method)));
+    }
+
+    private static function keyOf(string $program, SignInMethod $method): string
+    {
+        return "{$program}:{$method->value}";
     }
 }

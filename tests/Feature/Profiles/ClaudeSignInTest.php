@@ -8,6 +8,7 @@ use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Support\ClaudeSignIn;
 use App\Profiles\Support\PrivateAccountProcess;
 use App\Profiles\Support\SignInProtocols;
+use App\Profiles\Values\SignInVerification;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -15,7 +16,7 @@ use Tests\TestCase;
  * Claude Code's own sign-in run against a stand-in program: the address comes from its private output, the user's
  * code is typed only when it is one clean line, and only the program's own check of this folder signs it in.
  */
-#[TimeLimit(seconds: 4, reason: 'It runs a stand-in program as a host process several times.')]
+#[TimeLimit(seconds: 8, reason: 'It runs a stand-in program as a host process several times.')]
 final class ClaudeSignInTest extends TestCase
 {
     private string $directory;
@@ -46,7 +47,7 @@ final class ClaudeSignInTest extends TestCase
 
         $verification = $protocol->verify($this->directory);
         $this->assertTrue($verification->isSignedIn);
-        $this->assertSame('user@example.test', $verification->identity);
+        $this->assertSame('user@example.test', $verification->identity->display);
     }
 
     public function test_a_wrong_code_leaves_the_folder_signed_out_and_a_control_character_never_reaches_it(): void
@@ -65,9 +66,47 @@ final class ClaudeSignInTest extends TestCase
         $this->assertFalse($protocol->verify($this->directory)->isSignedIn);
     }
 
+    public function test_a_login_that_exited_cleanly_with_a_matching_claude_ai_status_proves_the_sign_in(): void
+    {
+        $verification = $this->proofAfterLogin('ok');
+
+        $this->assertTrue($verification->isSignedIn);
+        $this->assertSame('user@example.test', $verification->identity->display);
+        $this->assertNull($verification->identity->subject);
+    }
+
+    public function test_a_failed_login_another_method_or_another_folder_proves_nothing(): void
+    {
+        $this->assertFalse($this->proofAfterLogin('exit-1')->isSignedIn);
+        $this->assertFalse($this->proofAfterLogin('ok', ['auth-method' => 'api_key'])->isSignedIn);
+        $this->assertFalse($this->proofAfterLogin('ok', ['config-directory' => '/elsewhere'])->isSignedIn);
+        $this->assertFalse($this->proofAfterLogin('ok', ['config-directory' => ''])->isSignedIn);
+    }
+
     public function test_the_runner_finds_the_claude_protocol(): void
     {
         $this->assertInstanceOf(ClaudeSignIn::class, $this->app->make(SignInProtocols::class)->for('claude-code'));
+    }
+
+    /**
+     * The proof after a login with this code, with files in the folder that change what its status prints.
+     *
+     * @param  array<string, string>  $statusFiles
+     */
+    private function proofAfterLogin(string $code, array $statusFiles = []): SignInVerification
+    {
+        exec('rm -rf '.escapeshellarg($this->directory).'/*');
+        $protocol = $this->app->make(ClaudeSignIn::class);
+        $process = $protocol->begin($this->directory);
+        $this->addressOf($protocol, $process);
+        $protocol->submitCode($process, $code);
+        $process->finish();
+
+        foreach ($statusFiles as $name => $text) {
+            file_put_contents("{$this->directory}/{$name}", $text);
+        }
+
+        return $protocol->prove($process, $this->directory);
     }
 
     private function addressOf(ClaudeSignIn $protocol, PrivateAccountProcess $process): string

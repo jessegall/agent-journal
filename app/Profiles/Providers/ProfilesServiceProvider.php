@@ -25,6 +25,7 @@ use App\Profiles\Contracts\OperationNames;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileScripts;
 use App\Profiles\Contracts\ProfileSelections;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
@@ -39,7 +40,10 @@ use App\Profiles\Resolvers\ProfilePrograms;
 use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Support\BuiltInProfilePins;
+use App\Profiles\Support\ClaudeKeySignIn;
 use App\Profiles\Support\ClaudeSignIn;
+use App\Profiles\Support\ClaudeTokenSignIn;
+use App\Profiles\Support\CodexKeySignIn;
 use App\Profiles\Support\CodexSignIn;
 use App\Profiles\Support\ConfiguredOperations;
 use App\Profiles\Support\PolicyReadAdmission;
@@ -78,8 +82,11 @@ final class ProfilesServiceProvider extends ServiceProvider
         $this->callAfterResolving(
             SignInProtocols::class,
             function (SignInProtocols $protocols): void {
-                $protocols->register('claude-code', ClaudeSignIn::class);
-                $protocols->register('codex', CodexSignIn::class);
+                $protocols->register('claude-code', SignInMethod::OAuth, ClaudeSignIn::class);
+                $protocols->register('claude-code', SignInMethod::ProviderToken, ClaudeTokenSignIn::class);
+                $protocols->register('claude-code', SignInMethod::ApiKey, ClaudeKeySignIn::class);
+                $protocols->register('codex', SignInMethod::OAuth, CodexSignIn::class);
+                $protocols->register('codex', SignInMethod::ApiKey, CodexKeySignIn::class);
             },
         );
     }

@@ -12,6 +12,7 @@ use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Values\AccountLabel;
+use App\Profiles\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -27,7 +28,7 @@ final readonly class SignInCompletion
     /**
      * @throws SignInAttemptStale
      */
-    public function complete(string $attemptId, int $generation, string|null $identity): void
+    public function complete(string $attemptId, int $generation, SignInIdentity $identity): void
     {
         $now = CarbonImmutable::now();
         $program = SignInAttempt::programForJournal($attemptId);

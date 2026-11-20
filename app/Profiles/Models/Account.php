@@ -16,6 +16,7 @@ use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Values\AccountLabel;
 use App\Profiles\Values\CleanupProgress;
+use App\Profiles\Values\SignInIdentity;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -42,6 +43,10 @@ use Illuminate\Support\Str;
  * @property AccountState $state
  * @property string|null $directory
  * @property string|null $identity
+ * @property string|null $subject
+ * @property string|null $workspace
+ * @property string|null $fingerprint
+ * @property CarbonImmutable|null $expires_at
  * @property bool $maintenance
  * @property int $sign_in_generation
  * @property string|null $live_writer_attempt_id
@@ -86,6 +91,7 @@ final class Account extends Model implements ReadableModel
             'cleanup_problem' => CleanupProblem::class,
             'check_requested_generation' => 'integer',
             'checked_at' => 'immutable_datetime',
+            'expires_at' => 'immutable_datetime',
         ];
     }
 
@@ -250,7 +256,7 @@ final class Account extends Model implements ReadableModel
      * in again, it starts a new sign-in generation, so a report or check from before is out of date, and starts may
      * use it again.
      */
-    public function signedInAgain(SignInAttempt $attempt, string|null $identity, CarbonImmutable $checkedAt): void
+    public function signedInAgain(SignInAttempt $attempt, SignInIdentity $identity, CarbonImmutable $checkedAt): void
     {
         if ($this->live_writer_attempt_id === $attempt->id) {
             $this->sign_in_generation++;
@@ -259,7 +265,10 @@ final class Account extends Model implements ReadableModel
         }
 
         $this->state = AccountState::SignedIn;
-        $this->identity = $identity;
+        $this->identity = $identity->display;
+        $this->subject = $identity->subject;
+        $this->workspace = $identity->workspace;
+        $this->expires_at = $identity->expiry();
         $this->checked_at = $checkedAt;
         $this->save();
         $this->releaseWriter($attempt);

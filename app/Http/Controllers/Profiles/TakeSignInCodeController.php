@@ -8,19 +8,21 @@ use App\Agents\Support\HostContext;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\TakeSignInCode;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 
 /**
- * Hands the host's runner the code the user typed, once, or nothing. The host's calls run as the journal itself.
+ * Tells the host's runner whether its attempt is still live in the generation it runs in, with the code the user
+ * typed, once. The host's calls run as the journal itself.
  */
 final readonly class TakeSignInCodeController
 {
-    public function __invoke(string $attempt, HostContext $host, CommandBus $commands): JsonResponse|Response
+    public function __invoke(string $attempt, Request $request, HostContext $host, CommandBus $commands): JsonResponse
     {
-        $code = $commands->run(new TakeSignInCode($host->hostId, $attempt));
+        $poll = $commands->run(new TakeSignInCode($host->hostId, $attempt, $request->integer('generation')));
 
-        return $code === null
-            ? new Response(status: Response::HTTP_NO_CONTENT)
-            : new JsonResponse(['code' => $code], headers: ['Cache-Control' => 'no-store']);
+        return new JsonResponse(
+            ['live' => $poll->isLive, 'code' => $poll->code],
+            headers: ['Cache-Control' => 'no-store'],
+        );
     }
 }

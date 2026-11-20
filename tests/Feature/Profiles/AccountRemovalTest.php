@@ -27,6 +27,7 @@ use App\Profiles\Contracts\AccountOwnerDrain;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Enums\CleanupTarget;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
@@ -134,7 +135,7 @@ final class AccountRemovalTest extends TestCase
         mkdir($directory);
         $host = new RecordingSignInHost(null);
         $protocols = new SignInProtocols($this->app);
-        $protocols->register('codex', FinishingProtocol::class);
+        $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
         $host->nextCleanup = new ClaimedCleanup(CleanupTarget::Account, 'account', 'codex', $directory, 1, false);
         $runner = new PrivateSignInProcesses($host, $protocols, static fn () => null);
 
@@ -158,7 +159,7 @@ final class AccountRemovalTest extends TestCase
         mkdir($directory);
         $host = new RecordingSignInHost(null);
         $protocols = new SignInProtocols($this->app);
-        $protocols->register('codex', FinishingProtocol::class);
+        $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
         $host->nextCleanup = new ClaimedCleanup(CleanupTarget::Account, 'account', 'codex', $directory, 1, false);
         $stillRunning = new class implements AccountOwnerDrain
         {

@@ -12,6 +12,7 @@ use App\Agents\Commands\EnrollHost;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Jobs\SignInDeadline;
@@ -27,6 +28,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Profiles\FinishingProtocol;
+use Tests\Fixtures\Profiles\LingeringProtocol;
 use Tests\Fixtures\Profiles\RecordingSignInHost;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
@@ -77,14 +79,21 @@ final class SignInHostTest extends TestCase
 
         $claim = $this->signed($host, '/host/sign-ins/claim')->assertOk();
         $this->assertSame($attemptId, $claim->json('attempt_id'));
+        $this->assertSame('oauth', $claim->json('method'));
+        $this->assertSame(SignInMethod::OAuth, $this->attempt($attemptId)->method);
         $this->signed($host, '/host/sign-ins/claim')->assertNoContent();
 
         $this->report($host, $attemptId, 'waiting')->assertNoContent();
         $this->assertSame(SignInState::Waiting, $this->attempt($attemptId)->state);
-        $this->report($host, $attemptId, 'verified', 'work@example.test')->assertNoContent();
+        $proof = ['display' => 'work@example.test', 'subject' => 'subject-1', 'workspace' => 'workspace-1'];
+        $this->report($host, $attemptId, 'verified', $proof)->assertNoContent();
 
         $this->assertSame(SignInState::Complete, $this->attempt($attemptId)->state);
-        $this->assertSame('work@example.test', Account::query()->withoutGlobalScopes()->sole()->identity);
+        $account = Account::query()->withoutGlobalScopes()->sole();
+        $this->assertSame(
+            ['work@example.test', 'subject-1', 'workspace-1'],
+            [$account->identity, $account->subject, $account->workspace],
+        );
     }
 
     public function test_another_host_and_an_unsigned_call_reach_no_attempt(): void
@@ -122,8 +131,11 @@ final class SignInHostTest extends TestCase
         $this->assertStringNotContainsString('secret-state', (string) $page->getContent());
         $this->assertSame('https://claude.ai/oauth/authorize?secret-state', $read->json('address'));
         $this->assertStringContainsString('no-store', (string) $read->headers->get('Cache-Control'));
-        $this->assertSame('1234', $this->signed($host, "/host/sign-ins/{$attemptId}/code")->json('code'));
-        $this->signed($host, "/host/sign-ins/{$attemptId}/code")->assertNoContent();
+        $code = "/host/sign-ins/{$attemptId}/code";
+        $poll = fn (int $generation) => $this->signed($host, $code, ['generation' => $generation]);
+        $poll(0)->assertExactJson(['live' => true, 'code' => '1234']);
+        $poll(0)->assertExactJson(['live' => true, 'code' => null]);
+        $poll(1)->assertExactJson(['live' => false, 'code' => null]);
         $stranger = User::factory()->create();
         $this->assertFalse($this->actingAs($stranger)->post("/accounts/sign-ins/{$attemptId}/challenge")->isOk());
     }
@@ -140,7 +152,8 @@ final class SignInHostTest extends TestCase
         $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/cancel")->assertStatus(303);
         $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/code", ['code' => '1234']);
 
-        $this->signed($host, "/host/sign-ins/{$attemptId}/code")->assertNoContent();
+        $this->signed($host, "/host/sign-ins/{$attemptId}/code", ['generation' => 0])
+            ->assertExactJson(['live' => false, 'code' => null]);
         $this->assertSame(SignInState::Cancelled, $this->attempt($attemptId)->state);
         $read = $this->actingAs($owner)->post("/accounts/sign-ins/{$attemptId}/challenge");
         $this->assertNull($read->json('address'));
@@ -149,10 +162,10 @@ final class SignInHostTest extends TestCase
     public function test_the_runner_makes_the_folder_private_and_reports_what_the_check_says(): void
     {
         $directory = $this->root.'/new-account';
-        $claimed = new ClaimedSignIn('attempt-1', 'claude-code', $directory, 0, '2099-01-01T00:00:00+00:00');
+        $claimed = self::claimed('claude-code', SignInMethod::OAuth, $directory);
         $host = new RecordingSignInHost($claimed);
         $protocols = new SignInProtocols($this->app);
-        $protocols->register('claude-code', FinishingProtocol::class);
+        $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
 
         $ran = new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000))->runNext();
 
@@ -162,9 +175,37 @@ final class SignInHostTest extends TestCase
         $this->assertSame('0700', substr(sprintf('%o', fileperms($directory)), -4));
     }
 
+    public function test_an_attempt_the_journal_ended_stops_the_program_and_reports_nothing_more(): void
+    {
+        $directory = $this->root.'/new-account';
+        $claimed = self::claimed('claude-code', SignInMethod::OAuth, $directory);
+        $host = new RecordingSignInHost($claimed);
+        $host->livePolls = 2;
+        $protocols = new SignInProtocols($this->app);
+        $protocols->register('claude-code', SignInMethod::OAuth, LingeringProtocol::class);
+
+        new PrivateSignInProcesses($host, $protocols, static fn () => usleep(10_000))->runNext();
+
+        $this->assertSame([SignInOutcome::Waiting], $host->outcomes);
+        $this->assertSame(2, $host->pollCount);
+    }
+
+    public function test_a_method_the_host_cannot_serve_fails_its_sign_in(): void
+    {
+        $directory = $this->root.'/new-account';
+        $claimed = self::claimed('claude-code', SignInMethod::ApiKey, $directory);
+        $host = new RecordingSignInHost($claimed);
+        $protocols = new SignInProtocols($this->app);
+        $protocols->register('claude-code', SignInMethod::OAuth, FinishingProtocol::class);
+
+        new PrivateSignInProcesses($host, $protocols, static fn () => null)->runNext();
+
+        $this->assertSame([SignInOutcome::Failed], $host->outcomes);
+    }
+
     public function test_a_program_without_an_installed_protocol_fails_its_sign_in(): void
     {
-        $claimed = new ClaimedSignIn('attempt-1', 'codex', $this->root.'/x', 0, '2099-01-01T00:00:00+00:00');
+        $claimed = self::claimed('codex', SignInMethod::OAuth, $this->root.'/x');
         $host = new RecordingSignInHost($claimed);
 
         new PrivateSignInProcesses($host, new SignInProtocols($this->app), static fn () => null)->runNext();
@@ -182,18 +223,29 @@ final class SignInHostTest extends TestCase
         return $started->attemptId;
     }
 
+    /**
+     * A sign-in this test's host took, far from its deadline.
+     */
+    private static function claimed(string $program, SignInMethod $method, string $directory): ClaimedSignIn
+    {
+        return new ClaimedSignIn('attempt-1', $program, $method, $directory, 0, '2099-01-01T00:00:00+00:00');
+    }
+
     private function attempt(string $attemptId): SignInAttempt
     {
         return SignInAttempt::query()->withoutGlobalScopes()->findOrFail($attemptId);
     }
 
+    /**
+     * @param  array<string, string>  $identity
+     */
     private function report(
         EnrolledHost $host,
         string $attemptId,
         string $outcome,
-        string|null $identity = null,
+        array $identity = [],
     ): TestResponse {
-        $body = ['outcome' => $outcome, 'generation' => 0, 'identity' => $identity];
+        $body = ['outcome' => $outcome, 'generation' => 0, ...$identity];
 
         return $this->signed($host, "/host/sign-ins/{$attemptId}/report", $body);
     }

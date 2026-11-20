@@ -22,6 +22,7 @@ use App\Profiles\Jobs\SignInDeadline;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
+use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Values\SignInStarted;
 use Illuminate\Support\Facades\Bus;
 use Tests\Support\CommitsHookRows;
@@ -117,12 +118,12 @@ final class SignInAttemptTest extends TestCase
         return $this->bus()->run(new BeginSignIn('claude-code', $requestKey, 'Work'));
     }
 
-    private function complete(string $attemptId, int $generation, string|null $identity): void
+    private function complete(string $attemptId, int $generation, string|null $display): void
     {
         $this->app->make(EntryDispatchers::class)->runAsJournal(
             CommandEntry::HostControl,
             'test host',
-            new CompleteSignIn($attemptId, $generation, $identity),
+            new CompleteSignIn($attemptId, $generation, SignInIdentity::shown($display)),
         );
         $this->actAsOwner();
     }

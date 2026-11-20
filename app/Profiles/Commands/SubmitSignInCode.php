@@ -12,8 +12,9 @@ use App\Profiles\Handlers\SubmitSignInCodeHandler;
 use App\Profiles\Policies\AccountPolicy;
 
 /**
- * The owner types the code the provider's page showed into a live sign-in; the host's runner hands it to the
- * program once. The code is never stored with the attempt.
+ * The owner types the code the provider's page showed, or gives the key or token of a secret method, into a live
+ * sign-in; the host's runner hands it to the program once. Neither is stored with the attempt; a secret leaves only
+ * its keyed fingerprint.
  *
  * @extends Command<null>
  */

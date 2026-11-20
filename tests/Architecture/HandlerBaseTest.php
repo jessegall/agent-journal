@@ -32,11 +32,13 @@ final class HandlerBaseTest extends TestCase
             }
 
             foreach (Finder::create()->files()->in($folder)->depth(0)->name('*Handler.php') as $file) {
+                /** @var class-string $handler */
                 $handler = "Domain\\{$domain}\\Handlers\\".$file->getBasename('.php');
                 $reflection = new ReflectionClass($handler);
+                $parent = $reflection->getParentClass();
 
                 if (! $reflection->isFinal() || ! $reflection->isReadOnly()
-                    || $reflection->getParentClass()?->getName() !== $base) {
+                    || $parent === false || $parent->getName() !== $base) {
                     $faults[] = "{$handler} must be final readonly and extend {$base} directly";
                 }
             }

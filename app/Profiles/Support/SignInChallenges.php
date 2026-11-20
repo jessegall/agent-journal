@@ -52,6 +52,15 @@ final readonly class SignInChallenges
         return is_string($stored) ? (string) $this->encrypter->decrypt($stored) : null;
     }
 
+    /**
+     * Forgets the attempt's challenge and any code the user typed for it, once the attempt has ended.
+     */
+    public function forget(string $attemptId): void
+    {
+        $this->cache->forget(self::challengeKey($attemptId));
+        $this->cache->forget(self::codeKey($attemptId));
+    }
+
     private static function challengeKey(string $attemptId): string
     {
         return "accounts:sign-in:{$attemptId}:challenge";

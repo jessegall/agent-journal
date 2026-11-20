@@ -1,6 +1,9 @@
 #!/bin/sh
 # A stand-in for the claude command: a folder holding signed-in is an account signed in as the email it names. Its
-# login prints an address, reads one code, and signs the folder in when the code is ok.
+# login prints an address, reads one code, and signs the folder in when the code is ok; the code exit-1 signs it in
+# yet makes the login fail. A folder's auth-method or config-directory file changes what its status prints. A token on
+# the CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR descriptor or an apiKeyHelper in the folder's settings signs it in by that
+# method, and a model call with -p answers only for a value that starts with valid.
 case "$1" in
     --version) echo "2.1.323 (Claude Code)" ;;
     --help) echo "Options: --restricted --strict-mcp-config --mcp-config <file> --settings <file> --tools <tools>" ;;
@@ -8,15 +11,38 @@ case "$1" in
         if [ "$2" = "login" ]; then
             echo "Open https://claude.ai/oauth/authorize?code=test in your browser and paste the code here:"
             read -r code
-            if [ "$code" = "ok" ]; then echo "user@example.test" > "$CLAUDE_CONFIG_DIR/signed-in"; fi
+            if [ "$code" = "ok" ] || [ "$code" = "exit-1" ]; then
+                echo "user@example.test" > "$CLAUDE_CONFIG_DIR/signed-in"
+            fi
+            if [ "$code" = "exit-1" ]; then exit 1; fi
             exit 0
         fi
         if [ -f "$CLAUDE_CONFIG_DIR/signed-in" ]; then
             email=$(cat "$CLAUDE_CONFIG_DIR/signed-in")
-            printf '{"loggedIn":true,"authMethod":"claude.ai","configDirectory":"%s","email":"%s","token":"fake-secret-token"}\n' "$CLAUDE_CONFIG_DIR" "$email"
+            method=claude.ai
+            folder=$CLAUDE_CONFIG_DIR
+            if [ -f "$CLAUDE_CONFIG_DIR/auth-method" ]; then method=$(cat "$CLAUDE_CONFIG_DIR/auth-method"); fi
+            if [ -f "$CLAUDE_CONFIG_DIR/config-directory" ]; then folder=$(cat "$CLAUDE_CONFIG_DIR/config-directory"); fi
+            printf '{"loggedIn":true,"authMethod":"%s","apiProvider":"firstParty","configDirectory":"%s","email":"%s","token":"fake-secret-token"}\n' "$method" "$folder" "$email"
+        elif [ -n "$CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR" ]; then
+            expires=null
+            if [ -f "$CLAUDE_CONFIG_DIR/token-expires" ]; then expires="\"$(cat "$CLAUDE_CONFIG_DIR/token-expires")\""; fi
+            printf '{"loggedIn":true,"authMethod":"oauth_token","configDirectory":"%s","loginExpiresAt":%s}\n' "$CLAUDE_CONFIG_DIR" "$expires"
+        elif grep -q apiKeyHelper "$CLAUDE_CONFIG_DIR/settings.json" 2>/dev/null; then
+            printf '{"loggedIn":true,"authMethod":"api_key_helper","configDirectory":"%s","loginExpiresAt":null,"apiKeySource":"apiKeyHelper"}\n' "$CLAUDE_CONFIG_DIR"
         else
             echo '{"loggedIn":false,"authMethod":"none"}'
             exit 1
         fi
+        ;;
+    -p)
+        # One model call: it answers when the folder's token or key starts with valid, and fails otherwise.
+        value=""
+        if [ -n "$CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR" ]; then value=$(cat <&3); fi
+        if [ -f "$CLAUDE_CONFIG_DIR/api-key" ]; then value=$(cat "$CLAUDE_CONFIG_DIR/api-key"); fi
+        case "$value" in
+            valid*) echo '{"type":"result","subtype":"success","is_error":false,"result":"OK"}' ;;
+            *) echo '{"type":"result","subtype":"error","is_error":true}'; exit 1 ;;
+        esac
         ;;
 esac

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
+use App\Profiles\Values\SignInIdentity;
 use App\Profiles\Contracts\SignInProtocol;
 use App\Profiles\Support\PrivateAccountProcess;
 use App\Profiles\Values\SignInChallenge;
@@ -31,9 +32,16 @@ final readonly class FinishingProtocol implements SignInProtocol
         return ! $process->isRunning();
     }
 
+    public function prove(PrivateAccountProcess $process, string $directory): SignInVerification
+    {
+        return $this->verify($directory);
+    }
+
     public function verify(string $directory): SignInVerification
     {
-        return new SignInVerification(! is_file($directory.'/signed-out'), 'work@example.test');
+        $identity = new SignInIdentity('work@example.test', 'subject-1', 'workspace-1');
+
+        return new SignInVerification(! is_file($directory.'/signed-out'), $identity);
     }
 
     public function signOut(string $directory): void

@@ -23,6 +23,7 @@ final readonly class ClaimSignInHandler implements CommandHandler
         return new ClaimedSignIn(
             $attempt->id,
             $attempt->program,
+            $attempt->method,
             (string) $attempt->directory,
             $attempt->generation,
             $attempt->expires_at->toIso8601String(),

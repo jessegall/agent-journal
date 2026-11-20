@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('state', 32);
             $table->string('directory')->nullable();
             $table->string('identity')->nullable();
+            $table->string('subject')->nullable();
+            $table->string('workspace')->nullable();
+            $table->string('fingerprint', 64)->nullable();
+            $table->timestampTz('expires_at')->nullable();
             $table->boolean('maintenance')->default(false);
             $table->unsignedBigInteger('sign_in_generation')->default(0);
             $table->ulid('live_writer_attempt_id')->nullable();
@@ -48,6 +52,8 @@ return new class extends Migration
         Schema::create('sign_in_attempts', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('program', 64);
+            $table->string('method', 32);
+            $table->string('fingerprint', 64)->nullable();
             $table->ulid('account_id')->nullable();
             $table->string('label', 80)->nullable();
             $table->string('state', 32);

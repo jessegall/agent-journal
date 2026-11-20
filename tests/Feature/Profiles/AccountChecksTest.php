@@ -15,6 +15,7 @@ use App\Profiles\Commands\CheckAccount;
 use App\Profiles\Enums\AccountCheckResult;
 use App\Profiles\Enums\AccountNoticeReason;
 use App\Profiles\Enums\AccountState;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
@@ -98,7 +99,7 @@ final class AccountChecksTest extends TestCase
         $host = new RecordingSignInHost(null);
         $host->nextCheck = new ClaimedAccountCheck($this->account->id, 'codex', sys_get_temp_dir(), 1);
         $protocols = new SignInProtocols($this->app);
-        $protocols->register('codex', FinishingProtocol::class);
+        $protocols->register('codex', SignInMethod::OAuth, FinishingProtocol::class);
 
         $ran = new PrivateSignInProcesses($host, $protocols, static fn () => null)->checkNext();
 

@@ -12,6 +12,7 @@ use App\Profiles\Enums\SignInOutcome;
 use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\CleanupProgress;
+use App\Profiles\Values\SignInIdentity;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Filesystem\Filesystem;
@@ -44,26 +45,32 @@ final readonly class PrivateSignInProcesses
             return false;
         }
 
-        if (! $this->protocols->supports($claimed->program)) {
-            $this->host->report($claimed, SignInOutcome::Failed, null);
+        if (! $this->protocols->supports($claimed->program, $claimed->method)) {
+            $this->host->report($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
 
             return true;
         }
 
-        $protocol = $this->protocols->for($claimed->program);
+        $protocol = $this->protocols->for($claimed->program, $claimed->method);
 
         if (! $this->owners->drain($claimed->directory)) {
-            $this->host->report($claimed, SignInOutcome::Failed, null);
+            $this->host->report($claimed, SignInOutcome::Failed, SignInIdentity::unproved());
 
             return true;
         }
 
         self::makePrivateFolder($claimed->directory);
         $process = $protocol->begin($claimed->directory);
-        $this->host->report($claimed, SignInOutcome::Waiting, null);
-        $this->waitForEnd($protocol, $process, $claimed);
+        $this->host->report($claimed, SignInOutcome::Waiting, SignInIdentity::unproved());
 
-        $verification = $protocol->verify($claimed->directory);
+        if (! $this->waitForEnd($protocol, $process, $claimed)) {
+            $process->stop();
+
+            return true;
+        }
+
+        $verification = $protocol->prove($process, $claimed->directory);
+        $process->stop();
         $outcome = $verification->isSignedIn ? SignInOutcome::Verified : SignInOutcome::Failed;
         $this->host->report($claimed, $outcome, $verification->identity);
 
@@ -150,23 +157,31 @@ final readonly class PrivateSignInProcesses
         return ! file_exists($directory);
     }
 
-    private function waitForEnd(SignInProtocol $protocol, PrivateAccountProcess $process, ClaimedSignIn $claimed): void
+    /**
+     * Runs the sign-in until the program finishes, the attempt expires or the journal ends it, and answers whether
+     * the attempt is still live; a code reaches the program only from a live poll.
+     */
+    private function waitForEnd(SignInProtocol $protocol, PrivateAccountProcess $process, ClaimedSignIn $claimed): bool
     {
         $deadline = CarbonImmutable::parse($claimed->expiresAt);
         $isPublished = false;
 
         while (! $protocol->hasFinished($process) && CarbonImmutable::now()->lessThan($deadline)) {
             $isPublished = $isPublished || $this->publishChallenge($protocol, $process, $claimed);
-            $code = $this->host->pendingCode($claimed);
+            $poll = $this->host->poll($claimed);
 
-            if ($code !== null) {
-                $protocol->acceptCode($process, $code);
+            if (! $poll->isLive) {
+                return false;
+            }
+
+            if ($poll->code !== null) {
+                $protocol->acceptCode($process, $poll->code);
             }
 
             ($this->pause)();
         }
 
-        $process->stop();
+        return true;
     }
 
     /**

@@ -6,6 +6,7 @@ namespace App\Profiles\Models;
 
 use App\Links\Support\Linkable;
 use App\Profiles\Enums\CleanupProblem;
+use App\Profiles\Enums\SignInMethod;
 use App\Profiles\Enums\SignInState;
 use App\Profiles\Enums\SignInType;
 use App\Profiles\Exceptions\SignInAttemptMissing;
@@ -33,6 +34,8 @@ use Illuminate\Support\Carbon;
  * @property string $program
  * @property string|null $account_id
  * @property string|null $label
+ * @property SignInMethod $method
+ * @property string|null $fingerprint
  * @property SignInState $state
  * @property string $request_key
  * @property int $generation
@@ -49,7 +52,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read Account|null $account
  */
-#[Fillable(['program', 'label'])]
+#[Fillable(['program', 'method', 'label'])]
 final class SignInAttempt extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -69,6 +72,7 @@ final class SignInAttempt extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
+            'method' => SignInMethod::class,
             'state' => SignInState::class,
             'generation' => 'integer',
             'cleanup_pending' => 'boolean',
@@ -81,16 +85,17 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * A new attempt to sign in a new account under a name.
+     * A new attempt to sign in a new account under a name, by one of its program's methods.
      */
     public static function forNewAccount(
         HookProgram $program,
+        SignInMethod $method,
         AccountLabel $label,
         string $directory,
         string $requestKey,
         CarbonImmutable $expiresAt,
     ): self {
-        $attempt = new self(['program' => $program->value, 'label' => $label->label]);
+        $attempt = new self(['program' => $program->value, 'method' => $method, 'label' => $label->label]);
         $attempt->directory = $directory;
         $attempt->begin($requestKey, $expiresAt);
 
@@ -98,12 +103,16 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * A new attempt to sign an existing account in again, in the sign-in generation the account is in. No host takes
+     * A new attempt to sign an existing account in again by a method, in the sign-in generation the account is in. No host takes
      * it while a process may still run on the account's folder.
      */
-    public static function forAccount(Account $account, string $requestKey, CarbonImmutable $expiresAt): self
-    {
-        $attempt = new self(['program' => $account->program]);
+    public static function forAccount(
+        Account $account,
+        SignInMethod $method,
+        string $requestKey,
+        CarbonImmutable $expiresAt,
+    ): self {
+        $attempt = new self(['program' => $account->program, 'method' => $method]);
         $attempt->account_id = $account->id;
         $attempt->generation = $account->sign_in_generation;
         $attempt->directory = $account->directory;
@@ -335,6 +344,15 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     // ----------[ Mutations ]----------
+
+    /**
+     * Keeps the keyed fingerprint of the key or token the owner gave, never the value itself.
+     */
+    public function keepFingerprint(string $fingerprint): void
+    {
+        $this->fingerprint = $fingerprint;
+        $this->save();
+    }
 
     /**
      * Ends a live attempt in the given state; an attempt that made no account still owes the deletion of its folder.

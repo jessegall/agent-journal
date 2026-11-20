@@ -11,6 +11,8 @@ use App\Profiles\Values\ClaimedCleanup;
 use App\Profiles\Values\ClaimedSignIn;
 use App\Profiles\Values\CleanupProgress;
 use App\Profiles\Values\SignInChallenge;
+use App\Profiles\Values\SignInIdentity;
+use App\Profiles\Values\SignInPoll;
 
 /**
  * The journal as the host's sign-in runner reaches it: take the next sign-in, and report a safe outcome of one.
@@ -19,7 +21,7 @@ interface SignInHost
 {
     public function claim(): ClaimedSignIn|null;
 
-    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, string|null $identity): void;
+    public function report(ClaimedSignIn $claimed, SignInOutcome $outcome, SignInIdentity $identity): void;
 
     public function publishChallenge(ClaimedSignIn $claimed, SignInChallenge $challenge): void;
 
@@ -39,7 +41,7 @@ interface SignInHost
     public function reportCleanup(ClaimedCleanup $claimed, CleanupProgress $progress): void;
 
     /**
-     * The code the user typed for the sign-in, handed over once; none while none waits.
+     * Whether the attempt is still live in the generation the host runs it in, with the code the user typed, once.
      */
-    public function pendingCode(ClaimedSignIn $claimed): string|null;
+    public function poll(ClaimedSignIn $claimed): SignInPoll;
 }

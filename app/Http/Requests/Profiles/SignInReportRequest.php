@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Requests\Profiles;
 
 use App\Profiles\Enums\SignInOutcome;
+use App\Profiles\Values\SignInIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
  * The host sign-in runner's report on the attempt the route names: its safe outcome, the generation it ran in and,
- * once verified, the identity the program's own check showed. Never the program's output.
+ * once verified, who the program's own proof named: display text, subject and workspace apart. Never the program's output.
  */
 final class SignInReportRequest extends FormRequest
 {
@@ -22,7 +23,10 @@ final class SignInReportRequest extends FormRequest
         return [
             'outcome' => ['required', Rule::enum(SignInOutcome::class)],
             'generation' => ['required', 'integer', 'min:0'],
-            'identity' => ['nullable', 'string', 'max:200'],
+            'display' => ['nullable', 'string', 'max:200'],
+            'subject' => ['nullable', 'string', 'max:200'],
+            'workspace' => ['nullable', 'string', 'max:200'],
+            'expires_at' => ['nullable', 'date'],
         ];
     }
 
@@ -41,8 +45,18 @@ final class SignInReportRequest extends FormRequest
         return $this->integer('generation');
     }
 
-    public function identity(): string|null
+    public function identity(): SignInIdentity
     {
-        return $this->filled('identity') ? $this->string('identity')->toString() : null;
+        return new SignInIdentity(
+            $this->text('display'),
+            $this->text('subject'),
+            $this->text('workspace'),
+            $this->text('expires_at'),
+        );
+    }
+
+    private function text(string $key): string|null
+    {
+        return $this->filled($key) ? $this->string($key)->toString() : null;
     }
 }
