@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
+use App\Actors\Contracts\Policy;
 use App\Agents\Values\Operation;
 use App\Processes\Values\ProcessGrants;
 use BackedEnum;
@@ -45,6 +46,9 @@ final class ProfileSnapshot extends Data
         return $this->start->allowsOperation($operation);
     }
 
+    /**
+     * @param  class-string<Policy>  $policy
+     */
     public function grants(string $policy, BackedEnum $ability): bool
     {
         return $this->authorization->grants($policy, $ability);
