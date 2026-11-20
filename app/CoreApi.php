@@ -1149,7 +1149,22 @@ use App\Web\Contracts\CurrentUserResolver;
  */
 final class CoreApi
 {
+    /**
+     * What Core exports and where its listeners live, built once per process: both come from the code alone.
+     */
+    private static Exports|null $exports = null;
+
+    /**
+     * @var list<string>|null
+     */
+    private static array|null $listenerFolders = null;
+
     public static function exports(): Exports
+    {
+        return self::$exports ??= self::buildExports();
+    }
+
+    private static function buildExports(): Exports
     {
         return Exports::make()
             ->events(
@@ -2310,6 +2325,6 @@ final class CoreApi
      */
     public static function listenerFolders(): array
     {
-        return glob(__DIR__.'/*/Listeners', GLOB_ONLYDIR) ?: [];
+        return self::$listenerFolders ??= glob(__DIR__.'/*/Listeners', GLOB_ONLYDIR) ?: [];
     }
 }

@@ -29,6 +29,14 @@ final class DomainEventServiceProvider extends EventServiceProvider
 {
     private const string STATE_EVENTS = '@state-events';
 
+    /**
+     * The listeners this process already discovered, by the folders they were discovered in: the files cannot change
+     * while it runs, and a test's module fixture adds folders, so it is discovered anew.
+     *
+     * @var array<string, array<string, list<string>>>
+     */
+    private static array $discovered = [];
+
     public function boot(): void
     {
         $this->app->booted(fn () => $this->registerStateBridges());
@@ -116,7 +124,9 @@ final class DomainEventServiceProvider extends EventServiceProvider
      */
     private function discoverOrdinaryEvents(): array
     {
-        return $this->policy()->discover(parent::discoverEvents());
+        $folders = implode('|', $this->discoverEventsWithin());
+
+        return $this->policy()->discover(self::$discovered[$folders] ??= parent::discoverEvents());
     }
 
     /**

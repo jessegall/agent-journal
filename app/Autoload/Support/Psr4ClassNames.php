@@ -9,16 +9,27 @@ use Composer\Autoload\ClassLoader;
 
 /**
  * The class a PHP file declares, read from Composer's PSR-4 roots: each domain's src folder maps to its own
- * namespace, which Laravel's guess from the base path cannot know.
+ * namespace, which Laravel's guess from the base path cannot know. The roots are read once per process: no code
+ * registers new ones while it runs, and reading them resolves every package's folders.
  */
-final readonly class Psr4ClassNames
+final class Psr4ClassNames
 {
+    private static self|null $composerNames = null;
+
     /**
      * @param  array<string, string>  $roots  each real folder and the namespace it holds, the deepest folder first
      */
-    private function __construct(private array $roots) {}
+    private function __construct(private readonly array $roots) {}
 
     public static function fromComposer(): self
+    {
+        return self::$composerNames ??= self::readComposer();
+    }
+
+    /**
+     * The roots as Composer's registered loaders hold them now.
+     */
+    private static function readComposer(): self
     {
         $roots = [];
 

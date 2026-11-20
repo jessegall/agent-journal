@@ -260,7 +260,6 @@ case	DismissalType::Declined
 case	DismissalType::Withdrawn
 case	DockerImageName::Agent
 case	DockerImageName::Runner
-case	DockerImageStatus::Verified
 case	DriverOperation::ChangeEffort
 case	DriverOperation::ChangeModel
 case	DriverOperation::Deliver
@@ -2636,6 +2635,7 @@ class	KeyScriptRefused
 class	KeyedWriteWithoutReceipt
 class	KeywordDefinition
 class	KeywordRegistry
+class	KnownFolderClasses
 class	LaravelCommandBus
 class	LaunchCancelled
 class	LaunchCandidateFacts
@@ -6058,7 +6058,6 @@ enum	DiagnosticCode
 enum	DiscoveryProfile
 enum	DismissalType
 enum	DockerImageName
-enum	DockerImageStatus
 enum	DriverOperation
 enum	DriverType
 enum	EditingState
@@ -9450,6 +9449,7 @@ method	ConversationVisits::entered()
 method	CopySkill::__construct()
 method	CopySkillHandler::__construct()
 method	CopySkillHandler::handle()
+method	CoreApi::buildExports()
 method	CoreApi::exports()
 method	CoreApi::listenerFolders()
 method	CoreAskType::isUrgent()
@@ -9921,9 +9921,9 @@ method	DockedRecordPolicy::model()
 method	DockedRecordRecords::__construct()
 method	DockedRecordRecords::docked()
 method	DockerImageData::__construct()
-method	DockerImageData::isVerifiedAgentImage()
+method	DockerImageData::isAgentImage()
 method	DockerImageRecordData::__construct()
-method	DockerImageRecordData::hasVerifiedAgentImage()
+method	DockerImageRecordData::hasAgentImage()
 method	DockerImageVerifier::__construct()
 method	DockerImageVerifier::isVerified()
 method	Document::addRevision()
@@ -10822,6 +10822,7 @@ method	FlowShape::__construct()
 method	FlowShape::action()
 method	FlowShape::branch()
 method	FolderClasses::in()
+method	FolderClasses::read()
 method	FolderTrustRefused::notEmpty()
 method	FolderTrustRefused::outsideWorkingRoots()
 method	FolderType::ofFolder()
@@ -11713,6 +11714,7 @@ method	KeywordRegistry::statement()
 method	KeywordRegistry::statementFor()
 method	KeywordRegistry::store()
 method	KeywordRegistry::trigger()
+method	KnownFolderClasses::in()
 method	LaravelCommandBus::__construct()
 method	LaravelCommandBus::forRequest()
 method	LaravelCommandBus::hasHandlerFor()
@@ -14240,6 +14242,7 @@ method	PrunedPublications::__construct()
 method	Psr4ClassNames::__construct()
 method	Psr4ClassNames::classOf()
 method	Psr4ClassNames::fromComposer()
+method	Psr4ClassNames::readComposer()
 method	PublicAddresses::isPublic()
 method	PublicComment::__construct()
 method	PublicCommentPage::__construct()
@@ -23502,6 +23505,8 @@ property	CopySkill::$requestId
 property	CopySkill::$sourceKey
 property	CopySkillHandler::$skills
 property	CopySkillHandler::$writes
+property	CoreApi::$exports
+property	CoreApi::$listenerFolders
 property	CoreRules::$builds
 property	CoreRules::$checks
 property	CoreRules::$files
@@ -23788,7 +23793,6 @@ property	DockerImageData::$claudeCode
 property	DockerImageData::$codex
 property	DockerImageData::$name
 property	DockerImageData::$reference
-property	DockerImageData::$status
 property	DockerImageRecordData::$images
 property	DockerImageRecordData::$note
 property	DockerImageVerifier::$recordPath
@@ -23863,6 +23867,7 @@ property	DomainEntry::$settings
 property	DomainEntry::$skillConditions
 property	DomainEntry::$skills
 property	DomainEntry::$switchable
+property	DomainEventServiceProvider::$discovered
 property	DomainRegistry::$domainsByName
 property	DomainStateType::$availability
 property	DomainStateType::$loader
@@ -24811,6 +24816,7 @@ property	KeywordDefinition::$implementation
 property	KeywordDefinition::$token
 property	KeywordRegistry::$container
 property	KeywordRegistry::$keywords
+property	KnownFolderClasses::$found
 property	LaravelCommandBus::$container
 property	LaravelCommandBus::$dispatcher
 property	LaravelCommandBus::$origins
@@ -26408,6 +26414,7 @@ property	PrunedHistory::$hookCalls
 property	PrunedHistory::$stopOutputs
 property	PrunedPublications::$conflicts
 property	PrunedPublications::$retired
+property	Psr4ClassNames::$composerNames
 property	Psr4ClassNames::$roots
 property	PublicComment::$comment
 property	PublicComment::$excerpt
