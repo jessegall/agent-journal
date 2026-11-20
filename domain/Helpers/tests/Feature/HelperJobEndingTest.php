@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Helpers\Tests\Feature;
+
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Events\LaunchCancelled;
+use App\Agents\Models\Agent;
+use App\Hooks\Events\HelperCompletionCertified;
+use App\Hooks\Events\HelperStopHeld;
+use App\Hooks\Values\StopAttemptReference;
+use App\Records\Support\RecordIdentity;
+use Domain\Helpers\Enums\JobState;
+use Domain\Helpers\Models\HelperIdentity;
+use Domain\Helpers\Models\HelperJob;
+use Domain\Helpers\Models\HelperPurpose;
+use Domain\Helpers\Tests\TestCase;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Support\Str;
+use Tests\Support\RefreshHookDatabase;
+
+/**
+ * A helper job ends only on what Core says about its helper's stop (task 415): a certified stop finishes it with the
+ * evidence, a held stop holds it for repair, a cancelled launch cancels it, and a job that already ended or other
+ * work is left alone.
+ */
+final class HelperJobEndingTest extends TestCase
+{
+    use RefreshHookDatabase;
+
+    public function test_a_certified_stop_finishes_the_job_with_its_evidence(): void
+    {
+        $job = $this->job();
+
+        $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopAttemptReference('attempt-1')));
+
+        $finished = HelperJob::query()->acrossActors()->findOrFail($job->id);
+        $this->assertSame(JobState::Finished, $finished->state);
+        $this->assertSame('stop-attempt:attempt-1', $finished->stop_evidence_reference);
+        $this->assertNotNull($finished->finished_at);
+    }
+
+    public function test_a_held_stop_holds_the_job_and_a_cancelled_launch_cancels_it(): void
+    {
+        $held = $this->job();
+        $cancelled = $this->job();
+
+        $this->raise(new HelperStopHeld($held->assignmentIdentity(), new StopAttemptReference('attempt-2')));
+        $this->raise(new LaunchCancelled($cancelled->assignmentIdentity()));
+
+        $this->assertSame(JobState::Held, HelperJob::query()->acrossActors()->findOrFail($held->id)->state);
+        $this->assertSame(JobState::Cancelled, HelperJob::query()->acrossActors()->findOrFail($cancelled->id)->state);
+    }
+
+    public function test_an_ended_job_and_other_work_are_left_alone(): void
+    {
+        $job = $this->job();
+        $job->cancel();
+
+        $this->raise(new HelperCompletionCertified($job->assignmentIdentity(), new StopAttemptReference('attempt-3')));
+        $this->raise(new LaunchCancelled(new RecordIdentity('tasks.task', $job->id)));
+
+        $this->assertSame(JobState::Cancelled, HelperJob::query()->acrossActors()->findOrFail($job->id)->state);
+    }
+
+    private function job(): HelperJob
+    {
+        $parent = $this->actAsUser('parent');
+        $helper = HelperIdentity::declare(
+            $parent,
+            ActorIdentity::of(Agent::named('Helper '.Str::random(6), 'writing-helper')),
+            'writing-helper',
+            'writing-helper',
+        );
+        $purpose = HelperPurpose::free($parent, 'writing-helper', 'General work '.Str::random(6));
+
+        return HelperJob::accept($helper, $purpose, $parent, 'Fix the test', [], self::launchFor((string) Str::ulid()));
+    }
+
+    private function raise(object $event): void
+    {
+        $this->actAsUser('another');
+        $this->app->make(Dispatcher::class)->dispatch($event);
+    }
+}

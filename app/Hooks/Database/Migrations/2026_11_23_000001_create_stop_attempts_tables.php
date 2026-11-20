@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('condition_hashes');
             $table->string('state', 16);
             $table->string('submission_digest', 64)->nullable();
+            $table->timestampTz('certified_at')->nullable();
             $table->timestampsTz();
 
             $table->unique(['session_id', 'stop_id']);

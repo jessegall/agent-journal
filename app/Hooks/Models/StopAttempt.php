@@ -7,6 +7,7 @@ namespace App\Hooks\Models;
 use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\Support\AgentSessionScope;
+use App\Hooks\Values\StopAttemptReference;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -31,6 +32,7 @@ use Illuminate\Support\Str;
  * @property array<string, string> $condition_hashes
  * @property StopAttemptState $state
  * @property string|null $submission_digest
+ * @property Carbon|null $certified_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -55,6 +57,7 @@ final class StopAttempt extends Model implements ReadableModel
             'workspace_generation' => 'integer',
             'condition_hashes' => 'array',
             'state' => StopAttemptState::class,
+            'certified_at' => 'datetime',
         ];
     }
 
@@ -110,6 +113,24 @@ final class StopAttempt extends Model implements ReadableModel
     }
 
     /**
+     * The settled attempts of this session, newest first, at most this many.
+     *
+     * @return list<self>
+     */
+    public static function latestSettledOf(string $sessionId, int $count): array
+    {
+        return array_values(self::query()
+            ->withoutGlobalScope(AgentSessionScope::class)
+            ->where('session_id', $sessionId)
+            ->where('state', '!=', StopAttemptState::Pending->value)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit($count)
+            ->get()
+            ->all());
+    }
+
+    /**
      * @return HasMany<StopResult, $this>
      */
     public function results(): HasMany
@@ -158,5 +179,24 @@ final class StopAttempt extends Model implements ReadableModel
         $this->state = $state;
         $this->submission_digest = $submissionDigest;
         $this->save();
+    }
+
+    public function isCertified(): bool
+    {
+        return $this->certified_at !== null;
+    }
+
+    /**
+     * Marks this passed attempt as the certificate of the session's completion.
+     */
+    public function certify(): void
+    {
+        $this->certified_at = Carbon::now();
+        $this->save();
+    }
+
+    public function reference(): StopAttemptReference
+    {
+        return new StopAttemptReference($this->id);
     }
 }

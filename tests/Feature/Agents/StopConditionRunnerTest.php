@@ -14,6 +14,7 @@ use App\Hooks\Commands\RecordStopResults;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
+use App\Hooks\Enums\StopAttemptState;
 use App\Hooks\Enums\StopResultType;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\StopAttempt;
@@ -31,8 +32,8 @@ use Tests\TestCase;
 /**
  * A stop of a session with stop conditions opens its attempt and ends the turn with the job open while the host's
  * checks run; the host reads the frozen conditions of its own sessions; a failed result refuses the stop with its
- * summary and a passed one allows it; a session without conditions stops at once. The host's runner itself is
- * proven by tools/journal-agent/host/stop_conditions_test.go.
+ * summary and a passed one allows it; a session without conditions stops at once on a passed attempt. The host's
+ * runner itself is proven by tools/journal-agent/host/stop_conditions_test.go.
  */
 #[TimeLimit(seconds: 3, reason: 'It starts a test agent session and empties the hook tables.')]
 final class StopConditionRunnerTest extends TestCase
@@ -95,7 +96,7 @@ final class StopConditionRunnerTest extends TestCase
         $this->assertSame([], $allowed->messages);
     }
 
-    public function test_a_session_without_stop_conditions_stops_at_once_and_opens_no_attempt(): void
+    public function test_a_session_without_stop_conditions_stops_at_once_on_a_passed_attempt(): void
     {
         $unfrozen = TestStart::start('writing-helper');
         $empty = TestStart::start('writing-helper');
@@ -103,7 +104,10 @@ final class StopConditionRunnerTest extends TestCase
 
         $this->assertSame(AnswerType::Allow, $this->stop($unfrozen, 'stop-1')->answerType());
         $this->assertSame(AnswerType::Allow, $this->stop($empty, 'stop-1')->answerType());
-        $this->assertSame(0, StopAttempt::query()->withoutGlobalScopes()->count());
+        $this->assertSame(
+            StopAttemptState::Passed,
+            StopAttempt::query()->withoutGlobalScopes()->sole()->state,
+        );
     }
 
     private function helperWithConditions(): TestStart

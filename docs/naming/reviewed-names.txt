@@ -1554,6 +1554,9 @@ class	CancelInput
 class	CancelKeyScript
 class	CancelKeyScriptCommand
 class	CancelKeyScriptHandler
+class	CancelLaunch
+class	CancelLaunchHandler
+class	CancelLaunchedJob
 class	CancelMessageController
 class	CancelPlan
 class	CancelPlanCall
@@ -2275,6 +2278,7 @@ class	FileOutsideEveryDomain
 class	FileRules
 class	FindNextSubstitution
 class	FindReplay
+class	FinishCertifiedJob
 class	FinishPlan
 class	FinishPlanCall
 class	FinishPlanController
@@ -2356,6 +2360,7 @@ class	HeldTasksOverview
 class	HelperBusy
 class	HelperCandidate
 class	HelperCandidates
+class	HelperCompletionCertified
 class	HelperDispatch
 class	HelperIdentity
 class	HelperIdentityFixed
@@ -2373,6 +2378,7 @@ class	HelperReceipt
 class	HelperRecords
 class	HelperRequestConflict
 class	HelperRetired
+class	HelperStopHeld
 class	HelperUnavailable
 class	HelperWork
 class	HelpersDomain
@@ -2389,6 +2395,7 @@ class	HistoryPageResolver
 class	HistoryRequest
 class	HoldAccountUses
 class	HoldAccountUsesHandler
+class	HoldFailingJob
 class	HoldReleaseRequest
 class	HomeData
 class	HomeWindowData
@@ -2519,6 +2526,7 @@ class	IssueEvidencePermit
 class	IssueEvidencePermitHandler
 class	JobLaunch
 class	JobPermissionReader
+class	JobStopEvidence
 class	JournalAccessDenied
 class	JournalAssignment
 class	JournalBusy
@@ -2546,6 +2554,7 @@ class	KeyedWriteWithoutReceipt
 class	KeywordDefinition
 class	KeywordRegistry
 class	LaravelCommandBus
+class	LaunchCancelled
 class	LaunchCandidateFacts
 class	LaunchCandidateQuery
 class	LaunchProfileKey
@@ -5282,6 +5291,7 @@ constant	InboxNotices::SYSTEM_INBOX
 constant	InputRefused::CODE
 constant	IntegerSetting::LARGEST
 constant	IntegerSetting::SMALLEST
+constant	JobStopEvidence::ATTEMPT_PREFIX
 constant	JournalBusy::CODE
 constant	JournalResource::MIME_TYPES
 constant	JournalSearch::TOOL
@@ -5627,6 +5637,10 @@ constant	StateReferences::MAXIMUM
 constant	StopAttempt::FIRST_GENERATION
 constant	StopAttemptGate::CHECKS_RUNNING
 constant	StopAttemptGate::CHECKS_UNRESOLVED
+constant	StopAttemptGate::NO_CHECKS_REQUIRED
+constant	StopAttemptGate::NO_CONDITIONS_SUBMISSION
+constant	StopAttemptGate::STOP_HELD
+constant	StopAttemptGate::UNCHANGED_FAILURES_TO_HOLD
 constant	StopCondition::CLEAN_WORKTREE
 constant	StopCondition::DEFAULT_SECONDS
 constant	StopCondition::OUTPUT_BYTES
@@ -7962,6 +7976,12 @@ method	CancelKeyScript::subject()
 method	CancelKeyScriptCommand::handle()
 method	CancelKeyScriptHandler::__construct()
 method	CancelKeyScriptHandler::handle()
+method	CancelLaunch::__construct()
+method	CancelLaunch::subject()
+method	CancelLaunch::target()
+method	CancelLaunchHandler::__construct()
+method	CancelLaunchHandler::handle()
+method	CancelLaunchedJob::handle()
 method	CancelMessageController::__invoke()
 method	CancelPlan::__construct()
 method	CancelPlan::subject()
@@ -10387,6 +10407,7 @@ method	FindNextSubstitution::isTest()
 method	FindNextSubstitution::substitutionOf()
 method	FindNextSubstitution::wordsInside()
 method	FindReplay::handle()
+method	FinishCertifiedJob::handle()
 method	FinishPlan::__construct()
 method	FinishPlan::subject()
 method	FinishPlanCall::__construct()
@@ -10623,6 +10644,7 @@ method	HelperCandidates::exposedIdentities()
 method	HelperCandidates::factsOf()
 method	HelperCandidates::latestFinish()
 method	HelperCandidates::resumes()
+method	HelperCompletionCertified::__construct()
 method	HelperDispatch::__construct()
 method	HelperDispatch::admittedProfile()
 method	HelperDispatch::candidatesFor()
@@ -10649,6 +10671,7 @@ method	HelperJob::cancel()
 method	HelperJob::casts()
 method	HelperJob::exposedTo()
 method	HelperJob::finish()
+method	HelperJob::finishByStopEvidence()
 method	HelperJob::hold()
 method	HelperJob::isFinished()
 method	HelperJob::launch()
@@ -10680,6 +10703,7 @@ method	HelperRecords::__construct()
 method	HelperRecords::receiptOf()
 method	HelperRequestConflict::forRequest()
 method	HelperRetired::forIdentity()
+method	HelperStopHeld::__construct()
 method	HelperUnavailable::toYou()
 method	HelperWork::__construct()
 method	HelperWork::fingerprint()
@@ -10717,6 +10741,7 @@ method	HoldAccountUses::__construct()
 method	HoldAccountUses::subject()
 method	HoldAccountUsesHandler::__construct()
 method	HoldAccountUsesHandler::handle()
+method	HoldFailingJob::handle()
 method	HoldReason::needsAUser()
 method	HoldReleaseRequest::agentId()
 method	HoldReleaseRequest::hold()
@@ -11100,6 +11125,8 @@ method	JobPermissionReader::allowsRead()
 method	JobPermissionReader::isVisible()
 method	JobPermissionReader::profileKey()
 method	JobState::isFinal()
+method	JobStopEvidence::openJobs()
+method	JobStopEvidence::referenceOf()
 method	JournalAccessDenied::forUser()
 method	JournalAdmission::admits()
 method	JournalAdmission::owner()
@@ -11193,6 +11220,7 @@ method	LaravelCommandBus::forRequest()
 method	LaravelCommandBus::hasHandlerFor()
 method	LaravelCommandBus::run()
 method	LaravelCommandBus::runGuarded()
+method	LaunchCancelled::__construct()
 method	LaunchCandidateFacts::__construct()
 method	LaunchCandidateFacts::rankingFinish()
 method	LaunchCandidateQuery::__construct()
@@ -17236,6 +17264,8 @@ method	StartRecord::accept()
 method	StartRecord::casts()
 method	StartRecord::forAgent()
 method	StartRecord::forOwnerReference()
+method	StartRecord::ownerStartOf()
+method	StartRecord::ownerWork()
 method	StartRecord::replyInboxId()
 method	StartRecord::requestedBy()
 method	StartRecord::requireDigest()
@@ -17496,15 +17526,23 @@ method	StopAgentHandler::__construct()
 method	StopAgentHandler::handle()
 method	StopAttempt::asksFor()
 method	StopAttempt::casts()
+method	StopAttempt::certify()
+method	StopAttempt::isCertified()
 method	StopAttempt::isFor()
 method	StopAttempt::isSettled()
+method	StopAttempt::latestSettledOf()
 method	StopAttempt::openFor()
 method	StopAttempt::pendingOf()
+method	StopAttempt::reference()
 method	StopAttempt::results()
 method	StopAttempt::settle()
 method	StopAttempt::wasSubmittedAs()
 method	StopAttemptGate::__construct()
 method	StopAttemptGate::answer()
+method	StopAttemptGate::certifyCompletion()
+method	StopAttemptGate::passWithoutConditions()
+method	StopAttemptGate::refuseOrHold()
+method	StopAttemptGate::unchangedFailureCount()
 method	StopAttemptMissing::for()
 method	StopAttemptRecords::result()
 method	StopAttemptReference::__construct()
@@ -19593,6 +19631,7 @@ parameter	$fail
 parameter	$failed
 parameter	$failure
 parameter	$failureField
+parameter	$failureSummary
 parameter	$failures
 parameter	$fallthrough
 parameter	$family
@@ -21995,6 +22034,11 @@ property	CancelKeyScript::$requestId
 property	CancelKeyScriptCommand::$description
 property	CancelKeyScriptCommand::$signature
 property	CancelKeyScriptHandler::$recovery
+property	CancelLaunch::$agentId
+property	CancelLaunch::$idempotencyKey
+property	CancelLaunch::$sessionId
+property	CancelLaunchHandler::$events
+property	CancelLaunchHandler::$requests
 property	CancelPlan::$expectedRevision
 property	CancelPlan::$planId
 property	CancelPlan::$reason
@@ -23492,6 +23536,8 @@ property	HelperCandidate::$identity
 property	HelperCandidate::$rank
 property	HelperCandidate::$resumesConversation
 property	HelperCandidates::$launches
+property	HelperCompletionCertified::$attempt
+property	HelperCompletionCertified::$work
 property	HelperDispatch::$actors
 property	HelperDispatch::$callingProgram
 property	HelperDispatch::$candidates
@@ -23509,6 +23555,8 @@ property	HelperReceipt::$profileType
 property	HelperReceipt::$start
 property	HelperReceipt::$state
 property	HelperRecords::$starts
+property	HelperStopHeld::$attempt
+property	HelperStopHeld::$work
 property	HelperWork::$brief
 property	HelperWork::$independent
 property	HelperWork::$purposeId
@@ -23775,6 +23823,7 @@ property	LaravelCommandBus::$container
 property	LaravelCommandBus::$dispatcher
 property	LaravelCommandBus::$origins
 property	LaravelCommandBus::$registry
+property	LaunchCancelled::$work
 property	LaunchCandidateFacts::$actor
 property	LaunchCandidateFacts::$didThisPurpose
 property	LaunchCandidateFacts::$hasOpenWork
@@ -27740,6 +27789,7 @@ property	StopAgent::$agentId
 property	StopAgent::$idempotencyKey
 property	StopAgent::$sessionId
 property	StopAgentHandler::$requests
+property	StopAttemptGate::$events
 property	StopAttemptGate::$evidence
 property	StopAttemptGate::$policies
 property	StopAttemptReference::$attemptId
@@ -29173,6 +29223,7 @@ variable	$isRecipient
 variable	$isRefusedCommand
 variable	$isRelative
 variable	$isSameAgent
+variable	$isSameFailure
 variable	$isScoped
 variable	$isSignedIn
 variable	$isSignedOut
@@ -29928,6 +29979,7 @@ variable	$types
 variable	$unavailable
 variable	$unavailableTaskIds
 variable	$uncertainty
+variable	$unchangedFailures
 variable	$undeclared
 variable	$underline
 variable	$underlined

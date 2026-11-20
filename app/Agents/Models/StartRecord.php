@@ -15,6 +15,7 @@ use App\Agents\Support\StartRequest;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -141,6 +142,30 @@ final class StartRecord extends Model implements ReadableModel
     public function replyInboxId(): Option
     {
         return Option::fromValue($this->reply_inbox_id);
+    }
+
+    /**
+     * The start an owner made for this session, when the session began from an owner's request.
+     *
+     * @return Option<self>
+     */
+    public static function ownerStartOf(string $sessionId): Option
+    {
+        return Option::fromValue(self::query()
+            ->where('session_id', $sessionId)
+            ->where('origin_type', StartOriginType::OwnerRequest->value)
+            ->whereNotNull('owner_reference')
+            ->first());
+    }
+
+    /**
+     * The work this start was made for, as its owner names it.
+     */
+    public function ownerWork(): RecordIdentity
+    {
+        [$type, $id] = explode(':', (string) $this->owner_reference, 2);
+
+        return new RecordIdentity($type, $id);
     }
 
     public function startedAs(AgentSession $session): void

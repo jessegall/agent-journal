@@ -162,15 +162,30 @@ final class HelperJob extends Model implements Assignable, ReadableModel
         $this->save();
     }
 
+    /**
+     * Finishes the job on the stop evidence that certified its work complete.
+     */
+    public function finishByStopEvidence(string $stopEvidenceReference): void
+    {
+        $this->moveTo(JobState::Finished);
+        $this->stop_evidence_reference = $stopEvidenceReference;
+        $this->finished_at = CarbonImmutable::now();
+        $this->save();
+    }
+
     public function cancel(): void
     {
         $this->moveTo(JobState::Cancelled);
         $this->save();
     }
 
-    public function hold(): void
+    /**
+     * Holds the job for repair on the stop evidence that failed the same way three times.
+     */
+    public function hold(string $stopEvidenceReference): void
     {
         $this->moveTo(JobState::Held);
+        $this->stop_evidence_reference = $stopEvidenceReference;
         $this->save();
     }
 

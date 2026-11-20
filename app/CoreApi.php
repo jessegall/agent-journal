@@ -213,6 +213,7 @@ use App\Agents\Events\AccountUseChanged;
 use App\Agents\Events\AgentHoldReleased;
 use App\Agents\Events\AgentRuntimeReassigned;
 use App\Agents\Events\DriverRequestRecovered;
+use App\Agents\Events\LaunchCancelled;
 use App\Agents\Events\ProgramFailed;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Events\StartAccepted;
@@ -598,6 +599,8 @@ use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextStarted;
+use App\Hooks\Events\HelperCompletionCertified;
+use App\Hooks\Events\HelperStopHeld;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\IncomingWorkRepeated;
 use App\Hooks\Exceptions\MonotonicClockWentBack;
@@ -630,6 +633,7 @@ use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Values\EventCommands;
+use App\Hooks\Values\StopAttemptReference;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Links\Events\LinksRemoved;
@@ -1134,6 +1138,8 @@ final class CoreApi
                 MessageAnswerRequired::class,
                 MessageClaimReleased::class,
                 ContextStarted::class,
+                HelperCompletionCertified::class,
+                HelperStopHeld::class,
                 StateTypesRequested::class,
                 AssignmentsChanged::class,
                 SessionClosed::class,
@@ -1143,6 +1149,7 @@ final class CoreApi
                 ProfileRevisionRevoked::class,
                 StartAccepted::class,
                 StartUnavailable::class,
+                LaunchCancelled::class,
                 ProgramFailed::class,
                 AccountUseChanged::class,
                 AccountsChanged::class,
@@ -1654,6 +1661,7 @@ final class CoreApi
                 OwnerAuthority::class,
                 TrustedEntryAuthority::class,
                 RecordIdentity::class,
+                StopAttemptReference::class,
                 AssigneeRegistration::class,
                 ActivityRegistration::class,
                 Assignment::class,
