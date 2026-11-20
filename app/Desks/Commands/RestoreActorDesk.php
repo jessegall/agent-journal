@@ -7,18 +7,13 @@ namespace App\Desks\Commands;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
-use App\Desks\Enums\DeskAbility;
 use App\Desks\Handlers\RestoreActorDeskHandler;
-use App\Desks\Models\DeskRecord;
 use App\Desks\Policies\DeskPolicy;
 use App\Desks\Support\SeatChangeResult;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
 /**
  * Seats an actor at its preferred personal desk again when that seat is still free, or gives it a new personal desk;
@@ -29,17 +24,8 @@ use App\Operations\Enums\ResourceAreaType;
 #[RepeatableRead]
 #[RetainedActorRequestKey]
 #[HandledBy(RestoreActorDeskHandler::class)]
-#[Authorize(DeskPolicy::class, DeskAbility::Arrange)]
-#[Operation('restore_actor_desk', ResourceAreaType::JournalControl, AccessType::Create)]
-final readonly class RestoreActorDesk extends Command implements AuthorizedCommand
+#[Authorize(DeskPolicy::class, AccessType::Create)]
+final readonly class RestoreActorDesk extends Command
 {
     public function __construct(public ActorIdentity $actor) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return DeskRecord::class;
-    }
 }

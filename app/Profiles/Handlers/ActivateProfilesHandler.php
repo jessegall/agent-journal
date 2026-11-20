@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Handlers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Exceptions\AbilityNotRegistered;
+use App\Actors\Exceptions\GrantNotRegistered;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\ExecutionModeType;
@@ -49,7 +49,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
 
     /**
      * @throws ProfilePolicyRefused
-     * @throws AbilityNotRegistered
+     * @throws GrantNotRegistered
      */
     public function handle(ActivateProfiles $command): ProfileActivation
     {
@@ -61,7 +61,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
      * profiles comes here directly.
      *
      * @throws ProfilePolicyRefused
-     * @throws AbilityNotRegistered
+     * @throws GrantNotRegistered
      */
     public function activate(
         ProfileProposal $proposal,
@@ -81,7 +81,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
             $proposal->profiles,
         );
         foreach ($definitions as $definition) {
-            $definition->authorization->requireGrantableIn($this->catalogue);
+            $definition->authorization->assertGrantableIn($this->catalogue);
             $this->assertContainerSupport($definition);
         }
 
@@ -92,7 +92,10 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         $author = ActorIdentity::of($actor);
         $current = ProfileRevision::currentSources($keys);
         $compiled = array_map(
-            fn (ProfileDefinition $definition, ScriptSource $source) => $this->scripts->compileForProfile($source, $definition->start->access),
+            fn (
+                ProfileDefinition $definition,
+                ScriptSource $source,
+            ) => $this->scripts->compileForProfile($source, $definition),
             $definitions,
             $sources,
         );

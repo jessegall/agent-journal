@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Values;
 
-use App\Actors\Values\AbilityRequirement;
+use App\Actors\Values\AccessRequirement;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileSnapshot;
 
@@ -35,10 +35,10 @@ final readonly class StartProfile
     /**
      * Whether the pinned profile grants the requirement; a session started without one is granted nothing.
      */
-    public function grants(AbilityRequirement $requirement): bool
+    public function grants(AccessRequirement $requirement): bool
     {
         return $this->snapshot !== null
-            && $this->snapshot->authorization->grants($requirement->policy, $requirement->ability);
+            && $this->snapshot->authorization->grants($requirement->policy, $requirement->access);
     }
 
     /**

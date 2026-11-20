@@ -6,15 +6,10 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Handlers\ConfigureShareGatewayHandler;
-use App\Sharing\Models\Share;
 use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\GatewayConfiguration;
 
@@ -26,10 +21,9 @@ use App\Sharing\Support\GatewayConfiguration;
  * @extends Command<GatewayConfiguration>
  */
 #[HandledBy(ConfigureShareGatewayHandler::class)]
+#[Authorize(SharingPolicy::class, AccessType::Create)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
-#[Operation('configure_share_gateway', ResourceAreaType::JournalControl, AccessType::Create)]
-final readonly class ConfigureShareGateway extends Command implements AuthorizedCommand
+final readonly class ConfigureShareGateway extends Command
 {
     /**
      * @param  list<string>  $secretReferences
@@ -44,12 +38,4 @@ final readonly class ConfigureShareGateway extends Command implements Authorized
         public bool $makesDefault,
         public string $requestKey,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Share::class;
-    }
 }

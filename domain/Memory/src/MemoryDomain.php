@@ -13,6 +13,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use Domain\Memory\Api\MemoryCard;
 use Domain\Memory\Api\MemoryPage;
@@ -20,7 +21,6 @@ use Domain\Memory\Commands\EditMemory;
 use Domain\Memory\Commands\RemoveMemory;
 use Domain\Memory\Commands\SaveMemory;
 use Domain\Memory\Contracts\MemoryResolver;
-use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Mcp\MemoryResource;
@@ -66,7 +66,12 @@ final class MemoryDomain extends Domain implements
 
     public function policies(): array
     {
-        return [new PolicyRegistration(Memory::class, MemoryPolicy::class, MemoryAbility::class)];
+        return [
+            new PolicyRegistration(
+                MemoryPolicy::class,
+                [AccessType::Read, AccessType::Create, AccessType::Edit],
+            ),
+        ];
     }
 
     public function commands(): array

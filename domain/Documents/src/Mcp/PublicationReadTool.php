@@ -7,7 +7,6 @@ namespace Domain\Documents\Mcp;
 use App\Agents\Values\ReadRequest;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Mcp\Concerns\PublicationArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
@@ -19,8 +18,8 @@ abstract class PublicationReadTool extends JournalReadTool
     public function readRequest(ToolArguments|null $arguments = null): ReadRequest
     {
         return $arguments === null
-            ? ReadRequest::forDiscovery($this->name(), ResourceAreaType::JournalContent)
-            : new ReadRequest($this->name(), ResourceAreaType::JournalContent);
+            ? ReadRequest::forDiscovery($this->name())
+            : new ReadRequest($this->name());
     }
 
     /**

@@ -6,12 +6,8 @@ namespace Domain\Rules\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Handlers\ProposeRuleHandler;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
@@ -24,9 +20,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<string>
  */
 #[HandledBy(ProposeRuleHandler::class)]
-#[Authorize(RulePolicy::class, RuleAbility::Propose)]
-#[Operation('propose_rule', ResourceAreaType::JournalContent, AccessType::Create)]
-final readonly class ProposeRule extends Command implements AuthorizedCommand
+#[Authorize(RulePolicy::class, AccessType::Create)]
+final readonly class ProposeRule extends Command
 {
     public function __construct(
         #[Required, Max(Rule::TEXT_CHARACTER_LIMIT)]
@@ -35,12 +30,4 @@ final readonly class ProposeRule extends Command implements AuthorizedCommand
         public string $reason,
         public string|null $replacesRuleId = null,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Rule::class;
-    }
 }

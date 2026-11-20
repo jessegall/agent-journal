@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\CommandMiddlewareProvider;
@@ -64,8 +65,6 @@ use Tests\Fixtures\Modules\Notes\Commands\SystemNote;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteResolver;
-use Tests\Fixtures\Modules\Notes\Enums\NoteAbility;
-use Tests\Fixtures\Modules\Notes\Enums\NoteWorkAbility;
 use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
 use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
@@ -143,8 +142,8 @@ final class NotesDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(Note::class, NotePolicy::class, NoteAbility::class),
-            new PolicyRegistration(NotePage::class, NoteWorkPolicy::class, NoteWorkAbility::class),
+            new PolicyRegistration(NotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
+            new PolicyRegistration(NoteWorkPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
         ];
     }
 

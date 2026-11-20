@@ -7,12 +7,8 @@ namespace Domain\Plans\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Handlers\EditPlanHandler;
 use Domain\Plans\Models\Plan;
@@ -26,9 +22,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<int>
  */
 #[HandledBy(EditPlanHandler::class)]
-#[Authorize(PlanPolicy::class, PlanAbility::Work)]
-#[Operation('edit_plan', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class EditPlan extends Command implements AuthorizedCommand
+#[Authorize(PlanPolicy::class, AccessType::Edit)]
+final readonly class EditPlan extends Command
 {
     public function __construct(
         public string $planId,
@@ -39,12 +34,4 @@ final readonly class EditPlan extends Command implements AuthorizedCommand
         public string|null $brief = null,
         public PlanType|null $type = null,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Plan::class;
-    }
 }

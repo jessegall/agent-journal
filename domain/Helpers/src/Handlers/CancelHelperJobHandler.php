@@ -6,16 +6,16 @@ namespace Domain\Helpers\Handlers;
 
 use App\Agents\Commands\CancelLaunch;
 use App\Bus\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
 use Domain\Helpers\Commands\CancelHelperJob;
 use Domain\Helpers\Exceptions\HelperUnavailable;
+use Domain\Helpers\Handlers\Support\HelperCommandHandler;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Support\HelperStarts;
 
 /**
  * Stops the job's live attempt through Core's CancelLaunch, then marks the job cancelled; the workspace stays.
  */
-final readonly class CancelHelperJobHandler implements CommandHandler
+final readonly class CancelHelperJobHandler extends HelperCommandHandler
 {
     public function __construct(
         private CommandBus $commands,

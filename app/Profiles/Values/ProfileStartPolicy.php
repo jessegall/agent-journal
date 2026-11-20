@@ -8,6 +8,7 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\StartPolicy;
+use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\Operation;
 use App\Agents\Values\StopConditions;
@@ -91,6 +92,11 @@ final readonly class ProfileStartPolicy
     public function allowsOperation(Operation $operation): bool
     {
         return $this->access->allows($operation);
+    }
+
+    public function decide(Operation $operation): AccessDecision
+    {
+        return $this->access->decide($operation);
     }
 
     public function freeze(string|null $profileKey, int|null $revision): StartPolicy

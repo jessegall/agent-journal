@@ -11,7 +11,7 @@ final readonly class SupervisorCoverage
     public function __construct(
         public AskTypeKey $type,
         public SupervisorCoverageType $status,
-        public string $operation,
+        public string $command,
         public string $reason,
     ) {}
 }

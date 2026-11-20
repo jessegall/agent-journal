@@ -55,12 +55,12 @@ use App\Agents\Contracts\StartReservations;
 use App\Agents\Contracts\TerminalViewCloser;
 use App\Agents\Contracts\ToolDiscovery;
 use App\Agents\Contracts\WorkspaceReader;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Models\Agent;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Models\ProcessStart;
 use App\Agents\Models\Support\ProcessStartScope;
+use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
@@ -113,6 +113,7 @@ use App\Assignments\Support\AssigneeRegistration;
 use App\Autoload\Support\FolderClasses;
 use App\Contracts\StartTransaction;
 use App\Links\Support\LinkTypeRegistry;
+use App\Operations\Enums\AccessType;
 use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
@@ -237,20 +238,17 @@ final class AgentsServiceProvider extends ServiceProvider
         $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
         $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));
         $policies->register('Core', new PolicyRegistration(
-            Agent::class,
             AgentPolicy::class,
-            AgentAbility::class,
-            ownerOnly: [
-                AgentAbility::RunKeyScript,
-                AgentAbility::Inspect,
-                AgentAbility::Steer,
-                AgentAbility::Recover,
-                AgentAbility::ReadAccountUses,
-                AgentAbility::MaintainAccountUses,
-            ],
-            coordinatorOnly: [AgentAbility::RetireOthers],
+            [AccessType::Create, AccessType::Edit, AccessType::Delete],
+            coordinatorOnly: [AccessType::Delete],
         ));
-        $systemEntries->allow('account reconciliation', AgentPolicy::class);
+        $maintenance = [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute];
+        $policies->register('Core', new PolicyRegistration(
+            AgentMaintenancePolicy::class,
+            $maintenance,
+            ownerOnly: $maintenance,
+        ));
+        $systemEntries->allow('account reconciliation', AgentMaintenancePolicy::class);
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);

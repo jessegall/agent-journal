@@ -15,6 +15,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Contracts\ServerClock;
 use App\Actors\Contracts\TargetAuthorizer;
 use App\Actors\Contracts\UserPresences;
@@ -27,6 +28,7 @@ use App\Actors\Support\ActorStore;
 use App\Actors\Support\AuthorizerProviderRegistry;
 use App\Actors\Support\CurrentActorAuthorizer;
 use App\Actors\Support\DatabaseClock;
+use App\Actors\Support\DeclaredReads;
 use App\Actors\Support\JournalVisibility;
 use App\Actors\Support\PresenceWindow;
 use App\Actors\Support\RegisteredPolicies;
@@ -53,6 +55,7 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->bind(CurrentActorSetter::class, ActorStore::class);
         $this->app->bind(ActorRunner::class, ActorStore::class);
         $this->app->singleton(PolicyCatalogue::class, RegisteredPolicies::class);
+        $this->app->singleton(ReadEntitlements::class, DeclaredReads::class);
         $this->app->bind(ActorContext::class, fn (Application $app) => $app->make(CurrentActor::class)->actor());
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(
             $app->make('config')->integer('actors.presence_seconds'),

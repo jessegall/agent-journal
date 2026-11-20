@@ -7,10 +7,9 @@ namespace App\Profiles\Values;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ClassGrant;
+use App\Agents\Values\HostAccess;
 use App\Agents\Values\StopCondition;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Exceptions\BuiltInProfileMissing;
 
@@ -22,14 +21,16 @@ use App\Profiles\Exceptions\BuiltInProfileMissing;
 final readonly class ProfileBase
 {
     /**
-     * @param  list<ClassGrant>  $classGrants
+     * @param  list<AccessType>  $accesses  the accesses its built-in profile may hold on any policy that accepts them
+     * @param  list<HostAccess>  $paths  the roots its profiles work in on the host, with the accesses each permits
      * @param  list<StopCondition>  $stopConditions
      */
     private function __construct(
         public string $key,
         public string $label,
         public string $model,
-        public array $classGrants,
+        public array $accesses,
+        public array $paths,
         public ExecutionModeType $executionMode,
         public bool $containerRequired,
         public array $stopConditions,
@@ -44,14 +45,12 @@ final readonly class ProfileBase
     public static function mainAgent(): self
     {
         return new self('main-agent', 'Main agent', 'opus', [
-            new ClassGrant(ResourceAreaType::Workspace, [...self::looking(), ...self::changing(), ...self::running()]),
-            new ClassGrant(ResourceAreaType::JournalContent, [...self::looking(), ...self::changing()]),
-            new ClassGrant(ResourceAreaType::JournalDocuments, [...self::looking(), ...self::changing()]),
-            new ClassGrant(
-                ResourceAreaType::JournalWork,
-                [...self::looking(), ...self::changing(), AccessType::Delegate],
-            ),
-            new ClassGrant(ResourceAreaType::JournalControl, self::looking()),
+            ...self::looking(),
+            ...self::changing(),
+            AccessType::Delegate,
+            ...self::running(),
+        ], [
+            HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
         ], ExecutionModeType::ProtectedHost, false, [], OfflineReplyMode::Neutral, true);
     }
 
@@ -61,9 +60,10 @@ final readonly class ProfileBase
     public static function readOnlyHelper(): self
     {
         return new self('read-only-helper', 'Read-only helper', 'sonnet', [
-            new ClassGrant(ResourceAreaType::Workspace, [...self::looking(), AccessType::Execute]),
-            new ClassGrant(ResourceAreaType::JournalContent, self::journalWork()),
-            new ClassGrant(ResourceAreaType::JournalWork, self::journalWork()),
+            ...self::journalWork(),
+            AccessType::Execute,
+        ], [
+            HostAccess::root('.', [...self::looking(), AccessType::Execute]),
         ], ExecutionModeType::RequiredContainer, false, [], OfflineReplyMode::Refuse, false);
     }
 
@@ -73,11 +73,10 @@ final readonly class ProfileBase
     public static function writingHelper(): self
     {
         return new self('writing-helper', 'Writing helper', 'sonnet', [
-            new ClassGrant(ResourceAreaType::Workspace, [...self::looking(), ...self::changing(), ...self::running()]),
-            new ClassGrant(ResourceAreaType::Scratch, [...self::looking(), ...self::changing(), ...self::running()]),
-            new ClassGrant(ResourceAreaType::JournalContent, self::journalWork()),
-            new ClassGrant(ResourceAreaType::JournalDocuments, self::journalWork()),
-            new ClassGrant(ResourceAreaType::JournalWork, self::journalWork()),
+            ...self::journalWork(),
+            ...self::running(),
+        ], [
+            HostAccess::root('.', [...self::looking(), ...self::changing(), ...self::running()]),
         ], ExecutionModeType::RequiredContainer, true, [
             StopCondition::cleanWorktree(),
         ], OfflineReplyMode::Refuse, false);
@@ -144,7 +143,7 @@ final readonly class ProfileBase
     {
         $processes = $this->mayChangeWorkspaceFiles() ? ProcessGrants::everything() : ProcessGrants::readingOnly();
 
-        return AccessPolicy::make($this->classGrants, [], [], [], [], $processes);
+        return new AccessPolicy($this->paths, [], $processes);
     }
 
     /**
@@ -152,7 +151,7 @@ final readonly class ProfileBase
      */
     public function mayChangeWorkspaceFiles(): bool
     {
-        return array_any($this->classGrants, fn (ClassGrant $grant) => $grant->changesWorkspaceFiles());
+        return array_any($this->paths, fn (HostAccess $scope) => $scope->changesFiles());
     }
 
     /**
@@ -164,11 +163,25 @@ final readonly class ProfileBase
     }
 
     /**
-     * Whether profiles from this base hold the abilities only a coordinator holds, such as dispatching work.
+     * Whether profiles from this base hold the accesses only a coordinator holds, such as dispatching work.
      */
     public function isCoordinator(): bool
     {
         return $this->coordinator;
+    }
+
+    /**
+     * Whether profiles from this base change nothing in the workspace, so a policy's not-for-read-only accesses
+     * stay out of their built-in grants.
+     */
+    public function isReadOnly(): bool
+    {
+        return ! $this->mayChangeWorkspaceFiles();
+    }
+
+    public function allows(AccessType $access): bool
+    {
+        return in_array($access, $this->accesses, true);
     }
 
     /**

@@ -6,9 +6,7 @@ namespace App\Actors\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Contracts\Policy;
-use BackedEnum;
-use Illuminate\Contracts\Container\Container;
+use App\Operations\Enums\AccessType;
 
 /**
  * Authorization for the actor of this request: the authorizer its type's provider gives it, asked with the policy the
@@ -16,37 +14,19 @@ use Illuminate\Contracts\Container\Container;
  */
 final readonly class CurrentActorAuthorizer implements CurrentAuthorizer
 {
-    public function __construct(
-        private CurrentActor $actors,
-        private ActorAuthorizers $authorizers,
-        private Container $container,
-    ) {}
+    public function __construct(private CurrentActor $actors, private ActorAuthorizers $authorizers) {}
 
-    /**
-     * @param  class-string<Policy>  $policy
-     * @param  object|class-string  $subject
-     */
-    public function authorize(string $policy, object|string $subject, BackedEnum $ability): void
+    public function authorize(string $policy, object|string $subject, AccessType $access): void
     {
         $actor = $this->actors->actor();
-        $this->authorizers->forActor($actor)->authorize($this->container->make($policy), $actor, $subject, $ability);
+        $this->authorizers->assertAllowed($this->authorizers->forActor($actor), $policy, $actor, $subject, $access);
     }
 
-    /**
-     * @template TAbility of BackedEnum
-     *
-     * @param  class-string<Policy>  $policy
-     * @param  object|class-string  $subject
-     * @param  list<TAbility>  $abilities
-     * @return list<TAbility>
-     */
-    public function filterActions(string $policy, object|string $subject, array $abilities): array
+    public function filterActions(string $policy, object|string $subject, array $accesses): array
     {
         $actor = $this->actors->actor();
         $authorizer = $this->authorizers->forActor($actor);
 
-        $made = $this->container->make($policy);
-
-        return $this->authorizers->allowedAbilities($authorizer, $made, $actor, $subject, $abilities);
+        return $this->authorizers->allowedAccesses($authorizer, $policy, $actor, $subject, $accesses);
     }
 }

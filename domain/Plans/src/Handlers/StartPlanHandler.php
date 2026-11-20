@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\ActorWorkStacks;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Exceptions\PlanMissing;
+use Domain\Plans\Handlers\Support\PlanCommandHandler;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -18,7 +18,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * plan's working frame on its stack in the same transaction, so its current plan is read from the stack; a user's start
  * changes no stack. PlanStarted is raised only when the plan changed.
  */
-final readonly class StartPlanHandler implements CommandHandler
+final readonly class StartPlanHandler extends PlanCommandHandler
 {
     public function __construct(
         private Dispatcher $events,

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Profiles\Casts;
 
 use App\Profiles\Enums\AuthorizationType;
+use App\Profiles\Exceptions\GrantShapeInvalid;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
-use App\Profiles\Values\AbilityGrant;
+use App\Profiles\Values\PolicyGrant;
 use App\Profiles\Values\ProfileAuthorization;
+use App\Profiles\Values\ScopedRead;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
 use JsonException;
@@ -29,13 +31,17 @@ final class ProfileAuthorizationCast implements CastsAttributes
     public function get(Model $model, string $key, mixed $value, array $attributes): ProfileAuthorization
     {
         try {
-            $grants = json_decode((string) $attributes['ability_grants'], true, 8, JSON_THROW_ON_ERROR);
+            $grants = json_decode((string) $attributes['policy_grants'], true, 8, JSON_THROW_ON_ERROR);
+            $deniedCommands = json_decode((string) $attributes['denied_commands'], true, 4, JSON_THROW_ON_ERROR);
+            $reads = json_decode((string) $attributes['read_grants'], true, 4, JSON_THROW_ON_ERROR);
 
             return new ProfileAuthorization(
                 AuthorizationType::from((string) $attributes['authorization_type']),
-                array_values(array_map(AbilityGrant::fromArray(...), $grants)),
+                array_values(array_map(PolicyGrant::fromArray(...), $grants)),
+                array_values($deniedCommands),
+                array_values(array_map(ScopedRead::fromArray(...), $reads)),
             );
-        } catch (JsonException|TypeError|ValueError $failure) {
+        } catch (JsonException|TypeError|ValueError|GrantShapeInvalid $failure) {
             throw ProfileRevisionUnreadable::forRevision((string) $model->getKey(), $failure);
         }
     }
@@ -49,7 +55,9 @@ final class ProfileAuthorizationCast implements CastsAttributes
     {
         return [
             'authorization_type' => $value->type->value,
-            'ability_grants' => json_encode($value->grantsAsArrays(), JSON_THROW_ON_ERROR),
+            'policy_grants' => json_encode($value->grantsAsArrays(), JSON_THROW_ON_ERROR),
+            'denied_commands' => json_encode($value->deniedCommands, JSON_THROW_ON_ERROR),
+            'read_grants' => json_encode($value->readsAsArrays(), JSON_THROW_ON_ERROR),
         ];
     }
 }

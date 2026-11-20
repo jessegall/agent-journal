@@ -9,7 +9,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\StartTokens;
 use App\Agents\Commands\RetireAgent;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Events\AccountUseChanged;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Lifecycle\AgentLifecycle;
@@ -26,6 +25,7 @@ use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
 use App\Contracts\CommandHandler;
+use App\Operations\Enums\AccessType;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -51,7 +51,7 @@ final readonly class RetireAgentHandler implements CommandHandler
         // The exclusive lifecycle lock comes first, so a start of the same agent waits or is retried as a whole.
         $target = $this->lifecycle->lockExclusive($command->agentId);
         $caller = ActorIdentity::of($command->dispatchedBy());
-        $this->requireAuthority($caller, $target);
+        $this->assertRetirable($caller, $target);
 
         if ($target->isRetired()) {
             return new AssignmentResult([], []);
@@ -72,13 +72,13 @@ final readonly class RetireAgentHandler implements CommandHandler
     /**
      * Nobody retires itself, whatever its grants; retiring another agent needs the grant, before anything ends.
      */
-    private function requireAuthority(ActorIdentity $caller, Agent $target): void
+    private function assertRetirable(ActorIdentity $caller, Agent $target): void
     {
         if ($caller->isSameAs(ActorIdentity::of($target))) {
             throw AgentRetirementDenied::forCaller($caller, $target->id);
         }
 
-        $this->authorizer->authorize(AgentPolicy::class, Agent::class, AgentAbility::RetireOthers);
+        $this->authorizer->authorize(AgentPolicy::class, Agent::class, AccessType::Delete);
     }
 
     private function endSessionsOf(Agent $target): void

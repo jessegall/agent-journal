@@ -47,6 +47,6 @@ final readonly class FixedOperationPolicy implements OperationPolicy
             );
         }
 
-        return AccessDecision::allowed(AccessRuleType::ClassGrant, 'The test policy allows it.');
+        return AccessDecision::allowed(AccessRuleType::ScopeGrant, 'The test policy allows it.');
     }
 }

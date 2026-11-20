@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 namespace App\Actors\Contracts;
 
+use Illuminate\Database\Eloquent\Model;
+
 /**
- * A domain's policy for one kind of subject: its authorize method throws when the actor may not do the ability, and
- * its ability methods answer with a bool that never leaves the policy.
+ * A policy guards one model: a command, a read or an audit line names the resource by the policy, without loading a
+ * record, opening a transaction or constructing the policy.
  */
-interface Policy {}
+interface Policy
+{
+    /**
+     * @return class-string<Model>
+     */
+    public static function model(): string;
+}

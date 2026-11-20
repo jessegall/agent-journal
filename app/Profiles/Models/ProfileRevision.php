@@ -209,7 +209,7 @@ final class ProfileRevision extends Model implements ReadableModel
                     $profiles[] = new SupervisorProfile(
                         ProfileKey::from((string) $revision->getAttribute('profile_key')),
                         $revision->supervisor,
-                        $revision->start_policy->access,
+                        $revision->authorization,
                     );
                 }
             });

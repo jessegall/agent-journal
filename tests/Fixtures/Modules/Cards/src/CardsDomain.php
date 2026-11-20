@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
+use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\CommandMiddlewareProvider;
@@ -15,7 +16,6 @@ use App\Exports\Support\Exports;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
-use Tests\Fixtures\Modules\Cards\Enums\DeckAbility;
 use Tests\Fixtures\Modules\Cards\Models\Deck;
 use Tests\Fixtures\Modules\Cards\Policies\DeckPolicy;
 
@@ -53,6 +53,6 @@ final class CardsDomain extends Domain implements CommandMiddlewareProvider, Com
 
     public function policies(): array
     {
-        return [new PolicyRegistration(Deck::class, DeckPolicy::class, DeckAbility::class)];
+        return [new PolicyRegistration(DeckPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete])];
     }
 }

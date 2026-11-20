@@ -8,10 +8,14 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\Policy;
 use App\Actors\Exceptions\ActorNotAllowed;
-use BackedEnum;
+use App\Operations\Enums\AccessType;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Access\Response;
 
 /**
- * The authorizer an actor's profile gives it, from the provider its actor type registered.
+ * The authorizer an actor's profile gives it, from the provider its actor type registered, and the one evaluation
+ * path both the current actor and a target take: the subject is checked against the policy's model, then the
+ * authorizer answers with a Laravel response.
  */
 final readonly class ActorAuthorizers
 {
@@ -31,33 +35,63 @@ final readonly class ActorAuthorizers
     }
 
     /**
-     * The abilities of the list the authorizer allows the actor on the subject, in the order given. A refusal here
-     * is the answer for that ability, not a failure: filtering actions is asking which are refused.
-     *
-     * @template TAbility of BackedEnum
-     *
+     * @param  class-string<Policy>  $policy
      * @param  object|class-string  $subject
-     * @param  list<TAbility>  $abilities
-     * @return list<TAbility>
+     *
+     * @throws ActorNotAllowed
      */
-    public function allowedAbilities(
+    public function assertAllowed(
         Authorizer $authorizer,
-        Policy $policy,
+        string $policy,
         Actor $actor,
         object|string $subject,
-        array $abilities,
-    ): array {
-        $allowed = [];
+        AccessType $access,
+    ): void {
+        try {
+            $this->evaluate($authorizer, $policy, $actor, $subject, $access)->authorize();
+        } catch (AuthorizationException $denial) {
+            throw ActorNotAllowed::fromDenial($denial, $access, class_basename($policy::model()));
+        }
+    }
 
-        foreach ($abilities as $ability) {
-            try {
-                $authorizer->authorize($policy, $actor, $subject, $ability);
-                $allowed[] = $ability;
-            } catch (ActorNotAllowed) {
-                continue;
-            }
+    /**
+     * The accesses of the list the authorizer allows the actor on the subject, in the order given.
+     *
+     * @param  class-string<Policy>  $policy
+     * @param  object|class-string  $subject
+     * @param  list<AccessType>  $accesses
+     * @return list<AccessType>
+     */
+    public function allowedAccesses(
+        Authorizer $authorizer,
+        string $policy,
+        Actor $actor,
+        object|string $subject,
+        array $accesses,
+    ): array {
+        return array_values(array_filter(
+            $accesses,
+            fn (AccessType $access) => $this->evaluate($authorizer, $policy, $actor, $subject, $access)->allowed(),
+        ));
+    }
+
+    /**
+     * @param  class-string<Policy>  $policy
+     * @param  object|class-string  $subject
+     */
+    private function evaluate(
+        Authorizer $authorizer,
+        string $policy,
+        Actor $actor,
+        object|string $subject,
+        AccessType $access,
+    ): Response {
+        $given = is_object($subject) ? $subject::class : $subject;
+
+        if ($given !== $policy::model()) {
+            return Response::deny("{$policy} guards ".$policy::model().", not {$given}.");
         }
 
-        return $allowed;
+        return $authorizer->evaluate($policy, $actor, $subject, $access);
     }
 }

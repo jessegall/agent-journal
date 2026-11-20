@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace Tests\Feature\Actors;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Exceptions\ActorNotAllowed;
+use App\Actors\Exceptions\GrantNotRegistered;
 use App\Actors\Exceptions\PolicyRegistrationConflict;
 use App\Actors\Values\PolicyRegistration;
 use App\Contracts\DomainAvailability;
 use App\Domains\Support\DomainEntry;
-use Illuminate\Contracts\Auth\Access\Gate;
-use Tests\Fixtures\Modules\Notes\Enums\NoteAbility;
+use App\Operations\Enums\AccessType;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Policies\NotePolicy;
-use Tests\Fixtures\Policies\OtherAbility;
 use Tests\Fixtures\Policies\OtherNotePolicy;
 use Tests\TestCase;
 
@@ -44,13 +42,12 @@ final class PolicyCatalogueTest extends TestCase
         return $this->notesEnabled;
     }
 
-    public function test_a_module_registers_a_policy_that_the_gate_uses_for_its_model(): void
+    public function test_a_module_registers_a_grant_only_policy_that_names_its_model(): void
     {
         $this->registerNotes();
 
-        $this->assertInstanceOf(NotePolicy::class, $this->app->make(Gate::class)->getPolicyFor(Note::class));
-        $this->app->make(PolicyCatalogue::class)->requireGrantable(NotePolicy::class, NoteAbility::Edit);
-        $this->addToAssertionCount(1);
+        $this->app->make(PolicyCatalogue::class)->assertGrantable(NotePolicy::class, AccessType::Edit);
+        $this->assertSame(Note::class, $this->app->make(PolicyCatalogue::class)->registrationOf(NotePolicy::class)->model());
     }
 
     public function test_two_owners_registering_the_same_model_fail_naming_both(): void
@@ -58,21 +55,21 @@ final class PolicyCatalogueTest extends TestCase
         $this->registerNotes();
 
         $this->expectException(PolicyRegistrationConflict::class);
-        $this->expectExceptionMessage('Notes and Cards both register a policy for '.Note::class);
+        $this->expectExceptionMessage('Notes and Cards both register a policy for '.Note::class.'; one owner guards one model.');
 
         $this->app->make(PolicyCatalogue::class)->register(
             'Cards',
-            new PolicyRegistration(Note::class, OtherNotePolicy::class, NoteAbility::class),
+            new PolicyRegistration(OtherNotePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
         );
     }
 
-    public function test_an_equal_enum_value_of_another_policy_is_not_the_same_grant(): void
+    public function test_an_access_the_policy_does_not_accept_is_not_grantable(): void
     {
         $this->registerNotes();
 
-        $this->expectException(AbilityNotRegistered::class);
+        $this->expectException(GrantNotRegistered::class);
 
-        $this->app->make(PolicyCatalogue::class)->requireGrantable(NotePolicy::class, OtherAbility::Edit);
+        $this->app->make(PolicyCatalogue::class)->assertGrantable(NotePolicy::class, AccessType::Build);
     }
 
     public function test_a_switched_off_module_grants_nothing(): void
@@ -80,9 +77,9 @@ final class PolicyCatalogueTest extends TestCase
         $this->registerNotes();
         $this->notesEnabled = false;
 
-        $this->expectException(AbilityNotRegistered::class);
+        $this->expectException(GrantNotRegistered::class);
 
-        $this->app->make(PolicyCatalogue::class)->requireGrantable(NotePolicy::class, NoteAbility::Read);
+        $this->app->make(PolicyCatalogue::class)->assertGrantable(NotePolicy::class, AccessType::Read);
     }
 
     public function test_a_refused_actor_is_answered_as_forbidden(): void

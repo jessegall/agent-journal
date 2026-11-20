@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRevisionChanged;
+use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 
-final readonly class EditTaskHandler implements CommandHandler
+final readonly class EditTaskHandler extends TaskCommandHandler
 {
     /**
      * @throws TaskMissing

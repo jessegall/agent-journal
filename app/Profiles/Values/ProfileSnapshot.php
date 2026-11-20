@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 use App\Actors\Contracts\Policy;
+use App\Agents\Values\AccessDecision;
 use App\Agents\Values\Operation;
+use App\Bus\Attributes\Authorize;
+use App\Bus\Contracts\Command;
+use App\Operations\Enums\AccessType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Enums\InstancePolicy;
-use BackedEnum;
 use Spatie\LaravelData\Data;
 
 /**
@@ -57,10 +60,28 @@ final class ProfileSnapshot extends Data
     }
 
     /**
+     * Whether the profile admits this application command.
+     *
+     * @param  class-string<Command<mixed>>  $command
+     */
+    public function admits(string $command, Authorize $authorize): AccessDecision
+    {
+        return $this->authorization->admits($command, $authorize);
+    }
+
+    /**
+     * Whether the profile's start policy refuses this operation or read by name, whatever else grants it.
+     */
+    public function deniesOperation(string $name): bool
+    {
+        return in_array($name, $this->start->access->denials, true);
+    }
+
+    /**
      * @param  class-string<Policy>  $policy
      */
-    public function grants(string $policy, BackedEnum $ability): bool
+    public function grants(string $policy, AccessType $access): bool
     {
-        return $this->authorization->grants($policy, $ability);
+        return $this->authorization->grants($policy, $access);
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Providers;
 
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Values\ReadEntitlement;
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Tasks\Console\AssignedTasksCommand;
 use Domain\Tasks\Contracts\AssignedTaskResolver;
@@ -14,6 +16,7 @@ use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
+use Domain\Tasks\Policies\TaskPolicy;
 use Domain\Tasks\Resolvers\AssignedTasks;
 use Domain\Tasks\Resolvers\ListedTasks;
 use Domain\Tasks\Resolvers\TaskAssignmentRecords;
@@ -38,8 +41,11 @@ final class TasksServiceProvider extends ServiceProvider
         $this->app->scoped(TaskDetailsResolver::class, TaskDetailRecords::class);
     }
 
-    public function boot(LinkTypeRegistry $links): void
+    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
     {
+        $reads->declare('tasks_read', ReadEntitlement::grant(TaskPolicy::class));
+        $reads->declare('tasks_list', ReadEntitlement::grant(TaskPolicy::class));
+        $reads->declare('tasks_assigned', ReadEntitlement::grant(TaskPolicy::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands([AssignedTasksCommand::class]);
         $links->register([

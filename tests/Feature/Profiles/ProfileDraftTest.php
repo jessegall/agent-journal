@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profiles;
 
-use App\Actors\Exceptions\ActorNotAllowed;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\SaveProfileDraft;
 use App\Profiles\Enums\CommandDirectory;
@@ -38,7 +38,7 @@ final class ProfileDraftTest extends TestCase
             'executable' => '/usr/local/bin/composer',
             'arguments' => ['test:affected', '--no-interaction'],
             'directory' => 'workspace',
-            'effects' => ['read:workspace', 'test:workspace'],
+            'effects' => ['read', 'test'],
             'timeout_seconds' => 600,
         ],
     ];
@@ -67,7 +67,7 @@ final class ProfileDraftTest extends TestCase
         $this->assertSame($actor->id, $latest->getAttribute('author_id'));
         $this->assertEquals($draft, $latest->scriptSource());
         $this->assertSame(CommandDirectory::Workspace, $latest->scriptSource()->definitions()['tests']->directory);
-        $this->assertThrows(fn () => $commands->run(new ActivateProfiles($this->proposal())), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $commands->run(new ActivateProfiles($this->proposal())), CommandAdmissionRefused::class);
     }
 
     public function test_activation_refuses_the_whole_proposal_if_a_saved_draft_changed(): void

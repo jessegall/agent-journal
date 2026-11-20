@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Supervision\Enums;
 
+use App\Agents\Commands\MergeReviewedWork;
+use App\Bus\Contracts\Command;
+use App\Communication\Commands\ReplyToMessage;
 use App\Profiles\Values\AskTypeKey;
+use App\Supervision\Commands\ApproveCodeReview;
 use App\Supervision\Values\SubjectType;
 
 enum CoreAskType: string
@@ -19,12 +23,17 @@ enum CoreAskType: string
         return AskTypeKey::from($this->value);
     }
 
-    public function operation(): string
+    /**
+     * The command whose admission an answer to an ask of this type needs.
+     *
+     * @return class-string<Command<mixed>>
+     */
+    public function requiredCommand(): string
     {
         return match ($this) {
-            self::Question, self::Stuck => 'messages_reply',
-            self::ReviewReady => 'verify_restored_output',
-            self::MergeReady => 'publish_merge',
+            self::Question, self::Stuck => ReplyToMessage::class,
+            self::ReviewReady => ApproveCodeReview::class,
+            self::MergeReady => MergeReviewedWork::class,
         };
     }
 

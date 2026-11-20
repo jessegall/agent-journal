@@ -35,7 +35,7 @@ final readonly class StartPolicy
     public static function withoutProfile(ExecutionPolicy $execution): self
     {
         return new self(
-            AccessPolicy::make([], [], [], [], [], ProcessGrants::everything()),
+            new AccessPolicy([], [], ProcessGrants::everything()),
             StopConditions::make([]),
             $execution,
             null,

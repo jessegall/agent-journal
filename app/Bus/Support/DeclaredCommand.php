@@ -7,7 +7,6 @@ namespace App\Bus\Support;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
-use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -17,7 +16,8 @@ use App\Bus\Exceptions\CommandDeclarationInvalid;
 use ReflectionClass;
 
 /**
- * One command an owner lists, with the handler its HandledBy names, and what its attributes declare.
+ * One command an owner lists, with the handler its HandledBy names, and what its attributes declare: an application
+ * command declares one Authorize and no Entry, a trusted command one non-application Entry and no Authorize.
  */
 final readonly class DeclaredCommand
 {
@@ -25,35 +25,44 @@ final readonly class DeclaredCommand
      * @param  class-string  $command
      * @param  class-string  $handler
      */
-    public function __construct(
+    private function __construct(
         public string $command,
         public CommandOwner $owner,
         public string $handler,
+        public Authorize|null $authorize,
+        public CommandEntry $entry,
     ) {}
 
     /**
-     * The trusted entry the command declares; a command without Entry is an application command.
+     * Reads the command's declaration once and refuses any other form.
+     *
+     * @param  class-string  $command
+     * @param  class-string  $handler
+     *
+     * @throws CommandDeclarationInvalid
      */
-    public function entry(): CommandEntry
+    public static function read(string $command, CommandOwner $owner, string $handler): self
     {
-        foreach ($this->reflection()->getAttributes(Entry::class) as $declared) {
-            return $declared->newInstance()->entry;
+        $reflection = new ReflectionClass($command);
+        $authorizations = $reflection->getAttributes(Authorize::class);
+        $entries = $reflection->getAttributes(Entry::class);
+        $entry = $entries === [] ? CommandEntry::Application : $entries[0]->newInstance()->entry;
+
+        $fault = match (true) {
+            count($authorizations) > 1 || count($entries) > 1 => 'it declares Authorize or Entry twice',
+            $authorizations !== [] && $entries !== [] => 'it declares both Authorize and Entry',
+            $entries !== [] && $entry === CommandEntry::Application => 'an application command needs no Entry',
+            $authorizations === [] && $entries === [] => 'it declares neither Authorize nor a trusted Entry',
+            default => null,
+        };
+
+        if ($fault !== null) {
+            throw CommandDeclarationInvalid::for($command, $fault);
         }
 
-        return CommandEntry::Application;
-    }
+        $authorize = $authorizations === [] ? null : $authorizations[0]->newInstance();
 
-    public function authorization(): CommandAuthorization|null
-    {
-        $declared = $this->reflection()->getAttributes(Authorize::class)[0] ?? null;
-
-        if ($declared === null) {
-            return null;
-        }
-
-        $authorize = $declared->newInstance();
-
-        return new CommandAuthorization($authorize->policy, $authorize->ability);
+        return new self($command, $owner, $handler, $authorize, $entry);
     }
 
     public function needsRepeatableRead(): bool
@@ -68,25 +77,6 @@ final readonly class DeclaredCommand
         }
 
         return CommandEffectType::StateChange;
-    }
-
-    public function operation(): Operation|null
-    {
-        foreach ($this->reflection()->getAttributes(Operation::class) as $declared) {
-            $operation = $declared->newInstance();
-
-            if ($operation->name === '') {
-                throw CommandDeclarationInvalid::for($this->command, 'its Operation needs a name');
-            }
-
-            return $operation;
-        }
-
-        if ($this->owner->exportsCommand($this->command) && $this->entry() === CommandEntry::Application) {
-            throw CommandDeclarationInvalid::for($this->command, 'an exported application command needs Operation');
-        }
-
-        return null;
     }
 
     public function hasActorScopedReceipt(): bool

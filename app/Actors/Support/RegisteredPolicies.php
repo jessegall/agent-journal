@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Exceptions\AbilityNotRegistered;
+use App\Actors\Exceptions\GrantNotRegistered;
 use App\Actors\Exceptions\PolicyRegistrationConflict;
 use App\Actors\Values\PolicyRegistration;
 use App\Contracts\DomainAvailability;
+use App\Operations\Enums\AccessType;
 use App\Registries\Support\Registry;
-use BackedEnum;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Auth\Access\Gate;
 
 /**
- * The policies registered at boot, each kept with its owner and handed to Laravel's Gate for its model; an owner's
- * abilities grant only while the owner is available, read for the request asking.
+ * The policies registered at boot, each kept with its owner: one owner guards a model, which has at most one record
+ * policy; an owner's accesses grant only while the owner is available, read for the request asking.
  */
 final class RegisteredPolicies implements PolicyCatalogue
 {
@@ -30,40 +29,63 @@ final class RegisteredPolicies implements PolicyCatalogue
      */
     private readonly Registry $modelOwners;
 
-    public function __construct(private readonly Gate $gate)
+    /**
+     * @var Registry<string>
+     */
+    private readonly Registry $recordPolicies;
+
+    public function __construct()
     {
-        $this->byPolicy = Registry::replacing(AbilityNotRegistered::forPolicy(...));
-        $this->modelOwners = Registry::replacing(AbilityNotRegistered::forModel(...));
+        $this->byPolicy = Registry::replacing(GrantNotRegistered::forPolicy(...));
+        $this->modelOwners = Registry::replacing(GrantNotRegistered::forModel(...));
+        $this->recordPolicies = Registry::replacing(GrantNotRegistered::forModel(...));
     }
 
     public function register(string $owner, PolicyRegistration $registration): void
     {
-        if ($this->modelOwners->has($registration->model)) {
-            $modelOwner = $this->modelOwners->get($registration->model);
-
-            throw PolicyRegistrationConflict::forModel($registration->model, $modelOwner, $owner);
+        $model = $registration->model();
+        $modelOwner = $this->modelOwners->find($model)->getOrElse($owner);
+        if ($modelOwner !== $owner) {
+            throw PolicyRegistrationConflict::forModel($model, $modelOwner, $owner);
         }
-
         if ($this->byPolicy->has($registration->policy)) {
             [$policyOwner] = $this->byPolicy->get($registration->policy);
-
             throw PolicyRegistrationConflict::forPolicy($registration->policy, $policyOwner, $owner);
         }
+        if ($registration->isRecord() && $this->recordPolicies->has($model)) {
+            $recordPolicy = $this->recordPolicies->get($model);
+            throw PolicyRegistrationConflict::forRecordPolicy($model, $recordPolicy, $registration->policy);
+        }
 
-        $this->modelOwners->put($registration->model, $owner);
+        $this->modelOwners->put($model, $owner);
         $this->byPolicy->put($registration->policy, [$owner, $registration]);
-        $this->gate->policy($registration->model, $registration->policy);
+        if ($registration->isRecord()) {
+            $this->recordPolicies->put($model, $registration->policy);
+        }
     }
 
-    public function requireGrantable(string $policy, BackedEnum $ability): void
+    public function assertSupported(string $policy, AccessType $access): void
     {
-        $refusal = AbilityNotRegistered::for($policy, $ability);
-        [$owner, $registration] = $this->byPolicy->find($policy)->getOrThrow($refusal);
-        $available = Container::getInstance()->make(DomainAvailability::class)->isEnabled($owner);
+        $this->supportedEntry($policy, $access);
+    }
 
-        if (! $registration->grants($ability) || ! $available) {
-            throw $refusal;
+    public function assertGrantable(string $policy, AccessType $access): void
+    {
+        [$owner] = $this->supportedEntry($policy, $access);
+
+        if (! Container::getInstance()->make(DomainAvailability::class)->isEnabled($owner)) {
+            throw GrantNotRegistered::for($policy, $access);
         }
+    }
+
+    public function registrationOf(string $policy): PolicyRegistration
+    {
+        return $this->byPolicy->get($policy)[1];
+    }
+
+    public function registrations(): array
+    {
+        return array_values(array_map(fn (array $entry): PolicyRegistration => $entry[1], $this->byPolicy->all()));
     }
 
     public function grantable(): array
@@ -75,5 +97,22 @@ final class RegisteredPolicies implements PolicyCatalogue
         );
 
         return array_values(array_map(fn (array $entry): PolicyRegistration => $entry[1], $grantable));
+    }
+
+    /**
+     * @return array{string, PolicyRegistration}
+     *
+     * @throws GrantNotRegistered
+     */
+    private function supportedEntry(string $policy, AccessType $access): array
+    {
+        $refusal = GrantNotRegistered::for($policy, $access);
+        $entry = $this->byPolicy->find($policy)->getOrThrow($refusal);
+
+        if (! $entry[1]->supports($access)) {
+            throw $refusal;
+        }
+
+        return $entry;
     }
 }

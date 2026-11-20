@@ -5,85 +5,64 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Agents\Enums\AccessRuleType;
-use App\Agents\Exceptions\AccessPolicyInvalid;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
+use App\Agents\Enums\ResourceType;
 use App\Processes\Values\ProcessGrants;
 
 /**
- * What one profile may do: access types per resource area, exact operation grants, explicit denials, and the paths
- * and destinations it is held to. Protected resources are never granted.
+ * What one profile may do on the host: root paths and destinations with the accesses each permits, process ceilings,
+ * exact host operation grants and explicit denials. A protected path is never granted, and a journal grant never
+ * widens any of this.
  */
 final readonly class AccessPolicy
 {
     /**
-     * @param  list<ClassGrant>  $classGrants
-     * @param  list<OperationGrant>  $operationGrants
-     * @param  list<string>  $denials  operation names that are refused whatever else grants them
-     * @param  list<string>  $paths  the workspace paths the policy is held to
-     * @param  list<string>  $destinations  the network destinations it may reach
+     * Files no profile may touch wherever they lie, whatever grants them: the programs' own sign-ins.
      */
-    private function __construct(
-        public array $classGrants,
-        public array $operationGrants,
-        public array $denials,
+    public const array PROTECTED_PATHS = ['.claude/.credentials.json', '.codex/auth.json'];
+
+    /**
+     * @param  list<HostAccess>  $paths
+     * @param  list<HostAccess>  $destinations
+     * @param  list<OperationGrant>  $operationGrants
+     * @param  list<string>  $denials  host operation and read names refused whatever else grants them
+     */
+    public function __construct(
         public array $paths,
         public array $destinations,
         public ProcessGrants $processes,
+        public array $operationGrants = [],
+        public array $denials = [],
     ) {}
 
-    /**
-     * @param  list<ClassGrant>  $classGrants
-     * @param  list<OperationGrant>  $operationGrants
-     * @param  list<string>  $denials
-     * @param  list<string>  $paths
-     * @param  list<string>  $destinations
-     *
-     * @throws AccessPolicyInvalid
-     */
-    public static function make(
-        array $classGrants,
-        array $operationGrants,
-        array $denials,
-        array $paths,
-        array $destinations,
-        ProcessGrants $processes,
-    ): self {
-        foreach ($classGrants as $grant) {
-            if ($grant->area === ResourceAreaType::Protected) {
-                throw AccessPolicyInvalid::protectedGrant();
-            }
-        }
-
-        return new self($classGrants, $operationGrants, $denials, $paths, $destinations, $processes);
-    }
-
-    /**
-     * Decides one operation: an explicit denial or a protected resource refuses first, an exact grant allows, and
-     * otherwise every access it needs must be granted on every area it touches.
-     */
     public function allows(Operation $operation): bool
     {
         return $this->decide($operation)->allowed;
     }
 
+    /**
+     * Decides one host operation: an explicit denial, a protected path or an operand that cannot be judged refuses
+     * first, an exact grant allows, and otherwise every operand must lie in a scope permitting every access needed.
+     */
     public function decide(Operation $operation): AccessDecision
     {
         if (in_array($operation->name, $this->denials, true)) {
             return AccessDecision::refused(AccessRuleType::ExplicitDenial, "The policy denies {$operation->name}.");
         }
 
-        if ($operation->touches(ResourceAreaType::Protected)) {
+        if (array_any($operation->resources, self::isProtected(...))) {
             return AccessDecision::refused(
-                AccessRuleType::ProtectedArea,
-                "{$operation->name} reaches a protected resource, which no policy grants.",
+                AccessRuleType::ProtectedPath,
+                "{$operation->name} reaches a protected path, which no policy grants.",
             );
         }
 
-        if ($operation->accessTypes === []) {
+        if ($operation->accessTypes === [] || array_any(
+            $operation->resources,
+            fn (ResourceRequest $resource) => $resource->isUnknown(),
+        )) {
             return AccessDecision::refused(
                 AccessRuleType::Unclassified,
-                "{$operation->name} declares no access, so it cannot be granted.",
+                "{$operation->name} declares no access or an operand that cannot be judged, so it cannot be granted.",
             );
         }
 
@@ -92,65 +71,80 @@ final readonly class AccessPolicy
         }
 
         foreach ($operation->resources as $resource) {
+            $scope = array_find($this->scopesFor($resource), fn (HostAccess $scope) => $scope->covers($resource));
+
             foreach ($operation->accessTypes as $access) {
-                if (! $this->grants($access, $resource->area)) {
+                if ($scope === null || ! $scope->permits($access)) {
                     return AccessDecision::refused(
                         AccessRuleType::NotGranted,
-                        sprintf(
-                            '%s needs %s on %s, which this policy does not grant.',
-                            $operation->name,
-                            $access->value,
-                            $resource->area->value,
-                        ),
+                        "{$operation->name} needs {$access->value} on {$resource->target}, "
+                        .'which this policy does not grant.',
                     );
                 }
             }
         }
 
         return AccessDecision::allowed(
-            AccessRuleType::ClassGrant,
-            "Every access {$operation->name} needs is granted on the areas it touches.",
+            AccessRuleType::ScopeGrant,
+            "Every access {$operation->name} needs is granted where it acts.",
         );
     }
 
-    public function grants(AccessType $access, ResourceAreaType $area): bool
+    /**
+     * Whether a profile under this policy may change workspace files at all.
+     */
+    public function changesFiles(): bool
     {
-        return array_any($this->classGrants, fn (ClassGrant $grant): bool => $grant->grants($access, $area));
+        return array_any($this->paths, fn (HostAccess $scope) => $scope->changesFiles());
     }
 
     /**
-     * Whether the other policy grants nothing this one does not: every class grant and exact grant held here, every
-     * denial kept, its paths and destinations inside these and its processes within these. What cannot be proved
-     * contained is not.
+     * Whether the other policy grants nothing this one does not: every scope and exact grant held here, every denial
+     * kept, and its processes within these. What cannot be proved contained is not.
      */
     public function contains(self $other): bool
     {
-        return array_all($other->classGrants, fn (ClassGrant $grant): bool => array_all(
-            $grant->accessTypes,
-            fn (AccessType $access) => $this->grants($access, $grant->area),
-        ))
+        return self::scopesContain($this->paths, $other->paths)
+            && self::scopesContain($this->destinations, $other->destinations)
             && array_all($other->operationGrants, fn (OperationGrant $grant): bool => in_array(
                 $grant,
                 $this->operationGrants,
             ))
             && array_all($this->denials, fn (string $denial): bool => in_array($denial, $other->denials, true))
-            && self::isNarrowed($other->paths, $this->paths)
-            && self::isNarrowed($other->destinations, $this->destinations)
             && $this->processes->contains($other->processes);
     }
 
     /**
-     * A list of held-to entries is narrowed when this one holds none, or the other holds only entries of its own.
-     *
-     * @param  list<string>  $narrower
-     * @param  list<string>  $wider
+     * @return list<HostAccess>
      */
-    private static function isNarrowed(array $narrower, array $wider): bool
+    private function scopesFor(ResourceRequest $resource): array
     {
-        if ($wider === []) {
-            return true;
+        return $resource->type === ResourceType::Destination ? $this->destinations : $this->paths;
+    }
+
+    private static function isProtected(ResourceRequest $resource): bool
+    {
+        if ($resource->type !== ResourceType::Path) {
+            return false;
         }
 
-        return $narrower !== [] && array_all($narrower, fn (string $entry): bool => in_array($entry, $wider, true));
+        $path = $resource->normalizedPath();
+
+        return array_any(
+            self::PROTECTED_PATHS,
+            fn (string $protected) => $path === $protected || str_ends_with($path, '/'.$protected),
+        );
+    }
+
+    /**
+     * @param  list<HostAccess>  $wider
+     * @param  list<HostAccess>  $narrower
+     */
+    private static function scopesContain(array $wider, array $narrower): bool
+    {
+        return array_all(
+            $narrower,
+            fn (HostAccess $scope) => array_any($wider, fn (HostAccess $held) => $held->contains($scope)),
+        );
     }
 }

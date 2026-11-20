@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Providers;
 
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Values\ReadEntitlement;
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RuleDetailRecords;
 use Domain\Rules\Resolvers\RuleRecords;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -29,8 +32,10 @@ final class RulesServiceProvider extends ServiceProvider
         $this->app->bind(RuleResolver::class, RuleRecords::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
+    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions, ReadEntitlements $reads): void
     {
+        $reads->declare('rules_read', ReadEntitlement::grant(RulePolicy::class));
+        $reads->declare('rules_list', ReadEntitlement::grant(RulePolicy::class));
         // A missing rule is not found; a rule no longer proposed is a review error on the review buttons.
         if ($exceptions instanceof Handler) {
             $exceptions->map(

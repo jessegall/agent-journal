@@ -8,20 +8,23 @@ use App\Actors\Contracts\AuthorizerProviderRegistration;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Enums\ActorType;
 use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\BuiltInStartProfiles;
+use App\Agents\Contracts\ReadAdmission;
 use App\Agents\Contracts\StartProfileAdmission;
 use App\Autoload\Support\FolderClasses;
+use App\Bus\Contracts\CommandAdmission;
 use App\Hooks\Contracts\OperationPolicy;
+use App\Operations\Enums\AccessType;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Profiles\Contracts\OperationNames;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileScripts;
 use App\Profiles\Contracts\ProfileSelections;
-use App\Profiles\Enums\AccountAbility;
-use App\Profiles\Enums\ProfileAbility;
 use App\Profiles\Models\Account;
 use App\Profiles\Models\AccountNotice;
 use App\Profiles\Models\ActiveAccount;
@@ -30,18 +33,22 @@ use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Models\Support\AccountOwnerScope;
 use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Policies\ProfileAdministrationPolicy;
+use App\Profiles\Policies\ProfileDraftPolicy;
 use App\Profiles\Resolvers\ActiveAccountRecords;
 use App\Profiles\Resolvers\ProfilePrograms;
 use App\Profiles\Resolvers\ProfileRecords;
+use App\Profiles\Support\BuiltInAuthorizations;
 use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ClaudeSignIn;
 use App\Profiles\Support\CodexSignIn;
 use App\Profiles\Support\ConfiguredOperations;
+use App\Profiles\Support\PolicyReadAdmission;
 use App\Profiles\Support\ProfileAuthorizerProvider;
 use App\Profiles\Support\ProfileOperationPolicy;
 use App\Profiles\Support\ProfilePermissionReader;
 use App\Profiles\Support\ProfileStartAdmission;
 use App\Profiles\Support\SignInProtocols;
+use App\Profiles\Support\StackCommandAdmission;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
@@ -56,6 +63,8 @@ final class ProfilesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(CommandAdmission::class, StackCommandAdmission::class);
+        $this->app->bind(ReadAdmission::class, PolicyReadAdmission::class);
         $this->app->scoped(CommandPermissionResolver::class, ProfilePermissionReader::class);
         $this->app->scoped(OperationPolicy::class, ProfileOperationPolicy::class);
         $this->app->bind(OperationNames::class, ConfiguredOperations::class);
@@ -79,18 +88,24 @@ final class ProfilesServiceProvider extends ServiceProvider
         AuthorizerProviderRegistration $authorizers,
         PolicyCatalogue $policies,
         Dispatcher $events,
+        ReadEntitlements $reads,
     ): void {
+        foreach (BuiltInAuthorizations::ORIENTATION_READS as $read) {
+            $reads->declare($read, ReadEntitlement::named());
+        }
         $policies->register('Core', new PolicyRegistration(
-            Profile::class,
             ProfileAdministrationPolicy::class,
-            ProfileAbility::class,
-            ownerOnly: [ProfileAbility::Administer],
+            [AccessType::Create, AccessType::Edit],
+            ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
         $policies->register('Core', new PolicyRegistration(
-            Account::class,
+            ProfileDraftPolicy::class,
+            [AccessType::Edit],
+        ));
+        $policies->register('Core', new PolicyRegistration(
             AccountPolicy::class,
-            AccountAbility::class,
-            ownerOnly: [AccountAbility::Read, AccountAbility::Manage],
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
+            ownerOnly: [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
         ));
         $this->scopeAccountsToOwner($events);
         $this->callAfterResolving(

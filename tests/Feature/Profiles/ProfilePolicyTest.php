@@ -12,7 +12,6 @@ use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileResolver;
@@ -51,7 +50,7 @@ final class ProfilePolicyTest extends TestCase
         'allow_operations' => [
             [
                 'name' => 'shell:journal-check.cleanup',
-                'resources' => [['area' => 'scratch', 'target' => '/workspace/.scratch']],
+                'resources' => [['type' => 'path', 'target' => '/workspace/.scratch']],
             ],
             ['name' => 'shell:git.push'],
         ],
@@ -62,7 +61,7 @@ final class ProfilePolicyTest extends TestCase
         $this->activate([
             'revision' => 1,
             'base_overrides' => [
-                'writing-helper' => ['remove_classes' => ['delete:workspace'], 'deny_operations' => ['shell:git.push']],
+                'writing-helper' => ['remove_paths' => ['delete:.'], 'deny_operations' => ['shell:git.push']],
             ],
             'profiles' => ['journal-worker' => self::WORKER],
         ]);
@@ -70,11 +69,11 @@ final class ProfilePolicyTest extends TestCase
         $start = $this->resolver()->snapshotFor(ProfileKey::from('journal-worker'))->start;
         $access = $start->access;
 
-        $this->assertFalse($access->decide(self::operation('file.delete', AccessType::Delete, 'workspace'))->allowed);
+        $this->assertFalse($access->decide(self::operation('file.delete', AccessType::Delete))->allowed);
         $this->assertTrue($access->decide(
-            self::operation('shell:journal-check.cleanup', AccessType::Delete, 'scratch', '/workspace/.scratch'),
+            self::operation('shell:journal-check.cleanup', AccessType::Delete, '/workspace/.scratch'),
         )->allowed);
-        $push = self::operation('shell:git.push', AccessType::Execute, 'workspace');
+        $push = self::operation('shell:git.push', AccessType::Execute);
 
         $this->assertFalse($access->decide($push)->allowed);
         $this->assertSame(PolicyOriginType::Profile, $start->provenance->originOf('access'));
@@ -88,7 +87,7 @@ final class ProfilePolicyTest extends TestCase
                 'journal-editor' => [
                     'base' => 'read-only-helper',
                     'model' => 'opus',
-                    'allow_classes' => ['edit:workspace'],
+                    'allow_paths' => ['edit:.'],
                 ],
             ],
         ];
@@ -176,10 +175,9 @@ final class ProfilePolicyTest extends TestCase
     private static function operation(
         string $name,
         AccessType $access,
-        string $area,
         string $target = '/workspace/file.txt',
     ): Operation {
-        $resource = new ResourceRequest(ResourceAreaType::from($area), $target);
+        $resource = ResourceRequest::path($target);
 
         return new Operation('shell', $name, [$access], [$resource], [], 1);
     }

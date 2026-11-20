@@ -6,14 +6,14 @@ namespace App\Agents\Resolvers;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\AccountUses;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\AccountUseMissing;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ProcessStart;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Support\AccountSessions;
 use App\Agents\Support\AccountUseCounts;
+use App\Operations\Enums\AccessType;
 use App\Records\Contracts\IdentityLinks;
 use App\Records\Support\RecordIdentity;
 
@@ -67,6 +67,6 @@ final readonly class LinkedAccountUses implements AccountUses
 
     private function authorizeRead(): void
     {
-        $this->authorizer->authorize(AgentPolicy::class, Agent::class, AgentAbility::ReadAccountUses);
+        $this->authorizer->authorize(AgentMaintenancePolicy::class, Agent::class, AccessType::Read);
     }
 }

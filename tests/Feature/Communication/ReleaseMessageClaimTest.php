@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Communication;
 
-use App\Actors\Exceptions\ActorNotAllowed;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Support\AssignmentReference;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Commands\ReleaseMessageClaim;
 use App\Communication\Enums\MessageState;
@@ -46,7 +46,7 @@ final class ReleaseMessageClaimTest extends MessagingTestCase
     {
         $questionId = $this->takenUpByBuilder();
 
-        $this->expectException(ActorNotAllowed::class);
+        $this->expectException(CommandAdmissionRefused::class);
 
         $this->runOnBus(new ReleaseMessageClaim($questionId, $this->claimOf($questionId), 'Mine to give up.'));
     }

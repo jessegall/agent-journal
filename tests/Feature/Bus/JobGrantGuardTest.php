@@ -90,7 +90,7 @@ final class JobGrantGuardTest extends TestCase
         $start = TestStart::start();
         $recipient = TestStart::start();
         $task = Task::factory()->create();
-        $this->mock(StackPermission::class)->shouldReceive('allows')->once()->andReturn(
+        $this->mock(StackPermission::class)->shouldReceive('allows')->twice()->andReturn(
             StackVerdict::refuse('A reply is due.', new RecoveryCall('messages_read', ['message_id' => 'pending'])),
         );
 
@@ -121,7 +121,7 @@ final class JobGrantGuardTest extends TestCase
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
 
-    public function test_recovery_reads_pass_even_if_the_job_denies_other_reads(): void
+    public function test_a_read_the_admission_refuses_is_refused_even_when_it_is_an_orientation_read(): void
     {
         $admission = $this->createStub(ReadAdmission::class);
         $admission->method('assess')->willReturn(AccessDecision::refused(AccessRuleType::NotGranted, 'Refused.'));
@@ -129,7 +129,7 @@ final class JobGrantGuardTest extends TestCase
         $reads = $this->app->make(ReadGrant::class);
 
         foreach (['overview_read', 'operations_read', 'capabilities_read', 'rules_list', 'rules_read'] as $name) {
-            $this->assertTrue($reads->allows(new ReadRequest($name)));
+            $this->assertFalse($reads->allows(new ReadRequest($name)));
         }
 
         $this->assertFalse($reads->allows(new ReadRequest('plans_list')));

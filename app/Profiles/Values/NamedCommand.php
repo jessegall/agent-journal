@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Enums\CommandDirectory;
 use App\Profiles\Exceptions\ProfileDraftRefused;
 use JsonSerializable;
@@ -52,7 +51,7 @@ final readonly class NamedCommand implements JsonSerializable
             $executable,
             $arguments,
             CommandDirectory::Workspace,
-            array_map(fn (mixed $effect) => self::workspaceEffect($key, $effect), $effects),
+            array_map(fn (mixed $effect) => self::effectOf($key, $effect), $effects),
             $timeout,
         );
     }
@@ -62,20 +61,13 @@ final readonly class NamedCommand implements JsonSerializable
         return is_string($argument) && strlen($argument) <= 4096 && ! str_contains($argument, "\0");
     }
 
-    private static function workspaceEffect(string $key, mixed $effect): AccessType
+    private static function effectOf(string $key, mixed $effect): AccessType
     {
         if (! is_string($effect)) {
             throw ProfileDraftRefused::invalidCommand($key);
         }
 
-        $parts = explode(':', $effect, 2);
-        $access = AccessType::tryFrom($parts[0]);
-
-        if (($parts[1] ?? null) !== ResourceAreaType::Workspace->value || $access === null) {
-            throw ProfileDraftRefused::invalidCommand($key);
-        }
-
-        return $access;
+        return AccessType::tryFrom($effect) ?? throw ProfileDraftRefused::invalidCommand($key);
     }
 
     /**
@@ -97,10 +89,7 @@ final readonly class NamedCommand implements JsonSerializable
             'executable' => $this->executable,
             'arguments' => $this->arguments,
             'directory' => $this->directory->value,
-            'effects' => array_map(
-                fn (AccessType $access) => $access->value.':'.ResourceAreaType::Workspace->value,
-                $this->effects,
-            ),
+            'effects' => array_map(fn (AccessType $access) => $access->value, $this->effects),
             'timeout_seconds' => $this->timeoutSeconds,
         ];
     }

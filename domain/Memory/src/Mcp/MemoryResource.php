@@ -9,7 +9,6 @@ use App\Agents\Values\ReadRequest;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ToolArguments;
-use App\Operations\Enums\ResourceAreaType;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -41,8 +40,7 @@ final class MemoryResource extends JournalResource implements HasUriTemplate
         $arguments = ToolArguments::query($this->name(), $request, ['continuation']);
         $this->reads->assertAllowed(new ReadRequest(
             MemoryReadResult::TOOL,
-            ResourceAreaType::JournalContent,
-            ['memory_id' => $id],
+            arguments: ['memory_id' => $id],
         ));
 
         return Response::text(json_encode(

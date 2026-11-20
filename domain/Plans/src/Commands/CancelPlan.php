@@ -6,12 +6,8 @@ namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\CancelPlanHandler;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
@@ -24,9 +20,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<null>
  */
 #[HandledBy(CancelPlanHandler::class)]
-#[Authorize(PlanPolicy::class, PlanAbility::Work)]
-#[Operation('cancel_plan', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class CancelPlan extends Command implements AuthorizedCommand
+#[Authorize(PlanPolicy::class, AccessType::Edit)]
+final readonly class CancelPlan extends Command
 {
     public function __construct(
         public string $planId,
@@ -34,12 +29,4 @@ final readonly class CancelPlan extends Command implements AuthorizedCommand
         #[Required, Max(Plan::NOTE_CHARACTER_LIMIT)]
         public string $reason,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Plan::class;
-    }
 }

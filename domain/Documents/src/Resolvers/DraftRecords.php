@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Documents\Resolvers;
 
 use App\Actors\Contracts\CurrentAuthorizer;
+use App\Operations\Enums\AccessType;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
-use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
@@ -51,11 +51,11 @@ final readonly class DraftRecords implements DraftResolver
         if (! $this->editors->isEditing($draft)) {
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
-            $administrativeAbilities = [DocumentAbility::Administer];
+            $administrativeAccesses = [AccessType::Edit];
             $mayAdminister = $this->authorizer->filterActions(
                 DocumentAdministrationPolicy::class,
                 Document::class,
-                $administrativeAbilities,
+                $administrativeAccesses,
             ) !== [];
 
             return DraftState::from($mayAdminister ? [...$held, 'held' => $draft->view($document)] : $held);

@@ -7,7 +7,6 @@ namespace Domain\Documents\Mcp;
 use App\Agents\Contracts\ReadGrant;
 use App\Agents\Values\ReadRequest;
 use App\Mcp\Contracts\JobPermissionReader;
-use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Resolvers\ReportPages;
 use Laravel\Mcp\Request;
@@ -38,7 +37,7 @@ final class ReportResource extends PublicationResource implements HasUriTemplate
     protected function read(Request $request): Response
     {
         $id = $this->pathArguments($request, ['id'])->recordReference('id');
-        $this->reads->assertAllowed(new ReadRequest(ReportPages::TOOL, ResourceAreaType::JournalContent));
+        $this->reads->assertAllowed(new ReadRequest(ReportPages::TOOL));
 
         return $this->markdown(
             $this->reports->report($id, $this->bodyArguments($request, ReportPages::TOOL)),

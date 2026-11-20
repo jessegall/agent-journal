@@ -14,13 +14,13 @@ use App\Domains\Contracts\InternalAssignableContributor;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
+use App\Operations\Enums\AccessType;
 use Domain\Helpers\Commands\CancelHelperJob;
 use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Commands\SendHelper;
 use Domain\Helpers\Commands\StartHelper;
 use Domain\Helpers\Commands\SteerHelper;
 use Domain\Helpers\Contracts\HelperReader;
-use Domain\Helpers\Enums\HelperAbility;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperBusy;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
@@ -104,7 +104,12 @@ final class HelpersDomain extends Domain implements
 
     public function policies(): array
     {
-        return [new PolicyRegistration(HelperJob::class, HelperPolicy::class, HelperAbility::class)];
+        return [
+            new PolicyRegistration(
+                HelperPolicy::class,
+                [AccessType::Create, AccessType::Edit, AccessType::Delegate],
+            ),
+        ];
     }
 
     public function internalAssignables(): array

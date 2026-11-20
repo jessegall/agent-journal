@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
 /**
  * One operation as a trusted adapter or owner declares it: where it comes from, its stable name, every access it
@@ -26,17 +25,4 @@ final readonly class Operation
         public array $arguments,
         public int $declarationRevision,
     ) {}
-
-    public function touches(ResourceAreaType $area): bool
-    {
-        return array_any($this->resources, fn (ResourceRequest $resource): bool => $resource->area === $area);
-    }
-
-    /**
-     * @param  list<AccessType>  $accessTypes
-     */
-    public static function journal(string $name, ResourceAreaType $area, array $accessTypes): self
-    {
-        return new self('journal', $name, $accessTypes, [new ResourceRequest($area, '')], [], 1);
-    }
 }

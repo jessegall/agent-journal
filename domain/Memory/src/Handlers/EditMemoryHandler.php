@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Memory\Commands\EditMemory;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
+use Domain\Memory\Handlers\Support\MemoryCommandHandler;
 use Domain\Memory\Models\Memory;
 
 /**
  * Changes one of the actor's own memories; another actor's answers as unavailable.
  */
-final readonly class EditMemoryHandler implements CommandHandler
+final readonly class EditMemoryHandler extends MemoryCommandHandler
 {
     /**
      * @throws MemoryUnavailable

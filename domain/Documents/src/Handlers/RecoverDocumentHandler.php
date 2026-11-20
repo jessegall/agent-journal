@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Commands\RecoverDocument;
+use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Support\DraftClosing;
 
-final readonly class RecoverDocumentHandler implements CommandHandler
+final readonly class RecoverDocumentHandler extends DocumentCommandHandler
 {
     public function __construct(private DraftClosing $drafts) {}
 

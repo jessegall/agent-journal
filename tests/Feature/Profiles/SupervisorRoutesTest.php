@@ -37,7 +37,7 @@ final class SupervisorRoutesTest extends TestCase
 
     private const array PROFILE = ['base' => 'writing-helper', 'model' => 'sonnet'];
 
-    public function test_shipped_routes_are_stored_and_coverage_is_a_warning(): void
+    public function test_shipped_routes_are_stored_and_their_supervisors_admit_every_required_command(): void
     {
         $activation = $this->activate((array) config('profiles'));
         $profiles = $this->app->make(ProfileResolver::class);
@@ -53,7 +53,7 @@ final class SupervisorRoutesTest extends TestCase
 
         $byKey = collect($activation->profiles)->keyBy(fn (ActivatedProfile $profile) => $profile->key->key);
         $coverage = $byKey['journal-worker']->supervisorCoverage;
-        $this->assertContains(SupervisorCoverageType::Unsupported, array_column($coverage, 'status'));
+        $this->assertNotContains(SupervisorCoverageType::Unsupported, array_column($coverage, 'status'));
     }
 
     public function test_mixed_type_routes_are_valid_but_a_reachable_cycle_saves_nothing(): void

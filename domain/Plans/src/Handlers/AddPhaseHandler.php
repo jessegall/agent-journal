@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Exceptions\PlanMissing;
+use Domain\Plans\Handlers\Support\PlanCommandHandler;
 use Domain\Plans\Models\Plan;
 
 /**
  * Adds the phase under the plan's row lock, so two phases added at once get two numbers.
  */
-final readonly class AddPhaseHandler implements CommandHandler
+final readonly class AddPhaseHandler extends PlanCommandHandler
 {
     public function handle(AddPhase $command): string
     {

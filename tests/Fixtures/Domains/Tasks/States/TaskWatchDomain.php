@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Tasks\States;
 
+use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\CommandProvider;
@@ -51,6 +52,6 @@ final class TaskWatchDomain extends Domain implements CommandProvider, PolicyPro
 
     public function policies(): array
     {
-        return [new PolicyRegistration(FixtureWork::class, TaskWatchPolicy::class, TaskWatchAbility::class)];
+        return [new PolicyRegistration(TaskWatchPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete])];
     }
 }

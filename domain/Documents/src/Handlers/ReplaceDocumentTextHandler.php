@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Commands\ReplaceDocumentText;
+use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Support\DraftEditing;
 use Domain\Documents\Support\DraftText;
 
-final readonly class ReplaceDocumentTextHandler implements CommandHandler
+final readonly class ReplaceDocumentTextHandler extends DocumentCommandHandler
 {
     public function __construct(private DraftEditing $drafts) {}
 

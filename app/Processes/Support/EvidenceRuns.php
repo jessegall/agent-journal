@@ -72,7 +72,9 @@ final readonly class EvidenceRuns
     }
 
     /**
-     * The evidence run of a permit, started once: the same request id returns the run it already made.
+     * The evidence run of a permit, started once: the same request id returns the run it already made; a fresh start
+     * checks the runner's current permissions on every classified part first, so a permit issued before the runner's
+     * authority narrowed launches nothing.
      *
      * @throws EvidencePermitRefused
      */
@@ -83,6 +85,12 @@ final readonly class EvidenceRuns
         if ($permit->wasStartedBy($requestId)) {
             return ProcessRun::ofAnyActor($permit->process_run_id);
         }
+        $this->checkedClassification(
+            $permit->source_line,
+            $permit->working_folder,
+            $runner,
+            $permit->candidate_rules,
+        );
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();
         if (! $timing->isAllowed()) {
             throw PhaseTimingRefused::by($timing);

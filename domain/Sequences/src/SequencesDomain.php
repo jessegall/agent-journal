@@ -14,9 +14,9 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use Domain\Sequences\Commands\StartSequence;
-use Domain\Sequences\Enums\SequenceAbility;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Policies\SequencePolicy;
 use Domain\Sequences\Skills\SequencesSkill;
@@ -39,7 +39,12 @@ final class SequencesDomain extends Domain implements
 
     public function policies(): array
     {
-        return [new PolicyRegistration(SequenceRun::class, SequencePolicy::class, SequenceAbility::class)];
+        return [
+            new PolicyRegistration(
+                SequencePolicy::class,
+                [AccessType::Create],
+            ),
+        ];
     }
 
     /**

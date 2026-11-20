@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Memory\Commands\RemoveMemory;
 use Domain\Memory\Exceptions\MemoryUnavailable;
+use Domain\Memory\Handlers\Support\MemoryCommandHandler;
 use Domain\Memory\Models\Memory;
 
 /**
  * Removes one of the actor's own memories; another actor's answers as unavailable.
  */
-final readonly class RemoveMemoryHandler implements CommandHandler
+final readonly class RemoveMemoryHandler extends MemoryCommandHandler
 {
     /**
      * @throws MemoryUnavailable

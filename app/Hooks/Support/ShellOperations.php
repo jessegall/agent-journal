@@ -7,7 +7,6 @@ namespace App\Hooks\Support;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Processes\Enums\RedirectType;
 use App\Processes\Values\ClassFact;
 use App\Processes\Values\Classification;
@@ -93,7 +92,7 @@ final readonly class ShellOperations
                     self::SURFACE,
                     "shell:redirect.{$redirect->type->value}",
                     $access,
-                    [new ResourceRequest(ResourceAreaType::Workspace, $target)],
+                    [ResourceRequest::path($target)],
                     [$target],
                     self::DECLARATION_REVISION,
                 );
@@ -146,7 +145,7 @@ final readonly class ShellOperations
             $text = $word->literal();
 
             if ($text !== null && $text !== '' && ! str_starts_with($text, '-')) {
-                $operands[] = new ResourceRequest(ResourceAreaType::Workspace, $text);
+                $operands[] = ResourceRequest::path($text);
             }
         }
 

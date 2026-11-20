@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
-use App\Bus\Attributes\Operation;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
 
@@ -16,7 +16,7 @@ use App\Bus\Enums\CommandEntry;
 final readonly class RegisteredCommand
 {
     /**
-     * @param  CommandAuthorization|null  $authorization  null while the command declares no Authorize yet
+     * @param  Authorize|null  $authorize  the application command's declaration; null for a trusted command
      * @param  class-string  $handler
      * @param  list<RegisteredMiddleware>  $middleware
      * @param  array<string, list<string|object>>  $rules  each ruled property's Laravel rules, the type rule first
@@ -27,13 +27,12 @@ final readonly class RegisteredCommand
         public bool $exported,
         public bool $repeatableRead,
         public CommandEffectType $effect,
-        public Operation|null $operation,
         public bool $requiresRequestKey,
         public bool $actorScopedReceipt,
         public ReceiptRetention $retention,
         public array $middleware,
         public array $rules,
-        public CommandAuthorization|null $authorization = null,
+        public Authorize|null $authorize = null,
         public CommandEntry $entry = CommandEntry::Application,
     ) {}
 }

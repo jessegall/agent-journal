@@ -10,10 +10,8 @@ use App\Agents\Contracts\SessionProvenance;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Api\RetainedDraftView;
 use Domain\Documents\Contracts\DraftReader;
-use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\RetainedDraft;
@@ -32,7 +30,7 @@ final readonly class RetainedDrafts implements DraftReader
         return $this->actors->hasActor() && $this->authorizer->filterActions(
             DocumentAdministrationPolicy::class,
             Document::class,
-            [DocumentAbility::Administer],
+            [AccessType::Edit],
         ) !== [];
     }
 
@@ -54,7 +52,7 @@ final readonly class RetainedDrafts implements DraftReader
             'journal',
             'docs_drafts_read',
             [AccessType::Read],
-            [new ResourceRequest(ResourceAreaType::JournalContent, 'documents.document:'.$draft->document_id)],
+            [ResourceRequest::record('documents.document:'.$draft->document_id)],
             [],
             1,
         );

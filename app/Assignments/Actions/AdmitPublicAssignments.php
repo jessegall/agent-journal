@@ -11,8 +11,7 @@ use App\Assignments\Contracts\AssigneeLocks;
 use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\MaintenanceAdmission;
-use App\Assignments\Enums\AssignmentAbility;
-use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
 use App\Assignments\Support\AdmittedAssignment;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Records\Support\RecordIdentity;
@@ -37,8 +36,8 @@ final readonly class AdmitPublicAssignments
     {
         $this->providers->assertPublic($record->type);
         $caller = AssigneeIdentity::of($this->actors->actor());
-        $ability = AssignmentAbility::forRecipient($caller, $requested);
-        $this->authorizer->authorize(AssignmentPolicy::class, $requested, $ability);
+        $access = AssignmentRecipientPolicy::accessFor($caller, $requested);
+        $this->authorizer->authorize(AssignmentRecipientPolicy::class, AssignmentRecipientPolicy::model(), $access);
 
         return $this->resolve($record, $requested);
     }

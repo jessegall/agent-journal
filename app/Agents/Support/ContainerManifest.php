@@ -6,8 +6,6 @@ namespace App\Agents\Support;
 
 use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Values\AccessPolicy;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
 /**
  * What the protected host starts a helper container with (doc 14, section 63): the image by digest, an unprivileged
@@ -81,7 +79,7 @@ final readonly class ContainerManifest
         ExecutionPolicy $policy,
         string $network,
     ): self {
-        $writable = $access->grants(AccessType::Edit, ResourceAreaType::Workspace);
+        $writable = $access->changesFiles();
         $mount = new ManifestMount($start->workspace, self::WORKDIR, $writable);
 
         return self::make(

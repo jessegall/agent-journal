@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Values;
 
-use App\Bus\Attributes\Operation;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Contracts\Command;
 use App\Bus\Enums\CommandAdmissionStage;
 use App\Bus\Enums\CommandEffectType;
@@ -17,7 +17,7 @@ final readonly class EffectiveCommand
     public function __construct(
         public Command $command,
         public CommandEffectType $effect,
-        public Operation|null $operation,
+        public Authorize|null $authorize,
         public CommandAdmissionStage $stage,
     ) {}
 }

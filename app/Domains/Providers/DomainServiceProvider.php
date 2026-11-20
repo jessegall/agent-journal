@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Support\RecordPolicyMappings;
 use App\Autoload\Support\Psr4ClassNames;
 use App\Bus\Support\CommandRegistry;
 use App\Contracts\DomainAvailability;
@@ -83,9 +84,9 @@ class DomainServiceProvider extends ServiceProvider
     }
 
     /**
-     * Policies are registered first, since command declarations are checked against them; asking for the command and
-     * settings registries and the MCP catalogue here makes a declaration the application cannot start with fail the
-     * boot.
+     * The domains' policies are registered during boot like Core's; once every provider has booted, the command and
+     * settings registries, the MCP catalogue and the record policy mappings are checked, so a declaration the
+     * application cannot start with fails the boot whichever provider registered its policy.
      */
     public function boot(
         DomainRegistry $registry,
@@ -98,9 +99,13 @@ class DomainServiceProvider extends ServiceProvider
                 $policies->register($entry->name, $policy);
             }
         }
-        $this->app->make(CommandRegistry::class);
-        $this->app->make(SettingRegistry::class);
-        $this->app->make(McpCatalogue::class);
+        $this->app->booted(function (): void {
+            $this->app->make(CommandRegistry::class);
+            $this->app->make(SettingRegistry::class);
+            $this->app->make(McpCatalogue::class);
+            $this->app->make(RecordPolicyMappings::class)->assertResolved();
+            $this->app->forgetScopedInstances();
+        });
         foreach ($registry->all() as $entry) {
             foreach ($entry->shareRecords() as $registration) {
                 $shareRecords->register($registration);

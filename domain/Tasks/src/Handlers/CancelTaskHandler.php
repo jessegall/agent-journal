@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Commands\CancelTask;
+use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class CancelTaskHandler implements CommandHandler
+final readonly class CancelTaskHandler extends TaskCommandHandler
 {
     public function __construct(
         private Dispatcher $events,

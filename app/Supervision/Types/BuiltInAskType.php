@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Supervision\Types;
 
-use App\Agents\Values\OperationKey;
 use App\Profiles\Values\AskTypeKey;
 use App\Supervision\Contracts\AskSubjectResolver;
 use App\Supervision\Contracts\AskType;
@@ -32,9 +31,9 @@ abstract readonly class BuiltInAskType implements AskType
         return $this->subjects;
     }
 
-    public function operation(): OperationKey
+    public function requiredCommand(): string
     {
-        return new OperationKey($this->definition()->operation());
+        return $this->definition()->requiredCommand();
     }
 
     public function allowance(): DateInterval

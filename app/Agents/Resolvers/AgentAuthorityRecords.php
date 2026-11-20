@@ -10,10 +10,10 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Assignments\Contracts\AgentAuthority;
-use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
+use App\Operations\Enums\AccessType;
 
 /**
  * Reads an agent's authority to give out work: a main agent that is not retired has it.
@@ -32,11 +32,11 @@ final readonly class AgentAuthorityRecords implements AgentAuthority
             throw AssignmentDenied::forCaller($caller, $retired);
         }
 
-        $dispatch = [AssignmentAbility::Dispatch];
+        $dispatch = [AccessType::Delegate];
 
         if ($this->authorizer->filterActions(
             $caller,
-            AssignmentPolicy::class,
+            AssignmentRecipientPolicy::class,
             AssignmentRecord::class,
             $dispatch,
         ) === []) {

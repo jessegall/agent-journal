@@ -8,7 +8,6 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\MergeAdmission;
 use App\Agents\Exceptions\MergeRefused;
 use App\Agents\Values\ApprovedHead;
-use App\Agents\Values\OperationKey;
 use App\Agents\Values\ReviewDecisionReference;
 use App\Supervision\Contracts\AskAdmission;
 use App\Supervision\Enums\CoreAskType;
@@ -44,8 +43,11 @@ final readonly class ReviewMergeAdmission implements MergeAdmission
         }
 
         $ask = new AskReference($approval->merge_ask_id);
-        $operation = new OperationKey(CoreAskType::MergeReady->operation());
-        $admitted = $this->admission->requireCurrent($ask, $operation, $expectedVersion);
+        $admitted = $this->admission->requireCurrent(
+            $ask,
+            CoreAskType::MergeReady->requiredCommand(),
+            $expectedVersion,
+        );
         $review = $approval->review;
 
         return new ApprovedHead(

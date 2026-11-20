@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Helpers\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\CommandHandler;
 use Domain\Helpers\Commands\StartHelper;
+use Domain\Helpers\Handlers\Support\HelperCommandHandler;
 use Domain\Helpers\Support\DispatchRequest;
 use Domain\Helpers\Support\HelperDispatch;
 use Domain\Helpers\Support\HelperReceipt;
@@ -14,7 +14,7 @@ use Domain\Helpers\Support\HelperReceipt;
 /**
  * Dispatches new work to the best of the caller's helpers, or a new one, inside the command's transaction.
  */
-final readonly class StartHelperHandler implements CommandHandler
+final readonly class StartHelperHandler extends HelperCommandHandler
 {
     public function __construct(private HelperDispatch $dispatch) {}
 

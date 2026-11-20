@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ClassGrant;
+use App\Agents\Values\HostAccess;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Hooks\Contracts\OperationPolicy;
@@ -21,7 +21,6 @@ use App\Hooks\Inputs\ProgramToolInput;
 use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\States\ReadyState;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Values\ProfileBase;
 use Tests\Fixtures\Hooks\AllowedStops;
@@ -40,7 +39,7 @@ final class OperationPolicyTest extends TestCase
             ClaudeCodeTool::SURFACE,
             'claude:Read',
             [AccessType::Read],
-            [new ResourceRequest(ResourceAreaType::Protected, '/home/journal/.claude/.credentials.json')],
+            [ResourceRequest::path('/home/journal/.claude/.credentials.json')],
             [],
             1,
         );
@@ -69,14 +68,7 @@ final class OperationPolicyTest extends TestCase
     public function test_a_writer_patch_with_one_forbidden_change_is_denied_whole(): void
     {
         $writer = ProfileBase::writingHelper()->defaultAccess();
-        $withoutDeletes = AccessPolicy::make(
-            $writer->classGrants,
-            [],
-            ['file:delete'],
-            [],
-            [],
-            ProcessGrants::everything(),
-        );
+        $withoutDeletes = new AccessPolicy($writer->paths, [], ProcessGrants::everything(), [], ['file:delete']);
         $patch = new FileChanges([
             new FileChange('app/Models/Task.php', FileOperation::Edit),
             new FileChange('app/Models/Plan.php', FileOperation::Delete),
@@ -92,15 +84,9 @@ final class OperationPolicyTest extends TestCase
     {
         $fetch = ClaudeCodeTool::WebFetch->operation(new ProgramToolInput(['url' => 'https://example.com']));
         $main = ProfileBase::mainAgent()->defaultAccess();
-        $researcher = AccessPolicy::make(
-            [
-                ...$main->classGrants,
-                new ClassGrant(ResourceAreaType::Internet, [AccessType::Read, AccessType::Network]),
-            ],
-            [],
-            [],
-            [],
-            [],
+        $researcher = new AccessPolicy(
+            $main->paths,
+            [HostAccess::destination('*', [AccessType::Read, AccessType::Network])],
             ProcessGrants::everything(),
         );
         $request = new ToolRequested($this->hook(), $fetch);

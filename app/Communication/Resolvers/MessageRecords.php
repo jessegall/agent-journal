@@ -17,14 +17,14 @@ use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessagePage;
 use App\Communication\Data\MessageView;
-use App\Communication\Enums\MessageAbility;
 use App\Communication\Enums\MessageState;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
 use App\Communication\Models\MessageAttention;
-use App\Communication\Policies\MessagePolicy;
+use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Communication\Support\InboxMembers;
 use App\Communication\Support\RegisteredInboxes;
+use App\Operations\Enums\AccessType;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -82,7 +82,7 @@ final readonly class MessageRecords implements ConversationResolver
 
     public function inspect(string $inboxId, string|null $olderCursor, int $limit): MessagePage
     {
-        $this->authorizer->authorize(MessagePolicy::class, Message::class, MessageAbility::Inspect);
+        $this->authorizer->authorize(MessageAdministrationPolicy::class, Message::class, AccessType::Read);
 
         return $this->page(Message::query()->acrossInboxes()->ofInbox($inboxId), $olderCursor, $limit);
     }

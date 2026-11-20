@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Resources;
 
+use App\Agents\Contracts\ReadGrant;
+use App\Agents\Values\ReadRequest;
 use App\Mcp\Support\OperationsResolver;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -24,7 +26,7 @@ final class OperationResource extends JournalResource implements HasUriTemplate
 {
     private const string TEMPLATE = 'journal://v1/operations/{request_key}';
 
-    public function __construct(private readonly OperationsResolver $operations) {}
+    public function __construct(private readonly OperationsResolver $operations, private readonly ReadGrant $reads) {}
 
     public function uriTemplate(): UriTemplate
     {
@@ -37,6 +39,7 @@ final class OperationResource extends JournalResource implements HasUriTemplate
         parse_str((string) parse_url($uri, PHP_URL_QUERY), $query);
         $requestKey = basename((string) parse_url($uri, PHP_URL_PATH));
         $continuation = is_string($query['continuation'] ?? null) ? $query['continuation'] : null;
+        $this->reads->assertAllowed(new ReadRequest('operations_read', ['request_key' => $requestKey]));
 
         return Response::text(
             json_encode(

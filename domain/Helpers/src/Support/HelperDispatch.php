@@ -22,7 +22,6 @@ use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Exceptions\ProfileMissing;
@@ -42,6 +41,7 @@ use Domain\Helpers\Exceptions\HelperUnavailable;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperPurpose;
+use Domain\Helpers\Policies\HelperPolicy;
 use Domain\Helpers\Readers\HelperCandidates;
 use Domain\Helpers\Readers\HelperRecords;
 
@@ -191,15 +191,16 @@ final readonly class HelperDispatch
     }
 
     /**
-     * The profile's current selection, once the parent may delegate, the key names an activated helper profile and
-     * that profile grants nothing the parent does not hold.
+     * The profile's current selection, once the parent holds HelperPolicy/Delegate, the key names an activated helper
+     * profile, and that profile's whole authority, its grants, named reads, denials and host scope, lies inside the
+     * parent's frozen authority.
      */
     private function admittedProfile(string $profileKey, string $model, string|null $programKey): ProfileSelection
     {
         $authority = $this->actors->authority();
-        $held = $authority instanceof StartProfileAuthority ? $authority->profile->start->access : null;
+        $parent = $authority instanceof StartProfileAuthority ? $authority->profile : null;
 
-        if ($held !== null && ! $held->grants(AccessType::Delegate, ResourceAreaType::JournalWork)) {
+        if ($parent !== null && ! $parent->authorization->grants(HelperPolicy::class, AccessType::Delegate)) {
             throw HelperUnavailable::toYou();
         }
 
@@ -218,7 +219,12 @@ final readonly class HelperDispatch
             throw HelperProfileTypeConflict::forProfile($profileKey);
         }
 
-        if ($held !== null && ! $held->contains($profile->start->access)) {
+        $contained = $parent === null || (
+            $parent->authorization->contains($profile->authorization)
+            && $parent->start->access->contains($profile->start->access)
+        );
+
+        if (! $contained) {
             throw HelperUnavailable::toYou();
         }
 

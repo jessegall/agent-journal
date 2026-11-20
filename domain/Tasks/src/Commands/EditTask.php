@@ -6,12 +6,8 @@ namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\EditTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
@@ -25,9 +21,8 @@ use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
  * @extends Command<int>
  */
 #[HandledBy(EditTaskHandler::class)]
-#[Authorize(TaskPolicy::class, TaskAbility::Work)]
-#[Operation('edit_task', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class EditTask extends Command implements AuthorizedCommand
+#[Authorize(TaskPolicy::class, AccessType::Edit)]
+final readonly class EditTask extends Command
 {
     public function __construct(
         public string $taskId,
@@ -37,12 +32,4 @@ final readonly class EditTask extends Command implements AuthorizedCommand
         #[Max(Task::NOTE_CHARACTER_LIMIT)]
         public string|null $brief = null,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Task::class;
-    }
 }

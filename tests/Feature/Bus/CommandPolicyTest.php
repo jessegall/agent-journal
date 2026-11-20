@@ -40,7 +40,7 @@ final class CommandPolicyTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $this->app->make(RequestKey::class)->set(self::KEY);
         $admission = $this->mock(CommandAdmission::class);
-        $admission->shouldReceive('assess')->once()->withArgs(
+        $admission->shouldReceive('assess')->twice()->withArgs(
             fn (EffectiveCommand $call): bool => $call->stage === CommandAdmissionStage::BeforeMiddleware
                 && $call->command instanceof WriteNote && $call->command->text === 'outside',
         )->andReturn(CommandDecision::allow());

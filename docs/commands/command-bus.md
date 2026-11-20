@@ -20,11 +20,9 @@ namespace Domain\Rules\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
-use Domain\Rules\Enums\RuleAbility;
+use App\Operations\Enums\AccessType;
 use Domain\Rules\Handlers\ProposeRuleHandler;
-use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 
 /**
@@ -33,22 +31,14 @@ use Domain\Rules\Policies\RulePolicy;
  * @extends Command<string>
  */
 #[HandledBy(ProposeRuleHandler::class)]
-#[Authorize(RulePolicy::class, RuleAbility::Propose)]
-final readonly class ProposeRule extends Command implements AuthorizedCommand
+#[Authorize(RulePolicy::class, AccessType::Create)]
+final readonly class ProposeRule extends Command
 {
     public function __construct(
         public string $text,
         public string $reason,
         public string|null $replacesRuleId = null,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Rule::class;
-    }
 }
 ```
 
@@ -87,14 +77,15 @@ A command carries whole numbers, text, yes or no, decimals, backed enums, their 
 owner may name, and lists of those, never a model, a service or a stack target (a session is an int id the handler
 resolves). A handler returns nothing, one of those, or a final readonly value such as `App\Assignments\Support\AssignmentResult`.
 
-Every command a person or an agent sends declares who may run it: `#[Authorize(Policy::class, Ability::Case)]` and a
-`subject()`, through `App\Bus\Contracts\AuthorizedCommand`. The subject is a model class for a class-level
-ability (creating a task: `Domain\Tasks\Commands\CreateTask` returns `Task::class`), or the record the ability acts on
-(blocking a task: `Domain\Tasks\Commands\BlockTask` returns the locked task). A handler may take that subject as its
-second argument, as `Domain\Tasks\Handlers\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
-loads the record once. The bus asks the caller's own profile before the handler runs and refuses with
-`App\Actors\Exceptions\ActorNotAllowed`. A command without `Authorize` fails the boot with
-`App\Bus\Exceptions\CommandAuthorizationMissing`, unless it names a trusted entry: `#[Entry(CommandEntry::HostControl)]`,
+Every command a person or an agent sends declares who may run it with one `#[Authorize(Policy::class,
+AccessType::Case)]`: the policy names the model it guards, so the declaration needs no subject. A command whose policy
+decides on one record implements `App\Bus\Contracts\RecordCommand` and returns that locked record from `subject()`,
+as `Domain\Tasks\Commands\BlockTask` does for `Domain\Tasks\Policies\TaskRunPolicy`; its handler takes the record as
+its second argument, as `Domain\Tasks\Handlers\BlockTaskHandler::handle(BlockTask $command, Task $task)` does, so it
+loads it once. The bus checks the caller's profile grants before the subject is loaded and refuses with
+`App\Bus\Exceptions\CommandAdmissionRefused`, then authorizes the subject and refuses with
+`App\Actors\Exceptions\ActorNotAllowed`. A command with neither `Authorize` nor a trusted entry fails the boot with
+`App\Bus\Exceptions\CommandDeclarationInvalid`; a trusted entry is `#[Entry(CommandEntry::HostControl)]`,
 `ShareGateway`, `SkillPublisher` or `EngineMaintenance`. Such a command runs only through that entry's dispatcher, as
 the journal itself, and never from a request. No command asks what kind of actor calls (rule 39); the guide in
 docs/domains/authorization.md shows how a module declares its policies.

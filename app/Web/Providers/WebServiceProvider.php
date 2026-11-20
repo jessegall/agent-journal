@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Web\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Models\UserPresence;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Contracts\CommandRefusal;
@@ -13,6 +12,7 @@ use App\CorePages;
 use App\Domains\Support\DomainRegistry;
 use App\Http\Middleware\Web\CheckPageVisibility;
 use App\Links\Support\LinkTypeRegistry;
+use App\Operations\Enums\AccessType;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
@@ -21,7 +21,6 @@ use App\Web\Contracts\NavigationRecords as NavigationRecordsContract;
 use App\Web\Contracts\ReaderRequests as ReaderRequestsContract;
 use App\Web\Contracts\UiOwnerAvailability as UiOwnerAvailabilityContract;
 use App\Web\Contracts\WindowResults as WindowResultsContract;
-use App\Web\Enums\PresenceAbility;
 use App\Web\Models\Layout;
 use App\Web\Models\Support\CurrentUserScope;
 use App\Web\Policies\PresencePolicy;
@@ -93,7 +92,7 @@ final class WebServiceProvider extends ServiceProvider
     ): void {
         $policies->register(
             'Core',
-            new PolicyRegistration(UserPresence::class, PresencePolicy::class, PresenceAbility::class),
+            new PolicyRegistration(PresencePolicy::class, [AccessType::Edit], ownerOnly: [AccessType::Edit]),
         );
         $links->register(['web.layout' => Layout::class]);
         $this->renderRefusals($exceptions);

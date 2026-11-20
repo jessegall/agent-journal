@@ -5,20 +5,15 @@ declare(strict_types=1);
 namespace App\Agents\Commands;
 
 use App\Agents\Contracts\TargetsAgentStack;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Handlers\RecordRuntimeHandler;
-use App\Agents\Models\Agent;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
 /**
  * The owner asks the host to start, or stop, a redacted recording of an agent's runtime, written in the host's
@@ -27,9 +22,8 @@ use App\Operations\Enums\ResourceAreaType;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(RecordRuntimeHandler::class)]
-#[Authorize(AgentPolicy::class, AgentAbility::Recover)]
-#[Operation('record_runtime', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class RecordRuntime extends Command implements AuthorizedCommand, TargetsAgentStack
+#[Authorize(AgentMaintenancePolicy::class, AccessType::Edit)]
+final readonly class RecordRuntime extends Command implements TargetsAgentStack
 {
     public function __construct(
         public string $agentId,
@@ -46,13 +40,5 @@ final readonly class RecordRuntime extends Command implements AuthorizedCommand,
     public function operation(): DriverOperation
     {
         return $this->stop ? DriverOperation::StopRecording : DriverOperation::StartRecording;
-    }
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Agent::class;
     }
 }

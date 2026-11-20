@@ -19,9 +19,12 @@ final class ProfileProposalRefused extends InvalidArgumentException implements C
         return new self("The profile proposal cannot be read: {$failure->getMessage()}", 0, $failure);
     }
 
-    public static function classRule(string $text, Throwable|null $previous = null): self
+    public static function rootRule(string $text, Throwable|null $previous = null): self
     {
-        return new self("A class rule is written access:area, such as delete:workspace; {$text} is not.", previous: $previous);
+        return new self(
+            "A root rule is written access:root, such as delete:. for the working folder; {$text} is not.",
+            previous: $previous,
+        );
     }
 
     public static function unknownInstances(string $key, string $value): self

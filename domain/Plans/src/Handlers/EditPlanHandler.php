@@ -4,23 +4,18 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Plans\Commands\EditPlan;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
-use Domain\Plans\Models\Plan;
+use Domain\Plans\Handlers\Support\PlanCommandHandler;
 
-final readonly class EditPlanHandler implements CommandHandler
+final readonly class EditPlanHandler extends PlanCommandHandler
 {
     /**
      * @throws PlanRevisionChanged
      */
     public function handle(EditPlan $command): int
     {
-        $plan = Plan::lockStructure($command->planId);
-
-        if ($plan->revision !== $command->expectedRevision) {
-            throw PlanRevisionChanged::for($plan->number, $command->expectedRevision, $plan->revision);
-        }
+        $plan = $this->lockPlanAtRevision($command->planId, $command->expectedRevision);
 
         $plan->describe(
             $command->title ?? $plan->title,

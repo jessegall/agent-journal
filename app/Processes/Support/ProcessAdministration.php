@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Processes\Enums\ProcessAbility;
+use App\Operations\Enums\AccessType;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Policies\ProcessAdministrationPolicy;
 
@@ -21,7 +21,7 @@ final readonly class ProcessAdministration
         $granted = $this->authorizer->filterActions(
             ProcessAdministrationPolicy::class,
             CommandRequest::class,
-            [ProcessAbility::Administer],
+            [AccessType::Edit],
         );
 
         return $granted !== [];

@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Scripts\Support;
 
-use App\Agents\Values\AccessPolicy;
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Enums\ReadEntitlementType;
 use App\Agents\Values\Operation;
+use App\Agents\Values\ResourceRequest;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Contracts\ScriptCompilation;
 use App\Profiles\Exceptions\InvalidScript;
 use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\NamedCommand;
+use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ScriptSource;
 use App\Scripts\Contracts\ScriptChecks;
 use App\Scripts\Enums\DiagnosticCode;
@@ -19,7 +21,6 @@ use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\BooleanOperand;
 use App\Scripts\Values\Instruction;
 use App\Scripts\Values\KeywordDefinition;
-use App\Scripts\Values\ScriptRange;
 
 final readonly class ProfileScriptCompiler implements ScriptCompilation
 {
@@ -27,6 +28,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         private ScriptChecks $checks,
         private KeywordRegistry $keywords,
         private ObjectRegistry $objects,
+        private ReadEntitlements $reads,
     ) {}
 
     public function compile(ScriptSource $source): CompiledScript
@@ -40,7 +42,12 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         return $check->compiled;
     }
 
-    public function compileForProfile(ScriptSource $source, AccessPolicy $access): CompiledScript
+    /**
+     * Compiles a profile's script and checks each instruction by its own right: a named host command and a keyword's
+     * effect against the profile's host scope, an object read against its read entitlement; a refused operand keeps
+     * its source range.
+     */
+    public function compileForProfile(ScriptSource $source, ProfileDefinition $profile): CompiledScript
     {
         $compiled = $this->compile($source);
 
@@ -50,8 +57,12 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         $instructions = $compiled->graph['instructions'];
 
         foreach ($instructions as $instruction) {
-            foreach ($this->operations($instruction->keyword, $instruction->operand) as $operation) {
-                $this->assertAllowed($access, $instruction->source, $operation);
+            $refusal = $this->refusalOf($instruction->keyword, $instruction->operand, $profile);
+
+            if ($refusal !== null) {
+                $failure = ScriptSyntaxError::at(DiagnosticCode::CommandNotAllowed, $instruction->source, $refusal);
+
+                throw InvalidScript::withDiagnostics([$failure->diagnostic]);
             }
         }
 
@@ -59,48 +70,54 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
     }
 
     /**
-     * @return list<Operation>
+     * Why the profile may not run this instruction, or null when it may.
      */
-    private function operations(string $token, object $operand): array
+    private function refusalOf(string $token, object $operand, ProfileDefinition $profile): string|null
     {
         if ($operand instanceof NamedCommand) {
-            $name = 'profile.command:'.$operand->key;
-
-            return [Operation::journal($name, ResourceAreaType::Workspace, $operand->effects)];
+            return $this->hostRefusal($profile, 'profile.command:'.$operand->key, $operand->effects);
         }
 
         if ($operand instanceof BooleanOperand) {
-            $member = $this->objects->get($operand->object)->members[$operand->member];
+            $read = $this->objects->get($operand->object)->members[$operand->member]->read->key;
 
-            return [Operation::journal($member->read->key, ResourceAreaType::Workspace, [AccessType::Read])];
+            return $this->readRefusal($profile, $read);
         }
 
         $definition = $this->keywords->get($token)->definition;
+        $effects = $definition instanceof KeywordDefinition ? $definition->effects : [];
 
-        if (! $definition instanceof KeywordDefinition) {
-            return [];
+        foreach ($effects as $effect) {
+            $refusal = $this->hostRefusal($profile, $effect->value, [AccessType::Execute]);
+
+            if ($refusal !== null) {
+                return $refusal;
+            }
         }
 
-        $operations = [];
-        foreach ($definition->effects as $effect) {
-            $operations[] = Operation::journal(
-                $effect->operation()->key,
-                ResourceAreaType::JournalWork,
-                [AccessType::Create],
-            );
-        }
-
-        return $operations;
+        return null;
     }
 
-    private function assertAllowed(AccessPolicy $access, ScriptRange $range, Operation $operation): void
+    /**
+     * @param  list<AccessType>  $accesses
+     */
+    private function hostRefusal(ProfileDefinition $profile, string $name, array $accesses): string|null
     {
-        $decision = $access->decide($operation);
+        $operation = new Operation('script', $name, $accesses, [ResourceRequest::path('.')], [], 1);
+        $decision = $profile->start->decide($operation);
 
-        if (! $decision->allowed) {
-            $failure = ScriptSyntaxError::at(DiagnosticCode::CommandNotAllowed, $range, $decision->reason);
+        return $decision->allowed ? null : $decision->reason;
+    }
 
-            throw InvalidScript::withDiagnostics([$failure->diagnostic]);
-        }
+    private function readRefusal(ProfileDefinition $profile, string $read): string|null
+    {
+        $entitlement = $this->reads->of($read);
+        $allowed = match ($entitlement->type) {
+            ReadEntitlementType::Resolver => true,
+            ReadEntitlementType::Grant => $entitlement->isGrantedBy($profile->authorization->grants(...)),
+            ReadEntitlementType::Named => $profile->authorization->holdsRead($read, null),
+        };
+
+        return $allowed ? null : "The profile does not hold the read {$read}.";
     }
 }

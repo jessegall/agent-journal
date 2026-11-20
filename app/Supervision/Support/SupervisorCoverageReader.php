@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Supervision\Support;
 
-use App\Agents\Values\Operation;
 use App\Bus\Support\CommandRegistry;
 use App\Profiles\Enums\SupervisorCoverageType;
 use App\Profiles\Values\SupervisorCoverage;
@@ -30,27 +29,24 @@ final readonly class SupervisorCoverageReader
 
     private function forType(AskType $type, SupervisorProfile|null $profile): SupervisorCoverage
     {
-        $name = $type->operation()->key;
-        $found = $this->commands->operationNamed($name);
+        $command = $type->requiredCommand();
+        $authorize = $this->commands->has($command) ? $this->commands->authorizeOf($command) : null;
 
-        if ($profile === null || $found->isEmpty()) {
+        if ($profile === null || $authorize === null) {
             return new SupervisorCoverage(
                 $type->key(),
                 SupervisorCoverageType::Unknown,
-                $name,
-                'The target or required operation has no profile declaration to check.',
+                $command,
+                'The target or the required command has no profile declaration to check.',
             );
         }
 
-        $declaration = $found->get();
-        $decision = $profile->access->decide(
-            Operation::journal($declaration->name, $declaration->area, $declaration->accessTypes),
-        );
+        $decision = $profile->authorization->admits($command, $authorize);
 
         return new SupervisorCoverage(
             $type->key(),
             $decision->allowed ? SupervisorCoverageType::Supported : SupervisorCoverageType::Unsupported,
-            $name,
+            $command,
             $decision->reason,
         );
     }

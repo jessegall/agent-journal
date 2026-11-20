@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
-use Domain\Tasks\Handlers\Concerns\RefusesOtherRuns;
+use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class BlockTaskHandler implements CommandHandler
+final readonly class BlockTaskHandler extends TaskCommandHandler
 {
-    use RefusesOtherRuns;
-
     public function __construct(
         private Dispatcher $events,
     ) {}

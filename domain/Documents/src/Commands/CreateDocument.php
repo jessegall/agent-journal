@@ -7,17 +7,13 @@ namespace Domain\Documents\Commands;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\CreatedRecord;
-use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Handlers\CreateDocumentHandler;
 use Domain\Documents\Models\Document;
-use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Domain\Documents\Policies\DocumentPolicy;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Required;
 
@@ -28,9 +24,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  * @extends Command<CreatedRecord>
  */
 #[HandledBy(CreateDocumentHandler::class)]
-#[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('create_document', ResourceAreaType::JournalDocuments, AccessType::Create)]
-final readonly class CreateDocument extends Command implements AuthorizedCommand
+#[Authorize(DocumentPolicy::class, AccessType::Create)]
+final readonly class CreateDocument extends Command
 {
     public const int MOST_LINKS = 50;
 
@@ -47,12 +42,4 @@ final readonly class CreateDocument extends Command implements AuthorizedCommand
         public array $relatedRecords = [],
         public string|null $uploadId = null,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Document::class;
-    }
 }

@@ -6,14 +6,9 @@ namespace App\Profiles\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use App\Profiles\Enums\AccountAbility;
 use App\Profiles\Handlers\BeginSignInAgainHandler;
-use App\Profiles\Models\Account;
 use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Values\SignInStarted;
 
@@ -25,20 +20,11 @@ use App\Profiles\Values\SignInStarted;
  * @extends Command<SignInStarted>
  */
 #[HandledBy(BeginSignInAgainHandler::class)]
-#[Authorize(AccountPolicy::class, AccountAbility::Manage)]
-#[Operation('begin_sign_in_again', ResourceAreaType::JournalControl, AccessType::Create)]
-final readonly class BeginSignInAgain extends Command implements AuthorizedCommand
+#[Authorize(AccountPolicy::class, AccessType::Create)]
+final readonly class BeginSignInAgain extends Command
 {
     public function __construct(
         public string $accountId,
         public string $requestKey,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Account::class;
-    }
 }

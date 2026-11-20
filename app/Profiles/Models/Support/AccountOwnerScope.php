@@ -6,7 +6,7 @@ namespace App\Profiles\Models\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Profiles\Enums\AccountAbility;
+use App\Operations\Enums\AccessType;
 use App\Profiles\Models\Account;
 use App\Profiles\Policies\AccountPolicy;
 use Closure;
@@ -41,7 +41,7 @@ final readonly class AccountOwnerScope implements Scope
 
     private function mayRead(): bool
     {
-        $granted = ($this->authorizer)()->filterActions(AccountPolicy::class, Account::class, [AccountAbility::Read]);
+        $granted = ($this->authorizer)()->filterActions(AccountPolicy::class, Account::class, [AccessType::Read]);
 
         return $granted !== [];
     }

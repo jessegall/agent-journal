@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Domain\Helpers\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\CommandHandler;
 use Domain\Helpers\Commands\SteerHelper;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperUnavailable;
+use Domain\Helpers\Handlers\Support\HelperCommandHandler;
 use Domain\Helpers\Models\HelperIdentity;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Models\HelperMessage;
 use Domain\Helpers\Support\HelperStarts;
 use Domain\Helpers\Support\SteerReceipt;
 
-final readonly class SteerHelperHandler implements CommandHandler
+final readonly class SteerHelperHandler extends HelperCommandHandler
 {
     public function __construct(private HelperStarts $starts) {}
 

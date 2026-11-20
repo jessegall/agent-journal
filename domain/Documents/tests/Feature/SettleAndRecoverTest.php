@@ -11,6 +11,7 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Events\SessionClosed;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Bus\Exceptions\CommandInputInvalid;
 use App\Domains\Support\AvailableListener;
 use Carbon\CarbonImmutable;
@@ -196,7 +197,7 @@ final class SettleAndRecoverTest extends TestCase
     public function test_an_agent_cannot_recover_a_draft(): void
     {
         $this->actAsAgent(9, 90);
-        $this->expectException(ActorNotAllowed::class);
+        $this->expectException(CommandAdmissionRefused::class);
 
         $this->bus()->run(new RecoverDocument(new DraftTarget('1', 'any', 1), 'Mine now.'));
     }

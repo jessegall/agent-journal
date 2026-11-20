@@ -10,7 +10,7 @@ use App\Profiles\Enums\InstancePolicy;
 
 /**
  * What a start from a profile is: the program and model selected for it, the profile's type, the revision it was
- * selected from and that revision's start policy.
+ * selected from, that revision's start policy and its authorization.
  */
 final readonly class ProfileSelection
 {
@@ -19,6 +19,7 @@ final readonly class ProfileSelection
         public ProfileBase $base,
         public int $revision,
         public ProfileStartPolicy $start,
+        public ProfileAuthorization $authorization,
         public InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}
 

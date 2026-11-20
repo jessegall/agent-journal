@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Bus\Contracts\CommandBus;
-use App\Contracts\CommandHandler;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDraft;
 use Domain\Documents\Exceptions\DraftHeld;
+use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Resolvers\RetainedDrafts;
 use Domain\Documents\Support\DraftEditing;
 
-final readonly class RecoverDraftHandler implements CommandHandler
+final readonly class RecoverDraftHandler extends DocumentCommandHandler
 {
     public function __construct(
         private RetainedDrafts $drafts,

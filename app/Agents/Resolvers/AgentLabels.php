@@ -8,10 +8,10 @@ use App\Actors\Contracts\ActorLabelProvider;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\AgentResolver;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Models\Agent;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Support\AgentLabel;
+use App\Operations\Enums\AccessType;
 
 /**
  * Reads agent labels for the actor of this request: the user sees every agent, an agent only itself. Without an actor
@@ -54,6 +54,6 @@ final readonly class AgentLabels implements ActorLabelProvider, AgentResolver
      */
     private function inspectsAgents(): bool
     {
-        return $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AgentAbility::Inspect]) !== [];
+        return $this->authorizer->filterActions(AgentMaintenancePolicy::class, Agent::class, [AccessType::Read]) !== [];
     }
 }

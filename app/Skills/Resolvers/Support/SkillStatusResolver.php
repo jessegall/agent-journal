@@ -6,10 +6,10 @@ namespace App\Skills\Resolvers\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
+use App\Operations\Enums\AccessType;
 use App\Programs\Values\ProgramKey;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Enums\PublicationState;
@@ -170,9 +170,9 @@ final readonly class SkillStatusResolver
     private function visiblePublications(): array
     {
         $actor = $this->actors->actor();
-        $inspect = [AgentAbility::Inspect];
+        $inspect = [AccessType::Read];
 
-        if ($this->authorizer->filterActions(AgentPolicy::class, Agent::class, $inspect) !== []) {
+        if ($this->authorizer->filterActions(AgentMaintenancePolicy::class, Agent::class, $inspect) !== []) {
             return SkillPublication::latestOfEverySession(self::MOST_SESSIONS);
         }
 

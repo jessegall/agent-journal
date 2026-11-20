@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Commands\CancelPlan;
 use Domain\Plans\Exceptions\PlanRevisionChanged;
-use Domain\Plans\Models\Plan;
+use Domain\Plans\Handlers\Support\PlanCommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class CancelPlanHandler implements CommandHandler
+final readonly class CancelPlanHandler extends PlanCommandHandler
 {
     public function __construct(private Dispatcher $events) {}
 
@@ -20,11 +19,7 @@ final readonly class CancelPlanHandler implements CommandHandler
      */
     public function handle(CancelPlan $command): void
     {
-        $plan = Plan::lockStructure($command->planId);
-
-        if ($plan->revision !== $command->expectedRevision) {
-            throw PlanRevisionChanged::for($plan->number, $command->expectedRevision, $plan->revision);
-        }
+        $plan = $this->lockPlanAtRevision($command->planId, $command->expectedRevision);
 
         $plan->cancel($command->reason);
         $this->events->dispatch(new PlanCancelled($plan->id, $command->dispatchedBy()));

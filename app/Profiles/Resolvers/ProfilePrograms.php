@@ -42,6 +42,7 @@ final readonly class ProfilePrograms implements ProfileSelections
             $snapshot->base,
             $snapshot->revision,
             $start,
+            $snapshot->authorization,
             $snapshot->instances,
         );
     }

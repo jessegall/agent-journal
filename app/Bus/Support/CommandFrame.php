@@ -50,8 +50,8 @@ final class CommandFrame
      */
     public const array INSIDE = [
         GuardCommandOrigin::class,
+        CheckJobGrant::class,
         AuthorizeCommand::class,
         RecordReceipt::class,
-        CheckJobGrant::class,
     ];
 }

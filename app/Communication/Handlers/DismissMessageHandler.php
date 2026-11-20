@@ -10,15 +10,15 @@ use App\Actors\Support\ActorIdentity;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Enums\DismissalType;
-use App\Communication\Enums\MessageAbility;
 use App\Communication\Events\MessageDismissed;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Message;
-use App\Communication\Policies\MessagePolicy;
+use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageClaims;
 use App\Contracts\CommandHandler;
+use App\Operations\Enums\AccessType;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -71,7 +71,7 @@ final readonly class DismissMessageHandler implements CommandHandler
             throw MessageMissing::forId($message->id);
         }
 
-        $this->authorizer->authorize(MessagePolicy::class, Message::class, MessageAbility::Inspect);
+        $this->authorizer->authorize(MessageAdministrationPolicy::class, Message::class, AccessType::Read);
 
         return DismissalType::Cancelled;
     }

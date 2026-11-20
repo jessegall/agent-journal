@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Contracts\CommandHandler;
 use App\Numbers\Support\RecordReference;
 use App\Records\Support\RecordIdentity;
 use Domain\Documents\Commands\CommentOnReport;
+use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Resolvers\ReportRecords;
 use Domain\Documents\Support\RecordComments;
 
-final readonly class CommentOnReportHandler implements CommandHandler
+final readonly class CommentOnReportHandler extends DocumentCommandHandler
 {
     public function __construct(private RecordComments $comments) {}
 

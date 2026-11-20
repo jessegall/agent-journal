@@ -6,7 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Profiles\Enums\AccountAbility;
+use App\Operations\Enums\AccessType;
 use App\Profiles\Models\Account;
 use App\Profiles\Policies\AccountPolicy;
 use App\Ui\Contracts\VisibilityCheck;
@@ -20,6 +20,6 @@ final readonly class AccountOwnerCheck implements VisibilityCheck
 
     public function allows(Actor $actor): bool
     {
-        return $this->authorizer->filterActions(AccountPolicy::class, Account::class, [AccountAbility::Read]) !== [];
+        return $this->authorizer->filterActions(AccountPolicy::class, Account::class, [AccessType::Read]) !== [];
     }
 }

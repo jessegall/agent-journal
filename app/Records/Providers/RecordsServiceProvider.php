@@ -7,13 +7,13 @@ namespace App\Records\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Links\Models\Link;
+use App\Operations\Enums\AccessType;
 use App\Records\Console\LinkAddCommand;
 use App\Records\Console\LinkRemoveCommand;
 use App\Records\Contracts\IdentityLinks;
 use App\Records\Contracts\RecordLinker;
 use App\Records\Contracts\RecordProviderRegistration;
 use App\Records\Contracts\RecordResolver;
-use App\Records\Enums\RecordLinkAbility;
 use App\Records\Policies\RecordLinkPolicy;
 use App\Records\Support\RecordProviders;
 use App\Records\Support\TransactionalIdentityLinks;
@@ -37,7 +37,7 @@ final class RecordsServiceProvider extends ServiceProvider
     {
         $policies->register(
             'Core',
-            new PolicyRegistration(Link::class, RecordLinkPolicy::class, RecordLinkAbility::class),
+            new PolicyRegistration(RecordLinkPolicy::class, [AccessType::Create, AccessType::Edit]),
         );
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/links.php');
 

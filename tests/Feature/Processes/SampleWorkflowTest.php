@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Exceptions\ActorNotAllowed;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
@@ -76,7 +76,7 @@ final class SampleWorkflowTest extends TestCase
 
     public function test_an_agent_cannot_approve_a_sample(): void
     {
-        $this->assertThrows(fn () => $this->runAsAgent($this->approval()), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $this->runAsAgent($this->approval()), CommandAdmissionRefused::class);
         $this->assertSame(0, EvidencePermit::query()->count());
     }
 

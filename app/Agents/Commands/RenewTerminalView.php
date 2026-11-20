@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\RenewTerminalViewHandler;
-use App\Agents\Models\Agent;
 use App\Agents\Models\TerminalView;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Support\TerminalViewReceipt;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
 /**
  * A viewer keeps watching an agent's terminal: the lease goes on, or a lapsed one opens anew.
@@ -24,20 +19,11 @@ use App\Operations\Enums\ResourceAreaType;
  * @extends Command<TerminalViewReceipt>
  */
 #[HandledBy(RenewTerminalViewHandler::class)]
-#[Authorize(AgentPolicy::class, AgentAbility::Inspect)]
-#[Operation('renew_terminal_view', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class RenewTerminalView extends Command implements AuthorizedCommand
+#[Authorize(AgentMaintenancePolicy::class, AccessType::Edit)]
+final readonly class RenewTerminalView extends Command
 {
     public function __construct(
         public string $agentId,
         public int $intervalMs = TerminalView::DEFAULT_INTERVAL_MS,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Agent::class;
-    }
 }

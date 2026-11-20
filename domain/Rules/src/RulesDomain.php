@@ -13,6 +13,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
@@ -33,7 +34,6 @@ use Domain\Rules\Commands\ProposeRule;
 use Domain\Rules\Commands\RemoveRule;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
-use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
@@ -93,9 +93,13 @@ final class RulesDomain extends Domain implements
 
     public function policies(): array
     {
-        $review = [RuleAbility::Approve, RuleAbility::Deny, RuleAbility::Remove];
-
-        return [new PolicyRegistration(Rule::class, RulePolicy::class, RuleAbility::class, ownerOnly: $review)];
+        return [
+            new PolicyRegistration(
+                RulePolicy::class,
+                [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete],
+                ownerOnly: [AccessType::Edit, AccessType::Delete],
+            ),
+        ];
     }
 
     /**

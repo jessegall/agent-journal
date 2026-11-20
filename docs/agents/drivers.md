@@ -8,7 +8,7 @@ How a running agent program is driven, for a reader of the code. The design is d
 | Part | Where | What it does |
 | --- | --- | --- |
 | Driver ledger | `app/Agents/Models/DriverRequest.php`, `app/Agents/Support/DriverRequests.php` | Every operation asked of a runtime is a request with a sequence, an attempt and a progress; nothing reaches a program any other way |
-| Owner commands | `app/Agents/Commands` (`DeliverAgent`, `WakeAgent`, `ChangeAgentModel`, `ChangeAgentEffort`, `InterruptAgent`, `StopAgent`) | Append a request; the recovery commands (`RetryDriverRequest`, `CancelDriverRequest`, `ResolveDriverDelivery`, `RepairDriverSettings`, `ReleaseAgentHold`, `ResumeKeyScript`, `CancelKeyScript`, `ReassignAgentRuntime`) need the owner-only ability `AgentAbility::Recover` |
+| Owner commands | `app/Agents/Commands` (`DeliverAgent`, `WakeAgent`, `ChangeAgentModel`, `ChangeAgentEffort`, `InterruptAgent`, `StopAgent`) | Append a request; the recovery commands (`RetryDriverRequest`, `CancelDriverRequest`, `ResolveDriverDelivery`, `RepairDriverSettings`, `ReleaseAgentHold`, `ResumeKeyScript`, `CancelKeyScript`, `ReassignAgentRuntime`) need the owner-only `AgentMaintenancePolicy` |
 | Host routes | `app/Agents/Routes/host.php` | Claim, start grant, and reports of request progress, turns, activity, heartbeats, exit and screens |
 | Host | `tools/journal-agent` | `serve` claims requests (`client/poll.go`) and hands them to the loop in `serving/loop.go` |
 | Scheduler | `tools/journal-agent/host/scheduler.go` | Per runtime: control first, settings staged in front of content, a batch of deliveries or a wake as one turn, nothing while held |
@@ -34,7 +34,7 @@ A terminal view lets a person watch a terminal runtime's screen in the web UI, r
 (`app/Agents/Models/TerminalView.php`), never a driver request, so it stays out of the ledger and a held runtime can
 still be watched.
 
-- `OpenTerminalView`, `RenewTerminalView` and `CloseTerminalView` need `AgentAbility::Inspect` on the agent, which
+- `OpenTerminalView`, `RenewTerminalView` and `CloseTerminalView` need `AgentMaintenancePolicy` with `AccessType::Read`, which
   is decided again on every frame read. A process-driver runtime, a stopped runtime and more than 20 live views of
   one viewer are refused. Watching never types: no route takes keys or input for the program.
 - The browser renews its view every 10 seconds, and a view lapses 30 seconds after its last renewal. Each engine pass

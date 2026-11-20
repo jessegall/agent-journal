@@ -6,9 +6,6 @@ namespace App\Mcp\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\ReadGrant;
-use App\Agents\Values\Operation;
-use App\Bus\Attributes\Authorize;
-use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandRegistry;
 use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
@@ -16,7 +13,6 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Profiles\Values\StartProfileAuthority;
-use ReflectionClass;
 
 final readonly class JobPermissionReader implements JobPermissionReaderContract
 {
@@ -67,20 +63,9 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
 
     private function allowsCommand(StartProfileAuthority $authority, Dispatches $write): bool
     {
-        $declaration = $this->commands->operationOf($write->command);
+        $authorize = $this->commands->has($write->command) ? $this->commands->authorizeOf($write->command) : null;
 
-        if ($declaration !== null && ! $authority->profile->allowsOperation(
-            Operation::journal($declaration->name, $declaration->area, $declaration->accessTypes),
-        )) {
-            return false;
-        }
-
-        return $this->commands->authorizationOf($write->command)->map(
-            fn (CommandAuthorization $authorization): bool => $authority->profile->grants(
-                $authorization->policy,
-                $authorization->ability,
-            ),
-        )->getOrElse(false);
+        return $authorize !== null && $authority->admits($write->command, $authorize);
     }
 
     private function isVisible(JournalTool $tool): bool
@@ -97,26 +82,6 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
 
     private function allowsRead(JournalReadTool $tool): bool
     {
-        if (! $this->reads->allows($tool->readRequest())) {
-            return false;
-        }
-
-        if (! $this->actors->hasActor()) {
-            return true;
-        }
-
-        $authority = $this->actors->authority();
-
-        if (! $authority instanceof StartProfileAuthority) {
-            return true;
-        }
-
-        foreach (new ReflectionClass($tool)->getAttributes(Authorize::class) as $attribute) {
-            $declaration = $attribute->newInstance();
-
-            return $authority->profile->grants($declaration->policy, $declaration->ability);
-        }
-
-        return true;
+        return $this->reads->allows($tool->readRequest());
     }
 }

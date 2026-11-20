@@ -7,6 +7,7 @@ namespace App\Processes\Providers;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Links\Support\LinkTypeRegistry;
+use App\Operations\Enums\AccessType;
 use App\Processes\Admission\LineAdmission;
 use App\Processes\Classification\TreeClassifier;
 use App\Processes\Console\CommandTypeApproveCommand;
@@ -38,7 +39,6 @@ use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\VerificationTiming;
-use App\Processes\Enums\ProcessAbility;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Models\CommandRequest;
@@ -56,6 +56,7 @@ use App\Processes\Models\ResultReceipt;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleRevision;
 use App\Processes\Policies\ProcessAdministrationPolicy;
+use App\Processes\Policies\ProcessPolicy;
 use App\Processes\Rules\JournalClassifier;
 use App\Processes\Support\ActiveRules;
 use App\Processes\Support\CommandAliases;
@@ -109,10 +110,13 @@ final class ProcessesServiceProvider extends ServiceProvider
     public function boot(LinkTypeRegistry $links, PolicyCatalogue $policies): void
     {
         $policies->register('Core', new PolicyRegistration(
-            CommandRequest::class,
+            ProcessPolicy::class,
+            [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Execute, AccessType::Test],
+        ));
+        $policies->register('Core', new PolicyRegistration(
             ProcessAdministrationPolicy::class,
-            ProcessAbility::class,
-            ownerOnly: [ProcessAbility::Administer],
+            [AccessType::Create, AccessType::Edit, AccessType::Test],
+            ownerOnly: [AccessType::Create, AccessType::Edit, AccessType::Test],
         ));
         RequiredServices::check($this->app);
         $this->callAfterResolving(

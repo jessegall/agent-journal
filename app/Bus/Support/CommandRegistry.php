@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
-use App\Bus\Attributes\Operation;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Enums\CommandAdmissionStage;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandEntry;
@@ -16,8 +16,6 @@ use App\Bus\Pipes\RegisterCommands;
 use App\Bus\Values\EffectiveCommand;
 use App\Pipelines\Contracts\PipelineRunner;
 use PhpOption\None;
-use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * Every registered command with its handler, owner and middleware, checked once at start-up so a wrong declaration
@@ -84,13 +82,11 @@ final readonly class CommandRegistry
     }
 
     /**
-     * The policy and ability the command declared; none while it declares no Authorize yet.
-     *
-     * @return Option<CommandAuthorization>
+     * The policy and access an application command declares; null for a trusted command.
      */
-    public function authorizationOf(string $command): Option
+    public function authorizeOf(string $command): Authorize|null
     {
-        return Option::fromValue($this->entry($command)->authorization);
+        return $this->entry($command)->authorize;
     }
 
     /**
@@ -125,26 +121,7 @@ final readonly class CommandRegistry
     {
         $registered = $this->entry($call->name());
 
-        return new EffectiveCommand($call->command(), $registered->effect, $registered->operation, $stage);
-    }
-
-    public function operationOf(string $command): Operation|null
-    {
-        return $this->entry($command)->operation;
-    }
-
-    /**
-     * @return Option<Operation>
-     */
-    public function operationNamed(string $name): Option
-    {
-        foreach ($this->commands as $command) {
-            if ($command->operation?->name === $name) {
-                return new Some($command->operation);
-            }
-        }
-
-        return None::create();
+        return new EffectiveCommand($call->command(), $registered->effect, $registered->authorize, $stage);
     }
 
     public function requiresRequestKey(string $command): bool

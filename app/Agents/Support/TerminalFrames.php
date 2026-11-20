@@ -10,10 +10,10 @@ use App\Actors\Contracts\ServerClock;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\TerminalFrameData;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\Agent;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
+use App\Operations\Enums\AccessType;
 use PhpOption\Option;
 
 /**
@@ -37,7 +37,7 @@ final readonly class TerminalFrames
      */
     public function after(string $agentId, string $epoch, int $sequence): Option
     {
-        $this->authorizer->authorize(AgentPolicy::class, Agent::class, AgentAbility::Inspect);
+        $this->authorizer->authorize(AgentMaintenancePolicy::class, Agent::class, AccessType::Read);
         $viewer = ActorIdentity::of($this->actor->actor());
 
         return $this->views->frame($agentId, $viewer, $epoch, $sequence, $this->clock->now());

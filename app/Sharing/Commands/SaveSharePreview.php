@@ -6,14 +6,9 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Handlers\SaveSharePreviewHandler;
-use App\Sharing\Models\Share;
 use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\SavedSharePreview;
 
@@ -24,9 +19,8 @@ use App\Sharing\Support\SavedSharePreview;
  * @extends Command<SavedSharePreview>
  */
 #[HandledBy(SaveSharePreviewHandler::class)]
-#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
-#[Operation('save_share_preview', ResourceAreaType::JournalControl, AccessType::Create)]
-final readonly class SaveSharePreview extends Command implements AuthorizedCommand
+#[Authorize(SharingPolicy::class, AccessType::Create)]
+final readonly class SaveSharePreview extends Command
 {
     /**
      * @param  list<string>  $selectedIds
@@ -37,12 +31,4 @@ final readonly class SaveSharePreview extends Command implements AuthorizedComma
         public array $selectedIds,
         public string|null $gatewayConfigurationId = null,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Share::class;
-    }
 }

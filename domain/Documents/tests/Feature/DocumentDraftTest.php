@@ -16,7 +16,6 @@ use App\Agents\Values\ResourceRequest;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Models\Message;
 use App\Desks\Models\DeskRecord;
-use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\EditDocument;
@@ -98,9 +97,9 @@ final class DocumentDraftTest extends TestCase
     private function grantSource(TestStart $parent, string $documentId): void
     {
         $start = StartPolicy::mainOnHost(base_path());
-        $source = new ResourceRequest(ResourceAreaType::JournalContent, 'documents.document:'.$documentId);
+        $source = ResourceRequest::record('documents.document:'.$documentId);
         $grant = new OperationGrant('docs_drafts_read', [$source]);
-        $access = AccessPolicy::make([], [$grant], [], [], [], $start->access->processes);
+        $access = new AccessPolicy([], [], $start->access->processes, [$grant]);
 
         SessionPolicy::freeze($parent->session, new StartPolicy(
             $access,

@@ -22,7 +22,6 @@ use App\Communication\Contracts\InboxRegistration;
 use App\Desks\Console\InstallDesksCommand;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Contracts\RunClaims;
-use App\Desks\Enums\DeskAbility;
 use App\Desks\Models\DeskPreference;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Models\DeskSeat;
@@ -48,6 +47,7 @@ use App\Desks\Support\RegisteredAssignmentDestinations;
 use App\Desks\Support\RegisteredInboxDestinations;
 use App\Desks\Support\SeatedDesks;
 use App\Links\Support\LinkTypeRegistry;
+use App\Operations\Enums\AccessType;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -83,10 +83,9 @@ final class DesksServiceProvider extends ServiceProvider
         AssignmentRegistration $assignments,
     ): void {
         $policies->register('Core', new PolicyRegistration(
-            DeskRecord::class,
             DeskPolicy::class,
-            DeskAbility::class,
-            coordinatorOnly: [DeskAbility::Arrange],
+            [AccessType::Create, AccessType::Edit],
+            ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
         $links->register([
             DeskRecord::LINK_TYPE => DeskRecord::class,

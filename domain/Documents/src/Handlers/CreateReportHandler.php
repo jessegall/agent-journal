@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Agents\Contracts\SessionProvenance;
-use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordLinker;
 use App\Text\Support\MarkdownText;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Enums\UploadType;
+use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\DocumentBody;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class CreateReportHandler implements CommandHandler
+final readonly class CreateReportHandler extends DocumentCommandHandler
 {
     public function __construct(
         private Dispatcher $events,

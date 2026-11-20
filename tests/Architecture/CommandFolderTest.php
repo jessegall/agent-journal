@@ -81,7 +81,7 @@ final class CommandFolderTest extends TestCase
         $registry = $this->app->make(CommandRegistry::class);
         $undeclared = array_filter(
             array_keys($registry->handlerMap()),
-            fn (string $command) => $registry->authorizationOf($command)->isEmpty()
+            fn (string $command) => $registry->authorizeOf($command) === null
                 && $registry->entryOf($command) === CommandEntry::Application,
         );
 

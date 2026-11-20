@@ -29,6 +29,8 @@ use App\Actors\Contracts\MessageSender;
 use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Contracts\PolicyProvider;
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Contracts\RecordPolicy;
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Contracts\SeatedActor;
 use App\Actors\Contracts\TargetAuthorizer;
@@ -36,7 +38,7 @@ use App\Actors\Contracts\UserPresences;
 use App\Actors\Contracts\WorkStackProvider;
 use App\Actors\Contracts\WorkStacks;
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\AbilityNotRegistered;
+use App\Actors\Enums\ReadEntitlementType;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\ActorNotAllowed;
@@ -47,6 +49,7 @@ use App\Actors\Exceptions\AuthorizerProviderRepeated;
 use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Actors\Exceptions\CrossOwnerReadRefused;
 use App\Actors\Exceptions\EngineActorRequired;
+use App\Actors\Exceptions\GrantNotRegistered;
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Exceptions\PolicyRegistrationConflict;
 use App\Actors\Exceptions\SystemActorRequired;
@@ -57,9 +60,10 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorLabelSet;
 use App\Actors\Support\CurrentUser;
 use App\Actors\Support\UnrestrictedAuthorizer;
-use App\Actors\Values\AbilityRequirement;
+use App\Actors\Values\AccessRequirement;
 use App\Actors\Values\OwnerAuthority;
 use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\ReadEntitlement;
 use App\Actors\Values\TrustedEntryAuthority;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Attributes\InPath;
@@ -202,6 +206,7 @@ use App\Agents\Enums\RecoveryAction;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\ReservationState;
+use App\Agents\Enums\ResourceType;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\ScreenReportRefusal;
 use App\Agents\Enums\StartDisposition;
@@ -295,8 +300,8 @@ use App\Agents\Support\StartRequest;
 use App\Agents\Support\TerminalViewReceipt;
 use App\Agents\Values\AccessDecision;
 use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ClassGrant;
 use App\Agents\Values\HelperImportReceipt;
+use App\Agents\Values\HostAccess;
 use App\Agents\Values\MenuStep;
 use App\Agents\Values\NavigationAnswer;
 use App\Agents\Values\NavigationRound;
@@ -399,12 +404,9 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\OneLine;
-use App\Bus\Attributes\Operation as CommandOperationDeclaration;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\AuthorizedCommand;
-use App\Bus\Contracts\ClassLevelAbilities;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
@@ -413,6 +415,7 @@ use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Contracts\OperationResolver;
+use App\Bus\Contracts\RecordCommand;
 use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Contracts\RequestKey;
 use App\Bus\Enums\CommandEffectType;
@@ -471,6 +474,7 @@ use App\Comments\Events\CommentPosted;
 use App\Comments\Exceptions\CommentUnavailable;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
+use App\Comments\Policies\CommentPolicy;
 use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
@@ -683,9 +687,7 @@ use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Operations\Exceptions\UnknownAccessType;
-use App\Operations\Exceptions\UnknownResourceArea;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\OpenCommandRequest;
@@ -796,11 +798,12 @@ use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Enums\SupervisorCoverageType;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\ProfileRevisionRevoked;
-use App\Profiles\Exceptions\AbilityNotWithheld;
 use App\Profiles\Exceptions\AccountLabelInvalid;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Exceptions\BuiltInProfileMissing;
+use App\Profiles\Exceptions\GrantNotWithheld;
+use App\Profiles\Exceptions\GrantShapeInvalid;
 use App\Profiles\Exceptions\ProfileCannotCoordinate;
 use App\Profiles\Exceptions\ProfileFieldUnknown;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
@@ -813,18 +816,18 @@ use App\Profiles\Exceptions\SignInAttemptMissing;
 use App\Profiles\Exceptions\SignInAttemptStale;
 use App\Profiles\Exceptions\SignInCodeInvalid;
 use App\Profiles\Support\BaseOverride;
-use App\Profiles\Support\ClassRule;
 use App\Profiles\Support\OperationRule;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
-use App\Profiles\Values\AbilityGrant;
+use App\Profiles\Support\RootRule;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\AskTypeKey;
 use App\Profiles\Values\DraftExpectations;
 use App\Profiles\Values\ExpectedDraftRevision;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\NamedCommand;
+use App\Profiles\Values\PolicyGrant;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
@@ -835,6 +838,7 @@ use App\Profiles\Values\ProfileRevisionReference;
 use App\Profiles\Values\ProfileSelection;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Profiles\Values\ProfileStartPolicy;
+use App\Profiles\Values\ScopedRead;
 use App\Profiles\Values\ScriptDiff;
 use App\Profiles\Values\ScriptSource;
 use App\Profiles\Values\SignInStarted;
@@ -844,7 +848,7 @@ use App\Profiles\Values\SupervisorOverride;
 use App\Profiles\Values\SupervisorProfile;
 use App\Profiles\Values\SupervisorRoutes;
 use App\Profiles\Values\SupervisorTarget;
-use App\Profiles\Values\WithheldAbility;
+use App\Profiles\Values\WithheldGrant;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
 use App\Programs\Exceptions\ProviderKeyInvalid;
@@ -1028,12 +1032,12 @@ use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RestoreSkill;
 use App\Skills\Commands\RetireSkill;
 use App\Skills\Commands\ReviseSkill;
-use App\Skills\Conditions\Abilities;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Conditions\Environments;
 use App\Skills\Conditions\Everyone;
+use App\Skills\Conditions\Grants;
 use App\Skills\Conditions\Named;
 use App\Skills\Conditions\Not;
 use App\Skills\Conditions\ProfileBases;
@@ -1186,6 +1190,7 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                ReadEntitlements::class,
                 JobPermissionReader::class,
                 TextFields::class,
                 Continuations::class,
@@ -1249,6 +1254,7 @@ final class CoreApi
                 ActorProviderRegistration::class,
                 ActorLabels::class,
                 Policy::class,
+                RecordPolicy::class,
                 PolicyCatalogue::class,
                 ActorWorkStacks::class,
                 WorkRecordState::class,
@@ -1276,9 +1282,8 @@ final class CoreApi
                 WorkStacks::class,
                 PolicyProvider::class,
                 WorkStackProvider::class,
-                AuthorizedCommand::class,
+                RecordCommand::class,
                 MessageCommand::class,
-                ClassLevelAbilities::class,
                 Authorizer::class,
                 AuthorizerProvider::class,
                 AuthorizerProviderRegistration::class,
@@ -1391,6 +1396,8 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                TextPreview::class,
+                CommentPolicy::class,
                 SupervisorTarget::class,
                 SupervisorOverride::class,
                 ExpectedDraftRevision::class,
@@ -1480,12 +1487,10 @@ final class CoreApi
                 ConversationModeType::class,
                 StartDisposition::class,
                 AccessType::class,
-                ResourceAreaType::class,
                 AccessRuleType::class,
                 ResourceRequest::class,
                 PolicyOperation::class,
                 OperationGrant::class,
-                ClassGrant::class,
                 AccessDecision::class,
                 AccessPolicy::class,
                 ProcessGrants::class,
@@ -1537,7 +1542,6 @@ final class CoreApi
                 TextSections::class,
                 TextSelection::class,
                 MarkdownText::class,
-                TextPreview::class,
                 TextReading::class,
                 TextVersion::class,
                 TextRange::class,
@@ -1677,7 +1681,7 @@ final class CoreApi
                 ScreenReportRefusal::class,
                 ToolOutcome::class,
                 ActorIdentity::class,
-                AbilityRequirement::class,
+                AccessRequirement::class,
                 PolicyRegistration::class,
                 AssigneeIdentity::class,
                 AssignmentRequest::class,
@@ -1737,7 +1741,6 @@ final class CoreApi
                 MiddlewareDeclaration::class,
                 Authorize::class,
                 Effect::class,
-                CommandOperationDeclaration::class,
                 CommandEffectType::class,
                 CommandCall::class,
                 CurrentUser::class,
@@ -1858,8 +1861,13 @@ final class CoreApi
                 ProfileSnapshot::class,
                 ProfileStartPolicy::class,
                 ProfileAuthorization::class,
-                WithheldAbility::class,
-                AbilityGrant::class,
+                WithheldGrant::class,
+                PolicyGrant::class,
+                ReadEntitlement::class,
+                ScopedRead::class,
+                HostAccess::class,
+                ResourceType::class,
+                ReadEntitlementType::class,
                 AuthorizationType::class,
                 ProfileProvenance::class,
                 ProfileSelection::class,
@@ -1867,7 +1875,7 @@ final class CoreApi
                 ProposedProfile::class,
                 PolicyOverride::class,
                 BaseOverride::class,
-                ClassRule::class,
+                RootRule::class,
                 OperationRule::class,
                 ProfileChangeType::class,
                 FieldOrigin::class,
@@ -1880,7 +1888,7 @@ final class CoreApi
                 SkillOwner::class,
                 SkillOrigin::class,
                 MarkdownParts::class,
-                Abilities::class,
+                Grants::class,
                 Profiles::class,
                 ProfileBases::class,
                 Programs::class,
@@ -2040,6 +2048,7 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                GrantShapeInvalid::class,
                 EndpointDeclarationInvalid::class,
                 CommandStopped::class,
                 CallFailed::class,
@@ -2126,7 +2135,7 @@ final class CoreApi
                 UserActorRequired::class,
                 CrossOwnerReadRefused::class,
                 ActorNotAllowed::class,
-                AbilityNotRegistered::class,
+                GrantNotRegistered::class,
                 ConsoleOwnerMissing::class,
                 InboxUnavailable::class,
                 AnswerImpossible::class,
@@ -2232,7 +2241,6 @@ final class CoreApi
                 ImageUnverified::class,
                 CapacityUnavailable::class,
                 UnknownAccessType::class,
-                UnknownResourceArea::class,
                 AccessPolicyInvalid::class,
                 StopConditionsInvalid::class,
                 ExecutionPolicyInvalid::class,
@@ -2243,7 +2251,7 @@ final class CoreApi
                 ContinuationStale::class,
                 ProfileKeyInvalid::class,
                 ProfileMissing::class,
-                AbilityNotWithheld::class,
+                GrantNotWithheld::class,
                 ProfileRetired::class,
                 ProfileRevisionUnreadable::class,
                 ProfileFieldUnknown::class,

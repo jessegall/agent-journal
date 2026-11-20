@@ -19,6 +19,7 @@ use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
 use App\Ui\Contracts\NavigationProvider;
@@ -83,7 +84,6 @@ use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\CloseCause;
-use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\DraftConflict;
@@ -109,6 +109,9 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
+use Domain\Documents\Policies\DocumentPolicy;
+use Domain\Documents\Policies\ReportPolicy;
+use Domain\Documents\Policies\UploadPolicy;
 use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Resolvers\DocumentWindowResolver;
 use Domain\Documents\Resolvers\LibraryWindowResolver;
@@ -248,12 +251,26 @@ final class DocumentsDomain extends Domain implements
 
     public function policies(): array
     {
-        return [new PolicyRegistration(
-            Document::class,
-            DocumentAdministrationPolicy::class,
-            DocumentAbility::class,
-            ownerOnly: [DocumentAbility::Administer, DocumentAbility::ChangeOthersRecords],
-        )];
+        return [
+            new PolicyRegistration(
+                DocumentPolicy::class,
+                [AccessType::Create, AccessType::Edit],
+                notForReadOnly: [AccessType::Create, AccessType::Edit],
+            ),
+            new PolicyRegistration(
+                DocumentAdministrationPolicy::class,
+                [AccessType::Edit],
+                ownerOnly: [AccessType::Edit],
+            ),
+            new PolicyRegistration(
+                ReportPolicy::class,
+                [AccessType::Create, AccessType::Edit],
+            ),
+            new PolicyRegistration(
+                UploadPolicy::class,
+                [AccessType::Create, AccessType::Edit],
+            ),
+        ];
     }
 
     public function commands(): array

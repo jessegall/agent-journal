@@ -8,12 +8,12 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Data\RuntimeStatus;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
+use App\Operations\Enums\AccessType;
 use App\Reads\Support\ReadBuilder;
 use Carbon\CarbonImmutable;
 
@@ -83,6 +83,6 @@ final readonly class RuntimeRecords implements RuntimeResolver
      */
     private function inspectsAgents(): bool
     {
-        return $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AgentAbility::Inspect]) !== [];
+        return $this->authorizer->filterActions(AgentMaintenancePolicy::class, Agent::class, [AccessType::Read]) !== [];
     }
 }

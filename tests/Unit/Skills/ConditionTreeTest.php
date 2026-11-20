@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Skills;
 
-use App\Assignments\Enums\AssignmentAbility;
-use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
+use App\Operations\Enums\AccessType;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Support\BuiltInAuthorizations;
-use App\Profiles\Values\AbilityGrant;
+use App\Profiles\Values\PolicyGrant;
 use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
@@ -277,7 +277,7 @@ final class ConditionTreeTest extends TestCase
             'requiredSkills' => [],
             'start' => TestStartPolicies::for(ProfileBase::mainAgent()),
             'authorization' => new ProfileAuthorization(AuthorizationType::Policies, [
-                new AbilityGrant(AssignmentPolicy::class, AssignmentAbility::Dispatch),
+                new PolicyGrant(AssignmentRecipientPolicy::class, AccessType::Delegate),
             ]),
         ]);
 

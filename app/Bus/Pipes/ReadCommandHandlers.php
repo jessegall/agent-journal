@@ -8,7 +8,6 @@ use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\Effect;
 use App\Bus\Attributes\Entry;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Attributes\RetainedActorRequestKey;
@@ -37,7 +36,6 @@ final readonly class ReadCommandHandlers implements Pipe
     private const array SINGLE_ATTRIBUTES = [
         RepeatableRead::class,
         Effect::class,
-        Operation::class,
         RequiresRequestKey::class,
         RetainedActorRequestKey::class,
         Authorize::class,
@@ -66,7 +64,7 @@ final readonly class ReadCommandHandlers implements Pipe
                 }
 
                 $handlers[$handler] = true;
-                $commands[$key] = new DeclaredCommand($command, $owner, $handler);
+                $commands[$key] = DeclaredCommand::read($command, $owner, $handler);
             }
         }
 

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Bus\Attributes;
 
 use App\Actors\Contracts\Policy;
+use App\Operations\Enums\AccessType;
 use Attribute;
-use BackedEnum;
 
 /**
- * The policy and ability a command is authorized by; the command names its subject through AuthorizedCommand.
+ * The one declaration of an application command: the policy that guards it and the access it asks for.
  */
 #[Attribute(Attribute::TARGET_CLASS)]
 final readonly class Authorize
@@ -17,5 +17,15 @@ final readonly class Authorize
     /**
      * @param  class-string<Policy>  $policy
      */
-    public function __construct(public string $policy, public BackedEnum $ability) {}
+    public function __construct(public string $policy, public AccessType $access) {}
+
+    /**
+     * The declaration as an audit line's fields: the policy, the model it guards and the access.
+     *
+     * @return array{policy: class-string<Policy>, model: string, access: string}
+     */
+    public function auditFields(): array
+    {
+        return ['policy' => $this->policy, 'model' => $this->policy::model(), 'access' => $this->access->value];
+    }
 }

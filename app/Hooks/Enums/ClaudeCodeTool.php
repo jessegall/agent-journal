@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Hooks\Enums;
 
+use App\Agents\Enums\ResourceType;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\ProgramToolInput;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
 /**
  * The Claude Code tools the adapter knows, and what each one is to the journal.
@@ -112,19 +112,19 @@ enum ClaudeCodeTool: string
      */
     public function operation(ProgramToolInput $input): Operation
     {
-        [$access, $area, $target] = match ($this) {
-            self::Read => [[AccessType::Read], ResourceAreaType::Workspace, $input->firstText('file_path')],
+        [$access, $type, $target] = match ($this) {
+            self::Read => [[AccessType::Read], ResourceType::Path, $input->firstText('file_path')],
             self::Glob, self::Grep, self::LS => [
                 [AccessType::Search],
-                ResourceAreaType::Workspace,
+                ResourceType::Path,
                 $input->textArgument('path') ?? '.',
             ],
             self::WebFetch => [
                 [AccessType::Read, AccessType::Network],
-                ResourceAreaType::Internet,
+                ResourceType::Destination,
                 $input->firstText('url'),
             ],
-            self::WebSearch => [[AccessType::Read, AccessType::Network], ResourceAreaType::Internet, 'web search'],
+            self::WebSearch => [[AccessType::Read, AccessType::Network], ResourceType::Destination, 'web search'],
             self::Bash, self::Edit, self::MultiEdit, self::Write, self::NotebookEdit, self::TodoWrite, self::ToolSearch,
             self::ListMcpResources, self::ReadMcpResource, self::ReadMcpResourceDirectory => $this->refuseOperation(),
         };
@@ -133,7 +133,7 @@ enum ClaudeCodeTool: string
             self::SURFACE,
             sprintf('claude:%s', $this->value),
             $access,
-            [new ResourceRequest($area, $target)],
+            [new ResourceRequest($type, $target)],
             [$target],
             self::DECLARATION_REVISION,
         );

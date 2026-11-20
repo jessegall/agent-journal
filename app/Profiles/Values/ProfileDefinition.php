@@ -57,6 +57,6 @@ final readonly class ProfileDefinition
 
     public function supervisorProfile(): SupervisorProfile
     {
-        return new SupervisorProfile($this->key, $this->supervisor, $this->start->access);
+        return new SupervisorProfile($this->key, $this->supervisor, $this->authorization);
     }
 }

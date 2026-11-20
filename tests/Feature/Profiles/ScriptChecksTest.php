@@ -43,7 +43,7 @@ SCRIPT, ['tests' => [
             'executable' => '/usr/local/bin/composer',
             'arguments' => ['test:affected'],
             'directory' => 'workspace',
-            'effects' => ['read:workspace', 'test:workspace'],
+            'effects' => ['read', 'test'],
             'timeout_seconds' => 600,
         ]]);
 

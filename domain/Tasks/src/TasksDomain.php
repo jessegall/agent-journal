@@ -25,6 +25,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
@@ -49,7 +50,6 @@ use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
-use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -59,6 +59,7 @@ use Domain\Tasks\Mcp\TaskSearch;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Domain\Tasks\Policies\TaskPolicy;
+use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Resolvers\TaskAssignments;
 use Domain\Tasks\Resolvers\TaskRecords;
 use Domain\Tasks\Resolvers\TaskRunAssignments;
@@ -137,7 +138,16 @@ final class TasksDomain extends Domain implements
 
     public function policies(): array
     {
-        return [new PolicyRegistration(Task::class, TaskPolicy::class, TaskAbility::class)];
+        return [
+            new PolicyRegistration(
+                TaskPolicy::class,
+                [AccessType::Read, AccessType::Create, AccessType::Edit],
+            ),
+            new PolicyRegistration(
+                TaskRunPolicy::class,
+                [AccessType::Create, AccessType::Edit],
+            ),
+        ];
     }
 
     public function states(): array

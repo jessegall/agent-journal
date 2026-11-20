@@ -11,13 +11,12 @@ use App\Agents\Stored\StoredStopConditions;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ClassGrant;
+use App\Agents\Values\HostAccess;
 use App\Agents\Values\OperationGrant;
 use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Processes\Values\ProcessGrants;
 use Tests\TestCase;
 
@@ -29,20 +28,18 @@ final class StoredPolicyShapesTest extends TestCase
 {
     public function test_an_access_policy_reads_back_as_it_was_stored(): void
     {
-        $area = ResourceAreaType::cases()[0];
-        $access = AccessPolicy::make(
-            [new ClassGrant($area, [AccessType::Read, AccessType::Execute])],
-            [new OperationGrant('tasks.show', [new ResourceRequest($area, 'tasks/1')])],
-            ['tasks.delete'],
-            ['/workspace'],
-            ['example.test'],
+        $access = new AccessPolicy(
+            [HostAccess::root('.', [AccessType::Read, AccessType::Execute])],
+            [HostAccess::destination('example.test', [AccessType::Network])],
             ProcessGrants::readingOnly(),
+            [new OperationGrant('tasks.show', [ResourceRequest::record('tasks/1')])],
+            ['tasks.delete'],
         );
 
         $stored = StoredAccessPolicy::fromAccessPolicy($access)->toArray();
         $read = StoredAccessPolicy::from($stored)->toAccessPolicy();
 
-        $this->assertSame(['read', 'execute'], $stored['class_grants'][0]['access']);
+        $this->assertSame(['read', 'execute'], $stored['paths'][0]['access']);
         $this->assertEquals($access, $read);
     }
 

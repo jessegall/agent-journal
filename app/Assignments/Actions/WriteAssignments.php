@@ -13,12 +13,11 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Assignments\Contracts\MaintenanceAssignmentWriter;
-use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentRootFinished;
-use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
 use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AdmittedAssignment;
 use App\Assignments\Support\AssigneeIdentity;
@@ -30,6 +29,7 @@ use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\JournalAssignment;
+use App\Operations\Enums\AccessType;
 use App\Records\Support\RecordIdentity;
 use Closure;
 
@@ -251,7 +251,11 @@ final readonly class WriteAssignments implements
      */
     private function assertMayUnassign(): void
     {
-        $this->authorizer->authorize(AssignmentPolicy::class, AssignmentPolicy::class, AssignmentAbility::Unassign);
+        $this->authorizer->authorize(
+            AssignmentRecipientPolicy::class,
+            AssignmentRecipientPolicy::model(),
+            AccessType::Delete,
+        );
     }
 
     private function unchangedIfHeldBy(Assignment $current, AssigneeIdentity $recipient): AssignmentResult

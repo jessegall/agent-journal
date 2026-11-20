@@ -6,13 +6,13 @@ namespace Domain\Chat\Handlers;
 
 use App\Actors\Support\ActorIdentity;
 use App\Communication\Exceptions\InboxUnavailable;
-use App\Contracts\CommandHandler;
 use App\Records\Exceptions\RecordUnavailable;
 use Domain\Chat\Commands\RestoreDockedRecord;
+use Domain\Chat\Handlers\Support\ChatCommandHandler;
 use Domain\Chat\Models\DockedRecord;
 use Domain\Chat\Support\DockableRecords;
 
-final readonly class RestoreDockedRecordHandler implements CommandHandler
+final readonly class RestoreDockedRecordHandler extends ChatCommandHandler
 {
     public function __construct(
         private DockableRecords $dockable,

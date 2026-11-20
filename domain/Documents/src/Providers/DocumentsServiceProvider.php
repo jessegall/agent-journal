@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionProvenance;
 use App\Autoload\Support\FolderClasses;
@@ -55,8 +57,9 @@ final class DocumentsServiceProvider extends ServiceProvider
         $this->app->scoped(ReportReader::class, ReportPages::class);
     }
 
-    public function boot(LinkTypeRegistry $links): void
+    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
     {
+        $reads->declare('docs_drafts_read', ReadEntitlement::named());
         $links->register([
             Document::LINK_TYPE => Document::class,
             DocumentRevision::LINK_TYPE => DocumentRevision::class,

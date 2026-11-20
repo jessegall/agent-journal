@@ -34,11 +34,13 @@ use Domain\Tasks\Enums\TaskTextLimit;
 use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
+use Domain\Tasks\Policies\TaskRunPolicy;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Contracts\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -69,6 +71,7 @@ use PhpOption\Some;
  * @property Carbon|null $updated_at
  */
 #[UseFactory(TaskFactory::class)]
+#[UsePolicy(TaskRunPolicy::class)]
 #[Fillable([
     'title',
     'brief',

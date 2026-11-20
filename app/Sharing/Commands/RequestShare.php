@@ -6,16 +6,11 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Handlers\RequestShareHandler;
-use App\Sharing\Models\Share;
-use App\Sharing\Policies\SharingPolicy;
+use App\Sharing\Policies\ShareRequestPolicy;
 use App\Sharing\Support\ShareProposalStatus;
 
 /**
@@ -25,22 +20,13 @@ use App\Sharing\Support\ShareProposalStatus;
  * @extends Command<ShareProposalStatus>
  */
 #[HandledBy(RequestShareHandler::class)]
-#[Authorize(SharingPolicy::class, SharingAbility::Request)]
+#[Authorize(ShareRequestPolicy::class, AccessType::Create)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-#[Operation('request_share', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class RequestShare extends Command implements AuthorizedCommand
+final readonly class RequestShare extends Command
 {
     public function __construct(
         public string $rootType,
         public string $rootId,
         public string $requestKey,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Share::class;
-    }
 }

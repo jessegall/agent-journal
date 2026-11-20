@@ -9,16 +9,18 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ClassGrant;
+use App\Agents\Values\HostAccess;
 use App\Agents\Values\OperationGrant;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
-use App\Operations\Enums\ResourceAreaType;
+use App\Bus\Contracts\Command;
+use App\Bus\Support\CommandRegistry;
 use App\Profiles\Contracts\OperationNames;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileDefinition;
+use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileProvenance;
 use App\Profiles\Values\ProfileStartPolicy;
 
@@ -30,7 +32,11 @@ use App\Profiles\Values\ProfileStartPolicy;
  */
 final readonly class PolicyResolver
 {
-    public function __construct(private OperationNames $operations, private PolicyCatalogue $policies) {}
+    public function __construct(
+        private OperationNames $operations,
+        private PolicyCatalogue $policies,
+        private CommandRegistry $commands,
+    ) {}
 
     /**
      * @throws ProfilePolicyRefused
@@ -73,7 +79,8 @@ final readonly class PolicyResolver
             $profile->requiredSkills,
             $start,
             BuiltInAuthorizations::for($profile->base, $this->policies->grantable())
-                ->without($profile->withheldAbilities),
+                ->without($profile->withheldGrants)
+                ->denying($this->applicationCommands($profile->key, $profile->deniedCommands)),
             $profile->supervisor,
             $profile->instances,
         );
@@ -84,13 +91,12 @@ final readonly class PolicyResolver
      */
     private function access(ProposedProfile $profile, PolicyOverride $project): AccessPolicy
     {
-        $classes = [];
-
         $defaults = $profile->base->defaultAccess();
+        $rules = [];
 
-        foreach ($defaults->classGrants as $grant) {
-            foreach ($grant->accessTypes as $access) {
-                $classes[] = new ClassRule($access, $grant->area);
+        foreach ($defaults->paths as $scope) {
+            foreach ($scope->accesses as $access) {
+                $rules[] = new RootRule($access, $scope->scope);
             }
         }
 
@@ -98,7 +104,7 @@ final readonly class PolicyResolver
         $denials = [];
 
         foreach ([$project, $profile->override] as $override) {
-            $classes = $override->appliedTo($classes);
+            $rules = $override->appliedTo($rules);
             $grants = [
                 ...array_filter($grants, fn (OperationGrant $grant) => ! in_array(
                     $grant->operation,
@@ -110,15 +116,14 @@ final readonly class PolicyResolver
             $denials = [...$denials, ...$override->denyOperations];
         }
 
-        $this->requireWithinCeiling($profile, $classes);
+        $this->assertWithinCeiling($profile, $rules);
 
-        return AccessPolicy::make(
-            self::classGrants($classes),
+        return new AccessPolicy(
+            self::roots($rules),
+            $defaults->destinations,
+            $defaults->processes,
             $grants,
             array_values(array_unique($denials)),
-            [],
-            [],
-            $defaults->processes,
         );
     }
 
@@ -185,44 +190,39 @@ final readonly class PolicyResolver
     }
 
     /**
-     * @param  list<ClassRule>  $classes
+     * @param  list<RootRule>  $rules
      *
      * @throws ProfilePolicyRefused
      */
-    private function requireWithinCeiling(ProposedProfile $profile, array $classes): void
+    private function assertWithinCeiling(ProposedProfile $profile, array $rules): void
     {
-        foreach ($classes as $class) {
-            if ($class->area === ResourceAreaType::Protected) {
+        foreach ($rules as $rule) {
+            if ($rule->isProtected()) {
                 throw ProfilePolicyRefused::protectedArea($profile->key);
             }
 
-            $writes = $class->area->hasWorkspaceFiles() && $class->access->changesFiles();
-
-            if ($writes && ! $profile->base->mayChangeWorkspaceFiles()) {
+            if ($rule->access->changesFiles() && ! $profile->base->mayChangeWorkspaceFiles()) {
                 throw ProfilePolicyRefused::readOnlyCeiling($profile->key);
             }
         }
     }
 
     /**
-     * @param  list<ClassRule>  $classes
-     * @return list<ClassGrant>
+     * @param  list<RootRule>  $rules
+     * @return list<HostAccess>
      */
-    private static function classGrants(array $classes): array
+    private static function roots(array $rules): array
     {
-        $areas = [];
+        $accesses = [];
 
-        foreach ($classes as $class) {
-            $areas[$class->area->value][] = $class->access;
+        foreach ($rules as $rule) {
+            $accesses[$rule->root][] = $rule->access;
         }
 
-        $grants = [];
-
-        foreach ($areas as $area => $access) {
-            $grants[] = new ClassGrant(ResourceAreaType::from($area), $access);
-        }
-
-        return $grants;
+        return array_map(
+            fn (string $root) => HostAccess::root($root, $accesses[$root]),
+            array_keys($accesses),
+        );
     }
 
     private static function originOf(PolicyOverride $project, PolicyOverride $profile): PolicyOriginType
@@ -232,5 +232,27 @@ final readonly class PolicyResolver
             $project->changesAccess() => PolicyOriginType::ProjectType,
             default => PolicyOriginType::GlobalDefault,
         };
+    }
+
+    /**
+     * The denied commands, each a registered application command; an unknown or trusted one is refused.
+     *
+     * @param  list<string>  $commands
+     * @return list<class-string<Command<mixed>>>
+     *
+     * @throws ProfilePolicyRefused
+     */
+    private function applicationCommands(ProfileKey $key, array $commands): array
+    {
+        foreach ($commands as $command) {
+            if (! $this->commands->has($command) || $this->commands->authorizeOf($command) === null) {
+                throw ProfilePolicyRefused::unknownCommand($key, $command);
+            }
+        }
+
+        /**
+         * @var list<class-string<Command<mixed>>> $commands
+         */
+        return $commands;
     }
 }

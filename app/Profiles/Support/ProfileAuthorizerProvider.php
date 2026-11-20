@@ -10,13 +10,17 @@ use App\Actors\Contracts\AuthorizerProvider;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\ActorNotAllowed;
+use App\Actors\Support\UnrestrictedAuthorizer;
 use App\Agents\Models\AgentSession;
 use App\Profiles\Contracts\ProfileResolver;
+use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Exceptions\AgentProfileMissing;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
+use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\StartProfileAuthority;
+use Illuminate\Contracts\Auth\Access\Gate;
 
 /**
  * An agent's authorizer comes from the exact profile revision its start was pinned to, loaded once when the request
@@ -28,6 +32,7 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
         private CurrentActor $actors,
         private ProfileResolver $profiles,
         private PolicyCatalogue $catalogue,
+        private Gate $gate,
     ) {}
 
     /**
@@ -41,7 +46,7 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
             throw AgentProfileMissing::forAuthority($authority->description());
         }
 
-        return $authority->profile->authorization->authorizer($this->catalogue);
+        return $this->authorizerOf($authority->profile->authorization);
     }
 
     /**
@@ -67,6 +72,17 @@ final readonly class ProfileAuthorizerProvider implements AuthorizerProvider
             );
         }
 
-        return $profile->authorization->authorizer($this->catalogue);
+        return $this->authorizerOf($profile->authorization);
+    }
+
+    /**
+     * The strategy a frozen profile's authorization asks for: everything, or its pairs through the policies.
+     */
+    private function authorizerOf(ProfileAuthorization $authorization): Authorizer
+    {
+        return match ($authorization->type) {
+            AuthorizationType::AllowsEverything => new UnrestrictedAuthorizer(),
+            AuthorizationType::Policies => new PolicyAuthorizer($authorization, $this->catalogue, $this->gate),
+        };
     }
 }

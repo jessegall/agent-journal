@@ -6,14 +6,9 @@ namespace Domain\Plans\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\RecordPhaseCheckHandler;
-use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
 
 /**
@@ -23,17 +18,8 @@ use Domain\Plans\Policies\PlanPolicy;
  * @extends Command<string>
  */
 #[HandledBy(RecordPhaseCheckHandler::class)]
-#[Authorize(PlanPolicy::class, PlanAbility::Work)]
-#[Operation('record_phase_check', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class RecordPhaseCheck extends Command implements AuthorizedCommand
+#[Authorize(PlanPolicy::class, AccessType::Edit)]
+final readonly class RecordPhaseCheck extends Command
 {
     public function __construct(public string $phaseId, public string $receiptId) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Plan::class;
-    }
 }

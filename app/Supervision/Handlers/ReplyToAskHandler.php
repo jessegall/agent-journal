@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Supervision\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Values\OperationKey;
 use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Contracts\CommandHandler;
 use App\Supervision\Commands\ReplyToAsk;
@@ -39,8 +38,7 @@ final readonly class ReplyToAskHandler implements CommandHandler
             return $this->answerLate($ask, ActorIdentity::of($command->dispatchedBy()), $body);
         }
 
-        $operation = new OperationKey(CoreAskType::Question->operation());
-        $this->admission->requireCurrent($command->ask, $operation, $ask->version);
+        $this->admission->requireCurrent($command->ask, CoreAskType::Question->requiredCommand(), $ask->version);
 
         $hop = AskHop::currentFor($ask);
         $this->attention->retainReply($ask, $hop, $body);

@@ -6,7 +6,7 @@ namespace App\Actors\Contracts;
 
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorIdentity;
-use BackedEnum;
+use App\Operations\Enums\AccessType;
 
 /**
  * Authorization of another actor than the caller, such as the agent a message asks to answer: the target's own
@@ -20,20 +20,18 @@ interface TargetAuthorizer
      *
      * @throws ActorNotAllowed
      */
-    public function authorize(ActorIdentity $target, string $policy, object|string $subject, BackedEnum $ability): void;
+    public function authorize(ActorIdentity $target, string $policy, object|string $subject, AccessType $access): void;
 
     /**
-     * @template TAbility of BackedEnum
-     *
      * @param  class-string<Policy>  $policy
      * @param  object|class-string  $subject
-     * @param  list<TAbility>  $abilities
-     * @return list<TAbility>
+     * @param  list<AccessType>  $accesses
+     * @return list<AccessType>
      */
     public function filterActions(
         ActorIdentity $target,
         string $policy,
         object|string $subject,
-        array $abilities,
+        array $accesses,
     ): array;
 }

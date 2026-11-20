@@ -13,11 +13,10 @@ use App\CoreCommands;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use App\Numbers\Support\NumberedTypeRegistry;
+use App\Operations\Enums\AccessType;
 use App\Pipelines\Contracts\PipelineRunner;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Bus\Enums\FixtureAbility;
-use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Bus\Policies\FixturePolicy;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Ledger\LedgerDomain;
@@ -81,11 +80,11 @@ trait InstallsCommandModules
             )
             : $owner, $owners);
 
+        $this->registerPoliciesOf($domains, [CardsDomain::class, LedgerDomain::class, NotesDomain::class]);
         $this->app->instance(CommandRegistry::class, CommandRegistry::from(
             [CoreCommands::owner(), ...$owners],
             $this->app->make(PipelineRunner::class),
         ));
-        $this->registerPoliciesOf($domains, [CardsDomain::class, LedgerDomain::class, NotesDomain::class]);
         $this->app->forgetScopedInstances();
     }
 
@@ -98,12 +97,12 @@ trait InstallsCommandModules
     private function registerPoliciesOf(DomainRegistry $domains, array $moduleClasses): void
     {
         $catalogue = $this->app->make(PolicyCatalogue::class);
-        $registered = array_map(fn (PolicyRegistration $policy) => $policy->policy, $catalogue->grantable());
+        $registered = array_map(fn (PolicyRegistration $policy) => $policy->policy, $catalogue->registrations());
 
         if (! in_array(FixturePolicy::class, $registered, true)) {
             $catalogue->register(
                 'Core',
-                new PolicyRegistration(FixtureWork::class, FixturePolicy::class, FixtureAbility::class),
+                new PolicyRegistration(FixturePolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete]),
             );
         }
 
@@ -132,6 +131,7 @@ trait InstallsCommandModules
     {
         $domains = $this->domainsWith(...$moduleClasses);
         $this->app->instance(DomainRegistry::class, $domains);
+        $this->registerPoliciesOf($domains, $moduleClasses);
         $this->app->instance(CommandRegistry::class, $domains->commandDeclarations(
             CoreCommands::owner(),
             $this->app->make(PipelineRunner::class),

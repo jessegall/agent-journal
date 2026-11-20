@@ -33,6 +33,11 @@ final class ProfilePolicyRefused extends InvalidArgumentException implements Com
         return new self("Profile {$key} names the operation {$operation}, which no trusted owner declares.");
     }
 
+    public static function unknownCommand(ProfileKey $key, string $command): self
+    {
+        return new self("Profile {$key} denies {$command}, which is no registered application command.");
+    }
+
     public static function writerOutsideContainer(ProfileKey $key): self
     {
         return new self("Profile {$key} is a writing helper, which always runs in a required container.");

@@ -10,11 +10,12 @@ use App\Autoload\Support\FolderClasses;
 use App\Hooks\Contracts\FileAccessPolicy;
 use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillResolver;
-use App\Skills\Enums\SkillAbility;
 use App\Skills\Models\Skill;
 use App\Skills\Policies\SkillAuthoringPolicy;
+use App\Skills\Policies\SkillPolicy;
 use App\Skills\Resolvers\CatalogueOnFirstRead;
 use App\Skills\Resolvers\SkillCatalogue;
 use App\Skills\Resolvers\Support\SkillContextResolver;
@@ -71,10 +72,13 @@ final class SkillsServiceProvider extends ServiceProvider
     public function boot(NumberedModelRegistration $numbers, PolicyCatalogue $policies): void
     {
         $policies->register('Core', new PolicyRegistration(
-            Skill::class,
+            SkillPolicy::class,
+            [AccessType::Read],
+        ));
+        $policies->register('Core', new PolicyRegistration(
             SkillAuthoringPolicy::class,
-            SkillAbility::class,
-            ownerOnly: [SkillAbility::Administer],
+            [AccessType::Create, AccessType::Edit],
+            ownerOnly: [AccessType::Create, AccessType::Edit],
         ));
         $numbers->register(NumberedModel::global(Skill::class));
 

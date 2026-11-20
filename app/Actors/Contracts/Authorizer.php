@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace App\Actors\Contracts;
 
-use App\Actors\Exceptions\ActorNotAllowed;
-use BackedEnum;
+use App\Actors\Exceptions\GrantNotRegistered;
+use App\Operations\Enums\AccessType;
+use Illuminate\Auth\Access\Response;
 
 /**
- * How one actor's profile decides whether it may do an ability on a subject: it returns normally when the actor may,
- * and throws when it may not. It never answers a yes or no for the caller to act on.
+ * How one actor's profile answers whether it may have an access on a subject: a Laravel response, allowed or
+ * denied. A malformed or unavailable grant is a structural failure and throws instead.
  */
 interface Authorizer
 {
     /**
-     * @param  object|class-string  $subject
+     * @param  class-string<Policy>  $policy
+     * @param  object|class-string  $subject  the locked record for a record policy, the model class otherwise
      *
-     * @throws ActorNotAllowed
+     * @throws GrantNotRegistered
      */
-    public function authorize(Policy $policy, Actor $actor, object|string $subject, BackedEnum $ability): void;
+    public function evaluate(string $policy, Actor $actor, object|string $subject, AccessType $access): Response;
 }

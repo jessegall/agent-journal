@@ -7,7 +7,6 @@ namespace App\Hooks\Inputs;
 use App\Agents\Values\Operation;
 use App\Agents\Values\ResourceRequest;
 use App\Hooks\Enums\FileOperation;
-use App\Operations\Enums\ResourceAreaType;
 
 final readonly class FileChange
 {
@@ -29,7 +28,7 @@ final readonly class FileChange
             self::SURFACE,
             sprintf('file:%s', $this->operation->value),
             $this->operation->accessTypes(),
-            [new ResourceRequest(ResourceAreaType::Workspace, $this->path)],
+            [ResourceRequest::path($this->path)],
             [$this->path],
             self::DECLARATION_REVISION,
         );

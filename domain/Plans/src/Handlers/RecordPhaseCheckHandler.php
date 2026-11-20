@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\CommandHandler;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Enums\AssessmentOutcome;
 use Domain\Plans\Commands\RecordPhaseCheck;
 use Domain\Plans\Exceptions\PhaseCheckRefused;
+use Domain\Plans\Handlers\Support\PlanCommandHandler;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseCheck;
 use Domain\Tasks\Api\TaskSummary;
@@ -19,7 +19,7 @@ use Domain\Tasks\Contracts\TaskResolver;
  * Accepts a check result for a phase only through Core's one result gate: a current receipt (never an evidence run,
  * a run without a result or a superseded receipt) published after the phase's tasks last changed.
  */
-final readonly class RecordPhaseCheckHandler implements CommandHandler
+final readonly class RecordPhaseCheckHandler extends PlanCommandHandler
 {
     public function __construct(
         private ResultReceipts $receipts,

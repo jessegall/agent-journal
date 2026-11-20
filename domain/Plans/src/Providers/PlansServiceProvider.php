@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Providers;
 
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Values\ReadEntitlement;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
 use App\Processes\Contracts\VerificationTiming;
@@ -13,6 +15,7 @@ use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Policies\PlanPolicy;
 use Domain\Plans\Resolvers\PlanDetailRecords;
 use Domain\Plans\Resolvers\PlanRecords;
 use Domain\Plans\Support\PhaseTiming;
@@ -35,8 +38,12 @@ final class PlansServiceProvider extends ServiceProvider
         $this->app->scoped(VerificationTiming::class, PhaseTiming::class);
     }
 
-    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
+    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions, ReadEntitlements $reads): void
     {
+        $reads->declare('plans_read', ReadEntitlement::grant(PlanPolicy::class));
+        $reads->declare('plans_list', ReadEntitlement::grant(PlanPolicy::class));
+        $reads->declare('plans_assigned', ReadEntitlement::grant(PlanPolicy::class));
+        $reads->declare('phases_read', ReadEntitlement::grant(PlanPolicy::class));
         // A missing plan is not found; a refused start is a form error on the start button.
         if ($exceptions instanceof Handler) {
             $exceptions->map(

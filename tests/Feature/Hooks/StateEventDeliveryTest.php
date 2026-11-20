@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\AttentionOrigin;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\Event;
 use App\Hooks\Actions\AgentStacks;
@@ -166,7 +166,7 @@ final class StateEventDeliveryTest extends TestCase
         try {
             $this->dispatch(new NoteWritten(ordinary: [new RecordNoteEffect('unauthorized')]));
             $this->fail('The command ran without authority.');
-        } catch (ActorNotAllowed) {
+        } catch (CommandAdmissionRefused) {
             $this->assertSame([], $this->app->make(NoteEffects::class)->labels);
             $this->assertSame(['Still retained.'], $this->takeContext());
         }

@@ -6,12 +6,10 @@ namespace App\Supervision\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Values\Operation;
-use App\Agents\Values\OperationKey;
 use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Support\AssigneeIdentity;
-use App\Bus\Support\CommandRegistry;
-use App\Hooks\Contracts\OperationPolicy;
+use App\Bus\Contracts\Command;
+use App\Profiles\Support\CommandAdmissions;
 use App\Supervision\Contracts\AskAdmission;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Values\AdmittedAsk;
@@ -24,11 +22,13 @@ final readonly class CurrentAskAdmission implements AskAdmission
         private AskRecords $asks,
         private AssignmentStorage $assignments,
         private AskTypeRegistry $types,
-        private CommandRegistry $commands,
-        private OperationPolicy $policy,
+        private CommandAdmissions $admissions,
     ) {}
 
-    public function requireCurrent(AskReference $ask, OperationKey $operation, int $expectedVersion): AdmittedAsk
+    /**
+     * @param  class-string<Command<mixed>>  $command  the command the answer runs, which the ask's type must require
+     */
+    public function requireCurrent(AskReference $ask, string $command, int $expectedVersion): AdmittedAsk
     {
         $record = $this->asks->lock($ask);
         $actor = ActorIdentity::of($this->actors->actor());
@@ -41,15 +41,11 @@ final readonly class CurrentAskAdmission implements AskAdmission
         }
 
         $type = $this->types->get($record->typeKey());
-        if ($type->operation()->key !== $operation->key) {
+        if ($type->requiredCommand() !== $command) {
             throw AskRefused::wrongOperation();
         }
 
-        $declaration = $this->commands->operationNamed($operation->key)->getOrThrow(AskRefused::wrongOperation());
-
-        $decision = $this->policy->assess(
-            Operation::journal($declaration->name, $declaration->area, $declaration->accessTypes),
-        );
+        $decision = $this->admissions->admits($command);
 
         if (! $decision->allowed) {
             throw AskRefused::operationDenied($decision->reason);

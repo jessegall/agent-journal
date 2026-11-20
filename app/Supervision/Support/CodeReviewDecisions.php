@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Supervision\Support;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Values\OperationKey;
 use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Profiles\Values\SupervisorTarget;
 use App\Supervision\Contracts\AskAdmission;
@@ -44,8 +43,7 @@ final readonly class CodeReviewDecisions
         string $findings,
     ): ReviewDecision {
         $ask = $this->asks->lock($reference);
-        $operation = new OperationKey(CoreAskType::ReviewReady->operation());
-        $this->admission->requireCurrent($reference, $operation, $expectedVersion);
+        $this->admission->requireCurrent($reference, CoreAskType::ReviewReady->requiredCommand(), $expectedVersion);
         $review = CodeReview::openFor($reference);
         $made = ReviewDecision::decide($review, $decision, $reviewer, $findings);
         $hop = AskHop::currentFor($ask);

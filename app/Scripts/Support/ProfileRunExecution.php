@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Scripts\Support;
 
 use App\Agents\Values\AccessPolicy;
-use App\Operations\Enums\ResourceAreaType;
+use App\Agents\Values\Operation;
+use App\Agents\Values\ResourceRequest;
 use App\Profiles\Values\NamedCommand;
 use App\Scripts\Contracts\ScriptExecution;
 use App\Scripts\Values\BooleanOperand;
@@ -37,13 +38,13 @@ final readonly class ProfileRunExecution implements ScriptExecution
      */
     public function run(NamedCommand $command): StepOutcome
     {
-        foreach ($command->effects as $effect) {
-            if (! $this->access->grants($effect, ResourceAreaType::Workspace)) {
-                return StepOutcome::failed(
-                    "RUN {$command->key} needs {$effect->value} access to the workspace, which the profile does not "
-                    .'grant.',
-                );
-            }
+        $operation = new Operation('script', 'profile.command:'.$command->key, $command->effects, [
+            ResourceRequest::path('.'),
+        ], [], 1);
+        $decision = $this->access->decide($operation);
+
+        if (! $decision->allowed) {
+            return StepOutcome::failed("RUN {$command->key} is refused: {$decision->reason}");
         }
 
         return StepOutcome::pending($this->step);

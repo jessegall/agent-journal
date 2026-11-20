@@ -10,14 +10,13 @@ use App\Agents\Contracts\MergeAdmission;
 use App\Autoload\Support\FolderClasses;
 use App\Engine\Support\EngineListenerSet;
 use App\Links\Support\LinkTypeRegistry;
+use App\Operations\Enums\AccessType;
 use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Values\AskTypeKey;
 use App\Supervision\Contracts\AskAdmission;
 use App\Supervision\Contracts\AskReader;
 use App\Supervision\Contracts\SupervisorDispatch;
 use App\Supervision\Contracts\WorkRepair;
-use App\Supervision\Enums\AskAbility;
-use App\Supervision\Enums\SupervisorAbility;
 use App\Supervision\Models\Ask;
 use App\Supervision\Models\AskHop;
 use App\Supervision\Models\AskRequester;
@@ -76,12 +75,14 @@ final class SupervisionServiceProvider extends ServiceProvider
             fn (Schedule $schedule) => $schedule->command('asks:recover-delivery')->everyMinute()->withoutOverlapping(),
         );
         $policies->register('Core', new PolicyRegistration(
-            SupervisorLink::class,
             SupervisorPolicy::class,
-            SupervisorAbility::class,
-            coordinatorOnly: [SupervisorAbility::ChangeRoute],
+            [AccessType::Edit],
+            coordinatorOnly: [AccessType::Edit],
         ));
-        $policies->register('Core', new PolicyRegistration(Ask::class, AskPolicy::class, AskAbility::class));
+        $policies->register('Core', new PolicyRegistration(
+            AskPolicy::class,
+            [AccessType::Edit],
+        ));
         $types->register($this->app->make(QuestionType::class));
         $types->register($this->app->make(CodeReviewType::class));
         $types->register($this->app->make(MergeReadyType::class));

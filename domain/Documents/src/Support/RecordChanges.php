@@ -7,7 +7,7 @@ namespace Domain\Documents\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Exceptions\ActorNotAllowed;
-use Domain\Documents\Enums\DocumentAbility;
+use App\Operations\Enums\AccessType;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Illuminate\Database\Eloquent\Model;
@@ -28,14 +28,14 @@ final readonly class RecordChanges
             $this->authorizer->authorize(
                 DocumentAdministrationPolicy::class,
                 Document::class,
-                DocumentAbility::ChangeOthersRecords,
+                AccessType::Edit,
             );
         }
     }
 
     public function mayChange(Model $record): bool
     {
-        $others = [DocumentAbility::ChangeOthersRecords];
+        $others = [AccessType::Edit];
 
         return $this->createdByActor($record)
             || $this->authorizer->filterActions(DocumentAdministrationPolicy::class, Document::class, $others) !== [];

@@ -7,15 +7,15 @@ namespace App\Agents\Resolvers;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Agents\Contracts\SessionResolver;
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
-use App\Agents\Policies\AgentPolicy;
+use App\Agents\Policies\AgentMaintenancePolicy;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
 use App\Agents\Support\StartReceipt;
+use App\Operations\Enums\AccessType;
 use App\Reads\Support\ReadBuilder;
 
 /**
@@ -106,6 +106,6 @@ final readonly class SessionRecords implements SessionResolver
      */
     private function inspectsAgents(): bool
     {
-        return $this->authorizer->filterActions(AgentPolicy::class, Agent::class, [AgentAbility::Inspect]) !== [];
+        return $this->authorizer->filterActions(AgentMaintenancePolicy::class, Agent::class, [AccessType::Read]) !== [];
     }
 }

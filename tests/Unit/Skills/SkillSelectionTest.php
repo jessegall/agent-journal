@@ -36,7 +36,7 @@ final class SkillSelectionTest extends TestCase
         $selection = new SkillSelection()->select($this->skills(), $this->helper(null, []));
 
         $this->assertSame(['journal', 'journal-review'], $selection->selectedKeys());
-        $this->assertSame('no_match:ability-not-granted', $selection->excluded[0]->reason);
+        $this->assertSame('no_match:grant-not-held', $selection->excluded[0]->reason);
     }
 
     public function test_an_empty_allowlist_selects_none(): void
@@ -57,7 +57,7 @@ final class SkillSelectionTest extends TestCase
     public function test_a_required_skill_outside_the_selection_is_refused_with_its_key_and_reason(): void
     {
         $this->expectException(SkillSelectionConflict::class);
-        $this->expectExceptionMessage('requires the skill journal-main, but it is not selected for this start (no_match:ability-not-granted)');
+        $this->expectExceptionMessage('requires the skill journal-main, but it is not selected for this start (no_match:grant-not-held)');
 
         new SkillSelection()->select($this->skills(), $this->helper(null, ['journal-main']));
     }

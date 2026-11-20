@@ -6,15 +6,10 @@ namespace Domain\Chat\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RetainedActorRequestKey;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Chat\Enums\MessagePinAbility;
 use Domain\Chat\Handlers\UnpinMessageHandler;
-use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Support\ConversationPair;
 
@@ -25,9 +20,8 @@ use Domain\Chat\Support\ConversationPair;
  */
 #[RetainedActorRequestKey]
 #[HandledBy(UnpinMessageHandler::class)]
-#[Authorize(MessagePinPolicy::class, MessagePinAbility::Work)]
-#[Operation('unpin_message', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class UnpinMessage extends Command implements AuthorizedCommand
+#[Authorize(MessagePinPolicy::class, AccessType::Edit)]
+final readonly class UnpinMessage extends Command
 {
     public function __construct(
         public string $sourceInboxId,
@@ -38,13 +32,5 @@ final readonly class UnpinMessage extends Command implements AuthorizedCommand
     public function conversation(): ConversationPair
     {
         return new ConversationPair($this->sourceInboxId, $this->destinationInboxId);
-    }
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return MessagePin::class;
     }
 }

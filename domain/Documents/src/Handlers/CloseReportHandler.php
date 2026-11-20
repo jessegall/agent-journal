@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Contracts\CommandHandler;
 use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Commands\CloseReport;
+use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordChanges;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class CloseReportHandler implements CommandHandler
+final readonly class CloseReportHandler extends DocumentCommandHandler
 {
     public function __construct(private RecordChanges $changes, private Dispatcher $events) {}
 

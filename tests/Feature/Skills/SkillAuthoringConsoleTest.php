@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Skills;
 
-use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
 use App\Skills\Models\Skill;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
@@ -20,7 +20,7 @@ final class SkillAuthoringConsoleTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const string DISPATCH = AssignmentPolicy::class.':dispatch';
+    private const string DISPATCH = AssignmentRecipientPolicy::class.':delegate';
 
     private const array TABLES = [
         'skill_publications',

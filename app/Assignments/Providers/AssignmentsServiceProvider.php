@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Assignments\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\ReadEntitlement;
 use App\Assignments\Actions\AdmitPublicAssignments;
 use App\Assignments\Actions\AssignmentTurns;
 use App\Assignments\Actions\WriteAssignments;
@@ -30,9 +32,8 @@ use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Assignments\Contracts\MaintenanceAssignmentWriter;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Contracts\ResponsibilityWriter;
-use App\Assignments\Enums\AssignmentAbility;
-use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
 use App\Assignments\Registry\AssignmentRegistry;
 use App\Assignments\Resolvers\AssigneeRecords;
 use App\Assignments\Resolvers\AssignmentRecords;
@@ -49,6 +50,7 @@ use App\Assignments\Support\ProvedClaimRelease;
 use App\Assignments\Support\SizeAssignmentRoom;
 use App\Autoload\Support\FolderClasses;
 use App\Links\Support\LinkTypeRegistry;
+use App\Operations\Enums\AccessType;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
 
@@ -87,13 +89,18 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(DatabaseAutoAssignments::class);
     }
 
-    public function boot(PolicyCatalogue $policies): void
+    public function boot(PolicyCatalogue $policies, ReadEntitlements $reads): void
     {
+        $reads->declare('assignees_list', ReadEntitlement::grant(AssignmentPolicy::class));
+        $reads->declare('assignments_read', ReadEntitlement::grant(AssignmentPolicy::class));
         $policies->register('Core', new PolicyRegistration(
-            AssignmentRecord::class,
             AssignmentPolicy::class,
-            AssignmentAbility::class,
-            coordinatorOnly: [AssignmentAbility::Dispatch, AssignmentAbility::Unassign],
+            [AccessType::Read, AccessType::Create, AccessType::Edit],
+        ));
+        $policies->register('Core', new PolicyRegistration(
+            AssignmentRecipientPolicy::class,
+            [AccessType::Create, AccessType::Delegate, AccessType::Delete],
+            coordinatorOnly: [AccessType::Delegate, AccessType::Delete],
         ));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));

@@ -25,7 +25,7 @@ final readonly class ProfileOperationPolicy implements OperationPolicy
 
         if (! $authority instanceof StartProfileAuthority) {
             return AccessDecision::allowed(
-                AccessRuleType::ClassGrant,
+                AccessRuleType::ScopeGrant,
                 'An actor without a profile is not held to one.',
             );
         }

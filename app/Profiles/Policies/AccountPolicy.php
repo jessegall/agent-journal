@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Profiles\Policies;
 
-use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Policy;
-use BackedEnum;
+use App\Profiles\Models\Account;
 
 /**
- * Who may read and manage the saved accounts: only the owner holds the abilities, so the grants decide.
+ * Who may read and manage the saved accounts: only the owner holds the accesses, so the grants decide.
  */
 final readonly class AccountPolicy implements Policy
 {
-    /**
-     * @param  object|class-string  $subject
-     */
-    public function authorize(Actor $actor, object|string $subject, BackedEnum $ability): void {}
+    public static function model(): string
+    {
+        return Account::class;
+    }
 }

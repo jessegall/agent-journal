@@ -8,7 +8,6 @@ use App\Agents\Contracts\ReadGrant;
 use App\Agents\Values\ReadRequest;
 use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
-use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Resolvers\DocumentPages;
 use Laravel\Mcp\Request;
@@ -45,7 +44,7 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
             throw ToolArgumentInvalid::for('revision', 'a positive revision number');
         }
 
-        $this->reads->assertAllowed(new ReadRequest(DocumentPages::TOOL, ResourceAreaType::JournalContent));
+        $this->reads->assertAllowed(new ReadRequest(DocumentPages::TOOL));
 
         return $this->markdown(
             $this->documents->document($id, $this->bodyArguments($request, DocumentPages::TOOL, $revision)),

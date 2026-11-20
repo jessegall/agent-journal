@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Policies;
 
-use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Policy;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 
@@ -13,13 +12,8 @@ use Tests\Fixtures\Modules\Notes\Models\Note;
  */
 final readonly class NotePolicy implements Policy
 {
-    public function read(Actor $actor, Note $note): bool
+    public static function model(): string
     {
-        return true;
-    }
-
-    public function edit(Actor $actor, Note $note): bool
-    {
-        return true;
+        return Note::class;
     }
 }

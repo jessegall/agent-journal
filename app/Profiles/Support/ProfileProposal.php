@@ -9,7 +9,7 @@ use App\Profiles\Data\PolicyOverrideData;
 use App\Profiles\Data\ProfileConfigurationData;
 use App\Profiles\Data\ProposedProfileData;
 use App\Profiles\Data\ProposedStopConditionData;
-use App\Profiles\Data\WithheldAbilityData;
+use App\Profiles\Data\WithheldGrantData;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Exceptions\SupervisorRouteInvalid;
 use App\Profiles\Values\ProfileBase;
@@ -122,9 +122,10 @@ final readonly class ProfileProposal
                 $fields->stopConditions,
             ),
             array_map(
-                fn (WithheldAbilityData $withheld) => $withheld->toWithheldAbility(),
-                $fields->withheldAbilities,
+                fn (WithheldGrantData $withheld) => $withheld->toWithheldGrant(),
+                $fields->withheldGrants,
             ),
+            $fields->deniedCommands,
             self::supervisors($profile),
             $fields->instancePolicy($key),
         );

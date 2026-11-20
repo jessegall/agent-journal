@@ -7,7 +7,6 @@ namespace Tests\Feature\Agents;
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
-use App\Assignments\Enums\AssignmentAbility;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\RewriteSupport;
@@ -17,6 +16,7 @@ use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Mcp\Support\McpInstructions;
+use App\Operations\Enums\AccessType;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Actors\FixedCurrentAuthorizer;
 use Tests\Support\CommittedHookStack;
@@ -56,7 +56,7 @@ final class McpInstructionsTest extends TestCase
 
     public function test_the_instructions_stay_short_and_name_no_token_or_path(): void
     {
-        foreach ([[], [AssignmentAbility::Dispatch]] as $granted) {
+        foreach ([[], [AccessType::Delegate]] as $granted) {
             $instructions = new McpInstructions(new FixedCurrentAuthorizer($granted))->forCaller();
 
             $this->assertLessThan(1500, mb_strlen($instructions));
@@ -74,7 +74,7 @@ final class McpInstructionsTest extends TestCase
     private function startAs(): array
     {
         $this->callAs('call-1', hash('sha256', 'call-1'));
-        $this->app->instance(CurrentAuthorizer::class, new FixedCurrentAuthorizer([AssignmentAbility::Dispatch]));
+        $this->app->instance(CurrentAuthorizer::class, new FixedCurrentAuthorizer([AccessType::Delegate]));
         $this->app->instance(
             AgentContext::class,
             new AgentContext(

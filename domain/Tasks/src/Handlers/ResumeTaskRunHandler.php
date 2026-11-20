@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Domain\Tasks\Handlers;
 
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\CommandHandler;
 use App\Desks\Contracts\RunClaims;
 use App\Desks\Exceptions\RunClaimRefused;
 use Domain\Tasks\Commands\ResumeTaskRun;
 use Domain\Tasks\Exceptions\TaskRunFinished;
+use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 
-final readonly class ResumeTaskRunHandler implements CommandHandler
+final readonly class ResumeTaskRunHandler extends TaskCommandHandler
 {
     public function __construct(
         private RunClaims $claims,

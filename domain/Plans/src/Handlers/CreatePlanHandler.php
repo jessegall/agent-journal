@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Plans\Commands\CreatePlan;
+use Domain\Plans\Handlers\Support\PlanCommandHandler;
 use Domain\Plans\Models\Plan;
 
-final readonly class CreatePlanHandler implements CommandHandler
+final readonly class CreatePlanHandler extends PlanCommandHandler
 {
     public function handle(CreatePlan $command): string
     {

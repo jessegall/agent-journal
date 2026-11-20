@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Enums\UploadType;
+use Domain\Documents\Handlers\Support\DocumentCommandHandler;
 use Domain\Documents\Support\DocumentBody;
 use Domain\Documents\Support\DraftEditing;
 use Domain\Documents\Support\DraftText;
 
-final readonly class EditDocumentHandler implements CommandHandler
+final readonly class EditDocumentHandler extends DocumentCommandHandler
 {
     public function __construct(private DraftEditing $drafts, private DocumentBody $bodies) {}
 

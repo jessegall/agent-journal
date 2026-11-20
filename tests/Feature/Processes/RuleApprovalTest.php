@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Exceptions\ActorNotAllowed;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ProveReader;
 use App\Processes\Commands\RejectRuleProposal;
@@ -80,7 +80,7 @@ final class RuleApprovalTest extends TestCase
 
         $approve = new ApproveRuleProposal($this->proposalId(), $this->approval($reader, $proof, 0));
 
-        $this->assertThrows(fn () => $this->runAsAgent($approve), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $this->runAsAgent($approve), CommandAdmissionRefused::class);
         $this->assertSame(0, ClassificationRule::query()->count());
     }
 
@@ -153,7 +153,7 @@ final class RuleApprovalTest extends TestCase
         );
         $this->assertThrows(
             fn () => $this->runAsAgent(new RejectRuleProposal($this->proposalId(), 'agents cannot')),
-            ActorNotAllowed::class,
+            CommandAdmissionRefused::class,
         );
         $this->assertSame(ProposalState::Pending, RuleProposal::query()->sole()->state);
     }

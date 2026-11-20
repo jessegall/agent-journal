@@ -62,7 +62,7 @@ final class SkillPreviewTest extends TestCase
         $byAgent = array_column($preview['agents'], null, 'agent');
 
         $this->assertSame('match', $byAgent[$this->main->id]['outcome']);
-        $this->assertSame('abilities-granted', $byAgent[$this->main->id]['reason']);
+        $this->assertSame('grants-held', $byAgent[$this->main->id]['reason']);
         $this->assertSame('no_match', $byAgent[$this->reviewer->id]['outcome']);
         $this->assertSame('none-matched', $byAgent[$this->reviewer->id]['reason']);
         $this->assertSame($before, $this->rowCounts());

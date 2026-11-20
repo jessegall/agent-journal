@@ -6,37 +6,37 @@ namespace App\Profiles\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
-use App\Actors\Contracts\Policy;
 use App\Actors\Contracts\PolicyCatalogue;
-use App\Actors\Exceptions\AbilityNotRegistered;
-use App\Actors\Exceptions\ActorNotAllowed;
+use App\Actors\Contracts\RecordPolicy;
+use App\Operations\Enums\AccessType;
 use App\Profiles\Values\ProfileAuthorization;
-use BackedEnum;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Contracts\Auth\Access\Gate;
 
 /**
- * The authorizer of a profile that works through policies: the profile must grant the policy's ability, and then the
- * policy decides for this actor and subject.
+ * The authorizer of a profile that works through policies: the pair must be available and held, and a record policy
+ * then decides on the locked record through Laravel's Gate. A grant-only policy is never built.
  */
 final readonly class PolicyAuthorizer implements Authorizer
 {
-    public function __construct(private ProfileAuthorization $grants, private PolicyCatalogue $catalogue) {}
+    public function __construct(
+        private ProfileAuthorization $grants,
+        private PolicyCatalogue $catalogue,
+        private Gate $gate,
+    ) {}
 
-    /**
-     * @param  object|class-string  $subject
-     *
-     * @throws ActorNotAllowed
-     * @throws AbilityNotRegistered
-     */
-    public function authorize(Policy $policy, Actor $actor, object|string $subject, BackedEnum $ability): void
+    public function evaluate(string $policy, Actor $actor, object|string $subject, AccessType $access): Response
     {
-        $this->catalogue->requireGrantable($policy::class, $ability);
-        $this->grants->assertGranted($policy::class, $ability);
-        $decide = [$policy, 'authorize'];
+        $this->catalogue->assertGrantable($policy, $access);
 
-        if (! is_callable($decide)) {
-            throw ActorNotAllowed::to($ability, 'record');
+        if (! $this->grants->grants($policy, $access)) {
+            return Response::deny("The profile does not grant {$access->value} on {$policy}.");
         }
 
-        $decide($actor, $subject, $ability);
+        if (! is_subclass_of($policy, RecordPolicy::class)) {
+            return Response::allow();
+        }
+
+        return $this->gate->forUser($actor)->inspect('permits', [$subject, $access]);
     }
 }

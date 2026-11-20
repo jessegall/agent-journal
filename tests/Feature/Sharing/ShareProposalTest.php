@@ -6,11 +6,11 @@ namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ApproveShareRequest;
@@ -153,7 +153,7 @@ final class ShareProposalTest extends TestCase
                     '01JD8X0G9M3QZ6V4K2PROPOSE2',
                 ),
             ),
-            ActorNotAllowed::class,
+            CommandAdmissionRefused::class,
         );
         $this->assertSame(0, Share::query()->count());
     }

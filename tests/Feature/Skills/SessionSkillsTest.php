@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
-use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
@@ -79,7 +79,7 @@ final class SessionSkillsTest extends TestCase
                 Probe text.
 
                 TEXT,
-                '--ability' => [AssignmentPolicy::class.':dispatch'],
+                '--ability' => [AssignmentRecipientPolicy::class.':delegate'],
             ],
         )
             ->assertSuccessful();

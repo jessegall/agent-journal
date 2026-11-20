@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Agents\Enums\AgentAbility;
 use App\Agents\Handlers\AnswerNavigationHandler;
-use App\Agents\Models\Agent;
 use App\Agents\Policies\AgentPolicy;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Values\NavigationAnswer;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
 /**
  * One round of the main agent on a stalled runtime's screen, answering the navigation request at the row version and
@@ -25,9 +20,8 @@ use App\Operations\Enums\ResourceAreaType;
  * @extends Command<DriverReceipt>
  */
 #[HandledBy(AnswerNavigationHandler::class)]
-#[Authorize(AgentPolicy::class, AgentAbility::Navigate)]
-#[Operation('navigation_answer', ResourceAreaType::JournalWork, AccessType::Edit)]
-final readonly class AnswerNavigation extends Command implements AuthorizedCommand
+#[Authorize(AgentPolicy::class, AccessType::Edit)]
+final readonly class AnswerNavigation extends Command
 {
     public function __construct(
         public string $navigationId,
@@ -35,12 +29,4 @@ final readonly class AnswerNavigation extends Command implements AuthorizedComma
         public int $generation,
         public NavigationAnswer $answer,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Agent::class;
-    }
 }

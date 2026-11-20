@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger;
 
+use App\Operations\Enums\AccessType;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\CommandProvider;
@@ -15,7 +16,6 @@ use App\Numbers\Support\NumberedModel;
 use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger;
 use Tests\Fixtures\Modules\Ledger\Commands\WriteEntry;
-use Tests\Fixtures\Modules\Ledger\Enums\LedgerAbility;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 use Tests\Fixtures\Modules\Ledger\Policies\LedgerPolicy;
@@ -60,6 +60,6 @@ final class LedgerDomain extends Domain implements CommandProvider, NumberedMode
 
     public function policies(): array
     {
-        return [new PolicyRegistration(Ledger::class, LedgerPolicy::class, LedgerAbility::class)];
+        return [new PolicyRegistration(LedgerPolicy::class, [AccessType::Read, AccessType::Create, AccessType::Edit, AccessType::Delete])];
     }
 }

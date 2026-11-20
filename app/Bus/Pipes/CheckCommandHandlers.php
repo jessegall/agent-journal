@@ -4,30 +4,35 @@ declare(strict_types=1);
 
 namespace App\Bus\Pipes;
 
-use App\Actors\Contracts\Policy;
-use App\Bus\Contracts\AuthorizedCommand;
-use App\Bus\Contracts\ClassLevelAbilities;
-use App\Bus\Enums\CommandEntry;
+use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\RecordPolicy;
+use App\Actors\Exceptions\GrantNotRegistered;
+use App\Bus\Attributes\Authorize;
+use App\Bus\Contracts\RecordCommand;
 use App\Bus\Exceptions\CommandAuthorizationInvalid;
-use App\Bus\Exceptions\CommandAuthorizationMissing;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\HandlerInOtherOwner;
-use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandDeclarations;
 use App\Bus\Support\DeclaredCommand;
 use App\Bus\Support\SharedBindingCheck;
+use App\Operations\Enums\AccessType;
 use App\Pipelines\Contracts\Pipe;
+use Illuminate\Auth\Access\Response;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
+use ReflectionParameter;
 
 /**
  * Checks every command's handler: a final class built fresh in its owner's Handlers folder, whose public handle takes
- * the command, and the subject too when the command declares its authorization, and returns what the grammar allows.
- * An application command must declare its authorization.
+ * the command, and the record too for record work, and returns what the grammar allows; and checks that each
+ * application command's grant fits its policy.
  */
 final readonly class CheckCommandHandlers implements Pipe
 {
+    public function __construct(private PolicyCatalogue $policies) {}
+
     public function handle(CommandDeclarations $declarations): CommandDeclarations
     {
         foreach ($declarations->commands as $declared) {
@@ -66,17 +71,17 @@ final readonly class CheckCommandHandlers implements Pipe
             throw CommandDeclarationInvalid::for($handler, 'it needs a public, non-static handle method');
         }
 
-        $authorization = $declared->authorization();
+        $authorize = $declared->authorize;
 
-        if ($authorization === null && ! self::takesOnly($handle, $command)) {
+        if ($authorize === null && ! self::takesOnly($handle, $command)) {
             throw CommandDeclarationInvalid::for(
                 $handler,
                 "handle takes exactly one required parameter, typed {$command}",
             );
         }
 
-        if ($authorization !== null) {
-            self::checkAuthorization($command, $authorization, $handler, $handle);
+        if ($authorize !== null) {
+            $this->checkAuthorization($command, $authorize, $handler, $handle);
         }
 
         $problem = $declarations->grammarFor($declared->owner)->problemWithResult($handle->getReturnType());
@@ -84,90 +89,92 @@ final readonly class CheckCommandHandlers implements Pipe
         if ($problem !== null) {
             throw CommandDeclarationInvalid::for($handler, "its result {$problem}");
         }
-
-        if ($authorization === null && $declared->entry() === CommandEntry::Application) {
-            throw CommandAuthorizationMissing::for($command);
-        }
     }
 
     /**
-     * The command, its policy, its subject and its handler must fit together: the subject's type is what the policy's
-     * authorize takes, the ability is a case of its enum, a class subject pairs only with a class-level ability, and
-     * the handler takes the command and the subject.
+     * The command, its policy and its handler must fit together: the pair is registered, a record policy goes with a
+     * RecordCommand whose subject is the policy's model, and the handler takes the command, with the record too for
+     * record work.
      *
      * @param  class-string  $command
      * @param  class-string  $handler
      *
      * @throws CommandAuthorizationInvalid
      */
-    private static function checkAuthorization(
+    private function checkAuthorization(
         string $command,
-        CommandAuthorization $authorization,
+        Authorize $authorize,
         string $handler,
         ReflectionMethod $handle,
     ): void {
-        if (! is_subclass_of($command, AuthorizedCommand::class)) {
-            throw CommandAuthorizationInvalid::subjectMissing($command);
+        $policy = $authorize->policy;
+
+        try {
+            $this->policies->assertSupported($policy, $authorize->access);
+        } catch (GrantNotRegistered $unsupported) {
+            throw CommandAuthorizationInvalid::grantUnsupported($command, $unsupported);
         }
 
-        $policy = $authorization->policy;
-        $authorize = is_subclass_of($policy, Policy::class) && method_exists($policy, 'authorize')
-            ? new ReflectionMethod($policy, 'authorize')
-            : null;
-        $parameters = $authorize?->getParameters() ?? [];
+        $isRecordPolicy = is_subclass_of($policy, RecordPolicy::class);
+        $isRecordCommand = is_subclass_of($command, RecordCommand::class);
 
-        if ($authorize === null || ! $authorize->isPublic() || count($parameters) !== 3) {
-            throw CommandAuthorizationInvalid::policyInvalid($command, $policy);
+        if ($isRecordPolicy && ! $isRecordCommand) {
+            throw CommandAuthorizationInvalid::recordPolicyWithoutRecord($command, $policy);
         }
 
-        $subject = (string) new ReflectionMethod($command, 'subject')->getReturnType();
-        $accepted = (string) $parameters[1]->getType();
-
-        if (! self::typeFits($subject, $accepted)) {
-            throw CommandAuthorizationInvalid::subjectMismatched($command, $subject, $accepted);
+        if ($isRecordCommand && ! $isRecordPolicy) {
+            throw CommandAuthorizationInvalid::recordWithoutRecordPolicy($command, $policy);
         }
 
-        $abilityType = (string) $parameters[2]->getType();
-        $ability = $authorization->ability;
+        if (! $isRecordCommand) {
+            if (! self::takesOnly($handle, $command)) {
+                throw CommandAuthorizationInvalid::handlerShape($command, $handler, 'the command alone');
+            }
 
-        if (! $ability instanceof $abilityType) {
-            throw CommandAuthorizationInvalid::abilityMismatched($command, $ability::class, $abilityType);
-        }
-
-        $classLevel = $ability instanceof ClassLevelAbilities && $ability->isClassLevel();
-
-        if ($subject === 'string' && ! $classLevel) {
-            throw CommandAuthorizationInvalid::classSubjectOnInstanceAbility($command, $ability::class);
-        }
-
-        $classSubjectFits = $subject === 'string' && self::takesOnly($handle, $command);
-
-        if ($classSubjectFits) {
             return;
         }
 
-        $second = $handle->getParameters()[1] ?? null;
-        $takesBoth = $handle->getNumberOfRequiredParameters() === 2 && self::takesFirst($handle, $command);
+        $model = $policy::model();
+        $subject = (string) new ReflectionMethod($command, 'subject')->getReturnType();
 
-        if (! $takesBoth || $second === null || ! self::typeFits($subject, (string) $second->getType())) {
-            throw CommandAuthorizationInvalid::handlerShape($command, $handler, $subject);
+        if ($subject !== $model) {
+            throw CommandAuthorizationInvalid::subjectMismatched($command, $subject, $model);
+        }
+
+        self::assertPermits($command, $policy, $model);
+        $second = $handle->getParameters()[1] ?? null;
+        $secondType = $second?->getType();
+        $takesBoth = $handle->getNumberOfRequiredParameters() === 2 && self::takesFirst($handle, $command)
+            && $secondType instanceof ReflectionNamedType && $secondType->getName() === $model;
+
+        if (! $takesBoth) {
+            throw CommandAuthorizationInvalid::handlerShape($command, $handler, "the command and {$model}");
         }
     }
 
     /**
-     * Whether a value of the given type is accepted by a parameter of the other, a union or a parent included.
+     * A record policy decides through a public permits(Actor, its model, AccessType): Response.
+     *
+     * @param  class-string  $command
+     * @param  class-string  $policy
+     * @param  class-string  $model
+     *
+     * @throws CommandAuthorizationInvalid
      */
-    private static function typeFits(string $given, string $accepted): bool
+    private static function assertPermits(string $command, string $policy, string $model): void
     {
-        foreach (explode('|', $accepted) as $type) {
-            $anyObject = $type === 'object' && class_exists($given);
+        $permits = method_exists($policy, 'permits') ? new ReflectionMethod($policy, 'permits') : null;
+        $types = array_map(
+            fn (ReflectionParameter $parameter) => (string) $parameter->getType(),
+            $permits?->getParameters() ?? [],
+        );
+        $fits = $permits !== null && $permits->isPublic() && ! $permits->isStatic()
+            && $types === [Actor::class, $model, AccessType::class]
+            && (string) $permits->getReturnType() === Response::class;
 
-            if ($type === $given || $anyObject || (class_exists($given) && is_a($given, $type, true))) {
-                return true;
-            }
+        if (! $fits) {
+            throw CommandAuthorizationInvalid::permitsMissing($command, $policy, $model);
         }
-
-        return false;
     }
 
     private static function takesFirst(ReflectionMethod $handle, string $command): bool

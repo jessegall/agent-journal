@@ -6,10 +6,10 @@ namespace Domain\Rules\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandAdmissionRefused;
 use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Commands\DenyRule;
 use Domain\Rules\Commands\ProposeRule;
@@ -68,9 +68,9 @@ final class RuleProposalTest extends TestCase
         $this->startRequestAs($start->agent->id, $start->session->id);
         $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run(new RemoveRule($active->id)), ActorNotAllowed::class);
-        $this->assertThrows(fn () => $bus->run(new ApproveRule($proposed->id)), ActorNotAllowed::class);
-        $this->assertThrows(fn () => $bus->run(new DenyRule($proposed->id)), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $bus->run(new RemoveRule($active->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(fn () => $bus->run(new ApproveRule($proposed->id)), CommandAdmissionRefused::class);
+        $this->assertThrows(fn () => $bus->run(new DenyRule($proposed->id)), CommandAdmissionRefused::class);
 
         $this->assertSame(
             [RuleState::Active, RuleState::Proposed],

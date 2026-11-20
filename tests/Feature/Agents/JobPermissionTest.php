@@ -9,18 +9,18 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
+use App\Operations\Enums\AccessType;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Contracts\ProfileResolver;
-use App\Profiles\Exceptions\AbilityNotWithheld;
+use App\Profiles\Exceptions\GrantNotWithheld;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Profiles\Values\StartProfileAuthority;
-use App\Profiles\Values\WithheldAbility;
+use App\Profiles\Values\WithheldGrant;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Commands\ProposeRule;
-use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Policies\RulePolicy;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\Agents\HasContainerSupport;
@@ -56,7 +56,7 @@ final class JobPermissionTest extends TestCase
 
     public function test_a_session_of_a_narrowed_profile_is_refused_what_it_withholds_and_the_full_one_is_not(): void
     {
-        $this->activate([new WithheldAbility(RulePolicy::class, RuleAbility::Propose->value)]);
+        $this->activate([new WithheldGrant(RulePolicy::class, AccessType::Create)]);
 
         $this->actUnder(self::EXECUTOR, 1);
         $this->assertThrows(fn () => $this->propose(), ActorNotAllowed::class);
@@ -65,21 +65,21 @@ final class JobPermissionTest extends TestCase
         $this->propose();
         $this->assertFalse($this->snapshot(self::EXECUTOR, 1)->authorization->grants(
             RulePolicy::class,
-            RuleAbility::Propose,
+            AccessType::Create,
         ));
     }
 
     public function test_withholding_an_ability_the_base_does_not_grant_is_refused(): void
     {
         $this->assertThrows(
-            fn () => $this->activate([new WithheldAbility(RulePolicy::class, RuleAbility::Approve->value)]),
-            AbilityNotWithheld::class,
+            fn () => $this->activate([new WithheldGrant(RulePolicy::class, AccessType::Edit)]),
+            GrantNotWithheld::class,
         );
     }
 
     public function test_a_later_activation_leaves_a_running_sessions_grants_as_they_were(): void
     {
-        $this->activate([new WithheldAbility(RulePolicy::class, RuleAbility::Propose->value)]);
+        $this->activate([new WithheldGrant(RulePolicy::class, AccessType::Create)]);
 
         $this->activate([]);
 
@@ -90,13 +90,13 @@ final class JobPermissionTest extends TestCase
     }
 
     /**
-     * @param  list<WithheldAbility>  $withheld
+     * @param  list<WithheldGrant>  $withheld
      */
     private function activate(array $withheld): void
     {
         $this->startUserRequestAs($this->owner->id);
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
-            TestProposals::profile(self::EXECUTOR, ProfileBase::writingHelper(), withheldAbilities: $withheld),
+            TestProposals::profile(self::EXECUTOR, ProfileBase::writingHelper(), withheldGrants: $withheld),
             TestProposals::profile(self::WRITER, ProfileBase::writingHelper()),
         )));
     }

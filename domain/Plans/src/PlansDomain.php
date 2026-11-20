@@ -23,6 +23,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Sharing\Contracts\ShareRecordContributor;
 use App\Sharing\Support\ShareRecordRegistration;
 use App\Skills\Contracts\SkillProvider;
@@ -57,7 +58,6 @@ use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
-use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
@@ -189,7 +189,12 @@ final class PlansDomain extends Domain implements
 
     public function policies(): array
     {
-        return [new PolicyRegistration(Plan::class, PlanPolicy::class, PlanAbility::class)];
+        return [
+            new PolicyRegistration(
+                PlanPolicy::class,
+                [AccessType::Read, AccessType::Create, AccessType::Edit],
+            ),
+        ];
     }
 
     /**

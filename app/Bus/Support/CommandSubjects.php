@@ -6,8 +6,8 @@ namespace App\Bus\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\RecordCommand;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -32,23 +32,22 @@ final class CommandSubjects
     ) {}
 
     /**
-     * The call authorized on its command's subject; an undeclared command passes as it is.
+     * The call authorized once on its one subject: a record command's locked record, otherwise its policy's model
+     * class. A trusted command, which declares no Authorize, passes as it is.
      *
      * @throws ActorNotAllowed
      */
     public function authorized(CommandCall $call): CommandCall
     {
-        $authorization = $this->registry->authorizationOf($call->name());
-        $command = $call->command();
+        $authorize = $this->registry->authorizeOf($call->name());
 
-        if ($authorization->isEmpty() || ! $command instanceof AuthorizedCommand) {
+        if ($authorize === null) {
             return $call;
         }
 
-        $authorization = $authorization->get();
-
-        $subject = $command->subject();
-        $this->authorizer->authorize($authorization->policy, $subject, $authorization->ability);
+        $command = $call->command();
+        $subject = $command instanceof RecordCommand ? $command->subject() : $authorize->policy::model();
+        $this->authorizer->authorize($authorize->policy, $subject, $authorize->access);
 
         return $call->authorizedOn($subject);
     }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands;
 
+use Tests\Fixtures\Bus\Policies\FixturePolicy;
+use App\Operations\Enums\AccessType;
+use App\Bus\Attributes\Authorize;
 use App\Actors\Support\ActorContext;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
@@ -16,6 +19,7 @@ use Tests\Fixtures\Bus\Shop\Handlers\RemoveItemHandler;
  * @implements Command<mixed>
  */
 #[HandledBy(RemoveItemHandler::class)]
+#[Authorize(FixturePolicy::class, AccessType::Edit)]
 final class LooseItem implements Command
 {
     private ActorContext|null $dispatcher = null;

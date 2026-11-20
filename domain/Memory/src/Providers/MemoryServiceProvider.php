@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Providers;
 
+use App\Actors\Contracts\ReadEntitlements;
+use App\Actors\Values\ReadEntitlement;
 use App\Links\Support\LinkTypeRegistry;
 use Domain\Memory\Console\MemoryEditCommand;
 use Domain\Memory\Console\MemoryListCommand;
@@ -11,6 +13,7 @@ use Domain\Memory\Console\MemoryRemoveCommand;
 use Domain\Memory\Console\MemorySaveCommand;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Models\Memory;
+use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Resolvers\OwnMemories;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,8 +28,10 @@ final class MemoryServiceProvider extends ServiceProvider
         $this->app->scoped(MemoryResolver::class, OwnMemories::class);
     }
 
-    public function boot(LinkTypeRegistry $links): void
+    public function boot(LinkTypeRegistry $links, ReadEntitlements $reads): void
     {
+        $reads->declare('memories_read', ReadEntitlement::grant(MemoryPolicy::class));
+        $reads->declare('memories_list', ReadEntitlement::grant(MemoryPolicy::class));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $this->commands(
             [MemorySaveCommand::class, MemoryEditCommand::class, MemoryRemoveCommand::class, MemoryListCommand::class],

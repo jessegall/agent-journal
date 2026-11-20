@@ -12,6 +12,7 @@ use App\Bus\Contracts\CommandProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpToolProvider;
+use App\Operations\Enums\AccessType;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
@@ -23,8 +24,6 @@ use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
-use Domain\Chat\Enums\DockedRecordAbility;
-use Domain\Chat\Enums\MessagePinAbility;
 use Domain\Chat\Http\Controllers\CancelMessageController;
 use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
@@ -33,8 +32,6 @@ use Domain\Chat\Http\Controllers\TakeNextController;
 use Domain\Chat\Mcp\MessageResource;
 use Domain\Chat\Mcp\MessageSearch;
 use Domain\Chat\Mcp\PendingMessagesOverview;
-use Domain\Chat\Models\DockedRecord;
-use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Policies\DockedRecordPolicy;
 use Domain\Chat\Policies\MessagePinPolicy;
 use Domain\Chat\Resolvers\ChatWindowResolver;
@@ -78,8 +75,14 @@ final class ChatDomain extends Domain implements
     public function policies(): array
     {
         return [
-            new PolicyRegistration(MessagePin::class, MessagePinPolicy::class, MessagePinAbility::class),
-            new PolicyRegistration(DockedRecord::class, DockedRecordPolicy::class, DockedRecordAbility::class),
+            new PolicyRegistration(
+                MessagePinPolicy::class,
+                [AccessType::Edit],
+            ),
+            new PolicyRegistration(
+                DockedRecordPolicy::class,
+                [AccessType::Edit],
+            ),
         ];
     }
 

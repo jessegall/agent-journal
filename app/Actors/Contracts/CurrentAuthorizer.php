@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Contracts;
 
 use App\Actors\Exceptions\ActorNotAllowed;
-use BackedEnum;
+use App\Operations\Enums\AccessType;
 
 /**
  * Authorization for whoever acts in this request, through the authorizer of its type's provider.
@@ -18,17 +18,15 @@ interface CurrentAuthorizer
      *
      * @throws ActorNotAllowed
      */
-    public function authorize(string $policy, object|string $subject, BackedEnum $ability): void;
+    public function authorize(string $policy, object|string $subject, AccessType $access): void;
 
     /**
-     * The abilities of the list the acting actor may do on the subject, in the order given.
-     *
-     * @template TAbility of BackedEnum
+     * The accesses of the list the acting actor may have on the subject, in the order given.
      *
      * @param  class-string<Policy>  $policy
      * @param  object|class-string  $subject
-     * @param  list<TAbility>  $abilities
-     * @return list<TAbility>
+     * @param  list<AccessType>  $accesses
+     * @return list<AccessType>
      */
-    public function filterActions(string $policy, object|string $subject, array $abilities): array;
+    public function filterActions(string $policy, object|string $subject, array $accesses): array;
 }

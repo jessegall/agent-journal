@@ -8,7 +8,6 @@ use App\Agents\Values\ReadRequest;
 use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\SearchPage;
-use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\PublicationCard;
@@ -25,7 +24,7 @@ final readonly class DocumentSearch implements SearchContribution
 
     public function readRequest(): ReadRequest
     {
-        return new ReadRequest('docs_read', ResourceAreaType::JournalContent);
+        return new ReadRequest('docs_read');
     }
 
     public function search(string $query, int $page): SearchPage

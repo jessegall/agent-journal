@@ -6,12 +6,8 @@ namespace Domain\Tasks\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Handlers\CreateTaskHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Policies\TaskPolicy;
@@ -24,9 +20,8 @@ use Spatie\LaravelData\Attributes\Validation\Max;
  * @extends Command<string>
  */
 #[HandledBy(CreateTaskHandler::class)]
-#[Authorize(TaskPolicy::class, TaskAbility::Work)]
-#[Operation('create_task', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class CreateTask extends Command implements AuthorizedCommand
+#[Authorize(TaskPolicy::class, AccessType::Create)]
+final readonly class CreateTask extends Command
 {
     public function __construct(
         #[Max(Task::TITLE_CHARACTER_LIMIT)]
@@ -34,12 +29,4 @@ final readonly class CreateTask extends Command implements AuthorizedCommand
         #[Max(Task::NOTE_CHARACTER_LIMIT)]
         public string $brief,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Task::class;
-    }
 }

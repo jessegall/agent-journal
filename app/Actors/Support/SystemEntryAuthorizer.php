@@ -7,8 +7,8 @@ namespace App\Actors\Support;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\Authorizer;
 use App\Actors\Contracts\Policy;
-use App\Actors\Exceptions\ActorNotAllowed;
-use BackedEnum;
+use App\Operations\Enums\AccessType;
+use Illuminate\Auth\Access\Response;
 
 /**
  * The authorizer of one trusted entry of the journal itself: it may act only on the subjects of the policies its
@@ -21,15 +21,10 @@ final readonly class SystemEntryAuthorizer implements Authorizer
      */
     public function __construct(private array $policies) {}
 
-    /**
-     * @param  object|class-string  $subject
-     *
-     * @throws ActorNotAllowed
-     */
-    public function authorize(Policy $policy, Actor $actor, object|string $subject, BackedEnum $ability): void
+    public function evaluate(string $policy, Actor $actor, object|string $subject, AccessType $access): Response
     {
-        if (! in_array($policy::class, $this->policies, true)) {
-            throw ActorNotAllowed::to($ability, 'record');
-        }
+        return in_array($policy, $this->policies, true)
+            ? Response::allow()
+            : Response::deny("This trusted entry acts under no {$policy}.");
     }
 }

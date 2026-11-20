@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Handlers;
 
-use App\Contracts\CommandHandler;
 use Domain\Helpers\Commands\ContinueHelper;
 use Domain\Helpers\Enums\JobState;
 use Domain\Helpers\Exceptions\HelperJobAlreadyEnded;
 use Domain\Helpers\Exceptions\HelperLaunchUncertain;
 use Domain\Helpers\Exceptions\HelperUnavailable;
+use Domain\Helpers\Handlers\Support\HelperCommandHandler;
 use Domain\Helpers\Models\HelperJob;
 use Domain\Helpers\Readers\HelperRecords;
 use Domain\Helpers\Support\HelperDispatch;
@@ -20,7 +20,7 @@ use Domain\Helpers\Support\HelperStarts;
  * Continues the parent's own unfinished job of the named helper: an ended job refuses with the send that gives the
  * helper new work, and a job whose attempt may still run or is held refuses as uncertain.
  */
-final readonly class ContinueHelperHandler implements CommandHandler
+final readonly class ContinueHelperHandler extends HelperCommandHandler
 {
     public function __construct(
         private HelperDispatch $dispatch,

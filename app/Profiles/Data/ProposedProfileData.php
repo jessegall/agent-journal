@@ -23,7 +23,8 @@ final class ProposedProfileData extends Data
      * @param  list<string>|null  $skillAllowlist  null when the proposal leaves it out
      * @param  list<string>  $requiredSkills
      * @param  list<ProposedStopConditionData>  $stopConditions
-     * @param  list<WithheldAbilityData>  $withheldAbilities  abilities of its base this profile does not grant
+     * @param  list<WithheldGrantData>  $withheldGrants  grants of its base this profile does not hold
+     * @param  list<string>  $deniedCommands  application command classes the profile refuses outright
      */
     public function __construct(
         public readonly string $base,
@@ -38,8 +39,9 @@ final class ProposedProfileData extends Data
         public readonly string|null $container = null,
         #[DataCollectionOf(ProposedStopConditionData::class)]
         public readonly array $stopConditions = [],
-        #[DataCollectionOf(WithheldAbilityData::class)]
-        public readonly array $withheldAbilities = [],
+        #[DataCollectionOf(WithheldGrantData::class)]
+        public readonly array $withheldGrants = [],
+        public readonly array $deniedCommands = [],
         public readonly string $instances = 'reusable',
     ) {}
 

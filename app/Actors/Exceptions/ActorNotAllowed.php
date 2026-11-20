@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Exceptions;
 
 use App\Contracts\CommandRefusal;
-use BackedEnum;
+use App\Operations\Enums\AccessType;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,18 +14,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * The actor may not do the ability; the message names the ability and the kind of subject, never its content.
+ * The actor may not have the access; the message names the access and the kind of subject, never its content.
  */
 final class ActorNotAllowed extends RuntimeException implements CommandRefusal
 {
-    public static function to(BackedEnum $ability, string $subjectType): self
+    public static function to(AccessType $access, string $subjectType): self
     {
-        return new self("This actor may not {$ability->value} this {$subjectType}.");
+        return new self("This actor may not {$access->value} this {$subjectType}.");
     }
 
     public static function withoutStoredAuthority(string $type, Throwable|null $previous = null): self
     {
-        return new self("A {$type} has no stored authority another actor's request could evaluate.", previous: $previous);
+        return new self(
+            "A {$type} has no stored authority another actor's request could evaluate.",
+            previous: $previous,
+        );
     }
 
     public static function asNonOwner(): self
@@ -41,9 +44,9 @@ final class ActorNotAllowed extends RuntimeException implements CommandRefusal
     /**
      * The one place a Laravel gate's denial becomes the journal's refusal.
      */
-    public static function fromDenial(AuthorizationException $denial, BackedEnum $ability, string $subjectType): self
+    public static function fromDenial(AuthorizationException $denial, AccessType $access, string $subjectType): self
     {
-        $refusal = self::to($ability, $subjectType);
+        $refusal = self::to($access, $subjectType);
 
         return new self($refusal->getMessage(), 0, $denial);
     }

@@ -6,12 +6,11 @@ namespace App\Settings\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Operations\Enums\AccessType;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsResolver;
-use App\Settings\Enums\SettingAbility;
-use App\Settings\Models\SettingsRecord;
 use App\Settings\Policies\SettingPolicy;
 use App\Settings\Support\DatabaseSettingsCatalogue;
 use App\Settings\Support\DatabaseSettingsResolver;
@@ -39,10 +38,9 @@ final class SettingsServiceProvider extends ServiceProvider
     public function boot(PolicyCatalogue $policies): void
     {
         $policies->register('Core', new PolicyRegistration(
-            SettingsRecord::class,
             SettingPolicy::class,
-            SettingAbility::class,
-            ownerOnly: [SettingAbility::Administer],
+            [AccessType::Edit],
+            ownerOnly: [AccessType::Edit],
         ));
     }
 }

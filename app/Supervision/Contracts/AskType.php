@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Supervision\Contracts;
 
-use App\Agents\Values\OperationKey;
+use App\Bus\Contracts\Command;
 use App\Profiles\Values\AskTypeKey;
 use App\Supervision\Values\SubjectType;
 use DateInterval;
@@ -17,7 +17,12 @@ interface AskType
 
     public function resolver(): AskSubjectResolver;
 
-    public function operation(): OperationKey;
+    /**
+     * The registered command whose admission an answer to this ask needs.
+     *
+     * @return class-string<Command<mixed>>
+     */
+    public function requiredCommand(): string;
 
     public function allowance(): DateInterval;
 }

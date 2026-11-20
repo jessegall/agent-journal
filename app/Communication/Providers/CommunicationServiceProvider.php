@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Communication\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Contracts\ReadEntitlements;
 use App\Actors\Support\SystemEntryPolicies;
 use App\Actors\Values\PolicyRegistration;
+use App\Actors\Values\ReadEntitlement;
 use App\Agents\Contracts\RequestSource;
 use App\Agents\Support\PendingWorkSources;
 use App\Assignments\Contracts\AssignmentRegistration;
@@ -17,9 +19,9 @@ use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\InboxNotices as InboxNoticesContract;
 use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
-use App\Communication\Enums\MessageAbility;
 use App\Communication\Links\MessageLinkRecords;
 use App\Communication\Models\Message;
+use App\Communication\Policies\MessageAdministrationPolicy;
 use App\Communication\Policies\MessagePolicy;
 use App\Communication\Resolvers\AgentMessages;
 use App\Communication\Resolvers\MessageRecords;
@@ -33,6 +35,7 @@ use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Contracts\NumberedModelRegistration;
 use App\Numbers\Support\NumberedModel;
+use App\Operations\Enums\AccessType;
 use App\Records\Contracts\RecordProviderRegistration;
 use Illuminate\Console\Command;
 use Illuminate\Support\ServiceProvider;
@@ -63,13 +66,24 @@ final class CommunicationServiceProvider extends ServiceProvider
         PendingWorkSources $pendingWork,
         IncomingWorkRegistration $incoming,
         SystemEntryPolicies $system,
+        ReadEntitlements $reads,
     ): void {
+        $reads->declare('messages_show', ReadEntitlement::grant(MessagePolicy::class));
+        $reads->declare('messages_read', ReadEntitlement::grant(MessagePolicy::class));
+        $reads->declare('messages_list', ReadEntitlement::grant(MessagePolicy::class));
+        $reads->declare('messages_context', ReadEntitlement::grant(MessagePolicy::class));
+        $reads->declare('inbox_history', ReadEntitlement::grant(MessagePolicy::class));
+        $reads->declare('inbox_counts', ReadEntitlement::grant(MessagePolicy::class));
+        $reads->declare('attachments_read', ReadEntitlement::grant(MessagePolicy::class));
         $system->allow(InboxNotices::SYSTEM_ENTRY, MessagePolicy::class);
         $policies->register('Core', new PolicyRegistration(
-            Message::class,
             MessagePolicy::class,
-            MessageAbility::class,
-            ownerOnly: [MessageAbility::Inspect, MessageAbility::Recover],
+            [AccessType::Read, AccessType::Create, AccessType::Edit],
+        ));
+        $policies->register('Core', new PolicyRegistration(
+            MessageAdministrationPolicy::class,
+            [AccessType::Read, AccessType::Edit],
+            ownerOnly: [AccessType::Read, AccessType::Edit],
         ));
         $links->register([Message::LINK_TYPE => Message::class]);
         $pendingWork->register(PendingInboxWork::class);

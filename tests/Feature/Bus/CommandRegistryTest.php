@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
 use App\Agents\Commands\RetireAgent;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
@@ -13,7 +16,6 @@ use App\Bus\Exceptions\HandlerInOtherOwner;
 use App\Bus\Exceptions\HandlerServesTwoCommands;
 use App\Bus\Exceptions\MiddlewareDeclarationInvalid;
 use App\Bus\Exceptions\MiddlewareListedTwice;
-use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\CommandScope;
@@ -22,8 +24,8 @@ use App\Bus\Support\RegisteredMiddleware;
 use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
 use App\Exports\Support\Exports;
+use App\Operations\Enums\AccessType;
 use App\Pipelines\Contracts\PipelineRunner;
-use Tests\Fixtures\Bus\Enums\FixtureAbility;
 use Tests\Fixtures\Bus\Garden\CommandMiddleware\Fence;
 use Tests\Fixtures\Bus\Garden\Commands\Water;
 use Tests\Fixtures\Bus\Garden\Handlers\WaterHandler;
@@ -80,8 +82,8 @@ final class CommandRegistryTest extends TestCase
         $this->assertFalse($registry->isExported(RemoveItem::class));
         $this->assertTrue($registry->needsRepeatableRead(AddItem::class));
         $this->assertEquals(
-            new CommandAuthorization(FixturePolicy::class, FixtureAbility::Work),
-            $registry->authorizationOf(AddItem::class)->get(),
+            new Authorize(FixturePolicy::class, AccessType::Create),
+            $registry->authorizeOf(AddItem::class),
         );
         $this->assertSame(CommandEntry::Application, $registry->entryOf(AddItem::class));
         $this->assertSame(
@@ -111,14 +113,6 @@ final class CommandRegistryTest extends TestCase
 
         $this->assertTrue($registry->isExported(AddItem::class));
         $this->assertFalse($registry->isExported(RemoveItem::class));
-    }
-
-    public function test_an_exported_application_command_needs_an_operation_declaration(): void
-    {
-        $this->expectException(CommandDeclarationInvalid::class);
-        $this->expectExceptionMessage('an exported application command needs Operation');
-
-        $this->registryOf([$this->shop([RemoveItem::class], exports: [RemoveItem::class])]);
     }
 
     public function test_a_command_listed_twice_is_refused(): void
@@ -292,6 +286,18 @@ final class CommandRegistryTest extends TestCase
      */
     private function registryOf(array $owners): CommandRegistry
     {
+        $catalogue = $this->app->make(PolicyCatalogue::class);
+        $registered = array_map(fn (PolicyRegistration $registration) => $registration->policy, $catalogue->registrations());
+
+        if (! in_array(FixturePolicy::class, $registered, true)) {
+            $catalogue->register('Shop', new PolicyRegistration(FixturePolicy::class, [
+                AccessType::Read,
+                AccessType::Create,
+                AccessType::Edit,
+                AccessType::Delete,
+            ]));
+        }
+
         return CommandRegistry::from($owners, $this->app->make(PipelineRunner::class));
     }
 

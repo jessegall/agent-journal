@@ -10,9 +10,9 @@ namespace App\Agents\Enums;
 enum AccessRuleType: string
 {
     case ExplicitDenial = 'explicit_denial';
-    case ProtectedArea = 'protected_area';
+    case ProtectedPath = 'protected_path';
     case Unclassified = 'unclassified';
     case OperationGrant = 'operation_grant';
-    case ClassGrant = 'class_grant';
+    case ScopeGrant = 'scope_grant';
     case NotGranted = 'not_granted';
 }

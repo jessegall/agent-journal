@@ -11,15 +11,15 @@ namespace App\Profiles\Support;
 final readonly class PolicyOverride
 {
     /**
-     * @param  list<ClassRule>  $allowClasses
-     * @param  list<ClassRule>  $removeClasses
+     * @param  list<RootRule>  $allowPaths
+     * @param  list<RootRule>  $removePaths
      * @param  list<OperationRule>  $allowOperations
      * @param  list<string>  $removeOperations
      * @param  list<string>  $denyOperations
      */
     public function __construct(
-        public array $allowClasses,
-        public array $removeClasses,
+        public array $allowPaths,
+        public array $removePaths,
         public array $allowOperations,
         public array $removeOperations,
         public array $denyOperations,
@@ -32,7 +32,7 @@ final readonly class PolicyOverride
 
     public function changesAccess(): bool
     {
-        return $this->allowClasses !== [] || $this->removeClasses !== [] || $this->allowOperations !== []
+        return $this->allowPaths !== [] || $this->removePaths !== [] || $this->allowOperations !== []
             || $this->removeOperations !== [] || $this->denyOperations !== [];
     }
 
@@ -53,18 +53,18 @@ final readonly class PolicyOverride
     /**
      * The classes with this override applied: its removed classes gone, its allowed ones added once.
      *
-     * @param  list<ClassRule>  $classes
-     * @return list<ClassRule>
+     * @param  list<RootRule>  $classes
+     * @return list<RootRule>
      */
     public function appliedTo(array $classes): array
     {
-        $kept = array_values(array_filter($classes, fn (ClassRule $class) => ! array_any(
-            $this->removeClasses,
-            fn (ClassRule $removed) => $removed->isSameAs($class),
+        $kept = array_values(array_filter($classes, fn (RootRule $class) => ! array_any(
+            $this->removePaths,
+            fn (RootRule $removed) => $removed->isSameAs($class),
         )));
-        $added = array_values(array_filter($this->allowClasses, fn (ClassRule $class) => ! array_any(
+        $added = array_values(array_filter($this->allowPaths, fn (RootRule $class) => ! array_any(
             $kept,
-            fn (ClassRule $existing) => $existing->isSameAs($class),
+            fn (RootRule $existing) => $existing->isSameAs($class),
         )));
 
         return [...$kept, ...$added];

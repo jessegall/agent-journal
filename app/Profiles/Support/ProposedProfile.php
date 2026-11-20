@@ -10,7 +10,7 @@ use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\SupervisorRoutes;
-use App\Profiles\Values\WithheldAbility;
+use App\Profiles\Values\WithheldGrant;
 use App\Programs\Enums\HookProgram;
 
 /**
@@ -25,7 +25,8 @@ final readonly class ProposedProfile
      * @param  list<string>|null  $skillAllowlist
      * @param  list<string>  $requiredSkills
      * @param  list<StopCondition>  $stopConditions
-     * @param  list<WithheldAbility>  $withheldAbilities
+     * @param  list<WithheldGrant>  $withheldGrants
+     * @param  list<string>  $deniedCommands  application command classes the profile refuses outright
      */
     public function __construct(
         public ProfileKey $key,
@@ -41,7 +42,8 @@ final readonly class ProposedProfile
         public ExecutionModeType|null $container,
         public PolicyOverride $override,
         public array $stopConditions,
-        public array $withheldAbilities = [],
+        public array $withheldGrants = [],
+        public array $deniedCommands = [],
         public SupervisorRoutes $supervisor = new SupervisorRoutes(),
         public InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}

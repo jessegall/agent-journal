@@ -5,42 +5,26 @@ declare(strict_types=1);
 namespace App\Agents\Values;
 
 use App\Bus\Values\RecoveryCall;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 
+/**
+ * One read a caller asks for: the read's name, its real arguments and target, or no record at all for discovery.
+ * The read's entitlement is declared once, by name, in ReadEntitlements.
+ */
 final readonly class ReadRequest
 {
-    private const array RECOVERY = [
-        'overview_read',
-        'capabilities_read',
-        'operations_read',
-        'rules_list',
-        'rules_read',
-    ];
-
     /**
      * @param  array<string, string>  $arguments
      */
     public function __construct(
         public string $name,
-        public ResourceAreaType $area = ResourceAreaType::JournalWork,
         public array $arguments = [],
         public bool $discovery = false,
+        public string|null $target = null,
     ) {}
 
-    public static function forDiscovery(string $name, ResourceAreaType $area = ResourceAreaType::JournalWork): self
+    public static function forDiscovery(string $name): self
     {
-        return new self($name, $area, discovery: true);
-    }
-
-    public function isRecovery(): bool
-    {
-        return in_array($this->name, self::RECOVERY, true);
-    }
-
-    public function operation(): Operation
-    {
-        return Operation::journal($this->name, $this->area, [AccessType::Read]);
+        return new self($name, discovery: true);
     }
 
     public function matchesRecovery(RecoveryCall $recovery): bool

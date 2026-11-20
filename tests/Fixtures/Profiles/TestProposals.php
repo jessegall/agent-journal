@@ -10,7 +10,7 @@ use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
-use App\Profiles\Values\WithheldAbility;
+use App\Profiles\Values\WithheldGrant;
 use App\Programs\Enums\HookProgram;
 
 /**
@@ -22,7 +22,7 @@ final class TestProposals
     /**
      * @param  list<string>|null  $skillAllowlist
      * @param  list<string>  $requiredSkills
-     * @param  list<WithheldAbility>  $withheldAbilities
+     * @param  list<WithheldGrant>  $withheldGrants
      */
     public static function profile(
         string $key,
@@ -31,7 +31,7 @@ final class TestProposals
         string $model = 'opus',
         array|null $skillAllowlist = null,
         array $requiredSkills = [],
-        array $withheldAbilities = [],
+        array $withheldGrants = [],
         InstancePolicy $instances = InstancePolicy::Reusable,
     ): ProposedProfile {
         return new ProposedProfile(
@@ -48,7 +48,7 @@ final class TestProposals
             null,
             PolicyOverride::none(),
             [],
-            $withheldAbilities,
+            $withheldGrants,
             instances: $instances,
         );
     }

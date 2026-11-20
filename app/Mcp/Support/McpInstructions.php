@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Values\AbilityRequirement;
-use App\Assignments\Enums\AssignmentAbility;
-use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Policies\AssignmentPolicy;
+use App\Actors\Values\AccessRequirement;
+use App\Assignments\Policies\AssignmentRecipientPolicy;
+use App\Operations\Enums\AccessType;
 
 /**
  * What a started agent is told about the journal's MCP tools at every context start, by what its profile grants: how
@@ -38,15 +37,11 @@ final readonly class McpInstructions
     /**
      * Each journey that stays outside MCP, with the abilities it needs; none for a journey every agent has.
      *
-     * @return array<string, list<AbilityRequirement>>
+     * @return array<string, list<AccessRequirement>>
      */
     private function journeys(): array
     {
-        $dispatch = [new AbilityRequirement(
-            AssignmentPolicy::class,
-            AssignmentRecord::class,
-            AssignmentAbility::Dispatch,
-        )];
+        $dispatch = [new AccessRequirement(AssignmentRecipientPolicy::class, AccessType::Delegate)];
 
         return [
             'sequences (journal sequence)' => [],
@@ -61,7 +56,7 @@ final readonly class McpInstructions
     }
 
     /**
-     * @param  list<AbilityRequirement>  $requirements
+     * @param  list<AccessRequirement>  $requirements
      */
     private function grantsAll(array $requirements): bool
     {

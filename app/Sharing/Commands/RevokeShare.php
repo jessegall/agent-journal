@@ -6,15 +6,10 @@ namespace App\Sharing\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
 use App\Bus\Attributes\RequiresRequestKey;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Handlers\RevokeShareHandler;
-use App\Sharing\Models\Share;
 use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\ShareSummary;
 
@@ -25,21 +20,12 @@ use App\Sharing\Support\ShareSummary;
  * @extends Command<ShareSummary>
  */
 #[HandledBy(RevokeShareHandler::class)]
+#[Authorize(SharingPolicy::class, AccessType::Edit)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
-#[Authorize(SharingPolicy::class, SharingAbility::Administer)]
-#[Operation('revoke_share', ResourceAreaType::JournalControl, AccessType::Edit)]
-final readonly class RevokeShare extends Command implements AuthorizedCommand
+final readonly class RevokeShare extends Command
 {
     public function __construct(
         public string $shareId,
         public string $requestKey,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return Share::class;
-    }
 }

@@ -6,21 +6,18 @@ namespace Tests\Feature\Hooks;
 
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\ExecutionBudgetInvalid;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
 use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Values\AccessPolicy;
-use App\Agents\Values\ClassGrant;
 use App\Agents\Values\Operation;
 use App\Agents\Values\OperationGrant;
 use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
 use App\Operations\Exceptions\UnknownAccessType;
 use App\Processes\Values\ProcessGrants;
 use App\Profiles\Values\ProfileBase;
@@ -34,27 +31,20 @@ final class PolicyValuesTest extends TestCase
 {
     public function test_each_role_gets_its_section_51_grants(): void
     {
-        $main = ProfileBase::mainAgent()->defaultAccess();
-        $resolver = ProfileBase::readOnlyHelper()->defaultAccess();
-        $writer = ProfileBase::writingHelper()->defaultAccess();
+        $main = ProfileBase::mainAgent()->defaultAccess()->paths[0];
+        $resolver = ProfileBase::readOnlyHelper()->defaultAccess()->paths[0];
+        $writer = ProfileBase::writingHelper()->defaultAccess()->paths[0];
 
-        $this->assertTrue($main->grants(AccessType::Delete, ResourceAreaType::Workspace));
-        $this->assertTrue($main->grants(AccessType::Delegate, ResourceAreaType::JournalWork));
-        $this->assertFalse($main->grants(AccessType::Publish, ResourceAreaType::Workspace));
-        $this->assertFalse($main->grants(AccessType::Admin, ResourceAreaType::JournalControl));
-
-        $this->assertTrue($resolver->grants(AccessType::Read, ResourceAreaType::Workspace));
-        $this->assertTrue($resolver->grants(AccessType::Create, ResourceAreaType::JournalContent));
-        $this->assertFalse($resolver->grants(AccessType::Edit, ResourceAreaType::Workspace));
-        $this->assertFalse($resolver->grants(AccessType::Test, ResourceAreaType::Workspace));
-        $this->assertFalse($resolver->grants(AccessType::Delete, ResourceAreaType::JournalContent));
-        $this->assertFalse($resolver->grants(AccessType::Delegate, ResourceAreaType::JournalWork));
-
-        $this->assertTrue($writer->grants(AccessType::Edit, ResourceAreaType::Workspace));
-        $this->assertTrue($writer->grants(AccessType::Build, ResourceAreaType::Scratch));
-        $this->assertFalse($writer->grants(AccessType::Publish, ResourceAreaType::Workspace));
-        $this->assertFalse($writer->grants(AccessType::Network, ResourceAreaType::ProviderConnection));
-        $this->assertFalse($writer->grants(AccessType::Delegate, ResourceAreaType::JournalWork));
+        $this->assertTrue($main->permits(AccessType::Delete));
+        $this->assertFalse($main->permits(AccessType::Publish));
+        $this->assertTrue($resolver->permits(AccessType::Read));
+        $this->assertTrue($resolver->permits(AccessType::Execute));
+        $this->assertFalse($resolver->permits(AccessType::Edit));
+        $this->assertFalse($resolver->permits(AccessType::Test));
+        $this->assertTrue($writer->permits(AccessType::Edit));
+        $this->assertTrue($writer->permits(AccessType::Build));
+        $this->assertFalse($writer->permits(AccessType::Publish));
+        $this->assertSame([], ProfileBase::writingHelper()->defaultAccess()->destinations);
     }
 
     public function test_a_decision_names_its_rule(): void
@@ -63,34 +53,26 @@ final class PolicyValuesTest extends TestCase
             'shell',
             'shell:git.push',
             [AccessType::Execute, AccessType::Publish, AccessType::Network],
-            [new ResourceRequest(ResourceAreaType::Workspace, '/workspace')],
+            [ResourceRequest::path('/workspace')],
             ['push'],
             1,
         );
-        $edit = new Operation(
-            'tool',
-            'tool:edit',
-            [AccessType::Edit],
-            [new ResourceRequest(ResourceAreaType::Workspace, '/workspace/a.php')],
-            [],
-            1,
-        );
+        $edit = new Operation('tool', 'tool:edit', [AccessType::Edit], [ResourceRequest::path('/workspace/a.php')], [], 1);
         $secret = new Operation(
             'tool',
             'tool:read',
             [AccessType::Read],
-            [new ResourceRequest(ResourceAreaType::Protected, '/home/.claude')],
+            [ResourceRequest::path('/home/journal/.claude/.credentials.json')],
             [],
             1,
         );
         $writer = ProfileBase::writingHelper()->defaultAccess();
-        $denying = AccessPolicy::make(
-            $writer->classGrants,
-            [new OperationGrant('shell:git.push', [])],
-            ['shell:git.push'],
-            [],
+        $denying = new AccessPolicy(
+            $writer->paths,
             [],
             ProcessGrants::everything(),
+            [new OperationGrant('shell:git.push', [])],
+            ['shell:git.push'],
         );
 
         $this->assertSame(
@@ -98,11 +80,11 @@ final class PolicyValuesTest extends TestCase
             [$writer->decide($push)->allowed, $writer->decide($push)->rule],
         );
         $this->assertSame(
-            [true, AccessRuleType::ClassGrant],
+            [true, AccessRuleType::ScopeGrant],
             [$writer->decide($edit)->allowed, $writer->decide($edit)->rule],
         );
         $this->assertSame(
-            [false, AccessRuleType::ProtectedArea],
+            [false, AccessRuleType::ProtectedPath],
             [$writer->decide($secret)->allowed, $writer->decide($secret)->rule],
         );
         $this->assertSame(
@@ -116,18 +98,13 @@ final class PolicyValuesTest extends TestCase
         );
     }
 
-    public function test_a_protected_grant_and_an_unknown_access_type_are_refused(): void
+    public function test_an_escaping_operand_and_an_unknown_access_type_are_refused(): void
     {
-        $this->assertRefused(
-            AccessPolicyInvalid::class,
-            fn () => AccessPolicy::make(
-                [new ClassGrant(ResourceAreaType::Protected, [AccessType::Read])],
-                [],
-                [],
-                [],
-                [],
-                ProcessGrants::everything(),
-            ),
+        $escaping = new Operation('tool', 'tool:read', [AccessType::Read], [ResourceRequest::path('../outside')], [], 1);
+
+        $this->assertSame(
+            AccessRuleType::Unclassified,
+            ProfileBase::mainAgent()->defaultAccess()->decide($escaping)->rule,
         );
         $this->assertRefused(UnknownAccessType::class, fn () => AccessType::fromKey('unknown'));
     }

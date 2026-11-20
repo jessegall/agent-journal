@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\ActorAttention;
-use App\Actors\Contracts\PolicyCatalogue;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\Event;
 use App\Domains\Providers\DomainEventServiceProvider;
-use App\Domains\Support\DomainRegistry;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
@@ -38,12 +36,6 @@ final class TaskWatchDeliveryTest extends TestCase
     protected function setUpCommittedHookStack(): void
     {
         $this->bootModules(TaskWatchDomain::class);
-        $domain = $this->app->make(DomainRegistry::class)->get('States');
-        $catalogue = $this->app->make(PolicyCatalogue::class);
-
-        foreach ($domain->policies() as $policy) {
-            $catalogue->register($domain->name, $policy);
-        }
 
         new DomainEventServiceProvider($this->app)->boot();
         $this->setUpBaseStack();

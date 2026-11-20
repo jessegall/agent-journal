@@ -6,14 +6,9 @@ namespace Domain\Sequences\Commands;
 
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\Operation;
-use App\Bus\Contracts\AuthorizedCommand;
 use App\Bus\Support\Command;
 use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
-use Domain\Sequences\Enums\SequenceAbility;
 use Domain\Sequences\Handlers\StartSequenceHandler;
-use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Policies\SequencePolicy;
 
 /**
@@ -22,20 +17,11 @@ use Domain\Sequences\Policies\SequencePolicy;
  * @extends Command<null>
  */
 #[HandledBy(StartSequenceHandler::class)]
-#[Authorize(SequencePolicy::class, SequenceAbility::Work)]
-#[Operation('start_sequence', ResourceAreaType::JournalWork, AccessType::Create)]
-final readonly class StartSequence extends Command implements AuthorizedCommand
+#[Authorize(SequencePolicy::class, AccessType::Create)]
+final readonly class StartSequence extends Command
 {
     public function __construct(
         public string $sequenceRunId,
         public string $sessionId,
     ) {}
-
-    /**
-     * @return class-string
-     */
-    public function subject(): string
-    {
-        return SequenceRun::class;
-    }
 }

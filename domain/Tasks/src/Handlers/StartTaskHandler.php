@@ -6,13 +6,13 @@ namespace Domain\Tasks\Handlers;
 
 use App\Actors\Contracts\ReplyInboxes;
 use App\Actors\Support\ActorIdentity;
-use App\Contracts\CommandHandler;
 use App\Desks\Contracts\RunClaims;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunTaken;
+use Domain\Tasks\Handlers\Support\TaskCommandHandler;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Models\TaskRun;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -21,7 +21,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * Resolves the session after every middleware, then starts the task for it under the task's row lock and answers the
  * run number: the same session's active run is kept, another session's run is not taken.
  */
-final readonly class StartTaskHandler implements CommandHandler
+final readonly class StartTaskHandler extends TaskCommandHandler
 {
     public function __construct(
         private Dispatcher $events,
