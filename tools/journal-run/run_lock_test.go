@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ func TestANewRunWaitsOnTheRunLockAndStartsWhenItIsGone(t *testing.T) {
 	if err := os.MkdirAll(setup.Home, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(mark, nil, 0o644); err != nil {
+	if err := os.WriteFile(mark, []byte(strconv.Itoa(os.Getpid())), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	time.AfterFunc(1500*time.Millisecond, func() { os.Remove(mark) })
@@ -22,6 +23,19 @@ func TestANewRunWaitsOnTheRunLockAndStartsWhenItIsGone(t *testing.T) {
 	output, code := run(t, setup, newClient())
 	if code != 0 || !strings.Contains(output, "ran") || time.Since(started) < time.Second {
 		t.Fatalf("printed %q with code %d after %s", output, code, time.Since(started))
+	}
+}
+
+func TestARunLockOfAProcessThatDiedHoldsNoRun(t *testing.T) {
+	setup := options(t, "echo ran")
+	if err := os.MkdirAll(setup.Home, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(setup.Home, RunLockMark), []byte("999999"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if output, code := run(t, setup, newClient()); code != 0 || !strings.Contains(output, "ran") {
+		t.Fatalf("printed %q with code %d", output, code)
 	}
 }
 

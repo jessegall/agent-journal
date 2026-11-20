@@ -15,7 +15,7 @@ const RunLockMark = "run-lock"
 const RunLockLimitSeconds = 600
 
 // LockWait is the start of a run's script: it names the run, so a change of the code started by this run does not wait
-// on itself, and waits while the mark is there before the first part starts. A line of journal commands, or one that
+// on itself, and waits while the mark is there and the process it names lives, before the first part starts. A line of journal commands, or one that
 // only reads, does not wait: the agent needs them to go on working, and they touch none of the code being changed.
 func LockWait(home string, process int, parts []Part, aliases []string, onlyReads bool) string {
 	processExport := fmt.Sprintf("export JOURNAL_PROCESS=%d\n", process)
@@ -23,7 +23,7 @@ func LockWait(home string, process int, parts []Part, aliases []string, onlyRead
 		return processExport
 	}
 	mark := quoted(filepath.Join(home, RunLockMark))
-	return processExport + fmt.Sprintf("__journal_waited=0\nwhile [ -e %s ] && [ \"$__journal_waited\" -lt %d ]; do sleep 1; __journal_waited=$((__journal_waited+1)); done\n", mark, RunLockLimitSeconds)
+	return processExport + fmt.Sprintf("__journal_waited=0\nwhile [ -e %s ] && kill -0 \"$(cat %s 2>/dev/null)\" 2>/dev/null && [ \"$__journal_waited\" -lt %d ]; do sleep 1; __journal_waited=$((__journal_waited+1)); done\n", mark, mark, RunLockLimitSeconds)
 }
 
 // SlotWaitLimitSeconds is how long a queued run waits for its spot at most, so a queue that died leaves no run waiting.
