@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
-use App\Agents\Models\AgentSession;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\RequestSource;
 use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Enums\AgentInboxState;
-use App\Communication\Enums\AgentMessageView;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
+use App\Reads\Enums\ReadView;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Agents\TestSelections;
@@ -62,7 +62,7 @@ final class AgentInboxTest extends TestCase
         $this->assertSame(1, $inbox->messages[0]->revision);
         $this->assertTrue($inbox->messages[0]->isQuestion);
         $this->assertThrows(
-            fn () => $reader->message($unrelated->id, AgentMessageView::Summary),
+            fn () => $reader->message($unrelated->id, ReadView::Summary),
             MessageMissing::class,
         );
 
@@ -79,7 +79,7 @@ final class AgentInboxTest extends TestCase
         $question = $this->askInboxOf(ActorIdentity::of($caller->agent), str_repeat('é', 600));
         $caller->startRequest($this->app);
         $reader = $this->app->make(AgentMessageReader::class);
-        $first = $reader->message($question->id, AgentMessageView::Context);
+        $first = $reader->message($question->id, ReadView::Context);
         $last = $reader->context($question->id, $first->continuation);
 
         $this->assertNotNull($first->body);
@@ -119,8 +119,8 @@ final class AgentInboxTest extends TestCase
 
         $this->startRequestAs($child->id, $started->session->id);
         $reader = $this->app->make(AgentMessageReader::class);
-        $this->assertTrue($reader->message($first->id, AgentMessageView::Summary)->message->isJobSource);
-        $this->assertFalse($reader->message($first->id, AgentMessageView::Summary)->message->isSelected);
+        $this->assertTrue($reader->message($first->id, ReadView::Summary)->message->isJobSource);
+        $this->assertFalse($reader->message($first->id, ReadView::Summary)->message->isSelected);
         $this->assertThrows(fn () => Message::visibleById($second->id), MessageMissing::class);
     }
 }

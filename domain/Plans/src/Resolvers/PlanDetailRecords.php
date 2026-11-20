@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Reads\Enums\ReadView;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Contracts\PlanDetailsResolver;
-use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Models\Phase;
@@ -27,7 +27,7 @@ final readonly class PlanDetailRecords implements PlanDetailsResolver
         private PlanRecords $records,
     ) {}
 
-    public function plan(string $planId, PlanView $view, int $taskOffset = 0): PlanDetails
+    public function plan(string $planId, ReadView $view, int $taskOffset = 0): PlanDetails
     {
         $this->actors->actor();
         $plan = Plan::query()->find($planId) ?? throw PlanMissing::withId($planId);

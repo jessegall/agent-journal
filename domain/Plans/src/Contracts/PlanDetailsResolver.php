@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Contracts;
 
+use App\Reads\Enums\ReadView;
 use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanDetails;
-use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 
@@ -22,7 +22,7 @@ interface PlanDetailsResolver
      *
      * @throws PlanMissing
      */
-    public function plan(string $planId, PlanView $view, int $taskOffset = 0): PlanDetails;
+    public function plan(string $planId, ReadView $view, int $taskOffset = 0): PlanDetails;
 
     /**
      * @throws PhaseMissing

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Agents\Contracts\StartReadiness;
+use App\Agents\Contracts\ToolDiscovery;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -14,7 +14,7 @@ use Tests\TestCase;
 /**
  * An authenticated tools/list records the start's tool discovery at the call's signed issue time; nothing else does.
  */
-final class ReadinessDiscoveryTest extends TestCase
+final class ToolDiscoveryTest extends TestCase
 {
     use CommitsHookRows;
     use SendsMcpFrames;
@@ -49,25 +49,25 @@ final class ReadinessDiscoveryTest extends TestCase
 
     public function test_an_older_discovery_never_moves_it_back(): void
     {
-        $readiness = $this->app->make(StartReadiness::class);
+        $discovery = $this->app->make(ToolDiscovery::class);
         $later = CarbonImmutable::now()->startOfSecond();
 
-        $readiness->recordDiscovery($this->start->session->id, $later);
-        $readiness->recordDiscovery($this->start->session->id, $later->subMinute());
+        $discovery->recordDiscovery($this->start->session->id, $later);
+        $discovery->recordDiscovery($this->start->session->id, $later->subMinute());
 
         $this->assertTrue($later->equalTo($this->start->session->fresh()?->discovered_at));
     }
 
     public function test_discovered_since_compares_the_discovery_with_the_start_generation(): void
     {
-        $readiness = $this->app->make(StartReadiness::class);
+        $discovery = $this->app->make(ToolDiscovery::class);
         $discoveredAt = CarbonImmutable::now()->startOfSecond();
 
-        $this->assertFalse($readiness->discoveredSince($this->start->session->id, $discoveredAt->subMinute()));
+        $this->assertFalse($discovery->discoveredSince($this->start->session->id, $discoveredAt->subMinute()));
 
-        $readiness->recordDiscovery($this->start->session->id, $discoveredAt);
+        $discovery->recordDiscovery($this->start->session->id, $discoveredAt);
 
-        $this->assertTrue($readiness->discoveredSince($this->start->session->id, $discoveredAt->subMinute()));
-        $this->assertFalse($readiness->discoveredSince($this->start->session->id, $discoveredAt->addMinute()));
+        $this->assertTrue($discovery->discoveredSince($this->start->session->id, $discoveredAt->subMinute()));
+        $this->assertFalse($discovery->discoveredSince($this->start->session->id, $discoveredAt->addMinute()));
     }
 }

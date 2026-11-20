@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Domain\Plans\Enums;
+namespace App\Reads\Enums;
 
 /**
- * How much of one plan a read gives: its summary, or its context with the brief and the notes.
+ * How much of one record a read gives: its summary, or its context with its long texts.
  */
-enum PlanView: string
+enum ReadView: string
 {
     case Summary = 'summary';
     case Context = 'context';

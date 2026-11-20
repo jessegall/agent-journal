@@ -6,10 +6,10 @@ namespace Domain\Chat\Mcp;
 
 use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Data\AgentMessageCard;
-use App\Communication\Enums\AgentMessageView;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
+use App\Reads\Enums\ReadView;
 
 /**
  * Renders message content and keeps continuation calls in their own field.
@@ -42,9 +42,9 @@ final readonly class MessageReadResult
         ])]);
     }
 
-    private function defaultView(string $tool): AgentMessageView
+    private function defaultView(string $tool): ReadView
     {
-        return $tool === self::TOOL ? AgentMessageView::Summary : AgentMessageView::Context;
+        return $tool === self::TOOL ? ReadView::Summary : ReadView::Context;
     }
 
     /**

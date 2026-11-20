@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Agents\Actions\AgentRuntimes;
-use App\Agents\Contracts\StartReadiness;
+use App\Agents\Contracts\ToolDiscovery;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
@@ -23,7 +23,7 @@ use Tests\TestCase;
  * does not carry over, and a session the host never started has nothing to wait for.
  */
 #[TimeLimit(seconds: 4, reason: 'It starts a test agent session and opens its runtime.')]
-final class LaunchReadinessGateTest extends TestCase
+final class ToolDiscoveryGenerationTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -31,24 +31,27 @@ final class LaunchReadinessGateTest extends TestCase
     {
         $start = TestStart::start('writing-helper');
         $this->app->make(AgentRuntimes::class)->open($start->session, $this->intent(), 'start-token');
-        $readiness = $this->app->make(StartReadiness::class);
+        $discovery = $this->app->make(ToolDiscovery::class);
 
-        $this->assertFalse($readiness->isReady($start->session->id));
+        $this->assertFalse($discovery->isDiscoveredInCurrentGeneration($start->session->id));
 
-        $readiness->recordDiscovery($start->session->id, CarbonImmutable::now());
-        $this->assertTrue($readiness->isReady($start->session->id));
+        $discovery->recordDiscovery($start->session->id, CarbonImmutable::now());
+        $this->assertTrue($discovery->isDiscoveredInCurrentGeneration($start->session->id));
 
         $runtime = AgentRuntime::query()->where('agent_session_id', $start->session->id)->sole();
-        $runtime->recordObservation(RuntimeActivity::Starting, HoldReason::None, 2, CarbonImmutable::now()->addSecond());
+        $later = CarbonImmutable::now()->addSecond();
+        $runtime->recordObservation(RuntimeActivity::Starting, HoldReason::None, 2, $later);
 
-        $this->assertFalse($readiness->isReady($start->session->id));
+        $this->assertFalse($discovery->isDiscoveredInCurrentGeneration($start->session->id));
     }
 
     public function test_a_session_the_host_never_started_is_ready(): void
     {
         $start = TestStart::start();
 
-        $this->assertTrue($this->app->make(StartReadiness::class)->isReady($start->session->id));
+        $discovery = $this->app->make(ToolDiscovery::class);
+
+        $this->assertTrue($discovery->isDiscoveredInCurrentGeneration($start->session->id));
     }
 
     private function intent(): RuntimeIntent

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use App\Assignments\Contracts\AssigneeResolver;
+use App\Reads\Enums\ReadView;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskResolver;
-use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\Support\TaskExecutions;
 
@@ -23,7 +23,7 @@ final readonly class TaskDetailRecords implements TaskDetailsResolver
         private TaskExecutions $executions,
     ) {}
 
-    public function details(string $taskId, TaskView $view): TaskDetails
+    public function details(string $taskId, ReadView $view): TaskDetails
     {
         $this->visibility->requireVisible($taskId);
         $task = Task::query()->whereKey($taskId)->sole();

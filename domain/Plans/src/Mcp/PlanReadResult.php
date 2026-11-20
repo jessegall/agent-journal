@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp;
 
-use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\Continuation;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Contracts\TextFields;
+use App\Mcp\Data\ToolResult;
+use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
+use App\Reads\Enums\ReadView;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Contracts\PlanDetailsResolver;
-use Domain\Plans\Enums\PlanView;
 
 /**
  * Presents the same plan details for the tool and resource.
@@ -35,9 +35,9 @@ final readonly class PlanReadResult
     {
         $cursor = $arguments->continuation();
         $position = $cursor === null
-            ? $this->first($planId, $arguments->enumOr('view', PlanView::Summary))
+            ? $this->first($planId, $arguments->enumOr('view', ReadView::Summary))
             : $this->continuations->open($cursor, self::TOOL, $planId);
-        $view = PlanView::from($position->filters['view']);
+        $view = ReadView::from($position->filters['view']);
         $isTextContinuation = isset($position->filters['text_digest']);
         $plan = $this->plans->plan($planId, $view, $isTextContinuation ? 0 : $position->offset);
         $position->assertCurrentRevision($plan->revision);
@@ -51,13 +51,13 @@ final readonly class PlanReadResult
         return $this->phases($plan, $position, $text);
     }
 
-    private function first(string $planId, PlanView $view): Continuation
+    private function first(string $planId, ReadView $view): Continuation
     {
         return new Continuation(self::TOOL, $planId, ['view' => $view->value, 'phase_offset' => 0], 0);
     }
 
     /**
-     * @param array<string, string> $text
+     * @param  array<string, string>  $text
      */
     private function phases(PlanDetails $plan, Continuation $position, array $text): ToolResult
     {
@@ -74,7 +74,7 @@ final readonly class PlanReadResult
             $next = $this->fields->start(new Continuation(
                 self::TOOL,
                 $plan->id,
-                ['view' => PlanView::Context->value],
+                ['view' => ReadView::Context->value],
                 1,
                 revision: $plan->revision,
             ), $text);

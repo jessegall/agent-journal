@@ -57,7 +57,6 @@ final class DomainClassesTest extends TestCase
             'TaskDetailsResolver',
             'TaskExecution',
             'TaskDetails',
-            'TaskView',
             'TaskType',
         ]];
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], [
@@ -85,7 +84,6 @@ final class DomainClassesTest extends TestCase
             'PlanDetails',
             'PlanPhaseTasks',
             'PhaseDetails',
-            'PlanView',
             'PhaseMissing',
         ]];
         yield 'Chat' => [ChatDomain::class, [], []];

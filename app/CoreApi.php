@@ -169,10 +169,10 @@ use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionProvenance;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Contracts\StartExecutor;
-use App\Agents\Contracts\StartReadiness;
 use App\Agents\Contracts\StartReceipts;
 use App\Agents\Contracts\StartRecordResolver;
 use App\Agents\Contracts\StartReservations;
+use App\Agents\Contracts\ToolDiscovery;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
@@ -508,7 +508,6 @@ use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\AgentInboxState;
-use App\Communication\Enums\AgentMessageView;
 use App\Communication\Enums\DismissalType;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageAnswered;
@@ -851,6 +850,7 @@ use App\Queries\Support\TextSearch;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Enums\ReadMode;
+use App\Reads\Enums\ReadView;
 use App\Reads\Exceptions\LazyLoadRefused;
 use App\Reads\Exceptions\ModelReadAllRefused;
 use App\Reads\Exceptions\QueryInValueRead;
@@ -1210,7 +1210,7 @@ final class CoreApi
                 CurrentActorSetter::class,
                 AgentResolver::class,
                 SessionResolver::class,
-                StartReadiness::class,
+                ToolDiscovery::class,
                 StartExecutor::class,
                 HostCapabilities::class,
                 StartRecordResolver::class,
@@ -1419,7 +1419,7 @@ final class CoreApi
                 AgentMessageCard::class,
                 AgentMessageDetails::class,
                 AgentInboxState::class,
-                AgentMessageView::class,
+                ReadView::class,
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,

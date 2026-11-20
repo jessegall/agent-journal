@@ -15,7 +15,6 @@ use App\Communication\Data\AgentInboxCounts;
 use App\Communication\Data\AgentMessageCard;
 use App\Communication\Data\AgentMessageDetails;
 use App\Communication\Enums\AgentInboxState;
-use App\Communication\Enums\AgentMessageView;
 use App\Communication\Models\Message;
 use App\Communication\Support\RegisteredInboxes;
 use App\Mcp\Contracts\Continuations;
@@ -24,6 +23,7 @@ use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\SearchPage;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\TextChunk;
+use App\Reads\Enums\ReadView;
 use App\Reads\Support\ReadBuilder;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -81,9 +81,9 @@ final readonly class AgentMessages implements AgentMessageReader
         return new SearchPage(array_values($hits), $matching->count() > $size);
     }
 
-    public function message(string $messageId, AgentMessageView $view): AgentMessageDetails
+    public function message(string $messageId, ReadView $view): AgentMessageDetails
     {
-        if ($view === AgentMessageView::Context) {
+        if ($view === ReadView::Context) {
             return $this->context($messageId, null);
         }
 

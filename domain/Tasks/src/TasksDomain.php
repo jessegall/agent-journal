@@ -50,7 +50,6 @@ use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskResolver;
 use Domain\Tasks\Enums\TaskAbility;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Mcp\HeldTasksOverview;
@@ -128,7 +127,6 @@ final class TasksDomain extends Domain implements
                 TaskState::class,
                 TaskExecution::class,
                 TaskDetails::class,
-                TaskView::class,
                 TaskType::class,
             )
             ->exceptions(TaskMissing::class)

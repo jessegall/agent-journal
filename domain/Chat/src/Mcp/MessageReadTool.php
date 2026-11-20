@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Mcp;
 
-use App\Communication\Enums\AgentMessageView;
+use App\Reads\Enums\ReadView;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -19,7 +19,7 @@ final class MessageReadTool extends MessageDetailsTool
     {
         return [
             ...parent::schema($schema),
-            'view' => $schema->string()->enum(array_column(AgentMessageView::cases(), 'value')),
+            'view' => $schema->string()->enum(array_column(ReadView::cases(), 'value')),
         ];
     }
 }

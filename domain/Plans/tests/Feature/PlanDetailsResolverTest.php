@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
+use App\Reads\Enums\ReadView;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Contracts\PlanResolver;
-use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
@@ -35,17 +35,17 @@ final class PlanDetailsResolverTest extends TestCase
         $tasks[0]->finish();
         $resolver = $this->app->make(PlanDetailsResolver::class);
 
-        $details = $resolver->plan($plan->id, PlanView::Context);
+        $details = $resolver->plan($plan->id, ReadView::Context);
         $card = $this->app->make(PlanResolver::class)->list(new PlanFilters(search: 'Counted plan'))->cards[0];
 
         $this->assertEquals($card->progress, $details->progress);
         $this->assertSame([1, 3], [$details->progress->done, $details->progress->total]);
         $this->assertSame('Count it.', $details->brief);
-        $this->assertNull($resolver->plan($plan->id, PlanView::Summary)->brief);
+        $this->assertNull($resolver->plan($plan->id, ReadView::Summary)->brief);
 
         $tasks[1]->finish();
 
-        $this->assertSame(2, $resolver->plan($plan->id, PlanView::Summary)->progress->done);
+        $this->assertSame(2, $resolver->plan($plan->id, ReadView::Summary)->progress->done);
     }
 
     #[TimeLimit(seconds: 5, reason: 'It builds 120 tasks in one plan and reads them in three pages.')]
@@ -60,7 +60,7 @@ final class PlanDetailsResolverTest extends TestCase
         $reads = 0;
 
         do {
-            $details = $resolver->plan($plan->id, PlanView::Summary, $offset);
+            $details = $resolver->plan($plan->id, ReadView::Summary, $offset);
             $page = array_merge(...array_map(fn (PlanPhaseTasks $phase): array => $phase->taskIds, $details->phases));
             $this->assertLessThanOrEqual(PlanDetailsResolver::TASKS_PER_READ, count($page));
             $seen = [...$seen, ...$page];

@@ -721,7 +721,7 @@
                 "outputSchema": null,
                 "title": "Continue Helper Tool"
             },
-            "helpers_start": {
+            "helpers_send": {
                 "inputSchema": {
                     "additionalProperties": false,
                     "properties": {
@@ -731,6 +731,66 @@
                         },
                         "identity_id": {
                             "maxLength": 64,
+                            "type": "string"
+                        },
+                        "independent": {
+                            "type": "boolean"
+                        },
+                        "model": {
+                            "maxLength": 200,
+                            "type": "string"
+                        },
+                        "profile_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "program_key": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "purpose_id": {
+                            "maxLength": 64,
+                            "type": "string"
+                        },
+                        "purpose_text": {
+                            "maxLength": 2000,
+                            "type": "string"
+                        },
+                        "request_key": {
+                            "maxLength": 128,
+                            "type": "string"
+                        },
+                        "source_subjects": {
+                            "items": {
+                                "maxLength": 200,
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        "subject": {
+                            "maxLength": 200,
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "identity_id",
+                        "profile_key",
+                        "model",
+                        "brief",
+                        "request_key"
+                    ],
+                    "type": "object"
+                },
+                "name": "helpers_send",
+                "outputSchema": null,
+                "title": "Send Helper Tool"
+            },
+            "helpers_start": {
+                "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "brief": {
+                            "maxLength": 20000,
                             "type": "string"
                         },
                         "independent": {

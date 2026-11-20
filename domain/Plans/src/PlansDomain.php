@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans;
 
-use Domain\Plans\Mcp\PlanSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Assignments\Contracts\AutoAssignmentProvider;
@@ -61,13 +60,13 @@ use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
-use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
 use Domain\Plans\Mcp\HeldPlansOverview;
 use Domain\Plans\Mcp\PlanResource;
+use Domain\Plans\Mcp\PlanSearch;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
@@ -136,7 +135,6 @@ final class PlansDomain extends Domain implements
                 PlanDetails::class,
                 PlanPhaseTasks::class,
                 PhaseDetails::class,
-                PlanView::class,
             )
             ->commands(
                 StartPlan::class,

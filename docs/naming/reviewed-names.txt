@@ -71,8 +71,6 @@ case	AgentAbility::Work
 case	AgentInboxState::All
 case	AgentInboxState::Answered
 case	AgentInboxState::Pending
-case	AgentMessageView::Context
-case	AgentMessageView::Summary
 case	AnalysisLimit::Depth
 case	AnalysisLimit::ExecutableParts
 case	AnalysisLimit::Milliseconds
@@ -579,8 +577,6 @@ case	PlanType::Build
 case	PlanType::Cleanup
 case	PlanType::Fix
 case	PlanType::Research
-case	PlanView::Context
-case	PlanView::Summary
 case	PolicyOriginType::GlobalDefault
 case	PolicyOriginType::Profile
 case	PolicyOriginType::ProjectType
@@ -663,6 +659,8 @@ case	ReadMode::Chunked
 case	ReadMode::Default
 case	ReadMode::Limited
 case	ReadMode::Unbounded
+case	ReadView::Context
+case	ReadView::Summary
 case	ReceiptOwner::CommandBus
 case	ReceiptOwner::Operation
 case	ReceiptState::Completed
@@ -979,8 +977,6 @@ case	TaskState::Open
 case	TaskState::Started
 case	TaskTextLimit::Note
 case	TaskTextLimit::Title
-case	TaskView::Context
-case	TaskView::Summary
 case	TerminalFrameState::Ended
 case	TerminalFrameState::Live
 case	TerminalFrameState::Restarted
@@ -2688,7 +2684,7 @@ class	ListReportsController
 class	ListTextSectionsCall
 class	ListTextSectionsController
 class	ListToParse
-class	ListToolsAndRecordReadiness
+class	ListToolsAndRecordDiscovery
 class	ListedPage
 class	ListedTasks
 class	ListenerDeclarations
@@ -4057,7 +4053,6 @@ class	RuntimeEvidence
 class	RuntimeExit
 class	RuntimeIntent
 class	RuntimeLivenessReportData
-class	RuntimeReadinessController
 class	RuntimeRecords
 class	RuntimeScreen
 class	RuntimeSetting
@@ -4163,6 +4158,7 @@ class	SendHelper
 class	SendHelperCall
 class	SendHelperController
 class	SendHelperHandler
+class	SendHelperTool
 class	SendMessage
 class	SendMessageCall
 class	SendMessageCommand
@@ -4192,7 +4188,6 @@ class	SessionOutputPaths
 class	SessionPolicy
 class	SessionPolicyFrozen
 class	SessionProvenance
-class	SessionReadiness
 class	SessionRecords
 class	SessionSelectionFixed
 class	SessionSkillStatus
@@ -4200,6 +4195,7 @@ class	SessionSkillsIntended
 class	SessionStartDetails
 class	SessionStartStep
 class	SessionStarted
+class	SessionToolDiscovery
 class	SetBooleanSetting
 class	SetBooleanSettingHandler
 class	SetCallDeadline
@@ -4962,6 +4958,7 @@ class	ToolArgumentInvalid
 class	ToolArgumentUnknown
 class	ToolArguments
 class	ToolCallFinished
+class	ToolDiscoveryController
 class	ToolFinished
 class	ToolRequested
 class	ToolResult
@@ -5843,7 +5840,6 @@ enum	AdmissionRefusalCode
 enum	AdmissionState
 enum	AgentAbility
 enum	AgentInboxState
-enum	AgentMessageView
 enum	AnalysisLimit
 enum	AnswerType
 enum	AskAbility
@@ -5966,7 +5962,6 @@ enum	PlanState
 enum	PlanStateGroup
 enum	PlanTextLimit
 enum	PlanType
-enum	PlanView
 enum	PolicyOriginType
 enum	PoolInputType
 enum	PoolMembersType
@@ -5989,6 +5984,7 @@ enum	PublicationView
 enum	PurposeType
 enum	ReadEvidence
 enum	ReadMode
+enum	ReadView
 enum	ReceiptOwner
 enum	ReceiptState
 enum	RecordLinkAbility
@@ -6063,7 +6059,6 @@ enum	TaskAbility
 enum	TaskRunState
 enum	TaskState
 enum	TaskTextLimit
-enum	TaskView
 enum	TerminalFrameState
 enum	TerminalViewRefusal
 enum	TextAnchorType
@@ -6372,7 +6367,6 @@ interface	StackTransition
 interface	StartExecutor
 interface	StartHeartbeats
 interface	StartProfileAdmission
-interface	StartReadiness
 interface	StartReceipts
 interface	StartRecordResolver
 interface	StartReservations
@@ -6404,6 +6398,7 @@ interface	TextResolver
 interface	TickSubjectLocks
 interface	TickableState
 interface	TickableStateLoader
+interface	ToolDiscovery
 interface	UiOwnerAvailability
 interface	UserInterfaceUpdater
 interface	UserPresences
@@ -11646,8 +11641,8 @@ method	ListTextSectionsController::__invoke()
 method	ListToParse::__construct()
 method	ListToParse::andOr()
 method	ListToParse::isAtItsEnd()
-method	ListToolsAndRecordReadiness::__construct()
-method	ListToolsAndRecordReadiness::handle()
+method	ListToolsAndRecordDiscovery::__construct()
+method	ListToolsAndRecordDiscovery::handle()
 method	ListedPage::__construct()
 method	ListedPage::hasNextPage()
 method	ListedTasks::__construct()
@@ -13180,7 +13175,6 @@ method	PlanTaskPoolFactory::describe()
 method	PlanTaskPoolFactory::open()
 method	PlanTaskPoolFactory::plan()
 method	PlanTaskPoolFactory::validate()
-method	PlanView::includesText()
 method	PlanWindowResolver::__construct()
 method	PlanWindowResolver::read()
 method	PlanWord::__construct()
@@ -14156,6 +14150,7 @@ method	ReadTextRequest::selection()
 method	ReadTextRequest::version()
 method	ReadTextVersionCall::__construct()
 method	ReadTextVersionController::__invoke()
+method	ReadView::includesText()
 method	ReadWakeStatusCall::__construct()
 method	ReadWakeStatusController::__invoke()
 method	ReadWordPipeline::pipes()
@@ -15684,7 +15679,6 @@ method	RuntimeEvidence::__construct()
 method	RuntimeExit::__construct()
 method	RuntimeIntent::__construct()
 method	RuntimeLivenessReportData::__construct()
-method	RuntimeReadinessController::__invoke()
 method	RuntimeRecords::__construct()
 method	RuntimeRecords::folderOf()
 method	RuntimeRecords::forSession()
@@ -15964,6 +15958,9 @@ method	SendHelperCall::__construct()
 method	SendHelperController::__invoke()
 method	SendHelperHandler::__construct()
 method	SendHelperHandler::handle()
+method	SendHelperTool::command()
+method	SendHelperTool::present()
+method	SendHelperTool::writeSchema()
 method	SendMessage::__construct()
 method	SendMessage::subject()
 method	SendMessageCall::__construct()
@@ -16057,9 +16054,6 @@ method	SessionProvenance::parentHasGrant()
 method	SessionProvenance::parentOf()
 method	SessionProvenance::parentSessionOf()
 method	SessionProvenance::record()
-method	SessionReadiness::discoveredSince()
-method	SessionReadiness::isReady()
-method	SessionReadiness::recordDiscovery()
 method	SessionRecords::__construct()
 method	SessionRecords::active()
 method	SessionRecords::inspectsAgents()
@@ -16088,6 +16082,9 @@ method	SessionStarted::recordTurn()
 method	SessionStarted::recordVisit()
 method	SessionStatus::isRunning()
 method	SessionStatus::running()
+method	SessionToolDiscovery::discoveredSince()
+method	SessionToolDiscovery::isDiscoveredInCurrentGeneration()
+method	SessionToolDiscovery::recordDiscovery()
 method	SetBooleanSetting::__construct()
 method	SetBooleanSetting::subject()
 method	SetBooleanSettingHandler::__construct()
@@ -17502,7 +17499,6 @@ method	StartHelperHandler::__construct()
 method	StartHelperHandler::handle()
 method	StartHelperTool::command()
 method	StartHelperTool::present()
-method	StartHelperTool::writeSchema()
 method	StartMaterial::__construct()
 method	StartMaterialMissing::forRequest()
 method	StartOwnedAgent::__construct()
@@ -17551,9 +17547,6 @@ method	StartProfileMainRequest::rules()
 method	StartProfilePin::__construct()
 method	StartProgram::__construct()
 method	StartProgram::of()
-method	StartReadiness::discoveredSince()
-method	StartReadiness::isReady()
-method	StartReadiness::recordDiscovery()
 method	StartReceipt::__construct()
 method	StartReceipts::receiptFor()
 method	StartRecord::accept()
@@ -18425,7 +18418,6 @@ method	TaskState::hasEnded()
 method	TaskState::isHoldingChecks()
 method	TaskState::unfinished()
 method	TaskSummary::__construct()
-method	TaskView::includesText()
 method	TaskWork::__construct()
 method	TaskWork::needsWork()
 method	TaskWork::unfinishedReason()
@@ -18715,6 +18707,10 @@ method	ToolArguments::valuesOf()
 method	ToolArguments::wholeNumber()
 method	ToolArguments::within()
 method	ToolCallFinished::__construct()
+method	ToolDiscovery::discoveredSince()
+method	ToolDiscovery::isDiscoveredInCurrentGeneration()
+method	ToolDiscovery::recordDiscovery()
+method	ToolDiscoveryController::__invoke()
 method	ToolFinished::__construct()
 method	ToolFinished::accepts()
 method	ToolFinished::answerBy()
@@ -20804,7 +20800,6 @@ parameter	$readerClass
 parameter	$readerRevision
 parameter	$readerRevisionId
 parameter	$readers
-parameter	$readiness
 parameter	$readinessProblems
 parameter	$reading
 parameter	$reads
@@ -24386,8 +24381,8 @@ property	ListToParse::$closing
 property	ListToParse::$context
 property	ListToParse::$depth
 property	ListToParse::$parent
-property	ListToolsAndRecordReadiness::$agent
-property	ListToolsAndRecordReadiness::$readiness
+property	ListToolsAndRecordDiscovery::$agent
+property	ListToolsAndRecordDiscovery::$discovery
 property	ListedPage::$cards
 property	ListedPage::$page
 property	ListedPage::$perPage

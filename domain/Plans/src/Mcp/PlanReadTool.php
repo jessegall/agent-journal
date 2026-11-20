@@ -8,7 +8,7 @@ use App\Agents\Values\ReadRequest;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use Domain\Plans\Enums\PlanView;
+use App\Reads\Enums\ReadView;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -25,7 +25,7 @@ final class PlanReadTool extends JournalReadTool
     {
         return [
             'plan_id' => $schema->string()->max(26)->required(),
-            'view' => $schema->string()->enum(array_column(PlanView::cases(), 'value')),
+            'view' => $schema->string()->enum(array_column(ReadView::cases(), 'value')),
             'continuation' => $schema->string(),
         ];
     }

@@ -8,8 +8,8 @@ use App\Communication\Data\AgentInbox;
 use App\Communication\Data\AgentInboxCounts;
 use App\Communication\Data\AgentMessageDetails;
 use App\Communication\Enums\AgentInboxState;
-use App\Communication\Enums\AgentMessageView;
 use App\Mcp\Data\SearchPage;
+use App\Reads\Enums\ReadView;
 
 /**
  * Reads the caller's inbox and message context without changing any message or selection.
@@ -26,7 +26,7 @@ interface AgentMessageReader
 
     public function search(string $query, int $page): SearchPage;
 
-    public function message(string $messageId, AgentMessageView $view): AgentMessageDetails;
+    public function message(string $messageId, ReadView $view): AgentMessageDetails;
 
     public function context(string $messageId, string|null $continuation): AgentMessageDetails;
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Servers;
 
-use App\Mcp\Methods\ListToolsAndRecordReadiness;
+use App\Mcp\Methods\ListToolsAndRecordDiscovery;
 use App\Mcp\Support\McpCatalogue;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -50,6 +50,6 @@ final class JournalServer extends Server
     {
         $this->tools = $this->catalogue->toolClasses();
         $this->resources = $this->catalogue->resourceClasses();
-        $this->addMethod('tools/list', ListToolsAndRecordReadiness::class);
+        $this->addMethod('tools/list', ListToolsAndRecordDiscovery::class);
     }
 }

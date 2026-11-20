@@ -19,13 +19,13 @@ use App\Assignments\Support\NumberedPage;
 use App\Bus\Contracts\CommandBus;
 use App\Desks\Models\DeskRecord;
 use App\Desks\Support\DeskSeating;
+use App\Reads\Enums\ReadView;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Contracts\TaskListResolver;
 use Domain\Tasks\Enums\TaskState;
-use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
@@ -86,7 +86,7 @@ final class TaskDetailsResolverTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $this->asUser();
 
-        $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Context);
+        $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Context);
 
         $this->assertSame($desk->id, $details->holder->get()->holder()->id);
         $this->assertSame(
@@ -99,7 +99,7 @@ final class TaskDetailsResolverTest extends TestCase
             ],
         );
         $this->assertSame('Held by one, run by another.', $details->brief);
-        $this->assertNull($this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Summary)->brief);
+        $this->assertNull($this->app->make(TaskDetailsResolver::class)->details($task->id, ReadView::Summary)->brief);
     }
 
     #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]
@@ -138,7 +138,7 @@ final class TaskDetailsResolverTest extends TestCase
         $this->asUser();
 
         $this->assertThrows(
-            fn () => $this->app->make(TaskDetailsResolver::class)->details(TestIds::of(999999), TaskView::Summary),
+            fn () => $this->app->make(TaskDetailsResolver::class)->details(TestIds::of(999999), ReadView::Summary),
             TaskMissing::class,
         );
     }

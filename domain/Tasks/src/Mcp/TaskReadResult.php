@@ -6,14 +6,14 @@ namespace Domain\Tasks\Mcp;
 
 use App\Assignments\Support\AssignmentData;
 use App\Assignments\Support\AssignmentHolder;
-use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\Continuation;
 use App\Mcp\Contracts\Continuations;
 use App\Mcp\Contracts\TextFields;
+use App\Mcp\Data\ToolResult;
+use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
+use App\Reads\Enums\ReadView;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Contracts\TaskDetailsResolver;
-use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Http\Data\TaskExecutionData;
 
 /**
@@ -34,7 +34,7 @@ final readonly class TaskReadResult
     public function read(string $taskId, ToolArguments $arguments): ToolResult
     {
         $cursor = $arguments->continuation();
-        $view = $cursor === null ? $arguments->enumOr('view', TaskView::Summary) : TaskView::Context;
+        $view = $cursor === null ? $arguments->enumOr('view', ReadView::Summary) : ReadView::Context;
         $task = $this->tasks->details($taskId, $view);
         $summary = $this->summary($task);
         $text = $this->text($task);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
+use App\Reads\Enums\ReadView;
 use Domain\Tasks\Api\TaskDetails;
-use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Exceptions\TaskMissing;
 
 /**
@@ -16,5 +16,5 @@ interface TaskDetailsResolver
     /**
      * @throws TaskMissing
      */
-    public function details(string $taskId, TaskView $view): TaskDetails;
+    public function details(string $taskId, ReadView $view): TaskDetails;
 }
