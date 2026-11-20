@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
@@ -175,6 +176,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             CleanProcessOutput::class,
             VerifyRestoredOutput::class,
             ClaimStartGrant::class,
+            ClaimAutoAssignment::class,
         ], CoreCommands::privateCommands());
     }
 
