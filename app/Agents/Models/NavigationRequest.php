@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Casts\NavigationScreenCast;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\NavigationState;
@@ -108,7 +109,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         return [
             'goal_parameters' => 'array',
             'reason' => NavigationReason::class,
-            'screen' => NavigationScreen::class,
+            'screen' => NavigationScreenCast::class,
             'raise_rows' => 'array',
             'sent_steps' => 'array',
             'state' => NavigationState::class,

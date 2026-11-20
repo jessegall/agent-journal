@@ -40,11 +40,11 @@ final class NavigationRaiseData extends Data
 
     public function uncertainty(): NavigationUncertainty
     {
-        $screen = NavigationScreen::from([
-            'rows' => $this->rows,
-            'highlight' => $this->highlight >= 0 ? $this->highlight : null,
-            'generation' => $this->generation,
-        ]);
+        $screen = new NavigationScreen(
+            $this->rows,
+            $this->highlight >= 0 ? $this->highlight : null,
+            $this->generation,
+        );
 
         return NavigationUncertainty::fromHost(
             $this->reason,
