@@ -39,6 +39,7 @@ from core.modules.plugins.support.plugin_service_waits import PluginServiceWaits
 from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.errors.plugin_stopped_error import PluginStoppedError
+from core.modules.plugins.support.script_end import ScriptEnd
 from core.modules.plugins.support.script_pipes import ScriptPipes
 from core.modules.plugins.support.machine_runs import PROJECT_MARK_CHARACTERS
 
@@ -87,9 +88,18 @@ class PluginProgram:
         folder = self.folders.code(call.manifest.name)
         request = ExecutionRequest([str(folder / program)], folder, ProcessType.PLUGIN, (limit_ms or SCRIPT_TICKET_LIMIT_MS) / 1000)
         with ExecutionStartCheck(self.home).admitted(PlacedRun(request, None, False)):
-            return self.admitted_answer(call, program, line, limit_ms, wait_callback, checkout)
+            end = self.ended_script(call, program, line, limit_ms, wait_callback, checkout)
+        # the script's execution ended once it exited, so a stop on purpose or a fault of the plugin is raised after it
+        if end.is_stopped:
+            raise PluginStoppedError(end.stop_reason)
+        if end.exit_code != 0:
+            raise PluginFaultError(self.ended_text(end.exit_code, end.error_tail, call))
+        try:
+            return PluginAnswer.parsed(end.output)
+        except json.JSONDecodeError:
+            raise PluginFaultError("its answer is not JSON") from None
 
-    def admitted_answer(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None, checkout: Checkout | None) -> PluginAnswer:
+    def ended_script(self, call: PluginCall, program: str, line: str, limit_ms: int | None, wait_callback: Callable[[], None] | None, checkout: Checkout | None) -> ScriptEnd:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
         try:
@@ -104,14 +114,7 @@ class PluginProgram:
             stop_reason = self.scripts.stop_reason(process)
         finally:
             self.scripts.finish(process)
-        if stop_reason is not ScriptStop.STOP_FAILED:
-            raise PluginStoppedError(stop_reason)
-        if process.returncode != 0:
-            raise PluginFaultError(self.ended_text(process.returncode, pipes.error_tail(), call))
-        try:
-            return PluginAnswer.parsed(output)
-        except json.JSONDecodeError:
-            raise PluginFaultError("its answer is not JSON") from None
+        return ScriptEnd(output, process.returncode, pipes.error_tail(), stop_reason)
 
     def service_answer(self, plugin: str, service: str, line: str, limit_ms: int | None) -> PluginAnswer | None:
         path = self.sockets.answers(plugin, service)

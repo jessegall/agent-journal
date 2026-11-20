@@ -1,5 +1,5 @@
 from engine.time.clock import Clock
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 from types import SimpleNamespace
 import json
 import subprocess
@@ -17,8 +17,9 @@ from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.errors.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.errors.plugin_late_error import PluginLateError
+from core.modules.plugins.errors.plugin_stopped_error import PluginStoppedError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from engine.enums.script_stop import ScriptStop
 from core.modules.plugins.errors.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_service_waits import MOST_WAITING_CALLS, PluginServiceWaits
 from core.modules.plugins.support.plugin_program import PluginProgram, STOP_LIMIT_SECONDS
@@ -116,6 +117,29 @@ def test_a_script_that_was_stopped_is_a_fault_that_says_so_and_does_not_count(tm
     assert str(failures[0]) == "it was stopped when the plugin was switched off"
     assert failures[0].counts_toward_failing is False
     assert program.scripts.running("late") == ()
+
+
+def test_a_script_stopped_on_purpose_ends_its_execution_before_the_stop_is_raised(tmp_path: Path, monkeypatch) -> None:
+    program, call = program_at(tmp_path, QUICK_PROGRAM, "run.sh")
+    errors_in_execution: list[BaseException] = []
+
+    class RecordingStartCheck:
+        def __init__(self, home) -> None:
+            pass
+
+        @contextmanager
+        def admitted(self, run):
+            try:
+                yield
+            except BaseException as error:
+                errors_in_execution.append(error)
+                raise
+
+    monkeypatch.setattr("core.modules.plugins.support.plugin_program.ExecutionStartCheck", RecordingStartCheck)
+    monkeypatch.setattr(program.scripts, "stop_reason", lambda process: ScriptStop.SERVER)
+    with pytest.raises(PluginStoppedError):
+        program.run(call, None)
+    assert errors_in_execution == []
 
 
 def test_a_call_past_the_most_that_may_wait_on_a_service_is_refused_and_a_finished_one_frees_its_place(tmp_path):
