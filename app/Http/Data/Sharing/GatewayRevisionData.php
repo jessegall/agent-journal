@@ -20,7 +20,7 @@ final class GatewayRevisionData extends Data
 {
     /**
      * @param  list<string>  $secretReferences
-     * @param  list<string>  $readinessProblems
+     * @param  list<string>  $setupProblems
      * @param  list<RootShareData>  $dependentShares
      */
     public function __construct(
@@ -34,14 +34,14 @@ final class GatewayRevisionData extends Data
         public readonly array $secretReferences,
         public readonly bool $isDefault,
         public readonly bool $isDisabled,
-        public readonly array $readinessProblems,
+        public readonly array $setupProblems,
         public readonly bool|null $isHealthy,
         #[DataCollectionOf(RootShareData::class)]
         public readonly array $dependentShares,
     ) {}
 
     /**
-     * The revision as the owner sees it, its readiness asked of its gateway in the registry.
+     * The revision as the owner sees it, its setup check asked of its gateway in the registry.
      */
     public static function fromConfiguration(
         ShareGatewayConfiguration $configuration,
@@ -60,7 +60,7 @@ final class GatewayRevisionData extends Data
             $settings->secretReferences,
             $configuration->is_default,
             $configuration->isDisabled(),
-            $gateways->readinessProblemsOf($configuration),
+            $gateways->setupProblemsOf($configuration),
             $configuration->endpointHealth(),
             array_map(RootShareData::fromShare(...), $configuration->unendedShares()),
         );

@@ -15,8 +15,8 @@ use Tests\TestCase;
 
 /**
  * The ngrok gateway against fixture answers of its loopback control API: it accepts its own endpoint on the fixed
- * origin, ignores an unrelated one, and refuses a random ngrok address and an unexpected upstream; readiness refuses
- * a missing fixed HTTPS address and a missing authtoken.
+ * origin, ignores an unrelated one, and refuses a random ngrok address and an unexpected upstream; the setup check
+ * refuses a missing fixed HTTPS address and a missing authtoken.
  */
 final class NgrokGatewayTest extends TestCase
 {
@@ -98,16 +98,16 @@ final class NgrokGatewayTest extends TestCase
         );
     }
 
-    public function test_readiness_refuses_a_missing_fixed_address_and_authtoken(): void
+    public function test_the_setup_check_refuses_a_missing_fixed_address_and_authtoken(): void
     {
-        $this->assertTrue($this->gateway()->readiness($this->operation(self::ORIGIN)->configuration)->isReady());
+        $this->assertTrue($this->gateway()->setupCheck($this->operation(self::ORIGIN)->configuration)->isComplete());
 
         unlink($this->folder.'/secrets/ngrok-authtoken');
 
         $this->assertSame([
             'No fixed HTTPS address is configured for ngrok; a random address is never used.',
             'The ngrok authtoken is not stored for the journal.',
-        ], $this->gateway()->readiness($this->operation('http://docs.example.org')->configuration)->problems);
+        ], $this->gateway()->setupCheck($this->operation('http://docs.example.org')->configuration)->problems);
     }
 
     /**

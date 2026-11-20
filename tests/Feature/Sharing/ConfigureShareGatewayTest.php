@@ -9,7 +9,7 @@ use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\RequestKey;
 use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Enums\ShareAuditType;
-use App\Sharing\Exceptions\GatewayNotReady;
+use App\Sharing\Exceptions\GatewayNotSetUp;
 use App\Sharing\Exceptions\GatewaySecretRefused;
 use App\Sharing\Exceptions\UnknownShareGateway;
 use App\Sharing\Models\ShareAudit;
@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\TestShares;
-use Tests\Support\Sharing\UnreadyShareGateway;
+use Tests\Support\Sharing\UnconfiguredShareGateway;
 use Tests\Support\Sharing\UsesSecretsFolder;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
@@ -48,7 +48,8 @@ final class ConfigureShareGatewayTest extends TestCase
         parent::setUp();
 
         $this->app->make(ShareGatewayRegistry::class)->register(FakeShareGateway::KEY, FakeShareGateway::class);
-        $this->app->make(ShareGatewayRegistry::class)->register(UnreadyShareGateway::KEY, UnreadyShareGateway::class);
+        $gateways = $this->app->make(ShareGatewayRegistry::class);
+        $gateways->register(UnconfiguredShareGateway::KEY, UnconfiguredShareGateway::class);
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
     }
 
@@ -83,13 +84,13 @@ final class ConfigureShareGatewayTest extends TestCase
     public function test_a_gateway_that_is_not_ready_cannot_be_made_the_default(): void
     {
         $this->assertThrows(
-            fn () => $this->configure(UnreadyShareGateway::KEY, true),
-            GatewayNotReady::class,
+            fn () => $this->configure(UnconfiguredShareGateway::KEY, true),
+            GatewayNotSetUp::class,
             'not logged in',
         );
         $this->assertSame(0, ShareGatewayConfiguration::query()->where('is_default', true)->count());
 
-        $configured = $this->configure(UnreadyShareGateway::KEY, false);
+        $configured = $this->configure(UnconfiguredShareGateway::KEY, false);
         $this->assertFalse(ShareGatewayConfiguration::query()->findOrFail($configured->configurationId)->is_default);
     }
 

@@ -64,9 +64,9 @@ final class ShareGatewayRegistry
      *
      * @throws UnknownShareGateway
      */
-    public function readinessOf(ShareGatewayConfiguration $configuration): GatewayReadiness
+    public function setupCheckOf(ShareGatewayConfiguration $configuration): GatewaySetupCheck
     {
-        return $this->get($configuration->gateway_key)->readiness($configuration->toConfiguration());
+        return $this->get($configuration->gateway_key)->setupCheck($configuration->toConfiguration());
     }
 
     /**
@@ -75,13 +75,13 @@ final class ShareGatewayRegistry
      *
      * @return list<string>
      */
-    public function readinessProblemsOf(ShareGatewayConfiguration $configuration): array
+    public function setupProblemsOf(ShareGatewayConfiguration $configuration): array
     {
         if ($configuration->isDisabled() || ! $this->has($configuration->gateway_key)) {
             return [];
         }
 
-        return $this->readinessOf($configuration)->problems;
+        return $this->setupCheckOf($configuration)->problems;
     }
 
     /**

@@ -12,7 +12,7 @@ use App\Sharing\Support\ShareGatewayRegistry;
 use App\Ui\Contracts\PageResolver;
 
 /**
- * The owner's gateway settings: each revision with its readiness asked of its gateway (a read only), its endpoint's
+ * The owner's gateway settings: each revision with its setup check asked of its gateway (a read only), its endpoint's
  * health and the shares disabling it would revoke; and Offline when no sharing service holds the gateways.
  */
 final readonly class GatewaySettingsResolver implements PageResolver

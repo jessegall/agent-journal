@@ -26,7 +26,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
-final class HookRuntimeReadinessTest extends TestCase
+final class HookRuntimeStartTest extends TestCase
 {
     use RefreshHookDatabase;
 

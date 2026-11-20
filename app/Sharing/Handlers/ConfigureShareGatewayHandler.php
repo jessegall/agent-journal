@@ -9,7 +9,7 @@ use App\Contracts\CommandHandler;
 use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Enums\ShareAuditType;
-use App\Sharing\Exceptions\GatewayNotReady;
+use App\Sharing\Exceptions\GatewayNotSetUp;
 use App\Sharing\Exceptions\GatewaySecretRefused;
 use App\Sharing\Exceptions\UnknownShareGateway;
 use App\Sharing\Gateways\Support\GatewaySecrets;
@@ -62,10 +62,10 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
         $configuration = ShareGatewayConfiguration::configure($settings);
 
         if ($command->makesDefault) {
-            $readiness = $this->gateways->readinessOf($configuration);
+            $setupCheck = $this->gateways->setupCheckOf($configuration);
 
-            if (! $readiness->isReady()) {
-                throw GatewayNotReady::forDefault($command->gatewayKey, $readiness->problems);
+            if (! $setupCheck->isComplete()) {
+                throw GatewayNotSetUp::forDefault($command->gatewayKey, $setupCheck->problems);
             }
 
             $configuration->makeDefault();

@@ -9,16 +9,16 @@ use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewayReadiness;
+use App\Sharing\Support\GatewaySetupCheck;
 
 /**
  * A gateway that is always ready and healthy and opens an endpoint on its configured origin.
  */
 final class PressGateway implements ShareGateway
 {
-    public function readiness(GatewayConfiguration $configuration): GatewayReadiness
+    public function setupCheck(GatewayConfiguration $configuration): GatewaySetupCheck
     {
-        return GatewayReadiness::ready();
+        return GatewaySetupCheck::passed();
     }
 
     public function open(GatewayOperation $operation): GatewayEndpoint

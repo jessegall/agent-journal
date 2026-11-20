@@ -13,8 +13,8 @@ use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewayReadiness;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\GatewaySetupCheck;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
@@ -76,8 +76,8 @@ final class SharingValuesTest extends TestCase
     {
         $this->assertTrue(new ShareRecords([], [], 'next')->hasMore());
         $this->assertFalse(new ShareRecords([], [], null)->hasMore());
-        $this->assertTrue(GatewayReadiness::ready()->isReady());
-        $this->assertFalse(new GatewayReadiness(['The tunler program is not installed.'])->isReady());
+        $this->assertTrue(GatewaySetupCheck::passed()->isComplete());
+        $this->assertFalse(new GatewaySetupCheck(['The tunler program is not installed.'])->isComplete());
         $this->assertTrue(GatewayHealth::healthy()->isHealthy());
         $this->assertFalse(new GatewayHealth(['The probe was redirected.'])->isHealthy());
     }
@@ -97,7 +97,7 @@ final class SharingValuesTest extends TestCase
             ShareRelationRead::class, ShareContentRead::class, SharedContent::class, GatewayConfiguration::class,
             GatewayOperation::class,
             GatewayEndpoint::class,
-            GatewayReadiness::class,
+            GatewaySetupCheck::class,
             GatewayHealth::class,
             GatewaySettings::class,
             ShareSelectedTarget::class,

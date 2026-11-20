@@ -90,7 +90,7 @@ final class GatewaySettingsPageTest extends TestCase
             ->where('page.data.revisions.1.gatewayKey', 'tunler')
             ->where('page.data.revisions.1.secretReferences', ['tunler-login'])
             ->where(
-                'page.data.revisions.1.readinessProblems.0',
+                'page.data.revisions.1.setupProblems.0',
                 'The tunler program is not installed at its pinned path.',
             ));
 

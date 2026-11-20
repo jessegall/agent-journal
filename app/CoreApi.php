@@ -997,8 +997,8 @@ use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewayReadiness;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\GatewaySetupCheck;
 use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
@@ -1762,7 +1762,7 @@ final class CoreApi
                 GatewaySettings::class,
                 GatewayOperation::class,
                 GatewayEndpoint::class,
-                GatewayReadiness::class,
+                GatewaySetupCheck::class,
                 GatewayHealth::class,
                 ShareRelationType::class,
                 SharedPage::class,

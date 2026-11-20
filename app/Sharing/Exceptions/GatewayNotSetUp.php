@@ -13,7 +13,7 @@ use RuntimeException;
 /**
  * A gateway made the default before it is ready to open: there is no automatic default and no silent fallback.
  */
-final class GatewayNotReady extends RuntimeException implements CodedRefusal, CommandRefusal
+final class GatewayNotSetUp extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 

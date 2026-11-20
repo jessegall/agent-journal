@@ -17,7 +17,7 @@ use Illuminate\Process\Factory as Processes;
 use Tests\TestCase;
 
 /**
- * The Tunler gateway against fixture outputs of the tunler program, with no real account: readiness names each
+ * The Tunler gateway against fixture outputs of the tunler program, with no real account: the setup check names each
  * missing piece, opening accepts only the configured HTTPS origin from the start's own line, and the probe accepts
  * only its own challenge without a redirect.
  */
@@ -58,7 +58,7 @@ final class TunlerGatewayTest extends TestCase
         });
     }
 
-    public function test_readiness_names_each_missing_piece_and_is_ready_when_all_are_there(): void
+    public function test_the_setup_check_names_each_missing_piece_and_passes_when_all_are_there(): void
     {
         $this->processes->fake(
             [
@@ -67,7 +67,7 @@ final class TunlerGatewayTest extends TestCase
             ],
         );
 
-        $this->assertTrue($this->gateway()->readiness($this->configuration())->isReady());
+        $this->assertTrue($this->gateway()->setupCheck($this->configuration())->isComplete());
 
         $this->processes->fake(
             ['*version*' => 'tunler 1.3.9', '*status*' => '{"logged_in": false, "host": "other.test"}'],
@@ -79,13 +79,13 @@ final class TunlerGatewayTest extends TestCase
             'The tunler program is not version 1.4.0.',
             'The journal is not logged in to Tunler.',
             'Tunler is logged in to another host than example.test.',
-        ], $this->gateway()->readiness($this->configuration())->problems);
+        ], $this->gateway()->setupCheck($this->configuration())->problems);
 
         config(['sharing.tunler.binary' => $this->folder.'/missing']);
 
         $this->assertSame(
             ['The tunler program is not installed at its pinned path.'],
-            $this->gateway()->readiness($this->configuration())->problems,
+            $this->gateway()->setupCheck($this->configuration())->problems,
         );
     }
 

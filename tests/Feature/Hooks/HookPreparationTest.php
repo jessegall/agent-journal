@@ -24,7 +24,7 @@ use Tests\TestCase;
  * during an outage, a session start the journal answers prepares its generation, and an answer for an older
  * generation prepares nothing.
  */
-final class HookReadinessTest extends TestCase
+final class HookPreparationTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -43,7 +43,7 @@ final class HookReadinessTest extends TestCase
         parent::setUp();
 
         $this->start = TestStart::start('main-agent');
-        $this->bypassLog = sys_get_temp_dir().'/hook-readiness-'.getmypid().'.jsonl';
+        $this->bypassLog = sys_get_temp_dir().'/hook-preparation-'.getmypid().'.jsonl';
     }
 
     protected function tearDown(): void

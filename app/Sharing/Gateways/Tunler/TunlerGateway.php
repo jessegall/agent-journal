@@ -16,7 +16,7 @@ use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewayReadiness;
+use App\Sharing\Support\GatewaySetupCheck;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory as Processes;
@@ -48,10 +48,10 @@ final readonly class TunlerGateway implements ShareGateway
         private string|null $subdomain,
     ) {}
 
-    public function readiness(GatewayConfiguration $configuration): GatewayReadiness
+    public function setupCheck(GatewayConfiguration $configuration): GatewaySetupCheck
     {
         if (! is_file($this->binary) || ! is_executable($this->binary)) {
-            return new GatewayReadiness(['The tunler program is not installed at its pinned path.']);
+            return new GatewaySetupCheck(['The tunler program is not installed at its pinned path.']);
         }
 
         $problems = [];
@@ -71,7 +71,7 @@ final readonly class TunlerGateway implements ShareGateway
         try {
             $status = TunlerStatus::fromOutput($this->run(['status', '--json']));
         } catch (TunlerStatusUnreadable) {
-            return new GatewayReadiness([...$problems, 'Tunler did not report its login status.']);
+            return new GatewaySetupCheck([...$problems, 'Tunler did not report its login status.']);
         }
 
         if (! $status->isLoggedIn) {
@@ -82,7 +82,7 @@ final readonly class TunlerGateway implements ShareGateway
             $problems[] = "Tunler is logged in to another host than {$configuration->settings->providerHost}.";
         }
 
-        return new GatewayReadiness($problems);
+        return new GatewaySetupCheck($problems);
     }
 
     /**

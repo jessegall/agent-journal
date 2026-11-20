@@ -16,7 +16,7 @@ use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewayReadiness;
+use App\Sharing\Support\GatewaySetupCheck;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpClient;
@@ -51,10 +51,10 @@ final readonly class NgrokGateway implements ShareGateway
         private int $controlPort,
     ) {}
 
-    public function readiness(GatewayConfiguration $configuration): GatewayReadiness
+    public function setupCheck(GatewayConfiguration $configuration): GatewaySetupCheck
     {
         if (! is_file($this->binary) || ! is_executable($this->binary)) {
-            return new GatewayReadiness(['The ngrok program is not installed at its pinned path.']);
+            return new GatewaySetupCheck(['The ngrok program is not installed at its pinned path.']);
         }
 
         $settings = $configuration->settings;
@@ -81,7 +81,7 @@ final readonly class NgrokGateway implements ShareGateway
             $problems[] = "The ngrok program is not version {$settings->executableVersion}.";
         }
 
-        return new GatewayReadiness($problems);
+        return new GatewaySetupCheck($problems);
     }
 
     /**

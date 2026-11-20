@@ -8,7 +8,7 @@ use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
-use App\Sharing\Support\GatewayReadiness;
+use App\Sharing\Support\GatewaySetupCheck;
 
 /**
  * A tunnel program that makes the sharing listener reachable on a fixed public origin, registered under a key such
@@ -16,7 +16,7 @@ use App\Sharing\Support\GatewayReadiness;
  */
 interface ShareGateway
 {
-    public function readiness(GatewayConfiguration $configuration): GatewayReadiness;
+    public function setupCheck(GatewayConfiguration $configuration): GatewaySetupCheck;
 
     public function open(GatewayOperation $operation): GatewayEndpoint;
 

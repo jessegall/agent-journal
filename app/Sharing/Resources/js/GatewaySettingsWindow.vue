@@ -106,10 +106,10 @@ function disable(revision: GatewayRevisionData): void {
                             Secrets: {{ revision.secretReferences.join(', ') }}
                         </p>
                     </template>
-                    <template v-if="revision.readinessProblems.length > 0">
+                    <template v-if="revision.setupProblems.length > 0">
                         <ul aria-label="Not ready because">
                             <template
-                                v-for="problem in revision.readinessProblems"
+                                v-for="problem in revision.setupProblems"
                                 :key="problem"
                             >
                                 <li>{{ problem }}</li>

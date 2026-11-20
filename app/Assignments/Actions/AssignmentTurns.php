@@ -65,7 +65,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
 
         $nextAfterId = $page->facts[array_key_last($page->facts)]->id;
         $ready = array_values(
-            array_filter($page->facts, fn (AutoAssignmentFact $fact) => $this->isReady($fact, $stop)),
+            array_filter($page->facts, fn (AutoAssignmentFact $fact) => $this->mayTakeTurn($fact, $stop)),
         );
         usort($ready, static fn (AutoAssignmentFact $one, AutoAssignmentFact $other): int => $one->compareTurn($other));
         $started = 0;
@@ -96,7 +96,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
         return new AutoAssignmentRun(count($page->facts), $started, $assigned, $failed, $nextAfterId);
     }
 
-    private function isReady(AutoAssignmentFact $fact, StopTime $stop): bool
+    private function mayTakeTurn(AutoAssignmentFact $fact, StopTime $stop): bool
     {
         if (! $fact->enabled || $stop->remainingMilliseconds() <= 0 || ! $this->availability->domainsEnabled($fact)) {
             return false;
