@@ -10,6 +10,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Testing\WithCachedConfig;
 use Illuminate\Support\Facades\Http;
 use Laravel\Fortify\Features;
 use PDO;
@@ -19,8 +20,14 @@ use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 use Tests\Support\TimeLimits\TestAlarm;
 use Throwable;
 
+/**
+ * Every feature test's base: the configuration files are read once per process and kept, as Laravel's own
+ * WithCachedConfig does, so a test's boot loads none of them again.
+ */
 abstract class TestCase extends BaseTestCase
 {
+    use WithCachedConfig;
+
     /**
      * @var array<string, class-string> the application's morph map, before a test adds fixture types to it
      */
