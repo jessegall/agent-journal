@@ -35,7 +35,7 @@ final class DocCloseCommand extends Command
         }
 
         return $this->runReport(function () use ($documents, $drafts, $number, $held): CommandReport {
-            $closed = $documents->closeDocument((string) $number, $held['token'], $held['version']);
+            $closed = $documents->closeDocument((string) $number, $held['token'], version: $held['version']);
             $drafts->forget($number);
 
             return CommandReport::ending(self::SUCCESS)->line($closed->published
