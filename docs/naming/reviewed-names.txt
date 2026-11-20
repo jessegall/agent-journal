@@ -1597,6 +1597,7 @@ class	CaptureJobMessageSource
 class	CapturedChunk
 class	CapturedPart
 class	CatalogueOnFirstRead
+class	CertifiedWork
 class	ChallengeProbe
 class	ChangeAgentEffort
 class	ChangeAgentEffortHandler
@@ -2386,11 +2387,14 @@ class	HelperCalls
 class	HelperCancelCommand
 class	HelperCandidate
 class	HelperCandidates
+class	HelperCommitImport
 class	HelperCompletionCertified
 class	HelperContinueCommand
 class	HelperDispatch
 class	HelperIdentity
 class	HelperIdentityFixed
+class	HelperImportFailed
+class	HelperImportReceipt
 class	HelperJob
 class	HelperJobAlreadyEnded
 class	HelperJobAssignments
@@ -2421,6 +2425,7 @@ class	HelperSteerData
 class	HelperStopHeld
 class	HelperUnavailable
 class	HelperWork
+class	HelperWorkUncertified
 class	HelpersDomain
 class	HelpersServiceProvider
 class	HereDocument
@@ -2475,6 +2480,8 @@ class	HostStartMaterial
 class	HostStartRefused
 class	HostUnavailable
 class	ImageUnverified
+class	ImportHelperCommits
+class	ImportHelperCommitsHandler
 class	ImportProfileDraftCommand
 class	ImportProposalsCall
 class	ImportProposalsController
@@ -5338,6 +5345,8 @@ constant	GatewayStarts::CONNECT_SECONDS
 constant	GatewayStarts::LOOK_MICROSECONDS
 constant	GlobalGroup::JOURNAL
 constant	GuardShareRequest::METHODS
+constant	HelperCommitImport::SAFE_SETTINGS
+constant	HelperCommitImport::TIMEOUT_SECONDS
 constant	HelperDispatch::ADDRESSED_REASON
 constant	HelperDispatch::NEW_HELPER_REASON
 constant	HelperIdentity::FIXED_COLUMNS
@@ -8127,6 +8136,9 @@ method	CatalogueOnFirstRead::__construct()
 method	CatalogueOnFirstRead::all()
 method	CatalogueOnFirstRead::catalogue()
 method	CatalogueOnFirstRead::find()
+method	CertifiedWork::importRef()
+method	CertifiedWork::of()
+method	CertifiedWork::record()
 method	ChallengeProbe::__construct()
 method	ChallengeProbe::health()
 method	ChangeAgentEffort::__construct()
@@ -10773,6 +10785,9 @@ method	HelperCandidates::exposedIdentities()
 method	HelperCandidates::factsOf()
 method	HelperCandidates::latestFinish()
 method	HelperCandidates::resumes()
+method	HelperCommitImport::__construct()
+method	HelperCommitImport::git()
+method	HelperCommitImport::import()
 method	HelperCompletionCertified::__construct()
 method	HelperContinueCommand::handle()
 method	HelperDispatch::__construct()
@@ -10795,6 +10810,8 @@ method	HelperIdentity::ofProfile()
 method	HelperIdentity::representing()
 method	HelperIdentityFixed::forIdentity()
 method	HelperImages::isVerified()
+method	HelperImportFailed::for()
+method	HelperImportReceipt::__construct()
 method	HelperJob::accept()
 method	HelperJob::addSteering()
 method	HelperJob::assignmentIdentity()
@@ -10870,6 +10887,7 @@ method	HelperWork::__construct()
 method	HelperWork::described()
 method	HelperWork::fingerprint()
 method	HelperWork::sourceSnapshot()
+method	HelperWorkUncertified::for()
 method	HelpersDomain::commands()
 method	HelpersDomain::description()
 method	HelpersDomain::exports()
@@ -11075,6 +11093,10 @@ method	IdentityLinks::link()
 method	IdentityLinks::linkedOfType()
 method	ImageUnverified::because()
 method	ImageUnverified::reason()
+method	ImportHelperCommits::__construct()
+method	ImportHelperCommits::subject()
+method	ImportHelperCommitsHandler::__construct()
+method	ImportHelperCommitsHandler::handle()
 method	ImportProfileDraftCommand::handle()
 method	ImportProfileDraftCommand::read()
 method	ImportProfileDraftCommand::readCommands()
@@ -19404,6 +19426,7 @@ parameter	$category
 parameter	$cause
 parameter	$ceiling
 parameter	$cells
+parameter	$certificate
 parameter	$chain
 parameter	$challenge
 parameter	$challenges
@@ -19495,6 +19518,7 @@ parameter	$comment
 parameter	$commentField
 parameter	$commentId
 parameter	$comments
+parameter	$commits
 parameter	$committed
 parameter	$communication
 parameter	$compaction
@@ -20007,6 +20031,7 @@ parameter	$image
 parameter	$imageReference
 parameter	$images
 parameter	$implementation
+parameter	$import
 parameter	$imports
 parameter	$inbox
 parameter	$inboxId
@@ -20727,6 +20752,7 @@ parameter	$redirect
 parameter	$redirectIndex
 parameter	$redirector
 parameter	$redirects
+parameter	$ref
 parameter	$reference
 parameter	$references
 parameter	$reflection
@@ -20786,6 +20812,7 @@ parameter	$reportReference
 parameter	$reported
 parameter	$reports
 parameter	$reportsActualModel
+parameter	$repository
 parameter	$request
 parameter	$requestId
 parameter	$requestKey
@@ -23786,6 +23813,8 @@ property	HelperCandidate::$identity
 property	HelperCandidate::$rank
 property	HelperCandidate::$resumesConversation
 property	HelperCandidates::$launches
+property	HelperCommitImport::$processes
+property	HelperCommitImport::$repository
 property	HelperCompletionCertified::$attempt
 property	HelperCompletionCertified::$work
 property	HelperContinueCommand::$description
@@ -23799,6 +23828,8 @@ property	HelperDispatch::$purposes
 property	HelperDispatch::$records
 property	HelperDispatch::$reservations
 property	HelperDispatch::$responsibilities
+property	HelperImportReceipt::$commits
+property	HelperImportReceipt::$ref
 property	HelperJobNamed::$jobId
 property	HelperNoticeData::$id
 property	HelperNoticeData::$identityId
@@ -23956,6 +23987,9 @@ property	HostContext::$hostId
 property	HostSkillPublisher::$targets
 property	HostStartExecutor::$socket
 property	HostStartMaterial::$materials
+property	ImportHelperCommits::$certificate
+property	ImportHelperCommits::$work
+property	ImportHelperCommitsHandler::$import
 property	ImportProfileDraftCommand::$description
 property	ImportProfileDraftCommand::$signature
 property	ImportProposalsCall::$declarations
@@ -29155,6 +29189,7 @@ variable	$commentId
 variable	$commentPage
 variable	$commentView
 variable	$comments
+variable	$commits
 variable	$compatibility
 variable	$compiled
 variable	$completes
@@ -29378,6 +29413,7 @@ variable	$failure
 variable	$failures
 variable	$fence
 variable	$fenceLine
+variable	$fetch
 variable	$field
 variable	$fields
 variable	$file
@@ -29986,6 +30022,7 @@ variable	$recovery
 variable	$redirect
 variable	$redirectIndex
 variable	$redirects
+variable	$ref
 variable	$reference
 variable	$references
 variable	$reflectedClass

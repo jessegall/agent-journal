@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Providers;
 
-use App\Agents\Contracts\ReadGrant as ReadGrantContract;
-use App\Agents\Support\ReadGrant;
 use App\Actors\Contracts\ActorAttention;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
@@ -14,8 +12,6 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Support\SystemEntryPolicies;
-use App\Agents\Contracts\SessionProvenance as SessionProvenanceContract;
-use App\Agents\Support\SessionProvenance;
 use App\Actors\Values\PolicyRegistration;
 use App\AgentRequests\Console\GenerateCallsCommand;
 use App\AgentRequests\Contracts\AgentRequestClient as AgentRequestClientContract;
@@ -42,9 +38,11 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\NavigationReader;
 use App\Agents\Contracts\ProgramConversationResolver;
+use App\Agents\Contracts\ReadGrant as ReadGrantContract;
 use App\Agents\Contracts\RuntimeResolver;
 use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Contracts\SessionPolicyReader;
+use App\Agents\Contracts\SessionProvenance as SessionProvenanceContract;
 use App\Agents\Contracts\SessionResolver;
 use App\Agents\Contracts\StartExecutor;
 use App\Agents\Contracts\StartHeartbeats as StartHeartbeatsContract;
@@ -86,6 +84,7 @@ use App\Agents\Support\DatabaseStartTransaction;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\GrantedSessionOutputs;
+use App\Agents\Support\HelperCommitImport;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\HostStartExecutor;
 use App\Agents\Support\NavigationExpiry;
@@ -93,7 +92,9 @@ use App\Agents\Support\NavigationRecords;
 use App\Agents\Support\NavigationRequestProvider;
 use App\Agents\Support\PendingNavigationWork;
 use App\Agents\Support\PendingWorkSources;
+use App\Agents\Support\ReadGrant;
 use App\Agents\Support\RequestSession;
+use App\Agents\Support\SessionProvenance;
 use App\Agents\Support\SessionReadiness;
 use App\Agents\Support\TerminalViews;
 use App\Assignments\Contracts\AgentAuthority;
@@ -108,6 +109,7 @@ use Illuminate\Console\Command;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Process\Factory;
 use Illuminate\Support\ServiceProvider;
 use PhpOption\None;
 use PhpOption\Option;
@@ -184,6 +186,10 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
         ));
         $this->app->scoped(HostStartMaterial::class);
+        $this->app->bind(
+            HelperCommitImport::class,
+            fn () => new HelperCommitImport($this->app->make(Factory::class), base_path()),
+        );
         $this->app->bind(
             HostCapabilities::class,
             fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')),

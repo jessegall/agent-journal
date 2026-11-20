@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Support;
 
 use App\Agents\Contracts\SessionPolicyReader;
+use App\Agents\Models\CertifiedWork;
 use App\Agents\Models\StartRecord;
 use App\Hooks\Contracts\StopConditionGate;
 use App\Hooks\Contracts\StopEvidence;
@@ -94,11 +95,10 @@ final readonly class StopAttemptGate implements StopConditionGate
 
         $attempt->certify();
 
-        StartRecord::ownerStartOf($attempt->session_id)->forAll(
-            fn (StartRecord $start) => $this->events->dispatch(
-                new HelperCompletionCertified($start->ownerWork(), $attempt->reference()),
-            ),
-        );
+        StartRecord::ownerStartOf($attempt->session_id)->forAll(function (StartRecord $start) use ($attempt): void {
+            CertifiedWork::record($start, $attempt->id);
+            $this->events->dispatch(new HelperCompletionCertified($start->ownerWork(), $attempt->reference()));
+        });
 
         return $decision;
     }

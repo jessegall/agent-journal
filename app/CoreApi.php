@@ -118,6 +118,7 @@ use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\HoldAccountUses;
+use App\Agents\Commands\ImportHelperCommits;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\InterruptNavigation;
 use App\Agents\Commands\MarkMenuEntryStale;
@@ -1933,6 +1934,7 @@ final class CoreApi
                 ChangeAgentEffort::class,
                 InterruptAgent::class,
                 StopAgent::class,
+                ImportHelperCommits::class,
                 RetryDriverRequest::class,
                 CancelDriverRequest::class,
                 ResolveDriverDelivery::class,
