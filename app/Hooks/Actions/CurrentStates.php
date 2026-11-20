@@ -6,8 +6,7 @@ namespace App\Hooks\Actions;
 
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\CurrentState;
-use App\Hooks\Contracts\StateTypes;
-use App\Hooks\Contracts\WorkRecordLoader;
+use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Models\AgentStackRow;
@@ -23,7 +22,7 @@ use PhpOption\Option;
  */
 final readonly class CurrentStates implements CurrentState
 {
-    public function __construct(private StackRestorer $restorer, private StateTypes $types) {}
+    public function __construct(private StackRestorer $restorer) {}
 
     public function of(StackTarget $target, string $typeKey): Option
     {
@@ -61,15 +60,11 @@ final readonly class CurrentStates implements CurrentState
     {
         $subject = $frame->reference->subject;
 
-        if (! $frame->isLive() || ! $subject instanceof SubjectReference) {
+        if (! $frame->isLive() || ! $subject instanceof SubjectReference || ! $frame->state instanceof WorkRecordState) {
             return None::create();
         }
 
-        $loader = $this->types->registry()->get($frame->typeKey());
-
-        return $loader instanceof WorkRecordLoader
-            ? Option::fromValue($loader->recordOf($subject))
-            : None::create();
+        return Option::fromValue(new RecordIdentity($frame->state->workRecordType(), $subject->id));
     }
 
     /**

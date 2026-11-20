@@ -12,6 +12,7 @@ return [
         'shell:git.push',
         'shell:journal-check.cleanup',
         'tool:journal.web_read',
+        'workspace.status',
     ],
 
 ];

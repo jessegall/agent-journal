@@ -14,7 +14,6 @@ use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Links\Support\Linkable;
-use App\Profiles\Values\ProfileKey;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonInterface;
@@ -75,10 +74,10 @@ final class Agent extends Model implements Assignee, MessageRecipient, MessageSe
     }
 
     /** @return Option<ActorIdentity> */
-    public static function soleActorForProfile(ProfileKey $profile): Option
+    public static function soleActorForProfile(string $profile): Option
     {
         $matches = self::query()
-            ->where('profile_key', $profile->key)
+            ->where('profile_key', $profile)
             ->whereNull('retired_at')
             ->readLimit(2)
             ->get();

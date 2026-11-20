@@ -560,6 +560,7 @@ use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
 use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\ActorWorkStacks;
+use App\Hooks\Contracts\WorkRecordState;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\ConditionalState;
@@ -755,6 +756,7 @@ use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\SaveProfileDraft;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
@@ -805,6 +807,11 @@ use App\Profiles\Values\ProfileAuthorization;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ScriptSource;
+use App\Scripts\Attributes\ScriptMember;
+use App\Scripts\Attributes\ScriptObject;
+use App\Scripts\Contracts\ScriptKeywordDefinition;
+use App\Scripts\Values\ScriptContext;
 use App\Profiles\Values\ProfileProvenance;
 use App\Profiles\Values\ProfileSelection;
 use App\Profiles\Values\ProfileSnapshot;
@@ -1199,6 +1206,8 @@ final class CoreApi
                 Policy::class,
                 PolicyCatalogue::class,
                 ActorWorkStacks::class,
+                WorkRecordState::class,
+                ScriptKeywordDefinition::class,
                 Inbox::class,
                 InboxResolver::class,
                 InboxRegistration::class,
@@ -1766,6 +1775,8 @@ final class CoreApi
                 ShareProposalStatus::class,
                 ShareState::class,
                 ProfileKey::class,
+                ScriptSource::class,
+                ScriptContext::class,
                 ProfileBase::class,
                 OfflineReplyMode::class,
                 ProfileSnapshot::class,
@@ -1822,6 +1833,7 @@ final class CoreApi
             )
             ->commands(
                 ActivateProfiles::class,
+                SaveProfileDraft::class,
                 RevokeProfiles::class,
                 StartProfileMain::class,
                 SwitchAccount::class,
@@ -2172,6 +2184,8 @@ final class CoreApi
                 SkillOwnerRequired::class,
             )
             ->support(
+                ScriptObject::class,
+                ScriptMember::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

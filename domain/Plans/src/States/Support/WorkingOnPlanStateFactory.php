@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace Domain\Plans\States\Support;
 
-use App\Hooks\Contracts\WorkRecordLoader;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\States\WorkingOnPlanState;
 
 /**
  * Builds the working-on-plan state from the plan as it is now, reading a batch of plans in one query.
  */
-final readonly class WorkingOnPlanStateFactory implements WorkRecordLoader
+final readonly class WorkingOnPlanStateFactory implements StateLoader
 {
     public function stateClass(): string
     {
@@ -44,10 +43,5 @@ final readonly class WorkingOnPlanStateFactory implements WorkRecordLoader
     public function schemaVersion(): int
     {
         return 1;
-    }
-
-    public function recordOf(SubjectReference $subject): RecordIdentity
-    {
-        return new RecordIdentity(Plan::LINK_TYPE, $subject->id);
     }
 }
