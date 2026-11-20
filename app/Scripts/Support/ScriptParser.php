@@ -7,7 +7,7 @@ namespace App\Scripts\Support;
 use App\Scripts\Enums\DiagnosticCode;
 use App\Scripts\Enums\KeywordCategory;
 use App\Scripts\Enums\SyntaxForm;
-use App\Scripts\Exceptions\ScriptSyntaxInvalid;
+use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\BlockOperand;
 use App\Scripts\Values\BooleanOperand;
 use App\Scripts\Values\CommandOperand;
@@ -38,7 +38,7 @@ final readonly class ScriptParser
             $handler = $this->handler($cursor, $line);
 
             if (isset($handlers[$handler->trigger->token])) {
-                throw ScriptSyntaxInvalid::at(DiagnosticCode::DuplicateHandler, $line->source, 'Duplicate handler.');
+                throw ScriptSyntaxError::at(DiagnosticCode::DuplicateHandler, $line->source, 'Duplicate handler.');
             }
 
             $handlers[$handler->trigger->token] = $handler;
@@ -51,11 +51,11 @@ final readonly class ScriptParser
     {
         $opening = $this->keyword($line);
         if ($opening->form === SyntaxForm::EndBlock || $opening->form === SyntaxForm::ElseBlock) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnexpectedEnd, $line->source, 'Unexpected block ending.');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnexpectedEnd, $line->source, 'Unexpected block ending.');
         }
 
         if ($opening->form !== SyntaxForm::Handler) {
-            throw ScriptSyntaxInvalid::at(
+            throw ScriptSyntaxError::at(
                 DiagnosticCode::InvalidForm,
                 $line->source,
                 'A handler begins with ON and a trigger.',
@@ -66,11 +66,11 @@ final readonly class ScriptParser
         $trigger = $this->keywords->find($line->operand);
         if ($trigger->isEmpty() || ! $trigger->get()->definition instanceof KeywordDefinition
             || $trigger->get()->definition->category !== KeywordCategory::Trigger) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnknownTrigger, $line->operandSource, 'Unknown trigger.');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnknownTrigger, $line->operandSource, 'Unknown trigger.');
         }
 
         if (! $this->keywords->isAvailable($trigger->get())) {
-            throw ScriptSyntaxInvalid::at(
+            throw ScriptSyntaxError::at(
                 DiagnosticCode::UnavailableDefinition,
                 $line->operandSource,
                 'The trigger is unavailable.',
@@ -97,7 +97,7 @@ final readonly class ScriptParser
             }
 
             if ($keyword->category !== KeywordCategory::Statement) {
-                throw ScriptSyntaxInvalid::at(DiagnosticCode::InvalidForm, $line->source, 'Expected a statement.');
+                throw ScriptSyntaxError::at(DiagnosticCode::InvalidForm, $line->source, 'Expected a statement.');
             }
 
             $cursor->countStatement($line->source);
@@ -118,16 +118,16 @@ final readonly class ScriptParser
     private function block(ScriptCursor $cursor, ScriptLine $line, int $depth): BlockOperand
     {
         if ($depth > self::NESTING_LIMIT) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::NestingLimit, $line->source, 'At most four nested blocks.');
+            throw ScriptSyntaxError::at(DiagnosticCode::NestingLimit, $line->source, 'At most four nested blocks.');
         }
 
         $condition = $this->expression($line);
         $whenTrue = $this->body($cursor, $depth);
-        $other = $cursor->current();
+        $elseLine = $cursor->current();
         $whenFalse = [];
 
-        if ($other !== null && $this->keyword($other)->form === SyntaxForm::ElseBlock) {
-            self::assertNoOperand($other);
+        if ($elseLine !== null && $this->keyword($elseLine)->form === SyntaxForm::ElseBlock) {
+            self::assertNoOperand($elseLine);
             $cursor->advance();
             $whenFalse = $this->body($cursor, $depth);
         }
@@ -141,11 +141,11 @@ final readonly class ScriptParser
     {
         $line = $cursor->current();
         if ($line === null) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnclosedBlock, $opening->source, 'Expected END.', 'END');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnclosedBlock, $opening->source, 'Expected END.', 'END');
         }
 
         if ($this->keyword($line)->form !== SyntaxForm::EndBlock) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnexpectedEnd, $line->source, 'Expected END.', 'END');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnexpectedEnd, $line->source, 'Expected END.', 'END');
         }
 
         self::assertNoOperand($line);
@@ -156,12 +156,12 @@ final readonly class ScriptParser
     {
         $entry = $this->keywords->find($line->token);
         if ($entry->isEmpty()) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnknownKeyword, $line->source, 'Unknown script keyword.');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnknownKeyword, $line->source, 'Unknown script keyword.');
         }
 
         $word = $entry->get();
         if (! $word->definition instanceof KeywordDefinition || ! $this->keywords->isAvailable($word)) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnavailableDefinition, $line->source, 'Keyword unavailable.');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnavailableDefinition, $line->source, 'Keyword unavailable.');
         }
 
         return $word->definition;
@@ -203,9 +203,9 @@ final readonly class ScriptParser
         }
     }
 
-    private static function formError(ScriptLine $line, string $expected): ScriptSyntaxInvalid
+    private static function formError(ScriptLine $line, string $expected): ScriptSyntaxError
     {
-        return ScriptSyntaxInvalid::at(
+        return ScriptSyntaxError::at(
             DiagnosticCode::InvalidForm,
             $line->operandSource,
             'Invalid operand.',

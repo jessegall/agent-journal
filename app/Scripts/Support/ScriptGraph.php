@@ -6,7 +6,7 @@ namespace App\Scripts\Support;
 
 use App\Profiles\Values\CompiledScript;
 use App\Scripts\Enums\DiagnosticCode;
-use App\Scripts\Exceptions\ScriptSyntaxInvalid;
+use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\Instruction;
 
 final class ScriptGraph
@@ -27,14 +27,14 @@ final class ScriptGraph
     {
         $actual = array_keys($instruction->successors);
         if (array_diff($ports, $actual) !== [] || array_diff($actual, $ports) !== []) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::InvalidForm, $instruction->source, 'Invalid flow ports.');
+            throw ScriptSyntaxError::at(DiagnosticCode::InvalidForm, $instruction->source, 'Invalid flow ports.');
         }
 
         $times = array_map($this->secondsToFinish(...), array_values($instruction->successors));
         $seconds = $instruction->seconds() + max([0, ...$times]);
 
         if ($seconds > self::EXECUTION_BUDGET) {
-            throw ScriptSyntaxInvalid::at(
+            throw ScriptSyntaxError::at(
                 DiagnosticCode::ExecutionBudget,
                 $instruction->source,
                 'This branch exceeds the 900-second execution budget.',

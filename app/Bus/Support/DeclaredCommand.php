@@ -119,9 +119,9 @@ final readonly class DeclaredCommand
         $retained = $this->reflection()->getAttributes(RetainedActorRequestKey::class)[0] ?? null;
 
         if ($attribute !== null && $retained !== null) {
-            $both = 'it declares both RequiresRequestKey and RetainedActorRequestKey';
+            $conflictingAttributes = 'it declares both RequiresRequestKey and RetainedActorRequestKey';
 
-            throw CommandDeclarationInvalid::for($this->command, $both);
+            throw CommandDeclarationInvalid::for($this->command, $conflictingAttributes);
         }
 
         if ($retained !== null) {

@@ -6,7 +6,7 @@ namespace App\Scripts\Values;
 
 use App\Profiles\Values\NamedCommand;
 use App\Scripts\Enums\DiagnosticCode;
-use App\Scripts\Exceptions\ScriptSyntaxInvalid;
+use App\Scripts\Exceptions\ScriptSyntaxError;
 
 final readonly class Instruction
 {
@@ -64,8 +64,8 @@ final readonly class Instruction
         ];
     }
 
-    private function wrongOperand(): ScriptSyntaxInvalid
+    private function wrongOperand(): ScriptSyntaxError
     {
-        return ScriptSyntaxInvalid::at(DiagnosticCode::InvalidForm, $this->source, 'Unexpected instruction operand.');
+        return ScriptSyntaxError::at(DiagnosticCode::InvalidForm, $this->source, 'Unexpected instruction operand.');
     }
 }

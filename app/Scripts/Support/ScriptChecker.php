@@ -7,7 +7,7 @@ namespace App\Scripts\Support;
 use App\Profiles\Values\ScriptSource;
 use App\Scripts\Contracts\ScriptChecks;
 use App\Scripts\Enums\DiagnosticCode;
-use App\Scripts\Exceptions\ScriptSyntaxInvalid;
+use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\ObjectDefinition;
 use App\Scripts\Values\RegisteredKeyword;
 use App\Scripts\Values\ScriptCheck;
@@ -32,7 +32,7 @@ final readonly class ScriptChecker implements ScriptChecks
             $lines = self::lines($source->text);
             $tokens = array_map(fn (ScriptLine $line) => $line->source, $lines);
             $compiled = $this->compiler->compile($source, $this->parser->parse($lines));
-        } catch (ScriptSyntaxInvalid $failure) {
+        } catch (ScriptSyntaxError $failure) {
             return new ScriptCheck([$failure->diagnostic], $tokens, null, $source->hash(), $catalogue);
         }
 
@@ -45,7 +45,7 @@ final readonly class ScriptChecker implements ScriptChecks
         $source = preg_split('/\R/u', $text);
 
         if ($source === false) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::InvalidForm, new ScriptRange(1, 1, 1), 'Expected UTF-8.');
+            throw ScriptSyntaxError::at(DiagnosticCode::InvalidForm, new ScriptRange(1, 1, 1), 'Expected UTF-8.');
         }
 
         $lines = array_map(

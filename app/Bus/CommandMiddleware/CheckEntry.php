@@ -42,14 +42,14 @@ final readonly class CheckEntry implements CommandMiddleware
             return $next($call);
         }
 
-        $outsideItsEntry = ! $this->entrance->admits($entry);
-        $followsItsParent = $entry === CommandEntry::Application && $this->nesting->isNested();
+        $hasDisallowedEntry = ! $this->entrance->admits($entry);
+        $isNestedApplicationCall = $entry === CommandEntry::Application && $this->nesting->isNested();
 
-        if ($outsideItsEntry && ! $followsItsParent) {
+        if ($hasDisallowedEntry && ! $isNestedApplicationCall) {
             throw CommandNotRegistered::for($call->name());
         }
 
-        if ($entry === CommandEntry::Application && ! $followsItsParent && ! $this->mayRunApplicationCommands()) {
+        if ($entry === CommandEntry::Application && ! $isNestedApplicationCall && ! $this->mayRunApplicationCommands()) {
             throw CommandNotRegistered::for($call->name());
         }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Scripts\Support;
 
 use App\Scripts\Enums\DiagnosticCode;
-use App\Scripts\Exceptions\ScriptSyntaxInvalid;
+use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\ScriptLine;
 use App\Scripts\Values\ScriptRange;
 
@@ -35,7 +35,7 @@ final class ScriptCursor
         $this->statements++;
 
         if ($this->statements > self::STATEMENT_LIMIT) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::StatementLimit, $source, 'A script may have 64 statements.');
+            throw ScriptSyntaxError::at(DiagnosticCode::StatementLimit, $source, 'A script may have 64 statements.');
         }
     }
 }

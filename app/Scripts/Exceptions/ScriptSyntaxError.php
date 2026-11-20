@@ -9,7 +9,7 @@ use App\Scripts\Enums\DiagnosticCode;
 use App\Scripts\Values\ScriptRange;
 use RuntimeException;
 
-final class ScriptSyntaxInvalid extends RuntimeException
+final class ScriptSyntaxError extends RuntimeException
 {
     private function __construct(public readonly ScriptDiagnostic $diagnostic)
     {

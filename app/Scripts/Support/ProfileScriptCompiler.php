@@ -15,7 +15,7 @@ use App\Profiles\Values\NamedCommand;
 use App\Profiles\Values\ScriptSource;
 use App\Scripts\Contracts\ScriptChecks;
 use App\Scripts\Enums\DiagnosticCode;
-use App\Scripts\Exceptions\ScriptSyntaxInvalid;
+use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\BooleanOperand;
 use App\Scripts\Values\KeywordDefinition;
 use App\Scripts\Values\ScriptRange;
@@ -90,7 +90,7 @@ final readonly class ProfileScriptCompiler implements ScriptCompilation
         $decision = $access->decide($operation);
 
         if (! $decision->allowed) {
-            $failure = ScriptSyntaxInvalid::at(DiagnosticCode::CommandNotAllowed, $range, $decision->reason);
+            $failure = ScriptSyntaxError::at(DiagnosticCode::CommandNotAllowed, $range, $decision->reason);
 
             throw InvalidScript::withDiagnostics([$failure->diagnostic]);
         }

@@ -7,7 +7,7 @@ namespace App\Scripts\Support;
 use App\Profiles\Values\NamedCommand;
 use App\Scripts\Contracts\ScriptStatement;
 use App\Scripts\Enums\DiagnosticCode;
-use App\Scripts\Exceptions\ScriptSyntaxInvalid;
+use App\Scripts\Exceptions\ScriptSyntaxError;
 use App\Scripts\Values\BlockOperand;
 use App\Scripts\Values\BooleanOperand;
 use App\Scripts\Values\Instruction;
@@ -47,7 +47,7 @@ final readonly class CompileContext
         $key = $statement->commandKey();
 
         if (! isset($this->commands[$key])) {
-            throw ScriptSyntaxInvalid::at(
+            throw ScriptSyntaxError::at(
                 DiagnosticCode::UnknownCommand,
                 $statement->operandSource,
                 "Unknown command {$key}.",
@@ -124,16 +124,16 @@ final readonly class CompileContext
         $range = $statement->operandSource;
 
         if ($found->isEmpty()) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnknownObject, $range, 'Unknown script object.');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnknownObject, $range, 'Unknown script object.');
         }
 
         $object = $found->get();
         if (! isset($object->members[$condition->member])) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnknownMember, $range, 'Unknown boolean member.');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnknownMember, $range, 'Unknown boolean member.');
         }
 
         if (! $this->objects->isAvailable($object)) {
-            throw ScriptSyntaxInvalid::at(DiagnosticCode::UnavailableDefinition, $range, 'Script object unavailable.');
+            throw ScriptSyntaxError::at(DiagnosticCode::UnavailableDefinition, $range, 'Script object unavailable.');
         }
 
         $member = $object->members[$condition->member];
@@ -149,8 +149,8 @@ final readonly class CompileContext
         ]);
     }
 
-    private static function invalidOperand(ParsedStatement $statement): ScriptSyntaxInvalid
+    private static function invalidOperand(ParsedStatement $statement): ScriptSyntaxError
     {
-        return ScriptSyntaxInvalid::at(DiagnosticCode::InvalidForm, $statement->operandSource, 'Invalid operand.');
+        return ScriptSyntaxError::at(DiagnosticCode::InvalidForm, $statement->operandSource, 'Invalid operand.');
     }
 }
