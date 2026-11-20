@@ -150,10 +150,11 @@ func (tracker *Tracker) reportParts(stdout io.Writer) {
 		if tracker.Folder.Started(position) {
 			tracker.Folder.CutOutput(position, tracker.Options.MostOutputBytes)
 		}
-		if (ended || tracker.Folder.Started(position)) && !tracker.Reported[position] {
+		// a part that ends with the line, as the last part always does, is told by the line's end, its start too
+		// when it had ended before it was seen running
+		if tracker.Folder.Started(position) && !ended && !tracker.Reported[position] {
 			tracker.partStarted(position)
 		}
-		// a part that ends with the line, as the last part always does, is told by the line's end
 		if ended && !tracker.Reported[position] {
 			tracker.partEnded(stdout, position, code, !tracker.Folding && position != tracker.Parts)
 		}
@@ -180,7 +181,11 @@ func (tracker *Tracker) partStarted(position int) {
 
 // partEnded shows an ended part and, when tells is set, reports its end on its own.
 func (tracker *Tracker) partEnded(stdout io.Writer, position, code int, tells bool) {
-	tracker.partStarted(position)
+	if tells {
+		tracker.partStarted(position)
+	} else {
+		tracker.markStarted(position)
+	}
 	tracker.Reported[position] = true
 	if stdout != io.Discard {
 		tracker.showLateOutput(stdout)
