@@ -24,7 +24,7 @@ use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Policies\SupervisorPolicy;
 use App\Supervision\Readers\AskRecords;
 use App\Supervision\States\AnsweringAskState;
-use App\Supervision\States\AnsweringAskStates;
+use App\Supervision\States\Support\AnsweringAskStates;
 use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
 use App\Supervision\Support\SupervisorRouting;

@@ -25,7 +25,7 @@ use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
-use Domain\Plans\Api\PlanTextLimit;
+use Domain\Plans\Enums\PlanTextLimit;
 use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
