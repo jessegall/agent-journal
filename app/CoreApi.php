@@ -1273,6 +1273,7 @@ final class CoreApi
             )
             ->values(
                 EventCommands::class,
+                StackWide::class,
                 FolderClasses::class,
                 Endpoint::class,
                 CallKeyCast::class,
@@ -2086,7 +2087,6 @@ final class CoreApi
                 CountsLoads::class,
                 CountsPivotLoads::class,
                 AgentState::class,
-                StackWide::class,
                 Linkable::class,
                 LinkAccess::class,
                 LinkTypeRegistry::class,
