@@ -35,6 +35,7 @@ final readonly class ReadHereDocumentBodies implements Pipe
         }
 
         $tokens = $cursor->tokens();
+
         foreach ($cursor->hereDocuments->takeWaiting() as $waiting) {
             $redirectIndex = $waiting->redirect;
             $stripsTabs = $waiting->stripsTabs;
@@ -53,11 +54,13 @@ final readonly class ReadHereDocumentBodies implements Pipe
             $found = false;
             $bodyEnd = $lineStart;
             $length = strlen($cursor->source);
+
             while ($lineStart <= $length) {
                 $cursor->assertWithinBudget();
                 $lineEnd = strpos($cursor->source, "\n", $lineStart);
                 $lineEnd = $lineEnd === false ? $length : $lineEnd;
                 $line = substr($cursor->source, $lineStart, $lineEnd - $lineStart);
+
                 if (($stripsTabs ? ltrim($line, "\t") : $line) === $delimiter) {
                     $found = true;
                     $bodyEnd = $lineStart;
@@ -65,11 +68,13 @@ final readonly class ReadHereDocumentBodies implements Pipe
 
                     break;
                 }
+
                 if ($lineEnd === $length) {
                     break;
                 }
                 $lineStart = $lineEnd + 1;
             }
+
             if (! $found) {
                 throw ShellLineUnreadable::unfinished(
                     "the here-document ended by {$delimiter}",
@@ -96,8 +101,10 @@ final readonly class ReadHereDocumentBodies implements Pipe
     {
         $segments = [];
         $cursor->position = $body->start;
+
         while ($cursor->position < $body->end) {
             $character = $cursor->source[$cursor->position];
+
             if ($character === '\\') {
                 $cursor->position += 2;
 
@@ -106,6 +113,7 @@ final readonly class ReadHereDocumentBodies implements Pipe
             $expansion = ($character === '`' || ($character === '$' && $cursor->at(
                 $cursor->position + 1,
             ) === '(')) ? $this->expansions->read($cursor) : null;
+
             if ($expansion !== null) {
                 $segments[] = $expansion;
 

@@ -32,6 +32,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
         $request = CommandRequest::lockedForChange($command->commandRequestId);
+
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw RuleProposalRefused::notTheRequester($request->id);
         }
@@ -44,6 +45,7 @@ final readonly class ProposeCommandRuleHandler implements CommandHandler
             $command->proposed,
             $request,
         );
+
         if ($proposal->wasRecentlyCreated) {
             $request->answerWith($proposal);
         }

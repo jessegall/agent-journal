@@ -95,6 +95,7 @@ final readonly class PlanReadResult
     ): Continuation|null {
         $hasMorePhases = $phase < $count;
         $taskOffset = $hasMorePhases ? $position->offset : $plan->nextTaskOffset;
+
         if ($taskOffset === null) {
             return null;
         }

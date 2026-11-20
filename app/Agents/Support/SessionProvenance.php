@@ -93,6 +93,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
         $current = $this->session->sessionId();
         $parent = $this->parentSessionOf($record);
+
         if ($parent?->id !== $current || ! $this->policies->isFrozenFor($current)) {
             return false;
         }
@@ -108,6 +109,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
     private function parentSessionOf(Model $record): AgentSession|null
     {
         $origin = $this->links->linkedOfType($record, self::SESSION)[0] ?? null;
+
         if ($origin === null) {
             return null;
         }

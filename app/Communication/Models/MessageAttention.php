@@ -44,7 +44,9 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 final class MessageAttention extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

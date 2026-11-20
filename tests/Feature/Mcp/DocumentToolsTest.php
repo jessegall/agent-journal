@@ -102,6 +102,7 @@ final class DocumentToolsTest extends TestCase
 
         $read = '';
         $uri = "journal://v1/reports/{$id}";
+
         for ($part = 1; $uri !== null && $part <= 20; $part++) {
             $text = $this->sendMcp($reviewer, 'resources/read', ['uri' => $uri])->json('result.contents.0.text');
             $found = preg_match(
@@ -141,6 +142,7 @@ final class DocumentToolsTest extends TestCase
             'digest' => hash('sha256', $body),
             'request_key' => $key.'-begin',
         ])->assertJsonPath('result.isError', false)->json('result.structuredContent.upload_id');
+
         foreach (str_split($body, 48 * 1024) as $index => $part) {
             $this->callMcpTool($caller, 'uploads_append', [
                 'upload_id' => $upload, 'index' => $index, 'text' => $part, 'digest' => hash('sha256', $part),
@@ -160,6 +162,7 @@ final class DocumentToolsTest extends TestCase
     {
         $tools = [];
         $arguments = [];
+
         do {
             $page = $this->sendMcp($caller, 'tools/list', $arguments)->assertOk()->json('result');
             $tools = [...$tools, ...$page['tools']];

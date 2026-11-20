@@ -52,12 +52,14 @@ final readonly class ToolRules
         $read = CommandClassSet::of(CommandClass::Network, CommandClass::Read);
         $write = CommandClassSet::of(CommandClass::Network, CommandClass::Write);
         $rules = [];
+
         foreach (self::GH_READS as $group => $verbs) {
             foreach ($verbs as $verb) {
                 $id = "core.gh.{$group}-{$verb}";
                 $rules[] = CommandRule::forProgram($id, $gh, [$group, $verb], $this->ghReading(), $read);
             }
         }
+
         foreach (self::GH_WRITES as $group => $verbs) {
             foreach ($verbs as $verb) {
                 $id = "core.gh.{$group}-{$verb}";

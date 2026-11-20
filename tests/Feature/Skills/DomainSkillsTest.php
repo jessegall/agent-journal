@@ -25,12 +25,19 @@ final class DomainSkillsTest extends TestCase
     public static function domainSkills(): iterable
     {
         yield 'Tasks' => ['journal-tasks', 'Tasks', '## The tasks you hold'];
+
         yield 'Chat' => ['journal-messages', 'Chat', '## Answering'];
+
         yield 'Memory' => ['journal-memory', 'Memory', '## Weights'];
+
         yield 'Rules' => ['journal-rules', 'Rules', '## Reading rules'];
+
         yield 'Sequences' => ['journal-sequences', 'Sequences', '## Following a run'];
+
         yield 'Reminders' => ['journal-reminders', 'Reminders', '## In this version'];
+
         yield 'Processes' => ['journal-shell', 'Core', '## Reading output'];
+
         yield 'Access' => ['journal-access', 'Access', '## Agents'];
     }
 

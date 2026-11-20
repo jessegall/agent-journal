@@ -25,6 +25,7 @@ final readonly class SimpleCommandDraft
     public function continues(): bool
     {
         $cursor = $this->toParse->cursor();
+
         if ($this->isArrayAssignment || $cursor->atEnd()) {
             return false;
         }

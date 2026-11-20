@@ -42,6 +42,7 @@ final class DocumentRecordsTest extends TestCase
         $bus->run(new OpenDocument((string) $document->number));
 
         $links = $this->app->make(IdentityLinks::class);
+
         foreach ([Document::query()->sole(), DocumentRevision::query()->sole(), Report::query()->sole()] as $record) {
             $origins = $links->linkedOfType($record, 'core.agent-session');
             $this->assertSame([$author->session->id], array_column($origins, 'id'));

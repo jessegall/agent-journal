@@ -1,5 +1,11 @@
 FROM node:24-bookworm-slim AS node
 
+# journal-agent, the protected agent host, built from tools/journal-agent for the runner image.
+FROM golang:1.26.4-bookworm AS agent-host
+WORKDIR /src
+COPY tools/journal-agent/ ./
+RUN CGO_ENABLED=0 go build -o /out/journal-agent ./cmd/journal-agent
+
 # Tunler for the share service, built from one pinned commit whose source archive must match its checksum; see
 # docs/sharing/binaries.md for how the commit and the sum were checked.
 FROM golang:1.26.4-bookworm AS tunler
@@ -26,7 +32,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && echo "${sum}  /tmp/ngrok.tar.gz" | sha256sum -c - \
     && mkdir -p /out && tar -xzf /tmp/ngrok.tar.gz -C /out ngrok
 
-FROM dunglas/frankenphp:1-php8.5 AS app
+# The journal's PHP console: the extensions, the Composer packages and the code, with no frontend build. The app and
+# the runner image build on it, so there is one PHP setup.
+FROM dunglas/frankenphp:1-php8.5 AS console
 
 RUN install-php-extensions pcntl pdo_pgsql redis intl zip bcmath opcache
 
@@ -35,22 +43,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
+
+COPY . .
+RUN composer dump-autoload --optimize
+
+FROM console AS app
+
 # Node runs in the same image as PHP: the Wayfinder Vite plugin calls php artisan while building.
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 
-WORKDIR /app
-
-COPY composer.json composer.lock ./
-RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
-
 COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY . .
-RUN composer dump-autoload --optimize && npm run build
+RUN npm run build
 
 EXPOSE 8000
 
@@ -64,3 +76,30 @@ COPY --from=tunler /out/tunler /opt/sharing/bin/tunler
 COPY --from=ngrok /out/ngrok /opt/sharing/bin/ngrok
 
 CMD ["php", "artisan", "sharing:supervise"]
+
+# The runner image: the console with no .env, the pinned claude and codex, the no-keychain stand-in under the
+# console's own tools folder, and journal-agent. The agent-host, agent-host-enroll and accounts services each give it
+# their command; it has no entrypoint of its own and runs as 10001:10001.
+FROM console AS runner
+
+ARG CLAUDE_CODE_VERSION=2.1.323
+ARG CODEX_VERSION=0.165.0
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates nodejs npm \
+    && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
+    && npm cache clean --force \
+    && apt-get purge -y npm && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+
+COPY --from=agent-host /out/journal-agent /usr/local/bin/journal-agent
+
+# The code is copied with the modes it has where it was built, where some files may be private: make it readable,
+# and only storage and the bootstrap cache writable, for the user the services run as.
+RUN rm -f /app/.env \
+    && chmod -R a+rX /app \
+    && groupadd --gid 10001 journal \
+    && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home journal \
+    && chown -R 10001:10001 /app/storage /app/bootstrap/cache
+USER 10001:10001
+ENTRYPOINT []
+CMD []

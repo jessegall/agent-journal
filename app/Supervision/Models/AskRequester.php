@@ -16,7 +16,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['actor_type', 'actor_id'])]
 final class AskRequester extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.ask-requester';
 

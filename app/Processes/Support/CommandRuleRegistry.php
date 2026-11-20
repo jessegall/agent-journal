@@ -45,6 +45,7 @@ final readonly class CommandRuleRegistry
         self::assertDisjoint($standing);
         $active = [];
         $held = [];
+
         foreach ($standing as $rule) {
             if ($rule->scope->type->isActiveUnreviewed() || in_array($rule, $approved, true)) {
                 $active[$rule->program->family][] = $rule;
@@ -89,6 +90,7 @@ final readonly class CommandRuleRegistry
     public function bundles(): array
     {
         $rules = [];
+
         foreach ($this->held as $rule) {
             $rules[$rule->scope->name()][] = $rule;
         }
@@ -128,6 +130,7 @@ final readonly class CommandRuleRegistry
     public function match(ProgramIdentity $program, array $words, int $node): CommandRule|UnresolvedFact
     {
         $rules = $this->active[$program->family] ?? [];
+
         if ($rules === []) {
             $problem = "No rule declares the program {$program->family}.";
 
@@ -136,15 +139,19 @@ final readonly class CommandRuleRegistry
         $problem = "No rule of {$program->family} accepts these words.";
         $closest = new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem);
         $closestLength = -1;
+
         foreach ($this->bySubcommandLength($rules) as $rule) {
             $length = $rule->subcommandLength($words);
+
             if ($length < 0) {
                 continue;
             }
             $refusals = $rule->arguments->check(array_slice($words, $length), $node);
+
             if ($refusals === []) {
                 return $rule;
             }
+
             if ($length > $closestLength) {
                 [$closest, $closestLength] = [$refusals[0], $length];
             }
@@ -230,6 +237,7 @@ final readonly class CommandRuleRegistry
     private static function checkIds(array $rules): void
     {
         $byId = [];
+
         foreach ($rules as $rule) {
             if (isset($byId[$rule->id])) {
                 throw CommandRuleConflict::sameId($byId[$rule->id], $rule);

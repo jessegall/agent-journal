@@ -106,14 +106,17 @@ class DomainServiceProvider extends ServiceProvider
             $this->app->make(RecordPolicyMappings::class)->assertResolved();
             $this->app->forgetScopedInstances();
         });
+
         foreach ($registry->all() as $entry) {
             foreach ($entry->shareRecords() as $registration) {
                 $shareRecords->register($registration);
             }
+
             foreach ($entry->shareGateways() as $key => $gatewayClass) {
                 $shareGateways->register($key, $gatewayClass);
             }
         }
+
         foreach ($registry->all() as $entry) {
             $entry->boot($this->app);
         }

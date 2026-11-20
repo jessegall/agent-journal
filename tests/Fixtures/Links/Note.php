@@ -22,7 +22,8 @@ use Illuminate\Database\Eloquent\Model;
 final class Note extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     protected static function booted(): void
     {

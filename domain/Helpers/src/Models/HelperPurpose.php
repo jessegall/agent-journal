@@ -33,7 +33,9 @@ use Illuminate\Support\Str;
 #[Fillable(['profile_key', 'purpose_type', 'subject_type', 'subject_id', 'label'])]
 final class HelperPurpose extends Model implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

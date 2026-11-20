@@ -64,7 +64,8 @@ use Illuminate\Support\Carbon;
 final class EvidencePermit extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 
@@ -148,12 +149,15 @@ final class EvidencePermit extends Model implements ReadableModel
         if ($this->runner_type !== $runner->type->value || $this->runner_id !== $runner->id) {
             throw EvidencePermitRefused::otherActor();
         }
+
         if ($this->consumed_at !== null && $this->request_id !== $requestId) {
             throw EvidencePermitRefused::consumed();
         }
+
         if ($this->consumed_at === null && $this->expires_at->isPast()) {
             throw EvidencePermitRefused::expired();
         }
+
         if ($this->classification_digest !== $classificationDigest) {
             throw EvidencePermitRefused::changed();
         }

@@ -31,7 +31,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['origin_type', 'origin_id', 'lines', 'requests_attention'])]
 final class PendingAgentMessage extends Model implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     /**

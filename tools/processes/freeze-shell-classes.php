@@ -34,9 +34,11 @@ $classifier = $app->make(CommandClassifier::class);
 $context = new ExecutionContext(ShellDialect::Bash, '/work', '/work');
 $lines = [];
 $known = 0;
+
 foreach (file(CORPUS.'/cases.jsonl', FILE_IGNORE_NEW_LINES) ?: [] as $line) {
     $case = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
     unset($case['expected']['classification']);
+
     if ($case['expected']['outcome'] === 'complete') {
         $summary = $classifier->classify($syntax->parse($case['source'], ShellDialect::from($case['dialect'])), $context)->summary()->toArray();
         $case['expected']['classification'] = $summary;
@@ -47,6 +49,7 @@ foreach (file(CORPUS.'/cases.jsonl', FILE_IGNORE_NEW_LINES) ?: [] as $line) {
 file_put_contents(CORPUS.'/cases.jsonl', implode('', $lines));
 
 $manifest = json_decode((string) file_get_contents(CORPUS.'/manifest.json'), true, 512, JSON_THROW_ON_ERROR);
+
 foreach (['cases.jsonl', 'class-decisions.jsonl'] as $name) {
     $manifest['fixtures'][$name] = hash_file('sha256', CORPUS.'/'.$name);
 }

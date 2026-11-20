@@ -11,7 +11,7 @@ use App\Agents\Actions\RegisterPendingStart;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Commands\StartAgent;
 use App\Agents\Contracts\ActiveAccountReader;
-use App\Agents\Contracts\HelperImages;
+use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Events\StartAccepted;
 use App\Agents\Exceptions\AccountContainerUnsupported;
@@ -50,7 +50,7 @@ final readonly class StartAgentHandler implements CommandHandler
         private HostStartMaterial $material,
         private Dispatcher $events,
         private ContainerAdmission $containers,
-        private HelperImages $images,
+        private DockerImageVerifier $images,
         private HostCapacity $capacity,
         private HostCapacityLock $capacityLock,
         private ReplyInboxes $replyInboxes,

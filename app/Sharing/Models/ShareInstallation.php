@@ -30,7 +30,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'run_id', 'run_lease_ends_at'])]
 final class ShareInstallation extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share-installation';
 

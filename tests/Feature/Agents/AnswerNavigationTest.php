@@ -123,6 +123,7 @@ final class AnswerNavigationTest extends TestCase
             fn () => NavigationAnswer::keys(['ctrl-c']),
             fn () => NavigationAnswer::choose(str_repeat('a', 201)),
         ];
+
         foreach ($answers as $make) {
             try {
                 $make();

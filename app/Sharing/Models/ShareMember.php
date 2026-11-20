@@ -37,7 +37,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['scope_version', 'link_id', 'source_type', 'source_id', 'target_type', 'target_id', 'invalidated_at'])]
 final class ShareMember extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share-member';
 

@@ -137,6 +137,7 @@ final readonly class RequestWindowResolver implements PageResolver
     {
         $contracts = $declared === null ? [] : $declared->contracts;
         $statuses = [];
+
         foreach ($contracts as $contract) {
             foreach ($request->unsampledBranches($contract->exits) as $branch) {
                 $statuses[] = $branch->status;

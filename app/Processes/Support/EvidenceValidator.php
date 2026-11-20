@@ -40,13 +40,16 @@ final readonly class EvidenceValidator
     ): OutputValidation {
         $run = ProcessRun::ofAnyActor($part->process_run_id);
         $problems = [...$this->runProblems($run, $part), ...$read->problems];
+
         if ($consumed->offsets != $part->stream_offsets) {
             $problems[] = $this->problem(ProblemCode::OutputIncomplete, 'The reader left captured bytes unread.');
         }
+
         if ($part->end_type !== PartEndType::Exited) {
             return new OutputValidation($problems, AssessmentOutcome::Unavailable);
         }
         $outcome = $contract->exits->outcomeOf($part->end_code);
+
         if ($outcome === Outcome::ExecutionError) {
             $problems[] = $this->problem(ProblemCode::ExecutionError, "Exit {$part->end_code} is no declared branch.");
         } elseif (! $outcome->acceptsClaim($read->claimed)) {
@@ -54,9 +57,11 @@ final readonly class EvidenceValidator
             $problems[] = $this->problem(ProblemCode::OutcomeConflict, $claim);
         }
         $empty = $read->records === [];
+
         if ($empty && $contract->output->isEmptyRefused()) {
             $problems[] = $this->problem(ProblemCode::OutputMissing, 'The contract does not allow an empty output.');
         }
+
         if ($problems !== []) {
             return new OutputValidation($problems, AssessmentOutcome::Unavailable);
         }
@@ -73,6 +78,7 @@ final readonly class EvidenceValidator
     {
         $part = PartRun::query()->findOrFail($assessment->part_run_id);
         $run = ProcessRun::ofAnyActor($part->process_run_id);
+
         if (! $assessment->isValid() || $this->runProblems($run, $part) !== []) {
             throw EvidenceRejected::notValid($assessment->id);
         }
@@ -88,13 +94,16 @@ final readonly class EvidenceValidator
     private function runProblems(ProcessRun $run, PartRun $part): array
     {
         $problems = [];
+
         if ($run->mode !== RunMode::Normal) {
             $problems[] = $this->problem(ProblemCode::NotNormalRun, 'An evidence sample never gives a result.');
         }
+
         if ($part->lifecycle !== LifecycleState::Ended || $part->end_type !== PartEndType::Exited) {
             $problems[] = $this->problem(ProblemCode::ExitUnavailable, 'The part did not end with its own exit.');
         }
         $manifest = $this->manifests->stateOf($part);
+
         if (! $part->capture_state->isComplete() || ! $manifest->isComplete()) {
             $problems[] = $this->problem(ProblemCode::OutputIncomplete, 'The captured output is not complete.');
         }

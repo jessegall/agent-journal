@@ -56,7 +56,8 @@ use Illuminate\Support\Carbon;
 final class PartRun extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     /**
      * @var array<string, mixed>
@@ -231,6 +232,7 @@ final class PartRun extends Model implements ReadableModel
     public function manifestDigests(): array
     {
         $checksums = [];
+
         foreach ($this->chunks()->orderBy('stream')->orderBy('offset')->readLimit(100_000)->get() as $chunk) {
             $checksums[$chunk->stream->value][] = $chunk->checksum;
         }

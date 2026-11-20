@@ -54,7 +54,10 @@ use PhpOption\Option;
 )]
 final class SharePreview extends Model implements ReadableModel
 {
-    use BelongsToOneRoot, BoundedReads, HasUlids, Linkable;
+    use BelongsToOneRoot;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share-preview';
 

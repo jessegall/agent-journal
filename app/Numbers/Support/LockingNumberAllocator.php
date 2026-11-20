@@ -46,6 +46,7 @@ final readonly class LockingNumberAllocator
         $key = [$holder->getMorphClass(), (string) $holder->getKey(), $recordType];
 
         $group = NumberGroup::query()->forRecords(...$key)->locked()->first();
+
         if ($group !== null) {
             return $group;
         }

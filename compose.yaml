@@ -140,7 +140,78 @@ services:
             timeout: 5s
             retries: 10
 
+    # The contained profile (doc 61): on a server, every agent runs in a container of a separate Docker daemon that
+    # holds nothing else. A plain docker compose up on the Mac starts none of these services.
+    #
+    # The daemon is rootless Docker-in-Docker by default (AGENT_DAEMON_IMAGE docker:28-dind-rootless): it needs the
+    # relaxed seccomp and AppArmor profiles below for its own user namespaces, and nothing more. Where the server has
+    # Sysbox, set AGENT_DAEMON_RUNTIME=sysbox-runc and the same daemon runs with no relaxed profile. It never gets the
+    # server's own Docker socket.
+    agent-docker:
+        profiles: [contained]
+        restart: unless-stopped
+        image: ${AGENT_DAEMON_IMAGE:-docker:28-dind-rootless}
+        runtime: ${AGENT_DAEMON_RUNTIME:-runc}
+        security_opt:
+            - seccomp=unconfined
+            - apparmor=unconfined
+        environment:
+            DOCKER_HOST: unix:///run/agent-docker/docker.sock
+        command: ['--host=unix:///run/agent-docker/docker.sock']
+        volumes:
+            - agent-docker-data:/home/rootless/.local/share/docker
+            - agent-docker-socket:/run/agent-docker
+            - accounts-data:/srv/journal/accounts
+        networks:
+            - agent-egress
+        healthcheck:
+            test: ['CMD', 'docker', '--host=unix:///run/agent-docker/docker.sock', 'info']
+            interval: 5s
+            timeout: 5s
+            retries: 30
+
+    # Loads the two pinned images into the agent daemon by digest once it answers, and fails when a loaded digest
+    # differs from the one docs/accounts/docker-images.json records; a running agent never pulls an image.
+    agent-images:
+        profiles: [contained]
+        restart: 'no'
+        image: ${AGENT_DAEMON_IMAGE:-docker:28-dind-rootless}
+        depends_on:
+            agent-docker:
+                condition: service_healthy
+        environment:
+            DOCKER_HOST: unix:///run/agent-docker/docker.sock
+            AGENT_IMAGE: ${AGENT_IMAGE:-}
+            RUNNER_IMAGE: ${RUNNER_IMAGE:-}
+        entrypoint: ['/bin/sh', '-c']
+        command:
+            - |
+              set -eu
+              if [ -z "$$AGENT_IMAGE" ] || [ -z "$$RUNNER_IMAGE" ]; then
+                  echo "Name AGENT_IMAGE and RUNNER_IMAGE by digest in .env." >&2
+                  exit 1
+              fi
+              for image in "$$AGENT_IMAGE" "$$RUNNER_IMAGE"; do
+                  docker pull "$$image"
+                  digest="$$(docker image inspect --format '{{index .RepoDigests 0}}' "$$image")"
+                  if [ "$$digest" != "$$image" ]; then
+                      echo "The loaded image is $$digest, not the pinned $$image." >&2
+                      exit 1
+                  fi
+              done
+        volumes:
+            - agent-docker-socket:/run/agent-docker
+        networks:
+            - agent-egress
+
 volumes:
     postgres-data:
     redis-data:
     sharing-data:
+    agent-docker-data:
+    agent-docker-socket:
+    accounts-data:
+
+networks:
+    # The agent daemon's own network, shared with no app, database or cache container.
+    agent-egress:

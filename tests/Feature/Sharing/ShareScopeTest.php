@@ -30,7 +30,8 @@ use Tests\TestCase;
  */
 final class ShareScopeTest extends TestCase
 {
-    use RefreshHookDatabase, RegistersShareDomains;
+    use RefreshHookDatabase;
+    use RegistersShareDomains;
 
     private const array TARGET_TYPES = ['binders.sheet', 'binders.card', 'binders.tab'];
 

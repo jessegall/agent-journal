@@ -47,6 +47,7 @@ final readonly class MainDeskNavigation implements MainDesk
             return 0;
         }
         $seated = $this->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
+
         if (! $seated->getOrElse(false)) {
             return 0;
         }

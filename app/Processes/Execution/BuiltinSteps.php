@@ -58,15 +58,19 @@ final readonly class BuiltinSteps
     {
         $words = array_map(fn ($word) => $word->literal(), $step->argv);
         $name = (string) $words[0];
+
         if ($name === 'echo' && array_intersect(array_slice($words, 1), ['-e', '-E']) !== []) {
             throw SupervisorRefused::unsupportedBuiltin('echo', 'only -n is run');
         }
+
         if ($name === 'printf' && count($words) < 2) {
             throw SupervisorRefused::unsupportedBuiltin('printf', 'it needs a format');
         }
+
         if ($name === 'printf' && preg_match('/%(?![sd%])/', (string) $words[1]) === 1) {
             throw SupervisorRefused::unsupportedBuiltin('printf', 'only %s, %d and %% are run');
         }
+
         if ($name === 'cd' && count($words) > 2) {
             throw SupervisorRefused::unsupportedBuiltin('cd', 'it takes one folder');
         }
@@ -79,6 +83,7 @@ final readonly class BuiltinSteps
     {
         $target = $arguments[0] ?? ($context->environment['HOME'] ?? $context->workingFolder);
         $folder = realpath(str_starts_with($target, '/') ? $target : rtrim($context->workingFolder, '/').'/'.$target);
+
         if ($folder === false || ! is_dir($folder)) {
             return new BuiltinResult(1, $context, '', "cd: {$target}: No such file or directory\n");
         }
@@ -93,6 +98,7 @@ final readonly class BuiltinSteps
     private function assignmentsIn(array $arguments): array
     {
         $assignments = [];
+
         foreach ($arguments as $argument) {
             if (! str_contains($argument, '=')) {
                 continue;
@@ -123,6 +129,7 @@ final readonly class BuiltinSteps
         $arguments = array_values($operands);
         $perPass = max(1, preg_match_all('/%[sd]/', $pattern));
         $output = '';
+
         do {
             $pass = array_splice($arguments, 0, $perPass);
             $output .= (string) preg_replace_callback('/%([sd%])/', function (array $match) use (&$pass): string {

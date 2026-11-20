@@ -25,7 +25,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['session_id', 'epoch'])]
 final class SkillContextEpoch extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

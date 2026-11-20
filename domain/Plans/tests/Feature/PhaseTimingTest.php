@@ -83,6 +83,7 @@ final class PhaseTimingTest extends TestCase
         foreach ($this->tasks as $task) {
             $task->finish('Done.');
         }
+
         for ($number = 2; $number <= 500; $number++) {
             $this->plan->addPhase("Phase {$number}");
         }

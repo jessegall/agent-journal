@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Agents\Contracts;
 
 /**
- * Which helper images the image build verified and recorded by digest.
+ * Answers whether the image build verified a Docker image and recorded it by digest.
  */
-interface HelperImages
+interface DockerImageVerifier
 {
     public function isVerified(string $imageReference): bool;
 }

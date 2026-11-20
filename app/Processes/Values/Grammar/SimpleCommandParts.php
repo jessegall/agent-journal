@@ -44,6 +44,7 @@ final readonly class SimpleCommandParts
     public function withWord(WordToParse $word): self
     {
         $arguments = $this->arguments;
+
         if ($word->place === WordPlace::Argument) {
             $arguments[] = $word->word;
         }

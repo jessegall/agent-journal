@@ -46,6 +46,7 @@ final class ExplainCommandTypeCommand extends Command
             ? ''
             : " at byte {$explanation->diagnosticPosition}: {$explanation->diagnostic}";
         $this->line("Outcome: {$explanation->outcome}{$where}");
+
         if ($explanation->executableParts === 0) {
             $this->line('No executable parts.');
         }
@@ -56,11 +57,13 @@ final class ExplainCommandTypeCommand extends Command
             $node->snippet,
             implode('; ', $node->redirects),
         ], $explanation->nodes));
+
         foreach ($explanation->held as $part) {
             $request = "request {$part->requestId} ({$part->requestState})";
             $this->line("Node {$part->node} {$part->operation}: {$part->code}, {$request}.");
             $this->line("Next: {$part->next}");
         }
+
         if ($explanation->notice !== '') {
             $this->line($explanation->notice);
         }

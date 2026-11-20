@@ -33,6 +33,7 @@ trait PublicationArguments
     protected function sources(ToolArguments $arguments): array
     {
         $sources = $arguments->optionalList('source_references');
+
         if (count($sources) > 50) {
             throw ToolArgumentInvalid::for('source_references', 'at most 50 record references');
         }
@@ -43,6 +44,7 @@ trait PublicationArguments
     private function source(string $reference): RecordIdentity
     {
         $parts = explode(':', $reference, 2);
+
         if (count($parts) !== 2) {
             throw ToolArgumentInvalid::for('source_references', 'a list of record aliases and ids joined by a colon');
         }

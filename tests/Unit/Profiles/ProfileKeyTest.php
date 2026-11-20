@@ -24,14 +24,23 @@ final class ProfileKeyTest extends TestCase
     public static function invalidKeys(): iterable
     {
         yield 'empty' => [''];
+
         yield 'too long' => [str_repeat('a', 65)];
+
         yield 'uppercase' => ['Journal-reviewer'];
+
         yield 'leading hyphen' => ['-journal'];
+
         yield 'trailing hyphen' => ['journal-'];
+
         yield 'double hyphen' => ['journal--reviewer'];
+
         yield 'underscore' => ['journal_reviewer'];
+
         yield 'space' => ['journal reviewer'];
+
         yield 'not ascii' => ['journal-révieweur'];
+
         yield 'trailing newline' => ["journal\n"];
     }
 

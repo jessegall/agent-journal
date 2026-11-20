@@ -30,15 +30,18 @@ final readonly class FindNextSubstitution implements Pipe
     public function handle(SubstitutionQueue $queue): SubstitutionQueue
     {
         $pending = $queue->pending;
+
         while ($pending !== []) {
             $next = array_shift($pending);
             $inside = $this->insideOf($next);
+
             if ($inside !== null) {
                 $pending = [...$inside, ...$pending];
 
                 continue;
             }
             $substitution = $this->substitutionOf($next);
+
             if ($substitution !== null) {
                 return $queue->found($substitution, $pending);
             }
@@ -58,16 +61,20 @@ final readonly class FindNextSubstitution implements Pipe
     {
         $segment = $next->segment;
         $start = $segment->range->start;
+
         if ($this->isTest($segment)) {
             return $this->wordsInside($next, substr($segment->text, 3, -2), $start + 3);
         }
+
         if ($segment->type !== WordSegmentType::Expansion) {
             return null;
         }
         $line = $next->toParse->draft()->line;
+
         if (substr($line, $start, 2) === '${') {
             return $this->wordsInside($next, substr($segment->text, 2, -1), $start + 2);
         }
+
         if (substr($line, $start, 3) === '$((') {
             return $this->wordsInside($next, strtr($segment->text, '<>', '  '), $start + 2);
         }
@@ -93,10 +100,12 @@ final readonly class FindNextSubstitution implements Pipe
     private function wordsInside(PendingSegment $next, string $text, int $offset): array
     {
         $lexed = $this->lexer->lex($text, $next->toParse->draft()->dialect);
+
         if ($lexed->outcome !== ParseOutcome::Complete) {
             throw ShellGrammarStopped::fromLexedLine($lexed, $offset);
         }
         $inside = [];
+
         foreach ($lexed->tokens as $token) {
             if ($token->word === null) {
                 continue;
@@ -115,6 +124,7 @@ final readonly class FindNextSubstitution implements Pipe
     private function substitutionOf(PendingSegment $next): ShellSource|null
     {
         $segment = $next->segment;
+
         if ($segment->type !== WordSegmentType::Expansion) {
             return null;
         }
@@ -126,9 +136,11 @@ final readonly class FindNextSubstitution implements Pipe
             $opening === '<(', $opening === '>(' => NodeType::ProcessSubstitution,
             default => null,
         };
+
         if ($type === null) {
             return null;
         }
+
         if ($isBacktick && str_contains($segment->text, '\\`')) {
             $reason = 'A backtick substitution nested inside another is not supported.';
             $draft->markUnsupported($reason, $segment->range->start);

@@ -55,7 +55,8 @@ use Illuminate\Support\Carbon;
 final class OutputAssessment extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     public const null UPDATED_AT = null;
 

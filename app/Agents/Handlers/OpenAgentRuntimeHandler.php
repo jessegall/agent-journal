@@ -36,6 +36,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
     public function handle(OpenAgentRuntime $command): OpenedRuntime
     {
         $host = Host::query()->find($command->hostId);
+
         if ($host === null || $host->isRevoked()) {
             throw HostUnavailable::forHost($command->hostId);
         }

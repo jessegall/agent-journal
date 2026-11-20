@@ -29,16 +29,19 @@ final readonly class UnsupportedConstructs
         $opener = $cursor->currentLiteral();
         $construct = new UnsupportedConstruct($terminator);
         $cursor->advance();
+
         while (! $cursor->atEnd() && ! $construct->endsBefore($cursor->current())) {
             $end = $cursor->currentEnd();
             $construct->read($cursor->current());
             $cursor->advance();
+
             if ($construct->isClosed()) {
                 $end = $this->endOfTrailingRedirects($context, $end);
 
                 break;
             }
         }
+
         if ($construct->needsClosing()) {
             throw ShellGrammarStopped::invalid("The '{$opener}' opened here is not closed by '{$terminator}'.", $start);
         }
@@ -54,8 +57,10 @@ final readonly class UnsupportedConstructs
     {
         $last = $end;
         $cursor = $context->cursor;
+
         while ($cursor->is(TokenType::Redirect)) {
             $cursor->advance();
+
             if ($cursor->is(TokenType::Word)) {
                 $last = $cursor->currentEnd();
                 $cursor->advance();

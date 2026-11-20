@@ -35,8 +35,11 @@ final class SettingDeclarationsTest extends TestCase
     public static function badKeys(): iterable
     {
         yield 'uppercase' => ['Display'];
+
         yield 'a dot' => ['display.name'];
+
         yield 'a colon' => ['display:name'];
+
         yield 'over the key length' => [str_repeat('a', SettingKey::KEY_CHARACTERS + 1)];
     }
 

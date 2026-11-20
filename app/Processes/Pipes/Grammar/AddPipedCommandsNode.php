@@ -21,6 +21,7 @@ final readonly class AddPipedCommandsNode implements Pipe
         $draft = $commands->draft();
         $pipeline = $this->pipelineOf($draft, $commands->commands);
         $negationStart = $commands->start->negationStart;
+
         if ($negationStart === null) {
             return new NodeRead($pipeline);
         }
@@ -42,6 +43,7 @@ final readonly class AddPipedCommandsNode implements Pipe
         $first = $draft->range($commands[0]);
         $last = $draft->range($commands[array_key_last($commands)]);
         $pipeline = $draft->add(NodeType::Pipeline, new SourceRange($first->start, $last->end), null);
+
         foreach ($commands as $command) {
             $draft->adopt($pipeline, $command);
         }

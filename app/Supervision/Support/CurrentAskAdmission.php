@@ -41,6 +41,7 @@ final readonly class CurrentAskAdmission implements AskAdmission
         }
 
         $type = $this->types->get($record->typeKey());
+
         if ($type->requiredCommand() !== $command) {
             throw AskRefused::wrongOperation();
         }

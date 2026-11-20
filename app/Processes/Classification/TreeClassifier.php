@@ -127,6 +127,7 @@ final readonly class TreeClassifier implements CommandClassifier
         }
         $parts = [];
         $syntaxFacts = [];
+
         foreach ($tree->nodes as $node) {
             $syntaxFacts = [...$syntaxFacts, ...$this->redirects->factsOf($node), ...$this->backgroundFacts($node)];
             $parts = [...$parts, ...$this->partOf($tree, $node, $depth, $context)];
@@ -182,6 +183,7 @@ final readonly class TreeClassifier implements CommandClassifier
         ExecutionContext $context,
     ): PartClassification {
         $unresolved = [...$this->assignmentFacts($tree, $node), ...$unresolvedRedirects];
+
         if ($node->words === []) {
             return new PartClassification(
                 $node->id,
@@ -213,6 +215,7 @@ final readonly class TreeClassifier implements CommandClassifier
         if ($words === []) {
             return new PartClassification($node, [], [], CommandType::Ordinary);
         }
+
         if (AnalysisLimit::Depth->isPassedBy($depth)) {
             return new PartClassification(
                 $node,
@@ -229,18 +232,22 @@ final readonly class TreeClassifier implements CommandClassifier
         }
         $boundWords = array_map(fn (Word $word): Word => $word->boundTo($context->positional), $words);
         $program = $this->names->canonical($boundWords[0], $node, $this->rules->spellings());
+
         if ($program instanceof UnresolvedFact) {
             return new PartClassification($node, [], [$program], CommandType::Unknown);
         }
         $alias = $this->aliasOf($program, $boundWords, $context);
+
         if ($alias->isFound) {
             return $this->aliasPart($program, $alias, $boundWords, $node, $depth, $context);
         }
         $programClassifiers = $this->programClassifiers->for($program);
+
         if ($programClassifiers !== []) {
             return $programClassifiers[0]->classify($boundWords, $node, $program, $context);
         }
         $scripts = $this->scripts->scriptOf($program->family, $boundWords, $context->projectRoot);
+
         if ($scripts !== []) {
             return $this->scriptPart($program, $scripts[0], $node, $depth, $context);
         }
@@ -273,6 +280,7 @@ final readonly class TreeClassifier implements CommandClassifier
     private function rulePart(ProgramIdentity $program, array $words, int $node): PartClassification
     {
         $rule = $this->rules->match($program, array_slice($words, 1), $node);
+
         if ($rule instanceof UnresolvedFact) {
             return new PartClassification($node, [], [$rule], CommandType::Unknown, $program);
         }
@@ -297,8 +305,10 @@ final readonly class TreeClassifier implements CommandClassifier
     private function gitPart(ProgramIdentity $program, array $words, int $node): PartClassification
     {
         $index = 1;
+
         while ($index < count($words) && str_starts_with((string) $words[$index]->literal(), '-')) {
             $option = (string) $words[$index]->literal();
+
             if (in_array($option, ['-C', '--git-dir', '--work-tree', '--namespace'], true)) {
                 $index += 2;
             } elseif (in_array(
@@ -336,10 +346,12 @@ final readonly class TreeClassifier implements CommandClassifier
         ExecutionContext $context,
     ): PartClassification {
         $children = [];
+
         foreach ($script->lines as $line) {
             if ($this->scripts->isHarmlessCallback($line)) {
                 continue;
             }
+
             if (preg_match('/^[A-Za-z_\\\\]+::[A-Za-z_]+$/', $line) === 1) {
                 $children[] = $this->unknown(
                     $node,
@@ -389,6 +401,7 @@ final readonly class TreeClassifier implements CommandClassifier
     private function aliasOf(ProgramIdentity $program, array $words, ExecutionContext $context): AliasLookup
     {
         $name = count($words) > 2 && $words[1]->literal() === 'run' ? $words[2]->literal() : null;
+
         if ($program->family !== 'journal' || $name === null) {
             return AliasLookup::missing('');
         }
@@ -423,6 +436,7 @@ final readonly class TreeClassifier implements CommandClassifier
         }
         $arguments = array_slice($words, 3);
         $literalArguments = array_map(fn (Word $word): string|null => $word->literal(), $arguments);
+
         if (in_array(null, $literalArguments, true) || count($literalArguments) > count($alias->arguments)) {
             return $this->unknown(
                 $node,
@@ -512,13 +526,16 @@ final readonly class TreeClassifier implements CommandClassifier
         );
         $unresolved = [];
         $index = 1;
+
         while ($index < count($words)) {
             $text = $words[$index]->literal();
+
             if ($text === '--') {
                 $index++;
 
                 break;
             }
+
             if ($wrapper->takesAssignments
                 && $text !== null
                 && preg_match('/^([A-Za-z_][A-Za-z0-9_]*)=/', $text, $match) === 1) {
@@ -527,10 +544,12 @@ final readonly class TreeClassifier implements CommandClassifier
 
                 continue;
             }
+
             if ($text === null || ! str_starts_with($text, '-') || $text === '-') {
                 break;
             }
             $option = $wrapper->optionFor($text);
+
             if ($option === []) {
                 return $this->unknown(
                     $node,
@@ -542,9 +561,11 @@ final readonly class TreeClassifier implements CommandClassifier
             $index += $option[0]->takesValue() && ! $option[0]->carriesValue($text) ? 2 : 1;
         }
         $child = array_slice($words, $index + $wrapper->leadingOperands);
+
         if ($child === []) {
             return $this->defaultChildOf($wrapper, $program, $words[0], $node, $own, $unresolved, $depth, $context);
         }
+
         if ($wrapper->family === 'xargs' && array_key_exists((string) $child[0]->literal(), self::SHELL_DIALECTS)) {
             return $this->unknown(
                 $node,
@@ -607,9 +628,11 @@ final readonly class TreeClassifier implements CommandClassifier
         ExecutionContext $context,
     ): PartClassification {
         $index = 1;
+
         while ($index < count($words) && in_array($words[$index]->literal(), self::PLAIN_SHELL_OPTIONS, true)) {
             $index += $words[$index]->literal() === '-o' ? 2 : 1;
         }
+
         if (($words[$index] ?? null)?->literal() !== '-c') {
             return $this->unknown(
                 $node,
@@ -619,6 +642,7 @@ final readonly class TreeClassifier implements CommandClassifier
             );
         }
         $source = ($words[$index + 1] ?? null)?->literal();
+
         if ($source === null) {
             return $this->unknown(
                 $node,
@@ -659,10 +683,13 @@ final readonly class TreeClassifier implements CommandClassifier
         $origin = new RuleOrigin('core.find', 1);
         $own = [new ClassFact(CommandClass::Read, $node, $origin, 'find reads the folders it walks.')];
         $children = [];
+
         for ($index = 1; $index < count($words); $index++) {
             $text = (string) $words[$index]->literal();
+
             if (in_array($text, self::FIND_CHILD_STARTS, true)) {
                 $end = $this->findChildEnd($words, $index + 1);
+
                 if ($end < 0 || $end === $index + 1) {
                     return $this->unknown(
                         $node,
@@ -754,6 +781,7 @@ final readonly class TreeClassifier implements CommandClassifier
     private function assignmentFacts(ShellTree $tree, ShellNode $node): array
     {
         $unresolved = [];
+
         foreach ($tree->children($node->id) as $child) {
             $name = $child->type === NodeType::Assignment ? strstr(
                 (string) $child->words[0]->literal(),

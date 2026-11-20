@@ -34,7 +34,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['type', 'actor_type', 'actor_id', 'reason_code'])]
 final class ShareAudit extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share-audit';
 

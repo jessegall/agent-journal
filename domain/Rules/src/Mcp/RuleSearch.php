@@ -29,6 +29,7 @@ final readonly class RuleSearch implements SearchContribution
     public function search(string $query, int $page): SearchPage
     {
         $matches = $this->rules->list(new RuleFilters(search: $query, page: $page, perPage: self::PAGE_SIZE));
+
         if ($matches->page !== $page) {
             return new SearchPage([], false);
         }

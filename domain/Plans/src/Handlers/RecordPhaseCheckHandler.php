@@ -34,10 +34,12 @@ final readonly class RecordPhaseCheckHandler extends PlanCommandHandler
         $phase = Phase::query()->whereKey($command->phaseId)->sole();
         $missingReceipt = PhaseCheckRefused::noReceipt($command->receiptId);
         $receipt = $this->receipts->find($command->receiptId)->getOrThrow($missingReceipt);
+
         if ($receipt->outcome === AssessmentOutcome::Unavailable) {
             throw PhaseCheckRefused::noReceipt($receipt->receiptId);
         }
         $changes = array_map(fn (TaskSummary $task) => $task->changedAt, $this->tasks->summaries($phase->taskIds()));
+
         if ($changes !== [] && $receipt->publishedAt->lessThan(max($changes))) {
             throw PhaseCheckRefused::stale($receipt->receiptId, $receipt->runId);
         }

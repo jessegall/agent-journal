@@ -23,6 +23,7 @@ if (! file_exists('/.dockerenv') && $script === 'test:affected-inside') {
     $arguments = affectedArgumentsFromHost($checkout, $arguments);
     $command = ['composer', 'run-script', $script, '--', ...$arguments];
 }
+
 if (! file_exists('/.dockerenv')) {
     $command = [
         'docker',

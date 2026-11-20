@@ -60,6 +60,7 @@ final class PlanCascadeToolsTest extends TestCase
             ->json('result.structuredContent');
         $outcomes = [];
         $actions = $summary['next_actions'];
+
         for ($page = 0; $page < 23 && $actions !== []; $page++) {
             $reply = $this->callMcpTool($this->caller, $actions[0]['tool'], $actions[0]['arguments']);
             $this->assertFalse($reply->json('result.isError'), $reply->getContent());

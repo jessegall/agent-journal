@@ -18,7 +18,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['upload_id', 'position', 'encoded_text'])]
 final class TextUploadChunk extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

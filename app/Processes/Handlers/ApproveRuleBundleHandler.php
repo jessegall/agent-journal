@@ -38,6 +38,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
                 && $bundle->version === $command->version
                 && $bundle->digest() === $command->digest,
         ));
+
         if ($installed === []) {
             throw ApprovalRefused::bundleChanged($command->module);
         }

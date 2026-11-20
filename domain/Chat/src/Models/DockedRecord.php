@@ -36,8 +36,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['source_inbox_id', 'destination_inbox_id', 'record_type', 'record_id', 'docked_at'])]
 final class DockedRecord extends Model implements ReadableModel
 {
-    use BelongsToOneActor, HasUlids;
+    use BelongsToOneActor;
     use BoundedReads;
+    use HasUlids;
     use Linkable;
     use PlacedInConversation;
 

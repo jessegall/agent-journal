@@ -34,7 +34,9 @@ use Illuminate\Support\Str;
 #[Fillable(['program'])]
 final class ActiveAccount extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.active-account';
 

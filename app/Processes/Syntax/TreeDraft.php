@@ -45,6 +45,7 @@ final class TreeDraft
     {
         $id = $this->nextId++;
         $this->nodes[$id] = new DraftNode($type, $range, $parent ?? $id, $parent === null && $id === 0);
+
         if ($parent !== null) {
             $this->nodes[$parent]->children[] = $id;
         }
@@ -147,6 +148,7 @@ final class TreeDraft
     public function tree(int $root): ShellTree
     {
         $nodes = [];
+
         foreach ($this->nodes as $id => $node) {
             $nodes[$id] = $node->finished($id);
         }

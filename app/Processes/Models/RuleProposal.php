@@ -62,7 +62,8 @@ use Illuminate\Support\Carbon;
 final class RuleProposal extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 
@@ -93,6 +94,7 @@ final class RuleProposal extends Model implements ReadableModel
         CommandRequest|null $answers,
     ): self {
         $existing = self::query()->ofProject($projectKey)->requestedBy($author, $requestId)->first();
+
         if ($existing !== null) {
             return $existing->sameRequest($proposed);
         }
@@ -126,6 +128,7 @@ final class RuleProposal extends Model implements ReadableModel
     public function withdraw(ActorIdentity $author): void
     {
         $this->assertAuthor($author);
+
         if (! $this->state->canAcceptRevision()) {
             throw RuleProposalRefused::ended($this->id, $this->state);
         }
@@ -143,6 +146,7 @@ final class RuleProposal extends Model implements ReadableModel
     public function revise(int $expectedRevision, ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
     {
         $this->assertAuthor($author);
+
         if ($expectedRevision !== $this->current_revision) {
             throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
         }
@@ -176,6 +180,7 @@ final class RuleProposal extends Model implements ReadableModel
         if ($this->state !== ProposalState::Pending) {
             throw RuleProposalRefused::notPending($this->id, $this->state);
         }
+
         if ($expectedRevision !== $this->current_revision) {
             throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
         }

@@ -50,6 +50,7 @@ final readonly class AddressedStackPush
         }
 
         $stack = $stacks[0] ?? null;
+
         if ($stack === null) {
             return;
         }

@@ -44,6 +44,7 @@ final class PlansServiceProvider extends ServiceProvider
         $reads->declare('plans_list', ReadEntitlement::grant(PlanPolicy::class));
         $reads->declare('plans_assigned', ReadEntitlement::grant(PlanPolicy::class));
         $reads->declare('phases_read', ReadEntitlement::grant(PlanPolicy::class));
+
         // A missing plan is not found; a refused start is a form error on the start button.
         if ($exceptions instanceof Handler) {
             $exceptions->map(

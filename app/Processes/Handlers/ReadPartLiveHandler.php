@@ -31,16 +31,19 @@ final readonly class ReadPartLiveHandler implements CommandHandler
     {
         $part = PartRun::query()->whereKey($command->partRunId)->sole();
         $pairs = $this->assessments->pairOf($part);
+
         if ($pairs === []) {
             return '';
         }
         $position = ReaderPosition::of($part, $pairs[0]->reader);
+
         if ($position->hasFailed()) {
             return $position->interpretation->value;
         }
         $definition = $pairs[0]->reader->readerDefinition();
         $reader = new DeclarativeReader($definition, $pairs[0]->contract->output, $position->reader_revision_id);
         $checkpoint = $position->checkpoint();
+
         try {
             foreach ($part->recordedStreams() as $stream) {
                 $frames = $this->output->frames($part, $stream, $checkpoint->offsetOf($stream));
@@ -53,6 +56,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
         }
         $position->advance($checkpoint);
         $this->updates->progressed($part);
+
         if (array_any($checkpoint->problems, fn (OutputProblem $problem): bool => $problem->code->isReaderFailure())) {
             $position->markFailed();
         }

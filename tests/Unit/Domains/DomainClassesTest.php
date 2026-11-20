@@ -60,6 +60,7 @@ final class DomainClassesTest extends TestCase
             'TaskText',
             'TaskType',
         ]];
+
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], [
             'PlanStarted',
             'PlanProgressChanged',
@@ -87,7 +88,9 @@ final class DomainClassesTest extends TestCase
             'PhaseDetails',
             'PhaseMissing',
         ]];
+
         yield 'Chat' => [ChatDomain::class, [], []];
+
         yield 'Memory' => [MemoryDomain::class, [], [
             'MemoryResolver',
             'MemoryPage',
@@ -95,6 +98,7 @@ final class DomainClassesTest extends TestCase
             'MemoryUnavailable',
             'MemoryRevisionChanged',
         ]];
+
         yield 'Rules' => [RulesDomain::class, [], [
             'RuleApproved',
             'RuleDenied',
@@ -111,9 +115,13 @@ final class DomainClassesTest extends TestCase
             'RuleDetailsResolver',
             'RuleDetails',
         ]];
+
         yield 'Sequences' => [SequencesDomain::class, [], []];
+
         yield 'Reminders' => [RemindersDomain::class, [], []];
+
         yield 'Access' => [AccessDomain::class, [], []];
+
         yield 'Helpers' => [HelpersDomain::class, [], [
             'CancelHelperJob',
             'ContinueHelper',

@@ -35,9 +35,13 @@ final class AssignmentValuesTest extends TestCase
     public static function invalidRecords(): iterable
     {
         yield 'no alias' => ['', TestIds::of(1)];
+
         yield 'a class name' => ['App\\Domain\\Tasks\\Models\\Task', TestIds::of(1)];
+
         yield 'no owner part' => ['task', TestIds::of(1)];
+
         yield 'a number for an id' => ['tasks.task', '12'];
+
         yield 'a word for an id' => ['tasks.task', 'not-a-ulid'];
     }
 
@@ -85,7 +89,9 @@ final class AssignmentValuesTest extends TestCase
     public static function invalidPages(): iterable
     {
         yield 'no entries' => [null, 0];
+
         yield 'too many entries' => [null, 101];
+
         yield 'a cursor that is no id' => ['12', 20];
     }
 

@@ -70,7 +70,7 @@ final readonly class ProfileStartPolicy
     }
 
     /**
-     * Where a type runs by default: on the protected host, or in a required container of the journal's helper image,
+     * Where a type runs by default: on the protected host, or in a required container of the journal's agent image,
      * which the host resolves to its verified digest.
      */
     private static function defaultExecution(ProfileBase $type): ExecutionPolicy

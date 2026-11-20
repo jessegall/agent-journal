@@ -125,6 +125,7 @@ final class NavigationRaiseRouteTest extends TestCase
         [, , $matching] = $this->stalledScript();
         $this->navigationFor($matching);
         $this->travel(1)->seconds();
+
         for ($number = 1; $number <= 50; $number++) {
             [, , $different] = $this->stalledScript("Model {$number}");
             $this->navigationFor($different);
@@ -359,6 +360,7 @@ final class NavigationRaiseRouteTest extends TestCase
         for ($number = 1; $number <= 20; $number++) {
             $steps = [new MenuStep(self::FINGERPRINT, "Path {$number}", null, null)];
             $entry = MenuEntry::proven($source->actor(), $source, $steps, NavigationCompletion::Goal, 'GPT-6');
+
             foreach ($staleBuilds as $build) {
                 $entry->markStaleOn($build, 'label-missing', []);
             }

@@ -23,6 +23,7 @@ final readonly class VerifyRestoredOutputHandler implements CommandHandler
     {
         $run = ProcessRun::query()->acrossActors()->whereKey($command->runId)->sole();
         $captures = [];
+
         foreach ($run->parts()->readLimit(500)->get() as $part) {
             $part->markCapture($this->manifests->stateOf($part));
             $captures[] = new PartCapture($part->id, $part->capture_state);

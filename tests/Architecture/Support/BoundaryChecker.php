@@ -181,6 +181,7 @@ final readonly class BoundaryChecker
 
         foreach ($calls as $call) {
             $userName = $this->domainHolding($call->file)->name ?? self::SHARED_PLACE;
+
             if ($call->isEventNamedByString()) {
                 $violations[] = new Violation(
                     $call->file,

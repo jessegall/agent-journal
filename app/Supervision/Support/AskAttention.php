@@ -42,6 +42,7 @@ final readonly class AskAttention
         }
 
         $hop = AskHop::nextFor($holder);
+
         if ($hop !== null) {
             $this->stacks->offerFor($holder, AnsweringAskState::reference($hop));
         }
@@ -63,6 +64,7 @@ final readonly class AskAttention
     private function recoverHop(AskHop $hop): void
     {
         $ask = Ask::forAttention($hop->ask_id);
+
         if ($hop->attention === AskHop::PENDING_DELIVERY) {
             $requester = $ask->actor();
             $hop->recordAttention($this->wake($requester, AttentionOrigin::askReply($ask->id)));

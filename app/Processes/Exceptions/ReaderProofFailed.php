@@ -37,6 +37,7 @@ final class ReaderProofFailed extends RuntimeException implements CodedRefusal, 
     public static function because(array $failures, array $unprovenStatuses): self
     {
         $lines = [...$failures];
+
         if ($unprovenStatuses !== []) {
             $lines[] = 'exit statuses without a sample: '.implode(', ', $unprovenStatuses);
         }

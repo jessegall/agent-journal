@@ -137,8 +137,11 @@ final class HookRelayTest extends TestCase
     public static function serverAnswers(): iterable
     {
         yield 'forbidden' => [403, ''];
+
         yield 'not found' => [404, ''];
+
         yield 'unavailable' => [503, ''];
+
         yield 'a malformed success' => [200, '{"stdout":'];
     }
 
@@ -281,6 +284,7 @@ final class HookRelayTest extends TestCase
     private function forward(Request $request): PromiseInterface
     {
         $server = [];
+
         foreach ($request->headers() as $name => $values) {
             $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
         }

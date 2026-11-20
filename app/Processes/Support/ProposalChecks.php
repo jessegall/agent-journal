@@ -26,6 +26,7 @@ final readonly class ProposalChecks
         if ($rule->scope->type !== ScopeType::Project) {
             throw RuleProposalRefused::outsideProject($rule->id);
         }
+
         if (! $rule->hasContract() && ($heldForReader || $this->rules->coversAsCheck($rule))) {
             throw RuleProposalRefused::checkRenamed($rule->operation());
         }

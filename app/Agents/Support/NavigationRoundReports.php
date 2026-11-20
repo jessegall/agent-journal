@@ -35,11 +35,13 @@ final readonly class NavigationRoundReports
             ->whereKey($round->navigation_request_id)
             ->lockForUpdate()
             ->firstOrFail();
+
         if (! $navigation->state->isOpen()) {
             throw NavigationRaiseRefused::ended($navigation->id, $navigation->state->value);
         }
 
         $navigation->showScreen($report->screen());
+
         if ($round->navigationRound()?->proof !== null) {
             $this->settleProof($navigation, $report);
         }
@@ -56,12 +58,14 @@ final readonly class NavigationRoundReports
 
         $navigation->markProven();
         $evidence = 'proven';
+
         if ($report->steps !== []) {
             $evidence = 'proven, saved as menu entry '.$this->library->save($navigation, $report->steps)->id;
         }
         $stalled = DriverRequest::query()->whereKey($navigation->driver_request_id)->lockForUpdate()->firstOrFail();
         $runtime = AgentRuntime::query()->whereKey($navigation->agent_runtime_id)->lockForUpdate()->firstOrFail();
         $runtime->holdFor(HoldReason::None);
+
         if ($navigation->completes === NavigationCompletion::Goal) {
             $stalled->recordScriptProgress(
                 new ScriptProgress($navigation->stalled_step, $report->generation, $evidence),

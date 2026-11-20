@@ -51,6 +51,7 @@ final class DocumentEditTest extends TestCase
             strlen($replacement),
             hash('sha256', $replacement),
         ));
+
         foreach (str_split($replacement, TextUpload::CHUNK_BYTES) as $index => $chunk) {
             $bus->run(new AppendUpload($id, $index, $chunk, hash('sha256', $chunk)));
         }

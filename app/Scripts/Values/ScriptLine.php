@@ -21,6 +21,7 @@ final readonly class ScriptLine
         $body = ltrim($line);
         $column = mb_strlen($line) - mb_strlen($body) + 1;
         $parts = preg_split('/\h+/u', rtrim($body), 2, PREG_SPLIT_OFFSET_CAPTURE);
+
         if ($parts === false) {
             throw ScriptSyntaxError::at(
                 DiagnosticCode::InvalidForm,

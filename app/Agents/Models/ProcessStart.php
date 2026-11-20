@@ -52,7 +52,9 @@ use Illuminate\Support\Str;
 #[Fillable(['execution_id'])]
 final class ProcessStart extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     /**
      * @var list<string>

@@ -39,6 +39,7 @@ final class JournalToolRecognitionTest extends TestCase
     public static function programs(): iterable
     {
         yield 'Claude Code' => [ClaudeCodeAdapter::class, 'ToolSearch', 'ReadMcpResourceTool', 'ListMcpResourcesTool'];
+
         yield 'Codex' => [CodexAdapter::class, 'tool_search', 'read_mcp_resource', 'list_mcp_resources'];
     }
 
@@ -48,6 +49,7 @@ final class JournalToolRecognitionTest extends TestCase
     public static function resourceReaders(): iterable
     {
         yield 'Claude Code' => [ClaudeCodeAdapter::class, 'ReadMcpResourceTool'];
+
         yield 'Codex' => [CodexAdapter::class, 'read_mcp_resource'];
     }
 

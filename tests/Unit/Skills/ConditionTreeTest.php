@@ -138,6 +138,7 @@ final class ConditionTreeTest extends TestCase
             ['type' => 'any', 'version' => 1, 'children' => []],
             'condition.children needs at least one condition',
         ];
+
         yield 'not with two children' => [
             [
                 'type' => 'not',
@@ -146,36 +147,46 @@ final class ConditionTreeTest extends TestCase
             ],
             'condition.children needs exactly one condition',
         ];
+
         yield 'unknown type' => [
             ['type' => 'sometimes', 'version' => 1],
             'condition.type names the unknown type sometimes',
         ];
+
         yield 'unknown version' => [['type' => 'everyone', 'version' => 2], 'condition.version is 2'];
+
         yield 'empty keys' => [
             ['type' => 'programs', 'version' => 1, 'keys' => []],
             'condition.keys needs at least one key',
         ];
+
         yield 'wrong key type' => [
             ['type' => 'profiles', 'version' => 1, 'keys' => [7]],
             'condition.keys[0] is not text',
         ];
+
         yield 'invalid agent type' => [
             ['type' => 'profile-bases', 'version' => 1, 'keys' => ['worker']],
             'condition.keys holds a key that is not valid',
         ];
+
         yield 'extra field' => [
             ['type' => 'everyone', 'version' => 1, 'keys' => ['x']],
             'condition.keys is not a field of this type',
         ];
+
         yield 'nested field' => [
             ['type' => 'all', 'version' => 1, 'children' => [['type' => 'profiles', 'version' => 1]]],
             'condition.children[0].keys needs at least one key',
         ];
+
         yield '17 deep' => [self::nested(17), 'nested deeper than 16 levels'];
+
         yield '257 nodes' => [
             ['type' => 'any', 'version' => 1, 'children' => array_fill(0, 256, ['type' => 'everyone', 'version' => 1])],
             'more than 256 nodes',
         ];
+
         yield 'large parameters' => [
             [
                 'type' => 'named',

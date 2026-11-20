@@ -29,8 +29,11 @@ final class RuleInputLimitsTest extends TestCase
     public static function refusedProposals(): iterable
     {
         yield 'a long text' => [new ProposeRule(str_repeat('é', Rule::TEXT_CHARACTER_LIMIT + 1), 'Reason'), 'text'];
+
         yield 'an empty text' => [new ProposeRule('', 'Reason'), 'text'];
+
         yield 'a long reason' => [new ProposeRule('Text', str_repeat('é', Rule::REASON_CHARACTER_LIMIT + 1)), 'reason'];
+
         yield 'an empty reason' => [new ProposeRule('Text', ''), 'reason'];
     }
 

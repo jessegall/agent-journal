@@ -31,6 +31,7 @@ final readonly class ReviseRuleProposalHandler implements CommandHandler
         $request = $proposal->commandRequest()->lockForUpdate()->first();
         $this->checks->check($command->proposed->rule, $request !== null && $request->hold_reason->needsReader());
         $proposal->revise($command->expectedRevision, $command->proposed, $actor);
+
         if ($request !== null) {
             $request->answerWith($proposal);
         }

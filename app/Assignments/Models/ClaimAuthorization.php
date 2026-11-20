@@ -30,7 +30,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['claim_assignment_id', 'basis_type', 'participation_assignment_id', 'work_assignment_id'])]
 final class ClaimAuthorization extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

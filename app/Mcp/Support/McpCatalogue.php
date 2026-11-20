@@ -193,8 +193,10 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     public function toolDefinitionsFor(DiscoveryProfile $profile): array
     {
         $definitions = [];
+
         foreach ($this->tools as $name => $className) {
             $tool = $this->definitionOf($className);
+
             if (! $tool->isVisibleTo($profile)) {
                 continue;
             }
@@ -217,6 +219,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     public function resourceDefinitions(): array
     {
         $definitions = [];
+
         foreach ($this->resources as $className) {
             $resource = $this->definitionOf($className);
             $definitions[$resource->uri()] = $resource->toArray();

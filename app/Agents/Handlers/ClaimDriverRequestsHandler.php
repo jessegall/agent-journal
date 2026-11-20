@@ -65,16 +65,19 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         for ($round = 0; count($claimed) < $command->limit && $pending->isNotEmpty(); $round++) {
             foreach ($pending as $runtimeId => $requests) {
                 $request = $requests->shift();
+
                 if ($request === null) {
                     $pending->forget($runtimeId);
 
                     continue;
                 }
+
                 if ($this->settledWithoutWork($request, $runtimes->get($runtimeId))) {
                     continue;
                 }
                 $request->stage($now);
                 $claimed[] = $request->claimed();
+
                 if (count($claimed) === $command->limit) {
                     break;
                 }
@@ -89,6 +92,7 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         if ($request->operation !== DriverOperation::Wake || $runtime->activity !== RuntimeActivity::Idle) {
             return false;
         }
+
         if ($this->pendingWork->hasWorkFor(ActorIdentity::of($runtime->session->agent))) {
             return false;
         }

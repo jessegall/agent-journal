@@ -56,9 +56,13 @@ final class SendSignedCallsTest extends TestCase
     public static function failures(): iterable
     {
         yield 'a coded refusal' => [409, ['code' => 'state_blocked', 'message' => 'Blocked.'], StateBlocked::class];
+
         yield 'a proxy page' => [502, '<html>Bad gateway</html>', JournalUnavailable::class];
+
         yield 'a too large answer' => [413, '', CallTooLarge::class];
+
         yield 'a wrong answer shape' => [200, ['noteId' => ['not', 'text']], AnswerUnreadable::class];
+
         yield 'an answer that is not JSON' => [200, 'not json', AnswerUnreadable::class];
     }
 

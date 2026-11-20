@@ -258,6 +258,9 @@ case	DiscoveryProfile::WritingHelper
 case	DismissalType::Cancelled
 case	DismissalType::Declined
 case	DismissalType::Withdrawn
+case	DockerImageName::Agent
+case	DockerImageName::Runner
+case	DockerImageStatus::Verified
 case	DriverOperation::ChangeEffort
 case	DriverOperation::ChangeModel
 case	DriverOperation::Deliver
@@ -1630,6 +1633,7 @@ class	CheckRestoredOutputController
 class	CheckRules
 class	CheckRunCurrencyCall
 class	CheckRunCurrencyController
+class	CheckedCommandRegistries
 class	CheckpointBuilder
 class	ChildCommand
 class	ChildEnvironment
@@ -2078,6 +2082,9 @@ class	DockableRecords
 class	DockedRecord
 class	DockedRecordPolicy
 class	DockedRecordRecords
+class	DockerImageData
+class	DockerImageRecordData
+class	DockerImageVerifier
 class	Document
 class	DocumentAdministrationPolicy
 class	DocumentBody
@@ -5172,7 +5179,6 @@ class	ValidateCommand
 class	VerbNamedTypes
 class	VerificationContract
 class	VerificationContractInvalid
-class	VerifiedHelperImages
 class	VerifiedOutput
 class	VerifyRestoredOutput
 class	VerifyRestoredOutputHandler
@@ -6051,6 +6057,8 @@ enum	CoreAskType
 enum	DiagnosticCode
 enum	DiscoveryProfile
 enum	DismissalType
+enum	DockerImageName
+enum	DockerImageStatus
 enum	DriverOperation
 enum	DriverType
 enum	EditingState
@@ -6338,6 +6346,7 @@ interface	CurrentUserResolver
 interface	Desk
 interface	DestinationProvider
 interface	Destinations
+interface	DockerImageVerifier
 interface	DocumentReader
 interface	DocumentResolver
 interface	DomainAvailability
@@ -6355,7 +6364,6 @@ interface	FileAccessPolicy
 interface	GroupDeclaration
 interface	GuardedCommandBus
 interface	HelperCommitImport
-interface	HelperImages
 interface	HelperReader
 interface	HookAnswerer
 interface	HookInput
@@ -7164,7 +7172,6 @@ method	AgentScope::__construct()
 method	AgentScope::apply()
 method	AgentSession::agent()
 method	AgentSession::byId()
-method	AgentSession::canReceiveMessages()
 method	AgentSession::captureJobSourceMessage()
 method	AgentSession::casts()
 method	AgentSession::currentConversation()
@@ -8459,6 +8466,7 @@ method	CheckRules::pytest()
 method	CheckRules::testRunner()
 method	CheckRunCurrencyCall::__construct()
 method	CheckRunCurrencyController::__invoke()
+method	CheckedCommandRegistries::for()
 method	CheckpointBuilder::__construct()
 method	CheckpointBuilder::build()
 method	CheckpointBuilder::holdUntilMore()
@@ -9912,6 +9920,12 @@ method	DockedRecord::shown()
 method	DockedRecordPolicy::model()
 method	DockedRecordRecords::__construct()
 method	DockedRecordRecords::docked()
+method	DockerImageData::__construct()
+method	DockerImageData::isVerifiedAgentImage()
+method	DockerImageRecordData::__construct()
+method	DockerImageRecordData::hasVerifiedAgentImage()
+method	DockerImageVerifier::__construct()
+method	DockerImageVerifier::isVerified()
 method	Document::addRevision()
 method	Document::card()
 method	Document::casts()
@@ -10307,7 +10321,6 @@ method	DriverRequest::recordScriptProgress()
 method	DriverRequest::repairWith()
 method	DriverRequest::resolveAsApplied()
 method	DriverRequest::resolveAsNotApplied()
-method	DriverRequest::resumeScript()
 method	DriverRequest::retry()
 method	DriverRequest::runtime()
 method	DriverRequest::scriptGoal()
@@ -11079,7 +11092,6 @@ method	HelperIdentity::ofProfile()
 method	HelperIdentity::releaseDesignation()
 method	HelperIdentity::representing()
 method	HelperIdentityFixed::forIdentity()
-method	HelperImages::isVerified()
 method	HelperImportFailed::for()
 method	HelperImportReceipt::__construct()
 method	HelperJob::accept()
@@ -11092,7 +11104,6 @@ method	HelperJob::contextFor()
 method	HelperJob::existsFor()
 method	HelperJob::exposedTo()
 method	HelperJob::finish()
-method	HelperJob::finishByStopEvidence()
 method	HelperJob::hold()
 method	HelperJob::isFinished()
 method	HelperJob::launch()
@@ -13120,7 +13131,6 @@ method	PartRun::recordedStreams()
 method	PartRun::run()
 method	PartRun::skip()
 method	PartRun::start()
-method	PartRun::startInside()
 method	PartRun::stop()
 method	PartSnapshotData::__construct()
 method	PartSnapshotData::of()
@@ -13169,10 +13179,8 @@ method	PersonalDeskProvisioning::__construct()
 method	PersonalDeskProvisioning::provision()
 method	PersonalDesks::__construct()
 method	PersonalDesks::provision()
-method	Phase::addTask()
 method	Phase::addTasks()
 method	Phase::addTasksAtRevision()
-method	Phase::addTasksUnderPlanLock()
 method	Phase::assignmentIdentity()
 method	Phase::casts()
 method	Phase::details()
@@ -13910,6 +13918,7 @@ method	ProfileRun::lockedForStep()
 method	ProfileRun::outcomeOf()
 method	ProfileRun::previous()
 method	ProfileRun::recordStep()
+method	ProfileRun::recordedResult()
 method	ProfileRun::results()
 method	ProfileRun::startOn()
 method	ProfileRun::suspendOn()
@@ -19433,8 +19442,6 @@ method	VerificationContract::toArray()
 method	VerificationContract::unproven()
 method	VerificationContractInvalid::field()
 method	VerificationTiming::forCaller()
-method	VerifiedHelperImages::__construct()
-method	VerifiedHelperImages::isVerified()
 method	VerifiedOutput::__construct()
 method	VerifyRestoredOutput::__construct()
 method	VerifyRestoredOutputHandler::__construct()
@@ -19756,6 +19763,7 @@ parameter	$approvedClasses
 parameter	$approvedLinkIds
 parameter	$approver
 parameter	$approximate
+parameter	$architecture
 parameter	$area
 parameter	$argument
 parameter	$arguments
@@ -19873,6 +19881,7 @@ parameter	$buffer
 parameter	$build
 parameter	$builder
 parameter	$builds
+parameter	$builtAt
 parameter	$builtInProfiles
 parameter	$builtins
 parameter	$bullets
@@ -21398,7 +21407,6 @@ parameter	$result	app/Scripts/Data/ProfileStepData.php
 parameter	$result	app/Supervision/Commands/ResolveMergeAttempt.php
 parameter	$resultNote
 parameter	$resultNumber
-parameter	$resultReference
 parameter	$resultRevision
 parameter	$results	app/Hooks/StateEvents/StateEventEffects.php
 parameter	$resumesConversation
@@ -22989,6 +22997,7 @@ property	CheckRestoredOutputCall::$processRun
 property	CheckRestoredOutputCall::$requestKey
 property	CheckRunCurrencyCall::$eventKey
 property	CheckRunCurrencyCall::$processRun
+property	CheckedCommandRegistries::$built
 property	CheckpointBuilder::$offsets
 property	CheckpointBuilder::$pending
 property	CheckpointBuilder::$problems
@@ -23773,6 +23782,16 @@ property	DockableRecords::$messages
 property	DockableRecords::$records
 property	DockedRecordRecords::$actors
 property	DockedRecordRecords::$records
+property	DockerImageData::$architecture
+property	DockerImageData::$builtAt
+property	DockerImageData::$claudeCode
+property	DockerImageData::$codex
+property	DockerImageData::$name
+property	DockerImageData::$reference
+property	DockerImageData::$status
+property	DockerImageRecordData::$images
+property	DockerImageRecordData::$note
+property	DockerImageVerifier::$recordPath
 property	Document::$attributes
 property	DocumentBody::$uploads
 property	DocumentCalls::$sender
@@ -29619,7 +29638,6 @@ property	VerificationContract::$output
 property	VerificationContract::$progress
 property	VerificationContract::$reader
 property	VerificationContract::$tool
-property	VerifiedHelperImages::$recordPath
 property	VerifiedOutput::$assessment
 property	VerifiedOutput::$declaration
 property	VerifiedOutput::$manifestDigest

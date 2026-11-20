@@ -53,7 +53,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['brief', 'source_snapshot', 'request_id', 'state', 'steering', 'profile_revision'])]
 final class HelperJob extends Model implements Assignable, ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     public const string LINK_TYPE = 'helpers.job';

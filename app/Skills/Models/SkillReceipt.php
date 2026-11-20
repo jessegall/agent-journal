@@ -27,7 +27,8 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['session_id', 'context_epoch', 'skill_key', 'content_digest', 'evidence', 'read_at'])]
 final class SkillReceipt extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     public const string CREATED_AT = 'read_at';

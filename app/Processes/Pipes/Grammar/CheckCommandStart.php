@@ -22,9 +22,11 @@ final readonly class CheckCommandStart implements Pipe
     {
         $cursor = $toParse->cursor();
         $toParse->draft()->assertWithinBudget($cursor->position());
+
         if ($cursor->atEnd()) {
             throw ShellGrammarStopped::invalid('A command is missing at the end of the line.', $cursor->position());
         }
+
         if ($this->timesCompound($cursor)) {
             $cursor->advance();
         }

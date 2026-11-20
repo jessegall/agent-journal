@@ -22,6 +22,7 @@ final readonly class SkipListSeparator implements Pipe
     public function handle(ListItems $listCursor): ListItems
     {
         $cursor = $listCursor->toParse->cursor();
+
         if ($cursor->is(TokenType::Semicolon)) {
             $this->stepPastSemicolon($cursor, $listCursor->mayTakeSemicolon);
         }
@@ -38,6 +39,7 @@ final readonly class SkipListSeparator implements Pipe
         if ($cursor->peekIs(1, TokenType::Semicolon)) {
             throw ShellGrammarStopped::invalid('A case terminator ;; stands outside a case.', $cursor->position());
         }
+
         if (! $mayTakeSemicolon) {
             throw ShellGrammarStopped::invalid('A ; stands where a command should be.', $cursor->position());
         }

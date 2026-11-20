@@ -33,6 +33,7 @@ final readonly class ManifestCheck
             foreach ($chunks as $chunk) {
                 $stream = $chunk->stream->value;
                 $path = $disk->path($chunk->storage_path);
+
                 if ($chunk->offset !== ($next[$stream] ?? 0) || ! is_file($path)) {
                     $state = $state === CaptureState::Corrupt ? $state : CaptureState::Incomplete;
                 } elseif (hash_file('sha256', $path) !== $chunk->checksum) {
@@ -41,6 +42,7 @@ final readonly class ManifestCheck
                 $next[$stream] = $chunk->offset + $chunk->length;
             }
         });
+
         foreach ($part->stream_offsets as $stream => $counted) {
             if (($next[$stream] ?? 0) !== $counted) {
                 $state = $state === CaptureState::Corrupt ? $state : CaptureState::Incomplete;

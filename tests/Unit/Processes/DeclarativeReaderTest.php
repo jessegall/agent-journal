@@ -156,6 +156,7 @@ final class DeclarativeReaderTest extends TestCase
     {
         $reader = $this->reader();
         $checkpoint = new ReaderCheckpoint();
+
         foreach ($frames as $frame) {
             $checkpoint = $reader->read(ReaderCheckpoint::fromArray($checkpoint->toArray()), $frame);
         }

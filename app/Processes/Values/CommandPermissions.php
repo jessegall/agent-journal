@@ -64,6 +64,7 @@ final readonly class CommandPermissions
         if ($this->deniedPatterns->matchesAny($argv) || $classes->sharesAnyWith($this->denied)) {
             return false;
         }
+
         if (! $classes->missingFrom($this->ceiling)->isEmpty()) {
             return false;
         }

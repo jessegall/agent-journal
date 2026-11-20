@@ -38,6 +38,7 @@ final readonly class PartAssessments
     public function pairOf(PartRun $part): array
     {
         $approved = $this->rules->approvedFor($part->operation);
+
         if ($approved === [] || $approved[0]->payload->contracts === [] || $approved[0]->reader_approvals === []) {
             return [];
         }
@@ -57,6 +58,7 @@ final readonly class PartAssessments
         $run = ProcessRun::ofAnyActor($part->process_run_id);
         $assessment = OutputAssessment::record($run, $part, $pair->declaration, $pair->reader, $replayed, $validation);
         $this->updates->settled($part);
+
         if (! $validation->isValid()) {
             $codes = array_map(fn (OutputProblem $problem): string => $problem->code->value, $validation->problems);
             $actor = [(string) $run->actor_type, (string) $run->actor_id];

@@ -137,6 +137,7 @@ final class HookRetentionTest extends TestCase
     {
         $this->app->instance(RetentionPeriods::class, new RetentionPeriods(batchSize: 2));
         $this->stack(1);
+
         foreach (['a', 'b', 'c', 'd', 'e'] as $hookId) {
             $this->recordCall(1, $hookId);
         }

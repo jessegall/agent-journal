@@ -31,7 +31,8 @@ use Tests\TestCase;
  */
 final class OwnerSharePolicyTest extends TestCase
 {
-    use RefreshHookDatabase, RegistersShareDomains;
+    use RefreshHookDatabase;
+    use RegistersShareDomains;
 
     private string $ownerId;
 

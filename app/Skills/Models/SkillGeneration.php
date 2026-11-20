@@ -33,7 +33,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['catalogue_digest', 'registration_digest', 'entries', 'state', 'error_reason'])]
 final class SkillGeneration extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.skill-generation';
 

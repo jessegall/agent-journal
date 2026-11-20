@@ -98,6 +98,7 @@ final class Host extends Model implements ReadableModel
     {
         foreach ($this->start_roots as $root) {
             $root = rtrim($root, '/');
+
             if ($folder === $root || str_starts_with($folder, $root.'/')) {
                 return true;
             }

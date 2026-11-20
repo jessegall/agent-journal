@@ -36,7 +36,9 @@ use PhpOption\Option;
 #[Fillable(['endpoint_version', 'run_id', 'public_origin', 'state', 'last_health_at'])]
 final class ShareGatewayEndpoint extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share-gateway-endpoint';
 

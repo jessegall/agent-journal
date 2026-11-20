@@ -50,6 +50,7 @@ final readonly class ScriptParser
     private function handler(ScriptCursor $cursor, ScriptLine $line): ScriptHandler
     {
         $opening = $this->keyword($line);
+
         if ($opening->form->isStatementBoundary()) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnexpectedEnd, $line->source, 'Unexpected block ending.');
         }
@@ -64,6 +65,7 @@ final readonly class ScriptParser
         }
 
         $trigger = $this->keywords->find($line->operand);
+
         if ($trigger->isEmpty() || ! $trigger->get()->definition instanceof KeywordDefinition
             || $trigger->get()->definition->category !== KeywordCategory::Trigger) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnknownTrigger, $line->operandSource, 'Unknown trigger.');
@@ -142,6 +144,7 @@ final readonly class ScriptParser
     private function end(ScriptCursor $cursor, ScriptLine $opening): void
     {
         $line = $cursor->current();
+
         if ($line === null) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnclosedBlock, $opening->source, 'Expected END.', 'END');
         }
@@ -157,11 +160,13 @@ final readonly class ScriptParser
     private function keyword(ScriptLine $line): KeywordDefinition
     {
         $entry = $this->keywords->find($line->token);
+
         if ($entry->isEmpty()) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnknownKeyword, $line->source, 'Unknown script keyword.');
         }
 
         $word = $entry->get();
+
         if (! $word->definition instanceof KeywordDefinition || ! $this->keywords->isAvailable($word)) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnavailableDefinition, $line->source, 'Keyword unavailable.');
         }

@@ -59,11 +59,13 @@ final readonly class SpoolRecorder implements OutputRecorder
         }
         $file = is_file($path) ? false : fopen($path, 'xb');
         $written = $file === false ? 0 : (int) fwrite($file, $bytes);
+
         if ($file !== false) {
             fflush($file);
             fsync($file);
             fclose($file);
         }
+
         if ($written !== strlen($bytes)) {
             throw OutputStorageFailed::at($path, $written, strlen($bytes));
         }

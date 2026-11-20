@@ -63,12 +63,17 @@ use PhpOption\Option;
 #[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'revision', 'type', 'finish_note', 'cancel_reason'])]
 final class Plan extends Model implements Assignable, Numbered, ReadableModel, Shareable
 {
+    use AssignableListing;
+    use BoundedReads;
+
     /**
      * @use HasFactory<PlanFactory>
      */
-    use AssignableListing, HasFactory, HasNumber, HasUlids, Linkable;
+    use HasFactory;
 
-    use BoundedReads;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     /**
      * The stable name links and assignments use for a plan.

@@ -56,7 +56,9 @@ use Illuminate\Support\Str;
 )]
 final class DocumentDraft extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'documents.draft';
 

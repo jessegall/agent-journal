@@ -39,8 +39,10 @@ final readonly class RedirectFacts
     public function unresolvedOf(ShellNode $node): array
     {
         $unresolved = [];
+
         foreach ($node->redirects as $redirect) {
             $endpoint = $this->endpoint($redirect);
+
             if ($endpoint === null && $this->touchesFiles($redirect)) {
                 $unresolved[] = new UnresolvedFact(
                     UnresolvedType::DynamicWord,
@@ -65,12 +67,14 @@ final readonly class RedirectFacts
     private function factsOfRedirect(ShellNode $node, Redirect $redirect): array
     {
         $endpoint = $this->endpoint($redirect);
+
         if ($endpoint === null
             || ! $this->touchesFiles($redirect)
             || $this->isHarmless($endpoint)
             || $this->isUnknownDevice($endpoint)) {
             return [];
         }
+
         if (str_starts_with($endpoint, '/dev/tcp/') || str_starts_with($endpoint, '/dev/udp/')) {
             return [
                 new ClassFact(

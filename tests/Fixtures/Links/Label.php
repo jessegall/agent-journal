@@ -21,7 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 final class Label extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     public static function named(string $name): self
     {

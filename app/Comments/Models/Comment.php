@@ -54,7 +54,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['body', 'submission_key', 'submission_hash'])]
 final class Comment extends Model implements ReadableModel, Shareable
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.comment';
 
@@ -220,6 +222,7 @@ final class Comment extends Model implements ReadableModel, Shareable
     private function anchor(): TextAnchor
     {
         $type = $this->anchor_type === null ? null : TextAnchorType::tryFrom($this->anchor_type);
+
         if ($type === null) {
             throw IncompleteTextAnchor::withoutType();
         }

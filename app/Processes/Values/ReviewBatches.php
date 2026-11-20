@@ -26,6 +26,7 @@ final readonly class ReviewBatches
         $batches = [];
         $batch = [];
         $characters = 0;
+
         foreach ($shapes as $shape) {
             if ($shape->isTooLongForReview()) {
                 continue;

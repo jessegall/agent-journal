@@ -17,12 +17,14 @@ const ORACLE = __DIR__.'/../shell-oracle/bin/shell-oracle';
 const ORACLE_EVIDENCE = 'mvdan.cc/sh/v3 v3.14.1 through tools/shell-oracle';
 
 $cases = [];
+
 foreach (file(CORPUS.'/cases.jsonl', FILE_IGNORE_NEW_LINES) ?: fail('cases.jsonl cannot be read') as $line) {
     $case = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
     $cases[$case['id']] = $case;
 }
 
 $decisions = [];
+
 foreach (file(CORPUS.'/decisions.jsonl', FILE_IGNORE_NEW_LINES) ?: [] as $line) {
     $decision = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
     $decisions[$decision['case_id']] = $decision;
@@ -30,12 +32,15 @@ foreach (file(CORPUS.'/decisions.jsonl', FILE_IGNORE_NEW_LINES) ?: [] as $line) 
 
 $readings = oracleReadings($cases);
 $families = [];
+
 foreach ($cases as $id => $case) {
     $reading = $readings[$id] ?? fail("The oracle gave no reading for {$id}");
     $expected = ['evidence' => ORACLE_EVIDENCE, 'outcome' => $reading['outcome'], 'unsupported' => $reading['unsupported'] ?? null, 'parts' => $reading['parts']];
+
     if (isset($decisions[$id])) {
         $expected = ['evidence' => 'decisions.jsonl', ...$decisions[$id]['intended_outcome']];
     }
+
     if ($expected['outcome'] === 'unsupported') {
         $families[$expected['unsupported'] ?? 'unnamed'] = ($families[$expected['unsupported'] ?? 'unnamed'] ?? 0) + 1;
     }
@@ -48,6 +53,7 @@ file_put_contents(CORPUS.'/cases.jsonl', $casesText);
 
 $manifest = json_decode((string) file_get_contents(CORPUS.'/manifest.json'), true, 512, JSON_THROW_ON_ERROR);
 $manifest['expectations'] = ['evidence' => ORACLE_EVIDENCE, 'decisions' => count($decisions), 'unsupported_family_counts' => $families];
+
 foreach (['cases.jsonl', 'shapes.json', 'decisions.jsonl'] as $name) {
     $manifest['fixtures'][$name] = hash_file('sha256', CORPUS.'/'.$name);
 }
@@ -65,6 +71,7 @@ function oracleReadings(array $cases): array
         fail('Build the oracle first: go -C tools/shell-oracle build -o bin/shell-oracle .');
     }
     $process = proc_open([ORACLE], [['pipe', 'r'], ['pipe', 'w'], STDERR], $pipes);
+
     if (! is_resource($process)) {
         fail('The oracle did not start');
     }
@@ -73,10 +80,12 @@ function oracleReadings(array $cases): array
     fclose($pipes[0]);
     $output = stream_get_contents($pipes[1]);
     fclose($pipes[1]);
+
     if (proc_close($process) !== 0) {
         fail('The oracle failed');
     }
     $readings = [];
+
     foreach (explode("\n", trim((string) $output)) as $line) {
         $reading = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
         $readings[$reading['id']] = $reading;

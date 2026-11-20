@@ -86,7 +86,6 @@ trait RefreshHookDatabase
         self::$checkedDatabase = $database;
     }
 
-
     /**
      * The connections whose work is rolled back after each test; the default connection unless a test commits.
      *

@@ -27,6 +27,7 @@ final readonly class OpenDocumentHandler extends DocumentCommandHandler
     public function handle(OpenDocument $command): DraftReference
     {
         $document = Document::lockedForEditing(RecordReference::idOrNumber($command->documentNumber));
+
         if ($command->expectedRevision !== null) {
             $this->assertDocumentRevision($document, $command->expectedRevision);
         }

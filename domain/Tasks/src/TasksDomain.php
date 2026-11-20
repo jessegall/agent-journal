@@ -79,7 +79,10 @@ final class TasksDomain extends Domain implements
     SkillProvider,
     StateProvider
 {
-    use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
+    use HasAssignables;
+    use HasLinkRecords;
+    use HasNumberedModels;
+    use HasStates;
 
     public function description(): string
     {

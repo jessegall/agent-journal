@@ -83,9 +83,11 @@ final readonly class ShellParser implements ShellCommandParser
     private function joinAfter(ShellTree $tree, ShellNode $node): PartJoin
     {
         $current = $node;
+
         while (! $current->isRoot) {
             $parent = $tree->node($current->parent);
             $join = $parent->type->partJoin();
+
             if ($join !== null && ! $this->isLastChild($parent, $current)) {
                 return $join;
             }

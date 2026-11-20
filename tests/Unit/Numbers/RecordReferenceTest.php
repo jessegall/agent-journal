@@ -29,10 +29,15 @@ final class RecordReferenceTest extends TestCase
     public static function invalidNumbers(): iterable
     {
         yield 'zero' => ['0'];
+
         yield 'negative' => ['-1'];
+
         yield 'exponent' => ['1e3'];
+
         yield 'leading zero' => ['012'];
+
         yield 'space' => [' 12'];
+
         yield 'past the bigint range' => ['9223372036854775808'];
     }
 

@@ -20,6 +20,7 @@ final readonly class RefreshRunActivity implements Listener
     public function handle(OutputChunkCommitted $committed): void
     {
         $part = PartRun::query()->whereKey($committed->partRunId)->first();
+
         if ($part !== null) {
             $this->updates->progressed($part);
         }

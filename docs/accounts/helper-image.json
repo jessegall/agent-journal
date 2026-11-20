@@ -1,4 +1,0 @@
-{
-    "note": "Written by .docker/helper/build.sh: one row per architecture with the image by digest, the pinned client versions and provenance. A row counts only with status verified.",
-    "images": []
-}

@@ -48,6 +48,7 @@ abstract class PublicationResource extends JournalResource
     protected function markdown(ToolResult $page, Request $request): Response
     {
         $body = $page->responseFields['body'];
+
         if ($page->nextActions === []) {
             return Response::text($body);
         }

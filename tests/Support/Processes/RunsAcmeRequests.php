@@ -108,6 +108,7 @@ trait RunsAcmeRequests
         $part->finishProcess(PartEnd::exited($status));
         $part->finishDraining();
         $recorder->finish($part, PartEnd::exited($status));
+
         if ($read) {
             $this->signed($this->start, "/agent/processes/runs/{$runId}/output/summary", [])->assertOk();
             $tail = ['part' => 1, 'stream' => 'stdout', 'lines' => 50];

@@ -27,7 +27,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['text', 'suggested_command'])]
 final class HelperMessage extends Model implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

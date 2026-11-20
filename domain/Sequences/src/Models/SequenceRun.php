@@ -39,8 +39,10 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'steps'])]
 final class SequenceRun extends Model implements Numbered, ReadableModel
 {
-    use BelongsToOneActor, HasNumber, HasUlids;
+    use BelongsToOneActor;
     use BoundedReads;
+    use HasNumber;
+    use HasUlids;
     use Linkable;
 
     /**

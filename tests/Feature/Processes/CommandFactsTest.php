@@ -48,27 +48,45 @@ final class CommandFactsTest extends TestCase
     public static function linesAndRoleAnswers(): iterable
     {
         yield 'a command alias' => ['journal run tests', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a command alias by its name' => ['journal tests --tail 5', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a journal route' => ['journal task assigned', AnswerType::Allow, AnswerType::Allow];
+
         yield 'a journal route this version does not have' => ['journal task list', AnswerType::Deny, AnswerType::Deny];
+
         yield 'an unknown journal name' => ['journal not-saved', AnswerType::Deny, AnswerType::Deny];
+
         yield 'an unknown command alias' => ['journal run not-saved', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a plain read' => ['git status', AnswerType::Allow, AnswerType::Allow];
+
         yield 'a quoted search' => ['grep -rn "needs work" app', AnswerType::Allow, AnswerType::Allow];
+
         yield 'an unsaved test run' => ['composer test', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a test run behind an assignment' => [
             'APP_ENV=testing vendor/bin/phpunit',
             AnswerType::Deny,
             AnswerType::Deny,
         ];
+
         yield 'a test run in a pipe' => ['php artisan test | tail -5', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a build after a read' => ['ls && npm run build', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a file removal' => ['rm -rf build', AnswerType::Allow, AnswerType::Deny];
+
         yield 'a write through a redirect' => ['echo done > notes.txt', AnswerType::Allow, AnswerType::Deny];
+
         yield 'a write through a redirect without spaces' => ['cat a.txt>b.txt', AnswerType::Allow, AnswerType::Deny];
+
         yield 'an unknown program' => ['some-tool --flag', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a command substitution' => ['$(echo composer) test', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a variable' => ['cat $FILE', AnswerType::Deny, AnswerType::Deny];
+
         yield 'a quote left open' => ['echo "unfinished', AnswerType::Deny, AnswerType::Deny];
     }
 

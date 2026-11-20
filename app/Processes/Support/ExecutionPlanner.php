@@ -26,6 +26,7 @@ final readonly class ExecutionPlanner
         if ($tree->outcome !== ParseOutcome::Complete) {
             throw ExecutionPlanRefused::incomplete();
         }
+
         if (! $classification->isKnown()) {
             throw ExecutionPlanRefused::unknown();
         }

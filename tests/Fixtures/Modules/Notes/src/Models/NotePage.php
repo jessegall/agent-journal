@@ -30,7 +30,11 @@ use Illuminate\Database\Eloquent\Model;
 #[Table('module_note_pages')]
 final class NotePage extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {
-    use BoundedReads, HasComments, HasNumber, HasUlids, Linkable;
+    use BoundedReads;
+    use HasComments;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'notes.page';
 

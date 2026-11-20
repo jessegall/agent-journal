@@ -35,7 +35,9 @@ final class AwaitingSkillsStateTest extends TestCase
     public static function waitingStates(): iterable
     {
         yield 'pending' => [PublicationState::Pending];
+
         yield 'preparing' => [PublicationState::Preparing];
+
         yield 'failed' => [PublicationState::Failed];
     }
 
@@ -45,7 +47,9 @@ final class AwaitingSkillsStateTest extends TestCase
     public static function settledStates(): iterable
     {
         yield 'delivered' => [PublicationState::Delivered];
+
         yield 'superseded' => [PublicationState::Superseded];
+
         yield 'retired' => [PublicationState::Retired];
     }
 

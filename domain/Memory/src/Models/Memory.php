@@ -36,8 +36,10 @@ use Illuminate\Support\Carbon;
 #[Fillable(['text', 'weight', 'revision'])]
 final class Memory extends Model implements Numbered, ReadableModel
 {
-    use BelongsToOneActor, HasNumber, HasUlids;
+    use BelongsToOneActor;
     use BoundedReads;
+    use HasNumber;
+    use HasUlids;
     use Linkable;
 
     public const int LIGHTEST = 1;
@@ -51,7 +53,10 @@ final class Memory extends Model implements Numbered, ReadableModel
      */
     protected function casts(): array
     {
-        return ['weight' => 'integer', 'revision' => 'integer'];
+        return [
+            'weight' => 'integer',
+            'revision' => 'integer',
+        ];
     }
 
     /**

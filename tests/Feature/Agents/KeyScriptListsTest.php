@@ -21,6 +21,7 @@ final class KeyScriptListsTest extends TestCase
     public function test_the_server_lists_every_script_the_host_registers_and_no_other(): void
     {
         $server = [];
+
         foreach (config('agents.key_scripts') as $name => $script) {
             $server[$name] = [$script['version'], array_keys($script['parameters'])];
         }
@@ -37,11 +38,13 @@ final class KeyScriptListsTest extends TestCase
     private function hostScripts(): array
     {
         $scripts = [];
+
         foreach (glob(base_path('tools/journal-agent/keyscripts/scripts/*.go')) ?: [] as $file) {
             if (str_ends_with($file, '_test.go')) {
                 continue;
             }
             preg_match_all(self::HOST_SCRIPT, (string) file_get_contents($file), $matches, PREG_SET_ORDER);
+
             foreach ($matches as [, $name, $version, $parameters]) {
                 $names = array_map(fn (string $each) => trim($each, " \"\t\n"), explode(',', $parameters));
                 $scripts[$name] = [(int) $version, array_values(array_filter($names))];

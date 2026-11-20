@@ -23,7 +23,9 @@ use Illuminate\Database\Eloquent\Model;
 final class Ledger extends Model implements Numbered, ReadableModel
 {
     use BoundedReads;
-    use HasNumber, HasUlids, Linkable;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'ledger.ledger';
 

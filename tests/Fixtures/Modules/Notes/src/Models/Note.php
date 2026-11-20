@@ -37,7 +37,10 @@ use Illuminate\Support\Carbon;
 #[Table('module_notes')]
 final class Note extends Model implements Assignable, Commentable, Numbered, ReadableModel
 {
-    use BelongsToOneActor, HasComments, HasNumber, HasUlids;
+    use BelongsToOneActor;
+    use HasComments;
+    use HasNumber;
+    use HasUlids;
     use BoundedReads;
     use Linkable;
 

@@ -65,6 +65,7 @@ enum UnsupportedKeyword: string
     public static function closedBy(string|null $terminator): array
     {
         $keywords = [];
+
         foreach (self::cases() as $keyword) {
             if ($keyword->closingKeyword() === $terminator) {
                 $keywords[] = $keyword->value;

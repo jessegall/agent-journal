@@ -75,6 +75,7 @@ final class TerminalViewCommandsTest extends TestCase
     public function test_more_than_the_limit_of_views_is_refused(): void
     {
         $runtime = $this->runtimeOn('host-1');
+
         for ($view = 0; $view < TerminalView::MAX_PER_VIEWER; $view++) {
             TerminalView::open($this->owner(), $runtime, 500, CarbonImmutable::now());
         }

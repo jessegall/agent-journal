@@ -32,7 +32,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['parent_type', 'parent_id', 'actor_type', 'actor_id', 'reason', 'revision_number', 'settled_at'])]
 final class RecordSettlement extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'documents.settlement';
 

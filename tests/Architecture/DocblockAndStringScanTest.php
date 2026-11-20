@@ -26,13 +26,21 @@ final class DocblockAndStringScanTest extends TestCase
     public static function docblockTypes(): iterable
     {
         yield 'template of' => ['Message', 14];
+
         yield 'property' => ['Notifier', 16];
+
         yield 'method' => ['Message', 18];
+
         yield 'generic var' => ['Message', 23];
+
         yield 'array shape param' => ['Message', 28];
+
         yield 'union return' => ['Notifier', 29];
+
         yield 'throws' => ['ChatFailed', 31];
+
         yield 'var before a statement' => ['Message', 44];
+
         yield 'fully written return' => ['Message', 52];
     }
 
@@ -83,13 +91,21 @@ final class DocblockAndStringScanTest extends TestCase
     public static function stringNames(): iterable
     {
         yield 'heredoc' => [self::CHAT.'\Message', 14];
+
         yield 'literal' => [self::CHAT.'\Message', 19];
+
         yield 'literal with a leading backslash' => [self::CHAT.'\Message', 20];
+
         yield 'concatenation' => [self::CHAT.'\\', 21];
+
         yield 'concatenation with a leading backslash' => [self::CHAT.'\\', 22];
+
         yield 'interpolation' => [self::CHAT.'\\', 23];
+
         yield 'interpolation with a leading backslash' => [self::CHAT.'\\', 24];
+
         yield 'app() with a class name' => [self::CHAT.'\Message', 32];
+
         yield 'resolve() with a class name' => [self::CHAT.'\Message', 34];
     }
 

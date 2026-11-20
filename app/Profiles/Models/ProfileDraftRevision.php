@@ -24,7 +24,10 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['profile_key', 'revision', 'source', 'commands', 'author_type', 'author_id'])]
 final class ProfileDraftRevision extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable, PreventsRevisionUpdates;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
+    use PreventsRevisionUpdates;
 
     public const string LINK_TYPE = 'core.profile-draft-revision';
 

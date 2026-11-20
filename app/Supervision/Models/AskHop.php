@@ -33,8 +33,11 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['ask_id', 'actor_type', 'actor_id', 'type_key', 'version', 'route_version', 'accepted_at'])]
 final class AskHop extends Model implements ReadableModel
 {
-    use BoundedReads, HasActorColumns, HasUlids, Linkable;
+    use BoundedReads;
     use HasActorColumns;
+    use HasActorColumns;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.ask-hop';
 

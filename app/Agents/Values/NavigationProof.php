@@ -34,6 +34,7 @@ final readonly class NavigationProof
             throw NavigationProofRefused::empty(self::MOST_CHARACTERS);
         }
         $proof = new self($text);
+
         if ($proof->seenIn($raiseRows)) {
             throw NavigationProofRefused::alreadyOnScreen($text);
         }
@@ -49,6 +50,7 @@ final readonly class NavigationProof
     public function seenIn(array $rows): bool
     {
         $wanted = self::folded($this->text);
+
         foreach ($rows as $row) {
             if ($this->containsWholeWord(self::folded($row), $wanted)) {
                 return true;
@@ -61,9 +63,11 @@ final readonly class NavigationProof
     private function containsWholeWord(string $row, string $wanted): bool
     {
         $offset = 0;
+
         while (($at = mb_strpos($row, $wanted, $offset)) !== false) {
             $before = self::backwards($row, $at);
             $after = mb_substr($row, $at + mb_strlen($wanted), 2);
+
             if (! self::continuesWord($before) && ! self::continuesWord($after)) {
                 return true;
             }
@@ -92,6 +96,7 @@ final readonly class NavigationProof
     {
         $first = mb_substr($next, 0, 1);
         $second = mb_substr($next, 1, 1);
+
         if (preg_match('/^[\p{L}\p{N}]$/u', $first) === 1) {
             return true;
         }

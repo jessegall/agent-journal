@@ -80,6 +80,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
             fn (ProposedProfile $profile) => $this->resolver->resolve($proposal, $profile, $hash),
             $proposal->profiles,
         );
+
         foreach ($definitions as $definition) {
             $definition->authorization->assertGrantableIn($this->catalogue);
             $this->assertContainerSupport($definition);

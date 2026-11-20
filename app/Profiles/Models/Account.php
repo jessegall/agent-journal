@@ -67,8 +67,10 @@ use Illuminate\Support\Str;
 #[Fillable(['program', 'label'])]
 final class Account extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
     use KeepsCleanupTries;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.account';
 

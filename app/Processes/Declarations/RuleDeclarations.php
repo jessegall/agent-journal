@@ -74,6 +74,7 @@ final readonly class RuleDeclarations
     private function readFile(array $file): array
     {
         $validator = $this->validators->make($file, $this->rules());
+
         if ($validator->fails()) {
             throw DeclarationInvalid::fields(
                 $this->fieldErrors(array_map(array_values(...), $validator->errors()->messages())),
@@ -95,15 +96,19 @@ final readonly class RuleDeclarations
     private function checkPurposes(array $declared): void
     {
         $wrong = [];
+
         foreach ($declared as $index => $declaration) {
             $rule = $declaration->proposed->rule;
+
             if ($rule->outputRequirement !== $rule->purpose->outputRequirement()) {
                 $wrong[] = "declarations.{$index}.rule.output_requirement: it does not match the purpose";
             }
+
             if (count($rule->contracts) !== ($rule->hasContract() ? 1 : 0)) {
                 $wrong[] = "declarations.{$index}.rule.contracts: one for a test, check or build, none otherwise";
             }
         }
+
         if ($wrong !== []) {
             throw DeclarationInvalid::fields($wrong);
         }
@@ -116,6 +121,7 @@ final readonly class RuleDeclarations
     private function fieldErrors(array $messages): array
     {
         $errors = [];
+
         foreach ($messages as $field => $lines) {
             $errors[] = "{$field}: ".implode(' ', $lines);
         }

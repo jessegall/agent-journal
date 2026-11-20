@@ -50,6 +50,7 @@ final class SpawnedProcess
             return true;
         });
         pcntl_signal(SIGPIPE, SIG_DFL);
+
         try {
             // @phpstan-ignore argument.type (proc_open takes ['redirect', <descriptor>]; its stub does not say so)
             $process = proc_open($command, $descriptors, $pipes, $folder, $environment);
@@ -57,6 +58,7 @@ final class SpawnedProcess
             restore_error_handler();
             pcntl_signal(SIGPIPE, SIG_IGN);
         }
+
         if (! is_resource($process)) {
             return $error === '' ? "{$command[0]} could not be started" : $error;
         }
@@ -78,6 +80,7 @@ final class SpawnedProcess
     ): bool {
         $deadline = null;
         $streams = array_filter([1 => $this->pipes[1] ?? null, 2 => $this->pipes[2] ?? null], is_resource(...));
+
         foreach ($streams as $stream) {
             stream_set_blocking($stream, false);
         }
@@ -91,24 +94,29 @@ final class SpawnedProcess
                 $gathered[$descriptor] = '';
             }
         };
+
         while ($streams !== [] && ! $stop->isRequested()) {
             $read = array_values($streams);
             $write = null;
             $except = null;
             $ready = stream_select($read, $write, $except, 1);
+
             if ($ready === false) {
                 break;
             }
+
             foreach ($streams as $descriptor => $stream) {
                 $bytes = fread($stream, 1_048_576);
                 $gathered[$descriptor] .= $bytes === false ? '' : $bytes;
                 $emitOutput($descriptor, $ready === 0 || feof($stream) ? 1 : self::PIECE_BYTE_LIMIT);
+
                 if (feof($stream)) {
                     fclose($stream);
                     unset($streams[$descriptor]);
                 }
             }
             $deadline ??= $this->hasEnded() ? microtime(true) + $seconds : null;
+
             if ($deadline !== null && $streams !== [] && microtime(true) > $deadline) {
                 array_map(fclose(...), $streams);
                 $emitOutput(1, 1);
@@ -134,6 +142,7 @@ final class SpawnedProcess
         }
         $status = $this->endStatus;
         proc_close($this->process);
+
         if ($status === null) {
             return PartEnd::unavailable('The process status could not be read.');
         }
@@ -163,11 +172,13 @@ final class SpawnedProcess
     {
         posix_kill(-$this->pid, SIGTERM);
         $deadline = microtime(true) + $graceSeconds;
+
         while (! $this->hasEnded() && microtime(true) < $deadline) {
             usleep(20_000);
         }
         posix_kill(-$this->pid, SIGKILL);
         $deadline = microtime(true) + 1;
+
         while (! $this->hasEnded() && microtime(true) < $deadline) {
             usleep(20_000);
         }

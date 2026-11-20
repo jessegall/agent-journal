@@ -60,6 +60,7 @@ final readonly class DraftClosing
     {
         $document = Document::lockedForEditing($draft->document->number);
         $held = DocumentDraft::query()->find($draft->id);
+
         if ($held === null) {
             return;
         }
@@ -95,6 +96,7 @@ final readonly class DraftClosing
             fn () => throw DraftMissing::forDocument($document->number),
         );
         $requireCloser($draft);
+
         if ($target->expectedVersion !== null) {
             $this->assertCurrentDraftVersion($draft, $target->expectedVersion);
         }

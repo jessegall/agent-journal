@@ -22,6 +22,7 @@ final readonly class EditMemoryHandler extends MemoryCommandHandler
     public function handle(EditMemory $command): string
     {
         $memory = Memory::ownForUpdate($command->memoryId);
+
         if (! $memory->isAtRevision($command->expectedRevision)) {
             throw MemoryRevisionChanged::for($memory->id, $command->expectedRevision, $memory->revision);
         }

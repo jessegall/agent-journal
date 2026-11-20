@@ -31,20 +31,25 @@ final readonly class ProposeReaderHandler implements CommandHandler
     {
         $actor = ActorIdentity::of($command->dispatchedBy());
         $request = CommandRequest::lockedForChange($command->commandRequestId);
+
         if (! $request->acceptsProposalFrom($actor, $this->administration->isGrantedToCaller())) {
             throw ReaderProposalRefused::notTheRequester($request->id);
         }
+
         if (! $request->state->isOpen()) {
             throw ReaderProposalRefused::closed($request->id);
         }
         $declaration = RuleProposalRevision::query()->answering($request, $command->declarationRevision)->first();
+
         if ($declaration === null) {
             throw ReaderProposalRefused::declarationMissing($request->id, $command->declarationRevision);
         }
         $contracts = $declaration->payload->contracts;
+
         if ($contracts === []) {
             throw ReaderProposalRefused::noContract($request->id, $command->declarationRevision);
         }
+
         if ($contracts[0]->output->isSummaryRequired() && ! $command->definition->hasRole(RecordRole::Summary)) {
             throw ReaderDefinitionInvalid::summaryMissing();
         }

@@ -26,7 +26,8 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['profile_key', 'profile_revision', 'reconciled_at'])]
 final class RevisionFence extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

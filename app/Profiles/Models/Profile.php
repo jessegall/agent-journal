@@ -36,7 +36,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['key', 'label', 'current_revision_id', 'retired_at'])]
 final class Profile extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.profile';
 

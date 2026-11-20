@@ -164,7 +164,7 @@ use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Contracts\HelperImages;
+use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\NativeTurnRecords;
@@ -1234,7 +1234,7 @@ final class CoreApi
                 HostCapabilities::class,
                 StartRecordResolver::class,
                 ProgramConversationResolver::class,
-                HelperImages::class,
+                DockerImageVerifier::class,
                 RecordVisibility::class,
                 RuntimeResolver::class,
                 AgentStack::class,

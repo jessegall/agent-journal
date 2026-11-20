@@ -29,12 +29,15 @@ final readonly class ProposedRule
     public function missingFields(): array
     {
         $missing = [];
+
         if (trim($this->evidence) === '') {
             $missing[] = 'evidence';
         }
+
         if (! array_any($this->examples, fn (RuleExample $example): bool => $example->isPositive())) {
             $missing[] = 'examples';
         }
+
         foreach ($this->rule->contracts as $index => $contract) {
             if ($contract->exits->branches === []) {
                 $missing[] = "contracts.{$index}.exits";

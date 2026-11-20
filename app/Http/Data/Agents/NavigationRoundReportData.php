@@ -42,6 +42,7 @@ final class NavigationRoundReportData extends Data
     public function report(): NavigationRoundReport
     {
         $highlight = $this->highlight >= 0 ? $this->highlight : null;
+
         if (count($this->steps) > self::STEP_LIMIT) {
             throw MenuStepRefused::tooMany(count($this->steps), self::STEP_LIMIT);
         }

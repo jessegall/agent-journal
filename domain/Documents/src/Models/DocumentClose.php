@@ -47,7 +47,9 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 final class DocumentClose extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'documents.close';
 

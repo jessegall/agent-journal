@@ -82,6 +82,7 @@ final readonly class EvidenceRuns
     {
         $classification = $this->classify($permit->source_line, $permit->working_folder, $permit->candidate_rules);
         $permit->assertUsable($runner, $requestId, $this->digestOf($classification));
+
         if ($permit->wasStartedBy($requestId)) {
             return ProcessRun::ofAnyActor($permit->process_run_id);
         }
@@ -92,10 +93,12 @@ final readonly class EvidenceRuns
             $permit->candidate_rules,
         );
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();
+
         if (! $timing->isAllowed()) {
             throw PhaseTimingRefused::by($timing);
         }
         $verdict = $this->outputs->check($classification);
+
         if (! $verdict->isAllowed()) {
             throw EvidencePermitRefused::changed();
         }
@@ -128,10 +131,12 @@ final readonly class EvidenceRuns
         array $candidates,
     ): Classification {
         $classification = $this->classify($line, $workingFolder, $candidates);
+
         if (! $classification->isKnown()) {
             throw EvidencePermitRefused::unknown();
         }
         $permissions = $this->permissions->forActor($runner);
+
         foreach ($classification->parts as $part) {
             if (! $permissions->admits($classification->requiredClasses(), $classification->argvOf($part))) {
                 throw EvidencePermitRefused::beyondRole();
@@ -166,6 +171,7 @@ final readonly class EvidenceRuns
     private function classify(string $line, string $workingFolder, array $candidates): Classification
     {
         $tree = $this->syntax->parse($line, ShellDialect::Bash);
+
         if ($tree->outcome !== ParseOutcome::Complete) {
             throw EvidencePermitRefused::unknown();
         }

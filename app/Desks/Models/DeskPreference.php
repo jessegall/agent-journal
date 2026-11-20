@@ -27,7 +27,10 @@ use Illuminate\Database\Eloquent\Relations\MorphPivot;
 #[Table('desk_preferences')]
 final class DeskPreference extends MorphPivot implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids, Linkable;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.desk-preference';
 

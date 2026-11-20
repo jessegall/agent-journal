@@ -27,9 +27,11 @@ final class PipelinePump
         $last = count($commands) - 1;
         $readers = [];
         $inputs = [];
+
         foreach ($commands as $index => $command) {
             foreach ($command->openPipes() as $descriptor => $pipe) {
                 stream_set_blocking($pipe, false);
+
                 if ($descriptor === 0) {
                     $inputs[$index] = $pipe;
 
@@ -39,6 +41,7 @@ final class PipelinePump
             }
         }
         $waiting = array_fill(0, count($commands), '');
+
         while ($readers !== [] && ! $stop->isRequested()) {
             $read = array_values(
                 array_filter(
@@ -53,32 +56,40 @@ final class PipelinePump
                 array_filter($inputs, fn ($pipe, int $index) => $waiting[$index - 1] !== '', ARRAY_FILTER_USE_BOTH),
             );
             $except = null;
+
             if (($read !== [] || $write !== []) && @stream_select($read, $write, $except, 0, 200_000) === false) {
                 break;
             }
+
             foreach ($readers as $key => $pipe) {
                 [$index, $descriptor] = array_map(intval(...), explode(':', $key));
                 $bytes = fread($pipe, 65_536);
+
                 if ($bytes !== false && $bytes !== '') {
                     $onOutput($index, $descriptor === 1 ? OutputStream::Stdout : OutputStream::Stderr, $bytes);
                     $waiting[$index] .= $descriptor === 1 && $index < $last && isset($inputs[$index + 1]) ? $bytes : '';
                 }
+
                 if (feof($pipe)) {
                     fclose($pipe);
                     unset($readers[$key]);
                 }
             }
+
             foreach ($inputs as $index => $input) {
                 $consumerEnded = $commands[$index]->hasEnded();
+
                 if ($waiting[$index - 1] !== '' && ! $consumerEnded) {
                     $written = @fwrite($input, $waiting[$index - 1]);
                     $waiting[$index - 1] = $written === false ? '' : substr($waiting[$index - 1], $written);
                 }
                 $producerDone = ! isset($readers[($index - 1).':1']);
+
                 if ($consumerEnded || ($producerDone && $waiting[$index - 1] === '')) {
                     fclose($input);
                     unset($inputs[$index]);
                     $waiting[$index - 1] = '';
+
                     if ($consumerEnded && isset($readers[($index - 1).':1'])) {
                         fclose($readers[($index - 1).':1']);
                         unset($readers[($index - 1).':1']);

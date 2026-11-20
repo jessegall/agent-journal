@@ -27,10 +27,15 @@ final class DecimalTest extends TestCase
     public static function notPlain(): iterable
     {
         yield 'an exponent' => ['1e3'];
+
         yield 'a plus' => ['+1'];
+
         yield 'a space' => [' 1'];
+
         yield 'a word' => ['NAN'];
+
         yield 'a point without digits' => ['1.'];
+
         yield 'nothing' => [''];
     }
 

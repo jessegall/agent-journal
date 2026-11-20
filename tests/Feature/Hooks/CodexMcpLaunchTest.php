@@ -98,9 +98,13 @@ final class CodexMcpLaunchTest extends TestCase
     public static function unresolvedPaths(): iterable
     {
         yield 'relative' => ['bin/journal-mcp'];
+
         yield 'empty' => [''];
+
         yield 'placeholder' => ['/protected/${JOURNAL}/bin/journal-mcp'];
+
         yield 'a token' => ['/protected/'.str_repeat('a1B2', 12).'/journal-mcp'];
+
         yield 'named a token' => ['/tmp/token/journal-mcp'];
     }
 

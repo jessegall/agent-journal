@@ -82,6 +82,7 @@ final class TerminalViewRoutesTest extends TestCase
     public function test_too_many_views_answers_429(): void
     {
         $runtime = $this->runtimeOn('host-1');
+
         for ($view = 0; $view < TerminalView::MAX_PER_VIEWER; $view++) {
             TerminalView::open($this->viewerOf($this->owner), $runtime, 500, CarbonImmutable::now());
         }

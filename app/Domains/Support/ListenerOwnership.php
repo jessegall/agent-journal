@@ -36,6 +36,7 @@ final readonly class ListenerOwnership
 
         if ($owner === null) {
             $isCoreListener = $domain === null;
+
             if (! $isCoreListener && ! $this->coreExports->hasEvent($event)) {
                 throw InvalidListener::privateEvent($listener, $method, $event, self::CORE);
             }
@@ -45,6 +46,7 @@ final readonly class ListenerOwnership
 
         if ($domain === null) {
             $isExportedUiEvent = $owner->exportsEvent($event) && is_subclass_of($event, UserInterfaceUpdater::class);
+
             if (! $isExportedUiEvent) {
                 throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
             }

@@ -120,6 +120,7 @@ final readonly class AgentReferences
     private static function classIn(string $file): string
     {
         $text = (string) file_get_contents($file);
+
         if (preg_match('/^namespace ([^;]+);/m', $text, $namespaceMatch) !== 1) {
             throw FileDeclaresNoClass::withoutNamespace($file);
         }

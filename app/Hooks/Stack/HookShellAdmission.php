@@ -41,11 +41,13 @@ final readonly class HookShellAdmission
         if ($answer->isDenied()) {
             return $answer;
         }
+
         if (! $capabilities->rewrites->canRewrite()) {
             $limit = 'This program cannot take a rewritten command line without asking first.';
 
             return $answer->replacedBy($this->runnerUnavailable($limit), $stackBefore);
         }
+
         try {
             $folder = $this->runtimes->folderOf($this->access->target()->sessionId);
         } catch (StackTargetRefused) {
@@ -68,6 +70,7 @@ final readonly class HookShellAdmission
         $context = new ExecutionContext($dialect, $folder, $folder);
         $admission = $this->admission->admit($line, $dialect, $context, $input->hook->hookId);
         $refusal = $admission->decision;
+
         if ($refusal instanceof AdmissionRefusal) {
             return $answer->replacedBy(Decision::deny($refusal->message()), $stackBefore);
         }

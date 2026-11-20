@@ -27,7 +27,9 @@ use Illuminate\Support\Str;
 #[Fillable(['profile_key', 'revision', 'current_revision_id'])]
 final class ProfileDraft extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.profile-draft';
 

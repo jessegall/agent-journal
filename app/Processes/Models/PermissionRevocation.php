@@ -40,7 +40,8 @@ use Illuminate\Support\Collection;
 final class PermissionRevocation extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

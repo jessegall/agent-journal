@@ -24,6 +24,7 @@ final readonly class SettleSampleHandler implements CommandHandler
     public function handle(SettleSample $command): SampleOutcome
     {
         $request = CommandRequest::lockedForChange($command->commandRequestId);
+
         if ($request->state !== RequestState::CapturingSample) {
             throw SampleRefused::notReady($request->nextStep()->command);
         }
@@ -33,9 +34,11 @@ final readonly class SettleSampleHandler implements CommandHandler
             ->orderByDesc('id')
             ->firstOrFail();
         $run = ProcessRun::query()->ownedBy($request->actor())->findOrFail($permit->process_run_id);
+
         if (! $run->hasEnded()) {
             throw SampleRefused::stillRunning($run->id);
         }
+
         if ($run->hasCompleteEvidence()) {
             $request->finishSample();
         } else {
@@ -51,6 +54,7 @@ final readonly class SettleSampleHandler implements CommandHandler
     private function unsampledStatuses(CommandRequest $request, EvidencePermit $permit): array
     {
         $statuses = [];
+
         foreach ($permit->candidate_rules as $rule) {
             foreach ($rule->contracts as $contract) {
                 $branches = $request->unsampledBranches($contract->exits);

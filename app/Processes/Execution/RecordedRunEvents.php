@@ -70,6 +70,7 @@ final class RecordedRunEvents implements RunEvents
         $record->finishProcess($end);
         $record->finishDraining();
         $this->recorder->finish($record, $end);
+
         if (! $drained) {
             $record->markCapture(CaptureState::Incomplete);
         }

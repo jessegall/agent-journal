@@ -52,7 +52,8 @@ use Tests\TestCase;
  */
 final class CreateShareTest extends TestCase
 {
-    use RefreshHookDatabase, RegistersShareDomains;
+    use RefreshHookDatabase;
+    use RegistersShareDomains;
     use StartsAgentRequests;
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2CREATE01';

@@ -38,7 +38,9 @@ use Illuminate\Support\Carbon;
 ])]
 final class SessionOutputGrant extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     private const int MOST_GRANTS = 200;
 

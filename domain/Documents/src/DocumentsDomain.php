@@ -131,7 +131,8 @@ final class DocumentsDomain extends Domain implements
     SectionProvider,
     ShareRecordContributor
 {
-    use HasLinkRecords, HasNumberedModels;
+    use HasLinkRecords;
+    use HasNumberedModels;
 
     private const string SHARE_LINKED_RECORD = 'share-linked-record';
 

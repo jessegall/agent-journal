@@ -59,6 +59,7 @@ final readonly class CommandRule implements StoredValue
         if (preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)+$/', $id) !== 1) {
             throw CommandRuleInvalid::id($id);
         }
+
         if ($purpose->outputRequirement() === OutputRequirement::Full) {
             throw CommandRuleInvalid::contractMissing($id);
         }
@@ -97,6 +98,7 @@ final readonly class CommandRule implements StoredValue
         if (preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)+$/', $id) !== 1) {
             throw CommandRuleInvalid::id($id);
         }
+
         if ($purpose->outputRequirement() !== OutputRequirement::Full) {
             throw CommandRuleInvalid::contractWithoutCheck($id);
         }

@@ -36,6 +36,7 @@ final readonly class RuleRecords implements RuleResolver
     {
         $this->actors->actor();
         $matching = Rule::query()->matching($filters->search);
+
         if ($filters->state !== null) {
             $matching->where('state', $filters->state);
         }

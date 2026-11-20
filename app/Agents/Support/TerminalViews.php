@@ -41,6 +41,7 @@ final readonly class TerminalViews implements TerminalViewCloser
         }
 
         $runtime = $this->watchableRuntime($agentId);
+
         if (TerminalView::query()->ownedBy($viewer)->live()->count() >= TerminalView::MAX_PER_VIEWER) {
             throw TerminalViewRefused::tooManyViews();
         }
@@ -61,6 +62,7 @@ final readonly class TerminalViews implements TerminalViewCloser
     ): TerminalViewReceipt {
         $runtime = $this->watchableRuntime($agentId);
         $view = TerminalView::query()->ownedBy($viewer)->live()->where('agent_runtime_id', $runtime->id)->first();
+
         if ($view === null) {
             return $this->open($agentId, $viewer, $intervalMs, $now);
         }
@@ -77,6 +79,7 @@ final readonly class TerminalViews implements TerminalViewCloser
     {
         $runtime = $this->runtimeOf($agentId);
         $views = TerminalView::query()->ownedBy($viewer)->live()->where('agent_runtime_id', $runtime->id)->get();
+
         foreach ($views as $view) {
             $view->close($now);
         }
@@ -99,11 +102,13 @@ final readonly class TerminalViews implements TerminalViewCloser
         CarbonImmutable $now,
     ): Option {
         $view = TerminalView::query()->ownedBy($viewer)->live()->ofAgent($agentId)->latest('updated_at')->first();
+
         if ($view === null) {
             return Some::create($this->endedView($agentId, $viewer, $now));
         }
 
         $runtime = $this->runtimeOf($agentId);
+
         if (! $view->watches($runtime)) {
             $view->follow($runtime);
 
@@ -111,6 +116,7 @@ final readonly class TerminalViews implements TerminalViewCloser
         }
 
         $received = $this->screens->latest($runtime->id);
+
         if ($runtime->hasEnded()) {
             return Some::create($this->ended($received, $runtime->updated_at->toImmutable()));
         }
@@ -132,6 +138,7 @@ final readonly class TerminalViews implements TerminalViewCloser
     public function closeAllFor(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): void
     {
         $views = TerminalView::query()->ownedBy($viewer)->live()->ofAgent($agentId)->get();
+
         foreach ($views as $view) {
             $view->close($now);
         }
@@ -143,6 +150,7 @@ final readonly class TerminalViews implements TerminalViewCloser
     private function endedView(string $agentId, ActorIdentity $viewer, CarbonImmutable $now): TerminalFrameData
     {
         $last = TerminalView::query()->ownedBy($viewer)->ofAgent($agentId)->latest('closed_at')->first();
+
         if ($last === null) {
             return TerminalFrameData::from(['state' => TerminalFrameState::Ended, 'endedAt' => $now]);
         }
@@ -172,6 +180,7 @@ final readonly class TerminalViews implements TerminalViewCloser
     private function watchableRuntime(string $agentId): AgentRuntime
     {
         $runtime = $this->runtimeOf($agentId);
+
         if (! $runtime->hasScreen()) {
             throw TerminalViewRefused::processDriver();
         }
@@ -191,6 +200,7 @@ final readonly class TerminalViews implements TerminalViewCloser
     private function runtimeOf(string $agentId): AgentRuntime
     {
         $agent = Agent::query()->find($agentId);
+
         if ($agent === null || $agent->currentRuntime()->isEmpty()) {
             throw TerminalViewRefused::mayNotInspect();
         }

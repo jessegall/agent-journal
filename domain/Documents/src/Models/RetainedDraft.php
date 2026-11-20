@@ -31,7 +31,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['document_id', 'base_revision_number', 'title', 'abstract', 'body', 'reason', 'author_type', 'author_id'])]
 final class RetainedDraft extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'documents.retained-draft';
 

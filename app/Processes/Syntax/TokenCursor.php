@@ -117,6 +117,7 @@ final class TokenCursor
     public function word(string $missing): Word
     {
         $word = $this->current()->word;
+
         if ($word === null) {
             throw ShellGrammarStopped::invalid($missing, $this->position());
         }

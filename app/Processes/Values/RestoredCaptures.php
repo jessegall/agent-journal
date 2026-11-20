@@ -30,6 +30,7 @@ final readonly class RestoredCaptures
     public function toArray(): array
     {
         $states = [];
+
         foreach ($this->parts as $part) {
             $states[$part->partId] = $part->state->value;
         }

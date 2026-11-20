@@ -69,6 +69,7 @@ final readonly class PackageRules
             '--update-with-dependencies',
         ];
         $rules = [];
+
         foreach ([
             'npm' => ['install', 'i', 'ci', 'update', 'uninstall', 'remove'],
             'pnpm' => ['install', 'i', 'add', 'remove', 'update'],

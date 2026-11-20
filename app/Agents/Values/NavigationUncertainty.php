@@ -59,11 +59,13 @@ final readonly class NavigationUncertainty
         if (count($screen->rows) > self::MOST_ROWS) {
             throw NavigationRaiseRefused::tooManyRows(count($screen->rows), self::MOST_ROWS);
         }
+
         foreach ($screen->rows as $row => $text) {
             if (mb_strlen($text) > self::MOST_ROW_CHARACTERS) {
                 throw NavigationRaiseRefused::rowTooLong($row, self::MOST_ROW_CHARACTERS);
             }
         }
+
         if (preg_match(self::FINGERPRINT, $fingerprint) !== 1) {
             throw NavigationRaiseRefused::fingerprintMalformed($fingerprint);
         }

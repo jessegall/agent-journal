@@ -34,6 +34,7 @@ final class ScriptGraph
     public function add(Instruction $instruction, array $ports): string
     {
         $actual = array_keys($instruction->successors);
+
         if (array_diff($ports, $actual) !== [] || array_diff($actual, $ports) !== []) {
             throw ScriptSyntaxError::at(DiagnosticCode::InvalidForm, $instruction->source, 'Invalid flow ports.');
         }

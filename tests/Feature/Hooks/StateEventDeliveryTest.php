@@ -47,7 +47,8 @@ final class StateEventDeliveryTest extends TestCase
         setUpCommittedHookStack as private setUpBaseStack;
         tearDownCommittedHookStack as private tearDownBaseStack;
     }
-    use InstallsCommandModules, RegistersNoteStates;
+    use InstallsCommandModules;
+    use RegistersNoteStates;
 
     protected function setUpCommittedHookStack(): void
     {

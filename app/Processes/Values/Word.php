@@ -85,10 +85,12 @@ final readonly class Word
         if ($segment->type !== WordSegmentType::Expansion) {
             return $segment;
         }
+
         if (preg_match('/^\$\{?([1-9])\}?$/', $segment->text, $match) !== 1) {
             return $segment;
         }
         $index = (int) $match[1] - 1;
+
         if (! isset($positional[$index])) {
             return $segment;
         }

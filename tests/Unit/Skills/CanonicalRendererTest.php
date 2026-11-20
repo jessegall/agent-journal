@@ -94,7 +94,9 @@ final class CanonicalRendererTest extends TestCase
     public static function filesOutsideTheFolder(): iterable
     {
         yield 'absolute' => ['/etc/hosts'];
+
         yield 'parent step' => ['../src/GuideSkill.php'];
+
         yield 'url' => ['https://example.com/guide.md'];
     }
 

@@ -37,7 +37,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['gateway_key', 'configuration_version', 'settings', 'is_default', 'disabled_at'])]
 final class ShareGatewayConfiguration extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share-gateway-configuration';
 

@@ -22,6 +22,7 @@ final readonly class ReadOutputLive implements Listener
     public function handle(OutputChunkCommitted $committed): void
     {
         $part = PartRun::query()->whereKey($committed->partRunId)->first();
+
         if ($part === null || $this->assessments->pairOf($part) === []) {
             return;
         }

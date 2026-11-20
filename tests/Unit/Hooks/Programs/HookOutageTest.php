@@ -17,7 +17,9 @@ final class HookOutageTest extends TestCase
     public static function answersThatAreNotOutages(): iterable
     {
         yield 'a refused credential' => [CallFailure::Unauthorized];
+
         yield 'a changed retry' => [CallFailure::Conflict];
+
         yield 'an unreadable payload' => [CallFailure::Unreadable];
     }
 

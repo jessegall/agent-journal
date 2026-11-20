@@ -34,6 +34,7 @@ final readonly class InterruptNavigationHandler implements CommandHandler
             ->lockForUpdate()
             ->firstOr(fn () => throw NavigationRaiseRefused::unknownRequest($command->navigationId));
         $runtime = $this->runtimes->lockedFor($command->hostId, $navigation->agent_runtime_id);
+
         if ($navigation->state === NavigationState::Interrupted) {
             return;
         }

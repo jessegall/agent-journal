@@ -24,9 +24,11 @@ final readonly class RunReconciler
     {
         $moment = CarbonImmutable::now()->subSeconds(self::REPLAY_WINDOW_SECONDS);
         $runs = ProcessRun::query()->acrossActors()->silentSince($moment)->readLimit(200)->get();
+
         foreach ($runs as $run) {
             $parts = $run->parts()->readLimit(500)->get();
             $open = $parts->reject(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+
             foreach ($open as $part) {
                 $part->lose();
             }

@@ -71,6 +71,7 @@ final class DeskPlanAssignmentTest extends TestCase
         $assignments = AssignmentRecord::query()->forRecords($records)->readLimit(count($records))->get();
 
         $this->assertCount(count($records), $assignments);
+
         foreach ($assignments as $assignment) {
             $this->assertTrue($assignment->toAssignment()->holder()->isSameAs($main->assigneeIdentity()));
         }

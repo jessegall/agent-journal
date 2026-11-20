@@ -25,6 +25,7 @@ final readonly class ScanTokens implements Pipe
     public function handle(ShellSource $source): ScannedSource
     {
         $lexed = $this->lexer->lex($source->text, $source->draft->dialect);
+
         if ($lexed->outcome !== ParseOutcome::Complete) {
             throw ShellGrammarStopped::fromLexedLine($lexed, $source->offset);
         }

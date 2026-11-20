@@ -25,12 +25,14 @@ final readonly class CloseSimpleCommandNode implements Pipe
     {
         $context = $command->toParse->context;
         $parts = $command->parts;
+
         if ($command->isArrayAssignment) {
             $context->draft->undoExecutablePartCount();
             $context->draft->remove($parts->node);
 
             return new NodeRead($this->unsupported->skip($context, 'An array assignment is not supported.', null));
         }
+
         if ($parts->isEmpty() && ! $context->draft->hasChildren($parts->node)) {
             throw ShellGrammarStopped::invalid('A command is missing here.', $parts->start);
         }

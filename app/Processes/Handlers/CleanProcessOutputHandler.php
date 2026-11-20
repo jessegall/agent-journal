@@ -28,6 +28,7 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
     public function handle(CleanProcessOutput $command): CleanPreview
     {
         $runs = ProcessRun::query()->acrossActors()->whereKey($command->runIds)->readLimit(100)->get();
+
         foreach ($runs as $run) {
             if (! $run->lifecycle->isFinal()) {
                 throw CleanRefused::notEnded($run->id);
@@ -41,13 +42,16 @@ final readonly class CleanProcessOutputHandler implements CommandHandler
             (int) $chunks->sum('length'),
             ! $command->preview,
         );
+
         if ($command->preview) {
             return $preview;
         }
         $disk = $this->disks->disk(SpoolRecorder::DISK);
+
         foreach ($chunks as $chunk) {
             $disk->delete($chunk->storage_path);
         }
+
         foreach ($parts as $part) {
             $part->markCapture(CaptureState::Removed);
         }

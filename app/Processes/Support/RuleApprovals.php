@@ -58,6 +58,7 @@ final readonly class RuleApprovals
         $approved = RuleRevision::approve($declaration, $proposal->project_key, $approver, $approval->readers, []);
         $classification->activate($approved, $approval->expectedActiveRevision);
         $proposal->approve();
+
         if ($request !== null && $rule->hasContract()) {
             $request->approve();
         } elseif ($request !== null) {
@@ -79,6 +80,7 @@ final readonly class RuleApprovals
         $revisions = $this->projectRules->activeRevisions();
         $active = array_map(fn (RuleRevision $revision): CommandRule => $revision->payload, $revisions);
         $others = array_values(array_filter($active, fn (CommandRule $other): bool => ! $other->isSameRuleAs($rule)));
+
         try {
             $this->rules->withRules(...[...$others, $rule]);
         } catch (CommandRuleConflict $conflict) {
@@ -100,6 +102,7 @@ final readonly class RuleApprovals
 
             return;
         }
+
         if (count($readers) !== 1) {
             throw ApprovalRefused::proofMissing($rule->id);
         }
@@ -107,11 +110,13 @@ final readonly class RuleApprovals
             ->whereKey($readers[0]->proofId)
             ->where('reader_revision_id', $readers[0]->readerRevisionId)
             ->first();
+
         if ($proof === null || ! $this->provesSameDeclaration($proof, $declaration)) {
             throw ApprovalRefused::proofMismatch($readers[0]->proofId);
         }
         $covered = array_map(fn (ProvenBranch $branch): int => $branch->status, $proof->proven_branches);
         $admitted = array_map(fn (ExitBranch $branch): int => $branch->status, $rule->contracts[0]->exits->branches);
+
         if (array_diff($admitted, $covered) !== []) {
             throw ApprovalRefused::branchesUnproven($proof->id);
         }

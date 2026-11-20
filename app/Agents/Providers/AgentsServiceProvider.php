@@ -32,9 +32,9 @@ use App\Agents\Contracts\AgentCallContext;
 use App\Agents\Contracts\AgentResolver;
 use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\DockerImageVerifier as DockerImageVerifierContract;
 use App\Agents\Contracts\ExpiresNavigation;
 use App\Agents\Contracts\HelperCommitImport as HelperCommitImportContract;
-use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
 use App\Agents\Contracts\MergeAdmission;
@@ -76,7 +76,6 @@ use App\Agents\Resolvers\StartRecords;
 use App\Agents\Resolvers\Support\CurrentAgentRuntimes;
 use App\Agents\Resolvers\Support\HostStartMaterial;
 use App\Agents\Resolvers\UnconfiguredAccounts;
-use App\Agents\Resolvers\VerifiedHelperImages;
 use App\Agents\Support\AgentActivity;
 use App\Agents\Support\AgentActors;
 use App\Agents\Support\AgentAssignees;
@@ -85,6 +84,7 @@ use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\AgentVisibility;
 use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseStartTransaction;
+use App\Agents\Support\DockerImageVerifier;
 use App\Agents\Support\DriverBudgets;
 use App\Agents\Support\DriverRuntimeStops;
 use App\Agents\Support\FrozenSessionPolicies;
@@ -178,8 +178,8 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(StartRecordResolver::class, StartRecords::class);
         $this->app->bind(ProgramConversationResolver::class, ProgramConversationRecords::class);
         $this->app->bind(
-            HelperImages::class,
-            fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')),
+            DockerImageVerifierContract::class,
+            fn () => new DockerImageVerifier(base_path('docs/accounts/docker-images.json')),
         );
         $this->app->bind(SessionPolicyReader::class, FrozenSessionPolicies::class);
         $this->app->bind(SessionProvenanceContract::class, SessionProvenance::class);

@@ -57,9 +57,11 @@ final readonly class Supervisor
         $this->builtins->check($plan);
         $state = new RunState($events, $stop);
         $outcome = $this->execute($plan->root, $context, $state);
+
         foreach ($state->takeBackground() as [$part, $process]) {
             $this->finishExternal($part, $process, $state);
         }
+
         if ($stop->isRequested()) {
             $events->runStopped($stop->reason());
         }
@@ -96,6 +98,7 @@ final readonly class Supervisor
     private function inOrder(array $steps, ExecutionContext $context, RunState $state): StepOutcome
     {
         $outcome = new StepOutcome(0, $context);
+
         foreach ($steps as $step) {
             $outcome = $outcome->then($this->execute($step, $outcome->context, $state));
         }
@@ -115,6 +118,7 @@ final readonly class Supervisor
         bool $runsOnSuccess,
     ): StepOutcome {
         $outcome = $this->execute($steps[0], $context, $state);
+
         foreach (array_slice($steps, 1) as $step) {
             if (($outcome->status === 0) === $runsOnSuccess) {
                 $outcome = $outcome->then($this->execute($step, $outcome->context, $state));
@@ -144,6 +148,7 @@ final readonly class Supervisor
     private function pipeline(PlanStep $step, ExecutionContext $context, RunState $state): StepOutcome
     {
         $commands = [];
+
         foreach ($step->children as $index => $command) {
             if ($command->type !== StepType::Command || $command->children !== []) {
                 throw SupervisorRefused::stepNotRun($command->type);
@@ -151,6 +156,7 @@ final readonly class Supervisor
             $part = $this->queued($command, $state);
             $input = $index > 0 ? ['pipe', 'r'] : ['file', '/dev/null', 'r'];
             $process = $this->spawn($part, $command, [], $context, $state, $input);
+
             if (is_string($process)) {
                 return new StepOutcome(127, $context);
             }
@@ -183,11 +189,13 @@ final readonly class Supervisor
     private function background(PlanStep $step, ExecutionContext $context, RunState $state): StepOutcome
     {
         $child = $step->children[0];
+
         if ($child->type !== StepType::Command || $child->children !== []) {
             throw SupervisorRefused::stepNotRun($child->type);
         }
         $part = $this->queued($child, $state);
         $process = $this->spawn($part, $child, [], $context, $state, ['file', '/dev/null', 'r']);
+
         if (! is_string($process)) {
             $state->track($part, $process);
         }
@@ -202,10 +210,12 @@ final readonly class Supervisor
     private function part(PlanStep $step, ExecutionContext $context, RunState $state): StepOutcome
     {
         $environmentAssignments = [];
+
         foreach ($step->children as $substitution) {
             $output = $this->inOrder($substitution->children, $context, $state)->output;
             $environmentAssignments[$substitution->node] = rtrim($output, "\n");
         }
+
         if ($step->argv === []) {
             $assignments = array_map(
                 fn (PlanWord $word) => $this->text($word, $environmentAssignments),
@@ -215,12 +225,14 @@ final readonly class Supervisor
             return new StepOutcome(0, $context->withEnvironment([...$context->environment, ...$assignments]));
         }
         $part = $this->queued($step, $state);
+
         if ($step->type === StepType::Builtin) {
             $argv = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->argv);
 
             return $this->builtin($part, $argv, $context, $state);
         }
         $process = $this->spawn($part, $step, $environmentAssignments, $context, $state, ['file', '/dev/null', 'r']);
+
         if (is_string($process)) {
             return new StepOutcome(127, $context);
         }
@@ -267,10 +279,12 @@ final readonly class Supervisor
         array $input,
     ): SpawnedProcess|string {
         $stale = $this->staleSkip($part, $state);
+
         if ($stale !== '') {
             return $stale;
         }
         $descriptors = [0 => $input, 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+
         foreach ($step->redirects as $redirect) {
             $descriptors[$redirect->descriptor] = $this->descriptor($redirect, $environmentAssignments, $context);
         }
@@ -278,6 +292,7 @@ final readonly class Supervisor
         $environment = array_diff_key([...$context->environment, ...$assigned], array_flip(self::SECRET_VARIABLES));
         $argv = array_map(fn (PlanWord $word) => $this->text($word, $environmentAssignments), $step->argv);
         $process = SpawnedProcess::start($argv, $descriptors, $context->workingFolder, $environment);
+
         if (is_string($process)) {
             $state->events->spawnFailed($part, $process);
 
@@ -298,6 +313,7 @@ final readonly class Supervisor
     private function staleSkip(PartKey $part, RunState $state): string
     {
         $stale = $state->events->staleReason($part);
+
         if ($stale !== '') {
             $state->events->skipped($part, $stale);
         }

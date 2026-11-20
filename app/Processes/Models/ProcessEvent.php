@@ -30,7 +30,8 @@ use Illuminate\Support\Carbon;
 final class ProcessEvent extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     public const string OPERATIONAL_ERROR = 'operational_error';
 
@@ -50,11 +51,13 @@ final class ProcessEvent extends Model implements ReadableModel
     public static function record(ProcessRun $run, int $sequence, string $type, array $fields): self
     {
         $existing = self::query()->ofRun($run)->where('sequence', $sequence)->first();
+
         if ($existing === null) {
             return self::query()->create(
                 ['process_run_id' => $run->id, 'sequence' => $sequence, 'type' => $type, 'payload' => $fields],
             );
         }
+
         if ($existing->type === $type && $existing->payload === $fields) {
             return $existing;
         }

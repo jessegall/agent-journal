@@ -32,6 +32,7 @@ final readonly class ProveReaderHandler implements CommandHandler
     public function handle(ProveReader $command): string
     {
         $request = CommandRequest::lockedForChange($command->commandRequestId);
+
         if (! $request->awaitsProof()) {
             throw ReaderProofFailed::notAwaiting($request->nextStep()->command);
         }
@@ -40,6 +41,7 @@ final readonly class ProveReaderHandler implements CommandHandler
             ->where('command_request_id', $request->id)
             ->sole();
         $declaration = RuleProposalRevision::query()->answering($request, $reader->declaration_revision)->first();
+
         if ($declaration === null || $declaration->payload->contracts === []) {
             throw ReaderProposalRefused::noContract($request->id, $reader->declaration_revision);
         }

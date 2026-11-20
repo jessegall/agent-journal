@@ -45,8 +45,9 @@ use PhpOption\Option;
 #[Fillable(['actor_type', 'actor_id', 'assignable_type', 'enabled', 'pool', 'size', 'configuration_revision'])]
 final class AutoAssignment extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads;
     use HasActorColumns;
+    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

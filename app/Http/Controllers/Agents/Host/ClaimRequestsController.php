@@ -56,6 +56,7 @@ final readonly class ClaimRequestsController
     {
         do {
             $claimed = $claim();
+
             if (! $claimed->isEmpty() || $version() !== $knownVersion || microtime(true) >= $deadline) {
                 return $claimed;
             }

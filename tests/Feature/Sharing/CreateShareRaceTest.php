@@ -41,7 +41,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 10, reason: 'It waits out an installation lock held on a second PostgreSQL connection.')]
 final class CreateShareRaceTest extends TestCase
 {
-    use CommitsHookRows, RegistersShareDomains;
+    use CommitsHookRows;
+    use RegistersShareDomains;
     use StartsAgentRequests;
 
     private const array TABLES = [

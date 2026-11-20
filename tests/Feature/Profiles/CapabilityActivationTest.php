@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Agents\Commands\StartAgent;
-use App\Agents\Contracts\HelperImages;
+use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
@@ -55,7 +55,7 @@ final class CapabilityActivationTest extends TestCase
         $this->chooseActiveAccounts();
         $this->startTestUserRequest(1);
         $this->recordCapabilities(CapabilityStatusType::Supported);
-        $this->mock(HelperImages::class)->shouldReceive('isVerified')->andReturn(true);
+        $this->mock(DockerImageVerifier::class)->shouldReceive('isVerified')->andReturn(true);
         $commands = $this->app->make(CommandBus::class);
         $commands->run($this->activation());
         $profile = $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from(self::PROFILE));

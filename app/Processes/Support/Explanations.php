@@ -72,14 +72,17 @@ final readonly class Explanations
     private function heldParts(Classification $classification): array
     {
         $held = [];
+
         foreach ($classification->parts as $part) {
             $operation = $part->program === null ? 'unknown' : $part->program->family;
+
             if (! $part->isKnown()) {
                 $code = $part->unresolved === [] ? 'command-unknown' : $part->unresolved[0]->type->value;
                 $held[] = new HeldPartData($part->node, $code, $operation, RequestHoldReason::UnknownCommand->value);
 
                 continue;
             }
+
             foreach ($part->contracts as $contract) {
                 if ($contract->reader->isProven() || $this->rules->approvedFor($contract->operation) !== []) {
                     continue;
@@ -135,8 +138,10 @@ final readonly class Explanations
     {
         $text = '';
         $at = $range->start;
+
         foreach ($tree->nodes as $node) {
             $inside = $node->range->start >= $at && $node->range->end <= $range->end;
+
             if ($node->type !== NodeType::HereDocument || ! $inside) {
                 continue;
             }

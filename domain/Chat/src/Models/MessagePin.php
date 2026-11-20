@@ -30,8 +30,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['source_inbox_id', 'destination_inbox_id', 'message_id', 'pinned_at'])]
 final class MessagePin extends Model implements ReadableModel
 {
-    use BelongsToOneActor, HasUlids;
+    use BelongsToOneActor;
     use BoundedReads;
+    use HasUlids;
     use Linkable;
     use PlacedInConversation;
 

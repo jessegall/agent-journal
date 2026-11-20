@@ -60,7 +60,9 @@ use Illuminate\Database\Eloquent\Model;
 )]
 final class SkillRevision extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.skill-revision';
 

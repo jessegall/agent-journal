@@ -47,7 +47,8 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 final class SessionPolicy extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

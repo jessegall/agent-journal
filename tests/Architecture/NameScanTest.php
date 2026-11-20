@@ -24,33 +24,61 @@ final class NameScanTest extends TestCase
     public static function nameUses(): iterable
     {
         yield 'plain import' => ['PlainImport', 'Message', NameType::Import, 7];
+
         yield 'type after a plain import' => ['PlainImport', 'Message', NameType::Type, 11];
+
         yield 'static call after a plain import' => ['PlainImport', 'Message', NameType::StaticAccess, 13];
+
         yield 'alias import resolves to the class' => ['AliasImport', 'Message', NameType::Import, 7];
+
         yield 'alias used as a type' => ['AliasImport', 'Message', NameType::Type, 11];
+
         yield 'group import first item' => ['GroupImport', 'ChatFailed', NameType::Import, 7];
+
         yield 'group import second item' => ['GroupImport', 'Message', NameType::Import, 7];
+
         yield 'parameter type' => ['TypeUses', 'Message', NameType::Type, 15];
+
         yield 'nullable property type' => ['TypeUses', 'Message', NameType::Type, 13];
+
         yield 'union return type' => ['TypeUses', 'Notifier', NameType::Type, 15];
+
         yield 'arrow function type' => ['TypeUses', 'Message', NameType::Type, 22];
+
         yield 'class name' => ['ClassNameUse', 'Message', NameType::ClassName, 13];
+
         yield 'new' => ['ConstructionUse', 'Message', NameType::Construction, 16];
+
         yield 'class constant' => ['StaticUses', 'Message', NameType::StaticAccess, 14];
+
         yield 'static call and first class callable' => ['StaticUses', 'Message', NameType::StaticAccess, 22];
+
         yield 'use function' => ['FunctionUses', 'send_message', NameType::Function, 7];
+
         yield 'imported function call' => ['FunctionUses', 'send_message', NameType::Function, 13];
+
         yield 'fully written function call' => ['FunctionUses', 'send_message', NameType::Function, 14];
+
         yield 'use const' => ['ConstantUses', 'MAX_LENGTH', NameType::Constant, 7];
+
         yield 'constant fetch' => ['ConstantUses', 'MAX_LENGTH', NameType::Constant, 16];
+
         yield 'attribute' => ['OtherUses', 'Shared', NameType::Other, 14];
+
         yield 'extends' => ['OtherUses', 'Message', NameType::Other, 15];
+
         yield 'implements' => ['OtherUses', 'Notifier', NameType::Other, 15];
+
         yield 'trait use' => ['OtherUses', 'Escaping', NameType::Other, 17];
+
         yield 'insteadof' => ['OtherUses', 'Escaping', NameType::Other, 18];
+
         yield 'instanceof' => ['OtherUses', 'Message', NameType::Other, 24];
+
         yield 'catch' => ['OtherUses', 'ChatFailed', NameType::Other, 29];
+
         yield 'fully written type' => ['FullyWritten', 'Message', NameType::Type, 9];
+
         yield 'fully written new' => ['FullyWritten', 'Message', NameType::Construction, 11];
     }
 

@@ -31,9 +31,11 @@ const BUDGET_SECONDS = 1_800;
 const DECISIONS = __DIR__.'/shell-corpus-decisions.json';
 
 $started = microtime(true);
+
 if (! is_dir(CORPUS) || ! is_executable(ORACLE)) {
     notRun(is_dir(CORPUS) ? 'the reference oracle is not built (go -C tools/shell-oracle build -o bin/shell-oracle .)' : 'the private corpus folder ../shell-corpus-private is missing');
 }
+
 if (! is_dir(WORK) && ! mkdir(WORK, 0o700, true)) {
     notRun('the qualification folder cannot be created');
 }
@@ -44,6 +46,7 @@ $chunks = array_chunk(array_values($records), CHUNK_LINES);
 
 $cursorFile = WORK.'/cursor.json';
 $cursor = is_file($cursorFile) ? json_decode((string) file_get_contents($cursorFile), true, 512, JSON_THROW_ON_ERROR) : null;
+
 if (($cursor['input'] ?? null) !== $inputHash) {
     $cursor = ['input' => $inputHash, 'done' => [], 'counts' => []];
 }
@@ -52,6 +55,7 @@ foreach ($chunks as $number => $chunk) {
     if (in_array($number, $cursor['done'], true)) {
         continue;
     }
+
     if (microtime(true) - $started > BUDGET_SECONDS) {
         fwrite(STDERR, 'The 30-minute budget ran out after chunk '.($number - 1)."; run again to resume.\n");
         break;
@@ -69,6 +73,7 @@ foreach ($chunks as $number => $chunk) {
     $differences = [];
     $readings = hash_init('sha256');
     $classifications = hash_init('sha256');
+
     foreach ($chunk as $record) {
         $want = comparable($expected[$record['id']] ?? ['outcome' => 'missing', 'parts' => []]);
         $got = comparable($actual[$record['id']] ?? ['outcome' => 'missing', 'parts' => []]);
@@ -77,6 +82,7 @@ foreach ($chunks as $number => $chunk) {
         hash_update($classifications, $record['id'].json_encode($classification, JSON_THROW_ON_ERROR)."\n");
         $counts['known'] = ($counts['known'] ?? 0) + (($classification['known'] ?? false) ? 1 : 0);
         $counts['outcomes'][$got['outcome']] = ($counts['outcomes'][$got['outcome']] ?? 0) + 1;
+
         if ($want === $got) {
             $counts['agree']++;
 
@@ -84,6 +90,7 @@ foreach ($chunks as $number => $chunk) {
         }
         $counts['differ']++;
         $family = explainedBy($want['outcome'], $got['outcome'], $record['source'], $record['id']);
+
         if ($family !== null) {
             $counts['explained'][$family] = ($counts['explained'][$family] ?? 0) + 1;
         }
@@ -103,6 +110,7 @@ ksort($cursor['counts']);
 $total['version6_digest'] = hash('sha256', implode('', array_column($cursor['counts'], 'version6_digest')));
 $total['classification_digest'] = hash('sha256', implode('', array_column($cursor['counts'], 'classification_digest')));
 $total['known'] = array_sum(array_column($cursor['counts'], 'known'));
+
 foreach ($cursor['counts'] as $counts) {
     foreach ($counts['explained'] ?? [] as $family => $count) {
         $total['explained'][$family] = ($total['explained'][$family] ?? 0) + $count;
@@ -110,14 +118,17 @@ foreach ($cursor['counts'] as $counts) {
     $total['lines'] += $counts['lines'];
     $total['agree'] += $counts['agree'];
     $total['differ'] += $counts['differ'];
+
     foreach ($counts['outcomes'] as $outcome => $count) {
         $total['outcomes'][$outcome] = ($total['outcomes'][$outcome] ?? 0) + $count;
     }
 }
 $failingIds = [];
+
 foreach (glob(WORK.'/differences-*.jsonl') ?: [] as $file) {
     foreach (file($file, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
         $difference = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+
         if (($difference['decision'] ?? null) === null) {
             $failingIds[] = $difference['id'];
         }
@@ -150,10 +161,12 @@ function explainedBy(string $reference, string $version6, string $source, string
 {
     static $decisions = null;
     $decisions ??= json_decode((string) file_get_contents(DECISIONS), true, 512, JSON_THROW_ON_ERROR)['decisions'];
+
     foreach ($decisions as $decision) {
         $matches = isset($decision['ids'])
             ? in_array($id, $decision['ids'], true)
             : $decision['source_pattern'] === '' || preg_match('/'.$decision['source_pattern'].'/', $source) === 1;
+
         if ($decision['reference'] === $reference && $decision['version6'] === $version6 && $matches) {
             return $decision['family'];
         }
@@ -174,6 +187,7 @@ function corpusRecords(): array
     $add = function (string $origin, mixed $source, string $dialect = 'bash') use (&$records, &$sources): void {
         $sources[$origin] ??= ['lines' => 0, 'empty' => 0];
         $sources[$origin]['lines']++;
+
         if (! is_string($source) || trim($source) === '') {
             $sources[$origin]['empty']++;
 
@@ -190,26 +204,31 @@ function corpusRecords(): array
     eachLine(CORPUS.'/github_commands.jsonl', function (string $line) use ($add): void {
         $row = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
         $dialect = ShellDialect::tryFrom($row['shell'] ?? ShellDialect::Bash->value);
+
         if (in_array($dialect, [ShellDialect::Bash, ShellDialect::Sh], true)) {
             $add('github_commands.jsonl', $row['line'] ?? null, $row['shell'] ?? 'bash');
         }
     });
     eachLine(CORPUS.'/session-commands.jsonl', fn (string $line) => $add('session-commands.jsonl', json_decode($line, true, 512, JSON_THROW_ON_ERROR)['source'] ?? null));
     eachLine(CORPUS.'/docker-build-commands.jsonl', fn (string $line) => $add('docker-build-commands.jsonl', json_decode($line, true, 512, JSON_THROW_ON_ERROR)['source'] ?? null));
+
     foreach (glob(CORPUS.'/helper-report-*.txt') ?: [] as $path) {
         eachLine($path, function (string $written) use ($add): void {
             $line = trim($written);
+
             if (str_starts_with($line, '"')) {
                 $decoded = json_decode($line, true);
                 $add('helper-written', is_string($decoded) ? $decoded : null);
             }
         });
     }
+
     foreach (['v5-project-aliases.json', 'v6-project-aliases.json'] as $name) {
         foreach (jsonRows(CORPUS."/{$name}") as $row) {
             $add($name, $row['line'] ?? null);
         }
     }
+
     foreach (['v5-project-command-types.json', 'v6-project-command-types.json'] as $name) {
         foreach (jsonRows(CORPUS."/{$name}") as $row) {
             $add($name, $row['words'] ?? null);
@@ -226,8 +245,10 @@ function eachLine(string $path, Closure $read): void
         return;
     }
     $handle = fopen($path, 'r') ?: notRun("{$path} cannot be read");
+
     while (($line = fgets($handle)) !== false) {
         $line = rtrim($line, "\n");
+
         if ($line !== '') {
             try {
                 $read($line);
@@ -254,14 +275,17 @@ function jsonRows(string $path): array
 function readings(array $command, string $input): array
 {
     $process = proc_open($command, [['pipe', 'r'], ['pipe', 'w'], STDERR], $pipes, ROOT);
+
     if (! is_resource($process)) {
         notRun(implode(' ', $command).' did not start');
     }
     stream_set_blocking($pipes[1], false);
     $output = '';
     $offset = 0;
+
     while ($offset < strlen($input)) {
         $written = @fwrite($pipes[0], substr($input, $offset, 65536));
+
         if ($written === false) {
             // The reader stopped taking lines: it ended early, so its exit and its error output say why.
             break;
@@ -273,10 +297,12 @@ function readings(array $command, string $input): array
     stream_set_blocking($pipes[1], true);
     $output .= (string) stream_get_contents($pipes[1]);
     fclose($pipes[1]);
+
     if (proc_close($process) !== 0) {
         notRun(implode(' ', array_slice($command, 0, 3)).' failed');
     }
     $readings = [];
+
     foreach (explode("\n", trim($output)) as $line) {
         if ($line === '') {
             continue;
@@ -298,6 +324,7 @@ function readings(array $command, string $input): array
 function comparable(array $reading): array
 {
     $result = ['outcome' => $reading['outcome']];
+
     if ($reading['outcome'] === 'complete') {
         $parts = array_map(fn (array $span) => [$span['start'], $span['end']], $reading['parts']);
         sort($parts);
@@ -320,6 +347,7 @@ function codeHash(): string
 {
     $root = __DIR__.'/../..';
     $files = [__DIR__.'/analyse-shell-lines.php'];
+
     foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/app/Processes', FilesystemIterator::SKIP_DOTS)) as $file) {
         $files[] = $file->getPathname();
     }

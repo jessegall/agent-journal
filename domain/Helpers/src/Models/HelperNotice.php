@@ -31,7 +31,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['job_state', 'text'])]
 final class HelperNotice extends Model implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     /**

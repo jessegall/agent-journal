@@ -40,7 +40,12 @@ use Illuminate\Support\Carbon;
 #[Fillable(['document_id', 'title', 'abstract', 'body', 'author_type', 'author_id', 'closed_at'])]
 final class DocumentRevision extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, HasNumber, HasUlids, Linkable, MeasuresBody, SearchesText;
+    use BoundedReads;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
+    use MeasuresBody;
+    use SearchesText;
 
     public const string LINK_TYPE = 'documents.revision';
 

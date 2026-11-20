@@ -40,7 +40,9 @@ use Illuminate\Support\Carbon;
 final class Phase extends Model implements Assignable, Numbered, ReadableModel
 {
     use BoundedReads;
-    use HasNumber, HasUlids, Linkable;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     /**
      * The stable name links and assignments use for a phase.

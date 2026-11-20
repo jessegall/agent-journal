@@ -23,6 +23,7 @@ final readonly class ReplayMenuEntry implements Pipe
             $raise->fingerprint(),
             $raise->command->declinedEntries,
         );
+
         if ($entry === null) {
             return $raise;
         }

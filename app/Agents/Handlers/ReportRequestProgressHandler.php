@@ -46,6 +46,7 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
         if ($command->script !== null) {
             $request->recordScriptProgress($command->script);
         }
+
         if ($command->navigation !== null) {
             $this->navigationReports->apply($request, $command->navigation);
         }

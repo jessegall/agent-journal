@@ -56,16 +56,19 @@ final class UnsupportedConstruct
             self::COMMAND_STARTING_WORDS,
             true,
         );
+
         if ($token->type->isGroupOpener()) {
             $this->parentheses++;
 
             return;
         }
+
         if ($token->type->isGroupCloser() && $this->parentheses > 0) {
             $this->parentheses--;
 
             return;
         }
+
         if ($this->terminator !== null && $wasAtCommandStart && $literal !== null) {
             $this->readReservedWord($literal);
         }
@@ -88,9 +91,11 @@ final class UnsupportedConstruct
 
             return;
         }
+
         if ($literal !== $this->terminator) {
             return;
         }
+
         if ($this->nesting === 0) {
             $this->closed = true;
 

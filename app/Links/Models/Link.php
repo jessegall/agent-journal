@@ -37,8 +37,10 @@ use Illuminate\Support\Carbon;
 #[Fillable(['source_type', 'source_id', 'target_type', 'target_id'])]
 final class Link extends MorphPivot implements ReadableModel
 {
-    use BoundedReads, CountsPivotLoads;
-    use HasUlids, Linkable;
+    use BoundedReads;
+    use CountsPivotLoads;
+    use HasUlids;
+    use Linkable;
 
     /**
      * A pivot opens every attribute by default; this one takes only its Fillable list.

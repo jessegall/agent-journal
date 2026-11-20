@@ -54,7 +54,14 @@ use Illuminate\Support\Carbon;
 #[Fillable(['creator_type', 'creator_id'])]
 final class Document extends Model implements Commentable, Numbered, ReadableModel, Shareable, TextContent
 {
-    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, Settles, SharedWithComments;
+    use BoundedReads;
+    use CreatedWithAttention;
+    use HasComments;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
+    use Settles;
+    use SharedWithComments;
 
     public const string LINK_TYPE = 'documents.document';
 
@@ -111,6 +118,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     public static function lockedForEditing(int|string $number): self
     {
         $query = self::query()->with('currentRevision')->lockForUpdate();
+
         if (is_int($number)) {
             return $query->where('number', $number)->firstOr(fn () => throw DocumentMissing::numbered($number));
         }

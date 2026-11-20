@@ -24,6 +24,7 @@ final readonly class RepeatedStep extends Step
 
         return function (object $input) use ($round, $while): object {
             $stepInput = $input;
+
             while ($while($stepInput)) {
                 $stepInput = $round($stepInput);
             }

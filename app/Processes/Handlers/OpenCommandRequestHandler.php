@@ -25,6 +25,7 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
             ->stillOpen()
             ->lockForUpdate()
             ->first();
+
         if ($open !== null) {
             return $open->id;
         }

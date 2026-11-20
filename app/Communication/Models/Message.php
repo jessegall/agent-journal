@@ -86,7 +86,10 @@ use Spatie\LaravelData\Optional;
 ])]
 final class Message extends Model implements Assignable, Numbered, ReadableModel
 {
-    use BoundedReads, HasNumber, HasUlids, Linkable;
+    use BoundedReads;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'communication.message';
 

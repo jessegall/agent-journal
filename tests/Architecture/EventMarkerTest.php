@@ -28,7 +28,9 @@ final class EventMarkerTest extends TestCase
     public static function markedFolders(): iterable
     {
         yield 'events' => ['/Events/', Event::class];
+
         yield 'listeners' => ['/Listeners/', Listener::class];
+
         yield 'handlers' => ['/Handlers/', CommandHandler::class];
     }
 

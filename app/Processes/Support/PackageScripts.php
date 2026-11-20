@@ -59,6 +59,7 @@ final readonly class PackageScripts
         $package = is_file($path) ? json_decode((string) file_get_contents($path), true) : [];
         $body = is_array($package) ? ($package['scripts'][$name] ?? []) : [];
         $lines = array_values(array_map(strval(...), is_array($body) ? $body : [$body]));
+
         if ($lines === []) {
             return [];
         }

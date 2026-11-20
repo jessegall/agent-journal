@@ -44,7 +44,10 @@ use Illuminate\Support\Carbon;
 #[Fillable(['key', 'owner_type', 'owner_id', 'environment', 'current_revision_id', 'retired_at'])]
 final class Skill extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, HasNumber, HasUlids, Linkable;
+    use BoundedReads;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.skill';
 

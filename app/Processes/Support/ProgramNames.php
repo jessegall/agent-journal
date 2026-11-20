@@ -23,6 +23,7 @@ final readonly class ProgramNames
     public function canonical(Word $word, int $node, array $spellings): ProgramIdentity|UnresolvedFact
     {
         $original = $word->literal();
+
         if ($original === null || $original === '') {
             return new UnresolvedFact(
                 UnresolvedType::UnresolvedExecutable,
@@ -31,6 +32,7 @@ final readonly class ProgramNames
             );
         }
         $name = basename($original);
+
         foreach ($spellings as $family) {
             if ($family->names($name)) {
                 return new ProgramIdentity($family->family, $original);

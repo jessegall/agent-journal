@@ -36,9 +36,11 @@ final readonly class StartSampleHandler implements CommandHandler
             ->where('command_request_id', $request->id)
             ->lockForUpdate()
             ->first();
+
         if ($permit !== null && $permit->wasStartedBy($command->requestKey)) {
             return (string) $permit->process_run_id;
         }
+
         if ($permit === null || $request->state !== RequestState::ReadyForSample) {
             throw SampleRefused::notReady($request->nextStep()->command);
         }

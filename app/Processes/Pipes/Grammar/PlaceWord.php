@@ -20,6 +20,7 @@ final readonly class PlaceWord implements Pipe
         if ($toParse->place !== WordPlace::Unread) {
             return $toParse;
         }
+
         if (! $toParse->isBeforeArguments || ! $toParse->word->isAssignment()) {
             return $toParse->placedAs(WordPlace::Argument);
         }

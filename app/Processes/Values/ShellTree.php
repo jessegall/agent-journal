@@ -41,6 +41,7 @@ final readonly class ShellTree
     {
         $text = '';
         $at = $node->range->start;
+
         foreach ($node->redirects as $redirect) {
             $text .= $this->textOf(new SourceRange($at, $redirect->range->start));
             $at = $redirect->range->end;
@@ -76,8 +77,10 @@ final readonly class ShellTree
     {
         $parts = [];
         $pending = [$this->root];
+
         while ($pending !== []) {
             $node = $this->node(array_shift($pending));
+
             if ($node->type->isExecutable()) {
                 $parts[] = $node;
             }

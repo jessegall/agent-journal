@@ -41,8 +41,10 @@ use Illuminate\Support\Carbon;
 #[Fillable(['record_type', 'record_id', 'holder_type', 'holder_id'])]
 final class AssignmentRecord extends MorphPivot implements ReadableModel
 {
-    use BoundedReads, CountsPivotLoads;
-    use HasUlids, Linkable;
+    use BoundedReads;
+    use CountsPivotLoads;
+    use HasUlids;
+    use Linkable;
 
     /**
      * A pivot opens every attribute by default; this one takes only its Fillable list.

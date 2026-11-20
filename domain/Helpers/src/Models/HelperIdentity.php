@@ -35,7 +35,9 @@ use PhpOption\Option;
 #[Fillable(['profile_key', 'profile_base'])]
 final class HelperIdentity extends Model implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     /**

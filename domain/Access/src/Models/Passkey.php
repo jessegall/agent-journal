@@ -27,7 +27,9 @@ use Laravel\Passkeys\Passkey as PackagePasskey;
 #[Fillable(['name', 'credential_id', 'credential'])]
 final class Passkey extends PackagePasskey implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     /**
      * Empty, so the package's own list does not add to the Fillable attribute.

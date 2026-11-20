@@ -134,15 +134,19 @@ final readonly class ArgumentGrammar
         $seen = [];
         $operandCount = 0;
         $afterDoubleDash = false;
+
         for ($index = 0; $index < count($words); $index++) {
             $text = $words[$index]->literal();
+
             if ($this->endsOptionsAtDoubleDash && ! $afterDoubleDash && $text === '--') {
                 $afterDoubleDash = true;
 
                 continue;
             }
+
             if (! $afterDoubleDash && $this->isOptionWord($text)) {
                 $options = $this->optionsIn((string) $text);
+
                 if ($options === []) {
                     $problem = "The option {$text} is not declared.";
 
@@ -154,6 +158,7 @@ final readonly class ArgumentGrammar
 
                 continue;
             }
+
             if ($operandCount >= count($this->operands) && ! $this->hasRepeatingOperand()) {
                 $problem = 'The word '.($text ?? 'with an expansion').' is not an accepted operand.';
 
@@ -220,16 +225,20 @@ final readonly class ArgumentGrammar
             $this->options,
             fn (OptionGrammar $option): bool => $option->matches($text),
         ));
+
         if ($named !== []) {
             return [$named[0]];
         }
+
         if ($this->acceptsNumericOptions && preg_match('/^-[0-9]+$/', $text) === 1) {
             return [OptionGrammar::flag($text)];
         }
+
         if (preg_match('/^-[A-Za-z0-9]{2,}$/', $text) !== 1) {
             return [];
         }
         $first = $this->shortOption($text[1]);
+
         if ($first !== [] && $first[0]->takesValue()) {
             return $first;
         }
@@ -243,8 +252,10 @@ final readonly class ArgumentGrammar
     private function combinedFlagsOf(string $letters): array
     {
         $options = [];
+
         foreach (str_split($letters) as $position => $letter) {
             $option = $this->shortOption($letter);
+
             if ($option === [] || ($option[0]->takesValue() && $position < strlen($letters) - 1)) {
                 return [];
             }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Helpers\Tests\Support;
 
-use App\Agents\Contracts\HelperImages;
+use App\Agents\Contracts\DockerImageVerifier;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Models\AgentSession;
@@ -88,7 +88,7 @@ trait DispatchesHelpers
                 );
             }
         });
-        $this->app->instance(HelperImages::class, new class implements HelperImages
+        $this->app->instance(DockerImageVerifier::class, new class implements DockerImageVerifier
         {
             public function isVerified(string $imageReference): bool
             {

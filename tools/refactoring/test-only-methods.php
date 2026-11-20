@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PhpParser\ParserFactory;
 

@@ -23,13 +23,17 @@ final readonly class ShellExpansionScanner
     public function read(LexerCursor $cursor): WordSegment|null
     {
         $start = $cursor->position;
+
         if ($cursor->source[$start] === '`') {
             $close = $start + 1;
+
             while (true) {
                 $close = strpos($cursor->source, '`', $close);
+
                 if ($close === false) {
                     throw ShellLineUnreadable::unfinished('a backtick substitution', $start);
                 }
+
                 if ($cursor->source[$close - 1] !== '\\') {
                     break;
                 }
@@ -45,6 +49,7 @@ final readonly class ShellExpansionScanner
         }
 
         $next = $cursor->at($start + 1);
+
         if ($next === "'" && $cursor->dialect !== ShellDialect::Sh) {
             $close = $this->closingQuote($cursor, "'", $start + 2, $start, 'an ANSI-C quoted string');
             $cursor->position = $close + 1;
@@ -55,12 +60,15 @@ final readonly class ShellExpansionScanner
                 new SourceRange($start, $cursor->position),
             );
         }
+
         if ($next === '(') {
             return $this->readBalanced($cursor, 'a command substitution');
         }
+
         if ($next === '{') {
             $nameStart = $cursor->at($start + 2);
             $zshFlags = $cursor->dialect === ShellDialect::Zsh && $nameStart === '(';
+
             if ($nameStart === '' || ! ($zshFlags || ctype_alnum($nameStart) || str_contains('_@*#?$!-', $nameStart))) {
                 throw ShellLineUnreadable::badSubstitution($start);
             }
@@ -77,9 +85,11 @@ final readonly class ShellExpansionScanner
             'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_',
             $start + 1,
         );
+
         if ($nameLength === 0 && $next !== '' && str_contains('@*#?$!-0123456789', $next)) {
             $nameLength = 1;
         }
+
         if ($nameLength === 0) {
             return null;
         }
@@ -105,21 +115,26 @@ final readonly class ShellExpansionScanner
         $depth = 1;
         $index = $contentStart;
         $length = strlen($cursor->source);
+
         while ($index < $length) {
             $cursor->assertWithinBudget();
             $character = $cursor->source[$index];
+
             if ($character === '\\') {
                 $index += 2;
 
                 continue;
             }
+
             if ($character === '$' && $cursor->at($index + 1) === "'") {
                 $index = $this->closingQuote($cursor, "'", $index + 2, $start, $what) + 1;
 
                 continue;
             }
+
             if ($character === "'") {
                 $close = strpos($cursor->source, "'", $index + 1);
+
                 if ($close === false) {
                     throw ShellLineUnreadable::unfinished($what, $start);
                 }
@@ -127,26 +142,31 @@ final readonly class ShellExpansionScanner
 
                 continue;
             }
+
             if ($character === '"' || $character === '`') {
                 $index = $this->closingQuote($cursor, $character, $index + 1, $start, $what) + 1;
 
                 continue;
             }
+
             if ($character === '<' && $cursor->at($index + 1) === '<' && $cursor->at($index + 2) === '<') {
                 $index += 3;
 
                 continue;
             }
+
             if ($character === '<' && $cursor->at($index + 1) === '<') {
                 $index = $this->pastNestedHereDocument($cursor, $index, $start, $what);
 
                 continue;
             }
+
             if ($character === 'c' && $this->startsWord($cursor, $index, 'case')) {
                 $index = $this->pastNestedCase($cursor, $index, $start, $what);
 
                 continue;
             }
+
             if ($character === '(') {
                 $depth++;
             } elseif ($character === ')' && --$depth === 0) {
@@ -174,23 +194,28 @@ final readonly class ShellExpansionScanner
         $depth = 1;
         $index = $start + 2;
         $length = strlen($cursor->source);
+
         while ($index < $length) {
             $character = $cursor->source[$index];
+
             if ($character === '\\') {
                 $index += 2;
 
                 continue;
             }
+
             if ($character === "'" || $character === '"' || $character === '`') {
                 $index = $this->closingQuote($cursor, $character, $index + 1, $start, 'a parameter expansion') + 1;
 
                 continue;
             }
+
             if ($character === '$' && $cursor->at($index + 1) === '(') {
                 $index = $this->endOfBalanced($cursor, $index);
 
                 continue;
             }
+
             if ($character === '{') {
                 $depth++;
             } elseif ($character === '}' && --$depth === 0) {
@@ -227,6 +252,7 @@ final readonly class ShellExpansionScanner
             return $this->closingQuote($cursor, '"', $index + 1, $start, $what);
         }
         $close = strpos($cursor->source, "'", $index + 1);
+
         if ($close === false) {
             throw ShellLineUnreadable::unfinished($what, $start);
         }
@@ -243,12 +269,14 @@ final readonly class ShellExpansionScanner
     {
         $position = $index;
         $length = strlen($cursor->source);
+
         while ($position < $length) {
             if ($cursor->source[$position] === '\\') {
                 $position += 2;
 
                 continue;
             }
+
             if ($cursor->source[$position] === $quote) {
                 return $position;
             }
@@ -281,13 +309,16 @@ final readonly class ShellExpansionScanner
         $position = $index;
         $depth = 0;
         $length = strlen($cursor->source);
+
         while ($position < $length) {
             $character = $cursor->source[$position];
+
             if ($character === "'" || $character === '"') {
                 $position = $this->closingQuoteOf($cursor, $character, $position, $start, $what) + 1;
 
                 continue;
             }
+
             if ($this->startsWord($cursor, $position, 'case')) {
                 $depth++;
                 $position += 4;
@@ -327,22 +358,27 @@ final readonly class ShellExpansionScanner
         $delimiterStart += strspn($cursor->source, " \t", $delimiterStart);
         $delimiterLength = strcspn($cursor->source, " \t\n;&|<>()", $delimiterStart);
         $delimiter = str_replace(["'", '"', '\\'], '', substr($cursor->source, $delimiterStart, $delimiterLength));
+
         if ($delimiter === '') {
             return $index + 2;
         }
         $lineEnd = strpos($cursor->source, "\n", $delimiterStart);
+
         if ($lineEnd === false) {
             return $delimiterStart + $delimiterLength;
         }
         $lineStart = $lineEnd + 1;
         $length = strlen($cursor->source);
+
         while ($lineStart <= $length) {
             $next = strpos($cursor->source, "\n", $lineStart);
             $next = $next === false ? $length : $next;
             $line = substr($cursor->source, $lineStart, $next - $lineStart);
+
             if (($stripsTabs ? ltrim($line, "\t") : $line) === $delimiter) {
                 return $next;
             }
+
             if ($next === $length) {
                 break;
             }

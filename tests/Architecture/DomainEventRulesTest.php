@@ -44,12 +44,16 @@ final class DomainEventRulesTest extends TestCase
         $notExported = ", which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or use what Tasks exports";
 
         yield 'a listener importing a declared domain event' => ['Plans/Listeners/StartNextTask.php', []];
+
         yield 'a listener with an alias import' => ['Plans/Listeners/AliasListener.php', []];
+
         yield 'a state handler with an alias import' => ['Plans/States/PlanState.php', []];
+
         yield 'an unrelated state helper has no event permission' => [
             'Plans/States/PlanStateWithForeignUse.php',
             ['22 names '.self::TASK_CLOSED.$onlyAListener],
         ];
+
         yield 'a listener with a group import, naming a descriptor outside its own descriptor' => [
             'Plans/Listeners/GroupListener.php',
             [
@@ -57,14 +61,18 @@ final class DomainEventRulesTest extends TestCase
                 '13 uses Tests\Fixtures\Boundary\Events\Tasks\TasksDomain'.$notExported,
             ],
         ];
+
         yield 'the owner raising its own event' => ['Tasks/Actions/CloseTask.php', []];
+
         yield 'a listener building another domain event' => ['Plans/Listeners/RaisesTaskClosed.php', [
             '13 names '.self::TASK_CLOSED.$onlyAListener,
         ]];
+
         yield 'another domain event named outside a listener' => ['Plans/Actions/UsesTaskClosed.php', [
             '7 names '.self::TASK_CLOSED.$onlyAListener,
             '13 names '.self::TASK_CLOSED.$onlyAListener,
         ]];
+
         yield 'an event of an undeclared domain in a listener' => ['Plans/Listeners/HearsMessage.php', [
             '7 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
             '11 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',

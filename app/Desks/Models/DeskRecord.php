@@ -39,7 +39,9 @@ use PhpOption\Option;
 #[Fillable(['name', 'label', 'inbox_id', 'seat_count', 'forwards_occupants', 'seating_revision'])]
 final class DeskRecord extends Model implements Desk, ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.desk';
 

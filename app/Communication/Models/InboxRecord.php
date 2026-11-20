@@ -24,7 +24,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['provider_key', 'provider_id'])]
 final class InboxRecord extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

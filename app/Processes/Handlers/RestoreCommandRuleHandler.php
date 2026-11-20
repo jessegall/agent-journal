@@ -38,6 +38,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
             ->whereKey($command->classificationRuleId)
             ->lockForUpdate()
             ->sole();
+
         if ($rule->active_revision !== $command->expectedRevision) {
             throw ClassificationRuleRefused::stale($rule->rule_id, $command->expectedRevision, $rule->active_revision);
         }

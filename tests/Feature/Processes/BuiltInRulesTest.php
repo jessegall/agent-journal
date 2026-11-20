@@ -30,15 +30,25 @@ final class BuiltInRulesTest extends TestCase
     public static function familyClasses(): iterable
     {
         yield 'rg reads' => ['rg -n pattern src', [CommandClass::Read]];
+
         yield 'ls -la reads' => ['ls -la', [CommandClass::Read]];
+
         yield 'head -20 reads' => ['head -20 notes.txt', [CommandClass::Read]];
+
         yield 'sed -i edits' => ["sed -i 's/a/b/' file.txt", [CommandClass::Read, CommandClass::Edit]];
+
         yield 'sed prints' => ["sed -n '1,5p' file.txt", [CommandClass::Read]];
+
         yield 'rm -f deletes' => ['rm -f old.log', [CommandClass::Delete]];
+
         yield 'mv moves' => ['mv a b', [CommandClass::Read, CommandClass::Write, CommandClass::Delete]];
+
         yield 'curl saving' => ['curl -o f https://example.com', [CommandClass::Write, CommandClass::Network]];
+
         yield 'curl fetching' => ['curl -fsSL https://example.com', [CommandClass::Network]];
+
         yield 'kill' => ['kill -9 123', [CommandClass::ProcessControl]];
+
         yield 'npm install' => [
             'npm install',
             [
@@ -49,33 +59,46 @@ final class BuiltInRulesTest extends TestCase
                 CommandClass::PackageInstall,
             ],
         ];
+
         yield 'pint fixes' => ['vendor/bin/pint', [CommandClass::Read, CommandClass::Edit, CommandClass::Verification]];
+
         yield 'vite build' => ['vite build', [CommandClass::Read, CommandClass::Write, CommandClass::Build]];
+
         yield 'npx waits for task 770' => ['npx vite build', []];
+
         yield 'git status --short' => ['git status --short', [CommandClass::Read, CommandClass::VersionControl]];
+
         yield 'git -C dir log' => [
             'git -C sub --no-pager log --oneline -5',
             [CommandClass::Read, CommandClass::VersionControl],
         ];
+
         yield 'git branch --list' => ['git branch --list', [CommandClass::Read, CommandClass::VersionControl]];
+
         yield 'git branch topic' => [
             'git branch topic',
             [CommandClass::Read, CommandClass::Write, CommandClass::VersionControl],
         ];
+
         yield 'git branch -D topic' => [
             'git branch -D topic',
             [CommandClass::Read, CommandClass::Delete, CommandClass::VersionControl],
         ];
+
         yield 'git diff --ext-diff' => ['git diff --ext-diff', []];
+
         yield 'git -c is unresolved' => ['git -c core.pager=less log', []];
+
         yield 'git fetch' => [
             'git fetch --all --prune',
             [CommandClass::Read, CommandClass::Write, CommandClass::Network, CommandClass::VersionControl],
         ];
+
         yield 'git push --force' => [
             'git push --force origin main',
             [CommandClass::Read, CommandClass::Write, CommandClass::Network, CommandClass::VersionControl],
         ];
+
         yield 'git push --delete' => [
             'git push --delete origin old',
             [
@@ -86,10 +109,12 @@ final class BuiltInRulesTest extends TestCase
                 CommandClass::VersionControl,
             ],
         ];
+
         yield 'git ls-remote' => [
             'git ls-remote origin',
             [CommandClass::Read, CommandClass::Network, CommandClass::VersionControl],
         ];
+
         yield 'git reset --hard' => [
             'git reset --hard HEAD~1',
             [
@@ -125,10 +150,15 @@ final class BuiltInRulesTest extends TestCase
     public static function checks(): iterable
     {
         yield 'artisan test' => ['php artisan test --compact --filter Foo'];
+
         yield 'phpstan' => ['vendor/bin/phpstan analyse --memory-limit=1G'];
+
         yield 'pint check' => ['vendor/bin/pint --test'];
+
         yield 'the judge' => ['.journal/plugins/code-commandments/bin/commandments-release judge --changes'];
+
         yield 'vue-tsc' => ['vue-tsc --noEmit'];
+
         yield 'php8.3 spelling' => ['php8.3 artisan test'];
     }
 

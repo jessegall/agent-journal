@@ -77,9 +77,13 @@ final class RunnerCapabilityTest extends TestCase
     public static function demonstrations(): iterable
     {
         yield 'a sequence' => ['false; echo after', 2];
+
         yield 'and and or with a failing first part' => ['false && echo skipped || echo recovered', 3];
+
         yield 'a two-stage data pipeline' => ['cat data.txt | grep x', 2];
+
         yield 'a lowered sh -c' => ["sh -c 'echo a; echo b'", 2];
+
         yield 'a command substitution' => ['echo $(echo inner)', 2];
     }
 

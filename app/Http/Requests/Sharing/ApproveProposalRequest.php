@@ -17,7 +17,9 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class ApproveProposalRequest extends FormRequest
 {
-    use ReadsConfirmedPreview, ReadsIdempotencyKey, ReadsShareId;
+    use ReadsConfirmedPreview;
+    use ReadsIdempotencyKey;
+    use ReadsShareId;
 
     /**
      * @return array<string, list<string>>

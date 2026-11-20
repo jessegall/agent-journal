@@ -42,6 +42,7 @@ final readonly class ReaderProofCheck
         $runs = ProcessRun::query()->ownedBy($request->actor())->whereKey($runIds)->readLimit(100)->get()->keyBy('id');
         $failures = [];
         $proven = [];
+
         foreach ($runIds as $runId) {
             if (! in_array($runId, $samples, true)) {
                 $failures[] = "run {$runId} is no sample the journal captured for this request";
@@ -51,17 +52,21 @@ final readonly class ReaderProofCheck
             $run = $runs->get($runId) ?? throw new ModelNotFoundException()->setModel(ProcessRun::class, [$runId]);
             $part = $this->samplePart($request, $run);
             $runFailures = $this->runFailures($request, $run, $part);
+
             if ($runFailures === []) {
                 $runFailures = $this->replayFailures($reader, $contract, $part);
             }
+
             if ($runFailures === []) {
                 $proven[] = $this->branchOf($contract, $part);
             }
+
             foreach ($runFailures as $failure) {
                 $failures[] = "run {$runId}: {$failure}";
             }
         }
         $unproven = $this->unprovenStatuses($contract, $proven);
+
         if ($failures !== [] || $unproven !== []) {
             throw ReaderProofFailed::because($failures, $unproven);
         }
@@ -82,13 +87,16 @@ final readonly class ReaderProofCheck
         if ($part === null) {
             return ["no part of the run is {$request->operation}"];
         }
+
         if (! $run->hasEnded() || ! $part->end()->hasStatus()) {
             return ['the run has not ended with its own exit status'];
         }
         $manifest = $this->manifests->stateOf($part);
+
         if (! $part->capture_state->isComplete() || ! $manifest->isComplete()) {
             return ['its captured output is not complete'];
         }
+
         if (! $request->hasReadEvidence($run)) {
             return ["the request's actor has not read its envelope and every stream it wrote"];
         }
@@ -114,10 +122,12 @@ final readonly class ReaderProofCheck
             $assessment->problems,
         );
         $outcome = $contract->exits->outcomeOf($part->end_code);
+
         if (! $outcome->acceptsClaim($assessment->claimed)) {
             $claimed = $assessment->claimed->value;
             $failures[] = "the reader claims {$claimed} for exit {$part->end_code}, which means {$outcome->value}";
         }
+
         if ($assessment->records === [] && $contract->output->isEmptyRefused()) {
             $failures[] = 'the reader found no record and the contract does not allow an empty output';
         }

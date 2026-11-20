@@ -128,7 +128,9 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public static function misbehavingMiddleware(): iterable
     {
         yield 'skips the command' => [SkipsCommand::class, MiddlewareSkippedCommand::class];
+
         yield 'calls next twice' => [CallsNextTwice::class, ContinuationCalledTwice::class];
+
         yield 'changes the result' => [ChangesResult::class, CommandResultChanged::class];
     }
 

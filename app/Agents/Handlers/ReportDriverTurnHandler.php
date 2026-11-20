@@ -28,6 +28,7 @@ final readonly class ReportDriverTurnHandler implements CommandHandler
         $turn = DriverTurn::recordStart($runtime->id, $command->processGeneration, $command->nativePromptId, $now);
 
         $activity = $command->finished ? RuntimeActivity::Idle : RuntimeActivity::Running;
+
         if (! $runtime->recordObservation($activity, HoldReason::None, $command->processGeneration, $now)) {
             throw HostReportRefused::staleGeneration(
                 $runtime->id,

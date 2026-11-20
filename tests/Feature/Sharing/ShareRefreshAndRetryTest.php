@@ -45,7 +45,8 @@ use Tests\TestCase;
  */
 final class ShareRefreshAndRetryTest extends TestCase
 {
-    use RefreshHookDatabase, RegistersShareDomains;
+    use RefreshHookDatabase;
+    use RegistersShareDomains;
     use StartsAgentRequests;
 
     private RecordIdentity $root;

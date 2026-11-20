@@ -40,6 +40,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
             ->where('navigation_request_id', $navigation->id)
             ->where('idempotency_key', NavigationRounds::keyOf($navigation, $command->expectedRowVersion))
             ->first();
+
         if ($sent !== null) {
             return $sent->receipt();
         }
@@ -52,6 +53,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
             $command->answer,
         );
         $request = $this->rounds->append($navigation, $round);
+
         if ($navigation->state === NavigationState::Open) {
             $this->recordAnswered($navigation);
         }
@@ -81,6 +83,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
             throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->state->value);
         }
         $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);
+
         if ($navigation->screen->generation !== $command->generation) {
             throw NavigationAnswerRefused::staleScreen(
                 $navigation->id,
@@ -89,6 +92,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
             );
         }
         $parameter = $command->answer->typeParameter;
+
         if ($parameter !== null && ! array_key_exists($parameter, $navigation->goal_parameters)) {
             throw NavigationAnswerRefused::freeText($parameter);
         }

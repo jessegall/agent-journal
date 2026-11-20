@@ -24,6 +24,7 @@ final readonly class ShellWordScanner
     public function read(LexerCursor $cursor): void
     {
         $start = $cursor->position;
+
         if (substr($cursor->source, $start, 3) === '[[ '
             && $cursor->dialect !== ShellDialect::Sh
             && $cursor->atCommandStart()) {
@@ -72,6 +73,7 @@ final readonly class ShellWordScanner
 
                 continue;
             }
+
             if (str_contains(self::WORD_ENDS, $character)) {
                 break;
             }
@@ -115,6 +117,7 @@ final readonly class ShellWordScanner
     private function readSingleQuoted(LexerCursor $cursor): WordSegment
     {
         $close = strpos($cursor->source, "'", $cursor->position + 1);
+
         if ($close === false) {
             throw ShellLineUnreadable::unfinished('a single-quoted string', $cursor->position);
         }
@@ -136,6 +139,7 @@ final readonly class ShellWordScanner
     private function readExpansionOrDollar(LexerCursor $cursor, WordBuilder $word, string $character): void
     {
         $expansion = $this->expansions->read($cursor);
+
         if ($expansion === null) {
             $word->addCharacter($character, $cursor->position++);
 
@@ -153,16 +157,20 @@ final readonly class ShellWordScanner
     {
         $index = $start + 3;
         $length = strlen($cursor->source);
+
         while ($index < $length) {
             $cursor->assertWithinBudget();
             $character = $cursor->source[$index];
+
             if ($character === '\\') {
                 $index += 2;
 
                 continue;
             }
+
             if ($character === "'") {
                 $close = strpos($cursor->source, "'", $index + 1);
+
                 if ($close === false) {
                     throw ShellLineUnreadable::unfinished('a single-quoted string', $index);
                 }
@@ -170,6 +178,7 @@ final readonly class ShellWordScanner
 
                 continue;
             }
+
             if ($character === '"' || $character === '`') {
                 $close = $this->expansions->closingQuote($cursor, $character, $index + 1, $index, 'a quoted string');
                 $index = $close + 1;
@@ -182,6 +191,7 @@ final readonly class ShellWordScanner
                 true,
             )
                 && in_array($cursor->at($index + 2), ['', ' ', "\t", "\n", ';', '&', '|', ')'], true);
+
             if ($closes) {
                 $cursor->emitLiteralWord($start, $index + 2);
 
@@ -211,14 +221,17 @@ final readonly class ShellWordScanner
 
         while (true) {
             $cursor->assertWithinBudget();
+
             if ($cursor->position >= $length) {
                 throw ShellLineUnreadable::unfinished('a double-quoted string', $open);
             }
             $character = $cursor->source[$cursor->position];
+
             if ($character === '"') {
                 break;
             }
             $next = $cursor->at($cursor->position + 1);
+
             if ($character === '\\' && in_array($next, ['$', '`', '"', '\\', "\n"], true)) {
                 if ($next !== "\n") {
                     $text .= $next;
@@ -229,6 +242,7 @@ final readonly class ShellWordScanner
             }
             $startsExpansion = ($character === '$' && $next !== "'") || $character === '`';
             $expansion = $startsExpansion ? $this->expansions->read($cursor) : null;
+
             if ($expansion !== null) {
                 if ($text !== '') {
                     $segments[] = new WordSegment(

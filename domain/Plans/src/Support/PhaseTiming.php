@@ -55,6 +55,7 @@ final readonly class PhaseTiming implements VerificationTiming
 
             foreach ($started as $plan) {
                 $verdict = $this->verdictOf($plan);
+
                 if (! $verdict->isAllowed()) {
                     return $verdict;
                 }
@@ -111,6 +112,7 @@ final readonly class PhaseTiming implements VerificationTiming
             $this->tasks->summaries($taskIds),
             fn (TaskSummary $task): bool => $task->state->isHoldingChecks(),
         );
+
         if ($holding === []) {
             return TimingVerdict::allowed();
         }

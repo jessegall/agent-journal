@@ -1,13 +1,17 @@
-# The journal-helper image: one program run entirely inside an admitted container (doc 14, sections 58 and 59).
-# No account, login, personal settings or build secret goes into any layer. Pin BASE to a digest when building.
+# The agent image: every agent's program runs inside one of these containers (doc 14, sections 58 and 59; doc 61
+# decision 9). No account, login, personal settings or build secret goes into any layer. Pin BASE to a digest when
+# building. bubblewrap and socat let the program sandbox its own tools and reach the host's relays; TOOLCHAIN_PACKAGES
+# names the apt packages of the project toolchains the main agent's workspace needs, none by default.
 ARG BASE=php:8.5-cli-bookworm
 FROM ${BASE}
 
 ARG CLAUDE_CODE_VERSION=2.1.323
 ARG CODEX_VERSION=0.165.0
+ARG TOOLCHAIN_PACKAGES=""
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git ca-certificates bash nodejs npm \
+    && apt-get install -y --no-install-recommends git ca-certificates bash nodejs npm bubblewrap socat \
+        ${TOOLCHAIN_PACKAGES} \
     && npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" "@openai/codex@${CODEX_VERSION}" \
     && npm cache clean --force \
     && apt-get purge -y npm && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*

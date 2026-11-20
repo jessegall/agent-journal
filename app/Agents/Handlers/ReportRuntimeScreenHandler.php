@@ -48,6 +48,7 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
 
         $report = ScreenReportData::from(json_decode($command->body, true, flags: JSON_THROW_ON_ERROR));
         $refusal = $this->refusalOf($command->hostId, $report->runtimeId);
+
         if ($refusal !== null) {
             return $this->refuse($command->hostId, $report->runtimeId, $refusal);
         }
@@ -71,6 +72,7 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
         }
 
         $second = $this->clock->now()->getTimestamp();
+
         if ((int) $this->cache->get($this->rateKey($runtimeId, $second), 0) >= self::FRAMES_PER_SECOND_LIMIT) {
             return ScreenReportRefusal::TooFast;
         }
@@ -89,6 +91,7 @@ final readonly class ReportRuntimeScreenHandler implements CommandHandler
     private function refuse(string $hostId, string $runtimeId, ScreenReportRefusal $refusal): ScreenReportAnswer
     {
         $guard = "runtime-screen-refusal:{$hostId}:{$runtimeId}:{$refusal->value}";
+
         if ($this->cache->add($guard, true, 60)) {
             $this->log->warning('A screen report was refused.', [
                 'host_id' => $hostId,

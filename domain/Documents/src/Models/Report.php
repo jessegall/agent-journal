@@ -110,6 +110,7 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     public static function lockedForClosing(int|string $reference): self
     {
         $reports = self::query()->lockForUpdate();
+
         if (is_int($reference)) {
             return $reports->where('number', $reference)->firstOr(fn () => throw ReportMissing::numbered($reference));
         }

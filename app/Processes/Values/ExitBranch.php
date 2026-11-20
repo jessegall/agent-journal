@@ -23,6 +23,7 @@ final readonly class ExitBranch
         if ($status < 0 || $status > 255) {
             throw VerificationContractInvalid::field("exits.{$status}", 'an exit status is a number from 0 to 255');
         }
+
         if (trim($requires) === '') {
             throw VerificationContractInvalid::field(
                 "exits.{$status}.requires",

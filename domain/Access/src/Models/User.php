@@ -59,7 +59,13 @@ class User extends Authenticatable implements
     /**
      * @use HasFactory<UserFactory>
      */
-    use HasFactory, HasUlids, Linkable, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory;
+
+    use HasUlids;
+    use Linkable;
+    use Notifiable;
+    use PasskeyAuthenticatable;
+    use TwoFactorAuthenticatable;
 
     // ----------[ Constructors ]----------
 

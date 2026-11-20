@@ -82,18 +82,22 @@ final class ExportsTest extends TestCase
             DeclaredExports::make()->values(TaskFinished::class),
             InvalidExports::notAValue('Tasks', TaskFinished::class, 'it is an event; export it under events'),
         ];
+
         yield 'a concrete reader under contracts' => [
             DeclaredExports::make()->contracts(VisibleTasks::class),
             InvalidExports::notAnInterface('Tasks', VisibleTasks::class),
         ];
+
         yield 'a plain value under commands' => [
             DeclaredExports::make()->commands(TaskSummary::class),
             InvalidExports::notACommand('Tasks', TaskSummary::class),
         ];
+
         yield 'an exception under values' => [
             DeclaredExports::make()->values(TaskMissing::class),
             InvalidExports::notAValue('Tasks', TaskMissing::class, 'it is an exception; export it under exceptions'),
         ];
+
         yield 'support outside Core' => [
             DeclaredExports::make()->support(TaskSummary::class),
             InvalidExports::supportOutsideCore('Tasks', TaskSummary::class),

@@ -77,7 +77,11 @@ use PhpOption\Option;
 )]
 final class Share extends Model implements Numbered, ReadableModel
 {
-    use BelongsToOneRoot, BoundedReads, HasNumber, HasUlids, Linkable;
+    use BelongsToOneRoot;
+    use BoundedReads;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share';
 

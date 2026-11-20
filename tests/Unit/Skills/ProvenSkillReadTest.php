@@ -29,8 +29,11 @@ final class ProvenSkillReadTest extends TestCase
             self::call('Skill', ['skill' => 'journal-session-skills:journal-plans']),
             ReadEvidence::ClaudeSkillTool,
         ];
+
         yield 'whole read' => [self::call('Read', ['file_path' => self::FILE]), ReadEvidence::FullFileRead];
+
         yield 'shell cat' => [self::call('Bash', ['command' => 'cat '.self::FILE]), ReadEvidence::FullFileRead];
+
         yield 'skills show' => [
             self::call('mcp__journal__skills_show', ['key' => 'journal-plans']),
             ReadEvidence::JournalShow,
@@ -43,8 +46,11 @@ final class ProvenSkillReadTest extends TestCase
     public static function nonProofs(): iterable
     {
         yield 'a listing' => [self::call('Bash', ['command' => 'ls '.dirname(self::FILE, 2)])];
+
         yield 'a partial read' => [self::call('Read', ['file_path' => self::FILE, 'limit' => 10])];
+
         yield 'another file' => [self::call('Read', ['file_path' => '/work/README.md'])];
+
         yield 'a failed read' => [
             new ToolResult('Read', ToolOutcome::Failed, new ProgramToolInput(['file_path' => self::FILE])),
         ];

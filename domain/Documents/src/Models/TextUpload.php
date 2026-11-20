@@ -32,7 +32,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['type', 'bytes', 'digest', 'expires_at'])]
 final class TextUpload extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'documents.upload';
 
@@ -100,6 +102,7 @@ final class TextUpload extends Model implements ReadableModel
     public function appendChunk(int $position, string $text, string $digest): void
     {
         $bytes = strlen($text);
+
         if ($bytes < 1 || $bytes > self::CHUNK_BYTES || ! mb_check_encoding($text, 'UTF-8')
             || ! hash_equals(hash('sha256', $text), strtolower($digest))) {
             throw UploadInvalid::forChunk();
@@ -107,6 +110,7 @@ final class TextUpload extends Model implements ReadableModel
 
         if ($position >= 0 && $position < $this->next_index) {
             $chunk = TextUploadChunk::query()->where('upload_id', $this->id)->where('position', $position)->sole();
+
             if ($chunk->text() !== $text) {
                 throw UploadChunkConflict::atPosition();
             }
@@ -169,6 +173,7 @@ final class TextUpload extends Model implements ReadableModel
     {
         $body = '';
         $chunks = TextUploadChunk::query()->where('upload_id', $this->id)->orderBy('position');
+
         foreach ($chunks->readLimit($this->next_index)->cursor() as $chunk) {
             $body .= $chunk->text();
         }

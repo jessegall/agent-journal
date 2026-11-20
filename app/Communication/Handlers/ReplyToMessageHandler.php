@@ -36,6 +36,7 @@ final readonly class ReplyToMessageHandler implements CommandHandler
     {
         $membership = $this->reading->recipientOf($command->messageId, $command->dispatchedBy());
         $original = Message::lockedById($command->messageId);
+
         if ($command->expectedStateVersion !== null && ! $original->isAtStateVersion($command->expectedStateVersion)) {
             throw MessageStateConflict::staleVersion($original->id, $command->expectedStateVersion);
         }

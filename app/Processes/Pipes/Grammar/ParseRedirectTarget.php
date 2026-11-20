@@ -32,6 +32,7 @@ final readonly class ParseRedirectTarget implements Pipe
         $cursor->advance();
         $type = $operator->redirect ?? RedirectType::Output;
         $operatorRange = $operator->range->shiftedBy($cursor->offset());
+
         if ($type === RedirectType::Close) {
             $redirect = new Redirect($operator->descriptor, $type, new Word([], $operatorRange), $operatorRange);
 
@@ -40,6 +41,7 @@ final readonly class ParseRedirectTarget implements Pipe
         $start = $operatorRange->start;
         $target = $this->target($cursor, $start);
         $range = new SourceRange($start, $target->range->end);
+
         if ($type === RedirectType::HereDocument) {
             return $this->hereDocument($toParse, $operator->descriptor, $range);
         }
@@ -77,6 +79,7 @@ final readonly class ParseRedirectTarget implements Pipe
         $hereDocument = $body->hereDocument
             ?? throw ShellGrammarStopped::invalid('A here-document has no body.', $range->start);
         $redirect = new Redirect($descriptor, RedirectType::HereDocument, $hereDocument, $range);
+
         if ($body->word === null) {
             return new RedirectParts($redirect, $toParse->nothingToRead($range));
         }

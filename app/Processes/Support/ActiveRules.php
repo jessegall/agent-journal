@@ -34,6 +34,7 @@ final readonly class ActiveRules
                 fn (ModuleRuleBundle $row): bool => $row->approves($bundle),
             ),
         ));
+
         try {
             return $this->startup->withApprovedBundles(...$approved)->withRules(...$this->projectRules());
         } catch (CommandRuleConflict $conflict) {
@@ -67,6 +68,7 @@ final readonly class ActiveRules
     {
         $known = $this->startup->declaredRules();
         $missing = [];
+
         foreach ($this->projectRules() as $rule) {
             foreach ($rule->replaces as $replaced) {
                 if (! array_any($known, fn (CommandRule $other): bool => $replaced->names($other))) {

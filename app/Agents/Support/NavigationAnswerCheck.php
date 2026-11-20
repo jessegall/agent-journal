@@ -52,6 +52,7 @@ final readonly class NavigationAnswerCheck
         $actor = ActorIdentity::of($this->actors->actor());
         $owner = ActorIdentity::of($this->admission->owner());
         $seated = $this->mainDesk->occupant()->map(fn (ActorIdentity $occupant) => $occupant->isSameAs($actor));
+
         if (! $actor->isSameAs($owner) && ! $seated->getOrElse(false)) {
             throw NavigationAnswerRefused::notYours($navigation->id);
         }

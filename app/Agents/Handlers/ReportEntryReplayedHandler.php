@@ -32,6 +32,7 @@ final readonly class ReportEntryReplayedHandler implements CommandHandler
         );
 
         $entry->recordReplay($command->operationKey, $runtime->program_build);
+
         if ($runtime->hold_reason === HoldReason::NavigationNeeded) {
             $runtime->holdFor(HoldReason::None);
         }

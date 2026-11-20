@@ -23,6 +23,7 @@ final readonly class SkipKeywordFunctionHeader implements Pipe
     {
         $cursor = $toParse->cursor();
         $hasParentheses = $cursor->peekIs(2, TokenType::OpenParen);
+
         if ($hasParentheses && ! $cursor->peekIs(3, TokenType::CloseParen)) {
             throw ShellGrammarStopped::invalid('A function name is followed by arguments.', $cursor->position());
         }

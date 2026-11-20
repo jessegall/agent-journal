@@ -55,9 +55,11 @@ final class PlanBuilder
     {
         $node = $this->tree->node($nodeId);
         $runnable = $this->runnableChildren($node);
+
         if ($node->type === NodeType::Sequence && count($runnable) === 1) {
             return $this->step($runnable[0]->id, $context);
         }
+
         if (StepType::isControl($node->type)) {
             $control = StepType::ofControl($node->type);
             $children = array_map(
@@ -72,6 +74,7 @@ final class PlanBuilder
                 ['type' => $control, 'node' => $node->id, 'context' => $context, 'children' => $children],
             );
         }
+
         if ($node->type !== NodeType::SimpleCommand) {
             throw ExecutionPlanRefused::unsupportedNode($node->type->value, $node->id);
         }
@@ -116,6 +119,7 @@ final class PlanBuilder
         );
         $assignments = $this->assignments($node, $substitutions);
         $program = $argv === [] ? null : $argv[0]->literal();
+
         if ($program !== null && array_key_exists(basename($program), self::SHELLS)) {
             return $this->shell($node, $context, $argv, $redirects, $children, self::SHELLS[basename($program)]);
         }
@@ -150,11 +154,13 @@ final class PlanBuilder
     ): PlanStep {
         $literals = array_map(fn (PlanWord $word) => $word->literal(), $argv);
         $source = array_search('-c', $literals, true) === 1 ? ($literals[2] ?? null) : null;
+
         if ($source === null || in_array(null, $literals, true)) {
             throw ExecutionPlanRefused::unsupportedNode('shell without a literal -c source', $node->id);
         }
         $arguments = array_values(array_filter(array_slice($literals, 3), 'is_string'));
         $inner = $this->syntax->parse($source, $dialect);
+
         if ($inner->outcome !== ParseOutcome::Complete) {
             throw ExecutionPlanRefused::incomplete();
         }
@@ -179,6 +185,7 @@ final class PlanBuilder
     private function assignments(ShellNode $node, array $substitutions): array
     {
         $assignments = [];
+
         foreach ($this->tree->children($node->id) as $child) {
             if ($child->type !== NodeType::Assignment) {
                 continue;
@@ -186,6 +193,7 @@ final class PlanBuilder
             $word = $this->planWord($child->words[0], $node, $substitutions);
             $text = (string) $word->pieces[0];
             $name = strstr($text, '=', true);
+
             if ($name === false) {
                 throw ExecutionPlanRefused::dynamicWord($child->id);
             }
@@ -204,6 +212,7 @@ final class PlanBuilder
     private function planWord(Word $word, ShellNode $node, array $substitutions): PlanWord
     {
         $pieces = [];
+
         foreach ($word->boundTo($this->positional)->segments as $segment) {
             if ($segment->type !== WordSegmentType::Expansion) {
                 $pieces[] = $segment->text;
@@ -216,6 +225,7 @@ final class PlanBuilder
                     fn (ShellNode $candidate) => $candidate->range->start === $segment->range->start,
                 ),
             );
+
             if ($substitution === []) {
                 throw ExecutionPlanRefused::dynamicWord($node->id);
             }

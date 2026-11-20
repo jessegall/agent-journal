@@ -42,6 +42,7 @@ final readonly class DeclarativeReader
     {
         $builder = new CheckpointBuilder($from, $this->revision);
         $deadline = hrtime(true) + $this->definition->millisecondBudget * 1_000_000;
+
         foreach ($frames as $frame) {
             if (hrtime(true) > $deadline) {
                 $builder->problemOfWholeOutput(ProblemCode::ReaderFailed, 'The reader ran past its time budget.');
@@ -57,9 +58,11 @@ final readonly class DeclarativeReader
     public function finish(ReaderCheckpoint $at, PartEnd $end): ReaderAssessment
     {
         $builder = new CheckpointBuilder($at, $this->revision);
+
         foreach ($builder->streamsWithPending() as $stream) {
             $this->readLastLine($builder, OutputStream::from($stream));
         }
+
         if (! $end->hasEnded()) {
             $builder->problemOfWholeOutput(
                 ProblemCode::OutputIncomplete,
@@ -94,9 +97,11 @@ final readonly class DeclarativeReader
             return;
         }
         $expected = $builder->offsetOf($frame->stream);
+
         if ($frame->end() <= $expected) {
             return;
         }
+
         if ($frame->offset > $expected) {
             $explanation = 'Bytes are missing between two committed chunks.';
             $builder->problem(ProblemCode::OutputIncomplete, $frame->stream, $expected, $frame->offset, $explanation);
@@ -113,11 +118,13 @@ final readonly class DeclarativeReader
     private function readLines(CheckpointBuilder $builder, OutputStream $stream, int $start, string $bytes): void
     {
         $lineStart = 0;
+
         while (($newline = strpos($bytes, "\n", $lineStart)) !== false) {
             $this->readLine($builder, $stream, $start + $lineStart, substr($bytes, $lineStart, $newline - $lineStart));
             $lineStart = $newline + 1;
         }
         $rest = substr($bytes, $lineStart);
+
         if (strlen($rest) > $this->definition->maxRecordBytes) {
             $explanation = 'A record is longer than the reader allows.';
             $builder->problem(
@@ -140,6 +147,7 @@ final readonly class DeclarativeReader
         $rest = $builder->pendingOf($stream);
         $start = $builder->offsetOf($stream) - strlen($rest);
         $builder->holdUntilMore($stream, '', $builder->offsetOf($stream));
+
         if ($this->contract->framing !== FramingType::Lines) {
             $explanation = 'The output ended inside a record.';
             $builder->problem(ProblemCode::OutputIncomplete, $stream, $start, $start + strlen($rest), $explanation);
@@ -152,6 +160,7 @@ final readonly class DeclarativeReader
     private function readLine(CheckpointBuilder $builder, OutputStream $stream, int $start, string $bytes): void
     {
         $end = $start + strlen($bytes);
+
         if (strlen($bytes) > $this->definition->maxRecordBytes) {
             $builder->problem(
                 ProblemCode::RecordLimit,
@@ -163,16 +172,19 @@ final readonly class DeclarativeReader
 
             return;
         }
+
         if ($this->contract->encoding === OutputEncoding::Utf8 && ! mb_check_encoding($bytes, 'UTF-8')) {
             $builder->problem(ProblemCode::OutputEncoding, $stream, $start, $end, 'The bytes are not valid UTF-8.');
 
             return;
         }
         $line = $this->lineOf($this->normalizer->normalize($bytes));
+
         if (trim($line) === '') {
             return;
         }
         $rule = $this->normalizer->hasUnsupportedControl($line) ? null : $this->definition->ruleFor($line);
+
         if ($rule === null) {
             $builder->problem(
                 ProblemCode::OutputUnrecognized,
@@ -197,10 +209,12 @@ final readonly class DeclarativeReader
             return $line;
         }
         $fields = json_decode($line, true);
+
         if (! is_array($fields)) {
             return "\x01".$line;
         }
         $pairs = [];
+
         foreach ($fields as $key => $configuredField) {
             $pairs[] = $key.'='.(is_scalar($configuredField) ? var_export($configuredField, true) : 'object');
         }
@@ -217,6 +231,7 @@ final readonly class DeclarativeReader
             $builder->problemOfWholeOutput(ProblemCode::SummaryMissing, 'The output has no terminal summary.');
         }
         $distinct = array_unique(array_map(fn (OutputRecord $summary) => serialize($summary->captures), $summaries));
+
         if (count($distinct) > 1) {
             $builder->problemOfWholeOutput(ProblemCode::SummaryConflict, 'The output has summaries that disagree.');
         }
@@ -233,15 +248,19 @@ final readonly class DeclarativeReader
             return [];
         }
         $counts = [];
+
         foreach ([...$this->definition->countFields, $this->definition->totalField] as $field) {
             $count = $field === null ? null : $summary->count($field);
+
             if ($field !== null && $count !== null) {
                 $counts[$field] = $count;
             }
         }
         $total = $this->definition->totalField;
+
         if ($total !== null && isset($counts[$total])) {
             $parts = array_sum(array_intersect_key($counts, array_flip($this->definition->countFields)));
+
             if ($parts !== $counts[$total]) {
                 $builder->problemOfWholeOutput(
                     ProblemCode::CountsInvalid,
@@ -259,15 +278,18 @@ final readonly class DeclarativeReader
         OutputRecord|null $summary,
     ): ReadProgress {
         $records = $checkpoint->recordsOf(RecordRole::Progress);
+
         if ($records === []) {
             return ReadProgress::none();
         }
         $last = $records[array_key_last($records)];
         $progress = new ReadProgress($last->count('completed') ?? count($records), $last->count('total'));
+
         if ($progress->isPastItsTotal()) {
             $builder->problemOfWholeOutput(ProblemCode::CountsInvalid, 'Progress counts more steps than its total.');
         }
         $summaryTotal = $this->definition->totalField === null ? null : $summary?->count($this->definition->totalField);
+
         if ($progress->total !== null && $summaryTotal !== null && $progress->total !== $summaryTotal) {
             $builder->problemOfWholeOutput(
                 ProblemCode::ProgressTotalStale,

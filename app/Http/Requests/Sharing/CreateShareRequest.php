@@ -16,7 +16,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class CreateShareRequest extends FormRequest
 {
-    use ReadsConfirmedPreview, ReadsIdempotencyKey;
+    use ReadsConfirmedPreview;
+    use ReadsIdempotencyKey;
 
     /**
      * @return array<string, list<string>>

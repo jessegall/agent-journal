@@ -43,6 +43,7 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId)->load('session.agent');
         $request = $this->stalledScript($command, $runtime);
         $raisedBefore = NavigationRequest::raisedForOperation($runtime->id, $command->operationKey);
+
         if ($raisedBefore !== null) {
             return NavigationRaiseAnswer::opened($raisedBefore->id);
         }
@@ -73,9 +74,11 @@ final readonly class RaiseNavigationHandler implements CommandHandler
             ->where('agent_runtime_id', $runtime->id)
             ->lockForUpdate()
             ->firstOr(fn () => throw NavigationRaiseRefused::notOfRuntime($command->requestId, $runtime->id));
+
         if (! $request->isKeyScript()) {
             throw NavigationRaiseRefused::notAKeyScript($request->id);
         }
+
         if ($command->attempt !== $request->attempt_version) {
             throw HostReportRefused::staleAttempt($request->id, $command->attempt, $request->attempt_version);
         }

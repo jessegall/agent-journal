@@ -17,6 +17,7 @@ final readonly class NoteNegation implements Pipe
     public function handle(NodeToParse $toParse): PipedCommandsToParse
     {
         $cursor = $toParse->cursor();
+
         if (! $cursor->is(TokenType::Bang)) {
             return new PipedCommandsToParse($toParse, null);
         }

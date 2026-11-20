@@ -55,11 +55,13 @@ final readonly class PublicationLists
     private function position(string $tool, ToolArguments $arguments, AttentionFilter|null $state = null): Continuation
     {
         $cursor = $arguments->continuation();
+
         if ($cursor !== null) {
             return $this->continuations->open($cursor, $tool, '');
         }
 
         $search = $arguments->textOr('search', '');
+
         if (mb_strlen($search) > 200) {
             throw ToolArgumentInvalid::for('search', 'at most 200 characters');
         }

@@ -28,8 +28,10 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 #[Fillable(['phase_id', 'task_id', 'position'])]
 final class PhaseTask extends Pivot implements ReadableModel
 {
-    use BoundedReads, CountsPivotLoads;
-    use HasUlids, Linkable;
+    use BoundedReads;
+    use CountsPivotLoads;
+    use HasUlids;
+    use Linkable;
 
     public $timestamps = false;
 

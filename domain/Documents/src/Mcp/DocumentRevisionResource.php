@@ -40,6 +40,7 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
         $arguments = $this->pathArguments($request, ['id', 'revision']);
         $id = $arguments->recordReference('id');
         $revision = $arguments->recordReference('revision');
+
         if (! is_int($revision)) {
             throw ToolArgumentInvalid::for('revision', 'a positive revision number');
         }

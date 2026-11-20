@@ -19,6 +19,7 @@ final class MarkdownCheck
         }
 
         $problems = self::problemLines(explode("\n", $body->text));
+
         if ($problems !== []) {
             throw DraftMarkdownInvalid::onLines($problems);
         }
@@ -36,6 +37,7 @@ final class MarkdownCheck
         $fence = '';
         $headingLevel = 0;
         $columns = 0;
+
         foreach ($lines as $index => $line) {
             if ($fence !== '') {
                 if (str_starts_with(ltrim($line), $fence) && trim($line, " `~\t") === '') {
@@ -44,6 +46,7 @@ final class MarkdownCheck
 
                 continue;
             }
+
             if (preg_match('/^ {0,3}(`{3,}|~{3,})/', $line, $marker) === 1) {
                 $fence = $marker[1];
                 $columns = 0;
@@ -55,11 +58,14 @@ final class MarkdownCheck
                 $problems[] = $index + 1;
             }
             $next = $lines[$index + 1] ?? '';
+
             if (self::hasTableCells($line, $next, $columns)) {
                 $cells = count(self::cells($line));
+
                 if (! self::validTableLine($cells, $next, $columns)) {
                     $problems[] = $index + 1;
                 }
+
                 if ($columns === 0 && self::isTableSeparator($next)) {
                     $columns = $cells;
                 }
@@ -68,8 +74,10 @@ final class MarkdownCheck
             }
 
             $columns = 0;
+
             if (preg_match('/^ {0,3}(#{1,6})(.*)$/', $line, $heading) === 1) {
                 $level = strlen($heading[1]);
+
                 if ($level > $headingLevel + 1 || ($heading[2] !== '' && ! ctype_space($heading[2][0]))) {
                     $problems[] = $index + 1;
                 }

@@ -71,7 +71,8 @@ use Illuminate\Support\Carbon;
 final class CommandReceipt extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.command-receipt';
 

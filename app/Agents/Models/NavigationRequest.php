@@ -133,6 +133,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         CarbonImmutable $expiresAt,
     ): self {
         $raisedBefore = self::raisedForOperation($request->agent_runtime_id, $operationKey);
+
         if ($raisedBefore !== null) {
             return $raisedBefore;
         }
@@ -361,6 +362,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
             ->lockForUpdate()
             ->readLimit(20)
             ->get();
+
         foreach ($queued as $round) {
             $round->cancel();
         }

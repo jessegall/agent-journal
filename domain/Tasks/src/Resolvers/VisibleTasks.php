@@ -59,6 +59,7 @@ final readonly class VisibleTasks implements TaskResolver
     private function assertAllFound(array $requestedTaskIds, array $visibleTaskIds): void
     {
         $unavailableTaskIds = array_values(array_diff($requestedTaskIds, $visibleTaskIds));
+
         if ($unavailableTaskIds !== []) {
             throw TaskMissing::forId($unavailableTaskIds[0]);
         }

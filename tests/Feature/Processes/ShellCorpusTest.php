@@ -36,6 +36,7 @@ final class ShellCorpusTest extends TestCase
         $manifest = $this->manifest();
 
         $this->assertSame(1, $manifest->schemaVersion);
+
         foreach ($manifest->fixtures as $name => $hash) {
             $this->assertSame(
                 $hash,
@@ -61,6 +62,7 @@ final class ShellCorpusTest extends TestCase
             $tree = $syntax->parse($case->source, $case->dialect);
 
             $actual = ['outcome' => $tree->outcome->value];
+
             if ($tree->outcome === ParseOutcome::Complete) {
                 $actual['parts'] = array_map(
                     fn (ShellNode $node) => ['start' => $node->range->start, 'end' => $node->range->end],
@@ -68,6 +70,7 @@ final class ShellCorpusTest extends TestCase
                 );
             }
             $wanted = ['outcome' => $expected->outcome];
+
             if ($expected->isComplete()) {
                 $wanted['parts'] = $expected->sortedParts();
             }

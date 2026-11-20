@@ -61,6 +61,7 @@ final class DomainListenerGateTest extends TestCase
 
         $owners = [];
         $coreListeners = [];
+
         foreach ($gated as $listeners) {
             foreach ($listeners as $listener) {
                 if ($listener instanceof AvailableListener) {

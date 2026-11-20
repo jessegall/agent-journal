@@ -33,6 +33,7 @@ final readonly class RejectRuleProposalHandler implements CommandHandler
             ->sole();
         $proposal->reject();
         $request = $proposal->commandRequest()->lockForUpdate()->first();
+
         if ($request !== null) {
             $request->reject();
         }

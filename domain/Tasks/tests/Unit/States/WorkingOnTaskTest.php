@@ -26,8 +26,11 @@ final class WorkingOnTaskTest extends TestCase
     public static function settledStates(): iterable
     {
         yield 'finished' => [TaskState::Finished];
+
         yield 'blocked' => [TaskState::Blocked];
+
         yield 'cancelled' => [TaskState::Cancelled];
+
         yield 'released to open' => [TaskState::Open];
     }
 

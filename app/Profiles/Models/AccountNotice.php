@@ -32,7 +32,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['program', 'reason'])]
 final class AccountNotice extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

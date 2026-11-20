@@ -61,9 +61,11 @@ use Illuminate\Support\Str;
 #[Fillable(['program', 'method', 'actor_type', 'actor_id'])]
 final class SignInAttempt extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
     use HasActorColumns;
+    use HasUlids;
     use KeepsCleanupTries;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.sign-in-attempt';
 

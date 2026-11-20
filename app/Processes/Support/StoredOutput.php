@@ -96,6 +96,7 @@ final readonly class StoredOutput
     {
         $escape = fn (array $byte): string => sprintf('\x%02X', ord($byte[0]));
         $escaped = (string) preg_replace_callback('/[\x00-\x08\x0B-\x1F\x7F]/', $escape, $bytes);
+
         if (! mb_check_encoding($escaped, 'UTF-8')) {
             $escaped = (string) preg_replace_callback('/[\x80-\xFF]/', $escape, $escaped);
         }

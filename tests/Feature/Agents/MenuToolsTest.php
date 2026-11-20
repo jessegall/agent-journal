@@ -84,6 +84,7 @@ final class MenuToolsTest extends TestCase
         $answer = $this->callMcpTool($this->caller, 'menu_list')->json('result.structuredContent');
         $total = $answer['total'];
         $listed = array_column($answer['cards'], 'id');
+
         for ($read = 1; ($answer['next_actions'] ?? []) !== [] && $read < 10; $read++) {
             $next = $answer['next_actions'][0];
             $answer = $this->callMcpTool(

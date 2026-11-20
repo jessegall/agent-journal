@@ -147,6 +147,7 @@ final readonly class CompileContext
         }
 
         $object = $found->get();
+
         if (! isset($object->members[$condition->member])) {
             throw ScriptSyntaxError::at(DiagnosticCode::UnknownMember, $range, 'Unknown boolean member.');
         }

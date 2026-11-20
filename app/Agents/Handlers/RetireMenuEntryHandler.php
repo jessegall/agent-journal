@@ -25,6 +25,7 @@ final readonly class RetireMenuEntryHandler implements CommandHandler
             ->whereKey($command->entryId)
             ->lockForUpdate()
             ->firstOr(fn () => throw MenuEntryRefused::notFound($command->entryId));
+
         if ($entry->state !== $command->expectedState) {
             throw MenuEntryRefused::changedSinceRead($entry->id, $command->expectedState, $entry->state);
         }

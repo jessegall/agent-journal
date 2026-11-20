@@ -66,7 +66,8 @@ use Illuminate\Support\Carbon;
 final class RuleRevision extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
     use NamedByRuleScope;
 
     public const string CREATED_AT = 'approved_at';
@@ -106,9 +107,11 @@ final class RuleRevision extends Model implements ReadableModel
         array $scripts,
     ): self {
         $rule = $proposed->payload;
+
         if ($rule->hasContract() && count($readers) !== 1) {
             throw RuleRevisionInvalid::readerMissing($rule->id);
         }
+
         if (! $rule->hasContract() && $readers !== []) {
             throw RuleRevisionInvalid::readerWithoutContract($rule->id);
         }

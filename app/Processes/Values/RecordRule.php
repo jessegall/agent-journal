@@ -60,6 +60,7 @@ final readonly class RecordRule
     {
         $parts = preg_split('/(\{[^{}]*\})/', $pattern, flags: PREG_SPLIT_DELIM_CAPTURE) ?: [];
         $expression = '';
+
         foreach ($parts as $index => $part) {
             $expression .= $index % 2 === 0 ? preg_quote($part, '/') : self::placeholder($part);
         }

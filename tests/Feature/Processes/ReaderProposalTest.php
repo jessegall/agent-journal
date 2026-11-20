@@ -134,6 +134,7 @@ final class ReaderProposalTest extends TestCase
     private function definition(bool $withSummary): array
     {
         $rules = [['role' => 'outcome', 'pattern' => '^ok {name:rest}$']];
+
         if ($withSummary) {
             $rules[] = ['role' => 'summary', 'pattern' => '^done {passed:int} {failed:int}$'];
         }

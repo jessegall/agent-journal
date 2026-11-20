@@ -36,6 +36,7 @@ final class RulesServiceProvider extends ServiceProvider
     {
         $reads->declare('rules_read', ReadEntitlement::grant(RulePolicy::class));
         $reads->declare('rules_list', ReadEntitlement::grant(RulePolicy::class));
+
         // A missing rule is not found; a rule no longer proposed is a review error on the review buttons.
         if ($exceptions instanceof Handler) {
             $exceptions->map(

@@ -30,7 +30,8 @@ use Illuminate\Support\Carbon;
 final class StartBypass extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

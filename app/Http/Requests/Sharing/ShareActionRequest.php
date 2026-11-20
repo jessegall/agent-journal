@@ -13,7 +13,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 final class ShareActionRequest extends FormRequest
 {
-    use ReadsIdempotencyKey, ReadsShareId;
+    use ReadsIdempotencyKey;
+    use ReadsShareId;
 
     /**
      * @return array<string, list<string>>

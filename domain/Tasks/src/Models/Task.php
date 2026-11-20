@@ -85,12 +85,17 @@ use PhpOption\Some;
 ])]
 final class Task extends Model implements Assignable, Numbered, ReadableModel
 {
+    use AssignableListing;
+    use BoundedReads;
+
     /**
      * @use HasFactory<TaskFactory>
      */
-    use AssignableListing, HasFactory, HasNumber, HasUlids, Linkable;
+    use HasFactory;
 
-    use BoundedReads;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     /**
      * The stable name links and assignments use for a task.

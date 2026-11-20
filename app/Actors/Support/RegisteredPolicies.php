@@ -45,20 +45,26 @@ final class RegisteredPolicies implements PolicyCatalogue
     {
         $model = $registration->model();
         $modelOwner = $this->modelOwners->find($model)->getOrElse($owner);
+
         if ($modelOwner !== $owner) {
             throw PolicyRegistrationConflict::forModel($model, $modelOwner, $owner);
         }
+
         if ($this->byPolicy->has($registration->policy)) {
             [$policyOwner] = $this->byPolicy->get($registration->policy);
+
             throw PolicyRegistrationConflict::forPolicy($registration->policy, $policyOwner, $owner);
         }
+
         if ($registration->isRecord() && $this->recordPolicies->has($model)) {
             $recordPolicy = $this->recordPolicies->get($model);
+
             throw PolicyRegistrationConflict::forRecordPolicy($model, $recordPolicy, $registration->policy);
         }
 
         $this->modelOwners->put($model, $owner);
         $this->byPolicy->put($registration->policy, [$owner, $registration]);
+
         if ($registration->isRecord()) {
             $this->recordPolicies->put($model, $registration->policy);
         }

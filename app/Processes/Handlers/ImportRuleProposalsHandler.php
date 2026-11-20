@@ -38,6 +38,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
         $actor = ActorIdentity::of($command->dispatchedBy());
         $projectKey = $this->projects->current();
         $declared = $this->declarations->read($command->declarations);
+
         foreach ($declared as $declaration) {
             $this->checks->check($declaration->proposed->rule, false);
         }

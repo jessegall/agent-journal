@@ -48,16 +48,21 @@ final class JournalCheckTest extends TestCase
             fn (self $test) => $test->write('notes.md', 'changed'),
             'Changed and not committed: notes.md',
         ];
+
         yield 'an untracked file' => [fn (self $test) => $test->write('new.md', 'new'), 'Untracked: new.md'];
+
         yield 'a staged change' => [function (self $test): void {
             $test->write('notes.md', 'staged');
             $test->git('add', 'notes.md');
         }, 'Staged but not committed: notes.md'];
+
         yield 'a skip-worktree file' => [
             fn (self $test) => $test->git('update-index', '--skip-worktree', 'notes.md'),
             'Marked skip-worktree or assume-unchanged: notes.md',
         ];
+
         yield 'a detached head' => [fn (self $test) => $test->git('checkout', '--detach'), 'HEAD is detached'];
+
         yield 'a dirty submodule' => [function (self $test): void {
             $inner = $test->newRepository();
             $test->git('-c', 'protocol.file.allow=always', 'submodule', 'add', $inner, 'inner');

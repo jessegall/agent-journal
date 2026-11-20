@@ -31,6 +31,7 @@ final readonly class ReaderDefinition
         if ($maxRecordBytes < 1) {
             throw ReaderDefinitionInvalid::limit('maxRecordBytes', $maxRecordBytes);
         }
+
         if ($millisecondBudget < 1) {
             throw ReaderDefinitionInvalid::limit('millisecondBudget', $millisecondBudget);
         }
@@ -81,6 +82,7 @@ final readonly class ReaderDefinition
     public static function fromArray(array $fields): self
     {
         $rules = [];
+
         foreach (self::listOf($fields, 'rules') as $rule) {
             if (! is_array($rule) || ! is_string($rule['role'] ?? null) || ! is_string($rule['pattern'] ?? null)) {
                 throw ReaderDefinitionInvalid::field('rules');
@@ -107,6 +109,7 @@ final readonly class ReaderDefinition
     private static function listOf(array $fields, string $key): array
     {
         $field = $fields[$key] ?? [];
+
         if (! is_array($field) || ! array_is_list($field)) {
             throw ReaderDefinitionInvalid::field($key);
         }
@@ -122,6 +125,7 @@ final readonly class ReaderDefinition
     private static function nameOf(array $fields, string $key): string|null
     {
         $field = $fields[$key] ?? null;
+
         if ($field !== null && ! is_string($field)) {
             throw ReaderDefinitionInvalid::field($key);
         }

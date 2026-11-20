@@ -49,7 +49,8 @@ use Tests\TestCase;
  */
 final class GatewayDefaultAndDisableTest extends TestCase
 {
-    use RefreshHookDatabase, RegistersShareDomains;
+    use RefreshHookDatabase;
+    use RegistersShareDomains;
     use RunsTrustedCommands;
     use StartsAgentRequests;
 

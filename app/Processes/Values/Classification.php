@@ -151,6 +151,7 @@ final readonly class Classification
     private function isWithin(int $nodeId, int $ancestorId): bool
     {
         $node = $this->tree->node($nodeId);
+
         while ($node->id !== $ancestorId && ! $node->isRoot) {
             $node = $this->tree->node($node->parent);
         }

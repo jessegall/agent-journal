@@ -27,6 +27,7 @@ final readonly class RuntimeScreen
     public function put(string $runtimeId, ScreenFrameData $frame, CarbonImmutable $receivedAt): void
     {
         $stored = $this->latest($runtimeId);
+
         if ($stored !== null && ! $frame->supersedes($stored->frame)) {
             return;
         }

@@ -32,7 +32,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['actor_type', 'actor_id', 'request_id', 'input_digest', 'skill_id', 'skill_revision_id'])]
 final class SkillRequest extends Model implements ReadableModel
 {
-    use BoundedReads, HasActorColumns, HasUlids;
+    use BoundedReads;
+    use HasActorColumns;
+    use HasUlids;
     use Linkable;
 
     // ----------[ Constructors ]----------

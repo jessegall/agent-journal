@@ -53,7 +53,8 @@ use Illuminate\Support\Carbon;
 final class ResultReceipt extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     public const string CREATED_AT = 'published_at';
 

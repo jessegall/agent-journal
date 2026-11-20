@@ -25,6 +25,7 @@ final readonly class ExitPolicy
     public static function of(ExitBranch ...$branches): self
     {
         $statuses = array_map(fn (ExitBranch $branch): int => $branch->status, $branches);
+
         if (count($statuses) !== count(array_unique($statuses))) {
             throw VerificationContractInvalid::field('exits', 'each exit status is listed once');
         }

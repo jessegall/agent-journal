@@ -28,6 +28,7 @@ final class FollowingSequenceTest extends TestCase
     public static function settledStates(): iterable
     {
         yield 'finished' => [SequenceRunState::Finished];
+
         yield 'cancelled' => [SequenceRunState::Cancelled];
     }
 

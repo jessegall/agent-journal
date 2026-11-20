@@ -42,7 +42,9 @@ use PhpOption\Option;
 #[Fillable(['type', 'run_id', 'lease_token', 'lease_ends_at', 'outcome_code'])]
 final class ShareGatewayOperation extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.share-gateway-operation';
 

@@ -106,6 +106,7 @@ final class PipelineRunner implements PipelineRunnerContract
 
         return function (object $input) use ($runs): object {
             $stepInput = $input;
+
             foreach ($runs as $run) {
                 $stepInput = $run($stepInput);
             }

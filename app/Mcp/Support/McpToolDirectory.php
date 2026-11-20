@@ -29,6 +29,7 @@ final readonly class McpToolDirectory
 
         foreach ($files as $file) {
             $class = $names->classOf((string) $file->getRealPath());
+
             if (! is_subclass_of($class, JournalTool::class) || new ReflectionClass($class)->isAbstract()) {
                 continue;
             }

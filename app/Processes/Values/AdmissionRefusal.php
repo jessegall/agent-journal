@@ -45,6 +45,7 @@ final readonly class AdmissionRefusal
     public function message(): string
     {
         $message = "{$this->code->value}: {$this->reason} ".self::NOTICE." Correction: {$this->correction}";
+
         if ($this->requestId === '') {
             return $message;
         }

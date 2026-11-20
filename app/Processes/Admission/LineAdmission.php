@@ -79,14 +79,17 @@ final readonly class LineAdmission implements ShellAdmission
         $actor = ActorIdentity::of($this->actors->actor());
         $tree = $this->syntax->parse($line, $dialect);
         $earlier = ProcessRun::query()->acrossActors()->where('admission_id', $requestKey)->first();
+
         if ($earlier !== null) {
             return $this->repeated($earlier, $tree, $line, $actor);
         }
+
         if ($tree->outcome !== ParseOutcome::Complete) {
             $reason = $tree->diagnostic === null ? 'The line could not be read completely.' : $tree->diagnostic->reason;
 
             return $this->refused(AdmissionRefusalCode::ofSyntax($tree->outcome), $tree, $reason, 'Rewrite the line.');
         }
+
         try {
             $classification = $this->container->make(CommandClassifier::class)->classify($tree, $context);
             $refusal = $this->firstRefusal($tree, $classification, $context, $actor);
@@ -95,6 +98,7 @@ final readonly class LineAdmission implements ShellAdmission
         } catch (CommandRuleConflict $conflict) {
             return $this->failed(AdmissionRefusalCode::RuleConflict, $tree, $conflict);
         }
+
         if ($refusal !== null) {
             return Admission::refused($refusal);
         }
@@ -124,6 +128,7 @@ final readonly class LineAdmission implements ShellAdmission
                 return $this->held($unknown, $part, $tree, $context, RequestHoldReason::UnknownCommand);
             }
         }
+
         if (! $this->outputs->check($classification)->isAllowed()) {
             $correction = 'Run it unpiped and read its stored output.';
 
@@ -135,18 +140,22 @@ final readonly class LineAdmission implements ShellAdmission
             );
         }
         $permissions = $this->permissions->forActor($actor);
+
         foreach ($classification->parts as $part) {
             $refusal = $this->permissionRefusal($permissions, $tree, $classification, $part);
+
             if ($refusal !== null) {
                 return $refusal;
             }
         }
         $timing = $classification->hasVerification() ? $this->timing->forCaller() : null;
+
         if ($timing !== null && ! $timing->isAllowed()) {
             $correction = 'Run it at the end of the phase.';
 
             return $this->refusal(AdmissionRefusalCode::PhaseTiming, $tree, $timing->reason(), $correction);
         }
+
         foreach ($classification->parts as $part) {
             if ($part->outputRequirement() === OutputRequirement::Full && ! $this->hasApprovedReader($part)) {
                 $reason = 'No proven reader is approved.';
@@ -155,6 +164,7 @@ final readonly class LineAdmission implements ShellAdmission
                 return $this->held($refusal, $part, $tree, $context, RequestHoldReason::ReaderRequired);
             }
         }
+
         if (! $this->capacity->hasRoom()) {
             $correction = 'Free space on the output disk, then run it again.';
 
@@ -165,6 +175,7 @@ final readonly class LineAdmission implements ShellAdmission
                 $correction,
             );
         }
+
         if (! $this->runner->isOn()) {
             $correction = 'Use a host with its runner on.';
 
@@ -197,6 +208,7 @@ final readonly class LineAdmission implements ShellAdmission
     ): AdmissionRefusal|null {
         $argv = $classification->argvOf($part);
         $classes = $classification->classesOf($part);
+
         if ($permissions->admits($classes, $argv)) {
             return null;
         }
@@ -280,6 +292,7 @@ final readonly class LineAdmission implements ShellAdmission
 
             return $this->refused(AdmissionRefusalCode::RuleRevisionChanged, $tree, $reason, 'Use a new key.');
         }
+
         if ($earlier->isStale()) {
             return $this->refused(
                 AdmissionRefusalCode::RuleRevisionChanged,

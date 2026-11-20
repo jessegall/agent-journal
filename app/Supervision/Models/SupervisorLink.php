@@ -26,7 +26,10 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['routes', 'versions'])]
 final class SupervisorLink extends Model implements ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids, Linkable;
+    use BelongsToOneActor;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.supervisor-link';
 

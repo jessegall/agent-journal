@@ -51,8 +51,11 @@ use PhpOption\Option;
 #[Fillable(['version', 'pending_target', 'open', 'outcome', 'late_answer'])]
 final class Ask extends Model implements Assignable, ReadableModel
 {
-    use BelongsToOneActor, BoundedReads, HasUlids, Linkable;
+    use BelongsToOneActor;
+    use BoundedReads;
     use HasActorColumns;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.ask';
 

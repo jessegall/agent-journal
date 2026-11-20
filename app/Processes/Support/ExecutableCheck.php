@@ -22,6 +22,7 @@ final readonly class ExecutableCheck
         ExecutionContext $context,
     ): ExecutableVerdict {
         $resolved = $this->resolvedPath($program, $context);
+
         if ($resolved === '') {
             return new ExecutableVerdict(
                 false,
@@ -30,9 +31,11 @@ final readonly class ExecutableCheck
                 "The trusted context does not say where {$program->family} resolves to.",
             );
         }
+
         if ($binding->trustsContent()) {
             return $this->verifyContent($program, $binding, $context, $resolved);
         }
+
         if (! in_array(dirname($resolved), $binding->locations, true)) {
             return new ExecutableVerdict(
                 false,
@@ -58,6 +61,7 @@ final readonly class ExecutableCheck
     ): ExecutableVerdict {
         $root = rtrim($context->projectRoot, '/').'/';
         $relative = str_starts_with($resolved, $root) ? substr($resolved, strlen($root)) : $resolved;
+
         if (! in_array($relative, $binding->locations, true)) {
             return new ExecutableVerdict(
                 false,
@@ -67,6 +71,7 @@ final readonly class ExecutableCheck
             );
         }
         $digest = is_file($resolved) ? hash_file('sha256', $resolved) : false;
+
         if ($digest !== $binding->contentDigest) {
             return new ExecutableVerdict(
                 false,

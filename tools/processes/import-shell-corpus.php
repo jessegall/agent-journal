@@ -117,12 +117,14 @@ function main(array $arguments): void
 
     $cases = new CaseSet();
     $splitterLines = readJsonLines($sources['splitter_lines.jsonl']);
+
     foreach ($splitterLines as $index => $line) {
         $source = stringField($line, 'line', "splitter line {$index}");
         $cases->add($source, DIALECT, ['type' => 'splitter-line', 'index' => $index], ['splitter_parts' => $line['parts'] ?? null]);
     }
 
     $corrections = readJson($sources['splitter_corrections.json']);
+
     foreach (listOf($corrections, 'splitter_corrections.json') as $index => $correction) {
         $source = stringField($correction, 'line', "correction {$index}");
         $cases->add($source, DIALECT, ['type' => 'splitter-correction', 'index' => $index], ['corrected_parts' => $correction['parts'] ?? null, 'reason' => $correction['reason'] ?? null]);
@@ -132,15 +134,18 @@ function main(array $arguments): void
     $shapes = listOf($shapesFixture['forms'] ?? fail('generated_forms.json has no shapes'), 'shapes');
     $chains = listOf($shapesFixture['chains'] ?? fail('generated_forms.json has no chains'), 'chains');
     $shapeRows = [];
+
     foreach ($shapes as $index => $shape) {
         $text = stringField($shape, 'form', "shape {$index}");
         $shapeId = 'shape-'.substr(hash('sha256', $text), 0, 12);
         $shapeRows[] = ['id' => $shapeId, 'program' => stringField($shape, 'program', "shape {$index}"), 'subcommand' => stringField($shape, 'subcommand', "shape {$index}"), 'text' => $text];
+
         foreach (['kept' => true, 'dropped' => false] as $optional => $keep) {
             $cases->add(filledShape($text, $keep), DIALECT, ['type' => 'shape', 'id' => $shapeId, 'optional' => $optional], []);
         }
     }
     $chainRows = [];
+
     foreach ($chains as $index => $chain) {
         $parts = listOf($chain, "chain {$index}");
         $chainRows[] = ['id' => 'chain-'.substr(hash('sha256', implode(' ', $parts)), 0, 12), 'parts' => $parts];
@@ -148,9 +153,11 @@ function main(array $arguments): void
 
     $differences = readJson($sources['generated_differences.json']);
     $generated = readJsonLines(SAMPLE_FILE);
+
     if (count($generated) !== 500) {
         fail('The seed-7 sample must hold 500 rows, it holds '.count($generated));
     }
+
     foreach ($generated as $index => $row) {
         $source = stringField($row, 'source', "generated row {$index}");
         $cases->add($source, DIALECT, ['type' => 'generated', 'seed' => 7, 'index' => $index], [
@@ -163,11 +170,13 @@ function main(array $arguments): void
     foreach (BOUNDARY_CASES as $index => [$source, $note]) {
         $cases->add($source, DIALECT, ['type' => 'boundary', 'index' => $index, 'note' => $note], []);
     }
+
     foreach (ADVERSARIAL_CASES as $index => [$source, $dialect, $note]) {
         $cases->add($source, $dialect, ['type' => 'adversarial', 'index' => $index, 'note' => $note], []);
     }
 
     $folder = OUTPUT_FOLDER;
+
     if (! is_dir($folder) && ! mkdir($folder, 0o755, true)) {
         fail("Cannot create {$folder}");
     }
@@ -176,6 +185,7 @@ function main(array $arguments): void
         'shapes.json' => encode(['schema_version' => SCHEMA_VERSION, 'slot_values' => SLOT_VALUES, 'shapes' => $shapeRows, 'chains' => $chainRows])."\n",
         'decisions.jsonl' => '',
     ];
+
     foreach ($files as $name => $content) {
         file_put_contents("{$folder}/{$name}", $content);
     }
@@ -237,12 +247,14 @@ final class CaseSet
     {
         $this->inputs++;
         $this->origins++;
+
         if (trim($source) === '') {
             $this->emptyInputs++;
         }
         $key = hash('sha256', json_encode([$source, $dialect, CONTEXT], JSON_THROW_ON_ERROR));
         $this->cases[$key] ??= ['id' => 'case-'.substr($key, 0, 16), 'source' => $source, 'dialect' => $dialect, 'context' => CONTEXT, 'origins' => [], 'legacy' => [], 'expected' => new stdClass()];
         $this->cases[$key]['origins'][] = $origin;
+
         if ($legacy !== []) {
             $this->cases[$key]['legacy'][] = ['origin' => $origin['type'], ...$legacy];
         }
@@ -255,6 +267,7 @@ final class CaseSet
     {
         $cases = $this->cases;
         ksort($cases);
+
         foreach ($cases as $key => $case) {
             $cases[$key]['expected'] = $expected[$case['id']] ?? $case['expected'];
         }
@@ -295,6 +308,7 @@ function frozenExpectations(string $path): array
     }
 
     $expected = [];
+
     foreach (file($path, FILE_IGNORE_NEW_LINES) ?: [] as $line) {
         $case = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
         $expected[$case['id']] = $case['expected'];
@@ -320,6 +334,7 @@ function filledShape(string $shape, bool $keepOptional): string
 function sourceFiles(string $version5): array
 {
     $files = [];
+
     foreach (['splitter_lines.jsonl', 'splitter_corrections.json', 'generated_forms.json', 'generated_differences.json'] as $name) {
         $path = $version5.'/'.SOURCE_FOLDER.'/'.$name;
         $files[$name] = is_file($path) ? $path : fail("Missing version-5 fixture {$name}");
@@ -334,6 +349,7 @@ function sourceFiles(string $version5): array
 function readJsonLines(string $path): array
 {
     $rows = [];
+
     foreach (file($path, FILE_IGNORE_NEW_LINES) ?: fail("Cannot read {$path}") as $number => $line) {
         try {
             $row = json_decode($line, true, 512, JSON_THROW_ON_ERROR);

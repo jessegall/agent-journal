@@ -33,6 +33,7 @@ final readonly class DriverRequests
             'idempotency_key',
             $idempotencyKey,
         )->first();
+
         if ($existing !== null) {
             return $existing->payload_digest === $digest
                 ? $existing

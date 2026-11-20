@@ -53,6 +53,7 @@ final readonly class JournalClassifier implements ProgramClassifier
             array_map(fn (Word $word): string => (string) $word->literal(), array_slice($words, 1, 2)),
         );
         $route = $this->routes->routeOf($name);
+
         if ($route === []) {
             return $this->unresolved(
                 $node,

@@ -41,6 +41,7 @@ final class TextUploadTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
 
         $chunkDigest = hash('sha256', $part);
+
         for ($index = 0; $index < 32; $index++) {
             $bus->run(new AppendUpload($id, $index, $part, $chunkDigest));
         }

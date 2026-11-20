@@ -1,27 +1,79 @@
 #!/bin/sh
-# Builds the journal-helper image for one architecture and records it by digest in docs/accounts/helper-image.json.
-# The record is written verified only after the build checks pass: no secret in any layer, the pinned clients answer
-# their versions, journal-check is installed read-only and the image runs as 10001:10001.
+# Builds one of the journal's images for one architecture, the agent image (the default) or the runner image, and
+# records it by digest and name in docs/accounts/docker-images.json. The record is written verified only after the
+# build checks pass: no secret in any layer, the pinned clients answer their versions, and for the agent image
+# journal-check is installed read-only, bwrap and socat answer, no Docker, journal-agent or console is in it and it
+# runs as 10001:10001.
 set -eu
 
 architecture="${1:?name the architecture, such as linux/arm64}"
-tag="journal-helper:build"
+name="${2:-agent}"
 
-docker buildx build --platform "$architecture" --file .docker/helper/Dockerfile --tag "$tag" --load .
+case "$name" in
+    agent) dockerfile=.docker/helper/Dockerfile; target=agent ;;
+    runner) dockerfile=.docker/app/Dockerfile; target=runner ;;
+    *) echo "Name the image agent or runner, not $name." >&2; exit 2 ;;
+esac
 
-docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
-docker run --rm --entrypoint claude "$tag" --version | grep -q "2.1.323"
-docker run --rm --entrypoint codex "$tag" --version | grep -q "0.165.0"
-docker run --rm --entrypoint test "$tag" -x /opt/journal/bin/journal-check
-if docker history --no-trunc "$tag" | grep -Eiq "token|secret|password|auth.json|credentials"; then
+tag="journal-$name:build"
+
+# The pinned client versions are passed to both images from here, so they are named in one place.
+claude_code=2.1.323
+codex=0.165.0
+target_option=""
+if [ "$target" = runner ]; then target_option="--target runner"; fi
+
+# shellcheck disable=SC2086
+docker buildx build --platform "$architecture" --file "$dockerfile" $target_option \
+    --build-arg "CLAUDE_CODE_VERSION=$claude_code" --build-arg "CODEX_VERSION=$codex" --tag "$tag" --load .
+
+docker run --rm --entrypoint claude "$tag" --version | grep -q "$claude_code"
+docker run --rm --entrypoint codex "$tag" --version | grep -q "$codex"
+
+if [ "$name" = agent ]; then
+    docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
+    docker run --rm --entrypoint test "$tag" -x /opt/journal/bin/journal-check
+    docker run --rm --entrypoint bwrap "$tag" --version >/dev/null
+    docker run --rm --entrypoint socat "$tag" -V >/dev/null
+    for absent in docker journal-agent; do
+        if docker run --rm --entrypoint sh "$tag" -c "command -v $absent" >/dev/null 2>&1; then
+            echo "The agent image holds $absent: it is refused." >&2
+            exit 1
+        fi
+    done
+    console_search="find / -name artisan -not -path '/proc/*' 2>/dev/null | grep -q ."
+    if docker run --rm --entrypoint sh "$tag" -c "$console_search"; then
+        echo "The agent image holds the journal's console: it is refused." >&2
+        exit 1
+    fi
+fi
+
+if [ "$name" = runner ]; then
+    docker run --rm --entrypoint id "$tag" -u | grep -qx 10001
+    docker run --rm --workdir /app --entrypoint php "$tag" artisan list >/dev/null
+    docker run --rm --workdir /app --entrypoint php "$tag" artisan accounts:run-sign-ins --help >/dev/null
+    docker run --rm --entrypoint sh "$tag" -c "journal-agent 2>&1 | grep -q 'usage: journal-agent'"
+    if docker run --rm --entrypoint test "$tag" -e /app/.env; then
+        echo "The runner image holds a .env: it is refused." >&2
+        exit 1
+    fi
+fi
+
+# A layer that sets a token, secret or password, or holds a sign-in file; a build flag that merely names a word, such
+# as the base image's --with-password-argon2, is no credential.
+if docker history --no-trunc "$tag" | grep -Eiq "(token|secret|password)[a-z_]*=|auth\.json|\.credentials\.json"; then
     echo "A layer mentions a credential: the image is refused." >&2
     exit 1
 fi
 
-digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "$tag" 2>/dev/null || docker image inspect --format '{{.Id}}' "$tag")"
+digest="$(docker image inspect --format '{{index .RepoDigests 0}}' "$tag" 2>/dev/null \
+    || docker image inspect --format '{{.Id}}' "$tag")"
 php -r '
-    $path = "docs/accounts/helper-image.json";
+    $path = "docs/accounts/docker-images.json";
     $record = json_decode(file_get_contents($path), true);
-    $record["images"][] = ["architecture" => $argv[1], "reference" => $argv[2], "claude_code" => "2.1.323", "codex" => "0.165.0", "built_at" => gmdate("c"), "status" => "verified"];
+    $record["images"][] = [
+        "name" => $argv[3], "architecture" => $argv[1], "reference" => $argv[2],
+        "claude_code" => $argv[4], "codex" => $argv[5], "built_at" => gmdate("c"),
+    ];
     file_put_contents($path, json_encode($record, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL);
-' "$architecture" "$digest"
+' "$architecture" "$digest" "$name" "$claude_code" "$codex"

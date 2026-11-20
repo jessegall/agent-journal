@@ -73,8 +73,9 @@ use Illuminate\Support\Carbon;
 ])]
 final class ProcessRun extends Model implements ReadableModel
 {
-    use BelongsToOneActor, HasUlids;
+    use BelongsToOneActor;
     use BoundedReads;
+    use HasUlids;
     use Linkable;
 
     /**

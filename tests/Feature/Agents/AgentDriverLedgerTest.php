@@ -508,6 +508,7 @@ final class AgentDriverLedgerTest extends TestCase
             ->whereKey([$unavailable->requestId, $unconfirmed->requestId])
             ->readLimit(2)
             ->pluck('attempt_version', 'id');
+
         foreach ($ends as [$receipt, $progress, $outcome]) {
             $this->hostCall($host, '/host/reports/request', [
                 'request_id' => $receipt->requestId,
@@ -694,6 +695,7 @@ final class AgentDriverLedgerTest extends TestCase
         $cancelled = DriverRequest::query()->findOrFail(
             $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'opus']))->requestId,
         );
+
         foreach ([$resumed, $cancelled] as $request) {
             $this->asSystem(new ReportRequestProgress(
                 $host->hostId,
@@ -733,6 +735,7 @@ final class AgentDriverLedgerTest extends TestCase
     public function test_a_stop_and_an_interrupt_are_claimed_past_a_full_batch_of_normal_work(): void
     {
         [$host, $opened] = $this->openRuntime();
+
         foreach (range(1, 12) as $number) {
             $this->deliver($opened, "work-{$number}", "Work {$number}");
         }

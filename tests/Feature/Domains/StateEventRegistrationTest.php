@@ -16,7 +16,8 @@ use Tests\TestCase;
 
 final class StateEventRegistrationTest extends TestCase
 {
-    use RegistersNoteStates, SetsEventCachePath;
+    use RegistersNoteStates;
+    use SetsEventCachePath;
 
     public function test_an_installed_module_registers_one_bridge_alongside_ordinary_listeners(): void
     {

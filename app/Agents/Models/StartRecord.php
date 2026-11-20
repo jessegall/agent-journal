@@ -79,7 +79,8 @@ use PhpOption\Option;
 final class StartRecord extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

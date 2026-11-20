@@ -20,6 +20,7 @@ final readonly class ContractSnapshot
     public function render(): string
     {
         $profiles = [];
+
         foreach (DiscoveryProfile::cases() as $profile) {
             $profiles[$profile->value] = $this->catalogue->toolDefinitionsFor($profile);
         }
@@ -51,11 +52,13 @@ final readonly class ContractSnapshot
         )];
         $oldProfiles = (array) $before['profiles'];
         $newProfiles = (array) $after['profiles'];
+
         foreach (array_unique([...array_keys($oldProfiles), ...array_keys($newProfiles)]) as $profile) {
             $tools = $this->changedFields(
                 (array) ($oldProfiles[$profile] ?? []),
                 (array) ($newProfiles[$profile] ?? []),
             );
+
             foreach ($tools as $tool) {
                 $changes[] = $profile.'/'.$tool;
             }

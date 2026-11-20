@@ -42,7 +42,8 @@ use PhpOption\Some;
 final class Agent extends Model implements Assignee, MessageRecipient, MessageSender, ReadableModel, SeatedActor
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

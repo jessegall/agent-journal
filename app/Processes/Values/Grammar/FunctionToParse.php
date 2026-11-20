@@ -24,10 +24,12 @@ final readonly class FunctionToParse
     {
         $cursor = $command->cursor();
         $start = $cursor->position();
+
         for ($skipped = 0; $skipped < $tokens; $skipped++) {
             $cursor->advance();
         }
         $cursor->skip(TokenType::Newline);
+
         if (! CompoundToParse::opensAt($cursor)) {
             throw ShellGrammarStopped::invalid('A function definition has no body.', $start);
         }

@@ -26,12 +26,14 @@ final readonly class AttachListItem implements Pipe
     {
         $toParse = $parsedCommand->toParse;
         $cursor = $toParse->cursor();
+
         if ($cursor->is(TokenType::Background)) {
             $this->runInBackground($toParse, $parsedCommand->node);
 
             return new ListItems($toParse, false);
         }
         $toParse->draft()->adopt($toParse->parent, $parsedCommand->node);
+
         if (! $this->endsCommand($cursor)) {
             $unexpected = $cursor->currentType()->value;
 

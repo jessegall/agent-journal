@@ -37,7 +37,9 @@ use PhpOption\Option;
 #[Fillable(['task_id', 'run_number', 'started_by_type', 'started_by_id', 'state', 'outcome', 'reply_inbox_id'])]
 final class TaskRun extends Model implements Assignable, ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'tasks.run';
 

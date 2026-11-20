@@ -41,14 +41,17 @@ final readonly class MenuStep
             }
         }
         $fingerprint = $sent['fingerprint'] ?? null;
+
         if (! is_string($fingerprint) || preg_match(self::FINGERPRINT, $fingerprint) !== 1) {
             throw MenuStepRefused::fingerprintMalformed($index);
         }
         $choose = self::text($index, $sent['choose'] ?? null);
         $key = self::text($index, $sent['key'] ?? null);
+
         if (($choose === null) === ($key === null)) {
             throw MenuStepRefused::notOneAction($index);
         }
+
         if ($key !== null && NavigationKey::tryFrom($key) === null) {
             throw MenuStepRefused::keyNotAllowed($index, $key);
         }
@@ -64,6 +67,7 @@ final readonly class MenuStep
         if ($stepText === null) {
             return null;
         }
+
         if (! is_string($stepText) || mb_strlen($stepText) > self::MOST_TEXT_CHARACTERS) {
             throw MenuStepRefused::textTooLong($index, self::MOST_TEXT_CHARACTERS);
         }

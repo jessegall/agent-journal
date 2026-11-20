@@ -27,7 +27,10 @@ use Illuminate\Database\Eloquent\Model;
 #[Table('module_note_snapshots')]
 final class NoteSnapshot extends Model implements Numbered, ReadableModel, TextContent
 {
-    use BoundedReads, HasNumber, HasUlids, Linkable;
+    use BoundedReads;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'notes.snapshot';
 

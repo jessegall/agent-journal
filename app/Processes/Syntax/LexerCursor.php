@@ -140,6 +140,7 @@ final class LexerCursor
             && ! ($extended && $this->at($start + $digits + 1) === '(' && $digits === 0)) {
             return $this->readRedirect($start, $digits);
         }
+
         if ($digits > 0) {
             return false;
         }
@@ -154,10 +155,12 @@ final class LexerCursor
             if (substr_compare($this->source, $text, $start, strlen($text)) !== 0) {
                 continue;
             }
+
             if ($type === TokenType::Bang && ! $this->isNegation()) {
                 return false;
             }
             $this->position += strlen($text);
+
             if ($type === TokenType::Redirect) {
                 $redirect = $text === '&>>' ? RedirectType::Append : RedirectType::Output;
                 $this->emitRedirect($redirect, 1, $start);
@@ -183,6 +186,7 @@ final class LexerCursor
     private function operators(bool $extended): array
     {
         $operators = ['&&' => TokenType::AndIf, '||' => TokenType::OrIf];
+
         if ($extended) {
             $operators += ['|&' => TokenType::PipeBoth, '&>>' => TokenType::Redirect, '&>' => TokenType::Redirect];
         }
@@ -215,16 +219,19 @@ final class LexerCursor
             '>&' => RedirectType::DuplicateOutput,
             '>' => RedirectType::Output,
         ];
+
         foreach ($forms as $text => $type) {
             if ($type === null || substr_compare($this->source, $text, $this->position, strlen($text)) !== 0) {
                 continue;
             }
             $this->position += strlen($text);
+
             if ($type->isDuplicate() && $this->at($this->position) === '-') {
                 $this->position++;
                 $type = RedirectType::Close;
             }
             $this->emitRedirect($type, $descriptor ?? ($text[0] === '<' ? 0 : 1), $start);
+
             if ($type === RedirectType::HereDocument) {
                 $this->hereDocuments->expectDelimiter($text === '<<-');
             }
@@ -245,9 +252,11 @@ final class LexerCursor
     {
         $depth = 0;
         $length = strlen($this->source);
+
         for ($index = $start; $index < $length; $index++) {
             $this->assertWithinBudget();
             $character = $this->source[$index];
+
             if ($character === '(') {
                 $depth++;
             } elseif ($character === ')' && --$depth === 0) {

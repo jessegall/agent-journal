@@ -64,6 +64,7 @@ final class NativeSubagentRuleTest extends TestCase
             $denied = json_decode($settings->content(), true, flags: JSON_THROW_ON_ERROR)['permissions']['deny'];
 
             $this->assertNotSame([], $program->nativeChildTools(), $program->value);
+
             foreach ($program->nativeChildTools() as $toolName) {
                 $this->assertContains($toolName, $denied, "{$program->value} starts without denying {$toolName}");
             }

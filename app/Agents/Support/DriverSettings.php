@@ -32,11 +32,13 @@ final readonly class DriverSettings
         if ($model !== null && trim($model) === '') {
             throw DriverRequestRefused::emptyModel();
         }
+
         if ($effort !== null && ! in_array($effort, self::EFFORTS, true)) {
             throw DriverRequestRefused::unsupportedEffort($effort, self::EFFORTS);
         }
 
         $accepted = [];
+
         if ($model !== null) {
             $accepted[] = $this->requests->append(
                 $target,
@@ -45,6 +47,7 @@ final readonly class DriverSettings
                 DriverRequestPayload::model($model),
             );
         }
+
         if ($effort !== null) {
             $accepted[] = $this->requests->append(
                 $target,

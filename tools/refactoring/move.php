@@ -700,9 +700,11 @@ function names(string $body, string $class): bool
             if ($token === '{') {
                 $depth++;
             }
+
             if ($token === '}') {
                 $depth--;
             }
+
             if ($token === ';') {
                 $importing = false;
             }

@@ -29,6 +29,7 @@ final readonly class PlanSearch implements SearchContribution
     public function search(string $query, int $page): SearchPage
     {
         $matches = $this->plans->list(new PlanFilters(search: $query, page: $page, perPage: self::PAGE_SIZE));
+
         if ($matches->page !== $page) {
             return new SearchPage([], false);
         }

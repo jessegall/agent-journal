@@ -42,6 +42,7 @@ final readonly class DocumentPages implements DocumentReader
         $position = $cursor === null
             ? $this->firstRead((string) $id, $current->number, $arguments)
             : $this->continuations->open($cursor, self::TOOL, (string) $id);
+
         if (! $position->filters['explicit_revision']) {
             $position->assertCurrentRevision($current->number);
         }
@@ -74,6 +75,7 @@ final readonly class DocumentPages implements DocumentReader
     private function firstRead(string $selector, int $current, ToolArguments $arguments): Continuation
     {
         $requestedRevision = $arguments->optionalWholeNumber('revision');
+
         if ($requestedRevision === 0) {
             throw ToolArgumentInvalid::for('revision', 'a positive revision number');
         }

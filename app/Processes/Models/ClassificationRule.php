@@ -41,7 +41,8 @@ use Illuminate\Support\Carbon;
 final class ClassificationRule extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasUlids;
+    use Linkable;
     use NamedByRuleScope;
 
     // ----------[ Constructors ]----------
@@ -86,6 +87,7 @@ final class ClassificationRule extends Model implements ReadableModel
     public function retire(int $expectedRevision, string $reason): void
     {
         $this->assertExpectedRevision($expectedRevision);
+
         if ($this->state !== ClassificationState::Active) {
             throw ClassificationRuleRefused::notActive($this->rule_id, $this->state);
         }
@@ -105,6 +107,7 @@ final class ClassificationRule extends Model implements ReadableModel
     {
         $this->assertExpectedRevision($expectedRevision);
         $this->assertOwnRevision($revision);
+
         if ($revision->revision <= $this->active_revision) {
             throw ClassificationRuleRefused::notNewer($this->rule_id, $revision->revision, $this->active_revision);
         }

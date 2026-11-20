@@ -54,6 +54,7 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
         }
 
         $authority = $this->actors->authority();
+
         if ($authority instanceof StartProfileAuthority) {
             return $authority->profileKey();
         }

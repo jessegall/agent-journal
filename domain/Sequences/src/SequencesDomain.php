@@ -30,7 +30,8 @@ final class SequencesDomain extends Domain implements
     SkillProvider,
     StateProvider
 {
-    use HasNumberedModels, HasStates;
+    use HasNumberedModels;
+    use HasStates;
 
     public function description(): string
     {

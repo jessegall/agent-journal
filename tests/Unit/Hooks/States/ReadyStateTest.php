@@ -42,6 +42,7 @@ final class ReadyStateTest extends TestCase
     public static function roles(): iterable
     {
         yield 'a profile that edits files' => [new ReadyState(new FixedOperationPolicy(true), new AllowedStops())];
+
         yield 'a profile that edits none' => [new ReadyState(new FixedOperationPolicy(false), new AllowedStops())];
     }
 
@@ -54,18 +55,25 @@ final class ReadyStateTest extends TestCase
     {
         foreach (self::roles() as $role => [$ready]) {
             yield "{$role}, a command alias" => [$ready, self::line([self::part(CommandType::Alias)])];
+
             yield "{$role}, an ordinary read" => [$ready, self::line([self::part(CommandType::Ordinary)])];
+
             yield "{$role}, a test run" => [$ready, self::line([self::part(CommandType::Verification)])];
+
             yield "{$role}, a build" => [$ready, self::line([self::part(CommandType::Build)])];
+
             yield "{$role}, an unnamed program" => [$ready, self::line([self::part(CommandType::Unknown)])];
+
             yield "{$role}, a write" => [
                 $ready,
                 self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)]),
             ];
+
             yield "{$role}, a dynamic expansion" => [
                 $ready,
                 self::line([self::part(CommandType::Ordinary)], ParseOutcome::DynamicExpansion),
             ];
+
             yield "{$role}, an unparsed line" => [$ready, self::line([], ParseOutcome::Unparsed)];
         }
     }

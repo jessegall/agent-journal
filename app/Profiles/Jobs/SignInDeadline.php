@@ -17,7 +17,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
  */
 final class SignInDeadline implements ShouldQueue
 {
-    use Dispatchable, Queueable;
+    use Dispatchable;
+    use Queueable;
 
     public function __construct(public readonly string $attemptId) {}
 

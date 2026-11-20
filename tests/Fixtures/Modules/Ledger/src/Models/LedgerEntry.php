@@ -25,7 +25,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 final class LedgerEntry extends Model implements Numbered, ReadableModel
 {
     use BoundedReads;
-    use HasNumber, HasUlids, Linkable;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'ledger.entry';
 

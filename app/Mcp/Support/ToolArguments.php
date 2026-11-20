@@ -133,9 +133,11 @@ final readonly class ToolArguments
     public function recordReference(string $name): int|string
     {
         $argument = $this->arguments[$name] ?? null;
+
         if (is_int($argument)) {
             return $this->positiveInteger($name);
         }
+
         if (is_string($argument) && preg_match('/^[1-9][0-9]{0,18}$/', $argument) === 1
             && (strlen($argument) < 19 || strcmp($argument, (string) PHP_INT_MAX) <= 0)) {
             return (int) $argument;

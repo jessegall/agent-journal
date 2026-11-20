@@ -33,6 +33,7 @@ final readonly class JournalSearch
         $unavailable = [];
         $more = [];
         $next = [];
+
         foreach ($read->filters['types'] as $type) {
             if (! isset($classes[$type])) {
                 $unavailable[] = $type;
@@ -41,6 +42,7 @@ final readonly class JournalSearch
             }
 
             $area = $this->container->make($classes[$type]);
+
             if (! $this->reads->allows($area->readRequest())) {
                 $unavailable[] = $type;
 
@@ -49,6 +51,7 @@ final readonly class JournalSearch
 
             $page = $area->search($read->filters['query'], $read->offset);
             array_push($hits, ...array_map(fn (SearchHit $hit) => $hit->card(), $page->hits));
+
             if ($page->hasNextPage) {
                 $more[] = $type;
                 $next[] = $this->next($read, $type);
@@ -68,11 +71,13 @@ final readonly class JournalSearch
     private function firstPage(ToolArguments $arguments, array $registered): Continuation
     {
         $query = trim($arguments->text('query'));
+
         if (mb_strlen($query) < 2 || mb_strlen($query) > 200) {
             throw ToolArgumentInvalid::for('query', '2 to 200 characters');
         }
 
         $types = array_values(array_unique($arguments->optionalList('types')));
+
         if (count($types) > 12 || array_any($types, fn (string $type): bool => strlen($type) > 64)) {
             throw ToolArgumentInvalid::for('types', 'at most twelve record types of at most 64 bytes each');
         }

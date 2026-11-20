@@ -28,7 +28,9 @@ final class ScanSmokeTest extends TestCase
     public static function folders(): iterable
     {
         yield 'the application' => ['app'];
+
         yield 'Laravel support' => ['vendor/laravel/framework/src/Illuminate/Support'];
+
         yield 'Eloquent' => ['vendor/laravel/framework/src/Illuminate/Database/Eloquent'];
     }
 

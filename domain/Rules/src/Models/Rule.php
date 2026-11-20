@@ -45,7 +45,9 @@ use Illuminate\Support\Carbon;
 final class Rule extends Model implements Numbered, ReadableModel
 {
     use BoundedReads;
-    use HasNumber, HasUlids, Linkable;
+    use HasNumber;
+    use HasUlids;
+    use Linkable;
 
     /**
      * The most characters a rule's text holds.

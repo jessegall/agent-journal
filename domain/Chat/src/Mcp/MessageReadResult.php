@@ -28,6 +28,7 @@ final readonly class MessageReadResult
             : $this->messages->context($messageId, $cursor);
         $messageResponse = ['message' => self::card($details->message)];
         $body = $details->body;
+
         if ($body !== null) {
             $messageResponse += [
                 'body' => $body->text,

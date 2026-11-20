@@ -21,6 +21,7 @@ final readonly class OpenCompoundNode implements Pipe
     public function handle(CompoundToParse $toParse): CompoundParts
     {
         $cursor = $toParse->cursor();
+
         if (AnalysisLimit::Depth->isPassedBy($toParse->depth + 1)) {
             throw ShellGrammarStopped::pastLimit(AnalysisLimit::Depth, $cursor->position());
         }

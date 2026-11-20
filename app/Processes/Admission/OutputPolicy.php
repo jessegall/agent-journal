@@ -35,6 +35,7 @@ final readonly class OutputPolicy
     public function check(Classification $classification): OutputVerdict
     {
         $hidden = [];
+
         foreach ($classification->parts as $part) {
             if ($part->purpose->outputRequirement() === OutputRequirement::Full) {
                 $hidden = [...$hidden, ...$this->hiddenAround($classification->tree, $part)];
@@ -53,9 +54,11 @@ final readonly class OutputPolicy
         $correction = $tree->withoutRedirects($own);
         $hidden = [];
         $node = $own;
+
         while (true) {
             foreach ($node->redirects as $redirect) {
                 $lost = $this->lostBy($redirect, $part);
+
                 if ($lost !== []) {
                     $hidden[] = new HiddenOutput(
                         $part->node,
@@ -65,10 +68,12 @@ final readonly class OutputPolicy
                     );
                 }
             }
+
             if ($node->isRoot) {
                 return $hidden;
             }
             $parent = $tree->node($node->parent);
+
             if ($parent->type === NodeType::Pipeline && $this->isBeforeTheLastCommand($tree, $parent, $node)) {
                 $hidden[] = new HiddenOutput($part->node, 'output and exit status', 'the pipe', $correction);
             }
@@ -85,6 +90,7 @@ final readonly class OutputPolicy
             return [];
         }
         $stream = $redirect->descriptor === 1 ? 'standard output' : 'standard error';
+
         if (in_array($redirect->type, self::HIDING_REDIRECTS, true)) {
             return [$stream];
         }

@@ -21,6 +21,7 @@ final readonly class NavigationLibrary
     public function save(NavigationRequest $navigation, array $steps): MenuEntry
     {
         $entry = MenuEntry::lockForPath($navigation, $steps);
+
         if ($entry === null) {
             $completes = $navigation->completes ?? NavigationCompletion::Goal;
             $proof = (string) $navigation->proof;
@@ -28,6 +29,7 @@ final readonly class NavigationLibrary
         } else {
             $entry->provenOn($navigation->build);
         }
+
         if ($navigation->stale_entry_id !== null && $navigation->stale_entry_id !== $entry->id) {
             MenuEntry::query()->acrossActors()->whereKey($navigation->stale_entry_id)->lockForUpdate()->first()
                 ?->supersededBy($entry);

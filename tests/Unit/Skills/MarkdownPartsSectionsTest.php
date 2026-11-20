@@ -166,8 +166,11 @@ final class MarkdownPartsSectionsTest extends TestCase
     public static function headingsAndKeys(): iterable
     {
         yield 'comma' => ['Starting, blocking and finishing', 'starting-blocking-and-finishing'];
+
         yield 'code and dashes' => ['Use `--permit` safely', 'use-permit-safely'];
+
         yield 'accent' => ['Café rules', 'cafe-rules'];
+
         yield 'plan' => ['Holding plan work', 'holding-plan-work'];
     }
 
@@ -200,6 +203,7 @@ final class MarkdownPartsSectionsTest extends TestCase
         Text.
 
         TEXT, 'has no # title before its first ## heading'];
+
         yield 'text before the title' => [
             <<<'TEXT'
             Intro.
@@ -211,6 +215,7 @@ final class MarkdownPartsSectionsTest extends TestCase
             TEXT,
             'has no # title before its first ## heading',
         ];
+
         yield 'a deeper heading first' => [
             <<<'TEXT'
             ### States
@@ -222,7 +227,9 @@ final class MarkdownPartsSectionsTest extends TestCase
             TEXT,
             'has no # title before its first ## heading',
         ];
+
         yield 'no heading at all' => ["Just text.\n", 'has no # title before its first ## heading'];
+
         yield 'second title' => [<<<'TEXT'
         # Shell
 
@@ -231,12 +238,14 @@ final class MarkdownPartsSectionsTest extends TestCase
         # Notes
 
         TEXT, 'has a second # title, Notes'];
+
         yield 'title differs' => [<<<'TEXT'
         # Shells
 
         ## States
 
         TEXT, 'has the # title Shells, but the skill is named Shell'];
+
         yield 'heading without key' => [<<<'TEXT'
         # Shell
 
@@ -263,6 +272,7 @@ final class MarkdownPartsSectionsTest extends TestCase
     public static function unreachablePaths(): iterable
     {
         yield 'a missing file' => ['nope.md', 'nope.md does not exist'];
+
         yield 'a file outside the folder' => ['../secrets.md', 'is not a relative path inside'];
     }
 

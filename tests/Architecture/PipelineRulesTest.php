@@ -51,6 +51,7 @@ final class PipelineRulesTest extends TestCase
             $name = substr($class, strrpos($class, '\\') + 1);
             $startsWithVerb = preg_match('/^[A-Z][a-z]+/', $name, $firstWord) === 1
                 && in_array($firstWord[0], self::VERBS, true);
+
             if (is_subclass_of($class, PipelineDefinition::class) && ! $startsWithVerb) {
                 $vague[] = $class;
             }
@@ -65,6 +66,7 @@ final class PipelineRulesTest extends TestCase
 
         foreach (self::classes() as $class) {
             $isAdapter = is_a($class, PipelineAdapter::class, true);
+
             if (is_subclass_of($class, Pipe::class) && ! $isAdapter && self::reachesPipelines($class, [])) {
                 $running[] = $class;
             }
@@ -87,6 +89,7 @@ final class PipelineRulesTest extends TestCase
 
         foreach ($constructor?->getParameters() ?? [] as $parameter) {
             $type = $parameter->getType();
+
             if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
                 continue;
             }
@@ -94,9 +97,11 @@ final class PipelineRulesTest extends TestCase
              * @var class-string $given
              */
             $given = $type->getName();
+
             if ($given === PipelineRunner::class || is_subclass_of($given, PipelineAdapter::class)) {
                 return true;
             }
+
             if (! isset($seen[$given]) && class_exists($given) && self::reachesPipelines($given, $seen)) {
                 return true;
             }
@@ -117,6 +122,7 @@ final class PipelineRulesTest extends TestCase
             $source = (string) file_get_contents($file);
             $namespace = preg_match('/^namespace ([^;]+);/m', $source, $namespaceMatch) === 1;
             $name = preg_match('/^(?:final |abstract )?(?:readonly )?class (\w+)/m', $source, $nameMatch) === 1;
+
             if ($namespace && $name) {
                 /**
                  * @var class-string $class

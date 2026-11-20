@@ -48,6 +48,7 @@ final class SearchToolTest extends TestCase
             'tasks.task' => $task->id, 'chat.message' => $message->id, 'documents.document' => $document,
         ], array_column($answer['hits'], 'id', 'type'));
         $this->assertNotContains($hidden->id, array_column($answer['hits'], 'id'));
+
         foreach ($answer['hits'] as $hit) {
             $this->assertStringContainsString('violet harbor', $hit['excerpt']);
             $this->assertLessThanOrEqual(200, mb_strlen($hit['excerpt']));

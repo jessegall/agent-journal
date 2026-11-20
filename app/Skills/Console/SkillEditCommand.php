@@ -19,7 +19,8 @@ use Illuminate\Support\Str;
  */
 final class SkillEditCommand extends Command
 {
-    use PrintsSkillRefusals, ReadsAudienceOptions;
+    use PrintsSkillRefusals;
+    use ReadsAudienceOptions;
 
     protected $signature = 'skill:edit {number : The skill number or key} {--expected-revision= : The revision you read} {--name=} {--description=} {--body= : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=*} {--base=*} {--program=*} {--provider=*} {--ability=*} {--request-id= : Send again under the id a failed attempt printed}';
 

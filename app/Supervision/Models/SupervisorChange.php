@@ -18,7 +18,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['supervisor_link_id', 'actor_type', 'actor_id', 'route', 'previous_target', 'target', 'version'])]
 final class SupervisorChange extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.supervisor-change';
 

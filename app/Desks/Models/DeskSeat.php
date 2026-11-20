@@ -30,7 +30,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['desk_id', 'number'])]
 final class DeskSeat extends Model implements Assignable, ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     public const string LINK_TYPE = 'core.desk-seat';
 

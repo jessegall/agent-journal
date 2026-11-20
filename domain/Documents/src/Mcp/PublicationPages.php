@@ -35,9 +35,11 @@ final readonly class PublicationPages
         $outline = $body->outline();
         $entries = [];
         $length = strlen(json_encode($abstract, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+
         foreach (array_slice($outline, $position->offset - 1, self::OUTLINE_ENTRIES) as $heading) {
             $excerpt = TextPreview::within($heading, 70);
             $length += strlen(json_encode($excerpt, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE)) + 1;
+
             if ($entries !== [] && $length > 6200) {
                 break;
             }
@@ -68,6 +70,7 @@ final readonly class PublicationPages
     ): ToolResult {
         $page = $this->comments->list($record, new Page($position->filters['after_comment'] ?? null, 1));
         $entry = $page->comments[0] ?? null;
+
         if ($entry === null) {
             return ToolResult::ok([...$card->toArray(), 'comments' => []]);
         }
@@ -81,6 +84,7 @@ final readonly class PublicationPages
                 'created_at' => $comment->createdAt,
             ],
         ]);
+
         if ($commentPage->nextActions !== [] || $page->nextAfter === null) {
             return $commentPage;
         }

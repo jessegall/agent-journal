@@ -32,6 +32,7 @@ final readonly class PublicationChunks
         if ($offset !== null && ($firstLine === null || ($lastLine !== null && $lastLine !== $firstLine))) {
             throw ToolArgumentInvalid::for('character_offset', 'a character offset on one explicitly selected line');
         }
+
         if ($offset !== null) {
             $lastLine = $firstLine;
         }
@@ -81,9 +82,11 @@ final readonly class PublicationChunks
     {
         $lines = explode("\n", $text);
         $lastLine = $position->filters['line_end'] ?? count($lines);
+
         if ($position->offset < 1 || $lastLine < $position->offset || ! isset($lines[$position->offset - 1])) {
             throw ToolArgumentInvalid::for('line_start', 'a line in the record and within the selected range');
         }
+
         if ($position->characterOffset > mb_strlen($lines[$position->offset - 1])) {
             throw ToolArgumentInvalid::for('character_offset', 'a character offset within the selected line');
         }

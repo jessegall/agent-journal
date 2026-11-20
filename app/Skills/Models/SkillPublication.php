@@ -65,7 +65,9 @@ use Illuminate\Support\Carbon;
 ])]
 final class SkillPublication extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads;
+    use HasUlids;
+    use Linkable;
 
     // ----------[ Constructors ]----------
 

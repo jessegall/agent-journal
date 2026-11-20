@@ -34,16 +34,20 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
         $part = PartRun::query()->whereKey($command->partRunId)->lockForUpdate()->sole();
         $run = ProcessRun::ofAnyActor($part->process_run_id);
         $actor = ActorIdentity::of($command->dispatchedBy());
+
         if (! $this->administration->isGrantedToCaller() && ! $run->isByActor($actor)) {
             throw ReplayRefused::notYours($part->id);
         }
+
         if ($run->mode !== RunMode::Normal) {
             throw ReplayRefused::evidenceRun($part->id);
         }
+
         if ($part->lifecycle !== LifecycleState::Ended) {
             throw ReplayRefused::notEnded($part->id);
         }
         $pairs = $this->assessments->pairOf($part);
+
         if ($pairs === []) {
             throw ReplayRefused::noPair($part->operation);
         }
@@ -58,10 +62,12 @@ final readonly class ReplayAssessmentHandler implements CommandHandler
     private function checkSameContract(PartRun $part, ApprovedPair $pair): void
     {
         $previous = OutputAssessment::latestOf($part);
+
         if ($previous === null) {
             return;
         }
         $assessedUnder = RuleRevision::query()->findOrFail($previous->rule_revision_id)->payload->contracts;
+
         if ($assessedUnder === [] || $assessedUnder[0]->digest() !== $pair->contract->digest()) {
             throw ReplayRefused::contractChanged($part->id);
         }

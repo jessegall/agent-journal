@@ -32,6 +32,7 @@ final readonly class ChildCommand
         $unresolved = $ownUnresolved;
         $purpose = CommandType::Ordinary;
         $contracts = [];
+
         foreach ($children as $child) {
             $contracts = [...$contracts, ...$child->contracts];
             $facts = [
