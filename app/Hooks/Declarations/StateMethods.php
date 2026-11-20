@@ -24,7 +24,9 @@ use ReflectionNamedType;
 final class StateMethods
 {
     /**
-     * @var array<class-string<AgentState>, array<string, StateMethod>>
+     * @var array<class-string<AgentState>, array{
+     *     methods: array<string, StateMethod>, events: array<class-string<Event>, StateMethod>
+     * }>
      */
     private array $byClass = [];
 
@@ -37,15 +39,19 @@ final class StateMethods
     }
 
     /**
+     * @return array<class-string<Event>, StateMethod>
+     */
+    public function eventsForLoader(StateLoader $loader): array
+    {
+        return $this->declarationsFor($loader->stateClass())['events'];
+    }
+
+    /**
      * @return array<string, StateMethod>
      */
     public function forState(string $stateClass): array
     {
-        if (! is_subclass_of($stateClass, AgentState::class)) {
-            throw InvalidStateClass::for($stateClass);
-        }
-
-        return $this->byClass[$stateClass] ??= $this->discover(new ReflectionClass($stateClass));
+        return $this->declarationsFor($stateClass)['methods'];
     }
 
     /**
@@ -107,8 +113,20 @@ final class StateMethods
     }
 
     /**
+     * @return array{methods: array<string, StateMethod>, events: array<class-string<Event>, StateMethod>}
+     */
+    private function declarationsFor(string $stateClass): array
+    {
+        if (! is_subclass_of($stateClass, AgentState::class)) {
+            throw InvalidStateClass::for($stateClass);
+        }
+
+        return $this->byClass[$stateClass] ??= $this->discover(new ReflectionClass($stateClass));
+    }
+
+    /**
      * @param  ReflectionClass<AgentState>  $state
-     * @return array<string, StateMethod>
+     * @return array{methods: array<string, StateMethod>, events: array<class-string<Event>, StateMethod>}
      */
     private function discover(ReflectionClass $state): array
     {
@@ -119,6 +137,7 @@ final class StateMethods
         $this->checkClassMarkers($state);
         $hooks = new ReflectionClass(HookAnswerer::class);
         $methods = [];
+        $events = [];
 
         foreach ($state->getMethods() as $method) {
             $name = $method->getName();
@@ -134,11 +153,11 @@ final class StateMethods
             $event = $this->eventFor($method);
 
             if ($event !== null) {
-                $methods[$event] = StateMethod::fromMethod($state->getName(), $method);
+                $events[$event] = StateMethod::fromMethod($state->getName(), $method);
             }
         }
 
-        return $methods;
+        return ['methods' => [...$methods, ...$events], 'events' => $events];
     }
 
     private function isHookOverride(ReflectionMethod $method, ReflectionMethod $hook): bool
@@ -213,7 +232,7 @@ final class StateMethods
     }
 
     /**
-     * @param  ReflectionClass<object>  $class
+     * @param  ReflectionClass<covariant object>  $class
      */
     private function checkClassMarkers(ReflectionClass $class): void
     {

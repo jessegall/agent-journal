@@ -146,13 +146,9 @@ final readonly class ListenerPolicy
         $declarations = [];
 
         foreach ($types->loaders() as $loader) {
-            foreach ($methods->forLoader($loader) as $input => $method) {
-                if ($input === $method->name) {
-                    continue;
-                }
-
-                $owner = $this->checkStateEvent($input, $method);
-                $declaration = new StateEventDeclaration($input, $method, $owner);
+            foreach ($methods->eventsForLoader($loader) as $event => $method) {
+                $owner = $this->checkStateEvent($event, $method);
+                $declaration = new StateEventDeclaration($event, $method, $owner);
                 $declarations[$declaration->cacheEntry()] = $declaration;
             }
         }

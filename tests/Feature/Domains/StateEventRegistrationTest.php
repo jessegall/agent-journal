@@ -33,7 +33,7 @@ final class StateEventRegistrationTest extends TestCase
 
         $this->assertSame([$event], $heard);
         $this->assertContains(
-            StateEventBridge::class.'@receive',
+            StateEventBridge::LISTENER,
             $dispatcher->getRawListeners()[NoteWritten::class],
         );
         $this->assertCount(2, $dispatcher->getRawListeners()[NoteWritten::class]);
@@ -64,7 +64,7 @@ final class StateEventRegistrationTest extends TestCase
             $dispatcher = $this->app->make(Dispatcher::class);
 
             $this->assertSame(
-                [StateEventBridge::class.'@receive'],
+                [StateEventBridge::LISTENER],
                 $dispatcher->getRawListeners()[NoteWritten::class],
             );
 

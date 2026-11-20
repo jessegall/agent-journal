@@ -12,6 +12,7 @@ use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use Domain\Tasks\TasksDomain;
+use Tests\Fixtures\Bus\Models\FixtureWork;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordCancelledTask;
 use Tests\Fixtures\Domains\Tasks\States\Commands\RecordFinishedTask;
 use Tests\Fixtures\Domains\Tasks\States\Policies\TaskWatchPolicy;
@@ -50,6 +51,6 @@ final class TaskWatchDomain extends Domain implements ProvidesCommands, Provides
 
     public function policies(): array
     {
-        return [new PolicyRegistration(TaskWatchLog::class, TaskWatchPolicy::class, TaskWatchAbility::class)];
+        return [new PolicyRegistration(FixtureWork::class, TaskWatchPolicy::class, TaskWatchAbility::class)];
     }
 }

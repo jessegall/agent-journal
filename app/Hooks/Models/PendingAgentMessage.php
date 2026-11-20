@@ -81,7 +81,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
             ->get();
         self::query()->ownedBy($agent)->whereKey($messages->modelKeys())->delete();
 
-        return $messages->flatMap(fn (self $message) => $message->lines)->values()->all();
+        return array_values($messages->flatMap(fn (self $message) => $message->lines)->all());
     }
 
     public static function countFor(ActorIdentity $agent): int

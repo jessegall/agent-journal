@@ -56,6 +56,9 @@ final class StateEventDispatcher extends Dispatcher
         return parent::dispatch($event, new StateEventPayload($this->payloadKey, $dispatch), $halt);
     }
 
+    /**
+     * @return array{string, array<array-key, mixed>}
+     */
     protected function parseEventAndPayload($event, $payload): array
     {
         [$name, $arguments] = parent::parseEventAndPayload($event, $payload);
@@ -69,9 +72,12 @@ final class StateEventDispatcher extends Dispatcher
         return [$name, $arguments];
     }
 
-    protected function invokeListeners($event, $payload, $halt = false)
+    /**
+     * @return mixed The first listener result when halting, otherwise the list of responses.
+     */
+    protected function invokeListeners($event, $payload, $halt = false): mixed
     {
-        if (! $this->hasBridge($event)) {
+        if (! is_string($event) || ! $this->hasBridge($event)) {
             return parent::invokeListeners($event, $payload, $halt);
         }
 
@@ -87,19 +93,21 @@ final class StateEventDispatcher extends Dispatcher
         return $scope->deliver($dispatch, fn () => parent::invokeListeners($event, [$dispatch->event], $halt));
     }
 
+    /**
+     * @return list<Closure>
+     */
     public function getListeners($eventName): array
     {
-        $listeners = parent::getListeners($eventName);
-        $bridge = array_search(StateEventBridge::LISTENER, $this->listeners[$eventName] ?? [], true);
+        $listeners = array_values(parent::getListeners($eventName));
+        $bridge = $this->bridgePosition($eventName);
 
-        if ($bridge === false) {
+        if ($bridge === null) {
             return $listeners;
         }
 
-        $last = $listeners[$bridge];
-        unset($listeners[$bridge]);
+        $last = array_splice($listeners, $bridge, 1);
 
-        return [...array_values($listeners), $last];
+        return [...$listeners, ...$last];
     }
 
     private function awaitsCommit(Event $event): bool
@@ -115,6 +123,19 @@ final class StateEventDispatcher extends Dispatcher
 
     private function hasBridge(string $event): bool
     {
-        return in_array(StateEventBridge::LISTENER, $this->listeners[$event] ?? [], true);
+        return $this->bridgePosition($event) !== null;
+    }
+
+    private function bridgePosition(string $event): int|null
+    {
+        $listeners = $this->listeners[$event] ?? [];
+
+        if (! is_array($listeners)) {
+            return null;
+        }
+
+        $position = array_search(StateEventBridge::LISTENER, $listeners, true);
+
+        return is_int($position) ? $position : null;
     }
 }
