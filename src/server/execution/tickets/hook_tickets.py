@@ -22,7 +22,7 @@ class HookTickets:
 
     @contextmanager
     def admitted(self, turn: HookTurn) -> Generator[None]:
-        with self.queue.admitted(self.ticket(turn.priority, turn.event_name), turn.owner, turn.wait_seconds) as queued, \
+        with self.queue.admitted(self.ticket(turn.priority, turn.event_name), turn.owner, turn.wait_seconds, turn.is_client_waiting) as queued, \
                 CurrentExecution(queued.ticket.priority, HOOK_CLASS, queued.ticket.line, queued.ticket).applied():
             yield
 

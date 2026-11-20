@@ -4,7 +4,7 @@ import traceback
 from server.execution.tickets.hook_turn import HookTurn
 from engine.serving.server_files import ServerFiles
 from time import perf_counter
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
 from engine.database.database import Database
 from engine.database.reported_findings import ReportedFindings
@@ -39,6 +39,7 @@ from server.execution.session_starters import SessionStarters
 from server.hook.hook_sender import HookSender
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
+from server.errors.client_gone_error import ClientGoneError
 from server.errors.pool_busy_error import PoolBusyError
 from engine.enums.execution_priority import ExecutionPriority
 from server.context.server_context import ServerContext
@@ -70,7 +71,7 @@ class HookEndpoint:
     def __init__(self, timing: Timing, context: ServerContext) -> None:
         self.timing, self.context = timing, context
 
-    def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
+    def answer(self, data: object, program: str, headers: Mapping[str, str], is_client_waiting: Callable[[], bool]) -> HookReply:
         started_at = perf_counter()
         sender = HookSender.parsed(data, self.context.hook_limit_seconds, self.context.agent_hook_limit_seconds, self.context.stop_limit_seconds,
                                    role_name=SessionStarters.shared(self.context.home).role)
@@ -80,11 +81,11 @@ class HookEndpoint:
             self.kept_row(sender, program)
             return self.locked(sender)
         try:
-            with self.context.hook_database.used(sender.turn()) as database:
+            with self.context.hook_database.used(sender.turn(is_client_waiting)) as database:
                 self.timing.stamp("hook_locked")
                 queued_ms = (perf_counter() - started_at) * 1000
                 return self.routed_answer(data, program, headers, database, started_at, sender, queued_ms)
-        except (PoolBusyError, OldHookRunnerError) as error:
+        except (PoolBusyError, OldHookRunnerError, ClientGoneError) as error:
             return self.unchecked(sender, error)
         finally:
             self.timing.stamp("hook_answered")

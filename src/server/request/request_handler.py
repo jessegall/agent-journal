@@ -201,7 +201,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             endpoint = HookEndpoint(self.timing, self.journal_server().context)
             data = json.loads(body or b"{}")
             self.timing.stamp("hook_json")
-            reply = endpoint.answer(data, program, dict(self.headers.items()))
+            reply = endpoint.answer(data, program, dict(self.headers.items()), lambda: not self.has_caller_disconnected())
         except (HookEventError, UnknownProgramError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return

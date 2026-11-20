@@ -48,8 +48,8 @@ class HookSender:
     def owner(self) -> str:
         return self.session
 
-    def turn(self) -> HookTurn:
-        return HookTurn(self.priority, self.limit_seconds, self.owner, self.event_name)
+    def turn(self, is_client_waiting: Callable[[], bool]) -> HookTurn:
+        return HookTurn(self.priority, self.limit_seconds, self.owner, self.event_name, is_client_waiting)
 
     @property
     def name(self) -> str:

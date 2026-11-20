@@ -26,7 +26,7 @@ def test_an_old_hook_runner_gets_an_immediate_unchecked_answer(event, refused, t
                               listener_wakes=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
-    reply = endpoint.answer({"event": event}, "claude", {})
+    reply = endpoint.answer({"event": event}, "claude", {}, lambda: True)
     assert bool(reply.refusal) is refused
     assert reply.hook_call_id is None
     assert "update the hook runner" in (reply.refusal if refused else reply.lines[0])
@@ -41,6 +41,6 @@ def test_a_hook_takes_its_place_in_the_queue_by_its_role(role, priority, limit, 
                               listener_wakes=SimpleNamespace(wake=Mock()))
     endpoint = HookEndpoint(Mock(), context)
     endpoint.routed_answer = Mock(side_effect=OldHookRunnerError.detected())
-    endpoint.answer({"event": "pre_tool_use", "session": "s-1"}, "claude", {})
+    endpoint.answer({"event": "pre_tool_use", "session": "s-1"}, "claude", {}, lambda: True)
     turn = used.call_args.args[0]
     assert (turn.priority, turn.wait_seconds, turn.owner) == (priority, limit, "s-1")
