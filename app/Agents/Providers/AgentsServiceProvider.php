@@ -42,6 +42,7 @@ use App\Agents\Contracts\NavigationReader;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\ReadGrant as ReadGrantContract;
 use App\Agents\Contracts\RuntimeResolver;
+use App\Agents\Contracts\RuntimeStops;
 use App\Agents\Contracts\SessionOutputAccess;
 use App\Agents\Contracts\SessionPolicyReader;
 use App\Agents\Contracts\SessionProvenance as SessionProvenanceContract;
@@ -85,6 +86,7 @@ use App\Agents\Support\AgentVisibility;
 use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseStartTransaction;
 use App\Agents\Support\DriverBudgets;
+use App\Agents\Support\DriverRuntimeStops;
 use App\Agents\Support\FrozenSessionPolicies;
 use App\Agents\Support\GrantedSessionOutputs;
 use App\Agents\Support\HelperCommitImport;
@@ -154,6 +156,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(ToolDiscovery::class, SessionToolDiscovery::class);
         $this->app->bind(WorkspaceReader::class, RetainedWorkspaceReads::class);
         $this->app->bindIf(MergeAdmission::class, UnavailableMergeAdmission::class);
+        $this->app->bind(RuntimeStops::class, DriverRuntimeStops::class);
         $this->app->bind(NavigationReader::class, NavigationRecords::class);
         $this->app->bind(TerminalViewCloser::class, TerminalViews::class);
         $this->app->bind(StartExecutor::class, fn () => new HostStartExecutor(

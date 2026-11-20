@@ -16,7 +16,8 @@ use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Admits the merge, retains its one attempt, merges it if it has not run yet, and tells supervision how it ended.
+ * Admits the merge, retains its one attempt, merges it if it never ran or inspects what an interrupted run left, and
+ * tells supervision how it ended.
  */
 final readonly class MergeReviewedWorkHandler implements CommandHandler
 {
@@ -39,7 +40,12 @@ final readonly class MergeReviewedWorkHandler implements CommandHandler
             return $attempt->outcome();
         }
 
-        $this->merge->merge($attempt);
+        if ($attempt->wasRecentlyCreated) {
+            $this->merge->merge($attempt);
+        } else {
+            $this->merge->inspect($attempt);
+        }
+
         $this->events->dispatch(new MergeOutcomeRecorded($attempt->id));
 
         return $attempt->outcome();

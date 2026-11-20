@@ -25,6 +25,7 @@ use App\Engine\Support\EngineSettings;
 use App\Engine\Support\EngineTickedDelivery;
 use App\Engine\Support\ExpireNavigationRequestsOnTick;
 use App\Engine\Support\FrameBaselines;
+use App\Engine\Support\InspectMergeAttemptsOnTick;
 use App\Engine\Support\MarkSilentSessionsOnTick;
 use App\Engine\Support\MonotonicStopTimes;
 use App\Engine\Support\SystemMonotonicClock;
@@ -80,6 +81,7 @@ final class EngineServiceProvider extends ServiceProvider
         $authorizers->register(ActorType::Engine, EngineAuthorizerProvider::class);
         $listeners->add(MarkSilentSessionsOnTick::class);
         $listeners->add(CertifyPassedStopsOnTick::class);
+        $listeners->add(InspectMergeAttemptsOnTick::class);
         $listeners->add(EndTerminalViewsOnTick::class);
         $listeners->add(ExpireNavigationRequestsOnTick::class);
         $listeners->add(EnforceLaunchLimitsOnTick::class);

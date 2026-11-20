@@ -110,6 +110,19 @@ final class CodeReview extends Model implements ReadableModel
             ->firstOr(fn () => throw CodeReviewRefused::notOpen($ask->id));
     }
 
+    /**
+     * The latest review of one work, locked.
+     */
+    public static function latestFor(RecordIdentity $work): self
+    {
+        return self::query()
+            ->where('work_type', $work->type)
+            ->where('work_id', $work->id)
+            ->latest()
+            ->lockForUpdate()
+            ->firstOrFail();
+    }
+
     public function failImport(string $reason): void
     {
         $this->import_attempts++;

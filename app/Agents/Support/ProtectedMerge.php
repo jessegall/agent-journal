@@ -36,6 +36,33 @@ final readonly class ProtectedMerge
 
     public function __construct(private Factory $processes, private string $repository) {}
 
+    /**
+     * Ends an attempt a run left behind by what git shows: a published result is merged, a target unchanged with no
+     * result kept is no effect and merges again, and anything else is uncertain.
+     */
+    public function inspect(MergeAttempt $attempt): void
+    {
+        $branch = "refs/heads/{$attempt->target_branch}";
+        $target = $this->revision($branch);
+        $result = $this->revision($attempt->resultRef());
+
+        if ($result !== '' && $result === $target) {
+            $attempt->merged($result);
+
+            return;
+        }
+
+        if ($result === '' && ($attempt->target_before === null || $attempt->target_before === $target)) {
+            $this->merge($attempt);
+
+            return;
+        }
+
+        $attempt->becomeUncertain(
+            "The target is {$target} and the kept result is {$result}; neither proves the effect.",
+        );
+    }
+
     public function merge(MergeAttempt $attempt): void
     {
         if ($this->revision($attempt->import_ref) !== $attempt->head) {

@@ -175,6 +175,23 @@ final class Ask extends Model implements Assignable, ReadableModel
         return $asks->keyBy('id')->all();
     }
 
+    /**
+     * The open asks about one work, locked, whoever asked them.
+     *
+     * @return list<self>
+     */
+    public static function openFor(RecordIdentity $work): array
+    {
+        return array_values(self::query()
+            ->acrossActors()
+            ->where('work', WorkReference::forRecord($work)->key)
+            ->where('open', true)
+            ->lockForUpdate()
+            ->readAll('the open asks about one work, a review and a merge at most')
+            ->get()
+            ->all());
+    }
+
     public static function lockedForMaintenance(string $id): self
     {
         return self::query()->acrossActors()->whereKey($id)->lockForUpdate()->firstOrFail();

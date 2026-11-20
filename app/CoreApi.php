@@ -119,6 +119,7 @@ use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\HoldAccountUses;
 use App\Agents\Commands\ImportHelperCommits;
+use App\Agents\Commands\InspectMergeAttempts;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\InterruptNavigation;
 use App\Agents\Commands\MarkMenuEntryStale;
@@ -1074,6 +1075,7 @@ use App\Skills\Values\SkillSections;
 use App\Skills\Values\StartProfile;
 use App\Supervision\Commands\AdvanceAsk;
 use App\Supervision\Commands\HandOffCodeReview;
+use App\Supervision\Commands\SettleMergeOutcomes;
 use App\Supervision\Contracts\SupervisorDispatch;
 use App\Supervision\Contracts\WorkRepair;
 use App\Supervision\Enums\SupervisorDispatchOutcome;
@@ -1991,6 +1993,8 @@ final class CoreApi
                 EnforceLaunchLimits::class,
                 AdvanceAsk::class,
                 HandOffCodeReview::class,
+                SettleMergeOutcomes::class,
+                InspectMergeAttempts::class,
                 ExpireNavigationRequests::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,

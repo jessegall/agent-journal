@@ -43,6 +43,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $result
  * @property MergeRefusalReason|null $refusal
  * @property string|null $evidence
+ * @property bool $owner_attested
+ * @property Carbon|null $acknowledged_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -65,6 +67,8 @@ use Illuminate\Support\Carbon;
     'result',
     'refusal',
     'evidence',
+    'owner_attested',
+    'acknowledged_at',
 ])]
 final class MergeAttempt extends Model implements ReadableModel
 {
@@ -81,6 +85,8 @@ final class MergeAttempt extends Model implements ReadableModel
             'ask_version' => 'integer',
             'state' => MergeAttemptState::class,
             'refusal' => MergeRefusalReason::class,
+            'owner_attested' => 'boolean',
+            'acknowledged_at' => 'datetime',
         ];
     }
 
@@ -102,6 +108,69 @@ final class MergeAttempt extends Model implements ReadableModel
             'import_ref' => $approved->importRef,
             'state' => MergeAttemptState::Prepared,
         ]);
+    }
+
+    /**
+     * Ended attempts supervision has not settled yet, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function unacknowledged(int $limit): array
+    {
+        return array_values(self::query()
+            ->whereIn('state', MergeAttemptState::terminalValues())
+            ->whereNull('acknowledged_at')
+            ->orderBy('updated_at')
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    /**
+     * Attempts a run left before they ended, for the engine to inspect, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function interrupted(Carbon $before, int $limit): array
+    {
+        return array_values(self::query()
+            ->whereNotIn('state', MergeAttemptState::terminalValues())
+            ->where('updated_at', '<', $before)
+            ->orderBy('updated_at')
+            ->readLimit($limit)
+            ->get()
+            ->all());
+    }
+
+    public static function lockedById(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * Records that supervision settled the outcome, once.
+     */
+    public function acknowledge(): void
+    {
+        if ($this->acknowledged_at !== null) {
+            return;
+        }
+
+        $this->acknowledged_at = Carbon::now();
+        $this->save();
+    }
+
+    /**
+     * Records the owner's statement of how an uncertain attempt ended, labelled as attested by the owner.
+     */
+    public function resolveByOwner(MergeAttemptState $state, string|null $result, string $statement): void
+    {
+        $this->state = $state;
+        $this->result = $result;
+        $this->evidence = trim("{$this->evidence}\nOwner: {$statement}");
+        $this->owner_attested = true;
+        $this->acknowledged_at = null;
+        $this->save();
     }
 
     public function apply(string $targetBefore): void

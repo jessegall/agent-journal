@@ -29,7 +29,10 @@ return new class extends Migration
             $table->string('result', 64)->nullable();
             $table->string('refusal', 32)->nullable();
             $table->text('evidence')->nullable();
+            $table->boolean('owner_attested')->default(false);
+            $table->timestampTz('acknowledged_at')->nullable();
             $table->timestampsTz();
+            $table->index(['state', 'acknowledged_at', 'updated_at']);
         });
     }
 

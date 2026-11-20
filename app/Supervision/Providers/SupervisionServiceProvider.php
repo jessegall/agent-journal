@@ -31,6 +31,7 @@ use App\Supervision\Support\AskTypeRegistry;
 use App\Supervision\Support\CurrentAskAdmission;
 use App\Supervision\Support\HandOffCodeReviewsOnTick;
 use App\Supervision\Support\ReviewMergeAdmission;
+use App\Supervision\Support\SettleMergeOutcomesOnTick;
 use App\Supervision\Support\SupervisorRouting;
 use App\Supervision\Support\UnavailableSupervisorDispatch;
 use App\Supervision\Support\UnavailableWorkRepair;
@@ -67,6 +68,7 @@ final class SupervisionServiceProvider extends ServiceProvider
     ): void {
         $engineListeners->add(AdvanceDueAsksOnTick::class);
         $engineListeners->add(HandOffCodeReviewsOnTick::class);
+        $engineListeners->add(SettleMergeOutcomesOnTick::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/asks.php');
         $this->commands(FolderClasses::in(dirname(__DIR__).'/Console', Command::class));
         $this->callAfterResolving(

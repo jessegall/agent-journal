@@ -6,6 +6,7 @@ namespace App\Supervision\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Commands\InspectMergeAttempts;
 use App\Agents\Commands\MergeReviewedWork;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\JournalAssignableProvider;
@@ -15,11 +16,15 @@ use App\Bus\Support\CommandNesting;
 use App\Records\Support\RecordIdentity;
 use App\Supervision\Commands\AdvanceAsk;
 use App\Supervision\Commands\ApproveCodeReview;
+use App\Supervision\Commands\CloseWorkChain;
 use App\Supervision\Commands\HandOffCodeReview;
 use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\ResolveMergeAttempt;
 use App\Supervision\Commands\ReturnCodeReview;
 use App\Supervision\Commands\RouteAsk;
+use App\Supervision\Commands\SettleMergeOutcomes;
 use App\Supervision\Commands\WithdrawAsk;
+use App\Supervision\Commands\WithdrawWorkChain;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Models\Ask;
 use App\Supervision\Values\AskReference;
@@ -28,7 +33,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
 {
     /**
      * The commands that route an ask to its first holder: routing it, and the review chain opening its own asks; a
-     * handoff runs for the engine, on the worker's route.
+     * merge's settlement may open a repair's stuck ask.
      */
     private const array ROUTING_COMMANDS = [
         RouteAsk::class,
@@ -36,6 +41,18 @@ final readonly class AskAssignments implements JournalAssignableProvider
         ApproveCodeReview::class,
         ReturnCodeReview::class,
         MergeReviewedWork::class,
+        InspectMergeAttempts::class,
+        SettleMergeOutcomes::class,
+        ResolveMergeAttempt::class,
+    ];
+
+    /**
+     * The engine's commands that route an ask on its requester's behalf, as the review chain's maintenance.
+     */
+    private const array MAINTENANCE_ROUTING_COMMANDS = [
+        HandOffCodeReview::class,
+        InspectMergeAttempts::class,
+        SettleMergeOutcomes::class,
     ];
 
     /**
@@ -47,6 +64,11 @@ final readonly class AskAssignments implements JournalAssignableProvider
         ApproveCodeReview::class,
         ReturnCodeReview::class,
         MergeReviewedWork::class,
+        InspectMergeAttempts::class,
+        SettleMergeOutcomes::class,
+        ResolveMergeAttempt::class,
+        CloseWorkChain::class,
+        WithdrawWorkChain::class,
     ];
 
     public function __construct(
@@ -72,7 +94,7 @@ final readonly class AskAssignments implements JournalAssignableProvider
         }
 
         $this->graph->acquire();
-        $handsOff = $this->nesting->runs(HandOffCodeReview::class);
+        $handsOff = $this->runsAny(self::MAINTENANCE_ROUTING_COMMANDS);
         $ask = $handsOff
             ? Ask::lockedForMaintenance($assignment->record->id)
             : $this->asks->lock(new AskReference($assignment->record->id));

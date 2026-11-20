@@ -85,10 +85,13 @@ use App\Skills\Commands\RetrySkillPublication;
 use App\Supervision\Commands\ApproveCodeReview;
 use App\Supervision\Commands\AskSupervisor;
 use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\CloseWorkChain;
 use App\Supervision\Commands\ReplyToAsk;
+use App\Supervision\Commands\ResolveMergeAttempt;
 use App\Supervision\Commands\ReturnCodeReview;
 use App\Supervision\Commands\RouteAsk;
 use App\Supervision\Commands\WithdrawAsk;
+use App\Supervision\Commands\WithdrawWorkChain;
 use App\Web\Commands\RecordUserHeartbeat;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 
@@ -202,6 +205,9 @@ final class CoreCommandsTest extends CommandBusTestCase
             ChangeSupervisor::class,
             ReplyToAsk::class,
             ApproveCodeReview::class,
+            CloseWorkChain::class,
+            WithdrawWorkChain::class,
+            ResolveMergeAttempt::class,
             ReturnCodeReview::class,
             RouteAsk::class,
             WithdrawAsk::class,

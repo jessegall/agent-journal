@@ -1119,6 +1119,9 @@ case	WordSegmentType::Escaped
 case	WordSegmentType::Expansion
 case	WordSegmentType::Literal
 case	WordSegmentType::SingleQuoted
+case	WorkChainEnding::Closed
+case	WorkChainEnding::Merged
+case	WorkChainEnding::Withdrawn
 case	WorkRepairOutcome::Reopened
 case	WorkRepairOutcome::Unavailable
 class	AbandonNavigation
@@ -1767,6 +1770,8 @@ class	CloseStartStack
 class	CloseTerminalView
 class	CloseTerminalViewController
 class	CloseTerminalViewHandler
+class	CloseWorkChain
+class	CloseWorkChainHandler
 class	CodeReview
 class	CodeReviewDecisions
 class	CodeReviewRefused
@@ -2194,6 +2199,7 @@ class	DriverRequestRecovery
 class	DriverRequestRefused
 class	DriverRequestStatus
 class	DriverRequests
+class	DriverRuntimeStops
 class	DriverSettings
 class	DriverTurn
 class	DriverTurnReportData
@@ -2569,6 +2575,9 @@ class	IncompleteTextAnchor
 class	InputRefused
 class	InspectDocumentCall
 class	InspectDocumentController
+class	InspectMergeAttempts
+class	InspectMergeAttemptsHandler
+class	InspectMergeAttemptsOnTick
 class	InspectReportCall
 class	InspectReportController
 class	InspectedCall
@@ -2832,6 +2841,7 @@ class	MergeReadyType
 class	MergeRefused
 class	MergeReviewedWork
 class	MergeReviewedWorkHandler
+class	MergeSettlement
 class	Message
 class	MessageAcknowledgeTool
 class	MessageAnswerActivation
@@ -3934,6 +3944,8 @@ class	ResetUserPassword
 class	ResolveDriverDelivery
 class	ResolveDriverDeliveryCommand
 class	ResolveDriverDeliveryHandler
+class	ResolveMergeAttempt
+class	ResolveMergeAttemptHandler
 class	ResolveNavigationAdmissionPipeline
 class	ResolveRuntimeRequestController
 class	ResolvedDestinations
@@ -4348,6 +4360,9 @@ class	SettleFrameTimes
 class	SettleFrameTimesHandler
 class	SettleLifecycle
 class	SettleMergeOutcome
+class	SettleMergeOutcomes
+class	SettleMergeOutcomesHandler
+class	SettleMergeOutcomesOnTick
 class	SettleRecordRequest
 class	SettleReportCall
 class	SettleReportController
@@ -5201,12 +5216,15 @@ class	WithdrawProposalCall
 class	WithdrawProposalController
 class	WithdrawRuleProposal
 class	WithdrawRuleProposalHandler
+class	WithdrawWorkChain
+class	WithdrawWorkChainHandler
 class	WithheldAbility
 class	WithheldAbilityData
 class	Word
 class	WordBuilder
 class	WordSegment
 class	WordToParse
+class	WorkChainEnd
 class	WorkLockSet
 class	WorkOccurrence
 class	WorkOccurrenceStale
@@ -5270,6 +5288,7 @@ constant	AreaCycles::FOUNDATION_FOLDER
 constant	Ask::LIFETIME_HOURS
 constant	Ask::LINK_TYPE
 constant	AskAssignments::ANSWERING_COMMANDS
+constant	AskAssignments::MAINTENANCE_ROUTING_COMMANDS
 constant	AskAssignments::ROUTING_COMMANDS
 constant	AskAttention::CARD
 constant	AskClock::SCAN_LIMIT
@@ -5505,6 +5524,9 @@ constant	InboxMembers::LIMIT
 constant	InboxNotices::SYSTEM_ENTRY
 constant	InboxNotices::SYSTEM_INBOX
 constant	InputRefused::CODE
+constant	InspectMergeAttempts::MAINTENANCE_SCOPE
+constant	InspectMergeAttemptsHandler::PASS_LIMIT
+constant	InspectMergeAttemptsHandler::STALE_MINUTES
 constant	IntegerSetting::LARGEST
 constant	IntegerSetting::SMALLEST
 constant	JobStopEvidence::ATTEMPT_PREFIX
@@ -5779,6 +5801,8 @@ constant	SettingRegistry::GROUPS_PER_OWNER
 constant	SettingRegistry::SETTINGS_PER_OWNER
 constant	SettingsDocument::MOST_BYTES
 constant	SettleFrameTimes::MAINTENANCE_SCOPE
+constant	SettleMergeOutcomes::MAINTENANCE_SCOPE
+constant	SettleMergeOutcomesHandler::PASS_LIMIT
 constant	Share::FIRST_SCOPE_VERSION
 constant	Share::LINK_TYPE
 constant	Share::MOST_LIVE
@@ -6221,6 +6245,7 @@ enum	WholeRecord
 enum	WindowState
 enum	WordPlace
 enum	WordSegmentType
+enum	WorkChainEnding
 enum	WorkRepairOutcome
 interface	AccountOwnerDrain
 interface	AccountUses
@@ -6459,6 +6484,7 @@ interface	RuleResolver
 interface	RunClaims
 interface	RunEvents
 interface	RuntimeResolver
+interface	RuntimeStops
 interface	ScriptChecks
 interface	ScriptCompilation
 interface	ScriptExecution
@@ -7472,6 +7498,7 @@ method	Ask::isUnanswered()
 method	Ask::lockedForMaintenance()
 method	Ask::newReference()
 method	Ask::openByIds()
+method	Ask::openFor()
 method	Ask::openSubmissions()
 method	Ask::reference()
 method	Ask::replay()
@@ -7569,7 +7596,10 @@ method	AskRefused::assertValidSubmission()
 method	AskRefused::cannotWithdraw()
 method	AskRefused::invalidBody()
 method	AskRefused::invalidKey()
+method	AskRefused::mergeNotUncertain()
 method	AskRefused::onlyOwnerAnswersLate()
+method	AskRefused::onlyOwnerClosesChains()
+method	AskRefused::onlyOwnerResolvesMerges()
 method	AskRefused::openLimit()
 method	AskRefused::operationDenied()
 method	AskRefused::refusalCode()
@@ -8733,11 +8763,16 @@ method	CloseTerminalView::subject()
 method	CloseTerminalViewController::__invoke()
 method	CloseTerminalViewHandler::__construct()
 method	CloseTerminalViewHandler::handle()
+method	CloseWorkChain::__construct()
+method	CloseWorkChain::subject()
+method	CloseWorkChainHandler::__construct()
+method	CloseWorkChainHandler::handle()
 method	CodeReview::casts()
 method	CodeReview::decision()
 method	CodeReview::failImport()
 method	CodeReview::hasImportAttemptsLeft()
 method	CodeReview::isAwaitingImport()
+method	CodeReview::latestFor()
 method	CodeReview::open()
 method	CodeReview::openFor()
 method	CodeReview::retain()
@@ -10360,6 +10395,8 @@ method	DriverRequests::openWake()
 method	DriverRequests::runtimeOf()
 method	DriverRequests::stop()
 method	DriverRequests::supersedeEarlier()
+method	DriverRuntimeStops::__construct()
+method	DriverRuntimeStops::stopAgent()
 method	DriverSettings::__construct()
 method	DriverSettings::accept()
 method	DriverTurn::casts()
@@ -11462,6 +11499,11 @@ method	IncompleteTextAnchor::withoutType()
 method	InputRefused::fieldMessages()
 method	InspectDocumentCall::__construct()
 method	InspectDocumentController::__invoke()
+method	InspectMergeAttemptsHandler::__construct()
+method	InspectMergeAttemptsHandler::handle()
+method	InspectMergeAttemptsOnTick::__construct()
+method	InspectMergeAttemptsOnTick::__invoke()
+method	InspectMergeAttemptsOnTick::maintenanceScope()
 method	InspectReportCall::__construct()
 method	InspectReportController::__invoke()
 method	InspectedCall::__construct()
@@ -12172,17 +12214,23 @@ method	MenuStepRefused::textTooLong()
 method	MenuStepRefused::tooMany()
 method	MenuStepRefused::unexpectedField()
 method	MergeAdmission::requireApproval()
+method	MergeAttempt::acknowledge()
 method	MergeAttempt::admittedActor()
 method	MergeAttempt::apply()
 method	MergeAttempt::becomeUncertain()
 method	MergeAttempt::casts()
+method	MergeAttempt::interrupted()
+method	MergeAttempt::lockedById()
 method	MergeAttempt::merged()
 method	MergeAttempt::outcome()
 method	MergeAttempt::refuse()
+method	MergeAttempt::resolveByOwner()
 method	MergeAttempt::resultRef()
 method	MergeAttempt::retain()
+method	MergeAttempt::unacknowledged()
 method	MergeAttempt::work()
 method	MergeAttemptState::isTerminal()
+method	MergeAttemptState::terminalValues()
 method	MergeOutcome::__construct()
 method	MergeOutcomeRecorded::__construct()
 method	MergeReadyType::definition()
@@ -12194,6 +12242,8 @@ method	MergeReviewedWork::__construct()
 method	MergeReviewedWork::subject()
 method	MergeReviewedWorkHandler::__construct()
 method	MergeReviewedWorkHandler::handle()
+method	MergeSettlement::__construct()
+method	MergeSettlement::settle()
 method	Message::acknowledge()
 method	Message::acrossInboxes()
 method	Message::answerWith()
@@ -14140,6 +14190,7 @@ method	ProtectedFileRead::resolve()
 method	ProtectedMerge::__construct()
 method	ProtectedMerge::build()
 method	ProtectedMerge::git()
+method	ProtectedMerge::inspect()
 method	ProtectedMerge::merge()
 method	ProtectedMerge::publish()
 method	ProtectedMerge::revision()
@@ -15485,6 +15536,10 @@ method	ResolveDriverDelivery::subject()
 method	ResolveDriverDeliveryCommand::handle()
 method	ResolveDriverDeliveryHandler::__construct()
 method	ResolveDriverDeliveryHandler::handle()
+method	ResolveMergeAttempt::__construct()
+method	ResolveMergeAttempt::subject()
+method	ResolveMergeAttemptHandler::__construct()
+method	ResolveMergeAttemptHandler::handle()
 method	ResolveNavigationAdmissionPipeline::pipes()
 method	ResolveRuntimeRequestController::__invoke()
 method	ResolvedDestinations::__construct()
@@ -16050,6 +16105,7 @@ method	RuntimeStart::toArray()
 method	RuntimeStatus::__construct()
 method	RuntimeStatusResolver::__construct()
 method	RuntimeStatusResolver::read()
+method	RuntimeStops::stopAgent()
 method	RuntimesData::__construct()
 method	SampleApproved::__construct()
 method	SampleData::__construct()
@@ -16668,6 +16724,11 @@ method	SettleLifecycle::__construct()
 method	SettleLifecycle::handle()
 method	SettleMergeOutcome::__construct()
 method	SettleMergeOutcome::handle()
+method	SettleMergeOutcomesHandler::__construct()
+method	SettleMergeOutcomesHandler::handle()
+method	SettleMergeOutcomesOnTick::__construct()
+method	SettleMergeOutcomesOnTick::__invoke()
+method	SettleMergeOutcomesOnTick::maintenanceScope()
 method	SettleRecordRequest::documentNumber()
 method	SettleRecordRequest::number()
 method	SettleRecordRequest::reason()
@@ -19513,6 +19574,10 @@ method	WithdrawProposalController::__invoke()
 method	WithdrawRuleProposal::__construct()
 method	WithdrawRuleProposal::subject()
 method	WithdrawRuleProposalHandler::handle()
+method	WithdrawWorkChain::__construct()
+method	WithdrawWorkChain::subject()
+method	WithdrawWorkChainHandler::__construct()
+method	WithdrawWorkChainHandler::handle()
 method	WithheldAbility::__construct()
 method	WithheldAbility::withholds()
 method	WithheldAbilityData::__construct()
@@ -19537,6 +19602,8 @@ method	WordToParse::isArrayAssignment()
 method	WordToParse::of()
 method	WordToParse::placedAs()
 method	WordToParse::substitutions()
+method	WorkChainEnd::__construct()
+method	WorkChainEnd::end()
 method	WorkLockSet::__construct()
 method	WorkLockSet::covers()
 method	WorkLockSet::for()
@@ -19944,6 +20011,7 @@ parameter	$cells
 parameter	$certificate
 parameter	$certification
 parameter	$chain
+parameter	$chains
 parameter	$challenge
 parameter	$challenges
 parameter	$change
@@ -20291,6 +20359,7 @@ parameter	$endNanoseconds
 parameter	$endOffset
 parameter	$ended
 parameter	$endedAt
+parameter	$ending
 parameter	$endings
 parameter	$endpoint
 parameter	$endpointVersion
@@ -21396,6 +21465,7 @@ parameter	$result	app/Agents/Support/ProtectedMerge.php
 parameter	$result	app/Agents/Values/MergeOutcome.php
 parameter	$result	app/Hooks/Readers/SessionInspections.php
 parameter	$result	app/Scripts/Data/ProfileStepData.php
+parameter	$result	app/Supervision/Commands/ResolveMergeAttempt.php
 parameter	$resultNote
 parameter	$resultNumber
 parameter	$resultReference
@@ -23155,6 +23225,9 @@ property	CloseStartStack::$stacks
 property	CloseTerminalView::$agentId
 property	CloseTerminalViewHandler::$clock
 property	CloseTerminalViewHandler::$views
+property	CloseWorkChain::$work
+property	CloseWorkChainHandler::$chains
+property	CloseWorkChainHandler::$owner
 property	CodeReviewDecisions::$admission
 property	CodeReviewDecisions::$asks
 property	CodeReviewDecisions::$assignments
@@ -23944,6 +24017,7 @@ property	DriverRequestStatus::$script
 property	DriverRequestStatus::$scriptEvidence
 property	DriverRequestStatus::$scriptStep
 property	DriverRequestStatus::$sequence
+property	DriverRuntimeStops::$requests
 property	DriverSettings::$requests
 property	DriverTurnReportData::$effort
 property	DriverTurnReportData::$finished
@@ -24656,6 +24730,10 @@ property	InboxView::$label
 property	IncomingWorkList::$container
 property	IncomingWorkList::$workClasses
 property	InspectDocumentCall::$number
+property	InspectMergeAttemptsHandler::$access
+property	InspectMergeAttemptsHandler::$events
+property	InspectMergeAttemptsHandler::$merge
+property	InspectMergeAttemptsOnTick::$commands
 property	InspectReportCall::$number
 property	InspectedCall::$answer
 property	InspectedCall::$hookId
@@ -25084,6 +25162,10 @@ property	MergeReviewedWork::$expectedVersion
 property	MergeReviewedWorkHandler::$admission
 property	MergeReviewedWorkHandler::$events
 property	MergeReviewedWorkHandler::$merge
+property	MergeSettlement::$assignments
+property	MergeSettlement::$attention
+property	MergeSettlement::$chains
+property	MergeSettlement::$repairs
 property	MessageAnswerActivation::$actors
 property	MessageAnswerActivation::$proved
 property	MessageAnswerActivation::$transaction
@@ -27283,6 +27365,12 @@ property	ResolveDriverDelivery::$requestId
 property	ResolveDriverDeliveryCommand::$description
 property	ResolveDriverDeliveryCommand::$signature
 property	ResolveDriverDeliveryHandler::$recovery
+property	ResolveMergeAttempt::$attemptId
+property	ResolveMergeAttempt::$outcome
+property	ResolveMergeAttempt::$result
+property	ResolveMergeAttempt::$statement
+property	ResolveMergeAttemptHandler::$owner
+property	ResolveMergeAttemptHandler::$settlement
 property	ResolvedDestinations::$address
 property	ResolvedDestinations::$holder
 property	ResolvedPipe::$pipe
@@ -28135,10 +28223,10 @@ property	SettleDocumentHandler::$events
 property	SettleFrameTimes::$settlements
 property	SettleFrameTimesHandler::$access
 property	SettleLifecycle::$lifecycle
-property	SettleMergeOutcome::$asks
-property	SettleMergeOutcome::$assignments
-property	SettleMergeOutcome::$attention
-property	SettleMergeOutcome::$repairs
+property	SettleMergeOutcome::$settlement
+property	SettleMergeOutcomesHandler::$access
+property	SettleMergeOutcomesHandler::$settlement
+property	SettleMergeOutcomesOnTick::$commands
 property	SettleReportCall::$number
 property	SettleReportCall::$reason
 property	SettleReportCall::$requestKey
@@ -29610,6 +29698,9 @@ property	WithdrawCommandRequestHandler::$administration
 property	WithdrawProposalCall::$proposal
 property	WithdrawProposalCall::$requestKey
 property	WithdrawRuleProposal::$proposalId
+property	WithdrawWorkChain::$work
+property	WithdrawWorkChainHandler::$chains
+property	WithdrawWorkChainHandler::$records
 property	WithheldAbility::$ability
 property	WithheldAbility::$policy
 property	WithheldAbilityData::$ability
@@ -29628,6 +29719,9 @@ property	WordToParse::$depth
 property	WordToParse::$isBeforeArguments
 property	WordToParse::$place
 property	WordToParse::$word
+property	WorkChainEnd::$assignments
+property	WorkChainEnd::$attention
+property	WorkChainEnd::$stops
 property	WorkLockSet::$origin
 property	WorkLockSet::$others
 property	WorkOccurrence::$occurrence

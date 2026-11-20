@@ -16,6 +16,14 @@ enum MergeAttemptState: string
     case Refused = 'refused';
     case Uncertain = 'uncertain';
 
+    /**
+     * @return list<string>
+     */
+    public static function terminalValues(): array
+    {
+        return [self::Merged->value, self::Refused->value, self::Uncertain->value];
+    }
+
     public function isTerminal(): bool
     {
         return match ($this) {
