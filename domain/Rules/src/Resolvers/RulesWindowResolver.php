@@ -7,7 +7,6 @@ namespace Domain\Rules\Resolvers;
 use App\Ui\Contracts\PageResolver;
 use Domain\Rules\Contracts\RuleResolver;
 use Domain\Rules\Data\RuleListData;
-use Domain\Rules\Data\RulePaginationData;
 use Domain\Rules\Data\RuleReaderData;
 use Domain\Rules\Data\RuleRowData;
 use Domain\Rules\Http\Requests\RulesRequest;
@@ -31,7 +30,11 @@ final readonly class RulesWindowResolver implements PageResolver
         return RuleListData::from([
             'rows' => RuleRowData::collect($rulePage->rules),
             'filters' => $filters->onPage($rulePage->page),
-            'pagination' => RulePaginationData::fromRuleList($rulePage),
+            'pagination' => [
+                'page' => $rulePage->page,
+                'lastPage' => $rulePage->lastPage,
+                'total' => $rulePage->total,
+            ],
             'selectionMissing' => $rulePage->selectionMissing,
             'selected' => $rulePage->selection()->map(RuleReaderData::from(...))->getOrElse(Optional::create()),
         ]);

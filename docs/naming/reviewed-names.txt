@@ -426,11 +426,6 @@ case	MemoryAbility::Work
 case	MenuEntryState::Current
 case	MenuEntryState::Retired
 case	MenuEntryState::Superseded
-case	MenuStaleReason::Ambiguous
-case	MenuStaleReason::HighlightWrong
-case	MenuStaleReason::LabelMissing
-case	MenuStaleReason::NextFingerprint
-case	MenuStaleReason::NoProof
 case	MessageAbility::Inspect
 case	MessageAbility::Recover
 case	MessageAbility::Work
@@ -484,6 +479,7 @@ case	NavigationRaiseOutcome::Wait
 case	NavigationReason::Ambiguous
 case	NavigationReason::HighlightWrong
 case	NavigationReason::LabelMissing
+case	NavigationReason::NextFingerprint
 case	NavigationReason::NoEntry
 case	NavigationReason::NoProof
 case	NavigationReason::StaleEntry
@@ -710,9 +706,6 @@ case	RefusalCode::UnsupportedVersion
 case	ReportLineType::Error
 case	ReportLineType::Line
 case	ReportLineType::Output
-case	ReportState::All
-case	ReportState::Closed
-case	ReportState::Open
 case	RequestHoldReason::BindingChanged
 case	RequestHoldReason::ReaderRequired
 case	RequestHoldReason::ReaderStale
@@ -806,10 +799,6 @@ case	SessionEndReason::Clear
 case	SessionEndReason::Exit
 case	SessionEndReason::Logout
 case	SessionEndReason::Other
-case	SessionStartSource::Clear
-case	SessionStartSource::Compact
-case	SessionStartSource::Resume
-case	SessionStartSource::Startup
 case	SessionStatus::Active
 case	SessionStatus::Ended
 case	SessionStatus::Silent
@@ -2080,7 +2069,6 @@ class	DocumentAdministrationPolicy
 class	DocumentBody
 class	DocumentBodyMissing
 class	DocumentCalls
-class	DocumentCard
 class	DocumentClose
 class	DocumentClosed
 class	DocumentCommentCall
@@ -2090,7 +2078,6 @@ class	DocumentDraft
 class	DocumentDraftSaved
 class	DocumentFilters
 class	DocumentLinkRecords
-class	DocumentList
 class	DocumentMissing
 class	DocumentOpened
 class	DocumentPageData
@@ -3032,6 +3019,7 @@ class	PageController
 class	PagePropTypes
 class	PageProps
 class	PageSize
+class	PaginationData
 class	PaneChoice
 class	ParseCompoundList
 class	ParseFailed
@@ -3133,7 +3121,6 @@ class	PlanList
 class	PlanListData
 class	PlanMissing
 class	PlanNamed
-class	PlanPaginationData
 class	PlanPhaseTasks
 class	PlanPolicy
 class	PlanPoolRefused
@@ -3367,10 +3354,12 @@ class	PublicContracts
 class	PublicOriginCheck
 class	PublicOwner
 class	PublicTypePath
+class	PublicationCard
 class	PublicationChunks
 class	PublicationClaim
 class	PublicationFiles
 class	PublicationIntent
+class	PublicationList
 class	PublicationLists
 class	PublicationManifest
 class	PublicationPages
@@ -3754,7 +3743,6 @@ class	ReportAccountCheckController
 class	ReportAccountCleanupController
 class	ReportAlreadyStarted
 class	ReportAnswer
-class	ReportCard
 class	ReportCleanup
 class	ReportCleanupHandler
 class	ReportCommentCall
@@ -3771,7 +3759,6 @@ class	ReportFiled
 class	ReportInspectCommand
 class	ReportLine
 class	ReportLinkRecords
-class	ReportList
 class	ReportListCommand
 class	ReportMakeCommand
 class	ReportMissing
@@ -3977,7 +3964,6 @@ class	RuleListData
 class	RuleMissing
 class	RuleNotProposed
 class	RuleOrigin
-class	RulePaginationData
 class	RulePolicy
 class	RuleProposal
 class	RuleProposalRefused
@@ -5928,7 +5914,6 @@ enum	LaunchCandidateRank
 enum	LifecycleState
 enum	MemoryAbility
 enum	MenuEntryState
-enum	MenuStaleReason
 enum	MessageAbility
 enum	MessagePinAbility
 enum	MessageState
@@ -5993,7 +5978,6 @@ enum	RecoveryAction
 enum	RedirectType
 enum	RefusalCode
 enum	ReportLineType
-enum	ReportState
 enum	RequestHoldReason
 enum	RequestOutcome
 enum	RequestProgress
@@ -6015,7 +5999,6 @@ enum	SelectionReason
 enum	SequenceAbility
 enum	SequenceRunState
 enum	SessionEndReason
-enum	SessionStartSource
 enum	SessionStatus
 enum	SessionTransferType
 enum	SettingAbility
@@ -9166,7 +9149,6 @@ method	ContextOutput::__construct()
 method	ContextReminders::__construct()
 method	ContextReminders::add()
 method	ContextReminders::all()
-method	ContextStartType::fromSource()
 method	ContextStartType::isFreshContext()
 method	ContextStarted::__construct()
 method	ContextUnavailable::forJob()
@@ -9777,7 +9759,6 @@ method	DocumentCalls::showDocument()
 method	DocumentCalls::showDocumentRevision()
 method	DocumentCalls::showDraft()
 method	DocumentCalls::showReport()
-method	DocumentCard::__construct()
 method	DocumentClose::booted()
 method	DocumentClose::card()
 method	DocumentClose::casts()
@@ -9809,7 +9790,6 @@ method	DocumentLinkRecords::linkType()
 method	DocumentLinkRecords::mayChange()
 method	DocumentLinkRecords::readableRecords()
 method	DocumentLinkRecords::referenceWord()
-method	DocumentList::__construct()
 method	DocumentMissing::identified()
 method	DocumentMissing::numbered()
 method	DocumentMissing::refusalCode()
@@ -12749,6 +12729,7 @@ method	PageProvider::pages()
 method	PageResolver::read()
 method	PageSize::__construct()
 method	PageSize::from()
+method	PaginationData::__construct()
 method	PaneChoice::__construct()
 method	ParseCompoundList::back()
 method	ParseCompoundList::definition()
@@ -13092,8 +13073,6 @@ method	PlanList::__construct()
 method	PlanListData::__construct()
 method	PlanMissing::withId()
 method	PlanNamed::__construct()
-method	PlanPaginationData::__construct()
-method	PlanPaginationData::fromPlanList()
 method	PlanPhaseTasks::__construct()
 method	PlanPolicy::authorize()
 method	PlanPoolRefused::idsGiven()
@@ -13909,6 +13888,7 @@ method	PublicationArguments::referenceSchema()
 method	PublicationArguments::source()
 method	PublicationArguments::sources()
 method	PublicationArguments::target()
+method	PublicationCard::__construct()
 method	PublicationChunks::__construct()
 method	PublicationChunks::chunk()
 method	PublicationChunks::page()
@@ -13919,6 +13899,7 @@ method	PublicationFiles::batchAfter()
 method	PublicationFiles::count()
 method	PublicationFiles::of()
 method	PublicationIntent::__construct()
+method	PublicationList::__construct()
 method	PublicationLists::__construct()
 method	PublicationLists::documents()
 method	PublicationLists::filters()
@@ -14928,7 +14909,6 @@ method	ReportAccountCheckController::__invoke()
 method	ReportAccountCleanupController::__invoke()
 method	ReportAlreadyStarted::handle()
 method	ReportAnswer::handle()
-method	ReportCard::__construct()
 method	ReportCleanup::__construct()
 method	ReportCleanupHandler::handle()
 method	ReportCommentCall::__construct()
@@ -14953,7 +14933,6 @@ method	ReportLinkRecords::linkType()
 method	ReportLinkRecords::mayChange()
 method	ReportLinkRecords::readableRecords()
 method	ReportLinkRecords::referenceWord()
-method	ReportList::__construct()
 method	ReportListCommand::handle()
 method	ReportMakeCommand::handle()
 method	ReportMissing::identified()
@@ -15022,7 +15001,6 @@ method	ReportSignInController::__invoke()
 method	ReportSignInHandler::__construct()
 method	ReportSignInHandler::fail()
 method	ReportSignInHandler::handle()
-method	ReportState::attention()
 method	ReportStopped::__construct()
 method	ReportStoppedController::__invoke()
 method	ReportStoppedHandler::__construct()
@@ -15447,8 +15425,6 @@ method	RuleMissing::withId()
 method	RuleNotProposed::inState()
 method	RuleOrigin::__construct()
 method	RuleOrigin::reference()
-method	RulePaginationData::__construct()
-method	RulePaginationData::fromRuleList()
 method	RulePolicy::authorize()
 method	RuleProposal::approve()
 method	RuleProposal::assertAuthor()
@@ -20647,7 +20623,6 @@ parameter	$plain
 parameter	$plan
 parameter	$planId
 parameter	$planNumber
-parameter	$planPage
 parameter	$planTitle
 parameter	$planner
 parameter	$plans
@@ -20989,7 +20964,6 @@ parameter	$rowVersion
 parameter	$rows
 parameter	$rule
 parameter	$ruleId
-parameter	$rulePage
 parameter	$rules
 parameter	$run
 parameter	$runId
@@ -23255,13 +23229,6 @@ property	DockedRecordRecords::$records
 property	Document::$attributes
 property	DocumentBody::$uploads
 property	DocumentCalls::$sender
-property	DocumentCard::$abstract
-property	DocumentCard::$attention
-property	DocumentCard::$foundIn
-property	DocumentCard::$id
-property	DocumentCard::$number
-property	DocumentCard::$snippet
-property	DocumentCard::$title
 property	DocumentClosed::$documentId
 property	DocumentClosed::$number
 property	DocumentClosed::$revisionNumber
@@ -23282,10 +23249,6 @@ property	DocumentFilters::$query
 property	DocumentFilters::$revisions
 property	DocumentLinkRecords::$actors
 property	DocumentLinkRecords::$changes
-property	DocumentList::$hasNextPage
-property	DocumentList::$next
-property	DocumentList::$page
-property	DocumentList::$rows
 property	DocumentOpened::$documentId
 property	DocumentOpened::$number
 property	DocumentPageData::$editing
@@ -25070,6 +25033,9 @@ property	PageProps::$owners
 property	PageProps::$readers
 property	PageProps::$windowResults
 property	PageSize::$rows
+property	PaginationData::$lastPage
+property	PaginationData::$page
+property	PaginationData::$total
 property	PaneChoice::$choiceKey
 property	PaneChoice::$label
 property	ParsedFile::$code
@@ -25303,9 +25269,6 @@ property	PlanListData::$rows
 property	PlanListData::$selected
 property	PlanListData::$selectionMissing
 property	PlanNamed::$planId
-property	PlanPaginationData::$lastPage
-property	PlanPaginationData::$page
-property	PlanPaginationData::$total
 property	PlanPhaseTasks::$id
 property	PlanPhaseTasks::$number
 property	PlanPhaseTasks::$revision
@@ -25766,6 +25729,13 @@ property	PublicTypePath::$file
 property	PublicTypePath::$line
 property	PublicTypePath::$member
 property	PublicTypePath::$name
+property	PublicationCard::$abstract
+property	PublicationCard::$attention
+property	PublicationCard::$foundIn
+property	PublicationCard::$id
+property	PublicationCard::$number
+property	PublicationCard::$snippet
+property	PublicationCard::$title
 property	PublicationChunks::$continuations
 property	PublicationClaim::$fence
 property	PublicationClaim::$files
@@ -25778,6 +25748,10 @@ property	PublicationIntent::$selectionDigest
 property	PublicationIntent::$sessionId
 property	PublicationIntent::$skillKeys
 property	PublicationIntent::$target
+property	PublicationList::$hasNextPage
+property	PublicationList::$next
+property	PublicationList::$page
+property	PublicationList::$rows
 property	PublicationLists::$continuations
 property	PublicationLists::$documents
 property	PublicationLists::$reports
@@ -26456,13 +26430,6 @@ property	ReplyToMessageHandler::$answers
 property	ReplyToMessageHandler::$reading
 property	ReplyToMessageHandler::$sending
 property	Report::$attributes
-property	ReportCard::$abstract
-property	ReportCard::$attention
-property	ReportCard::$foundIn
-property	ReportCard::$id
-property	ReportCard::$number
-property	ReportCard::$snippet
-property	ReportCard::$title
 property	ReportCleanup::$hostId
 property	ReportCleanup::$report
 property	ReportCleanup::$sessionId
@@ -26503,10 +26470,6 @@ property	ReportLine::$text
 property	ReportLine::$type
 property	ReportLinkRecords::$actors
 property	ReportLinkRecords::$changes
-property	ReportList::$hasNextPage
-property	ReportList::$next
-property	ReportList::$page
-property	ReportList::$rows
 property	ReportListCommand::$description
 property	ReportListCommand::$help
 property	ReportListCommand::$signature
@@ -26900,9 +26863,6 @@ property	RuleListData::$selected
 property	RuleListData::$selectionMissing
 property	RuleOrigin::$revision
 property	RuleOrigin::$rule
-property	RulePaginationData::$lastPage
-property	RulePaginationData::$page
-property	RulePaginationData::$total
 property	RuleReadTool::$continuations
 property	RuleReadTool::$fields
 property	RuleReadTool::$rules

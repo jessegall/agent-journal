@@ -9,8 +9,8 @@ use App\Text\Support\TextSelection;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\DocumentList;
 use Domain\Documents\Data\DocumentView;
+use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\RevisionView;
@@ -32,7 +32,7 @@ final readonly class DocumentRecords implements DocumentResolver
 {
     public function __construct(private DraftResolver $drafts, private RecordResolver $records) {}
 
-    public function list(DocumentFilters $filters): DocumentList
+    public function list(DocumentFilters $filters): PublicationList
     {
         $size = $filters->pageSize()->rows;
         $searched = $filters->revisions ? 'revisions' : 'currentRevision';
@@ -67,7 +67,7 @@ final readonly class DocumentRecords implements DocumentResolver
             ->get();
         $page = $documents->take($size);
 
-        return DocumentList::from([
+        return PublicationList::from([
             'rows' => array_values(
                 $page->map(
                     fn (Document $document) => $filters->searches() ? $document->searchResult(

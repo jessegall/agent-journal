@@ -12,13 +12,13 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * One page of a list, and whether a next page follows.
  */
 #[TypeScript]
-final class DocumentList extends Data
+final class PublicationList extends Data
 {
     /**
-     * @param  list<DocumentCard>  $rows
+     * @param  list<PublicationCard>  $rows
      */
     public function __construct(
-        #[DataCollectionOf(DocumentCard::class)]
+        #[DataCollectionOf(PublicationCard::class)]
         public readonly array $rows,
         public readonly int $page,
         public readonly bool $hasNextPage,

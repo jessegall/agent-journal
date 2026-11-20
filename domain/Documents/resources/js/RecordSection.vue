@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DocumentCard, ReportCard } from '@generated/types/documents';
+import type { PublicationCard } from '@generated/types/documents';
 import CreateRecordForm from './CreateRecordForm.vue';
 
 /**
@@ -9,7 +9,7 @@ defineProps<{
     heading: string;
     type: 'doc' | 'report';
     path: string;
-    rows: (DocumentCard | ReportCard)[];
+    rows: (PublicationCard | PublicationCard)[];
     createLabel: string;
 }>();
 </script>

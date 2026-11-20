@@ -8,7 +8,6 @@ use App\Ui\Contracts\PageResolver;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanListData;
-use Domain\Plans\Data\PlanPaginationData;
 use Domain\Plans\Data\PlanReaderData;
 use Domain\Plans\Http\Requests\PlansRequest;
 
@@ -30,7 +29,11 @@ final readonly class PlansWindowResolver implements PageResolver
         return PlanListData::from([
             'rows' => PlanCardData::collect($planPage->cards),
             'filters' => $filters->onPage($planPage->page),
-            'pagination' => PlanPaginationData::fromPlanList($planPage),
+            'pagination' => [
+                'page' => $planPage->page,
+                'lastPage' => $planPage->lastPage,
+                'total' => $planPage->total,
+            ],
             'selectionMissing' => $planPage->selection->isMissing(),
             'selected' => PlanReaderData::ofSelection($planPage->selection),
         ]);

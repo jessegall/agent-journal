@@ -7,7 +7,7 @@ namespace Domain\Documents\Calls;
 use App\AgentRequests\Attributes\Endpoint;
 use App\AgentRequests\Contracts\JournalCall;
 use App\AgentRequests\Enums\CallEffect;
-use Domain\Documents\Data\DocumentList;
+use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Enums\AttentionFilter;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Min;
@@ -17,9 +17,9 @@ use Spatie\LaravelData\Data;
 /**
  * Lists documents by attention, one page or one search at a time.
  *
- * @implements JournalCall<DocumentList>
+ * @implements JournalCall<PublicationList>
  */
-#[Endpoint('docs/list', 'POST', DocumentList::class, CallEffect::Read)]
+#[Endpoint('docs/list', 'POST', PublicationList::class, CallEffect::Read)]
 final class ListDocumentsCall extends Data implements JournalCall
 {
     public function __construct(

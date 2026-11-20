@@ -11,9 +11,8 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\ToolArguments;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Contracts\ReportResolver;
-use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\ReportCard;
+use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Enums\AttentionFilter;
 
 final readonly class PublicationLists
@@ -65,11 +64,11 @@ final readonly class PublicationLists
     }
 
     /**
-     * @param  list<DocumentCard|ReportCard>  $cards
+     * @param  list<PublicationCard>  $cards
      */
     private function page(array $cards, bool $hasNext, Continuation $position): ToolResult
     {
-        $entries = array_map(fn (DocumentCard|ReportCard $card) => [
+        $entries = array_map(fn (PublicationCard $card) => [
             'id' => (int) $card->number,
             'record_id' => $card->id,
             'title' => mb_strcut($card->title, 0, 100),

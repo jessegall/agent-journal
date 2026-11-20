@@ -10,10 +10,10 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One report as a list shows it.
+ * One document or report as a list shows it.
  */
 #[TypeScript]
-final class ReportCard extends Data
+final class PublicationCard extends Data
 {
     public function __construct(
         public readonly string $id,

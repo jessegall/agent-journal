@@ -65,18 +65,16 @@ use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DockData;
-use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\DocumentList;
 use Domain\Documents\Data\DocumentPageData;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
+use Domain\Documents\Data\PublicationCard;
+use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordPageData;
 use Domain\Documents\Data\RecordText;
-use Domain\Documents\Data\ReportCard;
-use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionPageData;
@@ -183,12 +181,10 @@ final class DocumentsDomain extends Domain implements
                 AttentionState::class,
                 AttentionFilter::class,
                 DocumentFilters::class,
-                DocumentCard::class,
+                PublicationCard::class,
                 DocumentView::class,
-                DocumentList::class,
-                ReportCard::class,
+                PublicationList::class,
                 ReportView::class,
-                ReportList::class,
             )
             ->commands(
                 CreateDocument::class,

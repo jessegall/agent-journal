@@ -634,6 +634,7 @@ use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Values\EventCommands;
 use App\Hooks\Values\StopAttemptReference;
 use App\Http\Data\Assignments\RecordHolderData;
+use App\Http\Data\PaginationData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Links\Events\LinksRemoved;
 use App\Links\Exceptions\UnknownLinkType;
@@ -1390,6 +1391,7 @@ final class CoreApi
                 WorkspaceReadReference::class,
                 WorkReference::class,
                 HelperImportReceipt::class,
+                PaginationData::class,
                 NavigationUncertainty::class,
                 EventCommands::class,
                 StackWide::class,

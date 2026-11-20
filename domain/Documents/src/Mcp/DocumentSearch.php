@@ -10,8 +10,8 @@ use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\SearchPage;
 use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Contracts\DocumentResolver;
-use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentFilters;
+use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Enums\AttentionFilter;
 
 final readonly class DocumentSearch implements SearchContribution
@@ -36,7 +36,7 @@ final readonly class DocumentSearch implements SearchContribution
             'page' => $page,
             'perPage' => self::PAGE_SIZE,
         ]));
-        $hits = array_map(fn (DocumentCard $document) => SearchHit::matching(
+        $hits = array_map(fn (PublicationCard $document) => SearchHit::matching(
             $this->recordType(),
             $document->id,
             $document->title,

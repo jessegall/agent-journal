@@ -20,7 +20,7 @@ use App\Text\Support\MarkdownText;
 use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\DockCard;
-use Domain\Documents\Data\ReportCard;
+use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\RecordImmutable;
@@ -104,9 +104,9 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
         return $reports->whereKey($reference)->first() ?? throw ReportMissing::identified($reference);
     }
 
-    public function card(): ReportCard
+    public function card(): PublicationCard
     {
-        return ReportCard::from([
+        return PublicationCard::from([
             'id' => $this->id,
             'number' => (string) $this->number,
             'title' => $this->title,
@@ -118,9 +118,9 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
     /**
      * The report as a search found it: its card with a snippet around the words.
      */
-    public function searchResult(string $words): ReportCard
+    public function searchResult(string $words): PublicationCard
     {
-        return ReportCard::from([
+        return PublicationCard::from([
             'id' => $this->id,
             'number' => (string) $this->number,
             'title' => $this->title,

@@ -22,8 +22,8 @@ use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
-use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentView;
+use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
@@ -151,11 +151,11 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
             ->all());
     }
 
-    public function card(): DocumentCard
+    public function card(): PublicationCard
     {
         $revision = $this->currentRevisionOrFail();
 
-        return DocumentCard::from([
+        return PublicationCard::from([
             'id' => $this->id,
             'number' => (string) $this->number,
             'title' => $revision->title,
@@ -167,11 +167,11 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * The document as a search found it: its card with a snippet of the revision that holds the words.
      */
-    public function searchResult(string $words, DocumentRevision $matchingRevision): DocumentCard
+    public function searchResult(string $words, DocumentRevision $matchingRevision): PublicationCard
     {
         $revision = $this->currentRevisionOrFail();
 
-        return DocumentCard::from([
+        return PublicationCard::from([
             'id' => $this->id,
             'number' => (string) $this->number,
             'title' => $revision->title,

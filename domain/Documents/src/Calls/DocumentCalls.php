@@ -8,11 +8,10 @@ use App\AgentRequests\Contracts\CallSender;
 use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Values\CallAccepted;
 use App\Text\Support\TextSelection;
-use Domain\Documents\Data\DocumentList;
 use Domain\Documents\Data\DraftView;
+use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
-use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Enums\AttentionFilter;
 
@@ -119,7 +118,7 @@ final readonly class DocumentCalls
         string|null $query = null,
         bool $revisions = false,
         string|null $after = null,
-    ): DocumentList {
+    ): PublicationList {
         return $this->sender->send(ListDocumentsCall::from([
             'attention' => $attention,
             'page' => $page,
@@ -134,7 +133,7 @@ final readonly class DocumentCalls
         int $page = 1,
         string|null $query = null,
         string|null $after = null,
-    ): ReportList {
+    ): PublicationList {
         return $this->sender->send(ListReportsCall::from([
             'attention' => $attention,
             'page' => $page,

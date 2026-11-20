@@ -8,12 +8,12 @@ use App\Records\Contracts\RecordResolver;
 use App\Text\Support\TextSelection;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
+use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
-use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
-use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordReading;
@@ -28,7 +28,7 @@ final readonly class ReportRecords implements ReportResolver
 {
     public function __construct(private RecordResolver $records) {}
 
-    public function list(DocumentFilters $filters): ReportList
+    public function list(DocumentFilters $filters): PublicationList
     {
         $size = $filters->pageSize()->rows;
         $reports = Report::query()->sharedPublished()->inAttention($filters->attention->state())
@@ -43,7 +43,7 @@ final readonly class ReportRecords implements ReportResolver
             ->get();
         $page = $reports->take($size);
 
-        return ReportList::from([
+        return PublicationList::from([
             'rows' => array_values(
                 $page->map(
                     fn (Report $report) => $filters->searches() ? $report->searchResult(

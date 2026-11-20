@@ -11,7 +11,7 @@ use App\Mcp\Data\SearchPage;
 use App\Operations\Enums\ResourceAreaType;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\ReportCard;
+use Domain\Documents\Data\PublicationCard;
 use Domain\Documents\Enums\AttentionFilter;
 
 final readonly class ReportSearch implements SearchContribution
@@ -36,7 +36,7 @@ final readonly class ReportSearch implements SearchContribution
             'page' => $page,
             'perPage' => self::PAGE_SIZE,
         ]));
-        $hits = array_map(fn (ReportCard $report) => SearchHit::matching(
+        $hits = array_map(fn (PublicationCard $report) => SearchHit::matching(
             $this->recordType(),
             $report->id,
             $report->title,

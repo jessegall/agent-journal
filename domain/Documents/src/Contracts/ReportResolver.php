@@ -8,9 +8,9 @@ use App\Records\Data\RecordCard;
 use App\Text\Exceptions\SectionMissing;
 use App\Text\Support\TextSelection;
 use Domain\Documents\Data\DocumentFilters;
+use Domain\Documents\Data\PublicationList;
 use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
-use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Exceptions\ReportMissing;
 
@@ -19,7 +19,7 @@ use Domain\Documents\Exceptions\ReportMissing;
  */
 interface ReportResolver
 {
-    public function list(DocumentFilters $filters): ReportList;
+    public function list(DocumentFilters $filters): PublicationList;
 
     public function openCount(): int;
 

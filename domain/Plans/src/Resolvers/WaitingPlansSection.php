@@ -11,7 +11,6 @@ use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Contracts\PlanResolver;
 use Domain\Plans\Data\PlanCardData;
 use Domain\Plans\Data\PlanListData;
-use Domain\Plans\Data\PlanPaginationData;
 use Domain\Plans\Enums\PlanStateGroup;
 
 /**
@@ -34,7 +33,11 @@ final readonly class WaitingPlansSection implements SectionResolver
         return PlanListData::from([
             'rows' => PlanCardData::collect($planPage->cards),
             'filters' => ['q' => '', 'page' => $planPage->page, 'state' => PlanStateGroup::Waiting],
-            'pagination' => PlanPaginationData::fromPlanList($planPage),
+            'pagination' => [
+                'page' => $planPage->page,
+                'lastPage' => $planPage->lastPage,
+                'total' => $planPage->total,
+            ],
             'selectionMissing' => false,
         ]);
     }

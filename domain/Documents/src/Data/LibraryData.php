@@ -15,8 +15,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class LibraryData extends Data
 {
     public function __construct(
-        public readonly DocumentList $documents,
-        public readonly ReportList $reports,
+        public readonly PublicationList $documents,
+        public readonly PublicationList $reports,
         public readonly string $sharingNotice,
         public readonly string $query,
         public readonly AttentionFilter $attention,

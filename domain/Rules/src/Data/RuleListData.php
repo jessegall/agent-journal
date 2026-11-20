@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Data;
 
+use App\Http\Data\PaginationData;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -23,7 +24,7 @@ final class RuleListData extends Data
         #[DataCollectionOf(RuleRowData::class)]
         public readonly array $rows,
         public readonly RuleFiltersData $filters,
-        public readonly RulePaginationData $pagination,
+        public readonly PaginationData $pagination,
         public readonly bool $selectionMissing,
         public readonly RuleReaderData|Optional $selected = new Optional(),
     ) {}

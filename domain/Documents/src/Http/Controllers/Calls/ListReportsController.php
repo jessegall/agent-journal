@@ -7,14 +7,14 @@ namespace Domain\Documents\Http\Controllers\Calls;
 use Domain\Documents\Calls\ListReportsCall;
 use Domain\Documents\Contracts\ReportResolver;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Data\ReportList;
+use Domain\Documents\Data\PublicationList;
 
 /**
  * Answers one page of reports.
  */
 final readonly class ListReportsController
 {
-    public function __invoke(ListReportsCall $call, ReportResolver $reports): ReportList
+    public function __invoke(ListReportsCall $call, ReportResolver $reports): PublicationList
     {
         return $reports->list(new DocumentFilters(
             attention: $call->attention,

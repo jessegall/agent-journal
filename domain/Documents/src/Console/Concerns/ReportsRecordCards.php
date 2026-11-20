@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Console\Concerns;
 
 use App\AgentRequests\Values\CommandReport;
-use Domain\Documents\Data\DocumentCard;
-use Domain\Documents\Data\ReportCard;
+use Domain\Documents\Data\PublicationCard;
 
 /**
  * Reports one page of a document or report list: a line per record, where a search found it, and how to read on.
@@ -14,7 +13,7 @@ use Domain\Documents\Data\ReportCard;
 trait ReportsRecordCards
 {
     /**
-     * @param  list<DocumentCard|ReportCard>  $cards
+     * @param  list<PublicationCard>  $cards
      */
     protected function cardsReport(string $alias, array $cards, string|null $next): CommandReport
     {
