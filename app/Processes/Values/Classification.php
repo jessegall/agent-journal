@@ -145,7 +145,7 @@ final readonly class Classification
      */
     public function argvOf(PartClassification $part): array
     {
-        return array_map(fn (Word $word) => (string) $word->literal(), $this->tree->node($part->node)->words);
+        return array_map(fn (Word $word) => (string) $word->literal(), $part->nodeIn($this->tree)->words);
     }
 
     private function isWithin(int $nodeId, int $ancestorId): bool

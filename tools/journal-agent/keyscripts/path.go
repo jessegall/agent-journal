@@ -37,7 +37,7 @@ func (path ProvenPath) Entry() (Entry, error) {
 	}
 	var steps []EntryStep
 	for _, action := range path.Actions {
-		if action.movesHighlight() {
+		if action.isHighlightMove() {
 			continue
 		}
 		step, err := stepOf(action)
@@ -55,8 +55,8 @@ func (path ProvenPath) Entry() (Entry, error) {
 	return Entry{Steps: steps, Completes: path.Completes, NextStep: path.NextStep, Proof: path.Proof}, nil
 }
 
-// movesHighlight is whether the action only moved the highlight, which a library entry drops.
-func (action ActionRecord) movesHighlight() bool {
+// isHighlightMove is whether the action only moved the highlight, which a library entry drops.
+func (action ActionRecord) isHighlightMove() bool {
 	return action.Kind == "key" && highlightKeys[action.Key]
 }
 

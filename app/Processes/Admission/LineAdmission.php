@@ -335,7 +335,7 @@ final readonly class LineAdmission implements ShellAdmission
         string $reason,
         string $correction = self::EXPLAIN,
     ): AdmissionRefusal {
-        $source = $tree->textOf($tree->node($part->node)->range);
+        $source = $tree->textOf($part->nodeIn($tree)->range);
 
         return AdmissionRefusal::of($code, $part->node, $source, $reason, $correction);
     }

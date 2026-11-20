@@ -115,6 +115,11 @@ type screenCapture struct {
 	version uint64
 }
 
+// isSameAs is whether both captures read the same screen version from the same reader.
+func (capture screenCapture) isSameAs(other screenCapture) bool {
+	return capture.reader == other.reader && capture.version == other.version
+}
+
 // screenSender is one runtime's capture loop and what it last sent.
 type screenSender struct {
 	watcher   *ScreenWatcher
@@ -194,7 +199,7 @@ func (sender *screenSender) capture(now time.Time) (screen.Frame, bool) {
 
 	version := reader.Version()
 	capture := screenCapture{reader: reader, version: version}
-	unchanged := sender.lastCapture != nil && *sender.lastCapture == capture
+	unchanged := sender.lastCapture != nil && sender.lastCapture.isSameAs(capture)
 	if unchanged && !sender.signOfLifeDue(now) {
 		return screen.Frame{}, false
 	}

@@ -26,16 +26,18 @@ function sortedSource(string $source): string
     usort($unordered, fn (array $first, array $second): int => $second[0]->getStartFilePos()
         <=> $first[0]->getStartFilePos());
 
+    $sorted = $source;
+
     foreach ($unordered as $groups) {
         $start = $groups[0]->getStartFilePos();
         $end = $groups[array_key_last($groups)]->getEndFilePos();
         $lineStart = (int) strrpos(substr($source, 0, $start), "\n") + 1;
         $indent = substr($source, $lineStart, $start - $lineStart);
         $texts = array_map(fn (AttributeGroup $group): string => $runs->textOf($group), $runs->ordered($groups));
-        $source = substr_replace($source, implode("\n".$indent, $texts), $start, $end - $start + 1);
+        $sorted = substr_replace($sorted, implode("\n".$indent, $texts), $start, $end - $start + 1);
     }
 
-    return $source;
+    return $sorted;
 }
 
 $changed = 0;

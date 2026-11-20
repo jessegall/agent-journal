@@ -32,20 +32,40 @@ use PhpParser\ParserFactory;
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require_once __DIR__.'/promoted-parameters.php';
 
+/**
+ * One name the code declares: what kind of thing it names, the name, and where it is declared.
+ */
+final readonly class DeclaredName
+{
+    public function __construct(
+        public string $kind,
+        public string $name,
+        public string $place,
+    ) {}
+
+    /**
+     * The name as the review file keeps it, without its place: `kind<TAB>Name`.
+     */
+    public function reviewLine(): string
+    {
+        return "{$this->kind}\t{$this->name}";
+    }
+}
+
 $arguments = array_slice($argv, 1);
 $mode = in_array($arguments[0] ?? null, ['--check', '--accept'], true) ? array_shift($arguments) : '--list';
 $reviewedFile = $mode === '--list' ? '' : (string) array_shift($arguments);
 $names = declaredNames($arguments);
 
 if ($mode === '--list') {
-    foreach ($names as [$declarationType, $name, $location]) {
-        echo "{$declarationType}\t{$name}\t{$location}\n";
+    foreach ($names as $declared) {
+        echo "{$declared->reviewLine()}\t{$declared->place}\n";
     }
 
     exit(0);
 }
 
-$current = array_values(array_unique(array_map(fn (array $entry) => "{$entry[0]}\t{$entry[1]}", $names)));
+$current = array_values(array_unique(array_map(fn (DeclaredName $declared) => $declared->reviewLine(), $names)));
 sort($current);
 
 if ($mode === '--accept') {
@@ -66,9 +86,9 @@ if ($unreviewed === []) {
 
 echo count($unreviewed)." declared names were not reviewed yet; read each, rename what is not plain programming English, then record them with --accept:\n";
 
-foreach ($names as [$declarationType, $name, $location]) {
-    if (in_array("{$declarationType}\t{$name}", $unreviewed, true)) {
-        echo "  {$declarationType} {$name} ({$location})\n";
+foreach ($names as $declared) {
+    if (in_array($declared->reviewLine(), $unreviewed, true)) {
+        echo "  {$declared->kind} {$declared->name} ({$declared->place})\n";
     }
 }
 
@@ -76,7 +96,7 @@ exit(1);
 
 /**
  * @param  list<string>  $folders
- * @return list<array{string, string, string}>
+ * @return list<DeclaredName>
  */
 function declaredNames(array $folders): array
 {
@@ -100,18 +120,20 @@ function declaredNames(array $folders): array
                 }
 
                 $typeName = $type->name->toString();
-                $names[] = [declarationTypeOf($type), $typeName, "{$path}:{$type->getStartLine()}"];
+                $names[] = new DeclaredName(declarationTypeOf($type), $typeName, "{$path}:{$type->getStartLine()}");
 
                 foreach ($type->stmts as $member) {
                     foreach (membersOf($member) as [$declarationType, $name]) {
-                        $names[] = [$declarationType, "{$typeName}::{$name}", "{$path}:{$member->getStartLine()}"];
+                        $names[] = new DeclaredName(
+                            $declarationType,
+                            "{$typeName}::{$name}",
+                            "{$path}:{$member->getStartLine()}",
+                        );
                     }
                 }
             }
 
-            foreach (localNamesOf($statements) as [$declarationType, $name, $line]) {
-                $names[] = [$declarationType, $name, "{$path}:{$line}"];
-            }
+            array_push($names, ...localNamesOf($statements, $path));
         }
     }
 
@@ -123,9 +145,9 @@ function declaredNames(array $folders): array
  * and a variable that is not one of them, `$this` or a superglobal. A name counts once however often it is used.
  *
  * @param  array<Node>  $statements
- * @return list<array{string, string, int}>
+ * @return list<DeclaredName>
  */
-function localNamesOf(array $statements): array
+function localNamesOf(array $statements, string $path): array
 {
     $finder = new NodeFinder();
     $parameters = [];
@@ -150,8 +172,16 @@ function localNamesOf(array $statements): array
     }
 
     return [
-        ...array_map(fn (string $name, int $line) => ['parameter', $name, $line], array_keys($parameters), $parameters),
-        ...array_map(fn (string $name, int $line) => ['variable', $name, $line], array_keys($variables), $variables),
+        ...array_map(
+            fn (string $name, int $line) => new DeclaredName('parameter', $name, "{$path}:{$line}"),
+            array_keys($parameters),
+            $parameters,
+        ),
+        ...array_map(
+            fn (string $name, int $line) => new DeclaredName('variable', $name, "{$path}:{$line}"),
+            array_keys($variables),
+            $variables,
+        ),
     ];
 }
 

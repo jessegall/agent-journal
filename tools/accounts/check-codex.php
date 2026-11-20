@@ -37,14 +37,14 @@ $accountB = journal_account($options['accounts_root'], $options['account_b']);
 $home = empty_folder('home');
 
 // Every run gets only the path, an empty home and the account's CODEX_HOME.
-$environment = fn (string $codexHome): array => [
+$environment = fn (string $codexHome) => [
     'PATH' => (string) getenv('PATH'),
     'HOME' => $home,
     'CODEX_HOME' => $codexHome,
 ];
 
 // Only the exit of login status is kept: zero is signed in.
-$signedIn = fn (string $codexHome): bool => run_program([$program, 'login', 'status'], $environment($codexHome), $home)['exit'] === 0;
+$signedIn = fn (string $codexHome): bool => run_program([$program, 'login', 'status'], $environment($codexHome), $home)->succeeded();
 
 // The account keeps its sign-in in its own auth.json: the file setting is in its config.toml and the file exists.
 $usesFileStore = function (string $codexHome) use ($compatibility): bool {
@@ -60,15 +60,15 @@ $loadsWorkFolderServer = function (string $workingRoot, string $trusted) use ($p
     $codexHome = empty_folder('config-home');
     file_put_contents($codexHome.'/config.toml', "[projects.\"{$trusted}\"]\ntrust_level = \"trusted\"\n");
 
-    $servers = run_program([$program, 'mcp', 'list'], $environment($codexHome), $workingRoot)['stdout'];
+    $servers = run_program([$program, 'mcp', 'list'], $environment($codexHome), $workingRoot)->stdout;
 
     return str_contains($servers, 'hostile');
 };
 
-$version = run_program([$program, '--version'], $environment(empty_folder('version')), $home)['stdout'];
+$version = run_program([$program, '--version'], $environment(empty_folder('version')), $home)->stdout;
 $installed = installed_build($program, $version);
-$help = run_program([$program, '--help'], $environment(empty_folder('help')), $home)['stdout']
-    .run_program([$program, 'exec', '--help'], $environment(empty_folder('exec-help')), $home)['stdout'];
+$help = run_program([$program, '--help'], $environment(empty_folder('help')), $home)->stdout
+    .run_program([$program, 'exec', '--help'], $environment(empty_folder('exec-help')), $home)->stdout;
 $absentFlags = array_filter($compatibility->startFlags, fn (string $flag) => ! str_contains($help, $flag));
 
 $work = (string) realpath(empty_folder('work'));

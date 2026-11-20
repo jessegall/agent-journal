@@ -10,6 +10,7 @@ use App\Skills\Exceptions\SkillRevisionImmutable;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRequest;
 use App\Skills\Models\SkillRevision;
+use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillDraft;
@@ -43,7 +44,7 @@ final class StoredSkillModelsTest extends TestCase
 
     public function test_revisions_append_in_order_keep_their_content_and_refuse_updates(): void
     {
-        $skill = Skill::start(SkillKey::from('user-review-notes'), $this->author(), 'main');
+        $skill = Skill::start(SkillKey::from('user-review-notes'), $this->author(), SkillContextResolver::ENVIRONMENT);
         $first = $skill->appendRevision($this->draft('First.'), Conditions::everyone(), $this->author());
         $second = $skill->appendRevision($this->draft('Second.'), Conditions::dispatchesWork(), $this->author());
 
@@ -82,12 +83,12 @@ final class StoredSkillModelsTest extends TestCase
     public function test_visibility_keeps_another_environment_out(): void
     {
         Skill::start(SkillKey::from('user-everywhere'), $this->author(), null);
-        Skill::start(SkillKey::from('user-here'), $this->author(), 'main');
+        Skill::start(SkillKey::from('user-here'), $this->author(), SkillContextResolver::ENVIRONMENT);
         Skill::start(SkillKey::from('user-elsewhere'), $this->author(), 'other');
 
         $this->assertSame(
             ['user-everywhere', 'user-here'],
-            array_map(fn (Skill $skill) => $skill->key, Skill::activeIn('main', 10)),
+            array_map(fn (Skill $skill) => $skill->key, Skill::activeIn(SkillContextResolver::ENVIRONMENT, 10)),
         );
         $this->assertCount(3, Skill::allForMaintenance(10));
     }

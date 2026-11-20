@@ -2,7 +2,7 @@
 // generated types and routes, and packages. Web, the shell, may also use @/. The owners and their folders come from
 // resources/js/generated/domain-roots.json, written by php artisan journal:ui-manifest from the same registry.
 // Usage: node scripts/check-domain-imports.mjs [roots.json] [project root]
-import { readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import ts from 'typescript';
 import { parse } from 'vue/compiler-sfc';
@@ -76,13 +76,9 @@ function refusalOf(owner, ownFolder, file, specifier) {
     }
 
     if (specifier.startsWith('.')) {
-        let target = resolve(dirname(file), specifier);
-
-        try {
-            target = realpathSync(target);
-        } catch {
-            // A path without its extension is still judged by where it points.
-        }
+        const written = resolve(dirname(file), specifier);
+        // A path without its extension is still judged by where it points.
+        const target = existsSync(written) ? realpathSync(written) : written;
 
         return target === ownFolder || target.startsWith(ownFolder + sep) ? null : 'a relative path leaves the domain';
     }
@@ -111,23 +107,26 @@ function refusalOf(owner, ownFolder, file, specifier) {
     return specifier.startsWith('/') ? 'an absolute path' : null;
 }
 
-const refusals = [];
+/**
+ * Every refused import of one file, each as the line the check prints.
+ */
+function fileRefusals(owner, ownFolder, file) {
+    return scriptsOf(file)
+        .flatMap((script) => specifiersOf(script, file))
+        .map((specifier) => [specifier, refusalOf(owner, ownFolder, file, specifier)])
+        .filter(([, refusal]) => refusal !== null)
+        .map(([specifier, refusal]) => {
+            const written = specifier ?? '(an import without a written path)';
 
-for (const [owner, folder] of Object.entries(owners)) {
+            return `${relative(projectRoot, file)}: ${written}: ${refusal}`;
+        });
+}
+
+const refusals = Object.entries(owners).flatMap(([owner, folder]) => {
     const ownFolder = realpathSync(resolve(projectRoot, folder));
 
-    for (const file of sourceFiles(ownFolder)) {
-        for (const script of scriptsOf(file)) {
-            for (const specifier of specifiersOf(script, file)) {
-                const refusal = refusalOf(owner, ownFolder, file, specifier);
-
-                if (refusal !== null) {
-                    refusals.push(`${relative(projectRoot, file)}: ${specifier ?? '(an import without a written path)'}: ${refusal}`);
-                }
-            }
-        }
-    }
-}
+    return sourceFiles(ownFolder).flatMap((file) => fileRefusals(owner, ownFolder, file));
+});
 
 if (refusals.length > 0) {
     console.error(`Domain imports refused (${refusals.length}):\n${refusals.join('\n')}`);

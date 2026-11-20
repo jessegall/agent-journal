@@ -12,6 +12,17 @@ const actorNames = {
     visitor: 'Unknown visitor',
 } as const;
 defineProps<{ audit: ShareDetailData['audit'] }>();
+
+type AuditEntry = ShareDetailData['audit']['entries'][number];
+
+/** What happened: a public read says whether it was allowed, every other step is named by its type. */
+function whatHappened(entry: AuditEntry): string {
+    if (!entry.isRead) {
+        return entry.type;
+    }
+
+    return `Public read: ${entry.type === 'read_allowed' ? 'allowed' : 'denied'}`;
+}
 defineEmits<{ older: [] }>();
 </script>
 
@@ -31,11 +42,7 @@ defineEmits<{ older: [] }>();
                     <tr :class="entry.isRead ? 'text-muted' : ''">
                         <td>{{ entry.occurredAt }}</td>
                         <td>
-                            {{
-                                entry.isRead
-                                    ? `Public read: ${entry.type === 'read_allowed' ? 'allowed' : 'denied'}`
-                                    : entry.type
-                            }}
+                            {{ whatHappened(entry) }}
                         </td>
                         <td>{{ actorNames[entry.actor] }}</td>
                         <td>{{ entry.reasonCode ?? '' }}</td>

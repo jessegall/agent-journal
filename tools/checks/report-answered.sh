@@ -23,6 +23,10 @@ fi
 
 echo "Issue $issue of $repository is answered:"
 echo "$answer"
+echo
+echo "Act on the answer: upgrade the plugin when it names a release (journal plugin upgrade code-commandments --yes),"
+echo "fix the code when the finding is upheld, then drop the report so its lines are judged again:"
+echo "  .journal/plugins/code-commandments/bin/commandments-release report forget $issue"
 
 mkdir -p "$answered_folder"
 if [ ! -f "$answered_marker" ]; then

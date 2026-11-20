@@ -36,27 +36,36 @@ def wrap(line):
     return lines
 
 
+def php_files(roots):
+    """Every .php file under the roots."""
+    for root in roots:
+        for folder, _, names in os.walk(root):
+            yield from (os.path.join(folder, name) for name in names if name.endswith('.php'))
+
+
+def is_long_comment(line):
+    """Whether the line is a comment past the limit that is not a docblock's closing line."""
+    return len(line) > LIMIT and COMMENT.match(line) and not line.lstrip().startswith('*/')
+
+
+def wrapped_lines(source):
+    """The file's lines with every long comment wrapped, and how many comment lines were wrapped."""
+    output = []
+    count = 0
+    for line in source:
+        pieces = wrap(line) if is_long_comment(line) else [line]
+        output += pieces if len(pieces) > 1 else [line]
+        count += len(pieces) > 1
+    return output, count
+
+
 changed_files = 0
 wrapped = 0
-for root in sys.argv[1:]:
-    for folder, _, names in os.walk(root):
-        for name in names:
-            if not name.endswith('.php'):
-                continue
-            path = os.path.join(folder, name)
-            source = open(path).read().split('\n')
-            output = []
-            touched = False
-            for line in source:
-                if len(line) > LIMIT and COMMENT.match(line) and not line.lstrip().startswith('*/'):
-                    pieces = wrap(line)
-                    if len(pieces) > 1:
-                        output += pieces
-                        touched = True
-                        wrapped += 1
-                        continue
-                output.append(line)
-            if touched:
-                open(path, 'w').write('\n'.join(output))
-                changed_files += 1
+for path in php_files(sys.argv[1:]):
+    source = open(path).read().split('\n')
+    output, count = wrapped_lines(source)
+    if count:
+        open(path, 'w').write('\n'.join(output))
+        changed_files += 1
+        wrapped += count
 print(f'Wrapped {wrapped} comment lines in {changed_files} files.')

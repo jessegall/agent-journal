@@ -18,6 +18,71 @@ const MISSING = 'missing';
 const FAIL = 'fail';
 
 /**
+ * A refusal of the evidence procedure: an option it does not know, an account outside the journal's accounts
+ * folder, or a program that would not start.
+ */
+final class EvidenceRefused extends RuntimeException
+{
+    public static function unknownOption(string $name): self
+    {
+        return new self(sprintf('Unknown option %s.', $name));
+    }
+
+    public static function accountOutsideJournal(): self
+    {
+        return new self('An account directory must lie inside the journal accounts folder.');
+    }
+
+    public static function notStarted(string $program): self
+    {
+        return new self(sprintf('%s could not be started.', $program));
+    }
+}
+
+/**
+ * One run of a program: its exit code and its standard output.
+ */
+final readonly class ProgramRun
+{
+    public function __construct(
+        public int $exit,
+        public string $stdout,
+    ) {}
+
+    public function succeeded(): bool
+    {
+        return $this->exit === 0;
+    }
+}
+
+/**
+ * Whether an account is signed in, with a digest of its identity when its program names one.
+ */
+final readonly class AccountStatus
+{
+    public function __construct(
+        public bool $signedIn,
+        public string|null $identityDigest,
+    ) {}
+}
+
+/**
+ * The installed build of a program: its version number and the sha256 of its binary.
+ */
+final readonly class InstalledBuild
+{
+    public function __construct(
+        public string $version,
+        public string $digest,
+    ) {}
+
+    public function isPinnedBy(ProgramCompatibility $compatibility): bool
+    {
+        return $this->version === $compatibility->version && $compatibility->isPinnedBinary($this->digest);
+    }
+}
+
+/**
  * @param  list<string>  $arguments
  * @return array{
  *     program: string,
@@ -51,7 +116,7 @@ function read_options(array $arguments, string $defaultProgram): array
             '--allow-requests' => $options['allow_requests'] = true,
             '--host' => $options['host_agent'] = $value,
             '--host-state' => $options['host_state'] = $value,
-            default => throw new RuntimeException("Unknown option {$name}."),
+            default => throw EvidenceRefused::unknownOption($name),
         };
     }
 
@@ -71,7 +136,7 @@ function journal_account(string|null $accountsRoot, string|null $directory): str
     $resolved = realpath($directory);
 
     if ($root === false || $resolved === false || ! str_starts_with($resolved, $root.DIRECTORY_SEPARATOR)) {
-        throw new RuntimeException('An account directory must lie inside the journal accounts folder.');
+        throw EvidenceRefused::accountOutsideJournal();
     }
 
     return $resolved;
@@ -97,7 +162,11 @@ function remove_folder(string $folder): void
 
     foreach (array_diff((array) scandir($folder), ['.', '..']) as $name) {
         $path = $folder.'/'.$name;
-        is_dir($path) && ! is_link($path) ? remove_folder($path) : unlink($path);
+        if (is_dir($path) && ! is_link($path)) {
+            remove_folder($path);
+        } else {
+            unlink($path);
+        }
     }
 
     rmdir($folder);
@@ -109,21 +178,20 @@ function remove_folder(string $folder): void
  *
  * @param  list<string>  $command
  * @param  array<string, string>  $environment
- * @return array{exit: int, stdout: string}
  */
-function run_program(array $command, array $environment, string $workingDirectory): array
+function run_program(array $command, array $environment, string $workingDirectory): ProgramRun
 {
     $streams = [1 => ['pipe', 'w'], 2 => ['file', '/dev/null', 'w']];
     $process = proc_open($command, $streams, $pipes, $workingDirectory, $environment);
 
     if (! is_resource($process)) {
-        throw new RuntimeException("{$command[0]} could not be started.");
+        throw EvidenceRefused::notStarted($command[0]);
     }
 
     $stdout = (string) stream_get_contents($pipes[1]);
     fclose($pipes[1]);
 
-    return ['exit' => proc_close($process), 'stdout' => $stdout];
+    return new ProgramRun(proc_close($process), $stdout);
 }
 
 /**
@@ -144,7 +212,7 @@ function protected_host_items(string|null $hostAgent, string|null $hostState, st
         array_push($command, '--state', $hostState);
     }
 
-    $report = json_decode(run_program($command, ['PATH' => (string) getenv('PATH')], sys_get_temp_dir())['stdout'], true);
+    $report = json_decode(run_program($command, ['PATH' => (string) getenv('PATH')], sys_get_temp_dir())->stdout, true);
 
     if (! is_array($report) || ! is_array($report['items'] ?? null)) {
         return [item('protected-host', 'missing', 'the protected host gave no protection report', 'task 258')];
@@ -168,31 +236,28 @@ function item(string $id, string $result, string $reason, string $consumer): arr
 
 /**
  * The installed build: its version line's number and the sha256 of the binary the command resolves to.
- *
- * @return array{version: string, digest: string}
  */
-function installed_build(string $program, string $versionOutput): array
+function installed_build(string $program, string $versionOutput): InstalledBuild
 {
     preg_match('/\d+\.\d+\.\d+/', $versionOutput, $version);
     $path = str_contains($program, '/') ? $program : trim((string) shell_exec('command -v '.escapeshellarg($program)));
     $binary = realpath($path);
 
-    return [
-        'version' => $version[0] ?? 'unknown',
-        'digest' => $binary === false ? 'unknown' : (string) hash_file('sha256', $binary),
-    ];
+    return new InstalledBuild(
+        $version[0] ?? 'unknown',
+        $binary === false ? 'unknown' : (string) hash_file('sha256', $binary),
+    );
 }
 
 /**
- * @param  array{version: string, digest: string}  $installed
  * @param  list<array{item: string, result: string, reason: string, consumer: string}>  $items
  */
-function print_evidence(ProgramCompatibility $compatibility, array $installed, array $items): void
+function print_evidence(ProgramCompatibility $compatibility, InstalledBuild $installed, array $items): void
 {
     echo json_encode([
         'program' => $compatibility->program->value,
-        'version' => $installed['version'],
-        'binary_sha256' => $installed['digest'],
+        'version' => $installed->version,
+        'binary_sha256' => $installed->digest,
         'arrangement' => $compatibility->arrangement->value,
         'items' => $items,
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR).PHP_EOL;
@@ -201,12 +266,11 @@ function print_evidence(ProgramCompatibility $compatibility, array $installed, a
 /**
  * Whether the installed build is the pinned one, as the first item of every procedure.
  *
- * @param  array{version: string, digest: string}  $installed
  * @return array{item: string, result: string, reason: string, consumer: string}
  */
-function pinned_build_item(ProgramCompatibility $compatibility, array $installed, string $consumer): array
+function pinned_build_item(ProgramCompatibility $compatibility, InstalledBuild $installed, string $consumer): array
 {
-    $pinned = $installed['version'] === $compatibility->version && $compatibility->isPinnedBinary($installed['digest']);
+    $pinned = $installed->isPinnedBy($compatibility);
 
     return judged('pinned-build', $pinned, 'the installed binary is the pinned build', 'another build', $consumer);
 }

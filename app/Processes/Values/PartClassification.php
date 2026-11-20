@@ -30,6 +30,14 @@ final readonly class PartClassification
         public array $contracts = [],
     ) {}
 
+    /**
+     * The part's own node in the tree it was classified from.
+     */
+    public function nodeIn(ShellTree $tree): ShellNode
+    {
+        return $tree->node($this->node);
+    }
+
     public function classes(): CommandClassSet
     {
         return CommandClassSet::of(...array_map(fn (ClassFact $fact): CommandClass => $fact->class, $this->facts));

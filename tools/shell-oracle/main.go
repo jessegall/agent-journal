@@ -149,12 +149,13 @@ func commandSpan(statement *syntax.Stmt) (Span, bool) {
 // leftmostStatement is the first statement a timed pipeline runs: time measures the whole pipeline, and version 6
 // keeps the time keyword on its first command.
 func leftmostStatement(statement *syntax.Stmt) *syntax.Stmt {
+	leftmost := statement
 	for {
-		binary, ok := statement.Cmd.(*syntax.BinaryCmd)
+		binary, ok := leftmost.Cmd.(*syntax.BinaryCmd)
 		if !ok {
-			return statement
+			return leftmost
 		}
-		statement = binary.X
+		leftmost = binary.X
 	}
 }
 

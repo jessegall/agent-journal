@@ -113,17 +113,24 @@ func TestAnEndedProgramLeavesNoReaderAndARelaunchGetsANewOne(t *testing.T) {
 	first, _ := socket.ReaderFor("runtime-1")
 
 	(<-programs).Close()
-	deadline := time.Now().Add(time.Second)
-	for _, found := socket.ReaderFor("runtime-1"); found; _, found = socket.ReaderFor("runtime-1") {
-		if time.Now().After(deadline) {
-			t.Fatal("the ended program's terminal stayed")
-		}
-		time.Sleep(5 * time.Millisecond)
-	}
+	waitUntilTerminalGone(t, socket, "runtime-1")
 
 	attached(t, socket, "runtime-1", 24, 80)
 	waitForSize(t, socket, "runtime-1", 24, 80)
 	if second, _ := socket.ReaderFor("runtime-1"); second == first {
 		t.Fatal("the relaunch reuses the ended program's reader")
 	}
+}
+
+// waitUntilTerminalGone waits up to a second for the runtime's terminal to leave the socket.
+func waitUntilTerminalGone(t *testing.T, socket *AttachSocket, runtimeID string) {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if _, found := socket.ReaderFor(runtimeID); !found {
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatal("the ended program's terminal stayed")
 }

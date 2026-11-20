@@ -36,7 +36,7 @@ trait SendsHostCalls
      */
     private function hostCall(EnrolledHost $host, string $target, array|null $body = null): TestResponse
     {
-        $content = $body === null ? '' : (json_encode((object) $body) ?: '{}');
+        $content = $body === null ? '' : json_encode((object) $body, JSON_THROW_ON_ERROR);
 
         return $this->signedHostCall($host, 'POST', $target, $content);
     }

@@ -63,27 +63,18 @@ final readonly class ProgramCompatibility
     }
 
     /**
-     * Refuses an account start whose way of sharing the sign-in the real program has not shown.
-     *
-     * @throws ProgramArrangementUnproven
-     */
-    /**
      * The same compatibility with the evidence its arrangement now has.
      */
     public function withEvidence(ProgramEvidence $evidence): self
     {
-        return new self(
-            $this->program,
-            $this->version,
-            $this->binaryDigest,
-            $this->startFlags,
-            $this->settings,
-            $this->arrangement,
-            $evidence,
-            $this->evidenceOwner,
-        );
+        return clone ($this, ['arrangementEvidence' => $evidence]);
     }
 
+    /**
+     * Refuses an account start whose way of sharing the sign-in the real program has not shown.
+     *
+     * @throws ProgramArrangementUnproven
+     */
     public function requireStartable(): void
     {
         if (! $this->arrangementEvidence->isNativeShown()) {

@@ -121,7 +121,7 @@ final class TerminalViewRoutesTest extends TestCase
         $this->assertThrows(
             fn () => $this->app->make(TerminalViewResponses::class)->answer(
                 $agentId,
-                fn (): Response => $frames->after($agentId, '', 0)->getOrCall(fn (): Response => new Response()),
+                fn () => $frames->after($agentId, '', 0)->getOrCall(fn () => new Response()),
             ),
             TerminalViewRefused::class,
             'You may not inspect this agent',

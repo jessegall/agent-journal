@@ -50,17 +50,17 @@ export function useTerminalFrames(agentId: string) {
         if (answer.endedAt !== undefined) {
             endedAt.value = answer.endedAt;
         }
-        if (
-            answer.frame === undefined ||
-            answer.receivedAt === undefined ||
-            !supersedes(answer.frame, drawn.value)
-        ) {
+        const { frame, receivedAt: frameReceivedAt } = answer;
+        if (frame === undefined || frameReceivedAt === undefined) {
             return;
         }
-        drawn.value = answer.frame;
-        receivedAt.value = Date.parse(answer.receivedAt);
-        held.epoch = answer.frame.epoch;
-        held.after = answer.frame.sequence;
+        if (!supersedes(frame, drawn.value)) {
+            return;
+        }
+        drawn.value = frame;
+        receivedAt.value = Date.parse(frameReceivedAt);
+        held.epoch = frame.epoch;
+        held.after = frame.sequence;
     }
 
     async function poll(): Promise<void> {

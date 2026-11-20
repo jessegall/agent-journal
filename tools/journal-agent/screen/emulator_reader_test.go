@@ -62,15 +62,11 @@ func TestEveryRecordingReadsTheSameWhenSplitAtEveryByte(t *testing.T) {
 	for _, fixture := range fixtures {
 		whole, bytewise := newReader(t, 120, 40), newReader(t, 120, 40)
 
-		for _, chunk := range fixture.Output {
-			if err := whole.Feed(chunk.Bytes); err != nil {
-				t.Fatal(err)
-			}
-			for index := range chunk.Bytes {
-				if err := bytewise.Feed(chunk.Bytes[index : index+1]); err != nil {
-					t.Fatal(err)
-				}
-			}
+		if err := fixture.FeedScreen(whole); err != nil {
+			t.Fatal(err)
+		}
+		if err := fixture.FeedScreen(byteByByte{bytewise}); err != nil {
+			t.Fatal(err)
 		}
 
 		if !reflect.DeepEqual(whole.Snapshot(), bytewise.Snapshot()) {
@@ -204,4 +200,16 @@ func TestTheScreenGenerationCountsAChangeUndoneBetweenTwoReadsAndNotARepeatedRea
 	if reader.ScreenGeneration() != before+2 {
 		t.Fatalf("a spinner redraw moved the screen generation to %d", reader.ScreenGeneration())
 	}
+}
+
+// byteByByte feeds its reader one byte at a time, whatever chunk it is handed.
+type byteByByte struct{ *EmulatorReader }
+
+func (reader byteByByte) Feed(bytes []byte) error {
+	for index := range bytes {
+		if err := reader.EmulatorReader.Feed(bytes[index : index+1]); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -25,8 +25,8 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * An agent the journal starts, with the profile it starts with. It can hold assigned work until it is
- * retired; retirement is final.
+ * An agent the journal starts, with the profile it starts with and the work assigned to it. A retired agent
+ * holds no work and cannot be started again.
  *
  * @property string $id
  * @property string|null $current_session_id

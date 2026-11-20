@@ -24,9 +24,9 @@ final readonly class AttributeRuns
      */
     public function in(array $nodes): array
     {
-        $declarations = new NodeFinder()->find($nodes, fn (Node $node): bool => $this->standsInARun($node));
+        $declarations = new NodeFinder()->find($nodes, fn (Node $node) => $this->standsInARun($node));
 
-        return array_values(array_map(fn (Node $node): array => $this->groupsOf($node), $declarations));
+        return array_values(array_map(fn (Node $node) => $this->groupsOf($node), $declarations));
     }
 
     /**

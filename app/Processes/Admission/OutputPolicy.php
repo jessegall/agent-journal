@@ -49,7 +49,7 @@ final readonly class OutputPolicy
      */
     private function hiddenAround(ShellTree $tree, PartClassification $part): array
     {
-        $own = $tree->node($part->node);
+        $own = $part->nodeIn($tree);
         $correction = $tree->withoutRedirects($own);
         $hidden = [];
         $node = $own;

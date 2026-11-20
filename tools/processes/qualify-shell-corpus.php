@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Processes\Enums\ShellDialect;
+
+require dirname(__DIR__, 2).'/vendor/autoload.php';
+
 /*
  * The full-corpus qualification of version 6's shell syntax (doc 21 revision 3, sections 35 and 36). It reads every
  * private corpus source in ../shell-corpus-private (outside the project), deduplicates the lines by source and dialect, splits them into
@@ -185,7 +189,8 @@ function corpusRecords(): array
     eachLine(CORPUS.'/all_commands.txt', fn (string $line) => $add('all_commands.txt', explode("\t", $line, 2)[1] ?? null));
     eachLine(CORPUS.'/github_commands.jsonl', function (string $line) use ($add): void {
         $row = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
-        if (in_array($row['shell'] ?? 'bash', ['bash', 'sh'], true)) {
+        $dialect = ShellDialect::tryFrom($row['shell'] ?? ShellDialect::Bash->value);
+        if (in_array($dialect, [ShellDialect::Bash, ShellDialect::Sh], true)) {
             $add('github_commands.jsonl', $row['line'] ?? null, $row['shell'] ?? 'bash');
         }
     });

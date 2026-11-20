@@ -823,19 +823,15 @@ function importing(string $body, string $onward): string
 }
 
 /**
- * Where the class is declared, or null when nothing declares it. A short name can be declared more than
- * once across the tree — `Instant` is a modifier and a contract — so a scope narrows the search to the
- * namespace the class is being taken from.
- *
- * @param  list<string>  $files
- *
- * The one file declaring this class. A name that several files declare is REFUSED rather than guessed
- * at: picking the first renamed a class nobody asked about — and because every reference to the one
- * that WAS asked about had been repointed, `No dangling references` still reported clean.
- *
- * A fully-qualified name settles it, and so does `--namespace=`.
- * @param  list<string>  $files
- *
+ * The lookbehinds that keep a member of the same name: `case Name`, `const Name`, `function Name` and `->Name`
+ * declare or reach a member, never the class (an enum case once took the renamed class's name).
+ */
+function memberLookbehinds(): string
+{
+    return '(?<!->)(?<!case )(?<!const )(?<!function )';
+}
+
+/**
  * The body with every mention of the bare short name renamed.
  *
  * Three things it must not touch. A member reached through `::` — `Tag::Surface` is an enum case that
@@ -849,15 +845,6 @@ function importing(string $body, string $onward): string
  * `Ui\Client\Client` once rewrote `'src/Ui/Client/ScriptCompiler.php'` inside a `#[MustFailWhen]` to a
  * directory that does not exist, and the run reported no dangling references because a path is not one.
  */
-/**
- * The lookbehinds that keep a member of the same name: `case Name`, `const Name`, `function Name` and `->Name`
- * declare or reach a member, never the class (an enum case once took the renamed class's name).
- */
-function memberLookbehinds(): string
-{
-    return '(?<!->)(?<!case )(?<!const )(?<!function )';
-}
-
 function renamed(string $body, string $old, string $new): string
 {
     $pattern = '/'.memberLookbehinds().'(?<!::)(?<!\\\\)(?<!\\/)\b'.preg_quote($old, '/').'\b(?!\\\\)(?!\\/)/';
@@ -934,8 +921,9 @@ function isContract(string $qualified): bool
  * The contract is then `PipelineRunnerContract` and the class keeps the plain name, so neither is written
  * with a namespace in front of it (user message 9357).
  */
-function contractsAliased(string $body): string
+function contractsAliased(string $source): string
 {
+    $body = $source;
     preg_match_all('/^use\s+((?:\w+\\\\)+Contracts\\\\(\w+));$/m', $body, $contracts, PREG_SET_ORDER);
 
     foreach ($contracts as [$line, $qualified, $short]) {
@@ -1019,6 +1007,19 @@ function shortNameOf(string $class): string
     return basename(str_replace('\\', '/', $class));
 }
 
+/**
+ * Where the class is declared, or null when nothing declares it. A short name can be declared more than
+ * once across the tree — `Instant` is a modifier and a contract — so a scope narrows the search to the
+ * namespace the class is being taken from.
+ *
+ * The one file declaring this class. A name that several files declare is REFUSED rather than guessed
+ * at: picking the first renamed a class nobody asked about — and because every reference to the one
+ * that WAS asked about had been repointed, `No dangling references` still reported clean.
+ *
+ * A fully-qualified name settles it, and so does `--namespace=`.
+ *
+ * @param  list<string>  $files
+ */
 function declaredIn(string $class, array $files, string|null $scope = null): string|null
 {
     $wanted = basename(str_replace('\\', '/', $class));

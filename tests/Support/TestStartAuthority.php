@@ -29,11 +29,9 @@ final class TestStartAuthority
     {
         $profileKey = Agent::query()->whereKey($agentId)->value('profile_key');
 
-        return self::of(match ($profileKey) {
-            'read-only-helper' => ProfileBase::readOnlyHelper(),
-            'writing-helper' => ProfileBase::writingHelper(),
-            default => ProfileBase::mainAgent(),
-        });
+        $base = array_find(ProfileBase::all(), fn (ProfileBase $base) => $base->key === $profileKey);
+
+        return self::of($base ?? ProfileBase::mainAgent());
     }
 
     public static function of(ProfileBase|null $base = null): StartProfileAuthority

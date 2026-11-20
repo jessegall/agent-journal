@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 use App\Hooks\Support\ProgramCompatibility;
 use App\Programs\Enums\HookProgram;
+use Tools\Accounts\AccountStatus;
 
 use function Tools\Accounts\empty_folder;
 use function Tools\Accounts\installed_build;
@@ -40,7 +41,7 @@ $home = empty_folder('home');
 $emptyAnthropic = empty_folder('anthropic');
 
 // Every run gets only the path, an empty home, the account directory and an empty Anthropic folder.
-$environment = fn (string $accountDirectory): array => [
+$environment = fn (string $accountDirectory) => [
     'PATH' => (string) getenv('PATH'),
     'HOME' => $home,
     'CLAUDE_CONFIG_DIR' => $accountDirectory,
@@ -48,27 +49,27 @@ $environment = fn (string $accountDirectory): array => [
 ];
 
 // Of an account's status only whether it is signed in and a digest of its identity are kept.
-$status = function (string $accountDirectory) use ($program, $environment, $home): array {
+$status = function (string $accountDirectory) use ($program, $environment, $home): AccountStatus {
     $run = run_program([$program, 'auth', 'status', '--json'], $environment($accountDirectory), $home);
-    $report = json_decode($run['stdout'], true) ?: [];
+    $report = json_decode($run->stdout, true) ?: [];
     $identity = $report['email'] ?? $report['orgId'] ?? null;
 
-    return [
-        'signed_in' => ($report['loggedIn'] ?? false) === true,
-        'identity' => is_string($identity) ? hash('sha256', $identity) : null,
-    ];
+    return new AccountStatus(
+        ($report['loggedIn'] ?? false) === true,
+        is_string($identity) ? hash('sha256', $identity) : null,
+    );
 };
 
-$version = run_program([$program, '--version'], $environment(empty_folder('version')), $home)['stdout'];
+$version = run_program([$program, '--version'], $environment(empty_folder('version')), $home)->stdout;
 $installed = installed_build($program, $version);
-$help = run_program([$program, '--help'], $environment(empty_folder('help')), $home)['stdout'];
+$help = run_program([$program, '--help'], $environment(empty_folder('help')), $home)->stdout;
 $absentFlags = array_filter($compatibility->startFlags, fn (string $flag) => ! str_contains($help, $flag));
 $signedOut = $status(empty_folder('signed-out'));
 
 $items = [
     pinned_build_item($compatibility, $installed, 'task 252'),
     judged('start-flags', $absentFlags === [], 'the help names every start flag', 'a flag is absent', 'task 240'),
-    judged('empty-account-signed-out', ! $signedOut['signed_in'], 'no credential', 'it reported a sign-in', 'task 240'),
+    judged('empty-account-signed-out', ! $signedOut->signedIn, 'no credential', 'it reported a sign-in', 'task 240'),
 ];
 
 $statusA = $accountA === null ? null : $status($accountA);
@@ -77,35 +78,35 @@ $statusB = $accountB === null ? null : $status($accountB);
 foreach (['a' => $statusA, 'b' => $statusB] as $name => $accountStatus) {
     $items[] = $accountStatus === null
         ? missing("account-{$name}-signed-in", "a journal account {$name} signed in through the host", 'task 253')
-        : judged("account-{$name}-signed-in", $accountStatus['signed_in'], 'signed in', 'not signed in', 'task 253');
+        : judged("account-{$name}-signed-in", $accountStatus->signedIn, 'signed in', 'not signed in', 'task 253');
 }
 
-$bothSignedIn = ($statusA['signed_in'] ?? false) && ($statusB['signed_in'] ?? false);
+$bothSignedIn = ($statusA?->signedIn ?? false) && ($statusB?->signedIn ?? false);
 $items[] = match (true) {
     ! $bothSignedIn => missing('accounts-separate', 'two signed-in journal accounts', 'task 231'),
-    $statusA['identity'] === null || $statusB['identity'] === null => missing('accounts-separate', 'an account identity in auth status', 'task 231'),
+    $statusA->identityDigest === null || $statusB->identityDigest === null => missing('accounts-separate', 'an account identity in auth status', 'task 231'),
     default => judged(
         'accounts-separate',
-        $statusA['identity'] !== $statusB['identity'],
+        $statusA->identityDigest !== $statusB->identityDigest,
         'accounts A and B report different identities',
         'accounts A and B report the same identity',
         'task 231',
     ),
 };
 
-$restarted = ($statusA['signed_in'] ?? false) && $accountA !== null ? $status($accountA) : null;
+$restarted = ($statusA?->signedIn ?? false) && $accountA !== null ? $status($accountA) : null;
 $items[] = $restarted === null
     ? missing('sign-in-survives-restart', 'a signed-in journal account A', 'task 247')
     : judged(
         'sign-in-survives-restart',
-        $restarted['signed_in'] && $restarted['identity'] === $statusA['identity'],
+        $restarted->signedIn && $restarted->identityDigest === $statusA->identityDigest,
         'a new process finds account A signed in as before',
         'a new process does not find account A signed in as before',
         'task 247',
     );
 
 $items[] = (function () use ($options, $statusA, $accountA, $program, $environment): array {
-    if (! $options['allow_requests'] || ! ($statusA['signed_in'] ?? false) || $accountA === null) {
+    if (! $options['allow_requests'] || ! ($statusA?->signedIn ?? false) || $accountA === null) {
         return missing('hostile-work-settings-ignored', 'a signed-in account A and --allow-requests', 'task 262');
     }
 
@@ -126,7 +127,7 @@ $items[] = (function () use ($options, $statusA, $accountA, $program, $environme
     ];
     $run = run_program($command, $environment($accountA), $work);
 
-    return $run['exit'] === 0
+    return $run->succeeded()
         ? judged('hostile-work-settings-ignored', ! file_exists($marker), 'its hook stayed off', 'it ran', 'task 262')
         : missing('hostile-work-settings-ignored', 'a restricted request that completes', 'task 262');
 })();
