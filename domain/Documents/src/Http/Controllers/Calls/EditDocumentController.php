@@ -8,8 +8,8 @@ use App\Bus\Contracts\CommandBus;
 use Domain\Documents\Calls\DraftHeld;
 use Domain\Documents\Calls\EditDocumentCall;
 use Domain\Documents\Commands\ChangeDocumentDetails;
+use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\ReplaceDocumentBody;
-use Domain\Documents\Commands\ReplaceDocumentSection;
 use Domain\Documents\Commands\ReplaceDocumentText;
 
 /**
@@ -21,7 +21,7 @@ final readonly class EditDocumentController
     {
         $target = $call->target();
         $command = match ($call->mode) {
-            'section' => new ReplaceDocumentSection($target, (string) $call->section, (string) $call->body),
+            'section' => new EditDocument($target, (string) $call->section, $call->body, $call->uploadId),
             'text' => new ReplaceDocumentText($target, (string) $call->old, (string) $call->new),
             'details' => new ChangeDocumentDetails($target, (string) $call->title, (string) $call->abstract),
             default => new ReplaceDocumentBody($target, (string) $call->body),

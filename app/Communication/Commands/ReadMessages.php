@@ -29,7 +29,7 @@ use App\Operations\Enums\ResourceAreaType;
 #[RetainedActorRequestKey]
 #[HandledBy(ReadMessagesHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
-#[Operation('messages_read', ResourceAreaType::JournalWork, AccessType::Edit)]
+#[Operation('messages_acknowledge', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class ReadMessages extends Command implements AuthorizedCommand
 {
     /**

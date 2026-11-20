@@ -13,6 +13,7 @@ use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\RecordReading;
@@ -63,6 +64,11 @@ final readonly class ReportRecords implements ReportResolver
         return RecordReading::read("report {$number}", $report, $selection);
     }
 
+    public function openCount(): int
+    {
+        return Report::query()->sharedPublished()->inAttention(AttentionState::Active)->count();
+    }
+
     public function show(int $number): ReportView
     {
         return self::published($number)->view();
@@ -94,11 +100,13 @@ final readonly class ReportRecords implements ReportResolver
      *
      * @throws ReportMissing
      */
-    private static function published(int $number): Report
+    public static function published(int|string $reference): Report
     {
-        return Report::query()
-            ->sharedPublished()
-            ->where('number', $number)
-            ->firstOr(fn () => throw ReportMissing::numbered($number));
+        $reports = Report::query()->sharedPublished();
+        if (is_int($reference)) {
+            return $reports->where('number', $reference)->first() ?? throw ReportMissing::numbered($reference);
+        }
+
+        return $reports->whereKey($reference)->first() ?? throw ReportMissing::identified($reference);
     }
 }

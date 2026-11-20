@@ -23,7 +23,7 @@ use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
-use Domain\Documents\Commands\SettleReport;
+use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Enums\AttentionState;
@@ -88,7 +88,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->assertSame(AttentionState::Settled, $inspection->attention);
         $this->assertSame(['Shipped.'], array_map(fn ($settlement) => $settlement->reason, $inspection->settlements));
 
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Ship it again.'));
         $this->bus()->run(new CloseDocument($this->target($draft)));
 
@@ -105,7 +105,7 @@ final class SettleAndRecoverTest extends TestCase
         );
         $this->assertSame(AttentionState::Active, Document::query()->sole()->attention);
 
-        $this->bus()->run(new OpenDocument(1));
+        $this->bus()->run(new OpenDocument('1'));
         $this->expectException(SettlementDenied::class);
         $this->expectExceptionMessage('close it before settling');
 
@@ -118,7 +118,7 @@ final class SettleAndRecoverTest extends TestCase
         $tooLong = str_repeat('a', Document::SETTLEMENT_REASON_CHARACTERS + 1);
 
         $this->assertThrows(fn () => $this->bus()->run(new SettleDocument(1, 1, $tooLong)), CommandInputInvalid::class);
-        $this->assertThrows(fn () => $this->bus()->run(new SettleReport(1, $tooLong)), CommandInputInvalid::class);
+        $this->assertThrows(fn () => $this->bus()->run(new CloseReport('1', $tooLong)), CommandInputInvalid::class);
         $this->assertSame(
             [AttentionState::Active, AttentionState::Active],
             [Document::query()->sole()->attention, Report::query()->sole()->attention],
@@ -138,7 +138,7 @@ final class SettleAndRecoverTest extends TestCase
     public function test_a_blank_recovery_reason_is_refused_and_the_draft_stays_held(): void
     {
         $this->actAsAgent(9, 90);
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $this->actAsUser(1);
 
         $this->assertThrows(
@@ -153,7 +153,7 @@ final class SettleAndRecoverTest extends TestCase
     {
         $this->actAsAgent(9, 90);
         $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
-        $this->bus()->run(new SettleReport(1, 'Checked.'));
+        $this->bus()->run(new CloseReport('1', 'Checked.'));
         $this->assertSame(AttentionState::Settled, Report::query()->sole()->attention);
 
         $this->actAsUser(1);
@@ -161,13 +161,13 @@ final class SettleAndRecoverTest extends TestCase
         $this->actAsAgent(8, 80);
         $this->expectException(ActorNotAllowed::class);
 
-        $this->bus()->run(new SettleReport(2, 'Not mine.'));
+        $this->bus()->run(new CloseReport('2', 'Not mine.'));
     }
 
     public function test_a_user_recovers_an_agents_draft_and_the_revision_keeps_the_agent_as_author(): void
     {
         $this->actAsAgent(9, 90);
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Ship it soon.'));
 
         $this->actAsUser(1);
@@ -176,7 +176,7 @@ final class SettleAndRecoverTest extends TestCase
         $this->assertSame('Ship it soon.', trim(substr($editing->held->body, -14)));
 
         try {
-            $this->bus()->run(new RecoverDocument(new DraftTarget(1, $draft->token, 1), 'Agent gone.'));
+            $this->bus()->run(new RecoverDocument(new DraftTarget('1', $draft->token, 1), 'Agent gone.'));
             $this->fail('A recovery on an old version was accepted.');
         } catch (DraftConflict) {
             $this->assertSame(1, DocumentDraft::query()->count());
@@ -191,7 +191,7 @@ final class SettleAndRecoverTest extends TestCase
             [CloseCause::Recovery, TestIds::of(1), 'Agent gone.'],
             [$close->cause, $close->closer_id, $close->reason],
         );
-        $this->assertSame(1, $this->bus()->run(new OpenDocument(1))->version);
+        $this->assertSame(1, $this->bus()->run(new OpenDocument('1'))->version);
     }
 
     public function test_an_agent_cannot_recover_a_draft(): void
@@ -199,17 +199,17 @@ final class SettleAndRecoverTest extends TestCase
         $this->actAsAgent(9, 90);
         $this->expectException(ActorNotAllowed::class);
 
-        $this->bus()->run(new RecoverDocument(new DraftTarget(1, 'any', 1), 'Mine now.'));
+        $this->bus()->run(new RecoverDocument(new DraftTarget('1', 'any', 1), 'Mine now.'));
     }
 
     public function test_an_ended_session_closes_a_changed_draft_into_a_revision_and_an_unchanged_one_into_none(): void
     {
         $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
         $this->actAsAgent(9, 90);
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Shipped.'));
         $this->actAsAgent(8, 80);
-        $this->bus()->run(new OpenDocument(2));
+        $this->bus()->run(new OpenDocument('2'));
 
         DB::transaction(fn () => $this->endSession(9, 90));
         DB::transaction(fn () => $this->endSession(8, 80));
@@ -225,7 +225,7 @@ final class SettleAndRecoverTest extends TestCase
     public function test_a_failing_close_rolls_the_session_ending_back_and_keeps_the_draft(): void
     {
         $this->actAsAgent(9, 90);
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Ship it.', 'Shipped.'));
 
         $this->assertThrows(
@@ -258,7 +258,7 @@ final class SettleAndRecoverTest extends TestCase
 
     private function target(DraftReference $draft): DraftTarget
     {
-        return new DraftTarget($draft->documentNumber, $draft->token, $draft->version);
+        return new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version);
     }
 
     private function actAsAgent(int $agent, int $session): void

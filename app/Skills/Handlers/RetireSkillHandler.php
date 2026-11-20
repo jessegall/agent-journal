@@ -13,18 +13,16 @@ use App\Skills\Values\SkillRevisionResult;
 
 final readonly class RetireSkillHandler implements CommandHandler
 {
-    public function __construct(
-        private StoredSkillWrites $writes,
-    ) {}
+    public function __construct(private StoredSkillWrites $writes) {}
 
     public function handle(RetireSkill $command): SkillRevisionResult
     {
-
+        $skillId = $command->skill;
         return $this->writes->once($command->requestId, hash(
             'sha256',
-            "retire|{$command->skillId}|{$command->expectedRevision}",
-        ), function () use ($command) {
-            $skill = Skill::lockVisible($command->skillId, SkillContextResolver::ENVIRONMENT);
+            "retire|{$skillId}|{$command->expectedRevision}",
+        ), function () use ($command, $skillId) {
+            $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
             $skill->checkWritableAt($command->expectedRevision);
 
             return $skill->retireBy($this->writes->author());

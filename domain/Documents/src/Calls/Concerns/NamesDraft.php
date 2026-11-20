@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Calls\Concerns;
 
-use App\Numbers\Support\RecordReference;
 use Domain\Documents\Api\DraftTarget;
 
 /**
@@ -14,6 +13,6 @@ trait NamesDraft
 {
     public function target(): DraftTarget
     {
-        return new DraftTarget(RecordReference::number($this->number), $this->token, $this->version);
+        return new DraftTarget($this->number, $this->token, $this->version);
     }
 }

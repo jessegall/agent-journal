@@ -17,18 +17,17 @@ use App\Skills\Values\SkillRevisionResult;
 
 final readonly class CreateSkillHandler implements CommandHandler
 {
-    public function __construct(
-        private StoredSkillWrites $writes,
-    ) {}
+    public function __construct(private StoredSkillWrites $writes) {}
 
     public function handle(CreateSkill $command): SkillRevisionResult
     {
         $key = SkillKey::from($command->key);
+        $draft = $command->draft;
 
         return $this->writes->once($command->requestId, hash(
             'sha256',
-            $key->key.'|'.$command->draft->digest(),
-        ), function () use ($key, $command) {
+            $key->key.'|'.$draft->digest(),
+        ), function () use ($key, $draft) {
             if (! $key->isUserAuthored()) {
                 throw SkillDeclarationInvalid::reservedKey(SkillOwner::STORED, $key->key);
             }
@@ -37,14 +36,14 @@ final readonly class CreateSkillHandler implements CommandHandler
                 throw SkillKeyTaken::for($key->key);
             }
 
-            $condition = $this->writes->checkedCondition($key->key, $command->draft);
+            $condition = $this->writes->checkedCondition($key->key, $draft);
             $author = $this->writes->author();
 
             return Skill::start(
                 $key,
                 $author,
                 SkillContextResolver::ENVIRONMENT,
-            )->appendRevision($command->draft, $condition, $author);
+            )->appendRevision($draft, $condition, $author);
         });
     }
 }

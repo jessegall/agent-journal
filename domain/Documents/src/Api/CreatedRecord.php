@@ -13,6 +13,7 @@ final readonly class CreatedRecord
         public string $id,
         public int $number,
         public string $type,
+        public int $revision = 1,
     ) {}
 
     /**

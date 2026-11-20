@@ -21,6 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('account_generation');
             $table->string('directory');
             $table->string('state', 32);
+            $table->string('transport_profile', 8)->default('mcp');
             $table->string('role', 32);
             $table->ulid('owner_start_id')->nullable();
             $table->string('execution_id', 128)->nullable();

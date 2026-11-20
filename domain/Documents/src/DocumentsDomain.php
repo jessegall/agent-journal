@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
+use Domain\Documents\Mcp\DocumentSearch;
+use Domain\Documents\Mcp\ReportSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
@@ -14,6 +16,9 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Contracts\LinkRecordProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\McpToolProvider;
+use App\Mcp\Resources\JournalResource;
+use App\Mcp\Tools\JournalTool;
 use App\Numbers\Contracts\NumberedModelProvider;
 use App\Numbers\Support\NumberedModel;
 use App\Sharing\Contracts\ShareRecordContributor;
@@ -32,27 +37,33 @@ use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
+use Domain\Documents\Api\RetainedDraftView;
 use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Api\Events\DocumentPublished;
+use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
+use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Commands\ReplaceDocumentBody;
-use Domain\Documents\Commands\ReplaceDocumentSection;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
-use Domain\Documents\Commands\SettleReport;
+use Domain\Documents\Commands\CloseReport;
 use Domain\Documents\Contracts\DocumentResolver;
+use Domain\Documents\Contracts\AttachmentReader;
+use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DraftResolver;
 use Domain\Documents\Contracts\ReportResolver;
+use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DockData;
@@ -98,6 +109,7 @@ use Domain\Documents\Links\ReportLinkRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Mcp\OpenReportsOverview;
 use Domain\Documents\Policies\DocumentAdministrationPolicy;
 use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Resolvers\DocumentWindowResolver;
@@ -110,6 +122,7 @@ use Domain\Documents\Support\ReportShareProvider;
 final class DocumentsDomain extends Domain implements
     CommandProvider,
     LinkRecordProvider,
+    McpToolProvider,
     NavigationProvider,
     NumberedModelProvider,
     PageProvider,
@@ -141,9 +154,11 @@ final class DocumentsDomain extends Domain implements
                 DocumentDraftSaved::class,
                 DocumentClosed::class,
                 DocumentPublished::class,
+                DraftKept::class,
                 RecordSettled::class,
             )
-            ->contracts(DraftResolver::class, DocumentResolver::class, ReportResolver::class)
+            ->contracts(DraftResolver::class, DraftReader::class, DocumentResolver::class, ReportResolver::class)
+            ->contracts(AttachmentReader::class, DocumentReader::class, ReportReader::class)
             ->values(
                 DockCard::class,
                 DockData::class,
@@ -160,6 +175,7 @@ final class DocumentsDomain extends Domain implements
                 RevisionCard::class,
                 RevisionView::class,
                 DraftReference::class,
+                RetainedDraftView::class,
                 DraftTarget::class,
                 CloseResult::class,
                 CloseCause::class,
@@ -179,12 +195,12 @@ final class DocumentsDomain extends Domain implements
                 CreateReport::class,
                 OpenDocument::class,
                 ReplaceDocumentBody::class,
-                ReplaceDocumentSection::class,
+                EditDocument::class,
                 ReplaceDocumentText::class,
                 ChangeDocumentDetails::class,
                 CloseDocument::class,
                 SettleDocument::class,
-                SettleReport::class,
+                CloseReport::class,
                 RecoverDocument::class,
             )
             ->exceptions(
@@ -247,6 +263,26 @@ final class DocumentsDomain extends Domain implements
     public function commands(): array
     {
         return FolderClasses::in(__DIR__.'/Commands', Command::class);
+    }
+
+    public function mcpTools(): array
+    {
+        return FolderClasses::in(__DIR__.'/Mcp', JournalTool::class);
+    }
+
+    public function mcpResources(): array
+    {
+        return FolderClasses::in(__DIR__.'/Mcp', JournalResource::class);
+    }
+
+    public function overviewContributions(): array
+    {
+        return [OpenReportsOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [DocumentSearch::class, ReportSearch::class];
     }
 
     public function pages(): array

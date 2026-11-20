@@ -8,6 +8,7 @@ use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use BackedEnum;
+use Illuminate\Support\Str;
 use Laravel\Mcp\Request;
 
 /**
@@ -24,8 +25,11 @@ final readonly class ToolArguments
         'after_id',
         'limit',
         'search',
+        'state',
         'states',
         'view',
+        'query',
+        'types',
         'section',
         'line_start',
         'line_end',
@@ -47,15 +51,110 @@ final readonly class ToolArguments
      */
     public static function read(string $tool, Request $request, array $fields): self
     {
-        $arguments = $request->all();
+        return self::within($tool, $request->all(), $fields);
+    }
 
-        foreach (array_keys($arguments) as $name) {
-            if (! in_array($name, $fields, true)) {
-                throw ToolArgumentUnknown::for($tool, (string) $name);
+    /** @param list<string> $fields */
+    public static function query(string $resource, Request $request, array $fields): self
+    {
+        parse_str((string) parse_url((string) $request->uri(), PHP_URL_QUERY), $query);
+
+        return self::within($resource, $query, $fields);
+    }
+
+    public static function uriId(Request $request): string
+    {
+        $path = (string) parse_url((string) $request->uri(), PHP_URL_PATH);
+
+        return new self(['id' => basename($path)])->ulid('id');
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $arguments
+     * @param  list<string>  $fields
+     */
+    private static function within(string $context, array $arguments, array $fields): self
+    {
+        $declared = [];
+
+        foreach ($arguments as $name => $value) {
+            if (! is_string($name) || ! in_array($name, $fields, true)) {
+                throw ToolArgumentUnknown::for($context, (string) $name);
             }
+
+            $declared[$name] = $value;
         }
 
-        return new self($arguments);
+        return new self($declared);
+    }
+
+    /** @param list<string> $fields */
+    public function object(string $name, array $fields): self
+    {
+        $value = $this->arguments[$name] ?? null;
+
+        if (! is_array($value) || array_is_list($value)) {
+            throw ToolArgumentInvalid::for($name, 'an object');
+        }
+
+        return self::within($name, $value, $fields);
+    }
+
+    /** @param list<string> $fields */
+    public function optionalObject(string $name, array $fields): self|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->object($name, $fields) : null;
+    }
+
+    public function ulid(string $name): string
+    {
+        return self::normalizedUlid($name, $this->text($name));
+    }
+
+    public function optionalUlid(string $name): string|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->ulid($name) : null;
+    }
+
+    public function recordReference(string $name): int|string
+    {
+        $value = $this->arguments[$name] ?? null;
+        if (is_int($value)) {
+            return $this->positiveInteger($name);
+        }
+        if (is_string($value) && preg_match('/^[1-9][0-9]{0,18}$/', $value) === 1
+            && (strlen($value) < 19 || strcmp($value, (string) PHP_INT_MAX) <= 0)) {
+            return (int) $value;
+        }
+
+        return $this->ulid($name);
+    }
+
+    /** @return list<string> */
+    public function optionalList(string $name): array
+    {
+        return array_key_exists($name, $this->arguments) ? $this->list($name) : [];
+    }
+
+    /** @return non-empty-list<string> */
+    public function ulids(string $name): array
+    {
+        $ids = $this->list($name);
+
+        if ($ids === []) {
+            throw ToolArgumentInvalid::for($name, 'at least one ULID');
+        }
+
+        return array_map(fn (string $id): string => self::normalizedUlid($name, $id), $ids);
+    }
+
+    private static function normalizedUlid(string $name, string $id): string
+    {
+        if (! Str::isUlid($id)) {
+            throw ToolArgumentInvalid::for($name, 'a ULID');
+        }
+
+        return strtolower($id);
     }
 
     /**
@@ -110,6 +209,11 @@ final readonly class ToolArguments
         }
 
         return $value;
+    }
+
+    public function optionalWholeNumber(string $name): int|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->wholeNumber($name) : null;
     }
 
     /**
@@ -221,6 +325,26 @@ final readonly class ToolArguments
         }
 
         return $case;
+    }
+
+    /**
+     * @template T of BackedEnum
+     * @param T $default
+     * @return T
+     */
+    public function enumOr(string $name, BackedEnum $default): BackedEnum
+    {
+        return array_key_exists($name, $this->arguments) ? $this->enum($name, $default::class) : $default;
+    }
+
+    /**
+     * @template T of BackedEnum
+     * @param class-string<T> $type
+     * @return T|null
+     */
+    public function optionalEnum(string $name, string $type): BackedEnum|null
+    {
+        return array_key_exists($name, $this->arguments) ? $this->enum($name, $type) : null;
     }
 
     /**

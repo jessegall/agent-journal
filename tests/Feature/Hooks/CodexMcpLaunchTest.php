@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Agents\Enums\TransportProfileType;
 use App\Hooks\Exceptions\JournalServerUnresolved;
 use App\Hooks\Programs\CodexFolderTrust;
 use App\Hooks\Programs\CodexJournalServer;
@@ -78,6 +79,19 @@ final class CodexMcpLaunchTest extends TestCase
         $this->assertStringContainsString(sprintf('[projects."%s/roots/one"]', $this->base), $config);
     }
 
+    public function test_the_journal_server_can_be_disabled_and_restored_under_the_account_lock(): void
+    {
+        $server = CodexJournalServer::of(self::PHP, self::RELAY);
+        $this->prepare('one', $server, TransportProfileType::Cli);
+        $this->assertStringContainsString("tool_timeout_sec = 30\nenabled = false", $this->config());
+
+        $this->prepare('two', $server);
+        $config = $this->config();
+        $this->assertSame(1, substr_count($config, CodexJournalServer::HEADER));
+        $this->assertStringNotContainsString('enabled = false', $config);
+        $this->assertStringContainsString(sprintf('[projects."%s/roots/one"]', $this->base), $config);
+    }
+
     /**
      * @return iterable<string, array{string}>
      */
@@ -98,14 +112,17 @@ final class CodexMcpLaunchTest extends TestCase
         CodexJournalServer::of(self::PHP, $relay);
     }
 
-    private function prepare(string $root, CodexJournalServer $server): void
-    {
+    private function prepare(
+        string $root,
+        CodexJournalServer $server,
+        TransportProfileType $transport = TransportProfileType::Mcp,
+    ): void {
         new AccountConfigurationWrite()->prepare(
             $this->base.'/account',
             [],
             [],
             CodexFolderTrust::forWorkingRoot($this->base.'/roots', $this->base.'/roots/'.$root),
-            [$server->tomlTable()],
+            [$server->tomlTable($transport)],
         );
     }
 

@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Documents\Mcp;
+
+use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
+use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\JournalWriteTool;
+use Domain\Documents\Commands\BeginUpload;
+use Domain\Documents\Enums\UploadType;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+
+#[Name('uploads_begin')]
+#[Description('Start a private text upload with its size and SHA-256 digest.')]
+#[IsDestructive(false)]
+#[IsIdempotent]
+#[Dispatches(BeginUpload::class)]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
+final class BeginUploadTool extends JournalWriteTool
+{
+    protected function writeSchema(JsonSchema $schema): array
+    {
+        return [
+            'type' => $schema->string()->enum(array_column(UploadType::cases(), 'value'))->required(),
+            'bytes' => $schema->integer()->min(1)->max(BeginUpload::MAX_BYTES)->required(),
+            'digest' => $schema->string()->min(64)->max(64)->required(),
+        ];
+    }
+
+    protected function command(ToolArguments $arguments): BeginUpload
+    {
+        return new BeginUpload(
+            $arguments->enum('type', UploadType::class),
+            $arguments->positiveInteger('bytes', BeginUpload::MAX_BYTES),
+            $arguments->text('digest'),
+        );
+    }
+
+    protected function present(mixed $result): ToolResult
+    {
+        return ToolResult::ok(['upload_id' => $result]);
+    }
+}

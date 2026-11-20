@@ -86,10 +86,10 @@ final class SharingTest extends TestCase
         All good.
 
         TEXT));
-        $draft = $bus->run(new OpenDocument(1));
+        $draft = $bus->run(new OpenDocument('1'));
         $bus->run(
             new ReplaceDocumentBody(
-                new DraftTarget($draft->documentNumber, $draft->token, $draft->version),
+                new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version),
                 <<<'TEXT'
                 # Draft
                 Not yet.

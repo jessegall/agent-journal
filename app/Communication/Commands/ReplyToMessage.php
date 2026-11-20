@@ -37,7 +37,7 @@ final readonly class ReplyToMessage extends Command implements AuthorizedCommand
 {
     public function __construct(
         public string $messageId,
-        public int $expectedStateVersion,
+        public int|null $expectedStateVersion,
         #[Required]
         public string $body,
     ) {}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
+use Domain\Rules\Mcp\RuleSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\CommandProvider;
@@ -40,6 +41,10 @@ use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Mcp\ActiveRulesOverview;
+use Domain\Rules\Mcp\ProposeRuleTool;
+use Domain\Rules\Mcp\RuleReadTool;
+use Domain\Rules\Mcp\RulesListTool;
+use Domain\Rules\Mcp\RulesResource;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
@@ -126,17 +131,22 @@ final class RulesDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return [];
+        return [RulesListTool::class, RuleReadTool::class, ProposeRuleTool::class];
     }
 
     public function mcpResources(): array
     {
-        return [];
+        return [RulesResource::class];
     }
 
     public function overviewContributions(): array
     {
         return [ActiveRulesOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [RuleSearch::class];
     }
 
     public function skills(): array

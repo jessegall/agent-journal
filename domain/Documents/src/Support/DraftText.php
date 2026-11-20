@@ -16,7 +16,7 @@ final readonly class DraftText
 
     public static function of(DocumentDraft $draft): self
     {
-        return new self($draft->title, $draft->abstract, MarkdownText::body($draft->body));
+        return new self($draft->title, $draft->abstract, MarkdownText::workingBody($draft->body));
     }
 
     public function withBody(MarkdownText $body): self

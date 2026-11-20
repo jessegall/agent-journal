@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Bus\Support\CommandRegistry;
 use App\Hooks\Contracts\JournalToolNames;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
+use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\McpBudgetExceeded;
 use App\Mcp\Exceptions\McpClassInvalid;
+use App\Mcp\Exceptions\McpCommandMissing;
 use App\Mcp\Exceptions\McpResourceUriTaken;
+use App\Mcp\Exceptions\McpSearchTypeTaken;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
+use App\Mcp\Tools\JournalWriteTool;
+use App\Records\Support\RecordIdentity;
 use Laravel\Mcp\Server\Attributes\Name;
 use ReflectionClass;
 
@@ -42,14 +48,20 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
      */
     private array $overviewContributions = [];
 
+    /** @var array<string, class-string<SearchContribution>> */
+    private array $searchContributions = [];
+
     /** @var array<string, int> */
     private array $toolBytes = [];
 
     /** @var array<string, int> */
     private array $toolCounts = [];
 
+    public function __construct(private readonly CommandRegistry $commands) {}
+
     /**
      * @throws McpClassInvalid
+     * @throws McpCommandMissing
      * @throws McpToolNameInvalid
      * @throws McpToolNameTaken
      * @throws McpBudgetExceeded
@@ -67,13 +79,22 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         }
 
         $tool = $this->definitionOf($className);
-        $bytes = strlen(json_encode($tool->toArray(), JSON_THROW_ON_ERROR));
         $write = $tool->writeDeclaration();
+
+        if ($tool instanceof JournalWriteTool && $write->isEmpty()) {
+            throw McpCommandMissing::undeclared($className);
+        }
+
+        if ($write->isDefined() && ! $this->commands->has($write->get()->command)) {
+            throw McpCommandMissing::for($className, $write->get()->command);
+        }
+
+        $bytes = strlen(json_encode($tool->toArray(), JSON_THROW_ON_ERROR));
         $counts = $this->toolCounts;
         $sizes = $this->toolBytes;
 
         foreach (DiscoveryProfile::cases() as $profile) {
-            if ($write->isDefined() && ! $profile->includesWrite($write->get()->readOnlyHelper)) {
+            if (! $tool->isVisibleTo($profile)) {
                 continue;
             }
 
@@ -131,6 +152,29 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         $this->overviewContributions[] = $className;
     }
 
+    public function registerSearchContribution(string $className): void
+    {
+        if (! is_subclass_of($className, SearchContribution::class)) {
+            throw McpClassInvalid::for($className, SearchContribution::class);
+        }
+
+        $contribution = new ReflectionClass($className)->newInstanceWithoutConstructor();
+        $type = $contribution->recordType();
+        RecordIdentity::checkType($type);
+
+        if (isset($this->searchContributions[$type])) {
+            throw McpSearchTypeTaken::between($type, $this->searchContributions[$type], $className);
+        }
+
+        $this->searchContributions[$type] = $className;
+    }
+
+    /** @return array<string, class-string<SearchContribution>> */
+    public function searchContributionClasses(): array
+    {
+        return $this->searchContributions;
+    }
+
     /**
      * @return list<class-string<JournalTool>>
      */
@@ -174,6 +218,40 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     public function overviewContributionClasses(): array
     {
         return $this->overviewContributions;
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    public function toolDefinitionsFor(DiscoveryProfile $profile): array
+    {
+        $definitions = [];
+        foreach ($this->tools as $name => $className) {
+            $tool = $this->definitionOf($className);
+            if (! $tool->isVisibleTo($profile)) {
+                continue;
+            }
+
+            $definition = $tool->toArray();
+            $definitions[$name] = [
+                'name' => $definition['name'],
+                'title' => $definition['title'],
+                'inputSchema' => $definition['inputSchema'],
+                'outputSchema' => $definition['outputSchema'] ?? null,
+            ];
+        }
+
+        return $definitions;
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    public function resourceDefinitions(): array
+    {
+        $definitions = [];
+        foreach ($this->resources as $className) {
+            $definition = $this->definitionOf($className)->toArray();
+            $definitions[$definition['uriTemplate'] ?? $definition['uri']] = $definition;
+        }
+
+        return $definitions;
     }
 
     /**

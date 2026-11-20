@@ -135,7 +135,7 @@ final class CommentsAndReadsTest extends TestCase
                 (string) Str::uuid(),
             ),
         );
-        $draft = $this->bus()->run(new OpenDocument(2));
+        $draft = $this->bus()->run(new OpenDocument('2'));
         $draft = $this->bus()->run(
             new ReplaceDocumentText($this->target($draft), 'Third part.', 'A rewritten third part.'),
         );
@@ -215,7 +215,7 @@ final class CommentsAndReadsTest extends TestCase
 
     public function test_a_continuation_after_a_new_revision_is_refused(): void
     {
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'None.', 'Late.'));
         $this->bus()->run(new CloseDocument($this->target($draft)));
 
@@ -227,7 +227,7 @@ final class CommentsAndReadsTest extends TestCase
     public function test_search_finds_a_body_phrase_with_its_revision_and_never_a_draft_or_a_wildcard(): void
     {
         $this->bus()->run(new CreateReport('Check', 'What we found', "Rates of 50%_off\n"));
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'None.', 'Only in the draft.'));
 
         $found = $this->documents()->list(new DocumentFilters(query: 'ship THE editor'));
@@ -258,7 +258,7 @@ final class CommentsAndReadsTest extends TestCase
 
     private function target(DraftReference $draft): DraftTarget
     {
-        return new DraftTarget($draft->documentNumber, $draft->token, $draft->version);
+        return new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version);
     }
 
     private function documents(): DocumentResolver

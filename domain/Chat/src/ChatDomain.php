@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use Domain\Chat\Mcp\MessageSearch;
 use App\Actors\Contracts\PolicyProvider;
 use App\Actors\Values\PolicyRegistration;
 use App\Autoload\Support\FolderClasses;
@@ -11,6 +12,7 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandProvider;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\McpToolProvider;
 use App\Skills\Contracts\SkillProvider;
 use App\Ui\Contracts\NavigationProvider;
 use App\Ui\Contracts\PageProvider;
@@ -29,6 +31,16 @@ use Domain\Chat\Http\Controllers\ReadShownController;
 use Domain\Chat\Http\Controllers\ReplyController;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Http\Controllers\TakeNextController;
+use Domain\Chat\Mcp\AnswerMessageTool;
+use Domain\Chat\Mcp\AskQuestionTool;
+use Domain\Chat\Mcp\DismissMessageTool;
+use Domain\Chat\Mcp\MessageContextTool;
+use Domain\Chat\Mcp\MessageReadTool;
+use Domain\Chat\Mcp\MessageResource;
+use Domain\Chat\Mcp\MessagesListTool;
+use Domain\Chat\Mcp\PendingMessagesOverview;
+use Domain\Chat\Mcp\ReplyToMessageTool;
+use Domain\Chat\Mcp\SelectMessageTool;
 use Domain\Chat\Models\DockedRecord;
 use Domain\Chat\Models\MessagePin;
 use Domain\Chat\Policies\DockedRecordPolicy;
@@ -41,6 +53,7 @@ use Domain\Chat\Skills\ChatSkill;
 
 final class ChatDomain extends Domain implements
     CommandProvider,
+    McpToolProvider,
     NavigationProvider,
     PageProvider,
     PolicyProvider,
@@ -121,5 +134,34 @@ final class ChatDomain extends Domain implements
     public function skills(): array
     {
         return [ChatSkill::class];
+    }
+
+    public function mcpTools(): array
+    {
+        return [
+            MessagesListTool::class,
+            MessageReadTool::class,
+            MessageContextTool::class,
+            SelectMessageTool::class,
+            ReplyToMessageTool::class,
+            AskQuestionTool::class,
+            AnswerMessageTool::class,
+            DismissMessageTool::class,
+        ];
+    }
+
+    public function mcpResources(): array
+    {
+        return [MessageResource::class];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [PendingMessagesOverview::class];
+    }
+
+    public function searchContributions(): array
+    {
+        return [MessageSearch::class];
     }
 }

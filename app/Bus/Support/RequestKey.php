@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Exceptions\RequestKeyInvalid;
+use App\Bus\Exceptions\RequestKeyMissing;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -67,6 +68,16 @@ final class RequestKey
         return $this->key;
     }
 
+    /** @param class-string $command */
+    public function requireFor(string $command): string
+    {
+        if ($this->key === null) {
+            throw RequestKeyMissing::for($command);
+        }
+
+        return $this->key;
+    }
+
     /**
      * Runs one command dispatch, counting how deep it is nested.
      *
@@ -83,6 +94,25 @@ final class RequestKey
             return $work();
         } finally {
             $this->depth--;
+        }
+    }
+
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function independently(string $key, Closure $work): mixed
+    {
+        $before = [$this->key, $this->depth, $this->receiptTaken];
+        $this->set($key);
+        $this->depth = 0;
+        $this->receiptTaken = false;
+
+        try {
+            return $work();
+        } finally {
+            [$this->key, $this->depth, $this->receiptTaken] = $before;
         }
     }
 

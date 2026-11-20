@@ -15,5 +15,6 @@ final readonly class SkillRevisionResult
         public int $number,
         public int $revision,
         public bool $publicationPending,
+        public string $requestId,
     ) {}
 }

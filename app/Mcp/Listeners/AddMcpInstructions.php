@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Listeners;
 
+use App\Agents\Enums\TransportProfileType;
+use App\Agents\Models\ProcessStart;
 use App\Contracts\Listener;
 use App\Hooks\Events\ContextStarted;
 use App\Mcp\Support\McpInstructions;
@@ -20,6 +22,12 @@ final readonly class AddMcpInstructions implements Listener
 
     public function handle(ContextStarted $event): void
     {
+        $start = ProcessStart::latestOfSession($event->target->sessionId);
+
+        if ($start?->transport_profile === TransportProfileType::Cli) {
+            return;
+        }
+
         $event->reminders->add($this->instructions->forCaller(), true);
     }
 }

@@ -166,12 +166,13 @@ final readonly class DocumentRecords implements DocumentResolver
      *
      * @throws DocumentMissing
      */
-    private static function published(int $number): Document
+    public static function published(int|string $reference): Document
     {
-        return Document::query()
-            ->sharedPublished()
-            ->with('currentRevision')
-            ->where('number', $number)
-            ->firstOr(fn () => throw DocumentMissing::numbered($number));
+        $documents = Document::query()->sharedPublished()->with('currentRevision');
+        if (is_int($reference)) {
+            return $documents->where('number', $reference)->first() ?? throw DocumentMissing::numbered($reference);
+        }
+
+        return $documents->whereKey($reference)->first() ?? throw DocumentMissing::identified($reference);
     }
 }

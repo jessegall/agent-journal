@@ -77,15 +77,20 @@ func (profile ClaudeCode) Arguments(start contracts.Start) ([]string, error) {
 	arguments := []string{
 		"--settings", filepath.Join(start.SettingsFolder, "settings.json"),
 		"--setting-sources", "",
-		"--strict-mcp-config",
 		"--agents", "{}",
 		"--tools", strings.Join(claudeCodeAllowedTools, ","),
 		"--disallowedTools",
 	}
 	arguments = append(arguments, claudeCodeDelegationTools...)
 
+	if start.Account == nil || start.Account.Transport != contracts.CliTransport {
+		arguments = append(arguments, "--strict-mcp-config")
+	}
 	if start.Account != nil {
-		arguments = append(arguments, "--restricted", "--mcp-config", filepath.Join(start.SettingsFolder, "mcp.json"))
+		arguments = append(arguments, "--restricted")
+	}
+	if startsJournalServer(start) {
+		arguments = append(arguments, "--mcp-config", filepath.Join(start.SettingsFolder, "mcp.json"))
 	}
 
 	if start.Model != "" {
@@ -123,9 +128,11 @@ func (ClaudeCode) Environment(inherited []string, start contracts.Start) []strin
 		}
 		kept = append(kept, entry)
 	}
+	if startsJournalServer(start) {
+		kept = append(kept, "MCP_TIMEOUT="+claudeCodeMcpStartTimeout, "MCP_TOOL_TIMEOUT="+claudeCodeMcpToolTimeout)
+	}
 	if start.Account != nil {
-		kept = append(kept, "MCP_TIMEOUT="+claudeCodeMcpStartTimeout, "MCP_TOOL_TIMEOUT="+claudeCodeMcpToolTimeout,
-			"JOURNAL_LAUNCH_REF="+start.Account.LaunchReference)
+		kept = append(kept, "JOURNAL_LAUNCH_REF="+start.Account.LaunchReference)
 	}
 
 	return kept
@@ -155,17 +162,15 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 		content, err := json.MarshalIndent(settings, "", "  ")
 		return []contracts.SettingsFile{{Name: "settings.json", Content: content}}, err
 	}
-	descriptor, err := journalDescriptor(start)
-	if err != nil {
-		return nil, err
-	}
 	if start.HookCommand != "" {
 		if err := requireAbsoluteCommand(start.HookCommand); err != nil {
 			return nil, err
 		}
 	}
 	permissions, _ := settings["permissions"].(map[string]any)
-	permissions["allow"] = append(slices.Clone(claudeCodeAllowedWithoutAsking), claudeCodeJournalTools)
+	if startsJournalServer(start) {
+		permissions["allow"] = append(slices.Clone(claudeCodeAllowedWithoutAsking), claudeCodeJournalTools)
+	}
 	if err := mergeProtection(settings, start.Account.Protection); err != nil {
 		return nil, err
 	}
@@ -176,13 +181,22 @@ func (ClaudeCode) SettingsFiles(start contracts.Start) ([]contracts.SettingsFile
 	if err != nil {
 		return nil, err
 	}
+	files := []contracts.SettingsFile{{Name: "settings.json", Content: content}}
 
-	return []contracts.SettingsFile{
-		{Name: "settings.json", Content: content},
-		{Name: "mcp.json", Content: descriptor},
-	}, nil
+	if !startsJournalServer(start) {
+		return files, nil
+	}
+	descriptor, err := journalDescriptor(start)
+	if err != nil {
+		return nil, err
+	}
+
+	return append(files, contracts.SettingsFile{Name: "mcp.json", Content: descriptor}), nil
 }
 
+func startsJournalServer(start contracts.Start) bool {
+	return start.Account != nil && start.Account.Transport != contracts.CliTransport
+}
 // journalDescriptor is the launch's MCP configuration: the journal's server alone, started by absolute path, with
 // no token, environment or placeholder in it.
 func journalDescriptor(start contracts.Start) ([]byte, error) {

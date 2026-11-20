@@ -18,15 +18,17 @@ Route::middleware('journal.agent')
         $calls->register(Calls\OpenDocumentController::class)->name('docs.open');
         $calls->register(Calls\EditDocumentController::class)->name('docs.edit');
         $calls->register(Calls\CloseDocumentController::class)->name('docs.close');
+        $calls->register(Calls\CommentDocumentController::class)->name('docs.comment');
         $calls->register(Calls\ShowDraftController::class)->name('docs.draft');
         $calls->register(Calls\ListDocumentRevisionsController::class)->name('docs.revisions');
         $calls->register(Calls\ShowDocumentRevisionController::class)->name('docs.revision');
         $calls->register(Calls\SettleDocumentController::class)->name('docs.settle');
         $calls->register(Calls\InspectDocumentController::class)->name('docs.inspect');
-        $calls->register(Calls\SettleReportController::class)->name('reports.settle');
+        $calls->register(Calls\SettleReportController::class)->name('reports.close');
         $calls->register(Calls\InspectReportController::class)->name('reports.inspect');
         $calls->register(Calls\EditReportController::class)->name('reports.edit');
         $calls->register(Calls\MakeReportController::class)->name('reports.make');
+        $calls->register(Calls\CommentReportController::class)->name('reports.comment');
         $calls->register(Calls\ListReportsController::class)->name('reports.list');
         $calls->register(Calls\ShowReportController::class)->name('reports.show');
     });

@@ -13,6 +13,7 @@ use App\Bus\Contracts\RefusalMapper as RefusalMapperContract;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CallFailedUnexpectedly;
 use App\Bus\Values\MappedRefusal;
+use App\Contracts\CommandRefusal;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -40,6 +41,7 @@ final readonly class RefusalMapper implements RefusalMapperContract
                 $failure->getMessage(),
                 $failure instanceof RefusalDetails ? $failure->refusalDetails() : [],
             ),
+            $failure instanceof CommandRefusal => new MappedRefusal(RefusalCode::Forbidden, $failure->getMessage()),
             $failure instanceof ValidationException => new MappedRefusal(
                 RefusalCode::InvalidInput,
                 $failure->getMessage(),

@@ -21,6 +21,8 @@ interface ReportResolver
 {
     public function list(DocumentFilters $filters): ReportList;
 
+    public function openCount(): int;
+
     /**
      * @throws ReportMissing
      */

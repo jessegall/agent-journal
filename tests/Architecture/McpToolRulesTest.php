@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Bus\Contracts\Command;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalReadTool;
+use App\Mcp\Tools\JournalWriteTool;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
@@ -19,11 +22,19 @@ use Illuminate\Support\Facades\Event;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Resource;
 use Laravel\Mcp\Server\Tool;
+use PhpParser\Node;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Name as ParsedName;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Return_;
+use PhpParser\NodeFinder;
 use ReflectionClass;
 use Tests\Architecture\Support\ClassesDeclared;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\NamesUsed;
 use Tests\Architecture\Support\NameUse;
+use Tests\Architecture\Support\ParsedFile;
+use Tests\Fixtures\Mcp\DuplicateCommandTool;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -53,9 +64,9 @@ final class McpToolRulesTest extends TestCase
     ];
 
     /**
-     * The bases a tool may extend; the write base joins when it exists.
+     * The bases a tool may extend.
      */
-    private const array TOOL_BASES = [JournalReadTool::class, 'App\Mcp\Tools\JournalWriteTool'];
+    private const array TOOL_BASES = [JournalReadTool::class, JournalWriteTool::class];
 
     private const array IDENTITY_PROPERTIES = ['caller_agent_id', 'agent_id', 'session_id', 'actor'];
 
@@ -80,6 +91,87 @@ final class McpToolRulesTest extends TestCase
             ],
             $this->forbiddenUsesIn(DomainFiles::in([base_path('tests/Fixtures/Mcp/Leaky')])),
         );
+    }
+
+    public function test_write_tools_only_construct_their_declared_command(): void
+    {
+        $violations = [];
+
+        foreach (ScanCache::findings(new ClassesDeclared(), $this->mcpFiles()) as $class) {
+            if (is_subclass_of($class, JournalWriteTool::class)) {
+                $violations = [...$violations, ...$this->commandViolations(new ReflectionClass($class))];
+            }
+        }
+
+        $this->assertSame([], $violations);
+    }
+
+    public function test_the_command_rule_detects_two_commands_and_an_unrelated_call(): void
+    {
+        $this->assertSame([
+            DuplicateCommandTool::class.'::command must construct and return exactly one declared command.',
+            DuplicateCommandTool::class.'::command may only prepare command arguments.',
+        ], $this->commandViolations(new ReflectionClass(DuplicateCommandTool::class)));
+    }
+
+    /**
+     * @param  ReflectionClass<JournalWriteTool>  $type
+     * @return list<string>
+     */
+    private function commandViolations(ReflectionClass $type): array
+    {
+        if ($type->isAbstract()) {
+            return [];
+        }
+
+        $method = $type->getMethod('command');
+        $path = $method->getFileName();
+        $this->assertIsString($path);
+        $finder = new NodeFinder();
+        $node = $finder->findFirst(
+            ParsedFile::fromPath($path)->statements,
+            fn (Node $node): bool => $node instanceof ClassMethod && $node->getStartLine() === $method->getStartLine(),
+        );
+        $this->assertInstanceOf(ClassMethod::class, $node);
+        $this->assertIsArray($node->stmts);
+
+        $declared = $type->getAttributes(Dispatches::class);
+        $this->assertCount(1, $declared, $type->name);
+        $command = $declared[0]->newInstance()->command;
+        $constructions = $finder->find($node->stmts, fn (Node $node): bool => $node instanceof Expr\New_
+            && $node->class instanceof ParsedName && is_a($node->class->toString(), Command::class, true));
+        $returned = end($node->stmts);
+        $subject = $type->name.'::command';
+        $violations = [];
+
+        if (count($constructions) !== 1 || ! $returned instanceof Return_ || ! $returned->expr instanceof Expr\New_
+            || ! $returned->expr->class instanceof ParsedName || $returned->expr->class->toString() !== $command) {
+            $violations[] = "{$subject} must construct and return exactly one declared command.";
+        }
+
+        if ($finder->findFirst($node->stmts, $this->isUnrelatedCommandWork(...)) instanceof Node) {
+            $violations[] = "{$subject} may only prepare command arguments.";
+        }
+
+        return $violations;
+    }
+
+    private function isUnrelatedCommandWork(Node $node): bool
+    {
+        return match (true) {
+            $node instanceof Expr\FuncCall,
+            $node instanceof Expr\Include_,
+            $node instanceof Expr\Eval_,
+            $node instanceof Expr\NullsafeMethodCall,
+            $node instanceof Expr\StaticPropertyFetch => true,
+            $node instanceof Expr\Assign => ! $node->var instanceof Expr\Variable || $node->var->name === 'this',
+            $node instanceof Expr\PropertyFetch => true,
+            $node instanceof Expr\StaticCall => ! $node->class instanceof ParsedName
+                || ! enum_exists($node->class->toString()),
+            $node instanceof Expr\MethodCall => ! $node->var instanceof Expr\Variable
+                || ! in_array($node->var->name, ['arguments', 'this'], true),
+            default => false,
+        };
     }
 
     /**

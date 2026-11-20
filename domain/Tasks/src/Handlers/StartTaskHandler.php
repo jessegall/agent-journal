@@ -57,7 +57,7 @@ final readonly class StartTaskHandler implements CommandHandler
         $holder = $run === null ? null : $this->claims->holderOf($run->assignmentIdentity())->getOrElse(null);
 
         if ($holder !== null && ! $holder->isSameAs($actor)) {
-            throw TaskRunTaken::forTask($task->number);
+            throw TaskRunTaken::forTask($task);
         }
     }
 }

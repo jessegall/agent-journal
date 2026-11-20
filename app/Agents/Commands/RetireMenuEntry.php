@@ -21,7 +21,7 @@ use App\Operations\Enums\ResourceAreaType;
  * The owner takes an entry out of the menu library: the next uncertain point of any runtime misses it and asks the
  * main agent. The entry is kept, retired.
  *
- * @extends Command<null>
+ * @extends Command<string>
  */
 #[HandledBy(RetireMenuEntryHandler::class)]
 #[Authorize(AgentPolicy::class, AgentAbility::Recover)]

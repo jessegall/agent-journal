@@ -31,7 +31,6 @@ use Domain\Rules\Commands\ProposeRule;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestStart;
-use Tests\Fixtures\Domains\Ledger\Mcp\LedgerReadTool;
 use Tests\Fixtures\Domains\Ledger\Mcp\SecondBudgetReadTool;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
@@ -86,7 +85,7 @@ final class JobGrantGuardTest extends TestCase
         $permission = $stack->permission();
 
         $this->assertFalse($permission->allowed);
-        $this->assertEquals(new RecoveryCall('messages_show', ['message_id' => 'message-id']), $permission->recovery);
+        $this->assertEquals(new RecoveryCall('messages_read', ['message_id' => 'message-id']), $permission->recovery);
     }
 
     public function test_a_blocked_stack_refuses_a_signed_write_and_replays_the_recovery_action(): void
@@ -95,14 +94,14 @@ final class JobGrantGuardTest extends TestCase
         $recipient = TestStart::start();
         $task = Task::factory()->create();
         $this->mock(StackPermission::class)->shouldReceive('allows')->once()->andReturn(
-            StackVerdict::refuse('A reply is due.', new RecoveryCall('messages_show', ['message_id' => 'pending'])),
+            StackVerdict::refuse('A reply is due.', new RecoveryCall('messages_read', ['message_id' => 'pending'])),
         );
 
         for ($attempt = 0; $attempt < 2; $attempt++) {
             $this->assign($start, $recipient, $task)
                 ->assertConflict()
                 ->assertJsonPath('code', 'state_blocked')
-                ->assertJsonPath('details.next_action.tool', 'messages_show')
+                ->assertJsonPath('details.next_action.tool', 'messages_read')
                 ->assertJsonPath('details.next_action.arguments.message_id', 'pending');
         }
 
@@ -143,8 +142,6 @@ final class JobGrantGuardTest extends TestCase
     public function test_the_catalogue_rejects_the_twenty_fifth_tool_of_a_read_only_profile(): void
     {
         $catalogue = $this->app->make(McpCatalogue::class);
-        $catalogue->registerTool(LedgerReadTool::class);
-
         $this->expectException(McpBudgetExceeded::class);
         $this->expectExceptionMessage('read-only-helper');
         $catalogue->registerTool(SecondBudgetReadTool::class);

@@ -15,6 +15,8 @@ use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\AddPhaseTasksHandler;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Min;
 
 /**
  * Puts tasks, named by id, at the end of a phase in the order given.
@@ -26,12 +28,16 @@ use Domain\Plans\Policies\PlanPolicy;
 #[Operation('add_phase_tasks', ResourceAreaType::JournalWork, AccessType::Create)]
 final readonly class AddPhaseTasks extends Command implements AuthorizedCommand
 {
+    public const int MAX_TASKS = 100;
+
     /**
      * @param  list<string>  $taskIds
      */
     public function __construct(
         public string $phaseId,
         public int $expectedRevision,
+        #[Min(1)]
+        #[Max(self::MAX_TASKS)]
         public array $taskIds,
     ) {}
 

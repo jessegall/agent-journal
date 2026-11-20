@@ -14,7 +14,7 @@ use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Commands\ReplaceDocumentSection;
+use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Exceptions\DraftConflict;
@@ -71,8 +71,8 @@ final class DraftsTest extends TestCase
 
     public function test_an_open_starts_at_version_one_and_opening_again_returns_the_same_draft(): void
     {
-        $opened = $this->bus()->run(new OpenDocument(1));
-        $again = $this->bus()->run(new OpenDocument(1));
+        $opened = $this->bus()->run(new OpenDocument('1'));
+        $again = $this->bus()->run(new OpenDocument('1'));
 
         $this->assertSame([1, 1], [$opened->version, $opened->baseRevisionNumber]);
         $this->assertSame($opened->token, $again->token);
@@ -81,8 +81,8 @@ final class DraftsTest extends TestCase
 
     public function test_two_saves_close_into_exactly_one_next_revision(): void
     {
-        $draft = $this->bus()->run(new OpenDocument(1));
-        $draft = $this->bus()->run(new ReplaceDocumentSection($this->target($draft), '3', <<<'TEXT'
+        $draft = $this->bus()->run(new OpenDocument('1'));
+        $draft = $this->bus()->run(new EditDocument($this->target($draft), '3', <<<'TEXT'
         ## Risks
         Late.
 
@@ -110,7 +110,7 @@ final class DraftsTest extends TestCase
 
     public function test_an_unchanged_draft_adds_no_revision_and_a_repeated_close_returns_the_first_outcome(): void
     {
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'One.', 'Two.'));
         $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Two.', 'One.'));
         $first = $this->bus()->run(new CloseDocument($this->target($draft)));
@@ -125,10 +125,10 @@ final class DraftsTest extends TestCase
     public function test_another_user_is_refused_naming_the_holder_who_cannot_open_a_second_document(): void
     {
         $this->bus()->run(new CreateDocument('Notes', 'What we saw', "Text\n"));
-        $this->bus()->run(new OpenDocument(1));
+        $this->bus()->run(new OpenDocument('1'));
 
         try {
-            $this->bus()->run(new OpenDocument(2));
+            $this->bus()->run(new OpenDocument('2'));
             $this->fail('A second draft for one editor was opened.');
         } catch (DraftHeld $held) {
             $this->assertStringContainsString('doc 1', $held->getMessage());
@@ -137,12 +137,12 @@ final class DraftsTest extends TestCase
         $this->actAsUser(2);
         $this->expectException(DraftHeld::class);
         $this->expectExceptionMessage(TestIds::of(1));
-        $this->bus()->run(new OpenDocument(1));
+        $this->bus()->run(new OpenDocument('1'));
     }
 
     public function test_a_save_on_an_old_version_is_refused_and_the_first_save_stands(): void
     {
-        $opened = $this->bus()->run(new OpenDocument(1));
+        $opened = $this->bus()->run(new OpenDocument('1'));
         $this->bus()->run(new ReplaceDocumentText($this->target($opened), 'One.', 'Two.'));
 
         try {
@@ -155,11 +155,11 @@ final class DraftsTest extends TestCase
 
     public function test_refused_edits_name_their_cause_and_change_nothing(): void
     {
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $refusals = [
             [new ReplaceDocumentText($this->target($draft), '.', '!'), TextMatchInvalid::class],
             [
-                new ReplaceDocumentSection($this->target($draft), 'Missing', <<<'TEXT'
+                new EditDocument($this->target($draft), 'Missing', <<<'TEXT'
                 ## Missing
                 Text.
 
@@ -182,7 +182,7 @@ final class DraftsTest extends TestCase
 
     public function test_a_title_over_its_limit_is_refused_and_the_draft_keeps_its_text(): void
     {
-        $draft = $this->bus()->run(new OpenDocument(1));
+        $draft = $this->bus()->run(new OpenDocument('1'));
         $tooLong = new ChangeDocumentDetails(
             $this->target($draft),
             str_repeat('a', Document::TITLE_CHARACTERS + 1),
@@ -201,12 +201,12 @@ final class DraftsTest extends TestCase
         $this->expectException(DraftMissing::class);
         $this->expectExceptionMessage('doc:open 1');
 
-        $this->bus()->run(new ReplaceDocumentText(new DraftTarget(1, 'unknown', 1), 'One.', 'Two.'));
+        $this->bus()->run(new ReplaceDocumentText(new DraftTarget('1', 'unknown', 1), 'One.', 'Two.'));
     }
 
     private function target(DraftReference $draft): DraftTarget
     {
-        return new DraftTarget($draft->documentNumber, $draft->token, $draft->version);
+        return new DraftTarget((string) $draft->documentNumber, $draft->token, $draft->version);
     }
 
     private function documents(): DocumentResolver

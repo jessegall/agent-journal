@@ -51,8 +51,11 @@ final readonly class McpInstructions
         return [
             'sequences (journal sequence)' => [],
             'process outputs and their readers (journal output, journal reader)' => [],
+            'skill inspection (journal skill)' => [],
+            'inbox history and acknowledgements (journal message)' => [],
             'reminders (journal reminder)' => $dispatch,
             'helper dispatch (journal helper)' => $dispatch,
+            'plan cancellation (journal plan cancel)' => $dispatch,
             'account work (the Accounts page)' => $dispatch,
         ];
     }

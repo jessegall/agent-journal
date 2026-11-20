@@ -166,7 +166,7 @@ final class DocumentDraft extends Model implements ReadableModel
             $this->token,
             $this->version,
             $this->base_revision_number,
-            MarkdownText::body($this->body)->outline(),
+            MarkdownText::workingBody($this->body)->outline(),
         );
     }
 

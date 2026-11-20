@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Numbers\Support;
 
 use App\Numbers\Exceptions\InvalidRecordReference;
+use Illuminate\Support\Str;
 
 /**
  * A record as people name it: its type and its number, and for a record numbered within a parent the parent's
@@ -60,6 +61,11 @@ final readonly class RecordReference
         }
 
         return (int) $text;
+    }
+
+    public static function idOrNumber(string $text): int|string
+    {
+        return Str::isUlid($text) ? strtolower($text) : self::number($text);
     }
 
     /**

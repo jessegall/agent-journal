@@ -26,7 +26,7 @@ final readonly class AbandonNavigationHandler implements CommandHandler
      * @throws NavigationRaiseRefused
      * @throws NavigationTransitionRefused
      */
-    public function handle(AbandonNavigation $command): void
+    public function handle(AbandonNavigation $command): string
     {
         $navigation = $this->answering->lockedForAnswerer($command->navigationId);
         $this->answering->checkVersion($navigation, $command->expectedRowVersion);
@@ -37,5 +37,7 @@ final readonly class AbandonNavigationHandler implements CommandHandler
             ->lockForUpdate()
             ->firstOrFail()
             ->fail(RequestOutcome::EntryUnavailable);
+
+        return $navigation->id;
     }
 }

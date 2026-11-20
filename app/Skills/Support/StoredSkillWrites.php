@@ -53,6 +53,7 @@ final readonly class StoredSkillWrites
         if ($earlier !== null) {
             return $earlier->sentWith($inputDigest) ? $this->resultOf(
                 SkillRevision::query()->whereKey($earlier->skill_revision_id)->firstOrFail(),
+                $requestId,
             ) : throw SkillRequestReused::for($requestId);
         }
 
@@ -60,7 +61,7 @@ final readonly class StoredSkillWrites
         SkillRequest::record($author, $requestId, $inputDigest, $revision);
         $this->events->dispatch(new SkillsChanged($revision->skill_id, $revision->revision));
 
-        return $this->resultOf($revision);
+        return $this->resultOf($revision, $requestId);
     }
 
     /**
@@ -74,10 +75,10 @@ final readonly class StoredSkillWrites
         return $condition;
     }
 
-    private function resultOf(SkillRevision $revision): SkillRevisionResult
+    private function resultOf(SkillRevision $revision, string $requestId): SkillRevisionResult
     {
         $skill = Skill::query()->whereKey($revision->skill_id)->firstOrFail();
 
-        return new SkillRevisionResult($skill->id, $skill->number, $revision->revision, true);
+        return new SkillRevisionResult($skill->id, $skill->number, $revision->revision, true, $requestId);
     }
 }

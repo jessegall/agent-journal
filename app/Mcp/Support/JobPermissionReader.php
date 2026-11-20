@@ -7,13 +7,15 @@ namespace App\Mcp\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Values\Operation;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandRegistry;
-use App\Mcp\Attributes\WritesCommand;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Profiles\Values\StartProfileAuthority;
+use ReflectionClass;
 
 final readonly class JobPermissionReader
 {
@@ -25,8 +27,12 @@ final readonly class JobPermissionReader
 
     public function allows(JournalTool $tool): bool
     {
+        if (! $this->isVisible($tool)) {
+            return false;
+        }
+
         if ($tool instanceof JournalReadTool) {
-            return $this->reads->allows($tool->readRequest());
+            return $this->allowsRead($tool);
         }
 
         if (! $this->actors->hasActor()) {
@@ -53,14 +59,8 @@ final readonly class JobPermissionReader
         return DiscoveryProfile::MainAgent->value;
     }
 
-    private function allowsCommand(StartProfileAuthority $authority, WritesCommand $write): bool
+    private function allowsCommand(StartProfileAuthority $authority, Dispatches $write): bool
     {
-        $profile = DiscoveryProfile::from($authority->profile->base->key);
-
-        if (! $profile->includesWrite($write->readOnlyHelper)) {
-            return false;
-        }
-
         $declaration = $this->commands->operationOf($write->command);
 
         if ($declaration !== null && ! $authority->profile->start->access->decide(
@@ -75,5 +75,42 @@ final readonly class JobPermissionReader
                 $authorization->ability,
             ),
         )->getOrElse(false);
+    }
+
+    private function isVisible(JournalTool $tool): bool
+    {
+        if (! $this->actors->hasActor()) {
+            return true;
+        }
+
+        $authority = $this->actors->authority();
+
+        return ! $authority instanceof StartProfileAuthority
+            || $tool->isVisibleTo(DiscoveryProfile::from($authority->profile->base->key));
+    }
+
+    private function allowsRead(JournalReadTool $tool): bool
+    {
+        if (! $this->reads->allows($tool->readRequest())) {
+            return false;
+        }
+
+        if (! $this->actors->hasActor()) {
+            return true;
+        }
+
+        $authority = $this->actors->authority();
+
+        if (! $authority instanceof StartProfileAuthority) {
+            return true;
+        }
+
+        foreach (new ReflectionClass($tool)->getAttributes(Authorize::class) as $attribute) {
+            $declaration = $attribute->newInstance();
+
+            return $authority->profile->authorization->grants($declaration->policy, $declaration->ability);
+        }
+
+        return true;
     }
 }

@@ -7,6 +7,7 @@ namespace App\Mcp\Providers;
 use App\Agents\Support\AgentContext;
 use App\Hooks\Contracts\JournalToolNames;
 use App\Mcp\Console\RelayCommand;
+use App\Mcp\Console\ContractSnapshotCommand;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Models\RetainedPage;
@@ -38,7 +39,7 @@ final class McpServiceProvider extends ServiceProvider
     public function boot(RateLimiter $limiter): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/mcp.php');
-        $this->commands([RelayCommand::class]);
+        $this->commands([ContractSnapshotCommand::class, RelayCommand::class]);
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('model:prune', ['--model' => [RetainedPage::class]])->daily(),

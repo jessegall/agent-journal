@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
@@ -20,6 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 #[Name('skills_show')]
 #[Description('One skill by key: its owner, source, digest and the exact Markdown it is delivered as.')]
+#[VisibleToProfiles]
 final class SkillShowTool extends JournalReadTool
 {
     public function __construct(

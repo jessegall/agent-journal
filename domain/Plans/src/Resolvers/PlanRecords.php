@@ -9,6 +9,7 @@ use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Support\AssigneeIdentity;
+use App\Assignments\Support\NumberedPage;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -41,7 +42,7 @@ use PhpOption\Some;
 #[Scoped]
 final readonly class PlanRecords implements PlanResolver
 {
-    public const int PER_PAGE = 20;
+    public const int PER_PAGE = PlanFilters::PAGE_SIZE;
 
     public function __construct(
         private CurrentActor $actors,
@@ -56,15 +57,16 @@ final readonly class PlanRecords implements PlanResolver
     {
         $focused = $this->focusedPlanId();
         $total = $this->listed($filters)->count();
-        $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
+        $size = min(max(1, $filters->perPage), NumberedPage::LARGEST_SIZE);
+        $lastPage = max(1, (int) ceil($total / $size));
         $page = min(max(1, $filters->page), $lastPage);
-        $plans = $this->listed($filters)->listOrder($focused)->forPage($page, self::PER_PAGE)->get();
+        $plans = $this->listed($filters)->listOrder($focused)->forPage($page, $size)->get();
 
         return new PlanList(
             $this->cardsOf($plans, $focused),
             $filters,
             $page,
-            self::PER_PAGE,
+            $size,
             $lastPage,
             $total,
             $this->selection($filters, $focused),

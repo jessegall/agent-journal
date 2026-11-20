@@ -28,7 +28,7 @@ use App\Skills\Values\SkillRevisionResult;
 final readonly class RetireSkill extends Command implements AuthorizedCommand
 {
     public function __construct(
-        public string $skillId,
+        public string $skill,
         public int $expectedRevision,
         public string $requestId,
     ) {}

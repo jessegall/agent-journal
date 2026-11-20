@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Communication\Contracts\ConversationResolver;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -14,6 +15,7 @@ use Laravel\Mcp\Server\Attributes\Name;
 
 #[Name('inbox_counts')]
 #[Description('Count what is unread in an inbox and how many questions wait, taken up or not.')]
+#[VisibleToProfiles]
 final class InboxCountsTool extends JournalReadTool
 {
     public function __construct(private readonly ConversationResolver $conversations) {}

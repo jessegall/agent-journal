@@ -29,7 +29,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  */
 #[HandledBy(CreateDocumentHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('create_document', ResourceAreaType::JournalContent, AccessType::Create)]
+#[Operation('create_document', ResourceAreaType::JournalDocuments, AccessType::Create)]
 final readonly class CreateDocument extends Command implements AuthorizedCommand
 {
     public const int MOST_LINKS = 50;
@@ -42,9 +42,10 @@ final readonly class CreateDocument extends Command implements AuthorizedCommand
         public string $title,
         #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)]
         public string $abstract,
-        public string $body,
+        public string|null $body,
         #[Max(self::MOST_LINKS)]
         public array $about = [],
+        public string|null $uploadId = null,
     ) {}
 
     /**

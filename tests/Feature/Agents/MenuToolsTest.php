@@ -89,8 +89,10 @@ final class MenuToolsTest extends TestCase
     {
         $entry = $this->entryOf('owner');
 
-        $this->callMcpTool($this->caller, 'menu_retire', ['entry' => $entry->id, 'expected_state' => 'current'])
-            ->assertJsonPath('result.isError', true);
+        $this->sendMcp($this->caller, 'tools/call', [
+            'name' => 'menu_retire',
+            'arguments' => ['entry' => $entry->id, 'expected_state' => 'current', 'request_key' => 'retire'],
+        ])->assertBadRequest()->assertJsonPath('error.code', -32602);
         $this->asOwner(new RetireMenuEntry($entry->id, MenuEntryState::Current));
 
         $owner = new ActorIdentity(ActorType::User, 'owner');

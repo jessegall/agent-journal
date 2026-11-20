@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Operations\Exceptions;
 
+use App\Operations\Enums\ResourceAreaType;
 use InvalidArgumentException;
 
 /**
@@ -15,8 +16,9 @@ final class UnknownResourceArea extends InvalidArgumentException
     {
         return new self(
             sprintf(
-                '%s is not a resource area; use workspace, scratch, journal.content, journal.work, journal.control, provider.connection or protected.',
+                '%s is not a resource area. Use one of %s.',
                 $key,
+                implode(', ', array_column(ResourceAreaType::cases(), 'value')),
             ),
         );
     }

@@ -28,7 +28,7 @@ use Spatie\LaravelData\Attributes\Validation\Required;
  */
 #[HandledBy(ChangeDocumentDetailsHandler::class)]
 #[Authorize(DocumentAdministrationPolicy::class, DocumentAbility::Work)]
-#[Operation('change_document_details', ResourceAreaType::JournalContent, AccessType::Edit)]
+#[Operation('change_document_details', ResourceAreaType::JournalDocuments, AccessType::Edit)]
 final readonly class ChangeDocumentDetails extends Command implements AuthorizedCommand
 {
     public function __construct(

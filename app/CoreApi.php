@@ -156,6 +156,12 @@ use App\Agents\Contracts\AgentStartCommand;
 use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\SessionProvenance;
+use App\Communication\Contracts\InboxNotices;
+use App\Mcp\Contracts\SearchContribution;
+use App\Mcp\Data\SearchHit;
+use App\Mcp\Data\SearchPage;
+use App\Bus\Contracts\CommandTransaction;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
@@ -274,6 +280,7 @@ use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\RankedLaunchCandidate;
+use App\Agents\Support\ReadGrant;
 use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
@@ -295,6 +302,7 @@ use App\Agents\Values\NavigationRoundReport;
 use App\Agents\Values\NavigationScreen;
 use App\Agents\Values\Operation as PolicyOperation;
 use App\Agents\Values\OperationGrant;
+use App\Agents\Values\ReadRequest;
 use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\ScriptGoal;
 use App\Agents\Values\ScriptParameter;
@@ -352,6 +360,7 @@ use App\Assignments\Exceptions\AutoAssignmentSizeInvalid;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
+use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeIdentity;
@@ -399,6 +408,7 @@ use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Contracts\CommandMiddlewareProvider;
 use App\Bus\Contracts\CommandProvider;
 use App\Bus\Contracts\OperationResolver;
+use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Enums\CommandEffectType;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
@@ -436,6 +446,8 @@ use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
+use App\Bus\Support\RequestKey;
+use App\Bus\Values\RecoveryCall;
 use App\Comments\Calls\ListCommentsCall;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
@@ -458,14 +470,18 @@ use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
 use App\Communication\Commands\AskMessage;
+use App\Communication\Commands\AskQuestion;
+use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\ReadMessages;
 use App\Communication\Commands\ReleaseMessageClaim;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Commands\SelectMessage;
 use App\Communication\Commands\TakeNextMessages;
 use App\Communication\Contracts\ActorInboxResolver;
+use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Contracts\ConversationResolver;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxAccess;
@@ -475,6 +491,10 @@ use App\Communication\Contracts\InboxRegistration;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Contracts\MessageCommand;
 use App\Communication\Data\InboxCounts;
+use App\Communication\Data\AgentInboxCounts;
+use App\Communication\Data\AgentInbox;
+use App\Communication\Data\AgentMessageCard;
+use App\Communication\Data\AgentMessageDetails;
 use App\Communication\Data\InboxView;
 use App\Communication\Data\MessageClaimHolder;
 use App\Communication\Data\MessagePage;
@@ -484,6 +504,8 @@ use App\Communication\Data\MessageReadResult;
 use App\Communication\Data\MessageView;
 use App\Communication\Data\WakeStatus;
 use App\Communication\Enums\DismissalType;
+use App\Communication\Enums\AgentInboxState;
+use App\Communication\Enums\AgentMessageView;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageAnswered;
 use App\Communication\Events\MessageAnswerRequired;
@@ -609,6 +631,8 @@ use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
+use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Contracts\McpToolProvider;
 use App\Mcp\Contracts\NumberedPages;
@@ -616,6 +640,7 @@ use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use App\Mcp\Data\ToolResult as McpToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use App\Mcp\Exceptions\ResourceMimeTypeRefused;
@@ -623,8 +648,14 @@ use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
+use App\Mcp\Support\JobPermissionReader;
+use App\Mcp\Support\Continuation;
+use App\Mcp\Support\Continuations;
+use App\Mcp\Support\TextChunk;
+use App\Mcp\Support\TextFields;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
+use App\Mcp\Tools\JournalWriteTool;
 use App\Mcp\Tools\JournalTool;
 use App\Numbers\Commands\InstallNumbers;
 use App\Numbers\Contracts\Numbered;
@@ -1122,7 +1153,11 @@ final class CoreApi
                 RecordProvider::class,
                 RecordResolver::class,
                 RecordLinker::class,
+                CommandTransaction::class,
+                SessionProvenance::class,
+                InboxNotices::class,
                 CurrentSession::class,
+                SearchContribution::class,
                 ConversationVisits::class,
                 AutoAssignmentActivity::class,
                 NativeTurnRecords::class,
@@ -1243,6 +1278,8 @@ final class CoreApi
                 CommandHandler::class,
                 CommandProvider::class,
                 McpToolProvider::class,
+                AgentMessageReader::class,
+                RefusalDetails::class,
                 McpCall::class,
                 NumberedPages::class,
                 CommandMiddlewareProvider::class,
@@ -1314,6 +1351,12 @@ final class CoreApi
                 ReceiptState::class,
                 Operation::class,
                 McpToolResult::class,
+                AgentInboxCounts::class,
+                AgentInbox::class,
+                AgentMessageCard::class,
+                AgentMessageDetails::class,
+                AgentInboxState::class,
+                AgentMessageView::class,
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,
@@ -1378,6 +1421,15 @@ final class CoreApi
                 OwnerStartRequest::class,
                 OwnerStartReceipt::class,
                 ToolArguments::class,
+                ReadRequest::class,
+                Continuation::class,
+                TextChunk::class,
+                SearchHit::class,
+                SearchPage::class,
+                Dispatches::class,
+                VisibleToProfiles::class,
+                DiscoveryProfile::class,
+                RecoveryCall::class,
                 RecordCard::class,
                 StateReferences::class,
                 StateSet::class,
@@ -1791,6 +1843,9 @@ final class CoreApi
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
+                SelectMessage::class,
+                AskQuestion::class,
+                AnswerMessage::class,
                 AskMessage::class,
                 ReadMessages::class,
                 TakeNextMessages::class,
@@ -2129,6 +2184,13 @@ final class CoreApi
                 ReadsRouteNumber::class,
                 JournalTool::class,
                 JournalReadTool::class,
+                JournalWriteTool::class,
+                ReadsAssignmentArguments::class,
+                RequestKey::class,
+                ReadGrant::class,
+                Continuations::class,
+                TextFields::class,
+                JobPermissionReader::class,
                 JournalResource::class,
                 RendersRefusal::class,
                 RunsCallPipelines::class,

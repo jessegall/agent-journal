@@ -4,31 +4,35 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Mcp\Attributes\WritesCommand;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Agents\Commands\ProveNavigation;
 use App\Agents\Enums\NavigationCompletion;
-use App\Bus\Contracts\CommandBus;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 /**
  * navigation_done: the main agent says its rounds reached the goal or repaired the step, with the text that shows it.
  */
+#[IsIdempotent]
+#[IsDestructive(false)]
 #[Name('navigation_done')]
-#[WritesCommand(ProveNavigation::class)]
+#[Dispatches(ProveNavigation::class)]
 #[Description(
     'Say a navigation request is done: completes goal (the whole goal shows) or step (only the stalled step is '
     .'repaired), and a proof, text that now shows on the screen and did not when the request was raised. The host '
     .'checks the proof on the live screen before anything counts.',
 )]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class NavigationDoneTool extends JournalWriteTool
 {
-    public function __construct(private readonly CommandBus $commands) {}
-
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'request' => $schema->string()->max(26)->required(),
@@ -38,15 +42,18 @@ final class NavigationDoneTool extends JournalWriteTool
         ];
     }
 
-    protected function write(ToolArguments $arguments): ToolResult
+    protected function command(ToolArguments $arguments): ProveNavigation
     {
-        $receipt = $this->commands->run(new ProveNavigation(
+        return new ProveNavigation(
             $arguments->text('request'),
             $arguments->positiveInteger('version'),
             NavigationCompletion::from($arguments->text('completes')),
             $arguments->text('proof'),
-        ));
+        );
+    }
 
-        return ToolResult::ok(['round' => $receipt->requestId, 'progress' => $receipt->progress->value], []);
+    protected function present(mixed $result): ToolResult
+    {
+        return ToolResult::ok(['round' => $result->requestId, 'progress' => $result->progress->value], []);
     }
 }

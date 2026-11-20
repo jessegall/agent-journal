@@ -4,27 +4,31 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
-use App\Mcp\Attributes\WritesCommand;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Bus\Contracts\Command;
-use App\Bus\Support\RequestKey;
 use App\Communication\Commands\SendMessage;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
+#[IsIdempotent]
+#[IsDestructive(false)]
 #[Name('messages_send')]
-#[WritesCommand(SendMessage::class)]
+#[Dispatches(SendMessage::class)]
 #[Description('Send a note from one of your inboxes to another inbox; nobody has to answer it.')]
+#[VisibleToProfiles]
 final class MessageSendTool extends MessageWriteTool
 {
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'source_inbox_id' => $schema->string()->max(26)->required(),
             'destination_inbox_id' => $schema->string()->max(26)->required(),
             'body' => $schema->string()->required(),
-            'request_key' => $schema->string()->max(RequestKey::LONGEST)->required(),
         ];
     }
 

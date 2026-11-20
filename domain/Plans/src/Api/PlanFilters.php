@@ -12,6 +12,8 @@ use Domain\Plans\Enums\PlanState;
  */
 final readonly class PlanFilters
 {
+    public const int PAGE_SIZE = 20;
+
     /**
      * @param  list<PlanState>  $states  only plans in these states, or every plan when empty
      */
@@ -21,5 +23,6 @@ final readonly class PlanFilters
         public string|null $selectedPlanId = null,
         public array $states = [],
         public int|null $selectedPlanNumber = null,
+        public int $perPage = self::PAGE_SIZE,
     ) {}
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Attributes\VisibleToProfiles;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Support\AssigneeName;
@@ -24,6 +26,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 #[Name('assignees_list')]
 #[Description('The agents or users work may be given to, in id order: give type, and after_id and limit (1 to 100, 20 unless given), or type and the continuation a result gave. There is no page number.')]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class AssigneesListTool extends JournalReadTool
 {
     private const int DEFAULT_LIMIT = 20;

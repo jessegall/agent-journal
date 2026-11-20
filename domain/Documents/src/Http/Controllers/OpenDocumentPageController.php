@@ -14,7 +14,7 @@ final readonly class OpenDocumentPageController
 {
     public function __invoke(DraftPageRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new OpenDocument($request->documentNumber()));
+        $commands->run(new OpenDocument((string) $request->documentNumber()));
 
         return $redirect->back(303);
     }

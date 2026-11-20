@@ -21,7 +21,7 @@ use Spatie\LaravelData\Mappers\SnakeCaseMapper;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 
 /**
- * Replies to a message as the state you read.
+ * Replies to a message, with an optional state-version check.
  *
  * @implements JournalCall<MessageNamed>
  */
@@ -31,12 +31,12 @@ final class ReplyToMessageCall extends Data implements JournalCall
 {
     public function __construct(
         #[Size(26)]
-        public string $messageId,
-        #[Min(0)]
-        public int $expectedStateVersion,
-        public string $body,
+        public readonly string $messageId,
+        public readonly string $body,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
-        public CallKey $requestKey,
+        public readonly CallKey $requestKey,
+        #[Min(0)]
+        public readonly int|null $expectedStateVersion = null,
     ) {}
 }

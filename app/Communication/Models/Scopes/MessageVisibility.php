@@ -7,6 +7,8 @@ namespace App\Communication\Models\Scopes;
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\CurrentSession;
+use App\Communication\Models\Message;
 use App\Communication\Support\RegisteredInboxes;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,8 +27,14 @@ final readonly class MessageVisibility implements Scope
      * @param  Closure(): ActorVisibility  $visibility
      * @param  Closure(): CurrentActor  $actors
      * @param  Closure(): RegisteredInboxes  $inboxes
+     * @param  Closure(): CurrentSession  $session
      */
-    public function __construct(private Closure $visibility, private Closure $actors, private Closure $inboxes) {}
+    public function __construct(
+        private Closure $visibility,
+        private Closure $actors,
+        private Closure $inboxes,
+        private Closure $session,
+    ) {}
 
     /**
      * @param  Builder<covariant Model>  $builder
@@ -36,6 +44,7 @@ final readonly class MessageVisibility implements Scope
         ($this->visibility)()->ownRows($builder, function (Builder $query) use ($model): void {
             $actor = ActorIdentity::of(($this->actors)()->actor());
             $inboxIds = ($this->inboxes)()->inboxIdsOf($actor);
+            $session = ($this->session)();
 
             $query->where(fn (Builder $visible) => $visible
                 ->whereIn($model->qualifyColumn('source_inbox_id'), $inboxIds)
@@ -47,7 +56,11 @@ final readonly class MessageVisibility implements Scope
                     ->select('id')
                     ->from($model->getTable())
                     ->where('sender_type', $actor->type->value)
-                    ->where('sender_id', $actor->id)));
+                    ->where('sender_id', $actor->id))
+                ->when($session->hasSession(), fn (Builder $thread) => $thread->orWhereIn(
+                    $model->qualifyColumn('conversation_id'),
+                    Message::sourceConversation($session->sessionId()),
+                )));
         });
     }
 }

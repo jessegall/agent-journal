@@ -26,6 +26,7 @@ use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
+use Domain\Tasks\Api\TaskTextLimits;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
@@ -96,12 +97,12 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     /**
      * The most characters a task's title holds.
      */
-    public const int TITLE_CHARACTERS = 240;
+    public const int TITLE_CHARACTERS = TaskTextLimits::TITLE;
 
     /**
      * The most characters a task's brief, result note, block reason or cancel reason holds.
      */
-    public const int NOTE_CHARACTERS = 8000;
+    public const int NOTE_CHARACTERS = TaskTextLimits::NOTE;
 
     /**
      * @var array<string, mixed>

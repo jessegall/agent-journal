@@ -24,6 +24,7 @@ use Domain\Documents\Data\ReportCard;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\RecordImmutable;
+use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
@@ -91,6 +92,16 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
             'creator_id' => $author->actorId(),
             'filed_at' => CarbonImmutable::now(),
         ]);
+    }
+
+    public static function lockedForClosing(int|string $reference): self
+    {
+        $reports = self::query()->lockForUpdate();
+        if (is_int($reference)) {
+            return $reports->where('number', $reference)->first() ?? throw ReportMissing::numbered($reference);
+        }
+
+        return $reports->whereKey($reference)->first() ?? throw ReportMissing::identified($reference);
     }
 
     public function card(): ReportCard

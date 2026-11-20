@@ -13,23 +13,22 @@ use App\Skills\Values\SkillRevisionResult;
 
 final readonly class ReviseSkillHandler implements CommandHandler
 {
-    public function __construct(
-        private StoredSkillWrites $writes,
-    ) {}
+    public function __construct(private StoredSkillWrites $writes) {}
 
     public function handle(ReviseSkill $command): SkillRevisionResult
     {
-
+        $skillId = $command->skill;
         return $this->writes->once($command->requestId, hash(
             'sha256',
-            "{$command->skillId}|{$command->expectedRevision}|".$command->draft->digest(),
-        ), function () use ($command) {
-            $skill = Skill::lockVisible($command->skillId, SkillContextResolver::ENVIRONMENT);
+            "{$skillId}|{$command->expectedRevision}|".$command->draft->digest(),
+        ), function () use ($command, $skillId) {
+            $skill = Skill::lockVisible($skillId, SkillContextResolver::ENVIRONMENT);
             $skill->checkWritableAt($command->expectedRevision);
+            $draft = $command->draft;
 
             return $skill->appendRevision(
-                $command->draft,
-                $this->writes->checkedCondition($skill->key, $command->draft),
+                $draft,
+                $this->writes->checkedCondition($skill->key, $draft),
                 $this->writes->author(),
             );
         });

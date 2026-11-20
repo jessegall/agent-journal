@@ -14,6 +14,7 @@ declare(strict_types=1);
  *   echo '{"account":"...","working_roots":"...","root":"...","tables":["..."]}' | php tools/accounts/prepare-codex.php
  */
 
+use App\Agents\Enums\TransportProfileType;
 use App\Hooks\Programs\CodexFolderTrust;
 use App\Hooks\Programs\CodexJournalServer;
 use App\Hooks\Support\AccountConfigurationWrite;
@@ -25,6 +26,7 @@ require __DIR__.'/../../vendor/autoload.php';
 $request = json_decode((string) fgets(STDIN), true, flags: JSON_THROW_ON_ERROR);
 $workingRoots = realpath((string) $request['working_roots']);
 $name = (string) $request['root'];
+$transport = TransportProfileType::from($request['transport_profile'] ?? TransportProfileType::Mcp->value);
 
 if ($workingRoots === false || $name === '' || basename($name) !== $name || in_array($name, ['.', '..'], true)) {
     fwrite(STDERR, "The working roots folder or the root's name is not usable.\n");
@@ -47,7 +49,7 @@ new AccountConfigurationWrite()->prepare(
     $settings,
     array_values(array_map(strval(...), (array) ($request['tables'] ?? []))),
     CodexFolderTrust::forWorkingRoot($workingRoots, $root),
-    [CodexJournalServer::of(PHP_BINARY, (string) realpath(__DIR__.'/../../bin/journal-mcp'))->tomlTable()],
+    [CodexJournalServer::of(PHP_BINARY, (string) realpath(__DIR__.'/../../bin/journal-mcp'))->tomlTable($transport)],
 );
 chmod($root, 0o555);
 

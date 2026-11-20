@@ -15,6 +15,7 @@ enum ResourceAreaType: string
     case Workspace = 'workspace';
     case Scratch = 'scratch';
     case JournalContent = 'journal.content';
+    case JournalDocuments = 'journal.documents';
     case JournalWork = 'journal.work';
     case JournalControl = 'journal.control';
     case ProviderConnection = 'provider.connection';

@@ -18,14 +18,18 @@ final readonly class Refusal
 
     public string $message;
 
-    public function __construct(public RefusalCode $code, string $message)
-    {
+    /** @param array<string, mixed> $details */
+    private function __construct(
+        public RefusalCode $code,
+        string $message,
+        private array $details,
+    ) {
         $this->message = mb_strcut($message, 0, self::MESSAGE_BYTES);
     }
 
     public static function of(MappedRefusal $refusal): self
     {
-        return new self($refusal->code, $refusal->message);
+        return new self($refusal->code, $refusal->message, $refusal->details);
     }
 
     /**
@@ -37,6 +41,7 @@ final readonly class Refusal
             'code' => $this->code->value,
             'message' => $this->message,
             'retryable' => $this->code->isRetryable(),
+            ...array_intersect_key($this->details, ['next_action' => true]),
         ];
 
         return Response::make(

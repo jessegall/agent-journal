@@ -197,7 +197,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
         [$group, $finished] = $this->batch->checkedGroup($records);
 
         if ($this->batch->isFinished($group->root, $finished)) {
-            throw AssignmentRootFinished::for($group->root);
+            throw AssignmentRootFinished::for($group->root, $group->finishedRootRecovery);
         }
 
         return [$group, $finished];

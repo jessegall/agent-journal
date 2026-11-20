@@ -31,7 +31,7 @@ final class AnsweringMessageState extends AgentState
     {
         return StackVerdict::refuse(
             $this->instruction(),
-            new RecoveryCall('messages_show', ['message_id' => $this->messageId]),
+            new RecoveryCall('messages_read', ['message_id' => $this->messageId]),
         );
     }
 

@@ -4,28 +4,32 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Mcp\Attributes\WritesCommand;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Agents\Commands\AbandonNavigation;
-use App\Bus\Contracts\CommandBus;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 /**
  * navigation_give_up: the main agent gives up on a navigation request, saying why.
  */
+#[IsIdempotent]
+#[IsDestructive(true)]
 #[Name('navigation_give_up')]
-#[WritesCommand(AbandonNavigation::class)]
+#[Dispatches(AbandonNavigation::class)]
 #[Description(
     'Give up on a navigation request, saying why: its key script ends and the runtime stays held for the person.',
 )]
+#[VisibleToProfiles(DiscoveryProfile::MainAgent)]
 final class NavigationGiveUpTool extends JournalWriteTool
 {
-    public function __construct(private readonly CommandBus $commands) {}
-
-    public function schema(JsonSchema $schema): array
+    protected function writeSchema(JsonSchema $schema): array
     {
         return [
             'request' => $schema->string()->max(26)->required(),
@@ -34,14 +38,17 @@ final class NavigationGiveUpTool extends JournalWriteTool
         ];
     }
 
-    protected function write(ToolArguments $arguments): ToolResult
+    protected function command(ToolArguments $arguments): AbandonNavigation
     {
-        $this->commands->run(new AbandonNavigation(
+        return new AbandonNavigation(
             $arguments->text('request'),
             $arguments->positiveInteger('version'),
             $arguments->text('reason'),
-        ));
+        );
+    }
 
-        return ToolResult::ok(['abandoned' => $arguments->text('request')], []);
+    protected function present(mixed $result): ToolResult
+    {
+        return ToolResult::ok(['abandoned' => $result], []);
     }
 }

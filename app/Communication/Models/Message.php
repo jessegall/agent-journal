@@ -8,6 +8,8 @@ use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\CurrentSession;
+use App\Agents\Models\JobMessageSource;
 use App\Assignments\Contracts\Assignable;
 use App\Communication\Data\MessageReader;
 use App\Communication\Enums\DismissalType;
@@ -16,6 +18,7 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Scopes\MessageVisibility;
 use App\Communication\Support\AcceptedOperation;
+use App\Queries\Support\TextSearch;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageEnvelope;
 use App\Communication\Support\RegisteredInboxes;
@@ -45,6 +48,9 @@ use Spatie\LaravelData\Optional;
  * @property string $destination_inbox_id
  * @property string $sender_type
  * @property string $sender_id
+ * @property string|null $sender_session_id
+ * @property string $conversation_id
+ * @property bool $is_question
  * @property string $body
  * @property MessageState $state
  * @property int $state_version
@@ -68,6 +74,9 @@ use Spatie\LaravelData\Optional;
     'destination_inbox_id',
     'sender_type',
     'sender_id',
+    'sender_session_id',
+    'conversation_id',
+    'is_question',
     'body',
     'state',
     'state_version',
@@ -87,6 +96,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     {
         return [
             'state' => MessageState::class,
+            'is_question' => 'boolean',
             'state_version' => 'integer',
             'read_at' => 'immutable_datetime',
             'closed_at' => 'immutable_datetime',
@@ -102,6 +112,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
             static fn (): ActorVisibility => Container::getInstance()->make(ActorVisibility::class),
             static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
             static fn (): RegisteredInboxes => Container::getInstance()->make(RegisteredInboxes::class),
+            static fn (): CurrentSession => Container::getInstance()->make(CurrentSession::class),
         ));
     }
 
@@ -116,25 +127,59 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         $query->withoutGlobalScope(MessageVisibility::class);
     }
 
+    /** @param Builder<self> $query */
+    #[Scope]
+    protected function matchingBody(Builder $query, string $words): void
+    {
+        TextSearch::narrow($query, 'body', $words);
+    }
+
     /**
      * A new message from its envelope, accepted under the bus receipt of the operation that sent it.
      */
-    public static function record(MessageEnvelope $envelope, AcceptedOperation $operation): self
-    {
+    public static function record(
+        MessageEnvelope $envelope,
+        AcceptedOperation $operation,
+        string|null $senderSessionId = null,
+    ): self {
         $author = $envelope->author;
         $message = new self([
             'source_inbox_id' => $envelope->source->inboxId(),
             'destination_inbox_id' => $envelope->destination->inboxId(),
             ...$author->asColumns('sender'),
+            'sender_session_id' => $senderSessionId,
             'body' => $envelope->body->text,
             'state' => $envelope->state,
+            'is_question' => $envelope->state === MessageState::WaitingForAnswer,
             'state_version' => 0,
             'origin_receipt_id' => $operation->receiptId,
             'reply_to_id' => $envelope->replyToId,
         ]);
+        $message->id = $message->newUniqueId();
+        $message->conversation_id = $envelope->replyToId === null
+            ? $message->id
+            : self::query()->acrossInboxes()->findOrFail($envelope->replyToId)->conversation_id;
         $message->save();
 
         return $message;
+    }
+
+    /** @return Builder<self> */
+    public static function sourceConversation(string $sessionId): Builder
+    {
+        return self::query()->acrossInboxes()
+            ->whereIn('id', JobMessageSource::messagesFor($sessionId))
+            ->select('conversation_id');
+    }
+
+    public static function visibleById(string $messageId): self
+    {
+        return self::query()->whereKey($messageId)->first() ?? throw MessageMissing::forId($messageId);
+    }
+
+    public function revision(): int
+    {
+        return $this->state_version + 1;
     }
 
     /**
@@ -281,6 +326,13 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
         return $this->sender_type === $actor->type->value && $this->sender_id === $actor->id;
     }
 
+    public function isReplyBy(self $original, ActorIdentity $actor, string|null $sessionId): bool
+    {
+        return $this->reply_to_id === $original->id
+            && $this->isWrittenBy($actor)
+            && $this->sender_session_id === $sessionId;
+    }
+
     /**
      * The actor that first read the message, when it was read.
      */
@@ -314,6 +366,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
 
         $this->refuseWhenClosed();
         $this->state = MessageState::WaitingForAnswer;
+        $this->is_question = true;
         $this->state_version++;
         $this->save();
     }

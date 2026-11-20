@@ -19,12 +19,19 @@ final readonly class MakeDocumentController
     public function __invoke(MakeDocumentCall $call, CommandBus $commands, RecordResolver $records): RecordFiled
     {
         $about = array_map(fn (string $name) => $records->identify(RecordReference::parse(trim($name))), $call->about);
-        $created = $commands->run(new CreateDocument($call->title, $call->abstract, $call->body, $about));
+        $created = $commands->run(new CreateDocument(
+            $call->title,
+            $call->abstract,
+            $call->body,
+            $about,
+            $call->uploadId,
+        ));
 
         return RecordFiled::from([
             'id' => $created->id,
             'number' => (string) $created->number,
             'label' => $created->label(),
+            'revision' => $created->revision,
         ]);
     }
 }
