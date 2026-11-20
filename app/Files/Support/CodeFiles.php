@@ -6,6 +6,7 @@ namespace App\Files\Support;
 
 use App\Files\Enums\Place;
 use App\Files\Exceptions\CodeReadOutsideProject;
+use App\Files\Exceptions\FileOutsidePlaces;
 use App\Files\Exceptions\FileUnreadable;
 use App\Files\Values\FilePath;
 use App\Files\Values\FolderEntries;
@@ -42,7 +43,11 @@ final class CodeFiles
      */
     private array $reads = [];
 
-    private function __construct(private readonly PathConfinement $confinement, private readonly FolderWalker $walker) {}
+    private function __construct(
+        private readonly string $projectRoot,
+        private readonly PathConfinement $confinement,
+        private readonly FolderWalker $walker,
+    ) {}
 
     /**
      * The code reads of this process, over the project this code lives in.
@@ -61,7 +66,20 @@ final class CodeFiles
         $closed = new ClosedFolders($roots);
         $confinement = new PathConfinement($roots, $closed);
 
-        return new self($confinement, new FolderWalker($roots, $closed, $confinement));
+        return new self(rtrim($projectRoot, '/'), $confinement, new FolderWalker($roots, $closed, $confinement));
+    }
+
+    /**
+     * The project file path of an absolute path in this project's code, such as a folder a class names with __DIR__;
+     * FileOutsidePlaces when it lies outside the project.
+     */
+    public function projectPathOf(string $absolutePath): FilePath
+    {
+        if (! str_starts_with($absolutePath, "{$this->projectRoot}/")) {
+            throw FileOutsidePlaces::given();
+        }
+
+        return FilePath::in(Place::Project, substr($absolutePath, strlen($this->projectRoot) + 1));
     }
 
     /**
