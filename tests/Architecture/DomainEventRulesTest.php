@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\CoreApi;
+use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\DomainRegistry;
-use PHPUnit\Framework\TestCase;
+use App\Domains\Support\ListenerPolicy;
+use App\Hooks\Declarations\StateMethods;
+use App\Hooks\Stack\StateTypes;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\DomainFiles;
+use Tests\Architecture\Support\EventCallScan;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\Violation;
+use Tests\Architecture\Support\ViolationType;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Events\Plans\PlansDomain;
+use Tests\Fixtures\Boundary\Events\Plans\States\PlanState;
 use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
 use Tests\Support\JudgesFixtureFiles;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\TestCase;
 
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainEventRulesTest extends TestCase
@@ -34,6 +42,11 @@ final class DomainEventRulesTest extends TestCase
 
         yield 'a listener importing a declared domain event' => ['Plans/Listeners/StartNextTask.php', []];
         yield 'a listener with an alias import' => ['Plans/Listeners/AliasListener.php', []];
+        yield 'a state handler with an alias import' => ['Plans/States/PlanState.php', []];
+        yield 'an unrelated state helper has no event permission' => [
+            'Plans/States/PlanStateWithForeignUse.php',
+            ['22 names '.self::TASK_CLOSED.$onlyAListener],
+        ];
         yield 'a listener with a group import, naming a descriptor outside its own descriptor' => [
             'Plans/Listeners/GroupListener.php',
             [
@@ -53,6 +66,46 @@ final class DomainEventRulesTest extends TestCase
             '7 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
             '11 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
         ]];
+    }
+
+    public function test_state_event_permissions_and_manual_registration_use_the_listener_policy(): void
+    {
+        $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
+        $policy = new ListenerPolicy($registry, CoreApi::exports(), CoreApi::listenerFolders());
+        $declaration = new StateMethods()->forState(PlanState::class)[self::TASK_CLOSED];
+
+        $this->assertSame('Plans', $policy->checkStateEvent(self::TASK_CLOSED, $declaration));
+        $this->expectException(InvalidListener::class);
+        $policy->check([self::TASK_CLOSED => [PlanState::class.'@onTaskClosed']]);
+    }
+
+    public function test_a_state_listener_cannot_raise_the_event_it_received(): void
+    {
+        $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
+        $roots = ProjectRoots::fromComposer(dirname(__DIR__, 2).'/composer.json');
+        $file = $registry->get('Plans')->folder.'/States/PlanStateWithForeignUse.php';
+        $calls = ScanCache::findings(new EventCallScan(), [$file]);
+        $violations = new BoundaryChecker($registry->all(), $roots, CoreApi::exports())->eventCallViolations($calls);
+
+        $this->assertSame([ViolationType::ReRaisedReceivedEvent], array_column($violations, 'type'));
+    }
+
+    public function test_the_installed_loaders_declare_valid_states(): void
+    {
+        $registry = $this->app->make(DomainRegistry::class);
+        $policy = new ListenerPolicy($registry, CoreApi::exports(), CoreApi::listenerFolders());
+        $methods = new StateMethods();
+        $loaders = $this->app->make(StateTypes::class)->registry()->loaders();
+
+        $this->assertArrayHasKey('hooks.ready', $loaders);
+
+        foreach ($loaders as $loader) {
+            foreach ($methods->forLoader($loader) as $input => $method) {
+                if ($input !== $method->name) {
+                    $policy->checkStateEvent($input, $method);
+                }
+            }
+        }
     }
 
     /**

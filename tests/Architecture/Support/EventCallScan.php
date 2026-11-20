@@ -41,7 +41,7 @@ final readonly class EventCallScan implements FileScan
 
     public function key(): string
     {
-        return 'event-calls-2';
+        return 'event-calls-3';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -223,13 +223,17 @@ final readonly class EventCallScan implements FileScan
             $method = $method->getAttribute('parent');
         }
 
-        if (! $method instanceof ClassMethod || $method->name->toLowerString() !== 'handle') {
+        if (! $method instanceof ClassMethod) {
             return null;
         }
 
         $parameter = $method->params[0] ?? null;
 
         if ($parameter === null || ! $parameter->type instanceof Name || ! $parameter->var instanceof Expr\Variable) {
+            return null;
+        }
+
+        if ($method->name->toLowerString() !== 'handle' && ! StateEventParameter::matches($parameter)) {
             return null;
         }
 

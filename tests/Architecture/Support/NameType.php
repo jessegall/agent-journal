@@ -13,6 +13,7 @@ enum NameType: string
 {
     case Import = 'import';
     case Type = 'type';
+    case StateEventParameter = 'state-event-parameter';
     case ClassName = 'class-name';
     case Construction = 'construction';
     case StaticAccess = 'static-access';
@@ -27,7 +28,7 @@ enum NameType: string
     public function canNameAnEventToHearIt(): bool
     {
         return match ($this) {
-            self::Import, self::Type, self::ClassName => true,
+            self::Import, self::Type, self::ClassName, self::StateEventParameter => true,
             self::Construction, self::StaticAccess, self::Function, self::Constant, self::String, self::Other => false,
         };
     }

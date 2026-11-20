@@ -65,6 +65,11 @@ final class InvalidListener extends DomainDeclarationError
         );
     }
 
+    public static function stateRegisteredByHand(string $listener, string $event): self
+    {
+        return new self("{$listener} cannot be registered directly for {$event}. Register its state loader instead.");
+    }
+
     public static function cacheMissing(string $provider): self
     {
         return new self(

@@ -8,6 +8,8 @@ use App\Contracts\Event;
 use App\Contracts\LogsListenerFailures;
 use App\Domains\Exceptions\InvalidListener;
 use App\Exports\Support\Exports;
+use App\Hooks\Declarations\StateMethod;
+use App\Hooks\States\AgentState;
 use App\Ui\Contracts\UpdatesUserInterface;
 use ReflectionClass;
 use ReflectionMethod;
@@ -115,6 +117,10 @@ final readonly class ListenerPolicy
     {
         [$class, $method] = array_pad(explode('@', $listener, 2), 2, 'handle');
 
+        if (is_subclass_of($class, AgentState::class)) {
+            throw InvalidListener::stateRegisteredByHand($listener, $event);
+        }
+
         if (! class_exists($class)
             || ! method_exists($class, $method)
             || ! $this->firstParameterAccepts(new ReflectionMethod($class, $method), $event)) {
@@ -128,6 +134,33 @@ final readonly class ListenerPolicy
         }
 
         $hearer = $this->listenerDomain($class, $listener, $event);
+        $this->checkOwnership($event, $listener, $method, $hearer);
+    }
+
+    public function checkStateEvent(string $event, StateMethod $method): string
+    {
+        $listener = $method->stateClass.'@'.$method->name;
+        $hearer = $this->stateDomain($method->stateClass, $listener, $event);
+        $declaring = $this->stateDomain($method->declaringClass, $listener, $event);
+
+        if ($declaring !== $hearer) {
+            $this->checkOwnership($event, $listener, $method->name, $declaring);
+        }
+
+        $file = new ReflectionMethod($method->stateClass, $method->name)->getFileName();
+        $source = $this->stateSource($file, $listener, $event);
+
+        if ($source !== $hearer && $source !== $declaring) {
+            $this->checkOwnership($event, $listener, $method->name, $source);
+        }
+
+        $this->checkOwnership($event, $listener, $method->name, $hearer);
+
+        return $hearer->name ?? self::CORE;
+    }
+
+    private function checkOwnership(string $event, string $listener, string $method, ?DomainEntry $hearer): void
+    {
         $owner = $this->eventDomain($event, $listener);
 
         if ($owner === null) {
@@ -159,6 +192,37 @@ final readonly class ListenerPolicy
         if (! $owner->exportsEvent($event)) {
             throw InvalidListener::privateEvent($listener, $method, $event, $owner->name);
         }
+    }
+
+    /**
+     * @param class-string $class
+     */
+    private function stateDomain(string $class, string $listener, string $event): ?DomainEntry
+    {
+        $file = new ReflectionClass($class)->getFileName();
+        $domain = $this->stateSource($file, $listener, $event);
+        $ownsClass = $domain === null ? str_starts_with($class, 'App\\') : $domain->ownsName($class);
+
+        if (! $ownsClass) {
+            throw InvalidListener::unknownOwner($listener, $event);
+        }
+
+        return $domain;
+    }
+
+    private function stateSource(string|false $file, string $listener, string $event): ?DomainEntry
+    {
+        if ($file === false) {
+            throw InvalidListener::unknownOwner($listener, $event);
+        }
+
+        $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsFile($file));
+
+        if ($domain === null && ! str_starts_with($file, dirname(__DIR__, 2).DIRECTORY_SEPARATOR)) {
+            throw InvalidListener::unknownOwner($listener, $event);
+        }
+
+        return $domain;
     }
 
     /**

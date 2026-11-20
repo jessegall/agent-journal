@@ -40,8 +40,18 @@ final readonly class BoundaryChecker
     {
         $violations = [];
 
+        $stateEvents = [];
+
         foreach ($uses as $use) {
-            array_push($violations, ...$this->violationsOf($use));
+            if ($use->type === NameType::StateEventParameter) {
+                $stateEvents[$use->file][strtolower($use->name)] = true;
+            }
+        }
+
+        foreach ($uses as $use) {
+            $isStateListenerUse = $use->type === NameType::StateEventParameter
+                || ($use->type === NameType::Import && isset($stateEvents[$use->file][strtolower($use->name)]));
+            array_push($violations, ...$this->violationsOf($use, $isStateListenerUse));
         }
 
         return $violations;
@@ -50,7 +60,7 @@ final readonly class BoundaryChecker
     /**
      * @return list<Violation>
      */
-    private function violationsOf(NameUse $use): array
+    private function violationsOf(NameUse $use, bool $isStateListenerUse): array
     {
         $user = $this->domainHolding($use->file);
         $userName = $user->name ?? self::SHARED_PLACE;
@@ -71,6 +81,7 @@ final readonly class BoundaryChecker
 
             if ($user !== null
                 && $this->isCoreEvent($use->name)
+                && ! $isStateListenerUse
                 && ! ($user->holdsListenerFile($use->file) && $use->type->canNameAnEventToHearIt())) {
                 return [
                     new Violation(
@@ -102,7 +113,7 @@ final readonly class BoundaryChecker
             return [];
         }
 
-        $violations = $this->eventViolations($use, $user, $owner);
+        $violations = $isStateListenerUse ? [] : $this->eventViolations($use, $user, $owner);
 
         if ($user !== null && $user->requiresDomain($owner)) {
             $isPublic = $owner->ownsEvent($use->name)

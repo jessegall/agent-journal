@@ -43,6 +43,14 @@ final class StateTypeRegistry implements StateRegistration
         return $this->types->get($typeKey);
     }
 
+    /**
+     * @return array<string, StateLoader>
+     */
+    public function loaders(): array
+    {
+        return $this->types->all();
+    }
+
     public function has(string $typeKey): bool
     {
         return $this->types->has($typeKey);

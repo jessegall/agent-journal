@@ -539,6 +539,7 @@ use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StackTransition;
+use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\StateRegistration;
 use App\Hooks\Contracts\UserStack;
@@ -587,6 +588,7 @@ use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
+use App\Hooks\Values\EventCommands;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
@@ -1270,6 +1272,7 @@ final class CoreApi
                 SkillConditionEvaluator::class,
             )
             ->values(
+                EventCommands::class,
                 FolderClasses::class,
                 Endpoint::class,
                 CallKeyCast::class,
@@ -2083,6 +2086,7 @@ final class CoreApi
                 CountsLoads::class,
                 CountsPivotLoads::class,
                 AgentState::class,
+                StackWide::class,
                 Linkable::class,
                 LinkAccess::class,
                 LinkTypeRegistry::class,
