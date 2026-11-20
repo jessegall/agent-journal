@@ -1,0 +1,123 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Hooks;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Values\TrustedEntryAuthority;
+use App\Bus\Contracts\StackAdmission;
+use App\Bus\Support\OperationDeadline;
+use App\Engine\Support\EngineAccess;
+use App\Engine\Support\EngineActor;
+use App\Hooks\Events\StateEventBridge;
+use App\Hooks\Events\Support\StateEventScope;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Events\Dispatcher;
+use Tests\Fixtures\Hooks\AfterCommitStateEvent;
+use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
+use Tests\Support\ActsAsActors;
+use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
+use Tests\TestCase;
+
+final class StateEventScopeTest extends TestCase
+{
+    use ActsAsActors;
+    use RefreshHookDatabase;
+
+    public function test_the_same_object_dispatched_twice_carries_distinct_occurrences_through_outer_commit(): void
+    {
+        $original = TestActors::stack(1, 10);
+        $surrounding = TestActors::stack(2, 20);
+        $this->actAsAgent($original->agentId);
+        $dispatcher = $this->app->make(Dispatcher::class);
+        $scope = $this->app->make(StateEventScope::class);
+        $database = $this->app->make(ConnectionInterface::class);
+        $event = new AfterCommitStateEvent($surrounding);
+        $seen = [];
+        $dispatcher->listen(AfterCommitStateEvent::class, StateEventBridge::LISTENER);
+        $dispatcher->listen(AfterCommitStateEvent::class, function (AfterCommitStateEvent $received) use (
+            $event,
+            $scope,
+            &$seen,
+        ): void {
+            $this->assertSame($event, $received);
+            $this->assertSame(1, func_num_args());
+            $seen[] = $scope->currentDispatch()->get();
+        });
+
+        $database->beginTransaction();
+        $scope->admit([$original], function () use ($dispatcher, $event): void {
+            $dispatcher->dispatch($event);
+            $dispatcher->dispatch($event);
+        });
+
+        $this->assertSame([], $seen);
+        $this->actAsAgent($surrounding->agentId);
+        $scope->admit([$surrounding], fn () => $database->commit());
+
+        $this->assertCount(2, $seen);
+        $this->assertNotSame($seen[0]->id, $seen[1]->id);
+
+        foreach ($seen as $dispatch) {
+            $audience = $dispatch->audience->get();
+            $this->assertSame([$original], $audience->targets);
+            $this->assertSame($original->agentId, $audience->actor->actorId());
+        }
+
+        $this->assertTrue($scope->currentDispatch()->isEmpty());
+    }
+
+    public function test_rollback_drops_deferred_delivery_and_unaddressed_dispatch_still_reaches_ordinary_listeners(): void
+    {
+        $target = TestActors::stack(1, 10);
+        $this->actAsAgent($target->agentId);
+        $dispatcher = $this->app->make(Dispatcher::class);
+        $scope = $this->app->make(StateEventScope::class);
+        $database = $this->app->make(ConnectionInterface::class);
+        $seen = [];
+        $dispatcher->listen(AfterCommitStateEvent::class, StateEventBridge::LISTENER);
+        $dispatcher->listen(AfterCommitStateEvent::class, function () use ($scope, &$seen): void {
+            $seen[] = $scope->currentDispatch()->get();
+        });
+
+        $database->beginTransaction();
+        $event = new AfterCommitStateEvent($target);
+        $scope->admit([$target], fn () => $dispatcher->dispatch($event));
+        $database->rollBack();
+        $this->assertSame([], $seen);
+
+        $dispatcher->dispatch($event);
+
+        $this->assertCount(1, $seen);
+        $this->assertTrue($seen[0]->audience->isEmpty());
+        $this->assertTrue($scope->currentDispatch()->isEmpty());
+    }
+
+    public function test_engine_admission_captures_only_its_frame_grant_and_maintenance_has_no_target(): void
+    {
+        $access = $this->app->make(EngineAccess::class);
+        $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine tick'));
+        $admission = $this->app->make(StackAdmission::class);
+        $scope = $this->app->make(StateEventScope::class);
+        $dispatcher = $this->app->make(Dispatcher::class);
+        $seen = [];
+        $dispatcher->listen(NoteWritten::class, StateEventBridge::LISTENER);
+        $dispatcher->listen(NoteWritten::class, function () use ($scope, &$seen): void {
+            $seen[] = $scope->currentDispatch()->get();
+        });
+        $target = TestActors::stack(1, 10);
+        $dispatch = fn () => $dispatcher->dispatch(new NoteWritten());
+
+        $access->grantFrame($target, 'frame-id');
+        $admission->admitCaller(new OperationDeadline(), $dispatch);
+        $access->grantMaintenance('test');
+        $admission->admitCaller(new OperationDeadline(), $dispatch);
+
+        $this->assertCount(2, $seen);
+        $this->assertSame([$target], $seen[0]->audience->get()->targets);
+        $this->assertTrue($seen[1]->audience->isEmpty());
+        $this->assertTrue($scope->currentDispatch()->isEmpty());
+    }
+}

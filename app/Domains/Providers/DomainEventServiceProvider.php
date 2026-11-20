@@ -93,7 +93,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
         $dispatcher = $this->app->make(Dispatcher::class);
 
         foreach ($states->eventClasses() as $event) {
-            $dispatcher->listen($event, StateEventBridge::class.'@receive');
+            $dispatcher->listen($event, StateEventBridge::LISTENER);
         }
     }
 

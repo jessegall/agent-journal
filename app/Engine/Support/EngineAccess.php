@@ -32,6 +32,11 @@ final class EngineAccess implements EngineTargetAccess
         $this->grant = new MaintenanceGrant($capability);
     }
 
+    public function frameTargets(): array
+    {
+        return $this->grant instanceof FrameGrant ? [$this->grant->target] : [];
+    }
+
     public function clear(): void
     {
         $this->grant = new NoEngineGrant();

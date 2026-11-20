@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStacks;
+use App\Actors\Enums\ActorType;
+use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Contracts\EngineTargetAccess;
+use App\Hooks\Events\Support\StateEventScope;
 use Closure;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
@@ -35,6 +40,9 @@ final class AdvisoryStackAdmission implements StackAdmission
     public function __construct(
         private readonly DatabaseManager $databases,
         private readonly WorkStacks $workStacks,
+        private readonly CurrentActor $actors,
+        private readonly EngineTargetAccess $engine,
+        private readonly StateEventScope $eventScope,
     ) {}
 
     public function admit(string $sessionId, OperationDeadline $deadline, Closure $work): mixed
@@ -62,14 +70,35 @@ final class AdvisoryStackAdmission implements StackAdmission
      */
     public function admitCaller(OperationDeadline $deadline, Closure $work): mixed
     {
-        $admitted = $work;
+        $sessions = $this->workStacks->sessionsToAdmit();
+        $targets = $this->targetsFor($sessions);
+        $admitted = fn () => $this->eventScope->admit($targets, $work);
 
-        foreach (array_reverse($this->workStacks->sessionsToAdmit()) as $sessionId) {
+        foreach (array_reverse($sessions) as $sessionId) {
             $inner = $admitted;
             $admitted = fn () => $this->admit($sessionId, $deadline, $inner);
         }
 
         return $admitted();
+    }
+
+    /**
+     * @param list<string> $sessions
+     * @return list<StackTarget>
+     */
+    private function targetsFor(array $sessions): array
+    {
+        if (! $this->actors->hasActor()) {
+            return [];
+        }
+
+        $actor = $this->actors->actor();
+
+        return match ($actor->actorType()) {
+            ActorType::Agent => array_map(fn (string $session) => new StackTarget($actor->id, $session), $sessions),
+            ActorType::Engine => $this->engine->frameTargets(),
+            ActorType::User, ActorType::System => [],
+        };
     }
 
     /**

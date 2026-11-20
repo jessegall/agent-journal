@@ -12,6 +12,11 @@ use App\Agents\Support\StackTarget;
 interface EngineTargetAccess
 {
     /**
+     * @return list<StackTarget> The target of a frame grant, when active.
+     */
+    public function frameTargets(): array;
+
+    /**
      * Refuses a target the engine's current grant does not cover.
      */
     public function checkTarget(StackTarget $target): void;

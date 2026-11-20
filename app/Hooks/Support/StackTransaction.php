@@ -11,6 +11,7 @@ use App\Bus\Support\OperationDeadline;
 use App\Contracts\StartTransaction;
 use App\Hooks\Contracts\RunsStackTransactions;
 use App\Hooks\Contracts\StackTransactionRunner;
+use App\Hooks\Events\Support\StateEventScope;
 use App\Hooks\Exceptions\StackTransactionRequired;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
@@ -30,6 +31,7 @@ final readonly class StackTransaction implements RunsStackTransactions, StackTra
         private ConnectionInterface $database,
         private OperationDeadline $deadline,
         private StackAdmission $admission,
+        private StateEventScope $eventScope,
     ) {}
 
     /**
@@ -60,6 +62,20 @@ final readonly class StackTransaction implements RunsStackTransactions, StackTra
     public function runAdmitted(string $sessionId, OperationDeadline $deadline, Closure $work): mixed
     {
         return $this->admission->admit($sessionId, $deadline, fn () => $this->runWithin($deadline, $work));
+    }
+
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function runAdmittedForTarget(StackTarget $target, OperationDeadline $deadline, Closure $work): mixed
+    {
+        return $this->runAdmitted(
+            $target->sessionId,
+            $deadline,
+            fn () => $this->eventScope->admit([$target], $work),
+        );
     }
 
     /**

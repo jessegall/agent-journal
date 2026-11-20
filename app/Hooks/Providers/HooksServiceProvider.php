@@ -31,6 +31,8 @@ use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Contracts\StopEvidence;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Declarations\StateMethods;
+use App\Hooks\Events\Support\StateEventDispatcher;
+use App\Hooks\Events\Support\StateEventScope;
 use App\Hooks\Inspection\StackInspectionQuery;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\FailureReceipt;
@@ -56,6 +58,8 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Events\Dispatcher as LaravelEventDispatcher;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -66,6 +70,15 @@ final class HooksServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->extend(
+            'events',
+            static fn (LaravelEventDispatcher $events) => StateEventDispatcher::fromDispatcher(
+                $events,
+                static fn (): StateEventScope => Container::getInstance()->make(StateEventScope::class),
+            ),
+        );
+        Event::clearResolvedInstance('events');
+
         $this->app->bind(AgentStack::class, AgentStacks::class);
         $this->app->bind(CurrentState::class, CurrentStates::class);
         $this->app->bind(StackTransactionRunner::class, StackTransaction::class);

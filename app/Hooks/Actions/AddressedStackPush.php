@@ -8,6 +8,7 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Events\Support\StateEventScope;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StatePush;
 use App\Hooks\Support\StackTransaction;
@@ -21,6 +22,7 @@ final readonly class AddressedStackPush
     public function __construct(
         private StackTransaction $transaction,
         private StatePush $statePush,
+        private StateEventScope $eventScope,
     ) {}
 
     public function push(StackTarget $target, StateReference $state): void
@@ -28,7 +30,8 @@ final readonly class AddressedStackPush
         $this->transaction->requireOpen($target);
 
         $this->requireRunning($target);
-        $this->statePush->push($target, AgentStackRow::lockAuthorizedFor($target), $state);
+        $stack = AgentStackRow::lockAuthorizedFor($target);
+        $this->eventScope->admit([$target], fn () => $this->statePush->push($target, $stack, $state));
     }
 
     /**

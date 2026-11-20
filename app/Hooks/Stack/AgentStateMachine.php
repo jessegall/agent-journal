@@ -52,8 +52,8 @@ final readonly class AgentStateMachine
         $call = new HookCallStage($input, $capabilities, $render, $identity, $target);
 
         try {
-            return $this->transaction->runAdmitted(
-                $target->sessionId,
+            return $this->transaction->runAdmittedForTarget(
+                $target,
                 $deadline,
                 fn (): ProgramReply => $this->pipelines->run(AnswerHookPipeline::class, $call, ProgramReply::class),
             );

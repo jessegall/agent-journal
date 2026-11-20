@@ -11,5 +11,7 @@ use App\Contracts\Event;
  */
 final readonly class StateEventBridge
 {
+    public const string LISTENER = self::class.'@receive';
+
     public function receive(Event $event): void {}
 }
