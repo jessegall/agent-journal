@@ -185,6 +185,7 @@ use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\AccountProcessRole;
+use App\Agents\Enums\ArrangementType;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
@@ -196,6 +197,7 @@ use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\LaunchCandidateRank;
 use App\Agents\Enums\MenuEntryState;
 use App\Agents\Enums\ModelSelectionType;
+use App\Agents\Enums\MountType;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationKey;
 use App\Agents\Enums\NavigationReason;
@@ -279,6 +281,7 @@ use App\Agents\Support\LaunchProfileKey;
 use App\Agents\Support\LibraryEntryAnswer;
 use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ModelSelection;
+use App\Agents\Support\MountRules;
 use App\Agents\Support\NavigationRaiseAnswer;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\OwnerStartReceipt;
@@ -288,6 +291,7 @@ use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\RankedLaunchCandidate;
 use App\Agents\Support\ScreenReportAnswer;
+use App\Agents\Support\SecurityOptions;
 use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
@@ -1497,6 +1501,9 @@ final class CoreApi
                 ProgramConversationSummary::class,
                 ContainerManifest::class,
                 ManifestMount::class,
+                MountType::class,
+                MountRules::class,
+                SecurityOptions::class,
                 HostCapacity::class,
                 ReservationState::class,
                 StartOriginType::class,
@@ -1841,6 +1848,7 @@ final class CoreApi
                 SettingsChange::class,
                 RuntimeStatus::class,
                 EnrolledHost::class,
+                ArrangementType::class,
                 OpenedRuntime::class,
                 AutoAssignmentChange::class,
                 AutoAssignmentInput::class,

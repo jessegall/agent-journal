@@ -40,3 +40,11 @@ IS the bug surfacing. Load `commandments-php-fix-at-the-source` before your firs
 yours to resolve at its source.
 
 @JOURNAL.md
+
+## Testing a plan, phase by phase (user messages 11168, 11179, 11183)
+
+- Work a plan phase by phase. Inside a phase, write every task back to back and run no tests, Pint, PHPStan or judge between tasks.
+- At the end of each phase, once: `composer test:affected`, then Pint, PHPStan and the judge (`journal commandments-judge-changes`).
+- After a failure, rerun only the failed test methods by name: `composer test:run -- --filter=<method> <file>`. Never rerun `composer test:affected` to check one fix.
+- At the end of the whole plan, once: the full suite, `composer test`. Never the full suite between phases, never in a loop.
+- Commit after each phase, then go straight on to the next phase without stopping to report.

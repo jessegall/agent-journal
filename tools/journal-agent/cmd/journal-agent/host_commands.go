@@ -43,29 +43,65 @@ func defaultStateFolder() string {
 	return filepath.Join(home, ".journal-agent")
 }
 
-// enroll stores the host id and the secret agents:host-enroll printed. The secret is read from standard input, so it
-// never appears in the process list or the shell history.
+// enroll stores the host id and the secret agents:host-enroll printed. The secret is read from standard input or
+// from the file --secret-file names, so it never appears in the environment, the process list or the shell history:
+// an operator passes the file's path, never the secret. An enrollment already held for the same journal and host is
+// kept as it is, so a one-shot service may run enroll on every start.
 func enroll(arguments []string) error {
 	flags := flag.NewFlagSet("enroll", flag.ContinueOnError)
 	journalURL := flags.String("journal", "", "the journal's URL")
 	hostID := flags.String("host", "", "the host id agents:host-enroll printed")
 	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
+	secretFile := flags.String("secret-file", "", "a file holding the secret, instead of standard input")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
 	if *journalURL == "" || *hostID == "" {
-		return errors.New("enroll needs --journal and --host, and the secret on standard input")
+		return errors.New("enroll needs --journal and --host, and the secret on standard input or in --secret-file")
 	}
-	secret, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	if err != nil && secret == "" {
-		return errors.New("enroll reads the secret from standard input")
+	state := host.State{Folder: *stateFolder}
+	trimmedURL := strings.TrimRight(*journalURL, "/")
+	if state.HoldsEnrollment(trimmedURL, *hostID) {
+		log.Printf("host %s is already enrolled with %s; nothing changed", *hostID, trimmedURL)
+		return nil
 	}
-	enrollment := host.Enrollment{JournalURL: strings.TrimRight(*journalURL, "/"), HostID: *hostID, Secret: strings.TrimSpace(secret)}
-	if err := (host.State{Folder: *stateFolder}).Save(enrollment); err != nil {
+	secret, err := readSecret(*secretFile)
+	if err != nil {
+		return err
+	}
+	enrollment := host.Enrollment{JournalURL: trimmedURL, HostID: *hostID, Secret: secret}
+	if err := state.Save(enrollment); err != nil {
 		return err
 	}
 	log.Printf("host %s is enrolled; its state is in %s", enrollment.HostID, *stateFolder)
 	return nil
+}
+
+// readSecret reads the secret from the file, or from standard input when no file is named; a trailing newline is no
+// part of it.
+func readSecret(secretFile string) (string, error) {
+	if secretFile != "" {
+		content, err := os.ReadFile(secretFile)
+		if err != nil {
+			return "", fmt.Errorf("enroll reads the secret from %s: %w", secretFile, err)
+		}
+		return strings.TrimSpace(string(content)), nil
+	}
+	secret, err := bufio.NewReader(os.Stdin).ReadString('\n')
+	if err != nil && secret == "" {
+		return "", errors.New("enroll reads the secret from standard input or --secret-file")
+	}
+	return strings.TrimSpace(secret), nil
+}
+
+// verifyArrangement checks what the host runs from before it enrolls, listens or claims anything: a contained host's
+// pinned images on the agent daemon, a local host's sealed installation folder.
+func verifyArrangement(arrangement host.Arrangement, pinned host.PinnedImages, dockerSocket, installationFolder string) error {
+	if !arrangement.IsContained() {
+		return verifyInstallation(installationFolder)
+	}
+
+	return pinned.AssertLoaded(context.Background(), host.Containers{Docker: "docker", Host: dockerSocket})
 }
 
 // serve claims this host's requests until it is stopped. Carrying them out is the scheduler's job; until then each
@@ -75,10 +111,28 @@ func serve(arguments []string) error {
 	stateFolder := flags.String("state", defaultStateFolder(), "the host's private state folder")
 	hookCommand := flags.String("hook-command", "", "the hook relay command the programs call")
 	installationFolder := flags.String("installation", "", "the protected installation saved-account starts run from")
+	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local or contained")
+	dockerSocket := flags.String("docker", "", "the agent daemon's socket a contained host starts containers through")
+	installationName := flags.String("installation-name", "", "the prefix of a contained host's containers")
+	startSocketFolder := flags.String("start-socket-dir", "", "an owner-only folder for the start socket, the state folder by default")
+	agentImage := flags.String("agent-image", "", "the agent image a contained host runs, by digest")
+	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
 	if err := flags.Parse(arguments); err != nil {
 		return err
 	}
-	if err := verifyInstallation(*installationFolder); err != nil {
+	arrangement, err := host.ParseArrangement(*arrangementFlag)
+	if err != nil {
+		return err
+	}
+	installation, err := host.ParseInstallationName(*installationName)
+	if err != nil {
+		return err
+	}
+	if err := arrangement.AssertServable(*dockerSocket, installation); err != nil {
+		return err
+	}
+	pinned := host.PinnedImages{Agent: *agentImage, Runner: *runnerImage}
+	if err := verifyArrangement(arrangement, pinned, *dockerSocket, *installationFolder); err != nil {
 		return err
 	}
 	enrollment, err := (host.State{Folder: *stateFolder}).Load()
@@ -93,19 +147,29 @@ func serve(arguments []string) error {
 		return err
 	}
 	defer listener.Close()
-	journal := client.New(enrollment)
+	journal := client.New(enrollment).WithArrangement(string(arrangement))
 	opener := runtimeOpener{stateFolder: *stateFolder, installationFolder: *installationFolder,
 		codexOwners: &host.CodexOwners{}, journalURL: journal.JournalURL(), hookCommand: *hookCommand, socket: socket}
 	preparation := startPreparation(journal, *stateFolder, *installationFolder)
 	reports := &host.StartReports{Folder: *stateFolder}
-	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports)
+	sessions := host.ContainerSessions{}
+	if arrangement.IsContained() {
+		sessions, err = host.ContainerSessionsOf(ctx, host.Containers{Docker: "docker", Host: *dockerSocket}, string(installation))
+		if err != nil {
+			return err
+		}
+	}
+	outcomes, err := host.ReconcileOnBoot(ctx, journal, preparation.States, reports, sessions)
 	if err != nil {
 		return err
 	}
 	for _, outcome := range outcomes {
 		log.Printf("after the restart, start %s is %s", outcome.StartKey, outcome.Outcome)
 	}
-	startSocket := host.StartSocket{Folder: *stateFolder, Executor: &protectedExecutor{
+	if *startSocketFolder == "" {
+		*startSocketFolder = *stateFolder
+	}
+	startSocket := host.StartSocket{Folder: *startSocketFolder, Executor: &protectedExecutor{
 		preparation: preparation, open: opener.open, reports: reports, reporter: journal,
 		codexOwners: opener.codexOwners,
 	}}

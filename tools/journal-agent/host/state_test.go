@@ -37,3 +37,20 @@ func TestAStateOthersCanReadIsRefused(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestAnEnrollmentIsHeldOnlyForItsOwnJournalAndHost(t *testing.T) {
+	state := State{Folder: filepath.Join(t.TempDir(), "state")}
+	if state.HoldsEnrollment("https://journal.test", "host") {
+		t.Fatal("an empty state holds an enrollment")
+	}
+	if err := state.Save(Enrollment{JournalURL: "https://journal.test", HostID: "host", Secret: "secret"}); err != nil {
+		t.Fatal(err)
+	}
+
+	if !state.HoldsEnrollment("https://journal.test", "host") {
+		t.Fatal("the saved enrollment is not held")
+	}
+	if state.HoldsEnrollment("https://journal.test", "other") || state.HoldsEnrollment("https://other.test", "host") {
+		t.Fatal("another host or journal counts as already enrolled")
+	}
+}

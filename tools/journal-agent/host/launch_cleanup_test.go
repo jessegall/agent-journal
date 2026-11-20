@@ -41,7 +41,7 @@ func calls(t *testing.T, log string) []string {
 }
 
 func TestACreatedContainerCarriesTheLaunchLabels(t *testing.T) {
-	arguments, err := manifest().DockerCreateArguments("helper-7", labels())
+	arguments, err := manifest().DockerCreateArguments("helper-7", labels(), localRules)
 	if err != nil {
 		t.Fatal(err)
 	}

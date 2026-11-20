@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Profiles\Console;
 
 use App\Profiles\Support\HostAccountDrain;
+use App\Profiles\Support\HostSecret;
 use App\Profiles\Support\PrivateSignInProcesses;
 use App\Profiles\Support\SignedSignInHost;
 use App\Profiles\Support\SignInProtocols;
@@ -24,7 +25,10 @@ final class RunSignInsCommand extends Command
     public function handle(Factory $http, SignInProtocols $protocols): int
     {
         $runner = new PrivateSignInProcesses(
-            new SignedSignInHost($http, (string) getenv('JOURNAL_URL'), (string) getenv('JOURNAL_HOST_SECRET')),
+            new SignedSignInHost($http, (string) getenv('JOURNAL_URL'), HostSecret::fromEnvironment(
+                (string) getenv('JOURNAL_HOST_SECRET_FILE'),
+                (string) getenv('JOURNAL_HOST_SECRET'),
+            )),
             $protocols,
             static fn () => usleep(500_000),
             new HostAccountDrain((string) getenv('AGENTS_HOST_START_SOCKET')),

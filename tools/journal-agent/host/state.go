@@ -57,6 +57,14 @@ func (state State) Load() (Enrollment, error) {
 	return enrollment, json.Unmarshal(content, &enrollment)
 }
 
+// HoldsEnrollment is whether the folder already holds an enrollment with this journal and host id, so enrolling again
+// changes nothing; a folder with none, or with another journal or host, does not.
+func (state State) HoldsEnrollment(journalURL, hostID string) bool {
+	enrollment, err := state.Load()
+
+	return err == nil && enrollment.JournalURL == journalURL && enrollment.HostID == hostID
+}
+
 func (state State) enrollmentPath() string { return filepath.Join(state.Folder, enrollmentName) }
 
 // writePrivateJSON replaces a private file with the value encoded as JSON, in one step as writePrivateFile does.

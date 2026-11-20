@@ -15,7 +15,7 @@ final readonly class EnrollHostHandler implements CommandHandler
     public function handle(EnrollHost $command): EnrolledHost
     {
         $secret = Str::random(64);
-        $host = Host::create($command->installationName, $secret, $command->startRoots);
+        $host = Host::create($command->installationName, $secret, $command->startRoots, $command->arrangement);
 
         return new EnrolledHost($host->id, $secret);
     }

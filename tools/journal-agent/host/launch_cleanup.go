@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -32,11 +31,6 @@ func (labels LaunchLabels) arguments() []string {
 	}
 }
 
-// LaunchResourceName is the name of a launch's container and of its launch network.
-func LaunchResourceName(session string) string {
-	return "journal-" + session
-}
-
 // CleanupStep mirrors App\Agents\Enums\CleanupStep: one transient resource of an ended launch.
 type CleanupStep string
 
@@ -60,10 +54,11 @@ type CleanupReport struct {
 	Failure       string        `json:"failure,omitempty"`
 }
 
-// LaunchCleanup removes an ended launch's container, launch network and ephemeral runtime folder. The workspace is
-// never one of them, and no account is touched.
+// LaunchCleanup removes an ended launch's container, launch network and ephemeral runtime folder. The workspace and
+// its named volumes are never among them, and no account is touched.
 type LaunchCleanup struct {
 	Containers     Containers
+	Installation   InstallationName
 	RuntimeFolders string
 	StopSeconds    int
 }
@@ -73,7 +68,7 @@ type LaunchCleanup struct {
 // failure ends the pass and is reported, to be retried.
 func (cleanup LaunchCleanup) CleanUp(ctx context.Context, pending PendingCleanup) CleanupReport {
 	report := CleanupReport{Removed: []CleanupStep{}}
-	name := LaunchResourceName(pending.SessionID)
+	name := cleanup.Installation.ResourceName(pending.SessionID)
 	removals := map[CleanupStep]func() error{
 		CleanupContainer: func() error { return cleanup.Containers.Remove(ctx, name, cleanup.StopSeconds) },
 		CleanupNetwork:   func() error { return cleanup.Containers.RemoveNetwork(ctx, name) },
@@ -106,37 +101,40 @@ func containsStep(steps []CleanupStep, wanted CleanupStep) bool {
 // Remove stops the container within the bound and removes it, which Docker refuses while it still runs, so a
 // removal confirms its processes exited; a container already gone counts as removed.
 func (containers Containers) Remove(ctx context.Context, name string, stopSeconds int) error {
-	stop := exec.CommandContext(ctx, containers.Docker, "stop", "--time", strconv.Itoa(stopSeconds), name)
+	stop := containers.command(ctx, "stop", "--time", strconv.Itoa(stopSeconds), name)
 	if output, err := stop.CombinedOutput(); err != nil {
 		return absentIsDone(output, err)
 	}
-	return absentIsDone(exec.CommandContext(ctx, containers.Docker, "rm", "--volumes", name).CombinedOutput())
+	return absentIsDone(containers.command(ctx, "rm", "--volumes", name).CombinedOutput())
 }
 
 // RemoveNetwork removes the launch network; a network already gone counts as removed.
 func (containers Containers) RemoveNetwork(ctx context.Context, name string) error {
-	return absentIsDone(exec.CommandContext(ctx, containers.Docker, "network", "rm", name).CombinedOutput())
+	return absentIsDone(containers.command(ctx, "network", "rm", name).CombinedOutput())
 }
 
-// LabelledContainer is a container of this installation found by its labels: its id and the session it ran.
+// LabelledContainer is a container of this installation found by its labels: its id, the session it runs and whether
+// it still runs.
 type LabelledContainer struct {
 	ID      string
 	Session string
+	Running bool
 }
 
 // Labelled lists every container, running or not, that carries this installation's label.
 func (containers Containers) Labelled(ctx context.Context, installation string) ([]LabelledContainer, error) {
-	output, err := exec.CommandContext(ctx, containers.Docker, "ps", "--all", "--no-trunc",
+	output, err := containers.command(ctx, "ps", "--all", "--no-trunc",
 		"--filter", "label="+installationLabel+"="+installation,
-		"--format", `{{.ID}}\t{{.Label "`+sessionLabel+`"}}`).Output()
+		"--format", `{{.ID}}\t{{.Label "`+sessionLabel+`"}}\t{{.State}}`).Output()
 	if err != nil {
 		return nil, err
 	}
 	var found []LabelledContainer
 	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
-		id, session, ok := strings.Cut(line, "\t")
-		if ok && id != "" {
-			found = append(found, LabelledContainer{ID: id, Session: session})
+		fields := strings.Split(line, "\t")
+		if len(fields) >= 2 && fields[0] != "" {
+			running := len(fields) == 3 && fields[2] == "running"
+			found = append(found, LabelledContainer{ID: fields[0], Session: fields[1], Running: running})
 		}
 	}
 	return found, nil

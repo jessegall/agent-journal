@@ -8,9 +8,10 @@ use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Values\AccessPolicy;
 
 /**
- * What the protected host starts a helper container with (doc 14, section 63): the image by digest, an unprivileged
- * user, a read-only root without capabilities, exactly one workspace mount, bounded tmpfs folders, rotated logs and
- * the start's budgets. It is validated when built; anything else is refused by name.
+ * What the protected host starts a helper container with (doc 14, section 63; doc 61, decision 6): the image by
+ * digest, an unprivileged user, a read-only root without capabilities, the mounts its arrangement allows, its
+ * security profiles, rotated logs and the start's budgets, which size its tmpfs folders. It is validated when built;
+ * anything else is refused by name.
  */
 final readonly class ContainerManifest
 {
@@ -18,34 +19,9 @@ final readonly class ContainerManifest
 
     public const string WORKDIR = '/workspace';
 
-    public const string SECCOMP = 'verified-default';
-
     public const int LOG_BYTES = 10 * 1024 * 1024;
 
     public const int LOG_FILES = 3;
-
-    /**
-     * The tmpfs folders a helper writes to, with their size in bytes.
-     */
-    public const array TMPFS = [
-        '/tmp' => 256 * 1024 * 1024,
-        '/run/journal' => 16 * 1024 * 1024,
-        '/home/journal' => 64 * 1024 * 1024,
-    ];
-
-    /**
-     * Host folders that hold accounts, credentials or host control; no mount may name them.
-     */
-    private const array PROTECTED_SOURCES = [
-        '/var/run/docker.sock',
-        '/run/docker.sock',
-        '/.ssh',
-        '/.claude',
-        '/.codex',
-        '/.config',
-        '/Library/Keychains',
-        '/etc',
-    ];
 
     /**
      * @param  list<string>  $capabilities
@@ -59,7 +35,7 @@ final readonly class ContainerManifest
         public bool $readOnlyRoot,
         public array $capabilities,
         public bool $noNewPrivileges,
-        public string $seccomp,
+        public SecurityOptions $securityOptions,
         public bool $privileged,
         public string $network,
         public array $mounts,
@@ -80,7 +56,7 @@ final readonly class ContainerManifest
         string $network,
     ): self {
         $writable = $access->changesFiles();
-        $mount = new ManifestMount($start->workspace, self::WORKDIR, $writable);
+        $mount = ManifestMount::bind($start->workspace, self::WORKDIR, $writable);
 
         return self::make(
             (string) $policy->imageReference,
@@ -92,6 +68,8 @@ final readonly class ContainerManifest
             [$mount],
             [],
             $policy->budgets,
+            MountRules::local(),
+            SecurityOptions::none(),
         );
     }
 
@@ -112,6 +90,8 @@ final readonly class ContainerManifest
         array $mounts,
         array $publishedPorts,
         ExecutionBudgets $budgets,
+        MountRules $rules,
+        SecurityOptions $securityOptions,
     ): self {
         if (preg_match('/@sha256:[0-9a-f]{64}$/', $image) !== 1) {
             throw ManifestRefused::because("the image {$image} is not named by its digest");
@@ -129,11 +109,7 @@ final readonly class ContainerManifest
             throw ManifestRefused::because('a helper publishes no ports');
         }
 
-        if (count($mounts) !== 1 || $mounts[0]->target !== self::WORKDIR) {
-            throw ManifestRefused::because('a helper has exactly one mount, its workspace at /workspace');
-        }
-
-        self::assertValidSource($mounts[0]->source);
+        $rules->assertPermits($mounts);
 
         return new self(
             $image,
@@ -142,32 +118,12 @@ final readonly class ContainerManifest
             true,
             [],
             true,
-            self::SECCOMP,
+            $securityOptions,
             false,
             $network,
             $mounts,
             [],
             $budgets,
         );
-    }
-
-    /**
-     * @throws ManifestRefused
-     */
-    private static function assertValidSource(string $source): void
-    {
-        if (! str_starts_with($source, '/')
-            || in_array('..', explode('/', $source), true)
-            || substr_count(trim($source, '/'), '/') < 1) {
-            throw ManifestRefused::because("the workspace {$source} is not an assigned workspace folder");
-        }
-
-        foreach (self::PROTECTED_SOURCES as $protected) {
-            if (str_starts_with($source, $protected)
-                || str_contains($source, $protected.'/')
-                || str_ends_with($source, $protected)) {
-                throw ManifestRefused::because("the mount {$source} reaches accounts, credentials or host control");
-            }
-        }
     }
 }

@@ -92,6 +92,8 @@ RUN apt-get update \
     && apt-get purge -y npm && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 COPY --from=agent-host /out/journal-agent /usr/local/bin/journal-agent
+# The Docker client the contained agent host starts containers with, on the agent daemon only.
+COPY --from=docker:28-cli /usr/local/bin/docker /usr/local/bin/docker
 
 # The code is copied with the modes it has where it was built, where some files may be private: make it readable,
 # and only storage and the bootstrap cache writable, for the user the services run as.
@@ -99,7 +101,12 @@ RUN rm -f /app/.env \
     && chmod -R a+rX /app \
     && groupadd --gid 10001 journal \
     && useradd --uid 10001 --gid 10001 --home-dir /home/journal --no-create-home journal \
-    && chown -R 10001:10001 /app/storage /app/bootstrap/cache
+    && chown -R 10001:10001 /app/storage /app/bootstrap/cache \
+    # Compose cannot chown a named volume: a volume mounted on an empty folder of the image takes its owner and
+    # mode on first use, so the agent host's state and start socket folders are made here, owner-only for 10001.
+    && mkdir -p /var/lib/journal-host /run/journal-start \
+    && chown 10001:10001 /var/lib/journal-host /run/journal-start \
+    && chmod 0700 /var/lib/journal-host /run/journal-start
 USER 10001:10001
 ENTRYPOINT []
 CMD []

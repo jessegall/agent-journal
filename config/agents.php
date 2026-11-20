@@ -6,6 +6,19 @@ return [
     'transport_profile' => (string) env('AGENTS_TRANSPORT_PROFILE', 'mcp'),
 
     /*
+    | Where agents run: local (on this machine, the default) or contained (each in a container of the agent daemon,
+    | docker compose --profile contained; doc 61). A start on a host of the other arrangement is refused.
+    */
+    'arrangement' => (string) env('AGENTS_ARRANGEMENT', 'local'),
+
+    /*
+    | The prefix of every container, network and volume of this journal on the agent daemon, required when contained;
+    | compose passes its project name. The profiles folder holds the seccomp and AppArmor profiles a manifest may name.
+    */
+    'installation_name' => (string) env('AGENTS_INSTALLATION_NAME', (string) env('COMPOSE_PROJECT_NAME', '')),
+    'security_profiles' => (string) env('AGENTS_SECURITY_PROFILES', ''),
+
+    /*
     | The protected host's local start socket on this machine (journal-agent's state folder, start.sock): the one
     | way PHP on the host starts or stops a prepared start (doc 57, steps 04 and 24).
     */

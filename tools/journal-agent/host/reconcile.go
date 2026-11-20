@@ -29,6 +29,7 @@ func ReconcileOnBoot(
 	journal ReconcileJournal,
 	states StartStates,
 	reports *StartReports,
+	sessions ContainerSessions,
 ) ([]ReconcileOutcome, error) {
 	if err := reports.Send(ctx, journal); err != nil {
 		log.Printf("start reports from before the restart wait for the journal: %v", err)
@@ -44,7 +45,7 @@ func ReconcileOnBoot(
 	var outcomes []ReconcileOutcome
 	var stopped []string
 	for _, startKey := range unresolved {
-		outcome := reconcileStart(startKey, records)
+		outcome := reconcileStart(startKey, records, sessions)
 		outcomes = append(outcomes, ReconcileOutcome{StartKey: startKey, Outcome: outcome})
 		if outcome == Exited {
 			stopped = append(stopped, startKey)
@@ -58,7 +59,37 @@ func ReconcileOnBoot(
 	return outcomes, nil
 }
 
-func reconcileStart(startKey string, records []StartRecord) Reconciliation {
+// ContainerSessions are the containers of this installation the agent daemon holds, by the session each runs; a
+// local host has none.
+type ContainerSessions map[string]LabelledContainer
+
+// ContainerSessionsOf lists the installation's containers on the agent daemon, by session.
+func ContainerSessionsOf(ctx context.Context, containers Containers, installation string) (ContainerSessions, error) {
+	found, err := containers.Labelled(ctx, installation)
+	if err != nil {
+		return nil, err
+	}
+
+	sessions := ContainerSessions{}
+	for _, container := range found {
+		sessions[container.Session] = container
+	}
+
+	return sessions, nil
+}
+
+// reconcileContainer proves a contained start by its container: one still running is adopted, to be attached again;
+// one stopped or gone from the daemon, which lists stopped containers too, has exited.
+func (sessions ContainerSessions) reconcileContainer(record StartRecord) Reconciliation {
+	container, found := sessions[record.SessionID]
+	if found && container.Running {
+		return Adopted
+	}
+
+	return Exited
+}
+
+func reconcileStart(startKey string, records []StartRecord, sessions ContainerSessions) Reconciliation {
 	index := slices.IndexFunc(records, func(record StartRecord) bool {
 		return record.Claim != nil && record.Claim.StartKey == startKey
 	})
@@ -69,6 +100,8 @@ func reconcileStart(startKey string, records []StartRecord) Reconciliation {
 	switch {
 	case record.Stage == ExitKnown || record.Stage == ReportAcknowledged:
 		return Exited
+	case record.InContainer:
+		return sessions.reconcileContainer(record)
 	case record.Execution == nil:
 		return NeedsAttention
 	case (OwnedGroup{Pid: record.Execution.ProcessID}).Members() == NoMembers:

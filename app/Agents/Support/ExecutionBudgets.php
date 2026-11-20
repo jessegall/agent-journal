@@ -24,6 +24,8 @@ final readonly class ExecutionBudgets
 
     public const int MOST_WORKSPACE_BYTES = 50 * self::GIB;
 
+    public const int DEFAULT_HOME_BYTES = 64 * self::MIB;
+
     private function __construct(
         public int $cpuCores,
         public int $memoryBytes,
@@ -31,6 +33,7 @@ final readonly class ExecutionBudgets
         public int $processes,
         public int $openFiles,
         public int $tmpBytes,
+        public int $homeBytes,
         public int $workspaceBytes,
         public int $wallSeconds,
     ) {}
@@ -45,6 +48,7 @@ final readonly class ExecutionBudgets
         int $processes,
         int $openFiles,
         int $tmpBytes,
+        int $homeBytes,
         int $workspaceBytes,
         int $wallSeconds,
     ): self {
@@ -54,6 +58,7 @@ final readonly class ExecutionBudgets
             'processes',
             'openFiles',
             'tmpBytes',
+            'homeBytes',
             'workspaceBytes',
             'wallSeconds',
         ) as $name => $budgetAmount) {
@@ -84,17 +89,28 @@ final readonly class ExecutionBudgets
             $processes,
             $openFiles,
             $tmpBytes,
+            $homeBytes,
             $workspaceBytes,
             $wallSeconds,
         );
     }
 
     /**
-     * The per-start defaults: 2 cores, 4 GiB memory and swap, 256 processes, 1,024 files, 256 MiB tmp, a 10 GiB
-     * workspace and six hours.
+     * The per-start defaults: 2 cores, 4 GiB memory and swap, 256 processes, 1,024 files, 256 MiB tmp, a 64 MiB home,
+     * a 10 GiB workspace and six hours.
      */
     public static function defaults(): self
     {
-        return self::make(2, 4 * self::GIB, 4 * self::GIB, 256, 1024, 256 * self::MIB, 10 * self::GIB, 6 * 3600);
+        return self::make(
+            2,
+            4 * self::GIB,
+            4 * self::GIB,
+            256,
+            1024,
+            256 * self::MIB,
+            self::DEFAULT_HOME_BYTES,
+            10 * self::GIB,
+            6 * 3600,
+        );
     }
 }

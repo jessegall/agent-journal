@@ -16,6 +16,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\Host;
+use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\RuntimeIntent;
@@ -31,6 +32,7 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         private AgentSessions $sessions,
         private ActiveAccountReader $accounts,
         private RegisterPendingStart $pendingStarts,
+        private ArrangementSetting $arrangement,
     ) {}
 
     public function handle(OpenAgentRuntime $command): OpenedRuntime
@@ -44,6 +46,8 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         if (! $host->permitsFolder($command->folder)) {
             throw StartRootRefused::outsideRoots($command->folder);
         }
+
+        $this->arrangement->assertFits($host);
 
         $parent = $this->parentSessionFor($command);
         $intent = new RuntimeIntent(

@@ -68,6 +68,8 @@ case	AnswerType::Allow
 case	AnswerType::Delegate
 case	AnswerType::Deny
 case	AnswerType::Rewrite
+case	ArrangementType::Contained
+case	ArrangementType::Local
 case	AskOriginType::Internal
 case	AskOriginType::Supervisor
 case	AskRouteStatus::Assigned
@@ -433,6 +435,9 @@ case	MiddlewareStage::BeforeTransaction
 case	MiddlewareStage::InsideTransaction
 case	ModelSelectionType::Named
 case	ModelSelectionType::ProfileDefault
+case	MountType::Bind
+case	MountType::DaemonBind
+case	MountType::Volume
 case	NameType::ClassName
 case	NameType::Constant
 case	NameType::Construction
@@ -1321,6 +1326,8 @@ class	ApprovedPair
 class	AreaCycles
 class	ArgumentGrammar
 class	ArithmeticCommandReader
+class	ArrangementSetting
+class	ArrangementUnknown
 class	ArrayAssignmentReader
 class	Ask
 class	AskAssignments
@@ -2496,6 +2503,7 @@ class	HooksServiceProvider
 class	Host
 class	HostAccess
 class	HostAccountDrain
+class	HostArrangementRefused
 class	HostCapability
 class	HostCapabilityQuery
 class	HostCapabilityUnsupported
@@ -2505,6 +2513,8 @@ class	HostContext
 class	HostCredentialRejected
 class	HostReportRefused
 class	HostRuntimes
+class	HostSecret
+class	HostSecretUnreadable
 class	HostSkillPublisher
 class	HostStartExecutor
 class	HostStartMaterial
@@ -2564,6 +2574,7 @@ class	InstallNumbers
 class	InstallNumbersCommand
 class	InstallNumbersHandler
 class	InstallShippedReadersCommand
+class	InstallationNameMissing
 class	Instruction
 class	IntegerChoiceConstraintsData
 class	IntegerChoiceOptionData
@@ -2887,6 +2898,7 @@ class	ModuleRuleBundle
 class	MonotonicClockWentBack
 class	MonotonicStop
 class	MonotonicStopTimes
+class	MountRules
 class	NameAdmission
 class	NameOutsideEveryDomain
 class	NameScan
@@ -4234,6 +4246,7 @@ class	Section
 class	SectionDraft
 class	SectionMissing
 class	SecureShareResponse
+class	SecurityOptions
 class	SelectMessage
 class	SelectMessageCall
 class	SelectMessageController
@@ -5404,9 +5417,6 @@ constant	ConditionTree::MOST_PARAMETER_BYTES
 constant	ConditionTree::NAMED_KEY
 constant	ContainerManifest::LOG_BYTES
 constant	ContainerManifest::LOG_FILES
-constant	ContainerManifest::PROTECTED_SOURCES
-constant	ContainerManifest::SECCOMP
-constant	ContainerManifest::TMPFS
 constant	ContainerManifest::USER
 constant	ContainerManifest::WORKDIR
 constant	Continuations::LIFETIME_MINUTES
@@ -5479,6 +5489,7 @@ constant	Everyone::TYPE
 constant	Everyone::VERSION
 constant	EvidenceRead::CREATED_AT
 constant	EvidenceRead::UPDATED_AT
+constant	ExecutionBudgets::DEFAULT_HOME_BYTES
 constant	ExecutionBudgets::GIB
 constant	ExecutionBudgets::MIB
 constant	ExecutionBudgets::MOST_CPU_CORES
@@ -5585,6 +5596,11 @@ constant	ModelSelection::DEFAULT_INPUT
 constant	ModuleRuleBundle::CREATED_AT
 constant	ModuleRuleBundle::UPDATED_AT
 constant	MonotonicStop::NANOSECONDS_PER_MILLISECOND
+constant	MountRules::ACCOUNTS_ROOT
+constant	MountRules::CONTAINED_TARGETS
+constant	MountRules::DAEMON_ROOT
+constant	MountRules::MOST_CONTAINED_MOUNTS
+constant	MountRules::PROTECTED_SOURCES
 constant	Named::TYPE
 constant	NamedTaskPoolFactory::KEY
 constant	NavigationAnswer::LABEL_CHARACTER_LIMIT
@@ -6013,6 +6029,7 @@ enum	AdmissionState
 enum	AgentInboxState
 enum	AnalysisLimit
 enum	AnswerType
+enum	ArrangementType
 enum	AskOriginType
 enum	AskRouteStatus
 enum	AssessmentOutcome
@@ -6100,6 +6117,7 @@ enum	MergeRefusalReason
 enum	MessageState
 enum	MiddlewareStage
 enum	ModelSelectionType
+enum	MountType
 enum	NameType
 enum	NavigationAnswerer
 enum	NavigationCompletion
@@ -7462,6 +7480,12 @@ method	ArgumentGrammar::withOperands()
 method	ArgumentGrammar::withOptions()
 method	ArithmeticCommandReader::reads()
 method	ArithmeticCommandReader::reason()
+method	ArrangementSetting::__construct()
+method	ArrangementSetting::assertFits()
+method	ArrangementSetting::fromConfig()
+method	ArrangementSetting::mountRules()
+method	ArrangementType::isContained()
+method	ArrangementUnknown::for()
 method	ArrayAssignmentReader::reads()
 method	ArrayAssignmentReader::reason()
 method	Ask::accept()
@@ -9351,7 +9375,6 @@ method	ConsumedPreview::__construct()
 method	ContainerAdmission::__construct()
 method	ContainerAdmission::assertSupported()
 method	ContainerManifest::__construct()
-method	ContainerManifest::assertValidSource()
 method	ContainerManifest::compile()
 method	ContainerManifest::make()
 method	ContainerUnavailable::because()
@@ -10518,6 +10541,7 @@ method	EngineTicked::__construct()
 method	EngineTickedDelivery::__construct()
 method	EngineTickedDelivery::deliver()
 method	EnrollHost::__construct()
+method	EnrollHostCommand::arrangement()
 method	EnrollHostCommand::handle()
 method	EnrollHostCommand::installationName()
 method	EnrollHostCommand::startRoots()
@@ -11333,6 +11357,7 @@ method	HookWalk::removeFrame()
 method	HookWalk::visitedFrames()
 method	HooksServiceProvider::boot()
 method	HooksServiceProvider::register()
+method	Host::assertEnrolledAs()
 method	Host::casts()
 method	Host::create()
 method	Host::forSecret()
@@ -11349,6 +11374,11 @@ method	HostAccess::permits()
 method	HostAccess::root()
 method	HostAccountDrain::__construct()
 method	HostAccountDrain::drain()
+method	HostArrangementRefused::containedHost()
+method	HostArrangementRefused::localHost()
+method	HostArrangementRefused::refusalCode()
+method	HostArrangementRefused::status()
+method	HostArrangementRefused::unlikeEnrollment()
 method	HostCapabilities::capability()
 method	HostCapability::__construct()
 method	HostCapability::assertSupported()
@@ -11370,6 +11400,12 @@ method	HostReportRefused::notOwned()
 method	HostReportRefused::staleAttempt()
 method	HostReportRefused::staleGeneration()
 method	HostRuntimes::lockedFor()
+method	HostSecret::fromEnvironment()
+method	HostSecret::fromFile()
+method	HostSecretUnreadable::empty()
+method	HostSecretUnreadable::givenTwice()
+method	HostSecretUnreadable::missing()
+method	HostSecretUnreadable::tooOpen()
 method	HostSkillPublisher::__construct()
 method	HostSkillPublisher::activate()
 method	HostSkillPublisher::activeFolder()
@@ -11494,6 +11530,7 @@ method	InstallDesksHandler::handle()
 method	InstallNumbersCommand::handle()
 method	InstallNumbersHandler::handle()
 method	InstallShippedReadersCommand::handle()
+method	InstallationNameMissing::whenContained()
 method	Instruction::__construct()
 method	Instruction::command()
 method	Instruction::condition()
@@ -11974,6 +12011,9 @@ method	MalformedExports::listedTwice()
 method	ManifestCheck::__construct()
 method	ManifestCheck::stateOf()
 method	ManifestMount::__construct()
+method	ManifestMount::bind()
+method	ManifestMount::daemonBind()
+method	ManifestMount::volume()
 method	ManifestRefused::because()
 method	MapSessionOutputs::continuedFrom()
 method	MapSessionOutputs::map()
@@ -12448,6 +12488,13 @@ method	MonotonicStop::__construct()
 method	MonotonicStop::remainingMilliseconds()
 method	MonotonicStopTimes::__construct()
 method	MonotonicStopTimes::at()
+method	MountRules::__construct()
+method	MountRules::assertContainedSource()
+method	MountRules::assertLocal()
+method	MountRules::assertPermits()
+method	MountRules::contained()
+method	MountRules::isDaemonFolder()
+method	MountRules::local()
 method	NameAdmission::handle()
 method	NameOutsideEveryDomain::for()
 method	NameScan::classConstantType()
@@ -16301,6 +16348,11 @@ method	SectionMissing::number()
 method	SectionProvider::sections()
 method	SectionResolver::read()
 method	SecureShareResponse::handle()
+method	SecurityOptions::__construct()
+method	SecurityOptions::assertPlain()
+method	SecurityOptions::isInside()
+method	SecurityOptions::make()
+method	SecurityOptions::none()
 method	SelectMessage::__construct()
 method	SelectMessageCall::__construct()
 method	SelectMessageController::__invoke()
@@ -19670,6 +19722,7 @@ parameter	$accountMode
 parameter	$accountOrProgram
 parameter	$accountReference
 parameter	$accountSettings
+parameter	$accountSource
 parameter	$accountState
 parameter	$accountType
 parameter	$accounts
@@ -19756,6 +19809,7 @@ parameter	$app
 parameter	$appFolder
 parameter	$appKey
 parameter	$appName
+parameter	$apparmor
 parameter	$applied
 parameter	$approval
 parameter	$approvals
@@ -20301,6 +20355,7 @@ parameter	$endsOptionsAtDoubleDash
 parameter	$engine
 parameter	$engineFrame
 parameter	$engineListeners
+parameter	$enrolled
 parameter	$enteredAt
 parameter	$entitlement
 parameter	$entrance
@@ -20535,6 +20590,7 @@ parameter	$holder
 parameter	$holderId
 parameter	$holderType
 parameter	$holders
+parameter	$homeBytes
 parameter	$homePosition
 parameter	$hook
 parameter	$hookCallDays
@@ -20862,6 +20918,7 @@ parameter	$mostMilliseconds
 parameter	$mostQueries
 parameter	$mostRecords
 parameter	$mostRenderedBytes
+parameter	$mount
 parameter	$mounts
 parameter	$move
 parameter	$ms
@@ -21156,6 +21213,7 @@ parameter	$profileKey
 parameter	$profileRevision
 parameter	$profileType
 parameter	$profiles
+parameter	$profilesFolder
 parameter	$program
 parameter	$programArguments
 parameter	$programBuild
@@ -21542,6 +21600,7 @@ parameter	$sectionKey
 parameter	$sectionNumber
 parameter	$sectionTakes
 parameter	$sections
+parameter	$securityOptions
 parameter	$seen
 parameter	$segment
 parameter	$segments
@@ -21903,6 +21962,8 @@ parameter	$value	app/Actors/Models/Support/ReadsForActor.php
 parameter	$value	app/AgentRequests/Casts/CallKeyCast.php
 parameter	$value	app/AgentRequests/Transformers/CallKeyTransformer.php
 parameter	$value	app/Agents/Casts/NavigationScreenCast.php
+parameter	$value	app/Agents/Exceptions/ArrangementUnknown.php
+parameter	$value	app/Agents/Support/ArrangementSetting.php
 parameter	$value	app/Assignments/Casts/PoolReferenceCast.php
 parameter	$value	app/Bus/Support/OneLineRule.php
 parameter	$value	app/Comments/Casts/CommentViewsCast.php
@@ -22464,6 +22525,8 @@ property	ArgumentGrammar::$minimumOperands
 property	ArgumentGrammar::$operands
 property	ArgumentGrammar::$options
 property	ArgumentGrammar::$repeatsLastOperand
+property	ArrangementSetting::$arrangement
+property	ArrangementSetting::$installationName
 property	AskAssignments::$actors
 property	AskAssignments::$asks
 property	AskAssignments::$graph
@@ -23431,7 +23494,7 @@ property	ContainerManifest::$noNewPrivileges
 property	ContainerManifest::$privileged
 property	ContainerManifest::$publishedPorts
 property	ContainerManifest::$readOnlyRoot
-property	ContainerManifest::$seccomp
+property	ContainerManifest::$securityOptions
 property	ContainerManifest::$user
 property	ContainerManifest::$workdir
 property	ContextBody::$hookSpecificOutput
@@ -24125,6 +24188,7 @@ property	EngineTickedDelivery::$container
 property	EngineTickedDelivery::$events
 property	EngineTickedDelivery::$listeners
 property	EngineTickedDelivery::$log
+property	EnrollHost::$arrangement
 property	EnrollHost::$installationName
 property	EnrollHost::$startRoots
 property	EnrollHostCommand::$description
@@ -24194,6 +24258,7 @@ property	ExecutableVerdict::$program
 property	ExecutableVerdict::$reason
 property	ExecutableVerdict::$resolvedPath
 property	ExecutionBudgets::$cpuCores
+property	ExecutionBudgets::$homeBytes
 property	ExecutionBudgets::$memoryBytes
 property	ExecutionBudgets::$memorySwapBytes
 property	ExecutionBudgets::$openFiles
@@ -25035,6 +25100,7 @@ property	MakeReportCall::$uploadId
 property	ManifestCheck::$disks
 property	ManifestMount::$source
 property	ManifestMount::$target
+property	ManifestMount::$type
 property	ManifestMount::$writable
 property	MappedRefusal::$code
 property	MappedRefusal::$details
@@ -25271,6 +25337,8 @@ property	ModelSelection::$type
 property	MonotonicStop::$clock
 property	MonotonicStop::$stopNanoseconds
 property	MonotonicStopTimes::$clock
+property	MountRules::$accountSource
+property	MountRules::$installationName
 property	NameUse::$file
 property	NameUse::$line
 property	NameUse::$name
@@ -25455,6 +25523,7 @@ property	OpenAgentRuntime::$profile
 property	OpenAgentRuntime::$program
 property	OpenAgentRuntime::$programBuild
 property	OpenAgentRuntimeHandler::$accounts
+property	OpenAgentRuntimeHandler::$arrangement
 property	OpenAgentRuntimeHandler::$pendingStarts
 property	OpenAgentRuntimeHandler::$sessions
 property	OpenAgentRuntimeHandler::$starts
@@ -28008,6 +28077,8 @@ property	Section::$visibility
 property	SectionDraft::$heading
 property	SectionDraft::$key
 property	SectionDraft::$markdown
+property	SecurityOptions::$apparmor
+property	SecurityOptions::$seccomp
 property	SelectMessage::$messageId
 property	SelectMessageCall::$messageId
 property	SelectMessageCall::$requestKey
@@ -28320,7 +28391,8 @@ property	ShareGatewayChanged::$isDisabled
 property	ShareGatewayChanged::$occurredAt
 property	ShareGatewayRegistry::$container
 property	ShareGatewayRegistry::$gatewayClasses
-property	ShareGrant::$configuration
+property	ShareGrant::$configurationId
+property	ShareGrant::$configurationVersion
 property	ShareGrant::$ownerUserId
 property	ShareGrant::$token
 property	ShareGrants::$events
@@ -29099,6 +29171,7 @@ property	StoredExecutableBinding::$family
 property	StoredExecutableBinding::$locations
 property	StoredExecutableBinding::$type
 property	StoredExecutionBudgets::$cpuCores
+property	StoredExecutionBudgets::$homeBytes
 property	StoredExecutionBudgets::$memoryBytes
 property	StoredExecutionBudgets::$memorySwapBytes
 property	StoredExecutionBudgets::$openFiles
@@ -30481,12 +30554,15 @@ variable	$intent
 variable	$intents
 variable	$interface
 variable	$invalid
+variable	$isAccount
+variable	$isAllowed
 variable	$isApplicationCode
 variable	$isArray
 variable	$isBacktick
 variable	$isBareEsac
 variable	$isCall
 variable	$isCallOnThis
+variable	$isClean
 variable	$isComparison
 variable	$isConcreteCommand
 variable	$isConcreteEvent

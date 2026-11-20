@@ -9,8 +9,14 @@ services:
             # The most worker threads FrankenPHP grows to under load: about one per two active actors. The threads
             # started at boot (two per processor) are the floor and are never removed.
             OCTANE_MAX_THREADS: ${OCTANE_MAX_THREADS:-32}
+            # Where agents run (doc 61): local on this machine, or contained in the agent daemon's containers.
+            AGENTS_ARRANGEMENT: ${AGENTS_ARRANGEMENT:-local}
+            AGENTS_INSTALLATION_NAME: ${AGENTS_INSTALLATION_NAME:-journal}
         ports:
             - '127.0.0.1:${APP_PORT:-54700}:8000'
+        networks:
+            - default
+            - journal-api
         depends_on:
             postgres:
                 condition: service_healthy
@@ -204,6 +210,65 @@ services:
         networks:
             - agent-egress
 
+    # Enrolls the contained agent host once: it reads the secret agents:host-enroll printed from the compose secret,
+    # never from the environment, and does nothing when host-state already holds the same enrollment.
+    agent-host-enroll:
+        profiles: [contained]
+        restart: 'no'
+        image: ${RUNNER_IMAGE:-journal-runner:unset}
+        user: '10001:10001'
+        command:
+            - journal-agent
+            - enroll
+            - --journal=http://app:8000
+            - --host=${AGENTS_HOST_ID:-}
+            - --state=/var/lib/journal-host
+            - --secret-file=/run/secrets/journal_host_secret
+        secrets:
+            - journal_host_secret
+        volumes:
+            - host-state:/var/lib/journal-host
+        networks:
+            - journal-api
+        depends_on:
+            app:
+                condition: service_started
+
+    # The contained agent host: it claims the journal's starts and runs every agent in a container of the agent
+    # daemon, from the two pinned images. It publishes no port, never sees the server's Docker socket and holds no
+    # secret in its environment; PHP reaches its start socket through the host-start-socket volume.
+    agent-host:
+        profiles: [contained]
+        restart: unless-stopped
+        image: ${RUNNER_IMAGE:-journal-runner:unset}
+        user: '10001:10001'
+        command:
+            - journal-agent
+            - serve
+            - --arrangement=contained
+            - --state=/var/lib/journal-host
+            - --start-socket-dir=/run/journal-start
+            - --docker=unix:///run/agent-docker/docker.sock
+            - --installation-name=${AGENTS_INSTALLATION_NAME:-journal}
+            - --agent-image=${AGENT_IMAGE:-}
+            - --runner-image=${RUNNER_IMAGE:-}
+        volumes:
+            - host-state:/var/lib/journal-host
+            - host-start-socket:/run/journal-start
+            - agent-docker-socket:/run/agent-docker
+        networks:
+            - journal-api
+        depends_on:
+            agent-host-enroll:
+                condition: service_completed_successfully
+            agent-images:
+                condition: service_completed_successfully
+        healthcheck:
+            test: ['CMD', 'test', '-S', '/run/journal-start/start.sock']
+            interval: 5s
+            timeout: 5s
+            retries: 30
+
 volumes:
     postgres-data:
     redis-data:
@@ -211,7 +276,20 @@ volumes:
     agent-docker-data:
     agent-docker-socket:
     accounts-data:
+    # The contained agent host's enrollment and start records, kept across restarts so it reconciles from them.
+    host-state:
+    # The folder of the contained host's start socket, owned by 10001 as the runner image makes it.
+    host-start-socket:
+
+secrets:
+    # The host secret agents:host-enroll printed, in a file only the operator writes (secrets/README.md).
+    journal_host_secret:
+        file: ./secrets/journal_host_secret
 
 networks:
     # The agent daemon's own network, shared with no app, database or cache container.
     agent-egress:
+    # The internal network the app shares with the contained agent host and the sign-in service; it reaches no
+    # outside address.
+    journal-api:
+        internal: true

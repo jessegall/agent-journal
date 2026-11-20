@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"encoding/json"
 	"flag"
 	"log"
@@ -35,8 +36,19 @@ func install(arguments []string) error {
 func installation(arguments []string) error {
 	flags := flag.NewFlagSet("installation", flag.ContinueOnError)
 	folder := flags.String("folder", "", "the installation folder")
+	arrangementFlag := flags.String("arrangement", string(host.Local), "where agents run: local or contained")
+	agentImage := flags.String("agent-image", "", "the agent image a contained host runs, by digest")
+	runnerImage := flags.String("runner-image", "", "the sign-in runner image of a contained host, by digest")
 	if err := flags.Parse(arguments); err != nil {
 		return err
+	}
+	arrangement, err := host.ParseArrangement(*arrangementFlag)
+	if err != nil {
+		return err
+	}
+	if arrangement.IsContained() {
+		fmt.Println(host.PinnedImages{Agent: *agentImage, Runner: *runnerImage}.Lines(arrangement))
+		return nil
 	}
 	verified, err := host.Installation{Folder: *folder}.Verify()
 	if err != nil {

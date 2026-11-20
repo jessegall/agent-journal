@@ -83,7 +83,7 @@ func TestARestartReportsOnlyStartsWhoseProcessIsProvenGone(t *testing.T) {
 	}
 	journal := &recordingReporter{keys: []string{"ended", "running", "unknown", "never-recorded"}}
 
-	outcomes, err := ReconcileOnBoot(context.Background(), journal, states, &StartReports{Folder: t.TempDir()})
+	outcomes, err := ReconcileOnBoot(context.Background(), journal, states, &StartReports{Folder: t.TempDir()}, ContainerSessions{})
 	if err != nil {
 		t.Fatal(err)
 	}

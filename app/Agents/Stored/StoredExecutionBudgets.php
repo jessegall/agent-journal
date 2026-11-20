@@ -24,6 +24,7 @@ final class StoredExecutionBudgets extends Data
         public readonly int $tmpBytes,
         public readonly int $workspaceBytes,
         public readonly int $wallSeconds,
+        public readonly int $homeBytes = ExecutionBudgets::DEFAULT_HOME_BYTES,
     ) {}
 
     public static function fromExecutionBudgets(ExecutionBudgets $budgets): self
@@ -35,6 +36,7 @@ final class StoredExecutionBudgets extends Data
             'processes' => $budgets->processes,
             'open_files' => $budgets->openFiles,
             'tmp_bytes' => $budgets->tmpBytes,
+            'home_bytes' => $budgets->homeBytes,
             'workspace_bytes' => $budgets->workspaceBytes,
             'wall_seconds' => $budgets->wallSeconds,
         ]);
@@ -49,6 +51,7 @@ final class StoredExecutionBudgets extends Data
             $this->processes,
             $this->openFiles,
             $this->tmpBytes,
+            $this->homeBytes,
             $this->workspaceBytes,
             $this->wallSeconds,
         );

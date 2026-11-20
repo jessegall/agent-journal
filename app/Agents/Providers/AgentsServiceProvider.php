@@ -82,6 +82,7 @@ use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\AgentVisibility;
+use App\Agents\Support\ArrangementSetting;
 use App\Agents\Support\CurrentRuntimeAttention;
 use App\Agents\Support\DatabaseStartTransaction;
 use App\Agents\Support\DockerImageVerifier;
@@ -192,6 +193,10 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('agents.driver_budgets.long_poll_max_seconds'),
             $this->app->make('config')->integer('agents.driver_budgets.deliver_max_bytes'),
         ));
+        $this->app->singleton(ArrangementSetting::class, fn () => ArrangementSetting::fromConfig(
+            $this->app->make('config')->string('agents.arrangement'),
+            $this->app->make('config')->string('agents.installation_name'),
+        ));
         $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
             $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
             $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
@@ -234,6 +239,8 @@ final class AgentsServiceProvider extends ServiceProvider
         PendingWorkSources $pendingWork,
         LinkTypeRegistry $links,
         Dispatcher $events,
+        // read at boot so an unknown AGENTS_ARRANGEMENT stops the journal at once, naming the value
+        ArrangementSetting $arrangement,
     ): void {
         $starts = new ProcessStartScope(static fn () => Container::getInstance()->make(CurrentActor::class));
         $events->listen('eloquent.booted: '.ProcessStart::class, fn () => ProcessStart::addGlobalScope($starts));

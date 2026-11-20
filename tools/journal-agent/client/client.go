@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -221,11 +222,19 @@ type Client struct {
 	enrollment Enrollment
 	http       *http.Client
 	now        func() time.Time
+	// arrangement is where this host runs agents, local or contained, reported on every claim; empty reports local.
+	arrangement string
 }
 
 // New returns a client for the enrollment.
 func New(enrollment Enrollment) *Client {
 	return &Client{enrollment: enrollment, http: &http.Client{Timeout: 30 * time.Second}, now: time.Now}
+}
+
+// WithArrangement makes every claim report where this host runs agents, local or contained.
+func (client *Client) WithArrangement(arrangement string) *Client {
+	client.arrangement = arrangement
+	return client
 }
 
 // Watch is one runtime somebody watches in the journal, and how often its screen is captured.
@@ -247,6 +256,9 @@ type Claim struct {
 func (client *Client) Claim(ctx context.Context, limit, waitSeconds, watchedVersion int) (Claim, error) {
 	target := "/host/claim?limit=" + strconv.Itoa(limit) + "&wait=" + strconv.Itoa(waitSeconds) +
 		"&watched_version=" + strconv.Itoa(watchedVersion)
+	if client.arrangement != "" {
+		target += "&arrangement=" + url.QueryEscape(client.arrangement)
+	}
 	return answerOf[Claim](ctx, client, target, nil)
 }
 

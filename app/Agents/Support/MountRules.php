@@ -1,0 +1,141 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Support;
+
+use App\Agents\Enums\MountType;
+use App\Agents\Exceptions\ManifestRefused;
+
+/**
+ * Which mounts a helper container may have: in the local arrangement exactly one folder of this machine at
+ * /workspace; contained, one to three mounts of the agent daemon on their own folders, volumes of this installation
+ * and folders under /srv/journal/, an account folder only the session's own (doc 61, decision 6).
+ */
+final readonly class MountRules
+{
+    private const string DAEMON_ROOT = '/srv/journal/';
+
+    private const string ACCOUNTS_ROOT = '/srv/journal/accounts';
+
+    private const int MOST_CONTAINED_MOUNTS = 3;
+
+    private const array CONTAINED_TARGETS = ['/workspace', '/home/journal/.account', '/home/journal/.account/projects'];
+
+    /**
+     * Host folders that hold accounts, credentials or host control; no local mount may name them.
+     */
+    private const array PROTECTED_SOURCES = [
+        '/var/run/docker.sock',
+        '/run/docker.sock',
+        '/.ssh',
+        '/.claude',
+        '/.codex',
+        '/.config',
+        '/Library/Keychains',
+        '/etc',
+    ];
+
+    private function __construct(
+        public string|null $installationName,
+        public string|null $accountSource,
+    ) {}
+
+    public static function local(): self
+    {
+        return new self(null, null);
+    }
+
+    /**
+     * The rules of a contained session: its volumes open with the installation name, and the one account folder it
+     * may mount, when it has an account, is its own.
+     */
+    public static function contained(string $installationName, string|null $accountSource): self
+    {
+        return new self($installationName, $accountSource);
+    }
+
+    /**
+     * @param  list<ManifestMount>  $mounts
+     *
+     * @throws ManifestRefused
+     */
+    public function assertPermits(array $mounts): void
+    {
+        if ($this->installationName === null) {
+            $this->assertLocal($mounts);
+
+            return;
+        }
+
+        if ($mounts === [] || count($mounts) > self::MOST_CONTAINED_MOUNTS) {
+            throw ManifestRefused::because('a contained helper has one to three mounts');
+        }
+
+        $targets = array_map(static fn (ManifestMount $mount) => $mount->target, $mounts);
+
+        if (array_diff($targets, self::CONTAINED_TARGETS) !== [] || count(array_unique($targets)) !== count($targets)) {
+            throw ManifestRefused::because('a contained helper mounts only its workspace, account and projects, once each');
+        }
+
+        array_map($this->assertContainedSource(...), $mounts);
+    }
+
+    /**
+     * @param  list<ManifestMount>  $mounts
+     *
+     * @throws ManifestRefused
+     */
+    private function assertLocal(array $mounts): void
+    {
+        if (count($mounts) !== 1 || $mounts[0]->type !== MountType::Bind || $mounts[0]->target !== '/workspace') {
+            throw ManifestRefused::because('a helper has exactly one mount, its workspace at /workspace');
+        }
+
+        $source = $mounts[0]->source;
+
+        if (! str_starts_with($source, '/')
+            || in_array('..', explode('/', $source), true)
+            || substr_count(trim($source, '/'), '/') < 1) {
+            throw ManifestRefused::because("the workspace {$source} is not an assigned workspace folder");
+        }
+
+        foreach (self::PROTECTED_SOURCES as $protected) {
+            if (str_starts_with($source, $protected)
+                || str_contains($source, $protected.'/')
+                || str_ends_with($source, $protected)) {
+                throw ManifestRefused::because("the mount {$source} reaches accounts, credentials or host control");
+            }
+        }
+    }
+
+    /**
+     * @throws ManifestRefused
+     */
+    private function assertContainedSource(ManifestMount $mount): void
+    {
+        $isAllowed = match ($mount->type) {
+            MountType::Volume => str_starts_with($mount->source, $this->installationName.'-')
+                && strpbrk($mount->source, "/,\n") === false,
+            MountType::DaemonBind => $this->isDaemonFolder($mount->source),
+            MountType::Bind => false,
+        };
+
+        if (! $isAllowed) {
+            throw ManifestRefused::because("a contained helper may not mount {$mount->type->value} {$mount->target}");
+        }
+    }
+
+    /**
+     * A clean folder under /srv/journal/, and inside the accounts root only the session's own account folder.
+     */
+    private function isDaemonFolder(string $source): bool
+    {
+        $isClean = str_starts_with($source, self::DAEMON_ROOT)
+            && ! in_array('..', explode('/', $source), true)
+            && strpbrk($source, ",\n") === false;
+        $isAccount = $source === self::ACCOUNTS_ROOT || str_starts_with($source, self::ACCOUNTS_ROOT.'/');
+
+        return $isClean && (! $isAccount || $source === $this->accountSource);
+    }
+}

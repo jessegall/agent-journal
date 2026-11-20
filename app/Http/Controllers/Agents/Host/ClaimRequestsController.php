@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Enums\ArrangementType;
+use App\Agents\Models\Host;
 use App\Agents\Support\ClaimAnswer;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverBudgets;
@@ -14,11 +16,13 @@ use App\Bus\Contracts\CommandBus;
 use App\Reads\Support\ScopedReadMeter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Hands the host its next requests and the runtimes watched on it; when none waits and the watched list is the one
- * the host knows, it polls again for a short bounded time. The host's calls run as the journal itself: a host is
- * infrastructure, never an actor.
+ * the host knows, it polls again for a short bounded time. A host reports where it runs agents with each claim, local
+ * when it says nothing, and one that differs from its enrolment is refused. The host's calls run as the journal itself:
+ * a host is infrastructure, never an actor.
  */
 final readonly class ClaimRequestsController
 {
@@ -29,7 +33,13 @@ final readonly class ClaimRequestsController
         DriverBudgets $budgets,
         WatchedRuntimes $watched,
     ): JsonResponse {
-        $request->validate(['watched_version' => ['required', 'integer', 'min:0']]);
+        $request->validate([
+            'watched_version' => ['required', 'integer', 'min:0'],
+            'arrangement' => ['sometimes', Rule::enum(ArrangementType::class)],
+        ]);
+        Host::query()->whereKey($host->hostId)->sole()->assertEnrolledAs(
+            $request->enum('arrangement', ArrangementType::class) ?? ArrangementType::Local,
+        );
         $limit = min($budgets->claimBatchMax, max(1, $request->integer('limit', 10)));
         $deadline = microtime(true) + min($budgets->longPollMaxSeconds, max(0, $request->integer('wait', 0)));
         $knownVersion = $request->integer('watched_version');

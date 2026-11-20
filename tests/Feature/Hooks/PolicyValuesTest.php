@@ -186,15 +186,15 @@ final class PolicyValuesTest extends TestCase
         );
         $this->assertRefused(
             ExecutionBudgetInvalid::class,
-            fn () => ExecutionBudgets::make(9, 1024, 1024, 1, 1, 1, 1, 1),
+            fn () => ExecutionBudgets::make(9, 1024, 1024, 1, 1, 1, 1, 1, 1),
         );
         $this->assertRefused(
             ExecutionBudgetInvalid::class,
-            fn () => ExecutionBudgets::make(2, 1024, 2048, 1, 1, 1, 1, 1),
+            fn () => ExecutionBudgets::make(2, 1024, 2048, 1, 1, 1, 1, 1, 1),
         );
         $this->assertRefused(
             ExecutionBudgetInvalid::class,
-            fn () => ExecutionBudgets::make(0, 1024, 1024, 1, 1, 1, 1, 1),
+            fn () => ExecutionBudgets::make(0, 1024, 1024, 1, 1, 1, 1, 1, 1),
         );
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Agents\Enums\ArrangementType;
+use App\Agents\Exceptions\HostArrangementRefused;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -20,9 +22,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $installation_name
  * @property string $credential_hash
  * @property list<string> $start_roots
+ * @property ArrangementType $arrangement
  * @property CarbonImmutable|null $revoked_at
  */
-#[Fillable(['installation_name', 'credential_hash', 'start_roots'])]
+#[Fillable(['installation_name', 'credential_hash', 'start_roots', 'arrangement'])]
 final class Host extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -37,22 +40,29 @@ final class Host extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
+            'arrangement' => ArrangementType::class,
             'start_roots' => 'array',
             'revoked_at' => 'immutable_datetime',
         ];
     }
 
     /**
-     * A host enrolled under its installation name, holding only the hash of its secret and its start roots.
+     * A host enrolled under its installation name, holding only the hash of its secret, its start roots and the
+     * arrangement it runs agents in.
      *
      * @param  list<string>  $startRoots
      */
-    public static function create(string $installationName, string $secret, array $startRoots): self
-    {
+    public static function create(
+        string $installationName,
+        string $secret,
+        array $startRoots,
+        ArrangementType $arrangement,
+    ): self {
         return self::query()->create([
             'installation_name' => $installationName,
             'credential_hash' => self::hashOf($secret),
             'start_roots' => $startRoots,
+            'arrangement' => $arrangement,
         ]);
     }
 
@@ -105,6 +115,18 @@ final class Host extends Model implements ReadableModel
         }
 
         return false;
+    }
+
+    /**
+     * Refuses a host that reports another arrangement than the one it was enrolled with.
+     *
+     * @throws HostArrangementRefused
+     */
+    public function assertEnrolledAs(ArrangementType $reported): void
+    {
+        if ($reported !== $this->arrangement) {
+            throw HostArrangementRefused::unlikeEnrollment($reported, $this->arrangement);
+        }
     }
 
     public function isRevoked(): bool

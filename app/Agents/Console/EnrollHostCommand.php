@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Console;
 
 use App\Agents\Commands\EnrollHost;
+use App\Agents\Enums\ArrangementType;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use Illuminate\Console\Command;
@@ -14,13 +15,15 @@ use Illuminate\Console\Command;
  */
 final class EnrollHostCommand extends Command
 {
-    protected $signature = 'agents:host-enroll {name : The installation name of the host} {--root=* : A folder the host may start agents in}';
+    protected $signature = 'agents:host-enroll {name : The installation name of the host}'
+        .' {--root=* : A folder the host may start agents in}'
+        .' {--contained : The host is the contained agent-host service, which runs every agent in a container}';
 
     protected $description = 'Enroll a host that runs agent programs and print its secret once';
 
     public function handle(EntryDispatchers $dispatchers): int
     {
-        $enroll = new EnrollHost($this->installationName(), $this->startRoots());
+        $enroll = new EnrollHost($this->installationName(), $this->startRoots(), $this->arrangement());
         $enrolled = $dispatchers->runAsJournal(CommandEntry::HostControl, 'host enrolment', $enroll);
 
         $this->line("Host {$enrolled->hostId} is enrolled. Its secret, shown only now:");
@@ -35,6 +38,11 @@ final class EnrollHostCommand extends Command
     private function installationName(): string
     {
         return $this->argument('name');
+    }
+
+    private function arrangement(): ArrangementType
+    {
+        return $this->option('contained') === true ? ArrangementType::Contained : ArrangementType::Local;
     }
 
     /**

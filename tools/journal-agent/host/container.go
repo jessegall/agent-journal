@@ -1,19 +1,45 @@
 package host
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
 	"os/exec"
+	"path"
+	"slices"
 	"strconv"
 	"strings"
 )
 
-// ContainerMount mirrors App\Agents\Support\ManifestMount: the one host folder a container sees.
+// MountType is what a container mount takes its files from: a folder of this machine (the local arrangement), a named
+// volume of the agent daemon, or a folder under /srv/journal on the agent daemon (doc 61, decision 6).
+type MountType string
+
+const (
+	// MountBind is a folder of the machine the host runs on, the one mount of a local helper.
+	MountBind MountType = "bind"
+	// MountVolume is a named volume of the agent daemon, its name opening with the installation name.
+	MountVolume MountType = "volume"
+	// MountDaemonBind is a folder under /srv/journal/ on the agent daemon, such as an account's folder.
+	MountDaemonBind MountType = "daemon-bind"
+)
+
+// daemonBindRoot is the one folder of the agent daemon a daemon-bind mount may come from.
+const daemonBindRoot = "/srv/journal/"
+
+// containedTargets are the folders a contained container may have mounted, each at most once.
+var containedTargets = []string{"/workspace", "/home/journal/.account", "/home/journal/.account/projects"}
+
+// maxContainedMounts is the most mounts a contained container has: its workspace, its account and its projects.
+const maxContainedMounts = 3
+
+// ContainerMount mirrors App\Agents\Support\ManifestMount: one folder a container sees, and where it comes from.
 type ContainerMount struct {
-	Source   string `json:"source"`
-	Target   string `json:"target"`
-	Writable bool   `json:"writable"`
+	Type     MountType `json:"type"`
+	Source   string    `json:"source"`
+	Target   string    `json:"target"`
+	Writable bool      `json:"writable"`
 }
 
 // ContainerBudgets mirrors App\Agents\Support\ExecutionBudgets: the bounds a container runs under.
@@ -24,6 +50,14 @@ type ContainerBudgets struct {
 	Processes       int `json:"processes"`
 	OpenFiles       int `json:"openFiles"`
 	TmpBytes        int `json:"tmpBytes"`
+	HomeBytes       int `json:"homeBytes"`
+}
+
+// SecurityOptions are the seccomp and AppArmor profiles a container runs under, each a profile path or name, both
+// optional.
+type SecurityOptions struct {
+	Seccomp  string `json:"seccomp"`
+	AppArmor string `json:"apparmor"`
 }
 
 // ContainerManifest mirrors App\Agents\Support\ContainerManifest, which the journal already validated: the host
@@ -40,10 +74,27 @@ type ContainerManifest struct {
 	Mounts          []ContainerMount `json:"mounts"`
 	PublishedPorts  []int            `json:"publishedPorts"`
 	Budgets         ContainerBudgets `json:"budgets"`
+	SecurityOptions SecurityOptions  `json:"securityOptions"`
+	// Attachable is a session's own terminal process, such as the main agent's program: it gets a tty and an open
+	// stdin, and the host attaches to it, again after a restart. Helpers are not attachable.
+	Attachable bool `json:"attachable"`
 }
 
-// containerTmpfs mirrors ContainerManifest::TMPFS: the folders a helper writes to, with their size in bytes.
-var containerTmpfs = map[string]int{"/tmp": 256 << 20, "/run/journal": 16 << 20, "/home/journal": 64 << 20}
+// ContainerRules are what decides what a manifest may ask for: the host's arrangement and, when contained, the
+// installation name every volume of its containers opens with and the one agent image its containers run.
+type ContainerRules struct {
+	Arrangement      Arrangement
+	InstallationName InstallationName
+	AgentImage       string
+}
+
+// The tmpfs folders a helper writes to, and the sizes they keep when the budgets name none, mirroring
+// ContainerManifest::TMPFS.
+const (
+	defaultTmpBytes  = 256 << 20
+	runJournalBytes  = 16 << 20
+	defaultHomeBytes = 64 << 20
+)
 
 var (
 	// ErrContainerTransportUnsupported refuses a required-container start on a saved account: no account transport
@@ -61,19 +112,23 @@ func RequireContainerTransport(arrangement string) error {
 }
 
 // IsSafe is whether the manifest may start a container: unprivileged, with no capabilities or published ports, an
-// exact image digest, one workspace mount and a named user.
-func (manifest ContainerManifest) IsSafe() bool {
+// exact image digest, a named user, security profiles that are one value each, and only the mounts the rules allow.
+func (manifest ContainerManifest) IsSafe(rules ContainerRules) bool {
 	isConfined := !manifest.Privileged && len(manifest.Capabilities) == 0 && len(manifest.PublishedPorts) == 0
-	return isConfined && strings.Contains(manifest.Image, "@sha256:") && len(manifest.Mounts) == 1 && manifest.User != ""
+	isPinned := strings.Contains(manifest.Image, "@sha256:") && manifest.User != ""
+
+	return isConfined && isPinned && rules.permitsImage(manifest.Image) && manifest.SecurityOptions.isPlain() &&
+		rules.permit(manifest.Mounts)
 }
 
 // DockerCreateArguments are the arguments of `docker create` for the manifest: its exact image digest, the
-// unprivileged user, a read-only root, no capabilities, one workspace mount, the bounded resources and the labels
-// that let reconciliation find it again.
-func (manifest ContainerManifest) DockerCreateArguments(name string, labels LaunchLabels) ([]string, error) {
-	if !manifest.IsSafe() {
+// unprivileged user, a read-only root, no capabilities, its mounts, its security profiles, the bounded resources and
+// the labels that let reconciliation find it again.
+func (manifest ContainerManifest) DockerCreateArguments(name string, labels LaunchLabels, rules ContainerRules) ([]string, error) {
+	if !manifest.IsSafe(rules) {
 		return nil, ErrManifestUnsafe
 	}
+
 	arguments := []string{
 		"create", "--name", name, "--user", manifest.User, "--workdir", manifest.Workdir,
 		"--cap-drop", "ALL", "--network", manifest.Network,
@@ -87,23 +142,154 @@ func (manifest ContainerManifest) DockerCreateArguments(name string, labels Laun
 	if manifest.ReadOnlyRoot {
 		arguments = append(arguments, "--read-only")
 	}
+
 	if manifest.NoNewPrivileges {
 		arguments = append(arguments, "--security-opt", "no-new-privileges")
 	}
-	for folder, size := range containerTmpfs {
-		arguments = append(arguments, "--tmpfs", folder+":size="+strconv.Itoa(size))
+
+	if manifest.Attachable {
+		arguments = append(arguments, "--interactive", "--tty")
 	}
-	mount := manifest.Mounts[0]
-	volume := "type=bind,source=" + mount.Source + ",target=" + mount.Target + ",bind-propagation=rprivate"
-	if !mount.Writable {
-		volume += ",readonly"
+
+	arguments = append(arguments, manifest.SecurityOptions.arguments()...)
+	arguments = append(arguments, manifest.Budgets.tmpfsArguments()...)
+	for _, mount := range manifest.Mounts {
+		arguments = append(arguments, "--mount", mount.argument())
 	}
-	return append(arguments, "--mount", volume, manifest.Image), nil
+
+	return append(arguments, manifest.Image), nil
 }
 
-// Containers runs the Docker commands of a required-container start.
+// permitsImage is whether the image is one a container may run here: on a contained host only the pinned agent image.
+func (rules ContainerRules) permitsImage(image string) bool {
+	return !rules.Arrangement.IsContained() || image == rules.AgentImage
+}
+
+// permit is whether the mounts fit the arrangement: a local helper has exactly one folder of this machine; a
+// contained one has one to three mounts of the agent daemon, each on its own allowed folder.
+func (rules ContainerRules) permit(mounts []ContainerMount) bool {
+	if !rules.Arrangement.IsContained() {
+		return len(mounts) == 1 && mounts[0].Type == MountBind
+	}
+
+	if len(mounts) == 0 || len(mounts) > maxContainedMounts {
+		return false
+	}
+
+	seen := map[string]bool{}
+	for _, mount := range mounts {
+		if seen[mount.Target] || !slices.Contains(containedTargets, mount.Target) || !rules.permitsSource(mount) {
+			return false
+		}
+
+		seen[mount.Target] = true
+	}
+
+	return true
+}
+
+// permitsSource is whether a contained mount comes from where it may: a volume of this installation, or a clean
+// folder under /srv/journal/ on the agent daemon; never a folder of the server itself.
+func (rules ContainerRules) permitsSource(mount ContainerMount) bool {
+	switch mount.Type {
+	case MountVolume:
+		return rules.InstallationName != "" && strings.HasPrefix(mount.Source, string(rules.InstallationName)+"-") &&
+			!strings.ContainsAny(mount.Source, "/,\n")
+	case MountDaemonBind:
+		return path.Clean(mount.Source) == mount.Source && strings.HasPrefix(mount.Source, daemonBindRoot) &&
+			!strings.Contains(mount.Source, "..") && !strings.ContainsAny(mount.Source, ",\n")
+	}
+
+	return false
+}
+
+// argument is the mount as `docker create --mount` reads it, read-only unless it is writable.
+func (mount ContainerMount) argument() string {
+	argument := "type=bind,source=" + mount.Source + ",target=" + mount.Target + ",bind-propagation=rprivate"
+	if mount.Type == MountVolume {
+		argument = "type=volume,source=" + mount.Source + ",target=" + mount.Target
+	}
+
+	if !mount.Writable {
+		argument += ",readonly"
+	}
+
+	return argument
+}
+
+// isPlain is whether each profile is one value, since a comma or a newline would smuggle in another option.
+func (options SecurityOptions) isPlain() bool {
+	return !strings.ContainsAny(options.Seccomp+options.AppArmor, ",\n")
+}
+
+// arguments are the --security-opt arguments of the profiles that are set.
+func (options SecurityOptions) arguments() []string {
+	var arguments []string
+	if options.Seccomp != "" {
+		arguments = append(arguments, "--security-opt", "seccomp="+options.Seccomp)
+	}
+
+	if options.AppArmor != "" {
+		arguments = append(arguments, "--security-opt", "apparmor="+options.AppArmor)
+	}
+
+	return arguments
+}
+
+// tmpfsArguments are the --tmpfs arguments in a fixed order, sized from the budgets, or from the old sizes when the
+// budgets name none.
+func (budgets ContainerBudgets) tmpfsArguments() []string {
+	sizes := []struct {
+		folder string
+		bytes  int
+	}{
+		{"/tmp", cmp.Or(budgets.TmpBytes, defaultTmpBytes)},
+		{"/run/journal", runJournalBytes},
+		{"/home/journal", cmp.Or(budgets.HomeBytes, defaultHomeBytes)},
+	}
+
+	var arguments []string
+	for _, size := range sizes {
+		arguments = append(arguments, "--tmpfs", size.folder+":size="+strconv.Itoa(size.bytes))
+	}
+
+	return arguments
+}
+
+// Containers runs the Docker commands of a required-container start, under the container rules of the host; on a
+// contained host every command goes to the agent daemon at Host.
 type Containers struct {
 	Docker string
+	Host   string
+	Rules  ContainerRules
+}
+
+// command is a Docker command, sent to the agent daemon when the host names one.
+func (containers Containers) command(ctx context.Context, arguments ...string) *exec.Cmd {
+	if containers.Host != "" {
+		arguments = append([]string{"--host", containers.Host}, arguments...)
+	}
+
+	return exec.CommandContext(ctx, containers.Docker, arguments...)
+}
+
+// AssertImagePinned refuses an image the agent daemon lacks or holds under another digest than the reference names;
+// a reference matches the image's id or one of its repository digests.
+func (containers Containers) AssertImagePinned(ctx context.Context, reference string) error {
+	output, err := containers.command(ctx, "image", "inspect", "--format",
+		`{{.Id}} {{join .RepoDigests " "}}`, reference).Output()
+	if err != nil {
+		return fmt.Errorf("%w: the image %s is not loaded into the agent daemon", ErrInstallationChanged, reference)
+	}
+
+	digests := strings.Fields(string(output))
+	_, wanted, _ := strings.Cut(reference, "@")
+	if slices.Contains(digests, reference) || (wanted != "" && digests[0] == wanted) || digests[0] == reference {
+		return nil
+	}
+
+	return fmt.Errorf("%w: %s names %s, but the agent daemon holds %s", ErrInstallationChanged, reference,
+		cmp.Or(wanted, reference), digests[0])
 }
 
 // Create creates the container from the manifest and answers its id.
@@ -113,23 +299,29 @@ func (containers Containers) Create(
 	name string,
 	labels LaunchLabels,
 ) (string, error) {
-	arguments, err := manifest.DockerCreateArguments(name, labels)
+	arguments, err := manifest.DockerCreateArguments(name, labels, containers.Rules)
 	if err != nil {
 		return "", err
 	}
-	output, err := exec.CommandContext(ctx, containers.Docker, arguments...).Output()
+	output, err := containers.command(ctx, arguments...).Output()
 	return strings.TrimSpace(string(output)), err
+}
+
+// Attach is the command that attaches to an attachable container's terminal, for the host's pty to run as it runs a
+// local program; ending the attach leaves the container running, since no signal is passed on to it.
+func (containers Containers) Attach(ctx context.Context, name string) *exec.Cmd {
+	return containers.command(ctx, "attach", "--sig-proxy=false", name)
 }
 
 // Start starts a created container.
 func (containers Containers) Start(ctx context.Context, id string) error {
-	return exec.CommandContext(ctx, containers.Docker, "start", id).Run()
+	return containers.command(ctx, "start", id).Run()
 }
 
 // IsRunning answers whether the container runs, as docker inspect reports it; a failed inspect is an error, never
 // an answer.
 func (containers Containers) IsRunning(ctx context.Context, id string) (bool, error) {
-	output, err := exec.CommandContext(ctx, containers.Docker, "inspect", "--format", "{{.State.Running}}", id).Output()
+	output, err := containers.command(ctx, "inspect", "--format", "{{.State.Running}}", id).Output()
 	if err != nil {
 		return false, err
 	}
@@ -138,7 +330,7 @@ func (containers Containers) IsRunning(ctx context.Context, id string) (bool, er
 
 // Stop stops the container within the bound and answers only once inspect shows it stopped.
 func (containers Containers) Stop(ctx context.Context, id string, seconds int) error {
-	if err := exec.CommandContext(ctx, containers.Docker, "stop", "--time", strconv.Itoa(seconds), id).Run(); err != nil {
+	if err := containers.command(ctx, "stop", "--time", strconv.Itoa(seconds), id).Run(); err != nil {
 		return err
 	}
 	running, err := containers.IsRunning(ctx, id)

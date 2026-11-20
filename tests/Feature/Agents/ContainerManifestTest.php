@@ -24,7 +24,9 @@ use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
 use App\Agents\Support\ManifestMount;
+use App\Agents\Support\MountRules;
 use App\Agents\Support\PreparedStart;
+use App\Agents\Support\SecurityOptions;
 use App\Agents\Support\StartPolicy;
 use App\Agents\Support\StartRequest;
 use App\Bus\Contracts\CommandBus;
@@ -73,7 +75,7 @@ final class ContainerManifestTest extends TestCase
                 true,
                 [],
                 true,
-                'verified-default',
+                null,
                 false,
                 [],
                 'journal-start-1',
@@ -85,13 +87,13 @@ final class ContainerManifestTest extends TestCase
                 $manifest->readOnlyRoot,
                 $manifest->capabilities,
                 $manifest->noNewPrivileges,
-                $manifest->seccomp,
+                $manifest->securityOptions->seccomp,
                 $manifest->privileged,
                 $manifest->publishedPorts,
                 $manifest->network,
             ],
         );
-        $this->assertEquals([new ManifestMount('/workspaces/helper-7', '/workspace', true)], $manifest->mounts);
+        $this->assertEquals([ManifestMount::bind('/workspaces/helper-7', '/workspace', true)], $manifest->mounts);
         $this->assertSame(2, $manifest->budgets->cpuCores);
         $this->assertFalse(
             ContainerManifest::compile(
@@ -115,7 +117,7 @@ final class ContainerManifestTest extends TestCase
 
     public function test_a_parent_folder_a_credential_mount_a_mutable_tag_and_a_privileged_flag_are_refused(): void
     {
-        $workspace = [new ManifestMount('/workspaces/helper-7', '/workspace', true)];
+        $workspace = [ManifestMount::bind('/workspaces/helper-7', '/workspace', true)];
 
         $this->assertRefused(
             fn () => ContainerManifest::make(
@@ -125,9 +127,11 @@ final class ContainerManifestTest extends TestCase
                 [],
                 false,
                 'net',
-                [new ManifestMount('/workspaces/helper-7/..', '/workspace', true)],
+                [ManifestMount::bind('/workspaces/helper-7/..', '/workspace', true)],
                 [],
                 ExecutionBudgets::defaults(),
+                MountRules::local(),
+                SecurityOptions::none(),
             ),
         );
         $this->assertRefused(
@@ -138,9 +142,11 @@ final class ContainerManifestTest extends TestCase
                 [],
                 false,
                 'net',
-                [new ManifestMount('/Users/me/.claude', '/workspace', true)],
+                [ManifestMount::bind('/Users/me/.claude', '/workspace', true)],
                 [],
                 ExecutionBudgets::defaults(),
+                MountRules::local(),
+                SecurityOptions::none(),
             ),
         );
         $this->assertRefused(
@@ -151,9 +157,11 @@ final class ContainerManifestTest extends TestCase
                 [],
                 false,
                 'net',
-                [...$workspace, new ManifestMount('/var/run/docker.sock', '/var/run/docker.sock', true)],
+                [...$workspace, ManifestMount::bind('/var/run/docker.sock', '/var/run/docker.sock', true)],
                 [],
                 ExecutionBudgets::defaults(),
+                MountRules::local(),
+                SecurityOptions::none(),
             ),
         );
         $this->assertRefused(
@@ -167,6 +175,8 @@ final class ContainerManifestTest extends TestCase
                 $workspace,
                 [],
                 ExecutionBudgets::defaults(),
+                MountRules::local(),
+                SecurityOptions::none(),
             ),
         );
         $this->assertRefused(
@@ -180,6 +190,8 @@ final class ContainerManifestTest extends TestCase
                 $workspace,
                 [],
                 ExecutionBudgets::defaults(),
+                MountRules::local(),
+                SecurityOptions::none(),
             ),
         );
         $this->assertRefused(
@@ -193,6 +205,8 @@ final class ContainerManifestTest extends TestCase
                 $workspace,
                 [],
                 ExecutionBudgets::defaults(),
+                MountRules::local(),
+                SecurityOptions::none(),
             ),
         );
     }
@@ -245,6 +259,107 @@ final class ContainerManifestTest extends TestCase
 
         $this->assertThrows(fn () => $this->start($this->containerRequest()), CapacityUnavailable::class);
         $this->assertSame(1, CapacityReservation::query()->count());
+    }
+
+    public function test_a_contained_manifest_takes_its_volumes_account_and_profiles_and_goes_on_the_wire(): void
+    {
+        $manifest = $this->contained($this->containedMounts(), SecurityOptions::make(
+            '/etc/journal/profiles/seccomp.json',
+            'journal-agent',
+            '/etc/journal/profiles',
+        ));
+        $wire = json_decode((string) json_encode($manifest), true);
+
+        $this->assertSame(
+            [
+                ['type' => 'volume', 'source' => 'acme-workspace-s1', 'target' => '/workspace', 'writable' => false],
+                [
+                    'type' => 'daemon-bind',
+                    'source' => '/srv/journal/accounts/a1',
+                    'target' => '/home/journal/.account',
+                    'writable' => true,
+                ],
+                [
+                    'type' => 'volume',
+                    'source' => 'acme-history-s1',
+                    'target' => '/home/journal/.account/projects',
+                    'writable' => true,
+                ],
+            ],
+            $wire['mounts'],
+        );
+        $this->assertSame(
+            ['seccomp' => '/etc/journal/profiles/seccomp.json', 'apparmor' => 'journal-agent'],
+            $wire['securityOptions'],
+        );
+        $this->assertSame(ExecutionBudgets::DEFAULT_HOME_BYTES, $wire['budgets']['homeBytes']);
+    }
+
+    public function test_a_local_manifest_goes_on_the_wire_as_before_with_its_bind_type(): void
+    {
+        $manifest = ContainerManifest::compile(
+            $this->prepared(),
+            ProfileBase::writingHelper()->defaultAccess(),
+            $this->policy(),
+            'journal-start-1',
+        );
+
+        $this->assertSame(
+            ['type' => 'bind', 'source' => '/workspaces/helper-7', 'target' => '/workspace', 'writable' => true],
+            json_decode((string) json_encode($manifest), true)['mounts'][0],
+        );
+    }
+
+    public function test_a_contained_manifest_asking_for_another_mount_is_refused(): void
+    {
+        [$workspace, $account, $history] = $this->containedMounts();
+
+        foreach ([
+            [$workspace, ManifestMount::bind('/home/server/work', '/home/journal/.account', true)],
+            [$workspace, ManifestMount::volume('other-workspace-s1', '/home/journal/.account', true)],
+            [$workspace, $account, $history, ManifestMount::volume('acme-x-s1', '/workspace', true)],
+            [$workspace, ManifestMount::daemonBind('/srv/journal/accounts/a2', '/home/journal/.account', true)],
+            [$workspace, ManifestMount::daemonBind('/srv/journal/accounts', '/home/journal/.account', true)],
+            [$workspace, ManifestMount::daemonBind('/srv/journal/../etc', '/home/journal/.account', true)],
+            [$workspace, ManifestMount::volume('acme-history-s1', '/etc', true)],
+        ] as $mounts) {
+            $this->assertRefused(fn () => $this->contained($mounts, SecurityOptions::none()));
+        }
+
+        $this->assertRefused(fn () => SecurityOptions::make('unconfined,apparmor=unconfined', null, ''));
+        $this->assertRefused(fn () => SecurityOptions::make('/tmp/seccomp.json', null, '/etc/journal/profiles'));
+    }
+
+    /**
+     * @return list<ManifestMount>
+     */
+    private function containedMounts(): array
+    {
+        return [
+            ManifestMount::volume('acme-workspace-s1', '/workspace', false),
+            ManifestMount::daemonBind('/srv/journal/accounts/a1', '/home/journal/.account', true),
+            ManifestMount::volume('acme-history-s1', '/home/journal/.account/projects', true),
+        ];
+    }
+
+    /**
+     * @param  list<ManifestMount>  $mounts
+     */
+    private function contained(array $mounts, SecurityOptions $securityOptions): ContainerManifest
+    {
+        return ContainerManifest::make(
+            self::IMAGE,
+            '10001:10001',
+            true,
+            [],
+            false,
+            'acme-s1',
+            $mounts,
+            [],
+            ExecutionBudgets::defaults(),
+            MountRules::contained('acme', '/srv/journal/accounts/a1'),
+            $securityOptions,
+        );
     }
 
     private function assertRefused(\Closure $make): void
