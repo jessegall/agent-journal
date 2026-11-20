@@ -79,3 +79,31 @@ function configurationFor(string $root, array $paths): string
 
     return $path;
 }
+
+/**
+ * Drops a run's own database and the copies a parallel run made of it, when the run was given one to drop; the
+ * shared test databases are never dropped.
+ */
+function dropRunDatabase(string $root): void
+{
+    $database = (string) getenv('DB_DATABASE');
+    $isRunDatabase = preg_match('/^journal_hooks_test_wt_[a-z0-9]+$/', $database) === 1;
+
+    if (getenv('JOURNAL_DROP_RUN_DATABASE') !== '1' || ! $isRunDatabase) {
+        return;
+    }
+
+    $settings = Dotenv\Dotenv::parse((string) file_get_contents("{$root}/.env"));
+    $server = new PDO(
+        sprintf('pgsql:host=%s;port=%s;dbname=postgres', $settings['DB_HOST'], $settings['DB_PORT']),
+        $settings['DB_USERNAME'],
+        $settings['DB_PASSWORD'],
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
+    );
+    $names = $server->prepare('select datname from pg_database where datname = ? or datname ~ ?');
+    $names->execute([$database, sprintf('^%s_test_[0-9]+$', $database)]);
+
+    foreach ($names->fetchAll(PDO::FETCH_COLUMN) as $name) {
+        $server->exec(sprintf('drop database if exists "%s" with (force)', $name));
+    }
+}

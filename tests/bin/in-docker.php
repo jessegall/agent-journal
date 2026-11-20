@@ -44,8 +44,9 @@ $process = proc_open($command, [STDIN, STDOUT, STDERR], $pipes, $checkout);
 exit(is_resource($process) ? proc_close($process) : 1);
 
 /**
- * A worktree's tests run on a database named after its folder, journal_hooks_test_wt_<folder in a-z0-9>, so a
- * worker's or a checkpoint's run never shares a database with another suite; the main checkout keeps the default.
+ * Each run in a worktree gets a database of its own, journal_hooks_test_wt_<folder>r<run>, so two runs of one
+ * worktree, such as two checkpoints, never share rows; the run drops it and its parallel copies when it ends. The main
+ * checkout keeps the default.
  *
  * @return list<string>
  */
@@ -55,9 +56,10 @@ function worktreeDatabase(string $checkout, int|false $worktreeAt): array
         return [];
     }
 
-    $folder = preg_replace('/[^a-z0-9]/', '', strtolower(basename($checkout)));
+    $folder = substr((string) preg_replace('/[^a-z0-9]/', '', strtolower(basename($checkout))), 0, 20);
+    $database = sprintf('journal_hooks_test_wt_%sr%s', $folder, bin2hex(random_bytes(4)));
 
-    return ['-e', 'DB_DATABASE=journal_hooks_test_wt_'.$folder];
+    return ['-e', 'DB_DATABASE='.$database, '-e', 'JOURNAL_DROP_RUN_DATABASE=1'];
 }
 
 /**
