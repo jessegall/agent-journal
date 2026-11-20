@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
+use App\Agents\Models\AgentSession;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\RequestSource;
-use App\Agents\Models\MessageSelection;
 use App\Communication\Models\Message;
 use App\Records\Support\RecordIdentity;
 
@@ -21,7 +21,7 @@ final readonly class SelectedMessages implements RequestSource
             return null;
         }
 
-        $messageId = MessageSelection::messageFor($this->session->sessionId());
+        $messageId = AgentSession::selectedMessage($this->session->sessionId());
 
         if ($messageId === null || ! Message::query()->whereKey($messageId)->exists()) {
             return null;

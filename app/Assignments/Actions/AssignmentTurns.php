@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\Assignments\Actions;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\AutoAssignmentTrigger;
 use App\Assignments\Contracts\MaintenanceAdmission;
-use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AutoAssignmentBudget;
 use App\Assignments\Support\AutoAssignmentFact;
@@ -35,7 +31,6 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
     private const int CLAIM_LIMIT = 5;
 
     public function __construct(
-        private CurrentActor $actors,
         private MaintenanceAdmission $maintenance,
         private AutoAssignmentResolver $assignments,
         private AutoAssignmentAvailability $availability,
@@ -50,13 +45,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
 
     public function consider(AutoAssignmentBudget $budget): AutoAssignmentRun
     {
-        $actor = $this->actors->actor();
-
-        if ($actor->type !== ActorType::Engine) {
-            throw AssignmentDenied::forCaller(ActorIdentity::of($actor));
-        }
-
-        $this->maintenance->assertMaintenanceGranted(AssignRecord::MAINTENANCE_SCOPE);
+        $this->maintenance->assertMaintenanceGranted(AssignRecordForMaintenance::FILL_SCOPE);
         $stop = $this->stopTimes->at($budget->stopNanoseconds);
 
         if ($stop->remainingMilliseconds() <= 0 || $budget->isEmpty()) {

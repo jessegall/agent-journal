@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
+use App\Agents\Models\AgentSession;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\StartSessions;
 use App\Agents\Contracts\RequestSource;
 use App\Agents\Models\Agent;
-use App\Agents\Models\JobMessageSource;
-use App\Agents\Models\MessageSelection;
 use App\Communication\Commands\ReplyToMessage;
 use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Enums\AgentInboxState;
@@ -37,7 +36,7 @@ final class AgentInboxTest extends TestCase
     private const array TABLES = [
         'agents', 'agent_sessions', 'start_tokens', 'agent_stacks',
         'desks', 'desk_seats', 'desk_preferences', 'inboxes', 'assignments',
-        'command_receipts', 'messages', 'message_attentions', 'chat_selections', 'chat_job_sources',
+        'command_receipts', 'messages', 'message_attentions',
     ];
 
     public function test_the_message_schema_preserves_the_envelope_and_records_session_requests(): void
@@ -46,8 +45,8 @@ final class AgentInboxTest extends TestCase
             'sender_type', 'sender_id', 'destination_inbox_id', 'reply_to_id',
             'answer_message_id', 'dismissal_reason', 'is_question', 'state_version', 'conversation_id',
         ]));
-        $this->assertTrue(Schema::hasColumns('chat_selections', ['session_id', 'message_id', 'selected_at']));
-        $this->assertTrue(Schema::hasColumns('chat_job_sources', ['session_id', 'message_id', 'captured_at']));
+        $this->assertTrue(Schema::hasColumn('agent_sessions', 'selected_message_id'));
+        $this->assertTrue(Schema::hasColumn('agent_sessions', 'job_source_message_id'));
     }
 
     public function test_the_inbox_and_overview_count_only_messages_addressed_to_the_caller(): void
@@ -70,7 +69,7 @@ final class AgentInboxTest extends TestCase
         $this->callMcpTool($caller, 'overview_read')
             ->assertJsonPath('result.structuredContent.sections.messages.counts.unread', 1)
             ->assertJsonPath('result.structuredContent.sections.messages.counts.pending', 1);
-        $this->assertNull(MessageSelection::messageFor($caller->session->id));
+        $this->assertNull(AgentSession::selectedMessage($caller->session->id));
         $this->assertNull($mine->refresh()->read_at);
     }
 
@@ -94,7 +93,7 @@ final class AgentInboxTest extends TestCase
         $ancestor = $reader->context($replyId, $reply->continuation);
 
         $this->assertSame($question->id, $ancestor->message->id);
-        $this->assertNull(MessageSelection::messageFor($caller->session->id));
+        $this->assertNull(AgentSession::selectedMessage($caller->session->id));
     }
 
     public function test_a_launch_keeps_the_source_it_captured_when_the_parent_selects_another_message(): void
@@ -104,7 +103,7 @@ final class AgentInboxTest extends TestCase
         $first = $this->askInboxOf($actor, 'The launch source.');
         $second = $this->askInboxOf($actor, 'An unrelated next request.');
         $parent->startRequest($this->app);
-        MessageSelection::select($parent->session->id, $first->id);
+        AgentSession::selectMessage($parent->session->id, $first->id);
         $source = $this->app->make(RequestSource::class)->selectedSource();
         $child = Agent::named('Child', 'writing-helper');
         $started = $this->app->make(StartSessions::class)->start(
@@ -114,9 +113,9 @@ final class AgentInboxTest extends TestCase
             $parent->session,
             authorizedSource: $source,
         );
-        MessageSelection::select($parent->session->id, $second->id);
+        AgentSession::selectMessage($parent->session->id, $second->id);
 
-        $this->assertSame($first->id, JobMessageSource::messageFor($started->session->id));
+        $this->assertSame($first->id, AgentSession::jobSourceMessage($started->session->id));
 
         $this->startRequestAs($child->id, $started->session->id);
         $reader = $this->app->make(AgentMessageReader::class);

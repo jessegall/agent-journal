@@ -17,6 +17,18 @@ final readonly class CommunicationCalls
 {
     public function __construct(private CallSender $sender) {}
 
+    public function answerMessage(
+        string $messageId,
+        string $replyId,
+        CallKey $requestKey = new CallKey(),
+    ): MessageNamed {
+        return $this->sender->send(AnswerMessageCall::from([
+            'messageId' => $messageId,
+            'replyId' => $replyId,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
     public function askMessage(
         NewMessage $message,
         CallKey $requestKey = new CallKey(),
@@ -24,6 +36,18 @@ final readonly class CommunicationCalls
         return $this->sender->send(AskMessageCall::from([
             'message' => $message,
             'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function askQuestion(
+        string $body,
+        CallKey $requestKey = new CallKey(),
+        QuestionRecord|null $relatedRecord = null,
+    ): MessageNamed {
+        return $this->sender->send(AskQuestionCall::from([
+            'body' => $body,
+            'requestKey' => $requestKey,
+            'relatedRecord' => $relatedRecord,
         ]));
     }
 
@@ -112,15 +136,15 @@ final readonly class CommunicationCalls
 
     public function replyToMessage(
         string $messageId,
-        int $expectedStateVersion,
         string $body,
         CallKey $requestKey = new CallKey(),
+        int|null $expectedStateVersion = null,
     ): MessageNamed {
         return $this->sender->send(ReplyToMessageCall::from([
             'messageId' => $messageId,
-            'expectedStateVersion' => $expectedStateVersion,
             'body' => $body,
             'requestKey' => $requestKey,
+            'expectedStateVersion' => $expectedStateVersion,
         ]));
     }
 
@@ -129,6 +153,16 @@ final readonly class CommunicationCalls
         CallKey $requestKey = new CallKey(),
     ): MessageNamed {
         return $this->sender->send(RequireMessageAnswerCall::from([
+            'messageId' => $messageId,
+            'requestKey' => $requestKey,
+        ]));
+    }
+
+    public function selectMessage(
+        string $messageId,
+        CallKey $requestKey = new CallKey(),
+    ): MessageNamed {
+        return $this->sender->send(SelectMessageCall::from([
             'messageId' => $messageId,
             'requestKey' => $requestKey,
         ]));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Mcp\Contracts\JobPermissionReader as JobPermissionReaderContract;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Values\Operation;
@@ -17,7 +18,7 @@ use App\Mcp\Tools\JournalTool;
 use App\Profiles\Values\StartProfileAuthority;
 use ReflectionClass;
 
-final readonly class JobPermissionReader
+final readonly class JobPermissionReader implements JobPermissionReaderContract
 {
     public function __construct(
         private CurrentActor $actors,

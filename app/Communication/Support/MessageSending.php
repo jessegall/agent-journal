@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
@@ -61,8 +60,12 @@ final readonly class MessageSending
         )->id;
     }
 
-    public function question(string $sourceInboxId, string $destinationInboxId, string $body, ActorContext $actor): Message
-    {
+    public function question(
+        string $sourceInboxId,
+        string $destinationInboxId,
+        string $body,
+        ActorContext $actor,
+    ): Message {
         return $this->deliver(
             $sourceInboxId,
             $destinationInboxId,
@@ -110,7 +113,7 @@ final readonly class MessageSending
         $source = $this->inboxes->resolve($sourceInboxId);
         $destination = $this->inboxes->resolve($destinationInboxId);
         $this->lockShared([$source, $destination]);
-        $this->requireSource($source, $author);
+        $this->assertSourceAccess($source, $author);
         $message = Message::record(
             $envelope($source, $destination, ActorIdentity::of($author)),
             new AcceptedOperation($this->accepted->requireFor(self::class)),
@@ -127,9 +130,9 @@ final readonly class MessageSending
         return $message;
     }
 
-    private function requireSource(Inbox $source, ActorContext $author): void
+    private function assertSourceAccess(Inbox $source, ActorContext $author): void
     {
-        if ($author->type === ActorType::System
+        if (ActorIdentity::of($author)->isSameAs(ActorIdentity::system())
             && $source->inboxId() === $this->inboxes->named(InboxNotices::SYSTEM_INBOX)->inboxId()) {
             return;
         }

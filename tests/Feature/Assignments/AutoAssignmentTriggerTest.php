@@ -7,7 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\TrustedEntryAuthority;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Commands\ClaimAutoAssignment;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentProviders;
@@ -43,7 +43,7 @@ final class AutoAssignmentTriggerTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(new EngineActor(), new TrustedEntryAuthority('engine pass'));
-        $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecord::MAINTENANCE_SCOPE);
+        $this->app->make(EngineAccess::class)->grantMaintenance(AssignRecordForMaintenance::FILL_SCOPE);
         $stop = $this->createStub(StopTime::class);
         $stop->method('remainingMilliseconds')->willReturn(100);
         $this->mock(StopTimes::class)->shouldReceive('at')->andReturn($stop);

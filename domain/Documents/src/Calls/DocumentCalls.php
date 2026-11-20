@@ -26,13 +26,25 @@ final readonly class DocumentCalls
     public function closeDocument(
         string $number,
         string $token,
-        int $version,
         CallKey $requestKey = new CallKey(),
+        int|null $version = null,
     ): DraftClosed {
         return $this->sender->send(CloseDocumentCall::from([
             'number' => $number,
             'token' => $token,
+            'requestKey' => $requestKey,
             'version' => $version,
+        ]));
+    }
+
+    public function documentComment(
+        string $documentId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+    ): RecordCommented {
+        return $this->sender->send(DocumentCommentCall::from([
+            'documentId' => $documentId,
+            'body' => $body,
             'requestKey' => $requestKey,
         ]));
     }
@@ -49,6 +61,7 @@ final readonly class DocumentCalls
         string|null $title,
         string|null $abstract,
         CallKey $requestKey = new CallKey(),
+        string|null $uploadId = null,
     ): DraftHeld {
         return $this->sender->send(EditDocumentCall::from([
             'number' => $number,
@@ -62,6 +75,7 @@ final readonly class DocumentCalls
             'title' => $title,
             'abstract' => $abstract,
             'requestKey' => $requestKey,
+            'uploadId' => $uploadId,
         ]));
     }
 
@@ -135,16 +149,18 @@ final readonly class DocumentCalls
     public function makeDocument(
         string $title,
         string $abstract,
-        string $body,
         array $about,
         CallKey $requestKey = new CallKey(),
+        string|null $body = null,
+        string|null $uploadId = null,
     ): RecordFiled {
         return $this->sender->send(MakeDocumentCall::from([
             'title' => $title,
             'abstract' => $abstract,
-            'body' => $body,
             'about' => $about,
             'requestKey' => $requestKey,
+            'body' => $body,
+            'uploadId' => $uploadId,
         ]));
     }
 
@@ -154,25 +170,41 @@ final readonly class DocumentCalls
     public function makeReport(
         string $title,
         string $abstract,
-        string $body,
         array $about,
         CallKey $requestKey = new CallKey(),
+        string|null $body = null,
+        string|null $uploadId = null,
     ): RecordFiled {
         return $this->sender->send(MakeReportCall::from([
             'title' => $title,
             'abstract' => $abstract,
-            'body' => $body,
             'about' => $about,
             'requestKey' => $requestKey,
+            'body' => $body,
+            'uploadId' => $uploadId,
         ]));
     }
 
     public function openDocument(
         string $number,
         CallKey $requestKey = new CallKey(),
+        int|null $expectedRevision = null,
     ): DraftHeld {
         return $this->sender->send(OpenDocumentCall::from([
             'number' => $number,
+            'requestKey' => $requestKey,
+            'expectedRevision' => $expectedRevision,
+        ]));
+    }
+
+    public function reportComment(
+        string $reportId,
+        string $body,
+        CallKey $requestKey = new CallKey(),
+    ): RecordCommented {
+        return $this->sender->send(ReportCommentCall::from([
+            'reportId' => $reportId,
+            'body' => $body,
             'requestKey' => $requestKey,
         ]));
     }

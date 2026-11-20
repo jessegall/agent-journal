@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Bus\Providers;
 
+use App\Bus\Contracts\RequestKey as RequestKeyContract;
+use App\Bus\Support\RequestKey;
 use App\Bus\Console\PruneReceiptsCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandStops as CommandStopsContract;
@@ -43,6 +45,7 @@ final class CommandBusServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->alias(RequestKey::class, RequestKeyContract::class);
         $this->app->bind(OperationResolver::class, CallerOperations::class);
         $this->app->bind(RefusalMapperContract::class, RefusalMapper::class);
         $this->app->scoped(AcceptedReceipt::class);

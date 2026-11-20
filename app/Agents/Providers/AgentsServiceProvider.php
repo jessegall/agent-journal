@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Agents\Providers;
 
+use App\Agents\Contracts\ReadGrant as ReadGrantContract;
+use App\Agents\Support\ReadGrant;
 use App\Actors\Contracts\ActorAttention;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
@@ -123,6 +125,7 @@ final class AgentsServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(ReadGrantContract::class, ReadGrant::class);
         $this->app->bind(AgentResolver::class, AgentLabels::class);
         $this->app->scoped(RequestSession::class, static fn (Container $app) => new RequestSession(
             static fn (): Option => $app->resolved(AgentContext::class)

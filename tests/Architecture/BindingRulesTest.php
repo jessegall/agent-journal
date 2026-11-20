@@ -57,7 +57,7 @@ final class BindingRulesTest extends TestCase
 
     /**
      * The files that compose the application and may register assignable record types and actor types: the contract,
-     * the registry, Core's list, the providers of Core's assignment and agent areas, and the domain foundation.
+     * the registry, Core's composition root and export list, its area providers, and the domain foundation.
      */
     private const array ASSIGNMENT_REGISTRATION_SITES = [
         'app/Assignments/Contracts/AssignmentRegistration.php',
@@ -66,6 +66,7 @@ final class BindingRulesTest extends TestCase
         'app/Agents/Providers/AgentsServiceProvider.php',
         'app/Desks/Providers/DesksServiceProvider.php',
         'app/Communication/Providers/CommunicationServiceProvider.php',
+        'app/Providers/CoreServiceProvider.php',
         'app/CoreApi.php',
         'app/Domains/Bootstrappers/RegisterAssignables.php',
     ];

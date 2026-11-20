@@ -6,15 +6,12 @@ namespace App\Assignments\Actions;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\AssignRecordForMaintenance;
 use App\Assignments\Contracts\AssigneeLocks;
 use App\Assignments\Contracts\AssignmentDestinationResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\MaintenanceAdmission;
 use App\Assignments\Enums\AssignmentAbility;
-use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Support\AdmittedAssignment;
 use App\Assignments\Support\AssigneeIdentity;
@@ -39,13 +36,7 @@ final readonly class AdmitPublicAssignments
     public function admitPublic(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
     {
         $this->providers->assertPublic($record->type);
-        $actor = $this->actors->actor();
-
-        if ($actor->type === ActorType::Engine) {
-            throw AssignmentDenied::forCaller(ActorIdentity::of($actor));
-        }
-
-        $caller = AssigneeIdentity::of($actor);
+        $caller = AssigneeIdentity::of($this->actors->actor());
         $ability = AssignmentAbility::forRecipient($caller, $requested);
         $this->authorizer->authorize(AssignmentPolicy::class, $requested, $ability);
 
@@ -55,7 +46,7 @@ final readonly class AdmitPublicAssignments
     public function admitMaintenance(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
     {
         $this->providers->assertPublic($record->type);
-        $this->maintenance->assertMaintenanceGranted(AssignRecord::MAINTENANCE_SCOPE);
+        $this->maintenance->assertMaintenanceGranted(AssignRecordForMaintenance::FILL_SCOPE);
 
         return $this->resolve($record, $requested);
     }

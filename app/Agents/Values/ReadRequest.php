@@ -25,7 +25,7 @@ final readonly class ReadRequest
         public string $name,
         public ResourceAreaType $area = ResourceAreaType::JournalWork,
         public array $arguments = [],
-        private bool $discovery = false,
+        public bool $discovery = false,
     ) {}
 
     public static function forDiscovery(string $name, ResourceAreaType $area = ResourceAreaType::JournalWork): self

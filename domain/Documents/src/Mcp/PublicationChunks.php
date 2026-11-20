@@ -7,7 +7,7 @@ namespace Domain\Documents\Mcp;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\TextChunk;
 use App\Mcp\Support\ToolArguments;
 use App\Text\Support\MarkdownText;

@@ -16,6 +16,9 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\RuntimeIntent;
+use App\Agents\Support\StackTarget;
+use App\Contracts\StartTransaction;
+use App\Hooks\Actions\StartStacks;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
@@ -73,6 +76,13 @@ ActorContext::forAgent($this->agent->id),
             null,
         );
         $app->make(AgentRuntimes::class)->open($this->session, $intent, 'start-token');
+    }
+
+    public function openStack(Application $app): void
+    {
+        $target = new StackTarget($this->agent->id, $this->session->id);
+        $stacks = $app->make(StartStacks::class);
+        $app->make(StartTransaction::class)->runForSession($target->sessionId, fn () => $stacks->open($target));
     }
 
     /**

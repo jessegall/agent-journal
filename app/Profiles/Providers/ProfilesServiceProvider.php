@@ -16,6 +16,7 @@ use App\Agents\Contracts\StartProfileAdmission;
 use App\Autoload\Support\FolderClasses;
 use App\Hooks\Contracts\OperationPolicy;
 use App\Processes\Contracts\CommandPermissionResolver;
+use App\Profiles\Contracts\OperationNames;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AccountAbility;
@@ -34,6 +35,7 @@ use App\Profiles\Resolvers\ProfileRecords;
 use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ClaudeSignIn;
 use App\Profiles\Support\CodexSignIn;
+use App\Profiles\Support\ConfiguredOperations;
 use App\Profiles\Support\ProfileAuthorizerProvider;
 use App\Profiles\Support\ProfileOperationPolicy;
 use App\Profiles\Support\ProfilePermissionReader;
@@ -55,6 +57,7 @@ final class ProfilesServiceProvider extends ServiceProvider
     {
         $this->app->scoped(CommandPermissionResolver::class, ProfilePermissionReader::class);
         $this->app->scoped(OperationPolicy::class, ProfileOperationPolicy::class);
+        $this->app->bind(OperationNames::class, ConfiguredOperations::class);
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
         $this->app->bind(StartProfileAdmission::class, ProfileStartAdmission::class);

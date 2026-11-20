@@ -6,18 +6,17 @@ namespace App\Assignments\Actions;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentAuthorizer;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\Support\AssignmentBatch;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\JournalAssignmentWriter;
+use App\Assignments\Contracts\MaintenanceAssignmentWriter;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Exceptions\AssignmentConflict;
-use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Exceptions\AssignmentRootFinished;
 use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Storage\AssignmentStore;
@@ -40,7 +39,10 @@ use Closure;
  * owner under a key-share lock, then changes the one holding and raises the one committed fact. The caller is always
  * the actor of this request.
  */
-final readonly class WriteAssignments implements AssignmentWriter, JournalAssignmentWriter
+final readonly class WriteAssignments implements
+    AssignmentWriter,
+    JournalAssignmentWriter,
+    MaintenanceAssignmentWriter
 {
     public function __construct(
         private CurrentActor $actors,
@@ -57,11 +59,15 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
     public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
     {
         $this->transaction->assertOpen();
-        $admitted = $this->actors->actor()->type === ActorType::Engine
-            ? $this->admission->admitMaintenance($record, $recipient)
-            : $this->admission->admitPublic($record, $recipient);
 
-        return $this->assignAdmitted($admitted);
+        return $this->assignAdmitted($this->admission->admitPublic($record, $recipient));
+    }
+
+    public function assignForMaintenance(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
+    {
+        $this->transaction->assertOpen();
+
+        return $this->assignAdmitted($this->admission->admitMaintenance($record, $recipient));
     }
 
     public function assignForJournal(JournalAssignment $assignment): AssignmentResult
@@ -139,7 +145,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
     {
         $this->providers->assertPublic($record->type);
         $this->transaction->assertOpen();
-        $this->requireUnassign();
+        $this->assertMayUnassign();
         $this->providers->recordProvider($record->type)->requireAssignable($record);
 
         if ($this->store->lockCurrent($record)->isEmpty()) {
@@ -190,7 +196,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
     public function unassignUnfinished(AssignmentReference $expectedRoot, Closure $records): AssignmentResult
     {
         $this->transaction->assertOpen();
-        $this->requireUnassign();
+        $this->assertMayUnassign();
         [$group, $finished] = $this->checkedGroup($records);
         $this->store->lockExpected($group->root, $expectedRoot);
 
@@ -243,14 +249,8 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
     /**
      * Authorizes the caller for the write, then checks the recipient may hold work, before anything changes.
      */
-    private function requireUnassign(): void
+    private function assertMayUnassign(): void
     {
-        $caller = $this->actors->actor();
-
-        if ($caller->type === ActorType::Engine) {
-            throw AssignmentDenied::forCaller(ActorIdentity::of($caller));
-        }
-
         $this->authorizer->authorize(AssignmentPolicy::class, AssignmentPolicy::class, AssignmentAbility::Unassign);
     }
 

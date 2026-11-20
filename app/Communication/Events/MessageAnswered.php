@@ -13,7 +13,11 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 /**
  * A message was answered; raised once that has committed.
  */
-final readonly class MessageAnswered implements Event, ListenerFailureLog, ShouldDispatchAfterCommit, UserInterfaceUpdater
+final readonly class MessageAnswered implements
+    Event,
+    ListenerFailureLog,
+    ShouldDispatchAfterCommit,
+    UserInterfaceUpdater
 {
     public function __construct(
         public string $messageId,

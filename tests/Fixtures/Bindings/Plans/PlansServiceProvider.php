@@ -19,5 +19,6 @@ final class PlansServiceProvider extends ServiceProvider
         $this->app->bind(TaskResolver::class, PlanParser::class);
         $this->app->bind(PlanCounter::class, TaskList::class);
         $this->app->singleton(ShellCommandParser::class, PlanParser::class);
+        $this->app->bind(...);
     }
 }

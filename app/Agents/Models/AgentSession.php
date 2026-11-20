@@ -94,6 +94,34 @@ final class AgentSession extends Model implements ReadableModel
         ];
     }
 
+    public static function selectMessage(string $sessionId, string $messageId): void
+    {
+        self::query()->whereKey($sessionId)->update(['selected_message_id' => $messageId]);
+    }
+
+    public static function selectedMessage(string $sessionId): string|null
+    {
+        return self::query()->whereKey($sessionId)->value('selected_message_id');
+    }
+
+    public static function captureJobSourceMessage(string $sessionId, string $messageId): void
+    {
+        self::query()->whereKey($sessionId)->whereNull('job_source_message_id')->update([
+            'job_source_message_id' => $messageId,
+        ]);
+    }
+
+    public static function jobSourceMessage(string $sessionId): string|null
+    {
+        return self::jobSourceMessages($sessionId)->value('job_source_message_id');
+    }
+
+    /** @return Builder<self> */
+    public static function jobSourceMessages(string $sessionId): Builder
+    {
+        return self::query()->whereKey($sessionId)->select('job_source_message_id');
+    }
+
     /**
      * Starts the session of one start with the program and model it runs and the request that started it.
      *

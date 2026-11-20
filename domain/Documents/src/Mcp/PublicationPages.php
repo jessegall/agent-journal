@@ -8,7 +8,7 @@ use App\Assignments\Support\Page;
 use App\Comments\Contracts\CommentResolver;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
+use App\Mcp\Contracts\Continuations;
 use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
 

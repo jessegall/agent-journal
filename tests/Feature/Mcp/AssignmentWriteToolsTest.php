@@ -94,11 +94,20 @@ final class AssignmentWriteToolsTest extends TestCase
 
     public function test_an_executor_cannot_dispatch_a_record_to_someone_else(): void
     {
-        $this->callMcpTool($this->first, 'assignments_assign', [
+        $this->sendMcp($this->first, 'tools/call', [
+            'name' => 'assignments_assign',
+            'arguments' => [
+                ...$this->record(),
+                'recipient' => $this->recipient($this->second),
+                'request_key' => 'executor-assignment',
+            ],
+        ])->assertBadRequest();
+        $this->signed($this->first, '/agent/assignments/assign', [
             ...$this->record(),
-            'recipient' => $this->recipient($this->second),
+            'recipient_type' => 'agent',
+            'recipient_id' => $this->second->agent->id,
             'request_key' => 'executor-assignment',
-        ])->assertJsonPath('result.isError', true)->assertJsonPath('result.structuredContent.code', 'forbidden');
+        ])->assertForbidden();
 
         $this->callMcpTool($this->caller, 'assignments_read', $this->record())
             ->assertJsonPath('result.structuredContent.holder', null);
