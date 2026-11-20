@@ -15,4 +15,9 @@ final class NoteWorkFailed extends RuntimeException
     {
         return new self('The surrounding note work failed after its nested command ran.');
     }
+
+    public static function whileListening(): self
+    {
+        return new self('The note state refused to finish collecting the event.');
+    }
 }

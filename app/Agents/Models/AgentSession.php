@@ -14,6 +14,7 @@ use App\Agents\Support\AccountUse;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
+use App\Agents\Support\StackTarget;
 use App\Links\Support\Linkable;
 use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
@@ -315,6 +316,11 @@ final class AgentSession extends Model implements ReadableModel
     public static function sharedLockFor(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->sharedLock()->firstOrFail();
+    }
+
+    public static function lockRunningTarget(StackTarget $target): bool
+    {
+        return self::query()->runningFor($target->agentId)->whereKey($target->sessionId)->sharedLock()->first() !== null;
     }
 
     /**

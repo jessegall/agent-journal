@@ -10,7 +10,6 @@ use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Hooks\Exceptions\MissingBottomState;
-use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 
 /**
@@ -190,15 +189,6 @@ final readonly class AgentStack
 
     public function records(): FrameRecords
     {
-        return new FrameRecords(array_map(
-            fn (Frame $frame) => new FrameRecord(
-                $frame->id,
-                $frame->reference,
-                $frame->isBottom(),
-                $frame->schemaVersion,
-                $frame->enteredAt,
-            ),
-            $this->frames,
-        ));
+        return new FrameRecords(array_map(fn (Frame $frame) => $frame->record(), $this->frames));
     }
 }

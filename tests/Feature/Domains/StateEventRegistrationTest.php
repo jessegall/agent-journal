@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Domains\Bootstrappers\RegisterStates;
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
-use App\Domains\Support\DomainRegistry;
 use App\Hooks\Events\StateEventBridge;
 use Illuminate\Events\Dispatcher;
-use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
-use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\WritingNoteState;
+use Tests\Support\RegistersNoteStates;
 use Tests\Support\SetsEventCachePath;
 use Tests\TestCase;
 
 final class StateEventRegistrationTest extends TestCase
 {
-    use SetsEventCachePath;
+    use RegistersNoteStates, SetsEventCachePath;
 
     public function test_an_installed_module_registers_one_bridge_alongside_ordinary_listeners(): void
     {
@@ -55,7 +52,8 @@ final class StateEventRegistrationTest extends TestCase
             'wide',
         ]);
 
-        $this->assertSame([$expected], $events['@state-events']);
+        $this->assertContains($expected, $events['@state-events']);
+        $this->assertCount(2, $events['@state-events']);
         $path = (string) tempnam(sys_get_temp_dir(), 'state-event-cache-');
         $this->useEventCachePath($path);
 
@@ -79,16 +77,6 @@ final class StateEventRegistrationTest extends TestCase
             $this->useEventCachePath(null);
             unlink($path);
         }
-    }
-
-    private function providerWithNotes(): DomainEventServiceProvider
-    {
-        $classes = DomainRegistry::installedClasses(base_path());
-        $registry = DomainRegistry::from([...$classes, CardsDomain::class, NotesDomain::class]);
-        $this->app->instance(DomainRegistry::class, $registry);
-        $this->app->make(RegisterStates::class)($registry->get('Notes'));
-
-        return new DomainEventServiceProvider($this->app);
     }
 
     /**

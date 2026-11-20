@@ -10,6 +10,7 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
 use App\Hooks\Values\EventCommands;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
+use Tests\Fixtures\Modules\Notes\Exceptions\NoteWorkFailed;
 
 /**
  * While the agent writes a note, it may not stop.
@@ -24,6 +25,10 @@ final class WritingNoteState extends AgentState
     #[StackWide]
     public function onNoteWritten(NoteWritten $event): EventCommands
     {
+        if ($event->listenerFails) {
+            throw NoteWorkFailed::whileListening();
+        }
+
         return EventCommands::none()->withContext('A note was written.');
     }
 }

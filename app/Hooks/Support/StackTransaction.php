@@ -80,6 +80,24 @@ final readonly class StackTransaction implements RunsStackTransactions, StackTra
 
     /**
      * @template TResult
+     * @param list<StackTarget> $targets In admission order.
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function runForTargets(array $targets, Closure $work): mixed
+    {
+        $run = fn () => $this->run($work);
+
+        foreach (array_reverse($targets) as $target) {
+            $inner = $run;
+            $run = fn () => $this->admission->admit($target->sessionId, $this->deadline, $inner);
+        }
+
+        return $run();
+    }
+
+    /**
+     * @template TResult
      *
      * @param  Closure(): TResult  $work
      * @return TResult

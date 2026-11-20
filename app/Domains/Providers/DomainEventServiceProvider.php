@@ -90,6 +90,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
             }
         }
 
+        $this->app->instance(StateEvents::class, $states);
         $dispatcher = $this->app->make(Dispatcher::class);
 
         foreach ($states->eventClasses() as $event) {

@@ -149,7 +149,10 @@ final class NotesDomain extends Domain implements
 
     public function states(): array
     {
-        return ['notes.writing' => WritingNoteStateFactory::class];
+        return [
+            'notes.writing' => WritingNoteStateFactory::class,
+            'notes.watching' => WatchingNoteStateFactory::class,
+        ];
     }
 
     public function assignables(): array

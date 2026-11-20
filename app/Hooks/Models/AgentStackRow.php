@@ -162,6 +162,16 @@ final class AgentStackRow extends Model implements ReadableModel
         return $row;
     }
 
+    /**
+     * @return Option<self>
+     */
+    public static function lockActiveAuthorizedFor(StackTarget $target): Option
+    {
+        $row = self::query()->authorizedFor($target)->lockForUpdate()->first();
+
+        return $row !== null && $row->isActive() ? new Some($row) : None::create();
+    }
+
     public function isActive(): bool
     {
         return $this->status === StackStatus::Active;

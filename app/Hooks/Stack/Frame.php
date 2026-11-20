@@ -46,6 +46,11 @@ final readonly class Frame
         );
     }
 
+    public function record(): FrameRecord
+    {
+        return new FrameRecord($this->id, $this->reference, $this->bottom, $this->schemaVersion, $this->enteredAt);
+    }
+
     public function isBottom(): bool
     {
         return $this->bottom;
