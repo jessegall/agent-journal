@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Support;
 
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
+use App\Bus\Values\RecoveryCall;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -28,6 +29,7 @@ final readonly class AssignmentGroup
     public function __construct(
         public RecordIdentity $root,
         array $records,
+        public RecoveryCall|null $finishedRootRecovery = null,
     ) {
         $unique = [$root];
 

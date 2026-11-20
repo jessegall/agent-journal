@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Exceptions\RequestKeyInvalid;
+use App\Bus\Exceptions\RequestKeyMissing;
 use Closure;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -64,6 +65,16 @@ final class RequestKey
      */
     public function key(): string|null
     {
+        return $this->key;
+    }
+
+    /** @param class-string $command */
+    public function requireFor(string $command): string
+    {
+        if ($this->key === null) {
+            throw RequestKeyMissing::for($command);
+        }
+
         return $this->key;
     }
 

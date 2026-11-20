@@ -66,8 +66,11 @@ use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
 use Domain\Plans\Mcp\AssignedPlansTool;
+use Domain\Plans\Mcp\AssignPlanWorkTool;
 use Domain\Plans\Mcp\HeldPlansOverview;
 use Domain\Plans\Mcp\PlansListTool;
+use Domain\Plans\Mcp\ReassignPlanWorkTool;
+use Domain\Plans\Mcp\UnassignPlanWorkTool;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
@@ -262,7 +265,13 @@ final class PlansDomain extends Domain implements
 
     public function mcpTools(): array
     {
-        return [AssignedPlansTool::class, PlansListTool::class];
+        return [
+            AssignedPlansTool::class,
+            PlansListTool::class,
+            AssignPlanWorkTool::class,
+            ReassignPlanWorkTool::class,
+            UnassignPlanWorkTool::class,
+        ];
     }
 
     public function mcpResources(): array

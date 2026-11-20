@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use App\Assignments\Support\AssignmentGroup;
+use App\Bus\Values\RecoveryCall;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
@@ -39,7 +40,7 @@ final readonly class PlanAssignmentGroup
             $plan->id,
         )->readAll('every phase of the plan is assigned')->orderBy('number')->get();
 
-        return new AssignmentGroup($root, [
+        return $this->group($root, [
             ...array_values($phases->map(fn (Phase $phase) => $phase->assignmentIdentity())->all()),
             ...$this->tasks->records($this->taskIdsOf($phases)),
         ]);
@@ -50,7 +51,13 @@ final readonly class PlanAssignmentGroup
         $phase = Phase::query()->find($root->id) ?? throw RecordUnavailable::for($root);
         Plan::lockStructure($phase->plan_id);
 
-        return new AssignmentGroup($root, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));
+        return $this->group($root, $this->tasks->records($this->taskIdsOf(new Collection([$phase]))));
+    }
+
+    /** @param list<RecordIdentity> $records */
+    private function group(RecordIdentity $root, array $records): AssignmentGroup
+    {
+        return new AssignmentGroup($root, $records, new RecoveryCall('plans_assigned'));
     }
 
     /**

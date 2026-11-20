@@ -352,6 +352,7 @@ use App\Assignments\Exceptions\AutoAssignmentSizeInvalid;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
+use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeIdentity;
@@ -438,6 +439,8 @@ use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
+use App\Bus\Support\RequestKey;
+use App\Bus\Values\RecoveryCall;
 use App\Comments\Calls\ListCommentsCall;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
@@ -614,6 +617,7 @@ use App\Mcp\Contracts\McpCall;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Contracts\ProvidesMcpTools;
+use App\Mcp\Attributes\Dispatches;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use App\Mcp\Data\ToolResult as McpToolResult;
@@ -626,6 +630,7 @@ use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
+use App\Mcp\Tools\JournalWriteTool;
 use App\Mcp\Tools\JournalTool;
 use App\Numbers\Commands\InstallNumbers;
 use App\Numbers\Contracts\Numbered;
@@ -1376,6 +1381,8 @@ final class CoreApi
                 OwnerStartRequest::class,
                 OwnerStartReceipt::class,
                 ToolArguments::class,
+                Dispatches::class,
+                RecoveryCall::class,
                 RecordCard::class,
                 StateReferences::class,
                 StateSet::class,
@@ -2127,6 +2134,9 @@ final class CoreApi
                 ReadsRouteNumber::class,
                 JournalTool::class,
                 JournalReadTool::class,
+                JournalWriteTool::class,
+                ReadsAssignmentArguments::class,
+                RequestKey::class,
                 JournalResource::class,
                 RendersRefusal::class,
                 RunsCallPipelines::class,
