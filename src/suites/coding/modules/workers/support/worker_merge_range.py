@@ -25,6 +25,9 @@ class WorkerMergeRange:
     def branch_tip(self, worktree: Worktree) -> str:
         return self.git.tip(worktree.folder, worktree.branch)[:SHORT_ID_CHARACTERS]
 
+    def require_committed_merge(self, worktree: Worktree) -> None:
+        self.git.require_committed_merge(worktree)
+
     def worktree_file_base_changes(self, worktree: Worktree, commit: str) -> tuple[str, ...]:
         return self.git.worktree_file_base_changes(worktree.folder, worktree.base_branch, commit)
 

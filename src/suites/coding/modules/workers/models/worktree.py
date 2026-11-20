@@ -86,7 +86,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
         return self.moved(WorktreeLifecycle.remove, removed_at=timestamp)
 
     def committed(self, base_commit: str, task_ids: Sequence[int], short_id: str) -> "Worktree":
-        return self.moved(WorktreeLifecycle.advance, base_commit=base_commit, commit_task_ids=",".join(str(task_id) for task_id in task_ids), commit_short_id=short_id)
+        return self.moved(WorktreeLifecycle.advance, base_commit=base_commit, commit_task_ids=",".join(str(task_id) for task_id in task_ids), commit_short_id=short_id, delivered_at=None)
 
     def updated(self, base_commit: str) -> "Worktree":
         return self.moved(WorktreeLifecycle.advance, base_commit=base_commit)

@@ -8,7 +8,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.work_unit import WorkUnit
 from suites.coding.modules.workers.support.work_units import WorkUnits
-from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from suites.coding.modules.workers.support.worktree_runs import WorktreeRuns
 from suites.coding.modules.workers.support.merge_ask_part import MergeAskPart
 from suites.coding.modules.workers.support.worker_merge_range import WorkerMergeRange
@@ -21,9 +20,9 @@ class MergeAskScope:
     tasks, no run of the asked work open or failed, no clash waiting, something committed and no ask waiting
     already; a whole ask also needs nothing started. An ask is never refused for coming early in a plan."""
 
-    def __init__(self, units: WorkUnits, worktrees: WorktreeQuery, tasks: TaskQuery, runs: WorktreeRuns, steps: WorkerSteps, queries: Queries,
+    def __init__(self, units: WorkUnits, worktrees: WorktreeQuery, tasks: TaskQuery, runs: WorktreeRuns, queries: Queries,
                  merge_range: WorkerMergeRange) -> None:
-        self.units, self.worktrees, self.tasks, self.runs, self.steps, self.queries = units, worktrees, tasks, runs, steps, queries
+        self.units, self.worktrees, self.tasks, self.runs, self.queries = units, worktrees, tasks, runs, queries
         self.range = merge_range
 
     def checked(self, worker_id: int, note: str, last_task: str) -> MergeAskPart:
@@ -36,11 +35,10 @@ class MergeAskScope:
         started = next(iter(self.tasks.started_tasks(worker_id)), None)
         if started is not None and not last_task:
             raise Refusal(f"task {started.id} is started", "commit it, or ask up to an earlier task with --up-to and go on")
+        self.range.require_committed_merge(worktree)
         part = self.part(worktree, unit, last_task)
         self.check_base(worktree, part)
         self.check_runs(worktree, part.task_ids)
-        if self.steps.round(worker_id).conflict is not None:
-            raise Refusal(f"your worktree clashed with {worktree.base_branch}", "settle the conflict markers and commit first")
         waiting = self.queries.query(MergeAsk).filter(worktree_id=worktree.id, state=MergeAskState.WAITING).first()
         if waiting is not None:
             raise Refusal(f"your ask {waiting.id} waits for the merge", "wait; you are informed when it is merged")

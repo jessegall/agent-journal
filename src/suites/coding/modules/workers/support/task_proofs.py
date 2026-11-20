@@ -7,7 +7,7 @@ from suites.coding.modules.workers.support.missing_points import MissingPoints
 
 # A proof in one of these states stands for its point at a commit: a checked proof is never shown a second
 # time, and a short proof is refused by name instead of counted as a missing point.
-PROVING_STATES = (ProofState.SHOWN, ProofState.CHECKED, ProofState.SHORT)
+PROVING_STATES = (ProofState.SHOWN, ProofState.COMMITTED, ProofState.CHECKED, ProofState.SHORT)
 
 
 @dataclass(frozen=True)

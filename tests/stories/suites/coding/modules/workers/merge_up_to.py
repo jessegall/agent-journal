@@ -53,6 +53,24 @@ def test_a_merge_up_to_a_commit_takes_the_work_up_to_it(proven_worker):
     expect_first_task_merged(story, repository, worker, second_task)
 
 
+def test_a_merge_up_to_a_task_includes_its_conflict_resolution_and_leaves_the_next_commit(proven_worker):
+    story, repository, worker, second_task = proven_worker
+    folder = repository.worktree_folder(worker.id)
+    repository.committed("cart.py", "TOTAL = 2\n", "Change the total on the base")
+    clash = repository.git("merge", "--no-commit", ENVIRONMENT_BRANCH, folder=folder)
+    story.expect_rows(clash.returncode == 1, detail=clash.stdout)
+    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
+    repository.git("add", "cart.py", folder=folder).check_returncode()
+    repository.git("commit", "-m", "task 1: Resolve the cart total", "-m", f"Journal: worker worker-{worker.id}", folder=folder).check_returncode()
+    repository.git("add", "receipt.py", folder=folder).check_returncode()
+    repository.git("commit", "-m", f"task {second_task}: Add the receipt", folder=folder).check_returncode()
+
+    story.expect_success(f"worker merge --wait {worker.id} --up-to 1", actor=story.agent)
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
+    repository.expect_file(ENVIRONMENT_BRANCH, "receipt.py", "")
+    story.expect_text(f"task show {second_task}", "state: started")
+
+
 def test_a_commit_not_on_the_workers_branch_is_refused(proven_worker):
     story, _, worker, _ = proven_worker
     story.expect_refusal(f"worker merge --wait {worker.id} --up-to {UNKNOWN_COMMIT}", f"not on the branch of worker {worker.id}", actor=story.agent)

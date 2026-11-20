@@ -53,19 +53,6 @@ class SampleRuns:
         return self.blocking
 
 
-@dataclass
-class SampleRound:
-    conflict: object = None
-
-
-class SampleSteps:
-    def __init__(self, conflict=None):
-        self.conflict = conflict
-
-    def round(self, worker_id):
-        return SampleRound(self.conflict)
-
-
 class SampleQuery:
     def __init__(self, waiting):
         self.waiting = waiting
@@ -86,8 +73,13 @@ class SampleQueries:
 
 
 class SampleRange(WorkerMergeRange):
-    def __init__(self):
+    def __init__(self, conflict):
         self.commits = {7: "a1", 8: "b2"}
+        self.conflict = conflict
+
+    def require_committed_merge(self, worktree):
+        if self.conflict is not None:
+            raise Refusal("your worktree still has an unfinished merge or rebase")
 
     def task_commit(self, worktree, task_id):
         return self.commits.get(task_id)
@@ -106,7 +98,7 @@ class SampleRange(WorkerMergeRange):
 
 
 def scope(unit=LIST_UNIT, worktree=WORKTREE, started=(), blocking=None, conflict=None, waiting=None) -> MergeAskScope:
-    return MergeAskScope(SampleUnits(unit), SampleWorktrees(worktree), SampleTasks(*started), SampleRuns(blocking), SampleSteps(conflict), SampleQueries(waiting), SampleRange())
+    return MergeAskScope(SampleUnits(unit), SampleWorktrees(worktree), SampleTasks(*started), SampleRuns(blocking), SampleQueries(waiting), SampleRange(conflict))
 
 
 def run(state: CheckpointState) -> tuple[WorktreeReach, CheckpointReach]:
@@ -137,7 +129,7 @@ def test_a_run_that_failed_is_refused():
 
 
 def test_a_clash_that_waits_is_refused():
-    assert "your worktree clashed with version-5" in refusal_of(scope(conflict=object()))
+    assert "your worktree still has an unfinished merge or rebase" in refusal_of(scope(conflict=object()))
 
 
 def test_nothing_committed_is_refused():

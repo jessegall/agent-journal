@@ -5,6 +5,8 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import grou
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
+from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, unplanned_group_worker
 
 """Book D of doc 1252: the worker asks for the merge itself."""
@@ -54,6 +56,24 @@ def test_47_a_stop_while_the_last_run_is_open_is_allowed_and_no_report(three_com
 
 def test_48_the_whole_ask(committed_worker):
     committed_worker.story.expect_text(REQUEST_MERGE, "Asked for the merge of tasks 1, 2, 3: 3 tasks in 3 commits", actor=committed_worker.worker)
+
+
+@pytest.mark.real_git
+def test_a_unit_can_ask_again_after_committing_its_conflict_resolution(committed_worker):
+    story, repository, worker = committed_worker.story, committed_worker.repository, committed_worker.worker
+    story.expect_success(REQUEST_MERGE, actor=worker)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("task_3.txt", "the base edit\n", "Edit the third task on the base")
+    story.expect_text(f"worker merge --wait {worker.id}", "clashed on task_3.txt", actor=story.agent)
+    story.expect_text("proof show 3", "state: checked", actor=story.agent)
+    repository.changed(worker.id, "task_3.txt", "both edits\n")
+    story.expect_success(COMMIT, actor=worker)
+    committed_worker.end_all_tests()
+    story.expect_success(REQUEST_MERGE, actor=worker)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    repository.expect_file(ENVIRONMENT_BRANCH, "task_3.txt", "both edits\n")
 
 
 def test_49_refused_a_started_task(first_committed_worker):

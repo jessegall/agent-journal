@@ -218,10 +218,11 @@ class WorktreeGit:
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
         self.keep_branch(worktree)
         self.refuse_conflicts(worktree)
-        if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
+        merging = self.is_merging(worktree.folder)
+        if not merging and not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "-A")
-        if self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode == 0:
+        if not merging and self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode == 0:
             return False
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
@@ -252,7 +253,7 @@ class WorktreeGit:
         if self.is_merging(worktree.folder):
             self.commit(worktree, message, trailer)
             return self.committed_stashes(worktree, message, trailer)
-        moved =self.tip(worktree.folder, worktree.base_branch) != worktree.base_commit
+        moved = not self.is_ancestor(worktree.folder, worktree.base_branch, worktree.branch)
         rebased = moved and self.rebase(worktree)
         conflicts = self.without_instruction_conflicts(worktree, self.conflict_files(worktree)) if rebased else ()
         if conflicts:
@@ -272,6 +273,11 @@ class WorktreeGit:
         conflicts = self.conflict_files(worktree)
         if conflicts:
             raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle them in the worktree, then try again"))
+
+    def require_committed_merge(self, worktree: Worktree) -> None:
+        self.refuse_conflicts(worktree)
+        if self.is_merging(worktree.folder) or self.is_mid_sequence(worktree):
+            raise Refusal("your worktree still has an unfinished merge or rebase", "finish it in the worktree before asking for the merge")
 
     # A rebase a killed server or a timeout cut short leaves the head detached, and every later commit would miss the
     # branch: its state is dropped, keeping the head, and the branch is moved up to the head when the head holds it.
@@ -741,10 +747,10 @@ class WorktreeGit:
         return tuple(commit for commit in self.worktree_commits(worktree) if commit.has_task_subject([task_id]))
 
     def worktree_commits(self, worktree: Worktree) -> tuple[TaskBranchCommit, ...]:
-        return self.branch_commits(worktree.folder, f"{worktree.base_commit}..HEAD")
+        return self.branch_commits(worktree.folder, f"{worktree.base_commit}..{worktree.branch}")
 
     def branch_commits(self, folder: str, revisions: str) -> tuple[TaskBranchCommit, ...]:
-        log = self.git(folder, GIT_LIMIT_SECONDS, "log", "--no-merges", SHORT_COMMIT_FLAG, COMMIT_FORMAT, revisions)
+        log = self.git(folder, GIT_LIMIT_SECONDS, "log", "--first-parent", SHORT_COMMIT_FLAG, COMMIT_FORMAT, revisions)
         if log.returncode != 0:
             return ()
         fields = (record.strip().split(NAME_SEPARATOR, 1) for record in log.stdout.split(COMMIT_SEPARATOR) if record.strip())

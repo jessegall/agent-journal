@@ -23,7 +23,7 @@ STEP_TEXTS = {
     WorkerStep.COMMIT: WorkerStepText("{proven} proven.", "{commit}", "{commit_tests}"),
     WorkerStep.WAIT: WorkerStepText("{waiting}", "stop", "you are woken when its tests end, and started on your next task when it is merged"),
     WorkerStep.FIX: WorkerStepText("The tests of {label} failed.", "fix the failing tests, show the proof again with journal proof make and run journal worker commit, running tests freely until then", "the next commit reruns only what failed"),
-    WorkerStep.CONFLICT: WorkerStepText("{label} clashed with its base branch in {files}.", "settle the conflict markers in those files, then journal worker commit", f"the journal merges it again. {AskTopic.CONFLICT.question_line()}"),
+    WorkerStep.CONFLICT: WorkerStepText("{label} clashed with its base branch in {files}.", "settle the conflict markers in those files, then journal worker commit", f"for a unit with several tasks, ask again with journal worker ask-merge. {AskTopic.CONFLICT.question_line()}"),
     WorkerStep.BLOCKED: WorkerStepText("task {task} is blocked.", "stop", "you are woken when it opens, or when you are given another task"),
     WorkerStep.MERGE_DUE: WorkerStepText("Your unit is done: {unit}, {unit_tasks} tasks committed, the tests of every checkpoint passed on your commits.",
                                          'journal worker ask-merge "<what the merge holds>"', "the merger merges it once and you are told"),

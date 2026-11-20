@@ -16,8 +16,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.enums.merge_ask_state import MergeAskState
 from suites.coding.modules.workers.models.lifecycles.merge_ask_lifecycle import MergeAskLifecycle
 from suites.coding.modules.workers.models.merge_ask import MergeAsk
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
-from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.checkpoint_wait_text import CheckpointWaitText
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
@@ -27,13 +25,10 @@ from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
-CONFLICT_SHORTFALL = "the merge clashed on {files}: settle them and prove it again"
-
-
 class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
     """Closes the worker's delivered tasks that have a proof of their own in the worktree once git has
-    merged it, and names the others it leaves open, or restarts its task with the files that clashed. The
-    proofs of the worktree go short when it clashes, as for a failed test. A task of a started plan is
+    merged it, and names the others it leaves open, or restarts its task with the files that clashed. A clash
+    preserves the proofs so the resolution can be committed and tested. A task of a started plan is
     closed with the checkpoint its tests run at. The worker's ask that waited for this merge is merged with
     it."""
 
@@ -71,9 +66,6 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
 
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
         files = ", ".join(conflicts)
-        for proof in self.proofs.worktree_rows(worktree.id):
-            if proof.state is not ProofState.SHORT:
-                self.repository.save_change(proof, proof.moved(ProofLifecycle.short, shortfall=CONFLICT_SHORTFALL.format(files=files)), context)
         self.advance.restart_task(worktree, task, context)
         self.message_sender.send(worktree.session_agent_id, WorkerMergeConflictMessage.declared(), MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=files, line=self.guidance.conflict_line(task, files))
         return self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
