@@ -12,9 +12,15 @@ enum AssignmentPurpose: string
 {
     case PublicWork = 'public-work';
     case InternalResponsibility = 'internal-responsibility';
+    case JournalAssigned = 'journal-assigned';
 
     public function isPublic(): bool
     {
         return $this === self::PublicWork;
+    }
+
+    public function isResponsibility(): bool
+    {
+        return $this === self::InternalResponsibility;
     }
 }

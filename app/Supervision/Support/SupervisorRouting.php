@@ -15,11 +15,12 @@ use App\Profiles\Values\SupervisorProfile;
 use App\Profiles\Values\SupervisorRoutes;
 use App\Profiles\Values\SupervisorTarget;
 use App\Supervision\Commands\ChangeSupervisor;
-use App\Supervision\Enums\CoreAskType;
+use App\Supervision\Contracts\AskType;
 use App\Supervision\Exceptions\SupervisorRouteRefused;
 use App\Supervision\Models\SupervisorChange;
 use App\Supervision\Models\SupervisorLink;
 use App\Supervision\Values\SupervisorChangeReceipt;
+use App\Supervision\Values\SupervisorRoute;
 
 final readonly class SupervisorRouting implements SupervisorDefinitions
 {
@@ -27,6 +28,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         private SupervisorGraphLock $lock,
         private ProfileResolver $profiles,
         private SupervisorCoverageReader $coverage,
+        private AskTypeRegistry $types,
     ) {}
 
     public function validate(array $proposed): array
@@ -78,6 +80,16 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
         return new SupervisorChangeReceipt($link->versionFor($type), $this->coverage->forRoutes($routes, $profiles));
     }
 
+    public function routeFor(ActorIdentity $requester, AskTypeKey $type): SupervisorRoute
+    {
+        $this->types->get($type);
+        $actor = $this->workingActor($requester);
+        $profile = $this->profiles->snapshotFor(ProfileKey::from($actor->profile_key));
+        $link = SupervisorLink::ofActor($requester, $profile->supervisor);
+
+        return new SupervisorRoute($link->routes->targetFor($type), $link->versionFor($type));
+    }
+
     private function workingActor(ActorIdentity $actor): Agent
     {
         if (! $actor->type->isAgent()) {
@@ -112,11 +124,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
     private function requireKnown(SupervisorRoutes $routes, array $profiles): void
     {
         foreach ($routes->overrides as $override) {
-            $type = $override->type->key;
-
-            if (CoreAskType::tryFrom($type) === null) {
-                throw SupervisorRouteInvalid::askType($type);
-            }
+            $this->types->get($override->type);
         }
 
         foreach ($routes->jsonSerialize() as $target) {
@@ -135,7 +143,7 @@ final readonly class SupervisorRouting implements SupervisorDefinitions
     private function requireAcyclic(array $profiles, array $actors): void
     {
         $routes = [...array_map(fn (SupervisorProfile $profile) => $profile->routes, $profiles), ...$actors];
-        $types = array_map(fn (CoreAskType $type): AskTypeKey => $type->key(), CoreAskType::cases());
+        $types = array_map(fn (AskType $type): AskTypeKey => $type->key(), $this->types->all());
 
         new SupervisorGraph($routes)->requireAcyclic($types);
     }

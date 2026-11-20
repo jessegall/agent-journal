@@ -10,11 +10,11 @@ use App\Profiles\Enums\SupervisorCoverageType;
 use App\Profiles\Values\SupervisorCoverage;
 use App\Profiles\Values\SupervisorProfile;
 use App\Profiles\Values\SupervisorRoutes;
-use App\Supervision\Enums\CoreAskType;
+use App\Supervision\Contracts\AskType;
 
 final readonly class SupervisorCoverageReader
 {
-    public function __construct(private CommandRegistry $commands) {}
+    public function __construct(private CommandRegistry $commands, private AskTypeRegistry $types) {}
 
     /**
      * @param array<string, SupervisorProfile> $profiles
@@ -23,14 +23,14 @@ final readonly class SupervisorCoverageReader
     public function forRoutes(SupervisorRoutes $routes, array $profiles): array
     {
         return array_map(
-            fn (CoreAskType $type) => $this->forType($type, $profiles[$routes->targetFor($type->key())->key] ?? null),
-            CoreAskType::cases(),
+            fn (AskType $type) => $this->forType($type, $profiles[$routes->targetFor($type->key())->key] ?? null),
+            $this->types->all(),
         );
     }
 
-    private function forType(CoreAskType $type, SupervisorProfile|null $profile): SupervisorCoverage
+    private function forType(AskType $type, SupervisorProfile|null $profile): SupervisorCoverage
     {
-        $name = $type->operation();
+        $name = $type->operation()->key;
         $declaration = $this->commands->operationNamed($name);
 
         if ($profile === null || $declaration === null) {

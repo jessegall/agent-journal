@@ -43,6 +43,8 @@ interface AssignmentProviders
      */
     public function requireInternal(string $type): void;
 
+    public function journalProvider(string $type): JournalAssignableProvider;
+
     /**
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid

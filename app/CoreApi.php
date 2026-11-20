@@ -402,6 +402,7 @@ use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\CommandEffectType;
 use App\Supervision\Commands\ChangeSupervisor;
+use App\Supervision\Commands\RouteAsk;
 use App\Bus\Enums\MiddlewareStage;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
@@ -1796,6 +1797,7 @@ final class CoreApi
                 RequireMessageAnswer::class,
                 DismissMessage::class,
                 ChangeSupervisor::class,
+                RouteAsk::class,
                 RetireAgent::class,
                 StartAgent::class,
                 StartOwnedAgent::class,

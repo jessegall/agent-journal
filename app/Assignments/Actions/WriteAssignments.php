@@ -11,6 +11,7 @@ use App\Assignments\Actions\Support\AssignmentBatch;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
@@ -26,6 +27,8 @@ use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
+use App\Assignments\Support\AdmittedAssignment;
+use App\Assignments\Support\JournalAssignment;
 use App\Records\Support\RecordIdentity;
 use Closure;
 
@@ -35,7 +38,7 @@ use Closure;
  * owner under a key-share lock, then changes the one holding and raises the one committed fact. The caller is always
  * the actor of this request.
  */
-final readonly class WriteAssignments implements AssignmentWriter
+final readonly class WriteAssignments implements AssignmentWriter, JournalAssignmentWriter
 {
     public function __construct(
         private CurrentActor $actors,
@@ -46,12 +49,27 @@ final readonly class WriteAssignments implements AssignmentWriter
         private AssignmentFacts $facts,
         private AssignmentBatch $batch,
         private AdmitPublicAssignments $admission,
+        private AdmitJournalAssignment $journalAdmission,
     ) {}
 
     public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
     {
         $this->transaction->requireOpen();
         $admitted = $this->admission->admitPublic($record, $recipient);
+
+        return $this->assignAdmitted($admitted);
+    }
+
+    public function assignForJournal(JournalAssignment $assignment): AssignmentResult
+    {
+        $this->transaction->requireOpen();
+
+        return $this->assignAdmitted($this->journalAdmission->admit($assignment));
+    }
+
+    private function assignAdmitted(AdmittedAssignment $admitted): AssignmentResult
+    {
+        $record = $admitted->record;
         $current = $this->store->lockCurrent($record);
 
         if ($current->isDefined()) {
@@ -70,7 +88,20 @@ final readonly class WriteAssignments implements AssignmentWriter
     ): AssignmentResult {
         $this->transaction->requireOpen();
         $admitted = $this->admission->admitPublic($record, $recipient);
-        $current = $this->store->lockExpected($record, $expected);
+
+        return $this->replaceAdmitted($admitted, $expected);
+    }
+
+    public function reassignForJournal(JournalAssignment $assignment, AssignmentReference $expected): AssignmentResult
+    {
+        $this->transaction->requireOpen();
+
+        return $this->replaceAdmitted($this->journalAdmission->admit($assignment, $expected), $expected);
+    }
+
+    private function replaceAdmitted(AdmittedAssignment $admitted, AssignmentReference $expected): AssignmentResult
+    {
+        $current = $this->store->lockExpected($admitted->record, $expected);
 
         if ($current->holder()->isSameAs($admitted->resolved)) {
             return $this->unchanged($current)->forRequest($admitted->request());
@@ -80,7 +111,7 @@ final readonly class WriteAssignments implements AssignmentWriter
 
         return $this->changed(
             AssignmentReason::Reassigned,
-            $record,
+            $admitted->record,
             $current,
             $after,
         )->forRequest($admitted->request());

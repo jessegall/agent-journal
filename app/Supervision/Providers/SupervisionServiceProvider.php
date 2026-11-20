@@ -6,11 +6,27 @@ namespace App\Supervision\Providers;
 
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
+use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Enums\AssignmentPurpose;
+use App\Links\Support\LinkTypeRegistry;
 use App\Profiles\Contracts\SupervisorDefinitions;
+use App\Profiles\Values\AskTypeKey;
+use App\Supervision\Contracts\AskAdmission;
+use App\Supervision\Enums\AskAbility;
 use App\Supervision\Enums\SupervisorAbility;
+use App\Supervision\Models\Ask;
 use App\Supervision\Models\SupervisorLink;
+use App\Supervision\Policies\AskPolicy;
 use App\Supervision\Policies\SupervisorPolicy;
+use App\Supervision\Support\AskAssignments;
+use App\Supervision\Support\AskTypeRegistry;
+use App\Supervision\Support\CurrentAskAdmission;
 use App\Supervision\Support\SupervisorRouting;
+use App\Supervision\Types\CodeReviewType;
+use App\Supervision\Types\MergeReadyType;
+use App\Supervision\Types\QuestionType;
+use App\Supervision\Types\StuckType;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
 
 final class SupervisionServiceProvider extends ServiceProvider
@@ -19,15 +35,53 @@ final class SupervisionServiceProvider extends ServiceProvider
     {
         // The implementation belongs to a higher area; a Bind attribute here would create a reverse dependency.
         $this->app->bind(SupervisorDefinitions::class, SupervisorRouting::class);
+        $this->app->bind(AskAdmission::class, CurrentAskAdmission::class);
+        $this->app->singleton(AskTypeRegistry::class);
     }
 
-    public function boot(PolicyCatalogue $policies): void
-    {
+    public function boot(
+        PolicyCatalogue $policies,
+        AssignmentRegistration $assignments,
+        LinkTypeRegistry $links,
+        AskTypeRegistry $types,
+        Repository $config,
+    ): void {
         $policies->register('Core', new PolicyRegistration(
             SupervisorLink::class,
             SupervisorPolicy::class,
             SupervisorAbility::class,
             coordinatorOnly: [SupervisorAbility::ChangeRoute],
         ));
+        $policies->register('Core', new PolicyRegistration(Ask::class, AskPolicy::class, AskAbility::class));
+        $types->register($this->app->make(QuestionType::class));
+        $types->register($this->app->make(CodeReviewType::class));
+        $types->register($this->app->make(MergeReadyType::class));
+        $types->register($this->app->make(StuckType::class));
+        $this->requireKnownAskTypes($types, $config->array('profiles.profiles'));
+
+        $links->register([Ask::LINK_TYPE => Ask::class]);
+        $assignments->registerOwner('Supervision', []);
+        $assignments->registerRecord(
+            Ask::LINK_TYPE,
+            AskAssignments::class,
+            'Supervision',
+            AssignmentPurpose::JournalAssigned,
+        );
+    }
+
+    /** @param array<string, mixed> $profiles */
+    private function requireKnownAskTypes(AskTypeRegistry $types, array $profiles): void
+    {
+        foreach ($profiles as $profile) {
+            $routes = is_array($profile) ? ($profile['supervisor'] ?? null) : null;
+
+            if (! is_array($routes)) {
+                continue;
+            }
+
+            foreach (array_diff_key($routes, ['default' => true]) as $key => $target) {
+                $types->get(AskTypeKey::from($key));
+            }
+        }
     }
 }

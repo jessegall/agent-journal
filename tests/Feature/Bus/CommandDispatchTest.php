@@ -70,11 +70,11 @@ final class CommandDispatchTest extends CommandBusTestCase
         $nesting = $this->app->make(CommandNesting::class);
 
         foreach (range(1, 8) as $level) {
-            $nesting->enter();
+            $nesting->enter(AddItem::class);
         }
 
         try {
-            $nesting->enter();
+            $nesting->enter(AddItem::class);
             $this->fail('A ninth level was let through.');
         } catch (CommandNestingTooDeep) {
             foreach (range(1, 8) as $level) {
@@ -82,7 +82,7 @@ final class CommandDispatchTest extends CommandBusTestCase
             }
         }
 
-        $nesting->enter();
+        $nesting->enter(AddItem::class);
         $this->addToAssertionCount(1);
     }
 }

@@ -43,4 +43,5 @@ final readonly class AdmitPublicAssignments
 
         return new AdmittedAssignment($record, $requested, $resolved);
     }
+
 }

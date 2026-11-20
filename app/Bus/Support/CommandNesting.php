@@ -15,15 +15,17 @@ final class CommandNesting
 {
     private const int LIMIT = 8;
 
-    private int $depth = 0;
+    /** @var list<class-string> */
+    private array $commands = [];
 
-    public function enter(): void
+    /** @param class-string $command */
+    public function enter(string $command): void
     {
-        if ($this->depth >= self::LIMIT) {
-            throw CommandNestingTooDeep::at($this->depth + 1);
+        if (count($this->commands) >= self::LIMIT) {
+            throw CommandNestingTooDeep::at(count($this->commands) + 1);
         }
 
-        $this->depth++;
+        $this->commands[] = $command;
     }
 
     /**
@@ -31,11 +33,16 @@ final class CommandNesting
      */
     public function isNested(): bool
     {
-        return $this->depth > 1;
+        return count($this->commands) > 1;
+    }
+
+    public function runs(string $command): bool
+    {
+        return end($this->commands) === $command;
     }
 
     public function leave(): void
     {
-        $this->depth--;
+        array_pop($this->commands);
     }
 }

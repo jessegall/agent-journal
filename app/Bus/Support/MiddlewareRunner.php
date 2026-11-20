@@ -38,7 +38,7 @@ final readonly class MiddlewareRunner
      */
     public function handle(Command $command, Closure $next): mixed
     {
-        $this->nesting->enter();
+        $this->nesting->enter($command::class);
 
         try {
             $name = $command::class;

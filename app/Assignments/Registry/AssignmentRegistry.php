@@ -7,6 +7,7 @@ namespace App\Assignments\Registry;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\AssignableProvider;
+use App\Assignments\Contracts\JournalAssignableProvider;
 use App\Assignments\Contracts\AssignedWorkProvider;
 use App\Assignments\Contracts\AssigneeProvider;
 use App\Assignments\Contracts\AssignmentPoolFactory;
@@ -141,6 +142,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             throw AssignmentProviderInvalid::forRecords($type, $providerClass);
         }
 
+        if ($purpose === AssignmentPurpose::JournalAssigned
+            && ! is_subclass_of($providerClass, JournalAssignableProvider::class)) {
+            throw AssignmentProviderInvalid::forRecords($type, $providerClass);
+        }
+
         $this->recordProviders->put($type, $providerClass);
         $this->recordOwners->put($type, $owner);
         $this->recordPurposes->put($type, $purpose);
@@ -233,9 +239,18 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
 
     public function requireInternal(string $type): void
     {
-        if ($this->purposeOf($type)->isPublic()) {
+        if (! $this->purposeOf($type)->isResponsibility()) {
             throw AssignmentTypeUnavailable::forType($type);
         }
+    }
+
+    public function journalProvider(string $type): JournalAssignableProvider
+    {
+        if ($this->purposeOf($type) !== AssignmentPurpose::JournalAssigned) {
+            throw AssignmentTypeUnavailable::forType($type);
+        }
+
+        return $this->build($this->recordProviders->get($type), JournalAssignableProvider::class);
     }
 
     public function hasRecordProvider(string $type): bool
