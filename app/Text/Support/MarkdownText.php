@@ -28,7 +28,7 @@ use League\CommonMark\Node\Block\Paragraph;
  */
 final readonly class MarkdownText
 {
-    public const int BODY_BYTES = 1_048_576;
+    public const int BODY_BYTES = 2_097_152;
 
     public const int COMMENT_BYTES = 16_384;
 
@@ -53,6 +53,16 @@ final readonly class MarkdownText
      */
     public static function body(string $text): self
     {
+        return self::parseBody($text, true);
+    }
+
+    public static function workingBody(string $text): self
+    {
+        return self::parseBody($text, false);
+    }
+
+    private static function parseBody(string $text, bool $closedFence): self
+    {
         if (! mb_check_encoding($text, 'UTF-8')) {
             throw MarkdownInvalid::encoding();
         }
@@ -67,7 +77,7 @@ final readonly class MarkdownText
             throw ContentTooLarge::field('body', self::BODY_BYTES.' bytes');
         }
 
-        return new self($normalized, self::outlineOf($normalized));
+        return new self($normalized, self::outlineOf($normalized, $closedFence));
     }
 
     /**
@@ -280,7 +290,7 @@ final readonly class MarkdownText
             [...$replacement, ...array_fill(0, $blankLinesAfter, '')],
         );
 
-        return self::body(implode("\n", $lines));
+        return self::workingBody(implode("\n", $lines));
     }
 
     /**
@@ -306,7 +316,7 @@ final readonly class MarkdownText
             throw TextMatchInvalid::count($count);
         }
 
-        return self::body(str_replace($old, $new, $this->text));
+        return self::workingBody(str_replace($old, $new, $this->text));
     }
 
     /**
@@ -414,7 +424,7 @@ final readonly class MarkdownText
      *
      * @throws MarkdownInvalid
      */
-    private static function outlineOf(string $text): array
+    private static function outlineOf(string $text, bool $closedFence): array
     {
         $lines = explode("\n", $text);
         $headings = [];
@@ -460,7 +470,7 @@ final readonly class MarkdownText
             }
         }
 
-        if ($fence !== null) {
+        if ($closedFence && $fence !== null) {
             throw MarkdownInvalid::unclosedFence($fenceLine);
         }
 

@@ -18,6 +18,7 @@ Route::middleware('journal.agent')
         $calls->register(Calls\OpenDocumentController::class)->name('docs.open');
         $calls->register(Calls\EditDocumentController::class)->name('docs.edit');
         $calls->register(Calls\CloseDocumentController::class)->name('docs.close');
+        $calls->register(Calls\CommentDocumentController::class)->name('docs.comment');
         $calls->register(Calls\ShowDraftController::class)->name('docs.draft');
         $calls->register(Calls\ListDocumentRevisionsController::class)->name('docs.revisions');
         $calls->register(Calls\ShowDocumentRevisionController::class)->name('docs.revision');

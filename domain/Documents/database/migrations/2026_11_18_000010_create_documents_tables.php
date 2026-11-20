@@ -30,7 +30,7 @@ return new class extends Migration
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
             $table->string('title');
-            $table->string('abstract');
+            $table->string('abstract', 1000);
             $table->longText('body');
             $table->string('author_type', 16);
             $table->ulid('author_id');
@@ -46,7 +46,7 @@ return new class extends Migration
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
             $table->string('title');
-            $table->string('abstract');
+            $table->string('abstract', 1000);
             $table->longText('body');
             $table->string('creator_type', 16);
             $table->ulid('creator_id');

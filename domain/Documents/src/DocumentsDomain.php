@@ -43,10 +43,10 @@ use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Commands\ReplaceDocumentBody;
-use Domain\Documents\Commands\ReplaceDocumentSection;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
 use Domain\Documents\Commands\SettleReport;
@@ -179,7 +179,7 @@ final class DocumentsDomain extends Domain implements
                 CreateReport::class,
                 OpenDocument::class,
                 ReplaceDocumentBody::class,
-                ReplaceDocumentSection::class,
+                EditDocument::class,
                 ReplaceDocumentText::class,
                 ChangeDocumentDetails::class,
                 CloseDocument::class,

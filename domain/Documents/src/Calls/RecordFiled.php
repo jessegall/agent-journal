@@ -15,5 +15,6 @@ final class RecordFiled extends Data
         public string $id,
         public string $number,
         public string $label,
+        public int $revision = 1,
     ) {}
 }

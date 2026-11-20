@@ -14,7 +14,7 @@ use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\OpenDocument;
-use Domain\Documents\Commands\ReplaceDocumentSection;
+use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Contracts\DocumentResolver;
 use Domain\Documents\Exceptions\DraftConflict;
@@ -82,7 +82,7 @@ final class DraftsTest extends TestCase
     public function test_two_saves_close_into_exactly_one_next_revision(): void
     {
         $draft = $this->bus()->run(new OpenDocument(1));
-        $draft = $this->bus()->run(new ReplaceDocumentSection($this->target($draft), '3', <<<'TEXT'
+        $draft = $this->bus()->run(new EditDocument($this->target($draft), '3', <<<'TEXT'
         ## Risks
         Late.
 
@@ -159,7 +159,7 @@ final class DraftsTest extends TestCase
         $refusals = [
             [new ReplaceDocumentText($this->target($draft), '.', '!'), TextMatchInvalid::class],
             [
-                new ReplaceDocumentSection($this->target($draft), 'Missing', <<<'TEXT'
+                new EditDocument($this->target($draft), 'Missing', <<<'TEXT'
                 ## Missing
                 Text.
 

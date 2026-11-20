@@ -78,7 +78,9 @@ final readonly class DraftClosing
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->first()
             ?? throw DraftMissing::forDocument($document->number);
         $requireCloser($draft);
-        $this->refuseStaleDraftVersion($draft, $target->expectedVersion);
+        if ($target->expectedVersion !== null) {
+            $this->refuseStaleDraftVersion($draft, $target->expectedVersion);
+        }
 
         return $this->closeLocked($document, $draft, $cause, $closer, $reason);
     }
@@ -90,6 +92,7 @@ final readonly class DraftClosing
         Actor|null $closer,
         string|null $reason,
     ): CloseResult {
+        MarkdownCheck::publication($draft->body);
         $close = $draft->closeInto($document, $document->currentRevisionOrFail(), $cause, $closer, $reason);
         $this->events->dispatch(new DocumentClosed($document->id, $document->number, $close->result_revision_number));
 

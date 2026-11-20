@@ -32,11 +32,13 @@ final class MakeDocumentCall extends Data implements JournalCall
     public function __construct(
         public string $title,
         public string $abstract,
-        public string $body,
+        public string|null $body,
         #[PresentList]
         public array $about,
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
+        #[MapName('upload_id')]
+        public string|null $uploadId = null,
     ) {}
 }

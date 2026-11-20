@@ -42,9 +42,10 @@ final readonly class CreateDocument extends Command implements AuthorizedCommand
         public string $title,
         #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)]
         public string $abstract,
-        public string $body,
+        public string|null $body,
         #[Max(self::MOST_LINKS)]
         public array $about = [],
+        public string|null $uploadId = null,
     ) {}
 
     /**

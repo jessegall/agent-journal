@@ -7,6 +7,7 @@ namespace Domain\Documents\Support;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
+use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
@@ -28,9 +29,13 @@ final readonly class DraftEditing
      */
     public function saveEdit(DraftTarget $target, callable $newText): DraftReference
     {
+        if ($target->expectedVersion === null) {
+            throw DraftConflict::withoutVersion();
+        }
+
         $document = Document::lockedForEditing($target->documentNumber);
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->first()
-            ?? throw DraftMissing::forDocument($target->documentNumber);
+            ?? throw DraftMissing::forDocument($document->number);
         $this->refuseUnlessDraftEditor($draft, $this->editors);
         $this->refuseStaleDraftVersion($draft, $target->expectedVersion);
         $draft->saveText($newText(DraftText::of($draft)));

@@ -19,7 +19,7 @@ final readonly class ReplaceDocumentBodyHandler implements CommandHandler
     {
         return $this->drafts->saveEdit(
             $command->draft,
-            fn (DraftText $text) => $text->withBody(MarkdownText::body($command->body)),
+            fn (DraftText $text) => $text->withBody(MarkdownText::workingBody($command->body)),
         );
     }
 }

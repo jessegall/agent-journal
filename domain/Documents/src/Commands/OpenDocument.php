@@ -28,7 +28,10 @@ use Domain\Documents\Policies\DocumentAdministrationPolicy;
 #[Operation('open_document', ResourceAreaType::JournalContent, AccessType::Create)]
 final readonly class OpenDocument extends Command implements AuthorizedCommand
 {
-    public function __construct(public int $documentNumber) {}
+    public function __construct(
+        public int|string $documentNumber,
+        public int|null $expectedRevision = null,
+    ) {}
 
     /**
      * @return class-string

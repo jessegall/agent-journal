@@ -11,7 +11,9 @@ use App\Text\Support\MarkdownText;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Commands\CreateDocument;
+use Domain\Documents\Enums\UploadType;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Support\DocumentBody;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class CreateDocumentHandler implements CommandHandler
@@ -20,12 +22,14 @@ final readonly class CreateDocumentHandler implements CommandHandler
         private Dispatcher $events,
         private RecordLinker $links,
         private SessionProvenance $provenance,
+        private DocumentBody $bodies,
     ) {}
 
     public function handle(CreateDocument $command): CreatedRecord
     {
         $actor = $command->dispatchedBy();
-        $document = Document::publish($command->title, $command->abstract, MarkdownText::body($command->body), $actor);
+        $body = $this->bodies->read($command->body, $command->uploadId, UploadType::DocumentBody);
+        $document = Document::publish($command->title, $command->abstract, MarkdownText::body($body), $actor);
         $this->provenance->record($document);
         $this->provenance->record($document->currentRevisionOrFail());
         $this->links->linkFrom($document, $command->about);

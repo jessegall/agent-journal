@@ -10,6 +10,7 @@ use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Exceptions\DraftHeld;
+use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\RequestEditor;
@@ -26,6 +27,11 @@ final readonly class OpenDocumentHandler implements CommandHandler
     public function handle(OpenDocument $command): DraftReference
     {
         $document = Document::lockedForEditing($command->documentNumber);
+        $base = $document->currentRevisionOrFail();
+        if ($command->expectedRevision !== null && $base->number !== $command->expectedRevision) {
+            throw StaleRead::revision($command->expectedRevision, $base->number);
+        }
+
         $editor = $this->editors->editor();
         $held = DocumentDraft::query()->where('document_id', $document->id)->first();
 
@@ -46,7 +52,7 @@ final readonly class OpenDocumentHandler implements CommandHandler
             throw DraftHeld::elsewhere($elsewhere->document->number);
         }
 
-        $draft = DocumentDraft::openFor($document, $document->currentRevisionOrFail(), $editor);
+        $draft = DocumentDraft::openFor($document, $base, $editor);
         $this->provenance->record($draft);
         $this->events->dispatch(new DocumentOpened($document->id, $document->number));
 

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('base_revision_number');
             $table->unsignedInteger('version')->default(1);
             $table->string('title');
-            $table->string('abstract');
+            $table->string('abstract', 1000);
             $table->longText('body');
             $table->timestampTz('opened_at');
             $table->timestampsTz();

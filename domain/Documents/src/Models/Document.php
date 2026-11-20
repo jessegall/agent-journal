@@ -61,12 +61,12 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * The most characters a document's or a report's title holds.
      */
-    public const int TITLE_CHARACTERS = 200;
+    public const int TITLE_CHARACTERS = 240;
 
     /**
      * The most characters a document's or a report's abstract holds.
      */
-    public const int ABSTRACT_CHARACTERS = 500;
+    public const int ABSTRACT_CHARACTERS = 1000;
 
     /**
      * The most characters the reason a document or a report is settled holds.
@@ -239,10 +239,14 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
      *
      * @throws DocumentMissing
      */
-    public static function lockedForEditing(int $number): self
+    public static function lockedForEditing(int|string $number): self
     {
-        return self::query()->with('currentRevision')->where('number', $number)->lockForUpdate()->first()
-            ?? throw DocumentMissing::numbered($number);
+        $query = self::query()->with('currentRevision')->lockForUpdate();
+        if (is_int($number)) {
+            return $query->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
+        }
+
+        return $query->whereKey($number)->first() ?? throw DocumentMissing::identified($number);
     }
 
     /**

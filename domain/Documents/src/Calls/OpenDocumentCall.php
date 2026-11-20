@@ -32,5 +32,7 @@ final class OpenDocumentCall extends Data implements JournalCall
         #[LiteralTypeScriptType('string')]
         #[MapName('request_key'), WithCast(CallKeyCast::class), WithTransformer(CallKeyTransformer::class)]
         public CallKey $requestKey,
+        #[MapName('expected_revision')]
+        public int|null $expectedRevision = null,
     ) {}
 }
