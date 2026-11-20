@@ -37,6 +37,8 @@ final readonly class StackRestorer
         foreach ($this->positionsByType($all) as $typeKey => $positions) {
             $type = $this->types->registry()->get($typeKey);
 
+            $stateClass = $type->stateClass();
+
             foreach (array_chunk($positions, StateReferences::MAXIMUM) as $batch) {
                 $typeEnabled = ! $type instanceof ConditionalStateType || $type->isEnabled();
                 $states = $type->statesFor(
@@ -50,7 +52,8 @@ final readonly class StackRestorer
                         throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());
                     }
 
-                    $frames[$position] = Frame::restored($record, $states->stateAt($index), $typeEnabled);
+                    $state = $states->stateOfClassAt($index, $stateClass);
+                    $frames[$position] = Frame::restored($record, $state, $typeEnabled);
                 }
             }
         }

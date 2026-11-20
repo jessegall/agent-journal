@@ -12,6 +12,7 @@ use App\Hooks\Enums\SimpleTransition;
 use App\Hooks\Exceptions\ConflictingStackTransition;
 use App\Hooks\Exceptions\NoRefusalReason;
 use App\Hooks\Exceptions\NoReplacementLine;
+use App\Hooks\Values\WithContext;
 
 /**
  * A state's answer to one hook: the answer, one transition of the stack, any context for the agent, and the messages
@@ -19,6 +20,8 @@ use App\Hooks\Exceptions\NoReplacementLine;
  */
 final readonly class Decision
 {
+    use WithContext;
+
     /**
      * @param  list<string>  $context
      * @param  list<string>  $messages
@@ -79,16 +82,6 @@ final readonly class Decision
     public static function pop(): self
     {
         return new self(SimpleAnswer::Delegate, SimpleTransition::PopSelf);
-    }
-
-    public function withContext(string $text): self
-    {
-        return clone ($this, ['context' => [...$this->context, $text]]);
-    }
-
-    public function withMessage(string $text): self
-    {
-        return new self($this->answer, $this->transition, [...$this->context, $text], [...$this->messages, $text]);
     }
 
     public function withPush(StateReference $state): self

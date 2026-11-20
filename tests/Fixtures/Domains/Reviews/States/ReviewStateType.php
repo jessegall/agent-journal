@@ -21,6 +21,11 @@ final readonly class ReviewStateType implements StateLoader
 
     public function __construct(private ReviewSettings $settings, private CurrentSettingsResolver $currentSettings) {}
 
+    public function stateClass(): string
+    {
+        return ReviewState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $review = $this->currentSettings->resolver()->group($this->settings->review);

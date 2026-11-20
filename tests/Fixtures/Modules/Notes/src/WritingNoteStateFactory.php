@@ -15,6 +15,11 @@ use App\Hooks\States\AgentState;
  */
 final class WritingNoteStateFactory implements StateLoader
 {
+    public function stateClass(): string
+    {
+        return WritingNoteState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn (StateReference $reference) => $this->stateFor($reference));

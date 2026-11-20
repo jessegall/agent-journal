@@ -19,6 +19,11 @@ use App\Skills\States\AwaitingSkillsState;
  */
 final readonly class AwaitingSkillsStateFactory implements StateLoader
 {
+    public function stateClass(): string
+    {
+        return AwaitingSkillsState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $states = SkillPublication::statesOf($references->subjectIds());

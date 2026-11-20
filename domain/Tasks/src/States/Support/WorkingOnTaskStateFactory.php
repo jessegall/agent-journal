@@ -21,6 +21,11 @@ final readonly class WorkingOnTaskStateFactory implements StateLoader
 {
     public function __construct(private TaskRecords $tasks) {}
 
+    public function stateClass(): string
+    {
+        return WorkingOnTaskState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $subjects = $this->tasks->many($references->subjectIds());

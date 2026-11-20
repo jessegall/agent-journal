@@ -17,9 +17,15 @@ use Closure;
 final readonly class ClosureStateLoader implements StateLoader
 {
     /**
+     * @param  class-string<AgentState>  $stateClass
      * @param  Closure(StateReference): AgentState  $make
      */
-    public function __construct(private Closure $make) {}
+    public function __construct(private string $stateClass, private Closure $make) {}
+
+    public function stateClass(): string
+    {
+        return $this->stateClass;
+    }
 
     public function statesFor(StateReferences $references): StateSet
     {

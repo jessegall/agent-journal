@@ -13,6 +13,7 @@ use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\InvalidBottomState;
+use App\Hooks\Exceptions\StateClassMismatch;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\Exceptions\StateTypeUnknown;
@@ -161,7 +162,7 @@ final class StackRestorerTest extends TestCase
             $event->registry->register('tasks.working', $this->tasks);
             $event->registry->register(
                 'test.switched_off',
-                new ClosureStateLoader(fn () => new SwitchableState(false)),
+                new ClosureStateLoader(SwitchableState::class, fn () => new SwitchableState(false)),
             );
         });
         $types = new StateTypes($events, FixedOperationPolicy::loader());
@@ -210,6 +211,11 @@ final class StackRestorerTest extends TestCase
 
             public function __construct(private readonly Closure $make) {}
 
+            public function stateClass(): string
+            {
+                return ScriptedState::class;
+            }
+
             public function statesFor(StateReferences $references): StateSet
             {
                 return StateSet::build($references, fn (): AgentState => ($this->make)());
@@ -252,6 +258,33 @@ final class StackRestorerTest extends TestCase
         $this->assertSame(1, $loaded);
         $this->assertSame([true, false], array_map(fn ($frame) => $frame->isEnabled(), $stack->frames()));
         $this->assertSame(['ready'], $stack->withoutExposedInactive()->frameIds());
+    }
+
+    public function test_restoration_refuses_a_state_that_disagrees_with_its_declared_class(): void
+    {
+        $events = new Dispatcher();
+        $events->listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register(
+                'test.wrong_class',
+                new ClosureStateLoader(SwitchableState::class, fn () => ScriptedState::delegating()),
+            ),
+        );
+        $types = new StateTypes($events, FixedFileEditPermission::loader());
+        $restorer = new StackRestorer(
+            $types,
+            new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
+        );
+        $record = new FrameRecord(
+            'wrong-class',
+            new StateReference('test.wrong_class', NoSubject::None),
+            false,
+            1,
+            CarbonImmutable::now(),
+        );
+
+        $this->expectException(StateClassMismatch::class);
+        $restorer->restore($this->records($this->bottom(), $record));
     }
 
     private function restorerWith(InMemoryTaskLoader $tasks, bool $mayEditFiles = true): StackRestorer

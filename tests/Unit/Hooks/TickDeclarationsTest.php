@@ -19,6 +19,7 @@ use ReflectionProperty;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\Ticks\InheritedTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingLoader;
+use Tests\Fixtures\Hooks\Ticks\TickingState;
 use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestActors;
 
@@ -34,7 +35,7 @@ final class TickDeclarationsTest extends TestCase
         $registry = new StateTypeRegistry();
         $registry->register('test.ticking', new TickingLoader($make));
         $registry->register('test.inherited', new InheritedTickingLoader($make));
-        $registry->register('test.plain', new ClosureStateLoader($make));
+        $registry->register('test.plain', new ClosureStateLoader(TickingState::class, $make));
 
         $this->assertSame(['test.ticking', 'test.inherited'], $registry->tickingTypeKeys());
     }

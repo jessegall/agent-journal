@@ -23,6 +23,11 @@ final class RecordingStateLoader implements StateLoader
 
     public function __construct(private readonly LifecycleLog $log) {}
 
+    public function stateClass(): string
+    {
+        return RecordingState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn (StateReference $reference): AgentState => new RecordingState(

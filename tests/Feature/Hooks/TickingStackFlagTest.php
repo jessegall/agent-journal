@@ -58,7 +58,7 @@ final class TickingStackFlagTest extends TestCase
             ));
             $event->registry->register(
                 'test.plain',
-                new ClosureStateLoader(fn (): AgentState => new TickingState(false)),
+                new ClosureStateLoader(TickingState::class, fn () => new TickingState(false)),
             );
         });
     }

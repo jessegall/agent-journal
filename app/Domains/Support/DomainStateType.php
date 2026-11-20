@@ -22,6 +22,11 @@ final readonly class DomainStateType implements ConditionalStateType, StateLoade
      */
     public function __construct(public string $owner, private StateLoader $loader, private Closure $availability) {}
 
+    public function stateClass(): string
+    {
+        return $this->loader->stateClass();
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return $this->loader->statesFor($references);

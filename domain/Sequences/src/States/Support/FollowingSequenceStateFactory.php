@@ -21,6 +21,11 @@ final readonly class FollowingSequenceStateFactory implements StateLoader
 {
     public function __construct(private SequenceRecords $runs) {}
 
+    public function stateClass(): string
+    {
+        return FollowingSequenceState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $subjects = $this->runs->many($references->subjectIds());

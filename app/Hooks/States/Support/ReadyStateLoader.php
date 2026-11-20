@@ -18,6 +18,11 @@ final readonly class ReadyStateLoader implements StateLoader
 {
     public function __construct(private Container $container) {}
 
+    public function stateClass(): string
+    {
+        return ReadyState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn () => new ReadyState($this->container->make(OperationPolicy::class)));

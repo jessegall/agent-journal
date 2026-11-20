@@ -28,6 +28,11 @@ final class InMemoryTaskLoader implements StateLoader
         private readonly int $version = 1,
     ) {}
 
+    public function stateClass(): string
+    {
+        return WorkingOnTaskState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn (StateReference $reference) => $this->stateFor($reference));

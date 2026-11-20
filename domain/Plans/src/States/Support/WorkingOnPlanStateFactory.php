@@ -19,6 +19,11 @@ use Domain\Plans\States\WorkingOnPlanState;
  */
 final readonly class WorkingOnPlanStateFactory implements StateLoader
 {
+    public function stateClass(): string
+    {
+        return WorkingOnPlanState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $ids = $references->subjectIds();

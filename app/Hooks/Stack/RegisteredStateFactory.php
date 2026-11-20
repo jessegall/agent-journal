@@ -29,7 +29,7 @@ final readonly class RegisteredStateFactory implements StateFactory
         return new Frame(
             (string) Str::ulid(),
             $reference,
-            $type->statesFor(new StateReferences([$reference]))->stateAt(0),
+            $type->statesFor(new StateReferences([$reference]))->stateOfClassAt(0, $type->stateClass()),
             $this->clock->now(),
             schemaVersion: $type->schemaVersion(),
         );

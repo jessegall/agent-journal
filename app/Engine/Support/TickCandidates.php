@@ -160,7 +160,7 @@ final class TickCandidates
                         throw StateSchemaUnknown::for($frame->record->description(), $type->schemaVersion());
                     }
 
-                    $state = $states->stateAt($position);
+                    $state = $states->stateOfClassAt($position, $type->stateClass());
 
                     if (! $state->isFinished()) {
                         $candidates[$index] = $this->candidate($frame, $state);

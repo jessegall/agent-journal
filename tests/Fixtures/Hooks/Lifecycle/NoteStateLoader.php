@@ -16,6 +16,11 @@ use Tests\Fixtures\Hooks\ScriptedState;
  */
 final class NoteStateLoader implements StateLoader
 {
+    public function stateClass(): string
+    {
+        return ScriptedState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn (StateReference $reference) => $this->stateFor($reference));

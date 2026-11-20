@@ -79,9 +79,15 @@ trait CommittedHookStack
             StateTypesRequested $event,
         ) use ($tasks): void {
             $event->registry->register('test.tasks', $tasks);
-            $event->registry->register('guide', new ClosureStateLoader(fn () => ScriptedState::delegating()));
-            $event->registry->register('test.messaging', new ClosureStateLoader(fn () => new MessagingState()));
-            $event->registry->register('test.rewriting', new ClosureStateLoader(fn () => new RewritingState(
+            $event->registry->register(
+                'guide',
+                new ClosureStateLoader(ScriptedState::class, fn () => ScriptedState::delegating()),
+            );
+            $event->registry->register(
+                'test.messaging',
+                new ClosureStateLoader(MessagingState::class, fn () => new MessagingState()),
+            );
+            $event->registry->register('test.rewriting', new ClosureStateLoader(RewritingState::class, fn () => new RewritingState(
                 ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
                 new StateReference('guide', NoSubject::None),
             )));

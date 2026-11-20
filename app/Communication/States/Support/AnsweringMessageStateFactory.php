@@ -25,6 +25,11 @@ use Illuminate\Database\Eloquent\Collection;
  */
 final readonly class AnsweringMessageStateFactory implements StateLoader
 {
+    public function stateClass(): string
+    {
+        return AnsweringMessageState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $claimIds = $references->subjectIds();

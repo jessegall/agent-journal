@@ -37,6 +37,11 @@ final class ScriptedTickingLoader implements TickableStateLoader
         $this->guard = new ScriptedOccurrenceGuard();
     }
 
+    public function stateClass(): string
+    {
+        return ScriptedTickingState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn (StateReference $reference): AgentState => new ScriptedTickingState(

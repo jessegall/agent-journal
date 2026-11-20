@@ -20,6 +20,11 @@ final class AwaitingAnswerLoader implements TickableStateLoader
 {
     public const string TYPE_KEY = 'reminders.awaiting';
 
+    public function stateClass(): string
+    {
+        return AwaitingAnswerState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $questions = Question::query()->whereKey(

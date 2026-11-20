@@ -18,6 +18,11 @@ final readonly class DomainTickableStateType implements ConditionalStateType, Ti
 {
     public function __construct(private DomainStateType $type, private TickableStateLoader $loader) {}
 
+    public function stateClass(): string
+    {
+        return $this->type->stateClass();
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         return $this->type->statesFor($references);

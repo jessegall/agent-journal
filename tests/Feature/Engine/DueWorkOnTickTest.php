@@ -82,7 +82,7 @@ final class DueWorkOnTickTest extends TestCase
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register(
                 'test.plain',
-                new ClosureStateLoader(fn () => ScriptedState::delegating()),
+                new ClosureStateLoader(ScriptedState::class, fn () => ScriptedState::delegating()),
             ),
         );
         $this->bootModules(QuestionRemindersDomain::class);

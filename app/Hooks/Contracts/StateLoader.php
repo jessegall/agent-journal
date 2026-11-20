@@ -6,6 +6,7 @@ namespace App\Hooks\Contracts;
 
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
+use App\Hooks\States\AgentState;
 
 /**
  * Loads the states of one state type: given a batch of stored references, it reads their subjects fresh for this
@@ -13,6 +14,11 @@ use App\Hooks\Decisions\StateSet;
  */
 interface StateLoader
 {
+    /**
+     * @return class-string<AgentState> The state class, available without reading its subjects.
+     */
+    public function stateClass(): string;
+
     /**
      * A reference whose subject cannot be read keeps a StateSubjectMissing, thrown when its state is asked for.
      */

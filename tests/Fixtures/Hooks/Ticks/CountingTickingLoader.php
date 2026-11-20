@@ -33,6 +33,11 @@ final class CountingTickingLoader implements TickableStateLoader
         $this->guard = new ScriptedOccurrenceGuard();
     }
 
+    public function stateClass(): string
+    {
+        return TickingState::class;
+    }
+
     public function statesFor(StateReferences $references): StateSet
     {
         $this->batchSizes[] = count($references->all);

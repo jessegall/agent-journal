@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Decisions;
 
+use App\Hooks\Exceptions\StateClassMismatch;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
 use Closure;
@@ -40,6 +41,20 @@ final readonly class StateSet
         }
 
         return new self($states, $typeKey);
+    }
+
+    /**
+     * @param class-string<AgentState> $stateClass
+     */
+    public function stateOfClassAt(int $position, string $stateClass): AgentState
+    {
+        $state = $this->stateAt($position);
+
+        if ($state::class !== $stateClass) {
+            throw StateClassMismatch::for($this->typeKey, $stateClass, $state::class);
+        }
+
+        return $state;
     }
 
     /**
