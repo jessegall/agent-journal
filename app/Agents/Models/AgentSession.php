@@ -248,6 +248,45 @@ final class AgentSession extends Model implements ReadableModel
         return array_values($running->all());
     }
 
+    public function target(): StackTarget
+    {
+        return new StackTarget($this->agent_id, $this->id);
+    }
+
+    /**
+     * The running sessions launched for an owner's work, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function runningLaunches(int $limit): array
+    {
+        $launches = self::query()
+            ->running()
+            ->whereIn('id', StartRecord::query()->whereNotNull('owner_reference')->select('session_id'))
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($launches->all());
+    }
+
+    /**
+     * The running sessions started from one profile revision.
+     *
+     * @return list<self>
+     */
+    public static function runningFromRevision(string $key, int $revision, int $limit): array
+    {
+        $sessions = self::query()
+            ->running()
+            ->where('profile_key', $key)
+            ->where('profile_revision', $revision)
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($sessions->all());
+    }
+
     /**
      * This session as a use of the account it ran with; it runs until it ends.
      */

@@ -88,4 +88,23 @@ final class CapacityReservation extends Model implements ReadableModel
             ],
         );
     }
+
+    public static function isHeldFor(string $startRequestId): bool
+    {
+        return self::query()
+            ->where('start_request_id', $startRequestId)
+            ->where('state', ReservationState::Reserved)
+            ->exists();
+    }
+
+    /**
+     * Gives the start's share back once its exit is confirmed; releasing it again changes nothing.
+     */
+    public static function releaseFor(string $startRequestId): void
+    {
+        self::query()
+            ->where('start_request_id', $startRequestId)
+            ->where('state', ReservationState::Reserved)
+            ->update(['state' => ReservationState::Released]);
+    }
 }

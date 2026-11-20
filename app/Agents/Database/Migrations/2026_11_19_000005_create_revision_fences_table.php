@@ -12,7 +12,9 @@ return new class extends Migration
     {
         Schema::create('revision_fences', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('revision_reference', 64)->unique();
+            $table->string('profile_key', 128);
+            $table->unsignedInteger('profile_revision');
+            $table->unique(['profile_key', 'profile_revision']);
             $table->timestampTz('reconciled_at')->nullable();
             $table->timestampsTz();
         });

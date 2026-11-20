@@ -15,6 +15,6 @@ final readonly class FenceProfileRevisionHandler implements CommandHandler
 {
     public function handle(FenceProfileRevision $command): string
     {
-        return RevisionFence::retain($command->revisionReference)->id;
+        return RevisionFence::retain($command->key, $command->revision)->id;
     }
 }

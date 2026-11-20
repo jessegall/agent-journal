@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use PhpOption\Option;
 
 /**
  * The running program behind one agent session on one host: its driver, activity and hold, the requested, staged
@@ -85,6 +86,16 @@ final class AgentRuntime extends Model implements ReadableModel
     public static function existsForSession(string $sessionId): bool
     {
         return self::query()->where('agent_session_id', $sessionId)->exists();
+    }
+
+    /**
+     * The host the session's runtime ran on, or none when it never opened one.
+     *
+     * @return Option<string>
+     */
+    public static function hostOfSession(string $sessionId): Option
+    {
+        return Option::fromValue(self::query()->where('agent_session_id', $sessionId)->value('host_id'));
     }
 
     /**

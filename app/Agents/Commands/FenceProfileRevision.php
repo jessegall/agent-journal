@@ -17,8 +17,8 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /**
- * Retains the intent to fence every session started from a revoked configuration revision, named by an opaque
- * reference, in the transaction that revokes it, so a lost event cannot lose the revocation.
+ * Retains the intent to fence every session started from a revoked profile revision, in the transaction that revokes
+ * it, so a lost event cannot lose the revocation.
  *
  * @extends Command<string>
  */
@@ -27,7 +27,10 @@ use App\Operations\Enums\ResourceAreaType;
 #[Operation('fence_profile_revision', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class FenceProfileRevision extends Command implements AuthorizedCommand
 {
-    public function __construct(public string $revisionReference) {}
+    public function __construct(
+        public string $key,
+        public int $revision,
+    ) {}
 
     /**
      * @return class-string

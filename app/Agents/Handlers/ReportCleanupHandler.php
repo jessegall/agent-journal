@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Handlers;
+
+use App\Agents\Commands\ReportCleanup;
+use App\Agents\Enums\CleanupState;
+use App\Agents\Models\CapacityReservation;
+use App\Agents\Models\CleanupOperation;
+use App\Contracts\CommandHandler;
+
+/**
+ * Records the host's pass and releases the launch's capacity once every transient resource is gone, since only
+ * then can no process of it still run.
+ */
+final readonly class ReportCleanupHandler implements CommandHandler
+{
+    public function handle(ReportCleanup $command): CleanupState
+    {
+        $cleanup = CleanupOperation::ofSessionOn($command->hostId, $command->sessionId);
+        $cleanup->recordPass($command->report);
+
+        if ($cleanup->isDone()) {
+            CapacityReservation::releaseFor($cleanup->start_request_id);
+        }
+
+        return $cleanup->state;
+    }
+}

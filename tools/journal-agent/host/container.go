@@ -68,8 +68,9 @@ func (manifest ContainerManifest) IsSafe() bool {
 }
 
 // DockerCreateArguments are the arguments of `docker create` for the manifest: its exact image digest, the
-// unprivileged user, a read-only root, no capabilities, one workspace mount and the bounded resources.
-func (manifest ContainerManifest) DockerCreateArguments(name string) ([]string, error) {
+// unprivileged user, a read-only root, no capabilities, one workspace mount, the bounded resources and the labels
+// that let reconciliation find it again.
+func (manifest ContainerManifest) DockerCreateArguments(name string, labels LaunchLabels) ([]string, error) {
 	if !manifest.IsSafe() {
 		return nil, ErrManifestUnsafe
 	}
@@ -82,6 +83,7 @@ func (manifest ContainerManifest) DockerCreateArguments(name string) ([]string, 
 		"--pids-limit", strconv.Itoa(manifest.Budgets.Processes),
 		"--ulimit", "nofile=" + strconv.Itoa(manifest.Budgets.OpenFiles),
 	}
+	arguments = append(arguments, labels.arguments()...)
 	if manifest.ReadOnlyRoot {
 		arguments = append(arguments, "--read-only")
 	}
@@ -105,8 +107,13 @@ type Containers struct {
 }
 
 // Create creates the container from the manifest and answers its id.
-func (containers Containers) Create(ctx context.Context, manifest ContainerManifest, name string) (string, error) {
-	arguments, err := manifest.DockerCreateArguments(name)
+func (containers Containers) Create(
+	ctx context.Context,
+	manifest ContainerManifest,
+	name string,
+	labels LaunchLabels,
+) (string, error) {
+	arguments, err := manifest.DockerCreateArguments(name, labels)
 	if err != nil {
 		return "", err
 	}

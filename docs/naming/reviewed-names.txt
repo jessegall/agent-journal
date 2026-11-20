@@ -174,6 +174,12 @@ case	ClaudeCodeTool::WebSearch
 case	ClaudeCodeTool::Write
 case	CleanupProblem::FolderNotDeleted
 case	CleanupProblem::SignInNotVerified
+case	CleanupState::Done
+case	CleanupState::Failed
+case	CleanupState::Pending
+case	CleanupStep::Container
+case	CleanupStep::Network
+case	CleanupStep::Runtime
 case	CleanupTarget::Account
 case	CleanupTarget::SignInAttempt
 case	CloseCause::Author
@@ -1695,7 +1701,10 @@ class	CleanRefused
 class	CleanRunPageController
 class	CleanSignInAttempt
 class	CleanSignInAttemptHandler
+class	CleanupOperation
 class	CleanupProgress
+class	CleanupReport
+class	CleanupReportController
 class	CleanupReportRequest
 class	ClientOutOfDate
 class	CloseCard
@@ -2188,6 +2197,9 @@ class	EndTerminalViewsOnTick
 class	Endpoint
 class	EndpointDeclarationInvalid
 class	EndpointDeclarations
+class	EnforceLaunchLimits
+class	EnforceLaunchLimitsHandler
+class	EnforceLaunchLimitsOnTick
 class	EngineAccess
 class	EngineAccessRefused
 class	EngineActor
@@ -2587,6 +2599,7 @@ class	LaunchCancelled
 class	LaunchCandidateFacts
 class	LaunchCandidateQuery
 class	LaunchEnded
+class	LaunchLimits
 class	LaunchProfileKey
 class	Layout
 class	LayoutData
@@ -2928,6 +2941,7 @@ class	OpenDocumentPageController
 class	OpenDocumentTool
 class	OpenHostMainRuntime
 class	OpenHostMainRuntimeHandler
+class	OpenLaunchCleanup
 class	OpenMainRuntimeController
 class	OpenNavigationRequest
 class	OpenPlansCount
@@ -3728,6 +3742,8 @@ class	ReportAccountCleanupController
 class	ReportAlreadyStarted
 class	ReportAnswer
 class	ReportCard
+class	ReportCleanup
+class	ReportCleanupHandler
 class	ReportCommentCall
 class	ReportCommentsCommand
 class	ReportDriverTurn
@@ -5182,7 +5198,9 @@ constant	ClaudeCodeSkills::PLUGIN_NAME
 constant	ClaudeCodeSkills::SKILL_TOOL
 constant	ClaudeCodeTool::DECLARATION_REVISION
 constant	ClaudeCodeTool::SURFACE
+constant	CleanupOperation::ATTEMPT_LIMIT
 constant	CleanupProgress::MOST_TRIES
+constant	CleanupReportController::PENDING_LIMIT
 constant	ClientOutOfDate::CODE
 constant	CodexAccountProtection::HIDDEN_VARIABLES
 constant	CodexAccountSettings::OTHER_CREDENTIALS
@@ -5272,6 +5290,7 @@ constant	ElapsedTime::NANOSECONDS_PER_MILLISECOND
 constant	ElapsedTime::NANOSECONDS_PER_SECOND
 constant	EncodedValue::JSON_FLAGS
 constant	EndTerminalViews::MAINTENANCE_SCOPE
+constant	EnforceLaunchLimits::MAINTENANCE_SCOPE
 constant	EngineActor::ID
 constant	EngineLoop::LOCK_LOST
 constant	EngineLoop::NANOSECONDS_PER_MILLISECOND
@@ -5347,6 +5366,7 @@ constant	JournalTools::RESOURCE_SCHEME
 constant	JournalTools::SERVER
 constant	JournalTools::TOOL_PREFIX
 constant	JournalUnavailable::CODE
+constant	LaunchLimits::PASS_LIMIT
 constant	LibraryWindowResolver::SHARING_NOTICE
 constant	LimitMcpMessage::MAX_BYTES
 constant	LimitMcpMessage::MAX_DEPTH
@@ -5819,6 +5839,8 @@ enum	ClaimedOutcome
 enum	ClassificationState
 enum	ClaudeCodeTool
 enum	CleanupProblem
+enum	CleanupState
+enum	CleanupStep
 enum	CleanupTarget
 enum	CloseCause
 enum	CodexTool
@@ -6916,6 +6938,7 @@ method	AgentRuntime::hasScreen()
 method	AgentRuntime::holdFor()
 method	AgentRuntime::holdStartGrant()
 method	AgentRuntime::host()
+method	AgentRuntime::hostOfSession()
 method	AgentRuntime::isAssignedTo()
 method	AgentRuntime::isAtGeneration()
 method	AgentRuntime::isHeldFor()
@@ -6970,12 +6993,15 @@ method	AgentSession::recordSkillGeneration()
 method	AgentSession::running()
 method	AgentSession::runningFor()
 method	AgentSession::runningForMaintenance()
+method	AgentSession::runningFromRevision()
+method	AgentSession::runningLaunches()
 method	AgentSession::selectMessage()
 method	AgentSession::selectedMessage()
 method	AgentSession::selection()
 method	AgentSession::sharedLockFor()
 method	AgentSession::startFor()
 method	AgentSession::startToken()
+method	AgentSession::target()
 method	AgentSession::useOf()
 method	AgentSession::useSelection()
 method	AgentSession::visits()
@@ -8088,6 +8114,8 @@ method	CapabilityMatrixInvalid::unreadable()
 method	CapabilityMatrixInvalid::withoutRows()
 method	CapabilityWithoutTrait::for()
 method	CapacityReservation::casts()
+method	CapacityReservation::isHeldFor()
+method	CapacityReservation::releaseFor()
 method	CapacityReservation::reserve()
 method	CapacityUnavailable::because()
 method	CapacityUnavailable::reason()
@@ -8409,12 +8437,26 @@ method	CleanRefused::status()
 method	CleanRunPageController::__invoke()
 method	CleanSignInAttempt::__construct()
 method	CleanSignInAttemptHandler::handle()
+method	CleanupOperation::casts()
+method	CleanupOperation::isDone()
+method	CleanupOperation::ofSessionOn()
+method	CleanupOperation::open()
+method	CleanupOperation::pendingOn()
+method	CleanupOperation::recordPass()
+method	CleanupOperation::remainingSteps()
+method	CleanupOperation::stateAfterPass()
 method	CleanupProblem::of()
 method	CleanupProgress::__construct()
 method	CleanupProgress::isComplete()
+method	CleanupReport::__construct()
+method	CleanupReport::hasFailed()
+method	CleanupReportController::__invoke()
+method	CleanupReportController::index()
 method	CleanupReportRequest::generation()
 method	CleanupReportRequest::progress()
+method	CleanupReportRequest::report()
 method	CleanupReportRequest::rules()
+method	CleanupReportRequest::sessionId()
 method	CleanupReportRequest::targetId()
 method	CloseCard::__construct()
 method	CloseCompoundNode::handle()
@@ -10152,6 +10194,11 @@ method	Endpoint::__construct()
 method	EndpointDeclarationInvalid::for()
 method	EndpointDeclarations::check()
 method	EndpointDeclarations::endpointOf()
+method	EnforceLaunchLimitsHandler::__construct()
+method	EnforceLaunchLimitsHandler::handle()
+method	EnforceLaunchLimitsOnTick::__construct()
+method	EnforceLaunchLimitsOnTick::__invoke()
+method	EnforceLaunchLimitsOnTick::maintenanceScope()
 method	EngineAccess::__construct()
 method	EngineAccess::allowsMaintenance()
 method	EngineAccess::assertGranted()
@@ -11344,6 +11391,10 @@ method	LaunchCandidateQuery::__construct()
 method	LaunchCandidateRank::reason()
 method	LaunchCandidates::rank()
 method	LaunchEnded::__construct()
+method	LaunchLimits::__construct()
+method	LaunchLimits::enforceFences()
+method	LaunchLimits::stop()
+method	LaunchLimits::stopOverdue()
 method	LaunchProfileKey::__construct()
 method	Layout::casts()
 method	Layout::saveFor()
@@ -12378,6 +12429,7 @@ method	OpenHostMainRuntime::__construct()
 method	OpenHostMainRuntime::asAgentRuntime()
 method	OpenHostMainRuntimeHandler::__construct()
 method	OpenHostMainRuntimeHandler::handle()
+method	OpenLaunchCleanup::handle()
 method	OpenMainRuntimeController::__invoke()
 method	OpenNavigationRequest::__construct()
 method	OpenNavigationRequest::handle()
@@ -14791,6 +14843,8 @@ method	ReportAccountCleanupController::__invoke()
 method	ReportAlreadyStarted::handle()
 method	ReportAnswer::handle()
 method	ReportCard::__construct()
+method	ReportCleanup::__construct()
+method	ReportCleanupHandler::handle()
 method	ReportCommentCall::__construct()
 method	ReportCommentsCommand::handle()
 method	ReportDriverTurn::__construct()
@@ -15195,6 +15249,8 @@ method	ReviseSkillHandler::handle()
 method	RevisionCard::__construct()
 method	RevisionFence::casts()
 method	RevisionFence::isPending()
+method	RevisionFence::markReconciledAt()
+method	RevisionFence::pending()
 method	RevisionFence::retain()
 method	RevisionImmutable::assessment()
 method	RevisionImmutable::proof()
@@ -15890,6 +15946,7 @@ method	SessionPolicy::booted()
 method	SessionPolicy::casts()
 method	SessionPolicy::freeze()
 method	SessionPolicy::policy()
+method	SessionPolicy::wallDeadlinesOf()
 method	SessionPolicyFrozen::forSession()
 method	SessionPolicyReader::isFrozenFor()
 method	SessionPolicyReader::policyFor()
@@ -19400,6 +19457,7 @@ parameter	$classificationRuleId
 parameter	$classifier
 parameter	$classifiers
 parameter	$claudeCode
+parameter	$cleanup
 parameter	$cleanupProblem
 parameter	$client
 parameter	$clock
@@ -20044,6 +20102,7 @@ parameter	$journalUrl
 parameter	$json
 parameter	$jsonRpcCode
 parameter	$kept
+parameter	$keptWorkspace
 parameter	$key
 parameter	$keyPrefix
 parameter	$keys
@@ -20697,6 +20756,7 @@ parameter	$removeClasses
 parameter	$removeOperations
 parameter	$removed
 parameter	$removedClasses
+parameter	$removedSteps
 parameter	$removedVariables
 parameter	$render
 parameter	$rendered
@@ -22438,6 +22498,9 @@ property	CleanSignInAttempt::$hostId
 property	CleanSignInAttempt::$progress
 property	CleanupProgress::$isDirectoryRemoved
 property	CleanupProgress::$isStoreRemoved
+property	CleanupReport::$failure
+property	CleanupReport::$keptWorkspace
+property	CleanupReport::$removedSteps
 property	CloseCard::$baseRevision
 property	CloseCard::$cause
 property	CloseCard::$closedAt
@@ -23358,6 +23421,9 @@ property	Endpoint::$method
 property	Endpoint::$path
 property	Endpoint::$receipt
 property	Endpoint::$refusals
+property	EnforceLaunchLimitsHandler::$access
+property	EnforceLaunchLimitsHandler::$limits
+property	EnforceLaunchLimitsOnTick::$commands
 property	EngineAccess::$grant
 property	EngineAuthorizerProvider::$access
 property	EngineListenerSet::$listeners
@@ -23559,7 +23625,8 @@ property	FailureDetails::$failure
 property	FailureDetails::$program
 property	FailureLoggingListener::$event
 property	FailureLoggingListener::$listener
-property	FenceProfileRevision::$revisionReference
+property	FenceProfileRevision::$key
+property	FenceProfileRevision::$revision
 property	FetchAdmission::$processes
 property	FetchAdmissionCall::$processRun
 property	FetchAdmissionCall::$requestKey
@@ -24058,6 +24125,8 @@ property	LaunchCandidateQuery::$profile
 property	LaunchCandidateQuery::$program
 property	LaunchCandidateQuery::$purposeReference
 property	LaunchEnded::$work
+property	LaunchLimits::$clock
+property	LaunchLimits::$requests
 property	LaunchProfileKey::$key
 property	LayoutData::$id
 property	LayoutData::$name
@@ -26256,6 +26325,9 @@ property	ReportCard::$id
 property	ReportCard::$number
 property	ReportCard::$snippet
 property	ReportCard::$title
+property	ReportCleanup::$hostId
+property	ReportCleanup::$report
+property	ReportCleanup::$sessionId
 property	ReportCommentCall::$body
 property	ReportCommentCall::$reportId
 property	ReportCommentCall::$requestKey
@@ -29060,6 +29132,7 @@ variable	$classNames
 variable	$classSubjectFits
 variable	$classes
 variable	$classification
+variable	$cleanup
 variable	$close
 variable	$closed
 variable	$closes
@@ -29151,6 +29224,7 @@ variable	$cursor
 variable	$cycles
 variable	$database
 variable	$deadline
+variable	$deadlines
 variable	$decide
 variable	$decimal
 variable	$decision
@@ -29523,6 +29597,7 @@ variable	$lastSign
 variable	$lastVisits
 variable	$latest
 variable	$launch
+variable	$launches
 variable	$layout
 variable	$leading
 variable	$leaseEndsAt
@@ -29803,6 +29878,7 @@ variable	$plans
 variable	$plugin
 variable	$pointer
 variable	$points
+variable	$policies
 variable	$policy
 variable	$policyOwner
 variable	$pool
@@ -30307,6 +30383,7 @@ variable	$waiting
 variable	$waitingIds
 variable	$wake
 variable	$walk
+variable	$wallSeconds
 variable	$wanted
 variable	$wasAtCommandStart
 variable	$wasHeld

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Agents\Host\ActivityReportController;
 use App\Http\Controllers\Agents\Host\ClaimRequestsController;
 use App\Http\Controllers\Agents\Host\ClaimStartController;
+use App\Http\Controllers\Agents\Host\CleanupReportController;
 use App\Http\Controllers\Agents\Host\ExitReportController;
 use App\Http\Controllers\Agents\Host\HeartbeatReportController;
 use App\Http\Controllers\Agents\Host\InterruptNavigationController;
@@ -48,5 +49,7 @@ Route::prefix('host')->middleware('journal.host')->name('agents.host.')->group(f
     Route::post('/starts/{start}/running', ReportRunningController::class)->name('starts.running');
     Route::post('/starts/{start}/stopped', ReportStoppedController::class)->name('starts.stopped');
     Route::post('/starts/{start}/failure', ReportFailureController::class)->name('starts.failure');
+    Route::get('/cleanups', [CleanupReportController::class, 'index'])->name('cleanups.pending');
+    Route::post('/cleanups/{session}', CleanupReportController::class)->name('cleanups.report');
     Route::get('/starts/{start}/outputs', OutputGrantController::class)->name('starts.outputs');
 });

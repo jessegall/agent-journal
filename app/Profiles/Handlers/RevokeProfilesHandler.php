@@ -32,7 +32,7 @@ final readonly class RevokeProfilesHandler implements CommandHandler
         foreach ($profiles as $profile) {
             $revision = ProfileRevision::currentOf($profile);
             $profile->retire();
-            $this->commands->run(new FenceProfileRevision($revision->id));
+            $this->commands->run(new FenceProfileRevision($profile->key, $revision->revision));
             $this->events->dispatch(new ProfileRevisionRevoked(
                 ProfileKey::from($profile->key),
                 $revision->revision,

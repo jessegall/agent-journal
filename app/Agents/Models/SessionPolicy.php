@@ -12,6 +12,7 @@ use App\Agents\Support\StartPolicy;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -93,5 +94,35 @@ final class SessionPolicy extends Model implements ReadableModel
             $this->profile_revision,
             $this->configuration_hash,
         );
+    }
+
+    /**
+     * When each session's launch must have ended: its start plus the wall budget frozen with it, by session id. A
+     * session without a frozen policy has no budget and is not named.
+     *
+     * @param  list<AgentSession>  $sessions
+     * @return array<string, CarbonImmutable>
+     */
+    public static function wallDeadlinesOf(array $sessions): array
+    {
+        if ($sessions === []) {
+            return [];
+        }
+
+        $starts = [];
+
+        foreach ($sessions as $session) {
+            $starts[$session->id] = CarbonImmutable::instance($session->created_at);
+        }
+
+        $policies = self::query()->whereIn('session_id', array_keys($starts))->readLimit(count($starts))->get();
+        $deadlines = [];
+
+        foreach ($policies as $policy) {
+            $wallSeconds = $policy->execution_policy->budgets->wallSeconds;
+            $deadlines[$policy->session_id] = $starts[$policy->session_id]->addSeconds($wallSeconds);
+        }
+
+        return $deadlines;
     }
 }

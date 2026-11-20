@@ -8,6 +8,7 @@ use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\ClaimStartGrant;
 use App\Agents\Commands\FenceProfileRevision;
 use App\Agents\Commands\ReconcileStarts;
+use App\Agents\Commands\ReportCleanup;
 use App\Agents\Commands\ReportFailure;
 use App\Agents\Commands\ReportRunning;
 use App\Agents\Commands\ReportStopped;
@@ -107,10 +108,12 @@ final class CoreCommandsTest extends CommandBusTestCase
         $this->assertContains(StartAgent::class, CoreCommands::commands());
         $this->assertContains(RecordUserHeartbeat::class, CoreCommands::commands());
 
+        $privateCommands = CoreCommands::privateCommands();
+
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));
             $this->assertSame(
-                ! in_array($command, CoreCommands::privateCommands(), true),
+                ! in_array($command, $privateCommands, true),
                 $registry->isExported($command),
                 $command,
             );
@@ -123,6 +126,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             RecordStopResults::class,
             ReportFailure::class,
             ReconcileStarts::class,
+            ReportCleanup::class,
             PublishSignInChallenge::class,
             TakeSignInCode::class,
             RecordAccountFailure::class,

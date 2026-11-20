@@ -14,15 +14,16 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * The retained intent to fence every session started from one revoked configuration revision, named by an opaque
- * reference. Host reconciliation stops those sessions and marks the fence reconciled; until then it stays pending.
+ * The retained intent to fence every session started from one revoked profile revision. Launch reconciliation stops
+ * those sessions and marks the fence reconciled once none of them runs; until then it stays pending.
  *
  * @property string $id
- * @property string $revision_reference
+ * @property string $profile_key
+ * @property int $profile_revision
  * @property CarbonImmutable|null $reconciled_at
  */
 #[Table('revision_fences')]
-#[Fillable(['revision_reference', 'reconciled_at'])]
+#[Fillable(['profile_key', 'profile_revision', 'reconciled_at'])]
 final class RevisionFence extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
@@ -33,20 +34,41 @@ final class RevisionFence extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['reconciled_at' => 'immutable_datetime'];
+        return ['profile_revision' => 'integer', 'reconciled_at' => 'immutable_datetime'];
     }
 
     /**
      * Keeps the fence of the revision once; fencing the same revision again changes nothing.
      */
-    public static function retain(string $revisionReference): self
+    public static function retain(string $key, int $revision): self
     {
-        return self::query()->where('revision_reference', $revisionReference)->first()
-            ?? self::query()->create(['revision_reference' => $revisionReference]);
+        return self::query()->firstOrCreate(['profile_key' => $key, 'profile_revision' => $revision]);
     }
 
-    public static function isPending(string $revisionReference): bool
+    public static function isPending(string $key, int $revision): bool
     {
-        return self::query()->where('revision_reference', $revisionReference)->whereNull('reconciled_at')->exists();
+        return self::query()
+            ->where('profile_key', $key)
+            ->where('profile_revision', $revision)
+            ->whereNull('reconciled_at')
+            ->exists();
+    }
+
+    /**
+     * The fences whose sessions may still run, oldest first.
+     *
+     * @return list<self>
+     */
+    public static function pending(int $limit): array
+    {
+        $pending = self::query()->whereNull('reconciled_at')->orderBy('created_at')->readLimit($limit)->get();
+
+        return array_values($pending->all());
+    }
+
+    public function markReconciledAt(CarbonImmutable $time): void
+    {
+        $this->reconciled_at = $time;
+        $this->save();
     }
 }
