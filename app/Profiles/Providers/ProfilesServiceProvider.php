@@ -13,7 +13,7 @@ use App\Actors\Values\PolicyRegistration;
 use App\Agents\Contracts\ActiveAccountReader;
 use App\Agents\Contracts\BuiltInStartProfiles;
 use App\Agents\Contracts\StartProfileAdmission;
-use App\Hooks\Contracts\FileEditPermission;
+use App\Hooks\Contracts\OperationPolicy;
 use App\Processes\Contracts\CommandPermissionResolver;
 use App\Profiles\Console\ProfileActivateCommand;
 use App\Profiles\Console\ProfileListCommand;
@@ -40,7 +40,7 @@ use App\Profiles\Support\BuiltInProfilePins;
 use App\Profiles\Support\ClaudeSignIn;
 use App\Profiles\Support\CodexSignIn;
 use App\Profiles\Support\ProfileAuthorizerProvider;
-use App\Profiles\Support\ProfileFileEditPermission;
+use App\Profiles\Support\ProfileOperationPolicy;
 use App\Profiles\Support\ProfilePermissionReader;
 use App\Profiles\Support\ProfileStartAdmission;
 use App\Profiles\Support\SignInProtocols;
@@ -58,7 +58,7 @@ final class ProfilesServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(CommandPermissionResolver::class, ProfilePermissionReader::class);
-        $this->app->scoped(FileEditPermission::class, ProfileFileEditPermission::class);
+        $this->app->scoped(OperationPolicy::class, ProfileOperationPolicy::class);
         $this->app->bind(ProfileResolver::class, ProfileRecords::class);
         $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
         $this->app->bind(StartProfileAdmission::class, ProfileStartAdmission::class);

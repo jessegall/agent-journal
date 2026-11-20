@@ -22,7 +22,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
+use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\FixedServerClock;
@@ -75,7 +75,7 @@ final class StateLoaderTest extends TestCase
             $buildCount++;
             $event->registry->register('tasks.working', new InMemoryTaskLoader());
         });
-        $types = new StateTypes($events, FixedFileEditPermission::loader());
+        $types = new StateTypes($events, FixedOperationPolicy::loader());
 
         $first = $types->registry();
         $second = $types->registry();
@@ -88,7 +88,7 @@ final class StateLoaderTest extends TestCase
 
     public function test_the_ready_type_builds_the_one_bottom_state(): void
     {
-        $registry = new StateTypes(new Dispatcher(), FixedFileEditPermission::loader(false))->registry();
+        $registry = new StateTypes(new Dispatcher(), FixedOperationPolicy::loader(false))->registry();
         $readyType = $registry->get(ReadyState::TYPE_KEY);
         $ready = new StateReferences([new StateReference(ReadyState::TYPE_KEY, NoSubject::None)]);
 
@@ -108,7 +108,7 @@ final class StateLoaderTest extends TestCase
 
             $event->registry->register('tasks.working', new InMemoryTaskLoader());
         });
-        $types = new StateTypes($events, FixedFileEditPermission::loader());
+        $types = new StateTypes($events, FixedOperationPolicy::loader());
 
         try {
             $types->registry();
@@ -130,7 +130,7 @@ final class StateLoaderTest extends TestCase
             fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks),
         );
         $factory = new RegisteredStateFactory(
-            new StateTypes($events, FixedFileEditPermission::loader()),
+            new StateTypes($events, FixedOperationPolicy::loader()),
             new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00')),
         );
         $reference = new StateReference('tasks.working', new SubjectReference('42', 1));

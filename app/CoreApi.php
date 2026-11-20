@@ -528,6 +528,7 @@ use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\IncomingWork;
 use App\Hooks\Contracts\IncomingWorkRegistration;
+use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -576,6 +577,7 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
@@ -1177,6 +1179,7 @@ final class CoreApi
                 VerificationTiming::class,
                 HookAnswerer::class,
                 HookInput::class,
+                OperationPolicy::class,
                 StateRegistration::class,
                 ConditionalState::class,
                 ConditionalStateType::class,
@@ -1405,6 +1408,7 @@ final class CoreApi
                 SessionStartDetails::class,
                 SessionStartSource::class,
                 ShellCommandRequested::class,
+                ToolRequested::class,
                 ShellCommand::class,
                 CommandPart::class,
                 CommandClass::class,

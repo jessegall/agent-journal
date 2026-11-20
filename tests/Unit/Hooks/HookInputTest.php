@@ -26,6 +26,7 @@ final class HookInputTest extends TestCase
             'prompt' => 'onPrompt',
             'shell command' => 'onShellCommand',
             'file edit' => 'onFileEdit',
+            'tool requested' => 'onToolRequested',
             'stop' => 'onStop',
             'compaction' => 'onCompaction',
             'tool finished' => 'onToolFinished',

@@ -87,7 +87,7 @@ final class ClaudeCodeTest extends TestCase
         $this->assertInstanceOf(FileEditRequested::class, $edit);
         $this->assertInstanceOf(FileEditRequested::class, $write);
         $this->assertSame(['/redacted/notes.txt'], $edit->changes->paths());
-        $this->assertSame(FileOperation::Create, $write->changes->changes[0]->operation);
+        $this->assertSame(FileOperation::Write, $write->changes->changes[0]->operation);
     }
 
     public function test_a_start_after_compaction_is_the_compaction_under_the_callback_id(): void
@@ -171,6 +171,7 @@ final class ClaudeCodeTest extends TestCase
                 'onPrompt',
                 'onShellCommand',
                 'onFileEdit',
+                'onToolRequested',
                 'onStop',
                 'onCompaction',
                 'onToolFinished',

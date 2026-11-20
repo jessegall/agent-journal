@@ -28,7 +28,7 @@ use Domain\Plans\States\WorkingOnPlanState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
+use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\TestCase;
@@ -153,7 +153,7 @@ final class TransparentFramesTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedFileEditPermission()),
+            new ReadyState(new FixedOperationPolicy()),
             CarbonImmutable::now(),
             bottom: true,
         );

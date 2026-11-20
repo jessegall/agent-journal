@@ -7,7 +7,7 @@
         "shell command": "onShellCommand",
         "file edit": "onFileEdit",
         "file write": "onFileEdit",
-        "file read": "untouched",
+        "file read": "onToolRequested",
         "tool finished": "onToolFinished",
         "stop": "onStop",
         "stop failure": "reported",
@@ -16,7 +16,7 @@
         "subagent stop": "unsupported",
         "notification": "unsupported",
         "unknown tool": "unsupported",
-        "subagent tool call": "untouched"
+        "subagent tool call": "onToolRequested"
     },
     "unmapped inputs": []
 }

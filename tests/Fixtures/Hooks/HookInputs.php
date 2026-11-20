@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Hooks\Enums\ClaudeCodeTool;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\SessionEndReason;
@@ -26,6 +27,7 @@ use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Inputs\ToolResult;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
@@ -60,29 +62,33 @@ final class HookInputs
 
         return [
             'session start' => new SessionStarted(
-$hook,
- new SessionStartDetails('vendor-1', SessionStartSource::Startup, null),
-),
+                $hook,
+                new SessionStartDetails('vendor-1', SessionStartSource::Startup, null),
+            ),
             'prompt' => new PromptSubmitted($hook, new PromptDetails('prompt-1', 'Build the plan.', 'prompt-1')),
             'shell command' => new ShellCommandRequested(
-$hook,
- new ShellCommand(
-'composer test',
- ShellDialect::Bash,
- ParseOutcome::Complete,
- [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification)],
-),
-),
+                $hook,
+                new ShellCommand(
+                    'composer test',
+                    ShellDialect::Bash,
+                    ParseOutcome::Complete,
+                    [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification)],
+                ),
+            ),
             'file edit' => new FileEditRequested(
-$hook,
- new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)]),
-),
+                $hook,
+                new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)]),
+            ),
+            'tool requested' => new ToolRequested(
+                $hook,
+                ClaudeCodeTool::Read->operation(new ProgramToolInput(['file_path' => 'app/Models/Task.php'])),
+            ),
             'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
             'tool finished' => new ToolFinished(
-$hook,
- new ToolResult('Bash', ToolOutcome::Succeeded, new ProgramToolInput(['command' => 'ls'])),
-),
+                $hook,
+                new ToolResult('Bash', ToolOutcome::Succeeded, new ProgramToolInput(['command' => 'ls'])),
+            ),
             'session end' => new SessionEnded($hook, new SessionEndDetails(SessionEndReason::Exit)),
         ];
     }

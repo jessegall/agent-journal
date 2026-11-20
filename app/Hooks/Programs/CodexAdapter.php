@@ -45,6 +45,8 @@ final readonly class CodexAdapter implements ProgramAdapter
 
     private const string PATCH_FILE_LINE = '/^\*\*\* (Add|Update|Delete) File: (.+)$/m';
 
+    private const string PATCH_MOVED_FILE = '/^\*\*\* Update File: (.+)\n\*\*\* Move to: (.+)$/m';
+
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
@@ -57,7 +59,15 @@ final readonly class CodexAdapter implements ProgramAdapter
         return new ProgramCapabilities(
             self::PROGRAM,
             'Codex 0.165.0, hook payloads captured on 2026-11-17',
-            ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
+            [
+                'onSessionStart',
+                'onPrompt',
+                'onShellCommand',
+                'onFileEdit',
+                'onStop',
+                'onToolFinished',
+                'onSessionEnd',
+            ],
             RewriteSupport::NeedsApproval,
         );
     }
@@ -185,7 +195,8 @@ final readonly class CodexAdapter implements ProgramAdapter
     }
 
     /**
-     * Every file a patch adds, updates or deletes, in the order the patch names them.
+     * Every file a patch adds, updates or deletes, in the order the patch names them; a moved file is deleted at its
+     * source and written at its destination.
      */
     private function patchChanges(string $patch): FileChanges
     {
@@ -195,9 +206,17 @@ final readonly class CodexAdapter implements ProgramAdapter
             throw UnreadablePayload::forValue('patch', 'without a file');
         }
 
-        return new FileChanges(array_map(
-            fn (array $match) => new FileChange(trim($match[2]), FileOperation::fromPatchAction($match[1])),
+        preg_match_all(self::PATCH_MOVED_FILE, $patch, $moves, PREG_SET_ORDER);
+        $movedSources = array_map(fn (array $move) => trim($move[1]), $moves);
+
+        $changes = array_map(
+            fn (array $match) => in_array(trim($match[2]), $movedSources, true)
+                ? new FileChange(trim($match[2]), FileOperation::Delete)
+                : new FileChange(trim($match[2]), FileOperation::fromPatchAction($match[1])),
             $matches,
-        ));
+        );
+        $destinations = array_map(fn (array $move) => new FileChange(trim($move[2]), FileOperation::Write), $moves);
+
+        return new FileChanges([...$changes, ...$destinations]);
     }
 }

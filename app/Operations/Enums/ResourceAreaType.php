@@ -8,7 +8,7 @@ use App\Operations\Exceptions\UnknownResourceArea;
 
 /**
  * Where an operation acts: the helper's workspace and scratch, the journal's content, work and control records, the
- * provider connection, or the protected resources no policy may grant.
+ * provider connection, an internet destination, or the protected resources no policy may grant.
  */
 enum ResourceAreaType: string
 {
@@ -18,6 +18,7 @@ enum ResourceAreaType: string
     case JournalWork = 'journal.work';
     case JournalControl = 'journal.control';
     case ProviderConnection = 'provider.connection';
+    case Internet = 'internet';
     case Protected = 'protected';
 
     /**

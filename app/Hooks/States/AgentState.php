@@ -15,6 +15,7 @@ use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Lifecycle\LifecycleContext;
 
 /**
@@ -77,6 +78,11 @@ abstract class AgentState implements HookAnswerer
     }
 
     public function onFileEdit(FileEditRequested $input): Decision
+    {
+        return Decision::delegate();
+    }
+
+    public function onToolRequested(ToolRequested $input): Decision
     {
         return Decision::delegate();
     }

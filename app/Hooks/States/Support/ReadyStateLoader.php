@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\States\Support;
 
-use App\Hooks\Contracts\FileEditPermission;
+use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -20,7 +20,7 @@ final readonly class ReadyStateLoader implements StateLoader
 
     public function statesFor(StateReferences $references): StateSet
     {
-        return StateSet::build($references, fn () => new ReadyState($this->container->make(FileEditPermission::class)));
+        return StateSet::build($references, fn () => new ReadyState($this->container->make(OperationPolicy::class)));
     }
 
     public function schemaVersion(): int

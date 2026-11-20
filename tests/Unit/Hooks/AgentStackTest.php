@@ -33,7 +33,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Domain\Tasks\Support\TaskWork;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
+use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
@@ -168,7 +168,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_bottom_state_that_delegates_fails_with_the_steps_it_took(): void
     {
-        $delegatingBottom = new class(new FixedFileEditPermission()) extends ReadyState
+        $delegatingBottom = new class(new FixedOperationPolicy()) extends ReadyState
         {
             public function onStop(StopRequested $input): Decision
             {
@@ -371,7 +371,7 @@ final class AgentStackTest extends TestCase
         return new Frame(
             'ready',
             $this->reference('ready'),
-            new ReadyState(new FixedFileEditPermission()),
+            new ReadyState(new FixedOperationPolicy()),
             CarbonImmutable::now(),
             bottom: true,
         );

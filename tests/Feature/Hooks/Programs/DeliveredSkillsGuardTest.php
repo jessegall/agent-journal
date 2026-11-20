@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Agents\Models\AgentRuntime;
+use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Programs\ClaudeCodeAdapter;
@@ -13,9 +15,13 @@ use App\Hooks\Programs\CodexAdapter;
 use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\JudgedCall;
 use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Stack\AgentStack;
+use App\Hooks\Stack\HookAnswer;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Support\ShellParser;
 use App\Skills\Support\DeliveredSkillsAccess;
+use Closure;
+use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 
@@ -151,9 +157,11 @@ final class DeliveredSkillsGuardTest extends TestCase
      */
     private function claudeCode(string $tool, array $arguments): ProgramReply
     {
+        $allowed = new HookAnswer(Decision::allow(), [], [], new AgentStack([], new InMemoryStateFactory()));
+
         return $this->app->make(ClaudeCodeAdapter::class)
             ->callFor($this->payload($tool, $arguments), $this->hookIdentity())
-            ->replyWith(fn () => $this->fail('A refused tool call went to the journal.'));
+            ->replyWith(fn (HookInput $input, Closure $render) => $render($allowed));
     }
 
     /**

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\States;
 
-use App\Hooks\Contracts\FileEditPermission;
+use App\Agents\Values\Operation;
+use App\Hooks\Contracts\OperationPolicy;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileEditRequested;
@@ -14,16 +15,18 @@ use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolRequested;
 
 /**
- * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states. Whether it lets a
- * file change is what the agent's profile grants, never the agent's role.
+ * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states. It allows a file
+ * change or another tool call only when the agent's policy grants it, never by the agent's role, and a call with one
+ * refused operation is refused whole; a shell line is left to Core's admission, which judges every part of it.
  */
 class ReadyState extends AgentState
 {
     public const string TYPE_KEY = 'hooks.ready';
 
-    public function __construct(private readonly FileEditPermission $permission) {}
+    public function __construct(private readonly OperationPolicy $policy) {}
 
     public function onSessionStart(SessionStarted $input): Decision
     {
@@ -42,15 +45,12 @@ class ReadyState extends AgentState
 
     public function onFileEdit(FileEditRequested $input): Decision
     {
-        if ($this->permission->mayEditFiles()) {
-            return Decision::allow();
-        }
+        return $this->decide($input->changes->operations());
+    }
 
-        $paths = implode(', ', $input->changes->paths());
-
-        return Decision::deny(
-            "Your profile grants no changes to workspace files, so this edit of {$paths} is refused.",
-        );
+    public function onToolRequested(ToolRequested $input): Decision
+    {
+        return $this->decide([$input->operation]);
     }
 
     public function onStop(StopRequested $input): Decision
@@ -70,6 +70,24 @@ class ReadyState extends AgentState
 
     public function onSessionEnd(SessionEnded $input): Decision
     {
+        return Decision::allow();
+    }
+
+    /**
+     * Allows the call when the policy grants every operation of it, else refuses it with the first refusal's reason.
+     *
+     * @param  list<Operation>  $operations
+     */
+    private function decide(array $operations): Decision
+    {
+        foreach ($operations as $operation) {
+            $decision = $this->policy->assess($operation);
+
+            if (! $decision->allowed) {
+                return Decision::deny($decision->reason);
+            }
+        }
+
         return Decision::allow();
     }
 }

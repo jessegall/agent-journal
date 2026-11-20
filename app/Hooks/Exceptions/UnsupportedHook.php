@@ -27,6 +27,15 @@ final class UnsupportedHook extends LogicException
         );
     }
 
+    public static function notAnOperation(string $program, string $toolName): self
+    {
+        return new self(sprintf(
+            'The %s tool %s declares no operation: it is judged as a shell line or file edit, or touches nothing.',
+            $program,
+            $toolName,
+        ));
+    }
+
     public static function forResource(string $program, string $toolName): self
     {
         return new self(

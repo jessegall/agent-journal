@@ -14,6 +14,7 @@ use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\States\AgentState;
 
 /**
@@ -61,6 +62,11 @@ final class ScriptedState extends AgentState
     }
 
     public function onFileEdit(FileEditRequested $input): Decision
+    {
+        return $this->answer();
+    }
+
+    public function onToolRequested(ToolRequested $input): Decision
     {
         return $this->answer();
     }

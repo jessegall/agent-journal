@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Agents\Values\Operation;
 use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Actions\RecordProgramFailure;
 use App\Hooks\Contracts\ProgramAdapter;
@@ -31,6 +32,7 @@ use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Support\ProgramCompatibility;
 use App\Processes\Contracts\ShellCommandParser;
@@ -64,6 +66,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
                 'onCompaction',
                 'onShellCommand',
                 'onFileEdit',
+                'onToolRequested',
                 'onStop',
                 'onToolFinished',
                 'onSessionEnd',
@@ -183,7 +186,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
                 $hook,
                 FileAccess::Read,
                 $payload->toolArguments()->presentTexts('file_path', 'path'),
-                fn () => new UnjudgedCall(ProgramReplies::allowTool([])),
+                fn () => $this->judgedTool($hook, $tool->operation($payload->toolArguments()), $payload),
             );
         }
 
@@ -219,7 +222,24 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             );
         }
 
-        return new UnjudgedCall(ProgramReplies::allowTool([]));
+        if ($tool->keepsOwnTaskList()) {
+            return new UnjudgedCall(ProgramReplies::allowTool([]));
+        }
+
+        return $this->judgedTool($hook, $tool->operation($payload->toolArguments()), $payload);
+    }
+
+    /**
+     * A tool call the walk judges by its declared operation; the ready bottom allows it only when the policy grants it.
+     */
+    private function judgedTool(HookIdentity $hook, Operation $operation, HookPayload $payload): ProgramCall
+    {
+        $original = $payload->toolArguments();
+
+        return new JudgedCall(
+            new ToolRequested($hook, $operation),
+            fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+        );
     }
 
     private function refusesCommand(HookPayload $payload, HookIdentity $hook): bool

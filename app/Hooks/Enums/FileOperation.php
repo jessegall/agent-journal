@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace App\Hooks\Enums;
 
 use App\Hooks\Exceptions\UnknownPatchAction;
+use App\Operations\Enums\AccessType;
 
+/**
+ * What a native file tool does to one path; a write to a path that may or may not exist both creates and edits.
+ */
 enum FileOperation: string
 {
     case Create = 'create';
     case Edit = 'edit';
     case Delete = 'delete';
+    case Write = 'write';
 
     /**
      * The operation an apply_patch file line names: Add, Update or Delete.
@@ -22,6 +27,21 @@ enum FileOperation: string
             'Update' => self::Edit,
             'Delete' => self::Delete,
             default => throw UnknownPatchAction::forAction($action),
+        };
+    }
+
+    /**
+     * Every access the operation needs on its path.
+     *
+     * @return list<AccessType>
+     */
+    public function accessTypes(): array
+    {
+        return match ($this) {
+            self::Create => [AccessType::Create],
+            self::Edit => [AccessType::Edit],
+            self::Delete => [AccessType::Delete],
+            self::Write => [AccessType::Create, AccessType::Edit],
         };
     }
 }

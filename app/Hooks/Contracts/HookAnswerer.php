@@ -13,6 +13,7 @@ use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolRequested;
 
 /**
  * Whatever answers hooks, one method per hook; the agent states implement it.
@@ -24,6 +25,8 @@ interface HookAnswerer
     public function onPrompt(PromptSubmitted $input): Decision;
 
     public function onShellCommand(ShellCommandRequested $input): Decision;
+
+    public function onToolRequested(ToolRequested $input): Decision;
 
     public function onFileEdit(FileEditRequested $input): Decision;
 

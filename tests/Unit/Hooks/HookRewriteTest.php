@@ -20,7 +20,7 @@ use App\Hooks\Storage\WalkStep;
 use App\Processes\Enums\ShellDialect;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
+use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Hooks\RewritingState;
@@ -106,7 +106,7 @@ final class HookRewriteTest extends TestCase
 
     private function stack(RewritingState $rewriter): AgentStack
     {
-        return $this->stackOn(ReadyState::TYPE_KEY, new ReadyState(new FixedFileEditPermission()), $rewriter);
+        return $this->stackOn(ReadyState::TYPE_KEY, new ReadyState(new FixedOperationPolicy()), $rewriter);
     }
 
     /**

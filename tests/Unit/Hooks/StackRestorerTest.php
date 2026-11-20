@@ -29,7 +29,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
+use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\ScriptedState;
@@ -164,7 +164,7 @@ final class StackRestorerTest extends TestCase
                 new ClosureStateLoader(fn () => new SwitchableState(false)),
             );
         });
-        $types = new StateTypes($events, FixedFileEditPermission::loader());
+        $types = new StateTypes($events, FixedOperationPolicy::loader());
         $restorer = new StackRestorer(
             $types,
             new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
@@ -230,7 +230,7 @@ final class StackRestorerTest extends TestCase
             $event->registry->register('tasks.working', $this->tasks);
             $event->registry->register('plans.working', $switchedOffType);
         });
-        $types = new StateTypes($events, FixedFileEditPermission::loader());
+        $types = new StateTypes($events, FixedOperationPolicy::loader());
         $restorer = new StackRestorer(
             $types,
             new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
@@ -261,7 +261,7 @@ final class StackRestorerTest extends TestCase
             StateTypesRequested::class,
             fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks),
         );
-        $types = new StateTypes($events, FixedFileEditPermission::loader($mayEditFiles));
+        $types = new StateTypes($events, FixedOperationPolicy::loader($mayEditFiles));
 
         return new StackRestorer(
             $types,

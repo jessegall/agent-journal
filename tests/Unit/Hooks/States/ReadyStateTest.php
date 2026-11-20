@@ -24,7 +24,7 @@ use App\Processes\Values\CommandPart;
 use App\Processes\Values\ShellCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Hooks\FixedFileEditPermission;
+use Tests\Fixtures\Hooks\FixedOperationPolicy;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Support\TestActors;
 
@@ -40,8 +40,8 @@ final class ReadyStateTest extends TestCase
      */
     public static function roles(): iterable
     {
-        yield 'a profile that edits files' => [new ReadyState(new FixedFileEditPermission(true))];
-        yield 'a profile that edits none' => [new ReadyState(new FixedFileEditPermission(false))];
+        yield 'a profile that edits files' => [new ReadyState(new FixedOperationPolicy(true))];
+        yield 'a profile that edits none' => [new ReadyState(new FixedOperationPolicy(false))];
     }
 
     /**
@@ -83,21 +83,18 @@ final class ReadyStateTest extends TestCase
 
         $this->assertSame(
             AnswerType::Allow,
-            new ReadyState(new FixedFileEditPermission(true))->onFileEdit($edit)->answerType(),
+            new ReadyState(new FixedOperationPolicy(true))->onFileEdit($edit)->answerType(),
         );
     }
 
-    public function test_a_profile_without_file_changes_refuses_an_edit_and_names_every_path(): void
+    public function test_a_profile_without_file_changes_refuses_the_whole_edit_by_its_first_path(): void
     {
-        $decision = new ReadyState(new FixedFileEditPermission(false))->onFileEdit(
+        $decision = new ReadyState(new FixedOperationPolicy(false))->onFileEdit(
             $this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']),
         );
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString(
-            'app/Domains/Contracts/Domain.php, docs/hooks/dependencies.md',
-            $decision->refusalReason(),
-        );
+        $this->assertStringContainsString('app/Domains/Contracts/Domain.php', $decision->refusalReason());
     }
 
     #[DataProvider('roles')]

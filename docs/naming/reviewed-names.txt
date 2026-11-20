@@ -233,6 +233,7 @@ case	FileAccess::Write
 case	FileOperation::Create
 case	FileOperation::Delete
 case	FileOperation::Edit
+case	FileOperation::Write
 case	FolderType::Actions
 case	FolderType::CommandMiddleware
 case	FolderType::Commands
@@ -570,6 +571,7 @@ case	RequestState::Rejected
 case	RequestState::Withdrawn
 case	ReservationState::Released
 case	ReservationState::Reserved
+case	ResourceAreaType::Internet
 case	ResourceAreaType::JournalContent
 case	ResourceAreaType::JournalControl
 case	ResourceAreaType::JournalWork
@@ -2596,6 +2598,7 @@ class	ProfileKey
 class	ProfileKeyInvalid
 class	ProfileListCommand
 class	ProfileMissing
+class	ProfileOperationPolicy
 class	ProfilePermissionReader
 class	ProfilePolicyRefused
 class	ProfilePrograms
@@ -4014,6 +4017,7 @@ class	ToolArgumentUnknown
 class	ToolArguments
 class	ToolCallFinished
 class	ToolFinished
+class	ToolRequested
 class	ToolResult
 class	ToolRules
 class	ToolVersions
@@ -4217,8 +4221,11 @@ constant	ClaudeCodeAdapter::PROGRAM
 constant	ClaudeCodeSkills::FOLDER
 constant	ClaudeCodeSkills::PLUGIN_NAME
 constant	ClaudeCodeSkills::SKILL_TOOL
+constant	ClaudeCodeTool::DECLARATION_REVISION
+constant	ClaudeCodeTool::SURFACE
 constant	ClientOutOfDate::CODE
 constant	CodexAdapter::PATCH_FILE_LINE
+constant	CodexAdapter::PATCH_MOVED_FILE
 constant	CodexAdapter::PROGRAM
 constant	CodexSkills::FOLDER
 constant	CommandFrame::FIRST
@@ -4327,6 +4334,8 @@ constant	ExplainCommandController::NOTICE
 constant	Explanations::SNIPPET_BYTES
 constant	Exports::CORE_SUPPORT
 constant	FailedWindow::MESSAGE
+constant	FileChange::DECLARATION_REVISION
+constant	FileChange::SURFACE
 constant	FollowingSequenceStateReference::TYPE_KEY
 constant	Frame::BUDGET_SECONDS
 constant	Frame::CANCELLED
@@ -5071,6 +5080,7 @@ interface	NavigationChildren
 interface	Numbered
 interface	NumberedModelRegistration
 interface	NumberedPages
+interface	OperationPolicy
 interface	OperationResolver
 interface	OptionSetting
 interface	OutputRecorder
@@ -5668,6 +5678,7 @@ method	AgentState::onSessionStart()
 method	AgentState::onShellCommand()
 method	AgentState::onStop()
 method	AgentState::onToolFinished()
+method	AgentState::onToolRequested()
 method	AgentStateMachine::__construct()
 method	AgentStateMachine::answer()
 method	AgentVisibility::ownRead()
@@ -6673,6 +6684,7 @@ method	ClaudeCodeAdapter::__construct()
 method	ClaudeCodeAdapter::callFor()
 method	ClaudeCodeAdapter::callsJournalTools()
 method	ClaudeCodeAdapter::capabilities()
+method	ClaudeCodeAdapter::judgedTool()
 method	ClaudeCodeAdapter::modelArguments()
 method	ClaudeCodeAdapter::renderShell()
 method	ClaudeCodeAdapter::renderStop()
@@ -6687,8 +6699,11 @@ method	ClaudeCodeTool::canReadResources()
 method	ClaudeCodeTool::changesFiles()
 method	ClaudeCodeTool::discoversJournalTools()
 method	ClaudeCodeTool::fileOperation()
+method	ClaudeCodeTool::keepsOwnTaskList()
 method	ClaudeCodeTool::named()
+method	ClaudeCodeTool::operation()
 method	ClaudeCodeTool::readsFiles()
+method	ClaudeCodeTool::refuseOperation()
 method	CleanOutputCall::__construct()
 method	CleanOutputController::__invoke()
 method	CleanPreview::__construct()
@@ -8500,7 +8515,9 @@ method	FieldOriginData::fromFieldOrigin()
 method	FieldOriginData::toFieldOrigin()
 method	FileAccessPolicy::refusalFor()
 method	FileChange::__construct()
+method	FileChange::asOperation()
 method	FileChanges::__construct()
+method	FileChanges::operations()
 method	FileChanges::paths()
 method	FileDeclaresNoClass::withoutClass()
 method	FileDeclaresNoClass::withoutNamespace()
@@ -8514,6 +8531,7 @@ method	FileEditRequested::leavesAgentIdle()
 method	FileEditRequested::methodName()
 method	FileEditRequested::recordTurn()
 method	FileEditRequested::recordVisit()
+method	FileOperation::accessTypes()
 method	FileOperation::fromPatchAction()
 method	FileOutsideAutoload::for()
 method	FileOutsideAutoload::missingClass()
@@ -8824,6 +8842,7 @@ method	HookAnswerer::onSessionStart()
 method	HookAnswerer::onShellCommand()
 method	HookAnswerer::onStop()
 method	HookAnswerer::onToolFinished()
+method	HookAnswerer::onToolRequested()
 method	HookCall::acrossEveryAgent()
 method	HookCall::authorizedFor()
 method	HookCall::casts()
@@ -9998,6 +10017,7 @@ method	OperationDeadline::hasRunOut()
 method	OperationDeadline::lockMilliseconds()
 method	OperationGrant::__construct()
 method	OperationGrant::covers()
+method	OperationPolicy::assess()
 method	OperationResolver::operation()
 method	OperationResource::__construct()
 method	OperationResource::read()
@@ -10943,6 +10963,8 @@ method	ProfileListCommand::handle()
 method	ProfileMissing::for()
 method	ProfileMissing::refusalCode()
 method	ProfileMissing::status()
+method	ProfileOperationPolicy::__construct()
+method	ProfileOperationPolicy::assess()
 method	ProfilePermissionReader::__construct()
 method	ProfilePermissionReader::forActor()
 method	ProfilePermissionReader::forCurrentSession()
@@ -11594,6 +11616,7 @@ method	ReadsShareRoot::rootReference()
 method	ReadsShareRoot::shareRoot()
 method	ReadsWindowResults::result()
 method	ReadyState::__construct()
+method	ReadyState::decide()
 method	ReadyState::onCompaction()
 method	ReadyState::onFileEdit()
 method	ReadyState::onPrompt()
@@ -11602,6 +11625,7 @@ method	ReadyState::onSessionStart()
 method	ReadyState::onShellCommand()
 method	ReadyState::onStop()
 method	ReadyState::onToolFinished()
+method	ReadyState::onToolRequested()
 method	ReadyStateLoader::__construct()
 method	ReadyStateLoader::schemaVersion()
 method	ReadyStateLoader::statesFor()
@@ -15298,6 +15322,15 @@ method	ToolFinished::leavesAgentIdle()
 method	ToolFinished::methodName()
 method	ToolFinished::recordTurn()
 method	ToolFinished::recordVisit()
+method	ToolRequested::__construct()
+method	ToolRequested::accepts()
+method	ToolRequested::answerBy()
+method	ToolRequested::contextStart()
+method	ToolRequested::identity()
+method	ToolRequested::leavesAgentIdle()
+method	ToolRequested::methodName()
+method	ToolRequested::recordTurn()
+method	ToolRequested::recordVisit()
 method	ToolResult::__construct()
 method	ToolResult::hasArgument()
 method	ToolResult::ok()
@@ -15500,6 +15533,7 @@ method	UnsupportedHook::for()
 method	UnsupportedHook::forResource()
 method	UnsupportedHook::forTool()
 method	UnsupportedHook::forValue()
+method	UnsupportedHook::notAnOperation()
 method	UnsupportedKeyword::at()
 method	UnsupportedKeyword::closedBy()
 method	UnsupportedKeyword::closingKeyword()
@@ -18847,6 +18881,7 @@ property	ProfileFileEditPermission::$actors
 property	ProfileKey::$key
 property	ProfileListCommand::$description
 property	ProfileListCommand::$signature
+property	ProfileOperationPolicy::$actors
 property	ProfilePermissionReader::$actors
 property	ProfilePermissionReader::$profiles
 property	ProfilePrograms::$profiles
@@ -21515,6 +21550,8 @@ property	ToolCallFinished::$result
 property	ToolCallFinished::$target
 property	ToolFinished::$hook
 property	ToolFinished::$result
+property	ToolRequested::$hook
+property	ToolRequested::$operation
 property	ToolResult::$arguments
 property	ToolResult::$nextActions
 property	ToolResult::$outcome
