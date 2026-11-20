@@ -156,6 +156,7 @@ use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Support\SessionProvenance;
+use App\Communication\Support\InboxNotices;
 use App\Bus\Contracts\CommandTransaction;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
@@ -2156,6 +2157,7 @@ final class CoreApi
             )
             ->support(
                 SessionProvenance::class,
+                InboxNotices::class,
                 BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,

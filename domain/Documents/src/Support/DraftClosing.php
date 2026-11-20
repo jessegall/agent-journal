@@ -10,10 +10,13 @@ use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Api\Events\DocumentPublished;
+use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Exceptions\DraftMissing;
+use Domain\Documents\Exceptions\DraftMarkdownInvalid;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
+use Domain\Documents\Models\RetainedDraft;
 use Domain\Documents\Support\Concerns\RefusesOtherDrafts;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -55,7 +58,19 @@ final readonly class DraftClosing
     public function closeEnded(DocumentDraft $draft): void
     {
         $document = Document::lockedForEditing($draft->document->number);
-        $this->closeLocked($document, $draft, CloseCause::Lifecycle, null, null);
+        $held = DocumentDraft::query()->find($draft->id);
+        if ($held === null) {
+            return;
+        }
+
+        try {
+            $this->closeLocked($document, $held, CloseCause::Lifecycle, null, null);
+        } catch (DraftMarkdownInvalid $invalid) {
+            $kept = RetainedDraft::keep($held, $invalid->getMessage());
+            $this->provenance->inherit($kept, $held);
+            $held->delete();
+            $this->events->dispatch(new DraftKept($kept->id, $document->id, $this->provenance->parentOf($kept)));
+        }
     }
 
     /**

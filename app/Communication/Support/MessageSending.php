@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Support;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\AttentionOrigin;
@@ -109,7 +110,7 @@ final readonly class MessageSending
         $source = $this->inboxes->resolve($sourceInboxId);
         $destination = $this->inboxes->resolve($destinationInboxId);
         $this->lockShared([$source, $destination]);
-        $this->inboxes->accessFor($source)->membership($source, $author);
+        $this->requireSource($source, $author);
         $message = Message::record(
             $envelope($source, $destination, ActorIdentity::of($author)),
             new AcceptedOperation($this->accepted->requireFor(self::class)),
@@ -124,6 +125,16 @@ final readonly class MessageSending
         ));
 
         return $message;
+    }
+
+    private function requireSource(Inbox $source, ActorContext $author): void
+    {
+        if ($author->type === ActorType::System
+            && $source->inboxId() === $this->inboxes->named(InboxNotices::SYSTEM_INBOX)->inboxId()) {
+            return;
+        }
+
+        $this->inboxes->accessFor($source)->membership($source, $author);
     }
 
     /**

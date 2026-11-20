@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Actors\Support\ActorContext;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\SessionPolicyReader;
+use App\Agents\Models\AgentSession;
+use App\Agents\Values\Operation;
+use App\Agents\Values\OperationGrant;
 use App\Links\Models\Link;
 use App\Records\Contracts\IdentityLinks;
 use App\Records\Support\RecordIdentity;
@@ -15,7 +20,11 @@ final readonly class SessionProvenance
 {
     private const string SESSION = 'core.agent-session';
 
-    public function __construct(private CurrentSession $session, private IdentityLinks $links) {}
+    public function __construct(
+        private CurrentSession $session,
+        private IdentityLinks $links,
+        private SessionPolicyReader $policies,
+    ) {}
 
     public function record(Model $record): void
     {
@@ -62,5 +71,44 @@ final readonly class SessionProvenance
     public function fromSession(Builder $records, string $sessionId): Builder
     {
         return $this->links->among($records, new RecordIdentity(self::SESSION, $sessionId));
+    }
+
+    public function parentOf(Model $record): ActorContext|null
+    {
+        $parent = $this->parentSessionOf($record);
+
+        return $parent === null ? null : ActorContext::forAgent($parent->agent_id);
+    }
+
+    public function parentHasGrant(Model $record, Operation $operation): bool
+    {
+        if (! $this->session->hasSession()) {
+            return false;
+        }
+
+        $current = $this->session->sessionId();
+        $parent = $this->parentSessionOf($record);
+        if ($parent?->id !== $current || ! $this->policies->isFrozenFor($current)) {
+            return false;
+        }
+
+        $access = $this->policies->policyFor($current)->access;
+
+        return $access->decide($operation)->allowed && array_any(
+            $access->operationGrants,
+            fn (OperationGrant $grant): bool => $grant->resources !== [] && $grant->covers($operation),
+        );
+    }
+
+    private function parentSessionOf(Model $record): AgentSession|null
+    {
+        $origin = $this->links->linkedOfType($record, self::SESSION)[0] ?? null;
+        if ($origin === null) {
+            return null;
+        }
+
+        $parent = AgentSession::query()->whereKey($origin->id)->value('parent_session_id');
+
+        return $parent === null ? null : AgentSession::query()->find($parent);
     }
 }

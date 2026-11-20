@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Communication\Providers;
 
+use App\Actors\Support\SystemEntryPolicies;
 use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Values\PolicyRegistration;
 use App\Agents\Contracts\RequestSource;
@@ -22,6 +23,7 @@ use App\Communication\Policies\MessagePolicy;
 use App\Communication\Resolvers\MessageRecords;
 use App\Communication\Resolvers\AgentMessages;
 use App\Communication\Support\MessageAnswerActivation;
+use App\Communication\Support\InboxNotices;
 use App\Communication\Support\MessageClaimProvider;
 use App\Communication\Support\PendingInboxWork;
 use App\Communication\Support\RegisteredInboxes;
@@ -58,7 +60,9 @@ final class CommunicationServiceProvider extends ServiceProvider
         AssignmentRegistration $assignments,
         PendingWorkSources $pendingWork,
         IncomingWorkRegistration $incoming,
+        SystemEntryPolicies $system,
     ): void {
+        $system->allow(InboxNotices::SYSTEM_ENTRY, MessagePolicy::class);
         $policies->register('Core', new PolicyRegistration(
             Message::class,
             MessagePolicy::class,

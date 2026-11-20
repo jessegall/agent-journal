@@ -43,10 +43,24 @@ return new class extends Migration
             $table->timestampTz('closed_at');
             $table->timestampsTz();
         });
+
+        Schema::create('retained_drafts', function (Blueprint $table): void {
+            $table->ulid('id')->primary();
+            $table->foreignUlid('document_id')->constrained('documents')->cascadeOnDelete();
+            $table->unsignedBigInteger('base_revision_number');
+            $table->string('title');
+            $table->string('abstract', 1000);
+            $table->longText('body');
+            $table->text('reason');
+            $table->string('author_type', 16);
+            $table->ulid('author_id');
+            $table->timestampsTz();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('retained_drafts');
         Schema::dropIfExists('document_closes');
         Schema::dropIfExists('document_drafts');
     }

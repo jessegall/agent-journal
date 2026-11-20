@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Bus\Exceptions\RequestKeyMissing;
+use Closure;
 
 /**
  * The receipt the outermost command of this request was accepted under, for a write that keeps it as its origin.
@@ -16,6 +17,23 @@ final class AcceptedReceipt
     public function accept(string $receiptId): void
     {
         $this->receiptId = $receiptId;
+    }
+
+    /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function independently(Closure $work): mixed
+    {
+        $before = $this->receiptId;
+        $this->receiptId = null;
+
+        try {
+            return $work();
+        } finally {
+            $this->receiptId = $before;
+        }
     }
 
     /**

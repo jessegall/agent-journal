@@ -32,11 +32,13 @@ use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
+use Domain\Documents\Api\RetainedDraftView;
 use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Api\Events\DocumentPublished;
+use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\ChangeDocumentDetails;
@@ -46,6 +48,7 @@ use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Commands\EditDocument;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
+use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Commands\ReplaceDocumentBody;
 use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Commands\SettleDocument;
@@ -141,9 +144,10 @@ final class DocumentsDomain extends Domain implements
                 DocumentDraftSaved::class,
                 DocumentClosed::class,
                 DocumentPublished::class,
+                DraftKept::class,
                 RecordSettled::class,
             )
-            ->contracts(DraftResolver::class, DocumentResolver::class, ReportResolver::class)
+            ->contracts(DraftResolver::class, DraftReader::class, DocumentResolver::class, ReportResolver::class)
             ->values(
                 DockCard::class,
                 DockData::class,
@@ -160,6 +164,7 @@ final class DocumentsDomain extends Domain implements
                 RevisionCard::class,
                 RevisionView::class,
                 DraftReference::class,
+                RetainedDraftView::class,
                 DraftTarget::class,
                 CloseResult::class,
                 CloseCause::class,

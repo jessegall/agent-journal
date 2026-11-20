@@ -98,6 +98,25 @@ final class RequestKey
     }
 
     /**
+     * @template TResult
+     * @param Closure(): TResult $work
+     * @return TResult
+     */
+    public function independently(string $key, Closure $work): mixed
+    {
+        $before = [$this->key, $this->depth, $this->receiptTaken];
+        $this->set($key);
+        $this->depth = 0;
+        $this->receiptTaken = false;
+
+        try {
+            return $work();
+        } finally {
+            [$this->key, $this->depth, $this->receiptTaken] = $before;
+        }
+    }
+
+    /**
      * The key the command running now is receipted under: the request's key for the outermost command, null for a
      * nested one or a request without a key.
      */
