@@ -63,9 +63,9 @@ final class CodexFolderTrustTest extends TestCase
         $one = CodexFolderTrust::forWorkingRoot($this->base.'/roots', $this->base.'/roots/one');
         $two = CodexFolderTrust::forWorkingRoot($this->base.'/roots', $this->base.'/roots/two');
 
-        $this->assertTrue($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one));
-        $this->assertFalse($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one));
-        $this->assertTrue($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $two));
+        $this->assertTrue($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one, []));
+        $this->assertFalse($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $one, []));
+        $this->assertTrue($write->prepare($this->base.'/account', ['cli_auth_credentials_store' => '"file"'], [$hooks], $two, []));
 
         $written = (string) file_get_contents($config);
         $this->assertStringStartsWith("cli_auth_credentials_store = \"file\"\n[features]\nmulti_agent = false\n", $written);
