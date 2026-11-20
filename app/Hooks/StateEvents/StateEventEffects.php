@@ -71,7 +71,8 @@ final readonly class StateEventEffects
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     private function withCaller(StateEventAudience $audience, Closure $work): mixed

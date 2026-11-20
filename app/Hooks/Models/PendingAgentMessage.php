@@ -45,7 +45,7 @@ final class PendingAgentMessage extends Model implements ReadableModel
     }
 
     /**
-     * @param list<string> $lines
+     * @param  list<string>  $lines
      */
     public static function keep(
         ActorIdentity $agent,

@@ -23,7 +23,12 @@ use Tests\Fixtures\Modules\Notes\Policies\NoteWorkPolicy;
 #[Authorize(NoteWorkPolicy::class, NoteWorkAbility::Work)]
 final readonly class LimitNote extends Command implements HasAuthorizationSubject
 {
-    public function __construct(#[Max(5)] public string $text, #[Max(5)] public string|null $label = null) {}
+    public function __construct(
+        #[Max(5)]
+        public string $text,
+        #[Max(5)]
+        public string|null $label = null,
+    ) {}
 
     /**
      * @return class-string

@@ -17,9 +17,13 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class ReplyInput extends Data
 {
     public function __construct(
-        #[Ulid] public readonly string $messageId,
-        #[Min(0)] public readonly int $stateVersion,
-        #[Regex('/\S/')] public readonly string $body,
-        #[Ulid] public readonly string $session,
+        #[Ulid]
+        public readonly string $messageId,
+        #[Min(0)]
+        public readonly int $stateVersion,
+        #[Regex('/\S/')]
+        public readonly string $body,
+        #[Ulid]
+        public readonly string $session,
     ) {}
 }

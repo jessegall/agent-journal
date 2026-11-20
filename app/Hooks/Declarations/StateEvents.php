@@ -17,7 +17,7 @@ final readonly class StateEvents
     private array $byEvent;
 
     /**
-     * @param list<StateEventDeclaration> $declarations
+     * @param  list<StateEventDeclaration>  $declarations
      */
     public function __construct(array $declarations)
     {

@@ -535,7 +535,12 @@ final class AgentDriverLedgerTest extends TestCase
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
         $oldAttempt = $request->attempt_version;
         $this->asSystem(new ReportRequestProgress(
-            $host->hostId, $request->id, $oldAttempt, RequestProgress::Failed, null, RequestOutcome::EntryUnavailable,
+            $host->hostId,
+            $request->id,
+            $oldAttempt,
+            RequestProgress::Failed,
+            null,
+            RequestOutcome::EntryUnavailable,
         ));
         $request->refresh();
 
@@ -548,7 +553,12 @@ final class AgentDriverLedgerTest extends TestCase
         );
         $this->expectException(HostReportRefused::class);
         $this->asSystem(new ReportRequestProgress(
-            $host->hostId, $request->id, $oldAttempt, RequestProgress::Applied, 'late', null,
+            $host->hostId,
+            $request->id,
+            $oldAttempt,
+            RequestProgress::Applied,
+            'late',
+            null,
         ));
     }
 
@@ -559,7 +569,12 @@ final class AgentDriverLedgerTest extends TestCase
         $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
         $request = DriverRequest::query()->findOrFail($receipt->requestId);
         $this->asSystem(new ReportRequestProgress(
-            $host->hostId, $request->id, $request->attempt_version, RequestProgress::DeliveryUncertain, null, null,
+            $host->hostId,
+            $request->id,
+            $request->attempt_version,
+            RequestProgress::DeliveryUncertain,
+            null,
+            null,
         ));
         $request->refresh();
 
@@ -625,7 +640,12 @@ final class AgentDriverLedgerTest extends TestCase
         $request = DriverRequest::query()->findOrFail($effort->requestId);
         $attempt = $request->attempt_version;
         $this->asSystem(new ReportRequestProgress(
-            $host->hostId, $request->id, $attempt, RequestProgress::Failed, null, RequestOutcome::Refused,
+            $host->hostId,
+            $request->id,
+            $attempt,
+            RequestProgress::Failed,
+            null,
+            RequestOutcome::Refused,
         ));
         $request->refresh();
         $sequence = $request->sequence;
@@ -651,7 +671,11 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(HoldReason::None, $runtime()->hold_reason);
 
         $this->asSystem(new ReportRuntimeActivity(
-            $host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::Compacting, 1,
+            $host->hostId,
+            $opened->runtimeId,
+            RuntimeActivity::Running,
+            HoldReason::Compacting,
+            1,
         ));
         $this->expectException(DriverRequestRefused::class);
         $this->asOwner(new ReleaseAgentHold($agentId, $opened->sessionId, HoldReason::Compacting, 'hurry'));
@@ -668,7 +692,12 @@ final class AgentDriverLedgerTest extends TestCase
         );
         foreach ([$resumed, $cancelled] as $request) {
             $this->asSystem(new ReportRequestProgress(
-                $host->hostId, $request->id, $request->attempt_version, RequestProgress::Applying, null, null,
+                $host->hostId,
+                $request->id,
+                $request->attempt_version,
+                RequestProgress::Applying,
+                null,
+                null,
                 new ScriptProgress(2, 7, 'paused: a person typed'),
             ));
             $request->refresh();
@@ -886,7 +915,12 @@ final class AgentDriverLedgerTest extends TestCase
         $request = DriverRequest::query()->findOrFail($requestId);
 
         $this->asSystem(new ReportRequestProgress(
-            $hostId, $request->id, $request->attempt_version, $progress, null, RequestOutcome::EntryUnavailable,
+            $hostId,
+            $request->id,
+            $request->attempt_version,
+            $progress,
+            null,
+            RequestOutcome::EntryUnavailable,
         ));
     }
 }

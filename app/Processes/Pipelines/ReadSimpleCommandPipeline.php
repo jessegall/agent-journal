@@ -31,7 +31,8 @@ final readonly class ReadSimpleCommandPipeline implements CommandReader, Pipelin
         return [
             OpenSimpleCommandNode::class,
             Step::repeated(
-                Step::chosen(fn (SimpleCommandDraft $command) => $command->isAtRedirect(),
+                Step::chosen(
+                    fn (SimpleCommandDraft $command) => $command->isAtRedirect(),
                     then: AttachRedirectToSimpleCommand::class,
                     else: AttachWordToSimpleCommand::class
                 ),

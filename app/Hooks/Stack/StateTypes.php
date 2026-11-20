@@ -21,7 +21,8 @@ final class StateTypes implements ResolvesStateTypes
 {
     private StateTypeRegistry|null $registry = null;
 
-    public function __construct(private readonly Dispatcher $events,
+    public function __construct(
+        private readonly Dispatcher $events,
         private ReadyStateLoader $readyStates,
     ) {}
 

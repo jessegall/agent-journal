@@ -12,7 +12,7 @@ use App\Agents\Support\StackTarget;
 final readonly class StateEventResults
 {
     /**
-     * @param list<StateEventResult> $all
+     * @param  list<StateEventResult>  $all
      */
     public function __construct(public StackTarget $target, public array $all) {}
 

@@ -17,9 +17,9 @@ use PhpOption\Option;
 final readonly class StateEventAudience
 {
     /**
-     * @param list<StackTarget> $targets
-     * @param Option<AgentContext> $session
-     * @param Option<FrameGrant> $engineFrame
+     * @param  list<StackTarget>  $targets
+     * @param  Option<AgentContext>  $session
+     * @param  Option<FrameGrant>  $engineFrame
      */
     public function __construct(
         public ActorContext $actor,

@@ -20,8 +20,9 @@ interface AgentCallContext
 
     /**
      * @template TResult
-     * @param Option<AgentContext> $context
-     * @param Closure(): TResult $work
+     *
+     * @param  Option<AgentContext>  $context
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function within(Option $context, Closure $work): mixed;

@@ -45,7 +45,7 @@ final class TaskWatchDeliveryTest extends TestCase
             $catalogue->register($domain->name, $policy);
         }
 
-        (new DomainEventServiceProvider($this->app))->boot();
+        new DomainEventServiceProvider($this->app)->boot();
         $this->setUpBaseStack();
     }
 

@@ -17,9 +17,11 @@ use App\Bus\Support\OperationDeadline;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
+use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
 use App\Hooks\Models\PendingAgentMessage;
@@ -33,8 +35,6 @@ use App\Hooks\Support\AgentMessageDelivery;
 use App\Hooks\Support\PendingAgentMessages;
 use App\Hooks\Support\StackTransaction;
 use Tests\Fixtures\Agents\RecordedAttention;
-use App\Hooks\Enums\HookEvent;
-use App\Hooks\Enums\RewriteSupport;
 use Tests\Fixtures\Hooks\MessagingState;
 use Tests\Fixtures\Modules\Notes\Events\NoteWritten;
 use Tests\Support\CommittedHookStack;
@@ -176,7 +176,7 @@ final class AgentMessageDeliveryTest extends TestCase
         );
     }
 
-    private function hookIdentityFor(string $callId): \App\Hooks\Inputs\HookIdentity
+    private function hookIdentityFor(string $callId): HookIdentity
     {
         return TestActors::hookIdentity(1, 10, $callId, self::inputDigest());
     }

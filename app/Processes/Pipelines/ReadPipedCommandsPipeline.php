@@ -23,7 +23,8 @@ final readonly class ReadPipedCommandsPipeline implements PipelineDefinition
         return [
             NoteNegation::class,
             ParseFirstPipedCommand::class,
-            Step::repeated([SkipPipeSymbol::class, ParseNextPipedCommand::class],
+            Step::repeated(
+                [SkipPipeSymbol::class, ParseNextPipedCommand::class],
                 while: fn (PipedCommands $commands) => $commands->isAtPipeSymbol()
             ),
             AddPipedCommandsNode::class,

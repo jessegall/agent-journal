@@ -29,8 +29,10 @@ final readonly class ChangeDocumentDetails extends Command implements HasAuthori
 {
     public function __construct(
         public DraftTarget $draft,
-        #[Required, OneLine, Max(Document::TITLE_CHARACTERS)] public string $title,
-        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)] public string $abstract,
+        #[Required, OneLine, Max(Document::TITLE_CHARACTERS)]
+        public string $title,
+        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)]
+        public string $abstract,
     ) {}
 
     /**

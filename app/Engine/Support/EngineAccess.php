@@ -57,7 +57,8 @@ final class EngineAccess implements EngineTargetAccess
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function withinMaintenance(string $capability, Closure $work): mixed
@@ -121,7 +122,8 @@ final class EngineAccess implements EngineTargetAccess
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     private function withinGrant(EngineGrant|FrameGrant $grant, Closure $work): mixed

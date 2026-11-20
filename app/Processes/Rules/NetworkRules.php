@@ -61,15 +61,19 @@ final readonly class NetworkRules
             CommandRule::forProgram('core.wget', new ProgramSpellings('wget'), [], ArgumentGrammar::operands(
                 OperandType::Url,
             )->repeating()->withOptions(
-                OptionGrammar::valued(OperandType::Path, '-O', '--output-document'), OptionGrammar::valued(
+                OptionGrammar::valued(OperandType::Path, '-O', '--output-document'),
+                OptionGrammar::valued(
                     OperandType::Path,
                     '-P',
                     '--directory-prefix',
                 ),
-                OptionGrammar::flag('-q', '--quiet'), OptionGrammar::flag('-c', '--continue'), OptionGrammar::flag(
+                OptionGrammar::flag('-q', '--quiet'),
+                OptionGrammar::flag('-c', '--continue'),
+                OptionGrammar::flag(
                     '-nv',
                     '--no-verbose',
-                ), OptionGrammar::flag('--spider'),
+                ),
+                OptionGrammar::flag('--spider'),
             ), CommandClassSet::of(CommandClass::Network, CommandClass::Write)),
         ];
     }
@@ -84,13 +88,16 @@ final readonly class NetworkRules
                 OperandType::Text,
                 '-X',
                 '--request',
-            ), OptionGrammar::valued(OperandType::Text, '-H', '--header'),
-            OptionGrammar::valued(OperandType::Text, '-u', '--user'), OptionGrammar::valued(
+            ),
+            OptionGrammar::valued(OperandType::Text, '-H', '--header'),
+            OptionGrammar::valued(OperandType::Text, '-u', '--user'),
+            OptionGrammar::valued(
                 OperandType::Text,
                 '-w',
                 '--write-out',
             ),
-            OptionGrammar::valued(OperandType::Count, '-m', '--max-time'), OptionGrammar::valued(
+            OptionGrammar::valued(OperandType::Count, '-m', '--max-time'),
+            OptionGrammar::valued(
                 OperandType::Text,
                 '-A',
                 '--user-agent',
@@ -98,19 +105,26 @@ final readonly class NetworkRules
             OptionGrammar::valued(
                 OperandType::Count,
                 '--connect-timeout',
-            ), OptionGrammar::valued(OperandType::Count, '--retry'),
-            OptionGrammar::flag('-s', '--silent'), OptionGrammar::flag(
+            ),
+            OptionGrammar::valued(OperandType::Count, '--retry'),
+            OptionGrammar::flag('-s', '--silent'),
+            OptionGrammar::flag(
                 '-S',
                 '--show-error',
-            ), OptionGrammar::flag('-L', '--location'),
-            OptionGrammar::flag('-f', '--fail'), OptionGrammar::flag('-I', '--head'), OptionGrammar::flag(
+            ),
+            OptionGrammar::flag('-L', '--location'),
+            OptionGrammar::flag('-f', '--fail'),
+            OptionGrammar::flag('-I', '--head'),
+            OptionGrammar::flag(
                 '-v',
                 '--verbose',
             ),
             OptionGrammar::flag(
                 '-k',
                 '--insecure',
-            ), OptionGrammar::flag('-i', '--include'), OptionGrammar::flag('--compressed'),
+            ),
+            OptionGrammar::flag('-i', '--include'),
+            OptionGrammar::flag('--compressed'),
         );
     }
 }

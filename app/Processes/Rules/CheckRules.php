@@ -82,10 +82,14 @@ final readonly class CheckRules
                 'commandments',
                 ['commandments-release', 'commandments-go'],
             ), ['judge'], ArgumentGrammar::operands(OperandType::Path)->withOptions(
-                OptionGrammar::flag('--changes'), OptionGrammar::flag('--changed-files'), OptionGrammar::valued(
+                OptionGrammar::flag('--changes'),
+                OptionGrammar::flag('--changed-files'),
+                OptionGrammar::valued(
                     OperandType::Revision,
                     '--branch',
-                ), OptionGrammar::valued(OperandType::Name, '--sin'), OptionGrammar::valued(
+                ),
+                OptionGrammar::valued(OperandType::Name, '--sin'),
+                OptionGrammar::valued(
                     OperandType::Text,
                     '--repent',
                 ),
@@ -185,11 +189,14 @@ final readonly class CheckRules
             OptionGrammar::valued(
                 OperandType::Pattern,
                 '--filter',
-            ), OptionGrammar::valued(
+            ),
+            OptionGrammar::valued(
                 OperandType::Name,
                 '--testsuite',
-            ), OptionGrammar::valued(OperandType::Name, '--group'),
-            OptionGrammar::valued(OperandType::Count, '--processes'), OptionGrammar::valued(
+            ),
+            OptionGrammar::valued(OperandType::Name, '--group'),
+            OptionGrammar::valued(OperandType::Count, '--processes'),
+            OptionGrammar::valued(
                 OperandType::Path,
                 '-c',
                 '--configuration',
@@ -209,25 +216,34 @@ final readonly class CheckRules
     private function phpstan(): ArgumentGrammar
     {
         return ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
-            OptionGrammar::valued(OperandType::Text, '--memory-limit'), OptionGrammar::valued(
+            OptionGrammar::valued(OperandType::Text, '--memory-limit'),
+            OptionGrammar::valued(
                 OperandType::Path,
                 '-c',
                 '--configuration',
-            ), OptionGrammar::valued(OperandType::Text, '-l', '--level'),
+            ),
+            OptionGrammar::valued(OperandType::Text, '-l', '--level'),
             OptionGrammar::valued(
                 OperandType::Name,
                 '--error-format',
-            ), OptionGrammar::flag('--no-progress'), OptionGrammar::flag('--ansi'), OptionGrammar::flag('--no-ansi'),
+            ),
+            OptionGrammar::flag('--no-progress'),
+            OptionGrammar::flag('--ansi'),
+            OptionGrammar::flag('--no-ansi'),
         );
     }
 
     private function pint(): ArgumentGrammar
     {
         return ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
-            OptionGrammar::flag('--dirty'), OptionGrammar::flag('--parallel'), OptionGrammar::valued(
+            OptionGrammar::flag('--dirty'),
+            OptionGrammar::flag('--parallel'),
+            OptionGrammar::valued(
                 OperandType::Name,
                 '--format',
-            ), OptionGrammar::valued(OperandType::Path, '--config'), OptionGrammar::flag('-v'),
+            ),
+            OptionGrammar::valued(OperandType::Path, '--config'),
+            OptionGrammar::flag('-v'),
         );
     }
 

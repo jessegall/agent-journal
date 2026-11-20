@@ -182,7 +182,7 @@ final readonly class ListenerPolicy
         return $hearer->name ?? self::CORE;
     }
 
-    private function checkOwnership(string $event, string $listener, string $method, ?DomainEntry $hearer): void
+    private function checkOwnership(string $event, string $listener, string $method, DomainEntry|null $hearer): void
     {
         $owner = $this->eventDomain($event, $listener);
 
@@ -218,9 +218,9 @@ final readonly class ListenerPolicy
     }
 
     /**
-     * @param class-string $class
+     * @param  class-string  $class
      */
-    private function stateDomain(string $class, string $listener, string $event): ?DomainEntry
+    private function stateDomain(string $class, string $listener, string $event): DomainEntry|null
     {
         $file = new ReflectionClass($class)->getFileName();
         $domain = $this->stateSource($file, $listener, $event);
@@ -233,7 +233,7 @@ final readonly class ListenerPolicy
         return $domain;
     }
 
-    private function stateSource(string|false $file, string $listener, string $event): ?DomainEntry
+    private function stateSource(string|false $file, string $listener, string $event): DomainEntry|null
     {
         if ($file === false) {
             throw InvalidListener::unknownOwner($listener, $event);

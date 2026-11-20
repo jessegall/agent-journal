@@ -17,9 +17,9 @@ final readonly class EventCommands
     public const int MAXIMUM = 10;
 
     /**
-     * @param list<Command<mixed>> $commands
-     * @param list<string> $context
-     * @param list<string> $messages
+     * @param  list<Command<mixed>>  $commands
+     * @param  list<string>  $context
+     * @param  list<string>  $messages
      */
     private function __construct(
         public array $commands,
@@ -33,7 +33,7 @@ final readonly class EventCommands
     }
 
     /**
-     * @param Command<mixed> ...$commands
+     * @param  Command<mixed>  ...$commands
      */
     public static function of(Command ...$commands): self
     {

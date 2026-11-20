@@ -20,9 +20,12 @@ final class DocumentFilters extends Data
 {
     public function __construct(
         public readonly AttentionFilter $attention = AttentionFilter::Active,
-        #[Min(1)] public readonly int $page = 1,
-        #[Min(1), Max(100)] public readonly int $perPage = 50,
-        #[Max(200)] public readonly string $query = '',
+        #[Min(1)]
+        public readonly int $page = 1,
+        #[Min(1), Max(100)]
+        public readonly int $perPage = 50,
+        #[Max(200)]
+        public readonly string $query = '',
         public readonly bool $revisions = false,
         public readonly string $after = '',
     ) {}

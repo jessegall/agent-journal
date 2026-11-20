@@ -14,5 +14,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class TakeNextInput extends Data
 {
-    public function __construct(#[Ulid] public readonly string $inboxId) {}
+    public function __construct(
+        #[Ulid]
+        public readonly string $inboxId,
+    ) {}
 }

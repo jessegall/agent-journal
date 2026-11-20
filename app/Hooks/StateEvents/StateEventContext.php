@@ -10,8 +10,8 @@ namespace App\Hooks\StateEvents;
 final readonly class StateEventContext
 {
     /**
-     * @param list<string> $lines
-     * @param list<string> $messages
+     * @param  list<string>  $lines
+     * @param  list<string>  $messages
      */
     public function __construct(public array $lines, public array $messages) {}
 

@@ -30,7 +30,8 @@ final readonly class AskMessage extends Command implements HasAuthorizationSubje
     public function __construct(
         public string $sourceInboxId,
         public string $destinationInboxId,
-        #[Required] public string $body,
+        #[Required]
+        public string $body,
     ) {}
 
     /**

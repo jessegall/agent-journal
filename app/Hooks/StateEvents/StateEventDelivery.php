@@ -9,8 +9,8 @@ use App\Bus\Enums\CommandEntry;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\CommandRegistry;
 use App\Contracts\LogsListenerFailures;
-use App\Hooks\Enums\StateEventStage;
 use App\Hooks\Declarations\StateEvents;
+use App\Hooks\Enums\StateEventStage;
 use App\Hooks\Exceptions\StateEventAfterCommitFailed;
 use App\Hooks\Exceptions\StateEventCommandRefused;
 use App\Hooks\Exceptions\StateEventMethodUnregistered;
@@ -58,7 +58,7 @@ final readonly class StateEventDelivery
     }
 
     /**
-     * @param Closure(StateEventStage): void $advance
+     * @param  Closure(StateEventStage): void  $advance
      */
     private function deliverToAudience(StateEventDispatch $dispatch, Closure $advance): void
     {

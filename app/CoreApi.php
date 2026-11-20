@@ -532,6 +532,7 @@ use App\Engine\Values\FrameSettlement;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
+use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
@@ -547,7 +548,6 @@ use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StackTransition;
-use App\Hooks\Attributes\StackWide;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\StateRegistration;
 use App\Hooks\Contracts\UserStack;
@@ -596,8 +596,8 @@ use App\Hooks\Inputs\ToolRequested;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
-use App\Hooks\Values\EventCommands;
 use App\Hooks\Ticks\ElapsedTime;
+use App\Hooks\Values\EventCommands;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Links\Events\LinksRemoved;
@@ -740,6 +740,7 @@ use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\ProfileRevisionRevoked;
+use App\Profiles\Exceptions\AbilityNotWithheld;
 use App\Profiles\Exceptions\AccountLabelInvalid;
 use App\Profiles\Exceptions\AccountLabelTaken;
 use App\Profiles\Exceptions\AccountMissing;
@@ -775,6 +776,7 @@ use App\Profiles\Values\ProfileSnapshot;
 use App\Profiles\Values\ProfileStartPolicy;
 use App\Profiles\Values\SignInStarted;
 use App\Profiles\Values\StartProfileAuthority;
+use App\Profiles\Values\WithheldAbility;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
 use App\Programs\Exceptions\ProviderKeyInvalid;
@@ -1704,6 +1706,7 @@ final class CoreApi
                 ProfileSnapshot::class,
                 ProfileStartPolicy::class,
                 ProfileAuthorization::class,
+                WithheldAbility::class,
                 AbilityGrant::class,
                 AuthorizationType::class,
                 ProfileProvenance::class,
@@ -1784,7 +1787,6 @@ final class CoreApi
                 ReplyToMessage::class,
                 ReleaseMessageClaim::class,
                 RequireMessageAnswer::class,
-
                 DismissMessage::class,
                 RetireAgent::class,
                 StartAgent::class,
@@ -2077,6 +2079,7 @@ final class CoreApi
                 ContinuationStale::class,
                 ProfileKeyInvalid::class,
                 ProfileMissing::class,
+                AbilityNotWithheld::class,
                 ProfileRetired::class,
                 ProfileRevisionUnreadable::class,
                 ProfileFieldUnknown::class,

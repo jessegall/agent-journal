@@ -66,7 +66,8 @@ final readonly class StackTransaction implements RunsStackTransactions, StackTra
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function runAdmittedForTarget(StackTarget $target, OperationDeadline $deadline, Closure $work): mixed
@@ -80,8 +81,9 @@ final readonly class StackTransaction implements RunsStackTransactions, StackTra
 
     /**
      * @template TResult
-     * @param list<StackTarget> $targets In admission order.
-     * @param Closure(): TResult $work
+     *
+     * @param  list<StackTarget>  $targets  In admission order.
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function runForTargets(array $targets, Closure $work): mixed

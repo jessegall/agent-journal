@@ -106,21 +106,28 @@ final readonly class ReadingRules
                     OperandType::Pattern,
                     '-e',
                     '--regexp',
-                ), OptionGrammar::valued(
+                ),
+                OptionGrammar::valued(
                     OperandType::Count,
                     '-A',
-                ), OptionGrammar::valued(OperandType::Count, '-B'), OptionGrammar::valued(OperandType::Count, '-C'),
+                ),
+                OptionGrammar::valued(OperandType::Count, '-B'),
+                OptionGrammar::valued(OperandType::Count, '-C'),
                 OptionGrammar::valued(
                     OperandType::Count,
                     '-m',
                     '--max-count',
-                ), OptionGrammar::valued(
+                ),
+                OptionGrammar::valued(
                     OperandType::Pattern,
                     '--include',
-                ), OptionGrammar::valued(OperandType::Pattern, '--exclude'), OptionGrammar::valued(
+                ),
+                OptionGrammar::valued(OperandType::Pattern, '--exclude'),
+                OptionGrammar::valued(
                     OperandType::Pattern,
                     '--exclude-dir',
-                ), OptionGrammar::valued(OperandType::Text, '--color'),
+                ),
+                OptionGrammar::valued(OperandType::Text, '--color'),
                 ...$this->flags(
                     '-r',
                     '-R',
@@ -162,21 +169,28 @@ final readonly class ReadingRules
                     OperandType::Pattern,
                     '-g',
                     '--glob',
-                ), OptionGrammar::valued(OperandType::Name, '-t', '--type'), OptionGrammar::valued(
+                ),
+                OptionGrammar::valued(OperandType::Name, '-t', '--type'),
+                OptionGrammar::valued(
                     OperandType::Name,
                     '-T',
                     '--type-not',
                 ),
-                OptionGrammar::valued(OperandType::Count, '-A', '--after-context'), OptionGrammar::valued(
+                OptionGrammar::valued(OperandType::Count, '-A', '--after-context'),
+                OptionGrammar::valued(
                     OperandType::Count,
                     '-B',
                     '--before-context',
-                ), OptionGrammar::valued(OperandType::Count, '-C', '--context'),
-                OptionGrammar::valued(OperandType::Pattern, '-e', '--regexp'), OptionGrammar::valued(
+                ),
+                OptionGrammar::valued(OperandType::Count, '-C', '--context'),
+                OptionGrammar::valued(OperandType::Pattern, '-e', '--regexp'),
+                OptionGrammar::valued(
                     OperandType::Count,
                     '-m',
                     '--max-count',
-                ), OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'), OptionGrammar::valued(
+                ),
+                OptionGrammar::valued(OperandType::Count, '-d', '--max-depth'),
+                OptionGrammar::valued(
                     OperandType::Count,
                     '-M',
                     '--max-columns',

@@ -25,8 +25,10 @@ use Spatie\LaravelData\Attributes\Validation\Max;
 final readonly class CreateTask extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        #[Max(Task::TITLE_CHARACTERS)] public string $title,
-        #[Max(Task::NOTE_CHARACTERS)] public string $brief,
+        #[Max(Task::TITLE_CHARACTERS)]
+        public string $title,
+        #[Max(Task::NOTE_CHARACTERS)]
+        public string $brief,
     ) {}
 
     /**

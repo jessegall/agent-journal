@@ -24,7 +24,10 @@ use Tests\Fixtures\Bus\Shop\Handlers\EnumLimitedItemHandler;
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 final readonly class EnumLimitedItem extends Command implements HasAuthorizationSubject
 {
-    public function __construct(#[Max(5)] public ItemSize $size) {}
+    public function __construct(
+        #[Max(5)]
+        public ItemSize $size,
+    ) {}
 
     /**
      * @return class-string

@@ -26,7 +26,8 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 final readonly class CreateAgent extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        #[Required] public string $name,
+        #[Required]
+        public string $name,
         public string $profileKey,
     ) {}
 

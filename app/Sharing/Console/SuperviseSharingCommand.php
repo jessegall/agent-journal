@@ -30,11 +30,16 @@ final class SuperviseSharingCommand extends Command
 
     public function handle(
         SharingSupervisor $supervisor,
-        #[Config('sharing.listener.host')] string $host,
-        #[Config('sharing.listener.port')] int $port,
-        #[Config('sharing.timers.health_seconds')] int $healthSeconds,
-        #[Config('sharing.timers.expiry_seconds')] int $expirySeconds,
-        #[Config('sharing.timers.audit_prune_seconds')] int $auditPruneSeconds,
+        #[Config('sharing.listener.host')]
+        string $host,
+        #[Config('sharing.listener.port')]
+        int $port,
+        #[Config('sharing.timers.health_seconds')]
+        int $healthSeconds,
+        #[Config('sharing.timers.expiry_seconds')]
+        int $expirySeconds,
+        #[Config('sharing.timers.audit_prune_seconds')]
+        int $auditPruneSeconds,
     ): int {
         $listener = SpawnedProcess::start(
             [PHP_BINARY, '-q', '-S', "{$host}:{$port}", base_path('bootstrap/sharing-server.php')],

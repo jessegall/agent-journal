@@ -39,8 +39,9 @@ final class StateEventScope
 
     /**
      * @template TResult
-     * @param list<StackTarget> $targets
-     * @param Closure(): TResult $work
+     *
+     * @param  list<StackTarget>  $targets
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function admit(array $targets, Closure $work): mixed
@@ -50,7 +51,8 @@ final class StateEventScope
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function admitFrame(FrameGrant $grant, Closure $work): mixed
@@ -60,8 +62,9 @@ final class StateEventScope
 
     /**
      * @template TResult
-     * @param list<StateEventAudience> $audiences
-     * @param Closure(): TResult $work
+     *
+     * @param  list<StateEventAudience>  $audiences
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     private function withinAudience(array $audiences, Closure $work): mixed
@@ -97,7 +100,8 @@ final class StateEventScope
 
     /**
      * @template TResult
-     * @param Closure(): TResult $listeners
+     *
+     * @param  Closure(): TResult  $listeners
      * @return TResult
      */
     public function deliver(StateEventDispatch $dispatch, Closure $listeners): mixed
@@ -107,7 +111,8 @@ final class StateEventScope
 
     /**
      * @template TResult
-     * @param Closure(): TResult $listeners
+     *
+     * @param  Closure(): TResult  $listeners
      * @return TResult
      */
     public function deliverWithoutScope(Closure $listeners): mixed
@@ -117,8 +122,9 @@ final class StateEventScope
 
     /**
      * @template TResult
-     * @param list<StateEventDispatch> $dispatches
-     * @param Closure(): TResult $listeners
+     *
+     * @param  list<StateEventDispatch>  $dispatches
+     * @param  Closure(): TResult  $listeners
      * @return TResult
      */
     private function during(array $dispatches, Closure $listeners): mixed
@@ -134,8 +140,8 @@ final class StateEventScope
     }
 
     /**
-     * @param list<StackTarget> $targets
-     * @param Option<FrameGrant> $grant
+     * @param  list<StackTarget>  $targets
+     * @param  Option<FrameGrant>  $grant
      * @return list<StateEventAudience>
      */
     private function audienceFor(array $targets, Option $grant): array

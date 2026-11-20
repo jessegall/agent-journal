@@ -13,8 +13,8 @@ use Closure;
 interface GuardedCommandBus
 {
     /**
-     * @param Command<mixed> $command
-     * @param Closure(): CommandOriginStatus $check
+     * @param  Command<mixed>  $command
+     * @param  Closure(): CommandOriginStatus  $check
      */
     public function runGuarded(Command $command, Closure $check): CommandOriginStatus;
 }

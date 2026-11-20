@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Communication\Support;
 
 use App\Actors\Support\ActorContext;
+use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Contracts\ResponsibilityWriter;
 use App\Assignments\Models\ClaimAuthorization;
-use App\Assignments\Contracts\AssignmentStorage;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\ProvedClaims;
 use App\Communication\Contracts\Inbox;

@@ -28,9 +28,12 @@ final readonly class LimitedItem extends Command implements HasAuthorizationSubj
      * @param  list<string>  $tags
      */
     public function __construct(
-        #[Max(5)] public string $label,
-        #[Between(1, 10)] public int $count,
-        #[Max(3)] public array $tags,
+        #[Max(5)]
+        public string $label,
+        #[Between(1, 10)]
+        public int $count,
+        #[Max(3)]
+        public array $tags,
         public string $note = '',
     ) {}
 

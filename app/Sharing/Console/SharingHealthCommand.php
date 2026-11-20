@@ -22,8 +22,11 @@ final class SharingHealthCommand extends Command
 
     public function handle(
         #[Config('sharing.listener.host'),
-        ] string $host, #[Config('sharing.listener.port')] int $port): int
-    {
+        ]
+        string $host,
+        #[Config('sharing.listener.port')]
+        int $port
+    ): int {
         $listener = @fsockopen($host, $port, $errorCode, $errorText, self::CONNECT_SECONDS);
 
         if ($listener === false) {

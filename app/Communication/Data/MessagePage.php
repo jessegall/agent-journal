@@ -22,7 +22,8 @@ final class MessagePage extends Data
      * @param  list<MessageView>  $messages
      */
     public function __construct(
-        #[DataCollectionOf(MessageView::class)] public readonly array $messages,
+        #[DataCollectionOf(MessageView::class)]
+        public readonly array $messages,
         public readonly string|null $olderCursor,
     ) {}
 }

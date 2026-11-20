@@ -25,7 +25,8 @@ final readonly class CancelTask extends Command implements HasAuthorizationSubje
 {
     public function __construct(
         public string $taskId,
-        #[Max(Task::NOTE_CHARACTERS)] public string $reason,
+        #[Max(Task::NOTE_CHARACTERS)]
+        public string $reason,
     ) {}
 
     public function subject(): Task

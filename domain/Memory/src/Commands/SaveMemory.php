@@ -26,8 +26,10 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 final readonly class SaveMemory extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        #[Required] public string $text,
-        #[Between(Memory::LIGHTEST, Memory::HEAVIEST)] public int $weight,
+        #[Required]
+        public string $text,
+        #[Between(Memory::LIGHTEST, Memory::HEAVIEST)]
+        public int $weight,
     ) {}
 
     /**

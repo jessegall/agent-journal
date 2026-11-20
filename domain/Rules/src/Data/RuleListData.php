@@ -20,7 +20,8 @@ final class RuleListData extends Data
      * @param  list<RuleRowData>  $rows
      */
     public function __construct(
-        #[DataCollectionOf(RuleRowData::class)] public readonly array $rows,
+        #[DataCollectionOf(RuleRowData::class)]
+        public readonly array $rows,
         public readonly RuleFiltersData $filters,
         public readonly RulePaginationData $pagination,
         public readonly bool $selectionMissing,

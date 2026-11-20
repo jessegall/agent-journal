@@ -26,7 +26,8 @@ final readonly class SettleReport extends Command implements HasAuthorizationSub
 {
     public function __construct(
         public int $reportNumber,
-        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)] public string $reason,
+        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)]
+        public string $reason,
     ) {}
 
     /**

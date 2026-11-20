@@ -107,8 +107,7 @@ final class ScreenReportRouteTest extends TestCase
         AgentRuntime $runtime,
         int $sequence,
         string $text = 'hello',
-    ): TestResponse
-    {
+    ): TestResponse {
         return $this->hostCall($host, '/host/reports/screen', [
             'runtime_id' => $runtime->id,
             'frame' => [

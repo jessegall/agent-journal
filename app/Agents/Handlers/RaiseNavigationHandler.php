@@ -43,8 +43,10 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         private HostRuntimes $runtimes,
         private NavigationDispatch $dispatch,
         private JournalAdmission $admission,
-        #[Config('agents.navigation.expire_minutes')] private int $expireMinutes,
-        #[Config('agents.navigation.retry_after_seconds')] private int $retryAfterSeconds,
+        #[Config('agents.navigation.expire_minutes')]
+        private int $expireMinutes,
+        #[Config('agents.navigation.retry_after_seconds')]
+        private int $retryAfterSeconds,
     ) {}
 
     /**

@@ -34,10 +34,13 @@ final readonly class CreateDocument extends Command implements HasAuthorizationS
      * @param  list<RecordIdentity>  $about  the records it is about, linked with it or not created at all
      */
     public function __construct(
-        #[Required, OneLine, Max(Document::TITLE_CHARACTERS)] public string $title,
-        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)] public string $abstract,
+        #[Required, OneLine, Max(Document::TITLE_CHARACTERS)]
+        public string $title,
+        #[Required, OneLine, Max(Document::ABSTRACT_CHARACTERS)]
+        public string $abstract,
         public string $body,
-        #[Max(self::MOST_LINKS)] public array $about = [],
+        #[Max(self::MOST_LINKS)]
+        public array $about = [],
     ) {}
 
     /**

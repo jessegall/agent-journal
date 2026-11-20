@@ -28,8 +28,10 @@ final readonly class EditTask extends Command implements HasAuthorizationSubject
     public function __construct(
         public string $taskId,
         public int $expectedRevision,
-        #[RequiredWithout('brief'), Max(Task::TITLE_CHARACTERS)] public string|null $title = null,
-        #[Max(Task::NOTE_CHARACTERS)] public string|null $brief = null,
+        #[RequiredWithout('brief'), Max(Task::TITLE_CHARACTERS)]
+        public string|null $title = null,
+        #[Max(Task::NOTE_CHARACTERS)]
+        public string|null $brief = null,
     ) {}
 
     /**

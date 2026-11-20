@@ -26,7 +26,8 @@ final readonly class FinishTask extends Command implements HasAuthorizationSubje
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        #[Max(Task::NOTE_CHARACTERS)] public string $note,
+        #[Max(Task::NOTE_CHARACTERS)]
+        public string $note,
     ) {}
 
     public function subject(): Task

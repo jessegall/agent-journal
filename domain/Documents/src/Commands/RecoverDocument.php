@@ -29,7 +29,8 @@ final readonly class RecoverDocument extends Command implements HasAuthorization
 {
     public function __construct(
         public DraftTarget $draft,
-        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)] public string $reason,
+        #[Required, Max(Document::SETTLEMENT_REASON_CHARACTERS)]
+        public string $reason,
     ) {}
 
     /**

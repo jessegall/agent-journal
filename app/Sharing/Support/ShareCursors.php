@@ -14,7 +14,10 @@ use JsonException;
  */
 final readonly class ShareCursors
 {
-    public function __construct(#[Config('app.key')] private string $key) {}
+    public function __construct(
+        #[Config('app.key')]
+        private string $key,
+    ) {}
 
     public function write(ShareCursor $cursor): string
     {

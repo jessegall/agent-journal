@@ -44,7 +44,7 @@ final readonly class StateSet
     }
 
     /**
-     * @param class-string<AgentState> $stateClass
+     * @param  class-string<AgentState>  $stateClass
      */
     public function stateOfClassAt(int $position, string $stateClass): AgentState
     {

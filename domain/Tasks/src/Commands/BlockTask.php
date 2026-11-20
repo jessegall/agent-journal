@@ -26,7 +26,8 @@ final readonly class BlockTask extends Command implements HasAuthorizationSubjec
     public function __construct(
         public string $taskId,
         public int $runNumber,
-        #[Max(Task::NOTE_CHARACTERS)] public string $reason,
+        #[Max(Task::NOTE_CHARACTERS)]
+        public string $reason,
     ) {}
 
     public function subject(): Task

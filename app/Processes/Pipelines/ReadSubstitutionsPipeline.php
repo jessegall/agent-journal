@@ -22,7 +22,8 @@ final readonly class ReadSubstitutionsPipeline implements PipelineDefinition
         return [
             QueueWordSegments::class,
             FindNextSubstitution::class,
-            Step::repeated([ParseFoundSubstitution::class, FindNextSubstitution::class],
+            Step::repeated(
+                [ParseFoundSubstitution::class, FindNextSubstitution::class],
                 while: fn (SubstitutionQueue $queue) => $queue->hasFound()
             ),
             CompleteSubstitutions::class,

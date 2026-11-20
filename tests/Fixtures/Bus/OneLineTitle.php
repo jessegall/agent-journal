@@ -12,5 +12,8 @@ use Spatie\LaravelData\Data;
  */
 final class OneLineTitle extends Data
 {
-    public function __construct(#[OneLine] public readonly string $title) {}
+    public function __construct(
+        #[OneLine]
+        public readonly string $title,
+    ) {}
 }

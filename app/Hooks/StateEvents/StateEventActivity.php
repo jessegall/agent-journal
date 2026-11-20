@@ -29,7 +29,8 @@ final class StateEventActivity
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function evaluate(StackTarget $target, Closure $work): mixed
@@ -53,7 +54,8 @@ final class StateEventActivity
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function delivering(Closure $work): mixed

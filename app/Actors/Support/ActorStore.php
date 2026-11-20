@@ -71,7 +71,8 @@ final class ActorStore implements CurrentActor, CurrentActorSetter, RunsAsActor
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function within(ActorContext $actor, AuthoritySource $authority, Closure $work): mixed

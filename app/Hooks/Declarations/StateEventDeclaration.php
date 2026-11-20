@@ -12,7 +12,7 @@ use App\Contracts\Event;
 final readonly class StateEventDeclaration
 {
     /**
-     * @param class-string<Event> $event
+     * @param  class-string<Event>  $event
      */
     public function __construct(
         public string $event,

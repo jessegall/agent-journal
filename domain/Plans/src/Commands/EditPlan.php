@@ -29,8 +29,10 @@ final readonly class EditPlan extends Command implements HasAuthorizationSubject
     public function __construct(
         public string $planId,
         public int $expectedRevision,
-        #[OneLine, Max(Plan::TITLE_CHARACTERS)] public string|null $title = null,
-        #[Max(Plan::BRIEF_CHARACTERS)] public string|null $brief = null,
+        #[OneLine, Max(Plan::TITLE_CHARACTERS)]
+        public string|null $title = null,
+        #[Max(Plan::BRIEF_CHARACTERS)]
+        public string|null $brief = null,
         public PlanType|null $type = null,
     ) {}
 

@@ -28,10 +28,13 @@ final class ShelfPage extends Data
      * @param  list<BookData>  $books
      */
     public function __construct(
-        #[Hidden] public readonly string $shelf,
-        #[DataCollectionOf(BookData::class)] public readonly array $books,
+        #[Hidden]
+        public readonly string $shelf,
+        #[DataCollectionOf(BookData::class)]
+        public readonly array $books,
         public readonly ShelfState $state,
-        #[Hidden, FromContainer(ShelfCounter::class)] public readonly ShelfCounter $counter,
+        #[Hidden, FromContainer(ShelfCounter::class)]
+        public readonly ShelfCounter $counter,
         public readonly string|Optional $note = new Optional(),
     ) {}
 }

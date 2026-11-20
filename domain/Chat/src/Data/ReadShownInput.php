@@ -21,8 +21,11 @@ final class ReadShownInput extends Data
      * @param  list<string>  $messageIds
      */
     public function __construct(
-        #[Ulid] public readonly string $inboxId,
-        #[ArrayType, Min(1), Max(100)] public readonly array $messageIds,
-        #[Ulid] public readonly string $session,
+        #[Ulid]
+        public readonly string $inboxId,
+        #[ArrayType, Min(1), Max(100)]
+        public readonly array $messageIds,
+        #[Ulid]
+        public readonly string $session,
     ) {}
 }

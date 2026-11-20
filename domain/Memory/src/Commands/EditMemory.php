@@ -29,8 +29,10 @@ final readonly class EditMemory extends Command implements HasAuthorizationSubje
     public function __construct(
         public string $memoryId,
         public int $expectedRevision,
-        #[Filled, RequiredWithout('weight')] public string|null $text,
-        #[Between(Memory::LIGHTEST, Memory::HEAVIEST)] public int|null $weight,
+        #[Filled, RequiredWithout('weight')]
+        public string|null $text,
+        #[Between(Memory::LIGHTEST, Memory::HEAVIEST)]
+        public int|null $weight,
     ) {}
 
     /**

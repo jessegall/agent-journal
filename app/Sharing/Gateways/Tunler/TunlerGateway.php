@@ -40,9 +40,12 @@ final readonly class TunlerGateway implements ShareGateway
         private GatewayStarts $starts,
         private PublicOriginCheck $origins,
         private ChallengeProbe $probe,
-        #[Config('sharing.tunler.binary')] private string $binary,
-        #[Config('sharing.tunler.config_dir')] private string $configFolder,
-        #[Config('sharing.tunler.subdomain')] private string|null $subdomain,
+        #[Config('sharing.tunler.binary')]
+        private string $binary,
+        #[Config('sharing.tunler.config_dir')]
+        private string $configFolder,
+        #[Config('sharing.tunler.subdomain')]
+        private string|null $subdomain,
     ) {}
 
     public function readiness(GatewayConfiguration $configuration): GatewayReadiness

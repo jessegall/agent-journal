@@ -14,7 +14,10 @@ final readonly class ConfiguredOperations
     /**
      * @param  list<string>  $operations
      */
-    public function __construct(#[Config('operations.names', [])] private array $operations) {}
+    public function __construct(
+        #[Config('operations.names', [])]
+        private array $operations,
+    ) {}
 
     public function has(string $operation): bool
     {

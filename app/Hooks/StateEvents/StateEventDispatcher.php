@@ -19,7 +19,7 @@ final class StateEventDispatcher extends Dispatcher
     private readonly object $payloadKey;
 
     /**
-     * @param Closure(): StateEventScope $scope
+     * @param  Closure(): StateEventScope  $scope
      */
     private function __construct(Container $container, private readonly Closure $scope)
     {
@@ -28,7 +28,7 @@ final class StateEventDispatcher extends Dispatcher
     }
 
     /**
-     * @param Closure(): StateEventScope $scope
+     * @param  Closure(): StateEventScope  $scope
      */
     public static function fromDispatcher(Dispatcher $dispatcher, Closure $scope): self
     {

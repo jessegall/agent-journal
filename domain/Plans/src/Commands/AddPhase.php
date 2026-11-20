@@ -27,7 +27,8 @@ final readonly class AddPhase extends Command implements HasAuthorizationSubject
 {
     public function __construct(
         public string $planId,
-        #[Required, OneLine, Max(Plan::TITLE_CHARACTERS)] public string $title,
+        #[Required, OneLine, Max(Plan::TITLE_CHARACTERS)]
+        public string $title,
     ) {}
 
     /**

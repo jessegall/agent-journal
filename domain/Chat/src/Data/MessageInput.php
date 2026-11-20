@@ -16,9 +16,13 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class MessageInput extends Data
 {
     public function __construct(
-        #[Regex('/\S/')] public readonly string $body,
-        #[Ulid] public readonly string $sourceInboxId,
-        #[Ulid] public readonly string $destinationInboxId,
-        #[Ulid] public readonly string $session,
+        #[Regex('/\S/')]
+        public readonly string $body,
+        #[Ulid]
+        public readonly string $sourceInboxId,
+        #[Ulid]
+        public readonly string $destinationInboxId,
+        #[Ulid]
+        public readonly string $session,
     ) {}
 }

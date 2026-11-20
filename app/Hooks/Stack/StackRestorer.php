@@ -6,8 +6,8 @@ namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateFactory;
-use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Storage\FrameRecord;

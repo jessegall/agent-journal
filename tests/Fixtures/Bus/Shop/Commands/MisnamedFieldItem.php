@@ -24,7 +24,8 @@ use Tests\Fixtures\Bus\Shop\Handlers\MisnamedFieldItemHandler;
 final readonly class MisnamedFieldItem extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        #[RequiredWithout('breif')] public string|null $title = null,
+        #[RequiredWithout('breif')]
+        public string|null $title = null,
         public string|null $brief = null,
     ) {}
 

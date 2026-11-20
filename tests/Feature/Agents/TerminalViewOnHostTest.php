@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Agents\Models\TerminalView;
-use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\WatchedRuntimes;
 use App\Engine\Events\EngineTicked;
 use App\Engine\Support\EndTerminalViewsOnTick;
@@ -118,6 +117,7 @@ final class TerminalViewOnHostTest extends TestCase
         );
         $this->assertNotSame(0, $versions[0]);
     }
+
     public function test_an_engine_pass_deletes_views_ended_more_than_a_day_ago_and_keeps_fresh_ones(): void
     {
         $runtime = $this->runtimeOn('host-1');

@@ -18,6 +18,7 @@ final class InboxPageData extends Data
      * @param  list<InboxPanelData>  $panels
      */
     public function __construct(
-        #[DataCollectionOf(InboxPanelData::class)] public readonly array $panels,
+        #[DataCollectionOf(InboxPanelData::class)]
+        public readonly array $panels,
     ) {}
 }

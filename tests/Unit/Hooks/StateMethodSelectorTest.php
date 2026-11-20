@@ -80,7 +80,7 @@ final class StateMethodSelectorTest extends TestCase
     }
 
     /**
-     * @param list<SelectedStateMethod> $selection
+     * @param  list<SelectedStateMethod>  $selection
      */
     private function assertSelection(array $selection, string $method): void
     {

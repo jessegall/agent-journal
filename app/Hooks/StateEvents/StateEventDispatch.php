@@ -18,7 +18,7 @@ final readonly class StateEventDispatch
     public string $id;
 
     /**
-     * @param Option<StateEventAudience> $audience
+     * @param  Option<StateEventAudience>  $audience
      */
     public function __construct(
         public Event $event,

@@ -28,8 +28,10 @@ final class ConversationData extends Data
         public readonly string $sessionId,
         public readonly string $sourceInboxId,
         public readonly string $destinationInboxId,
-        #[DataCollectionOf(MessageView::class)] public readonly array $messages,
-        #[DataCollectionOf(RecordCard::class)] public readonly array $dockedCards,
+        #[DataCollectionOf(MessageView::class)]
+        public readonly array $messages,
+        #[DataCollectionOf(RecordCard::class)]
+        public readonly array $dockedCards,
     ) {}
 
     /**

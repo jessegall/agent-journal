@@ -6,8 +6,8 @@ namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\StateFactory;
-use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Declarations\StateMethods;
 use App\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Hooks\Exceptions\MissingBottomState;
 use App\Hooks\Storage\FrameRecords;

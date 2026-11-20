@@ -20,7 +20,8 @@ final class PlanListData extends Data
      * @param  list<PlanCardData>  $rows
      */
     public function __construct(
-        #[DataCollectionOf(PlanCardData::class)] public readonly array $rows,
+        #[DataCollectionOf(PlanCardData::class)]
+        public readonly array $rows,
         public readonly PlanFiltersData $filters,
         public readonly PlanPaginationData $pagination,
         public readonly bool $selectionMissing,

@@ -30,7 +30,8 @@ final readonly class SendMessage extends Command implements HasAuthorizationSubj
     public function __construct(
         public string $sourceInboxId,
         public string $destinationInboxId,
-        #[Required] public string $body,
+        #[Required]
+        public string $body,
     ) {}
 
     /**

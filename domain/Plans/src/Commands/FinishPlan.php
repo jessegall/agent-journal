@@ -27,7 +27,8 @@ final readonly class FinishPlan extends Command implements HasAuthorizationSubje
     public function __construct(
         public string $planId,
         public int $expectedRevision,
-        #[Required, Max(Plan::NOTE_CHARACTERS)] public string $note,
+        #[Required, Max(Plan::NOTE_CHARACTERS)]
+        public string $note,
     ) {}
 
     /**

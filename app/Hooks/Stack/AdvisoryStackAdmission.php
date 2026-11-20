@@ -82,8 +82,9 @@ final class AdvisoryStackAdmission implements StackAdmission
 
     /**
      * @template TResult
-     * @param list<string> $sessions
-     * @param Closure(): TResult $work
+     *
+     * @param  list<string>  $sessions
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     private function withEventTargets(array $sessions, Closure $work): mixed

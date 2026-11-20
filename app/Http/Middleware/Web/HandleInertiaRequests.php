@@ -30,7 +30,8 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     public function __construct(
-        #[Config('app.name')] private readonly string $appName,
+        #[Config('app.name')]
+        private readonly string $appName,
         private readonly CurrentUserResolver $users,
         private readonly RecordsNavigation $navigation,
         private readonly ResponseFactory $inertia,

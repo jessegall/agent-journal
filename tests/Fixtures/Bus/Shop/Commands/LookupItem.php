@@ -23,7 +23,10 @@ use Tests\Fixtures\Bus\Shop\Handlers\LookupItemHandler;
 #[Authorize(FixturePolicy::class, FixtureAbility::Work)]
 final readonly class LookupItem extends Command implements HasAuthorizationSubject
 {
-    public function __construct(#[Exists('items', 'id')] public int $itemId) {}
+    public function __construct(
+        #[Exists('items', 'id')]
+        public int $itemId,
+    ) {}
 
     /**
      * @return class-string

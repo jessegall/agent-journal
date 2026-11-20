@@ -27,8 +27,10 @@ use Spatie\LaravelData\Attributes\Validation\Required;
 final readonly class CreatePlan extends Command implements HasAuthorizationSubject
 {
     public function __construct(
-        #[Required, OneLine, Max(Plan::TITLE_CHARACTERS)] public string $title,
-        #[Required, Max(Plan::BRIEF_CHARACTERS)] public string $brief,
+        #[Required, OneLine, Max(Plan::TITLE_CHARACTERS)]
+        public string $title,
+        #[Required, Max(Plan::BRIEF_CHARACTERS)]
+        public string $brief,
         public PlanType $type,
     ) {}
 

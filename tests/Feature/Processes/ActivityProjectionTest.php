@@ -60,8 +60,10 @@ final class ActivityProjectionTest extends TestCase
         $this->assertSame(['stdout' => 23], $activity->bytes);
         $this->assertSame('\x1B[31mlatest line', $activity->latestLine);
         $this->assertGreaterThanOrEqual(0, $activity->elapsedSeconds);
-        $this->assertSame(['partRunId', 'name', 'lifecycle', 'elapsedSeconds', 'bytes', 'lastActivityAt', 'latestLine'],
-            array_keys(get_object_vars($activity)));
+        $this->assertSame(
+            ['partRunId', 'name', 'lifecycle', 'elapsedSeconds', 'bytes', 'lastActivityAt', 'latestLine'],
+            array_keys(get_object_vars($activity))
+        );
         Event::assertDispatched(RunChanged::class);
     }
 

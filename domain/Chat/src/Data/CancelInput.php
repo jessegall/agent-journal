@@ -17,7 +17,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class CancelInput extends Data
 {
     public function __construct(
-        #[Ulid] public readonly string $messageId,
-        #[Regex('/\\S/'), Max(2000)] public readonly string $reason,
+        #[Ulid]
+        public readonly string $messageId,
+        #[Regex('/\\S/'), Max(2000)]
+        public readonly string $reason,
     ) {}
 }

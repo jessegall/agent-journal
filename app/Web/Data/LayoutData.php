@@ -21,6 +21,7 @@ final class LayoutData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $name,
-        #[LiteralTypeScriptType('Record<string, unknown>')] public readonly array $shape,
+        #[LiteralTypeScriptType('Record<string, unknown>')]
+        public readonly array $shape,
     ) {}
 }

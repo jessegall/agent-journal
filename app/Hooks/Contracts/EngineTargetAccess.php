@@ -22,7 +22,8 @@ interface EngineTargetAccess
 
     /**
      * @template TResult
-     * @param Closure(): TResult $work
+     *
+     * @param  Closure(): TResult  $work
      * @return TResult
      */
     public function withinFrameGrant(FrameGrant $grant, Closure $work): mixed;

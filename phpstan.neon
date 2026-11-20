@@ -17,8 +17,11 @@ parameters:
     # A domain's tests, like the tests in tests/Feature and tests/Unit, are not analysed.
     excludePaths:
         - domain/*/tests/*
+        # The standalone attribute rule's own fixture breaks the rule on purpose; its test analyses it alone.
+        - tests/Fixtures/PhpStan/*
 
     level: 7
 
 rules:
     - Tests\Architecture\PhpStan\TypedClassConstantRule
+    - Tests\Architecture\PhpStan\StandaloneAttributeRule

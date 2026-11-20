@@ -13,11 +13,11 @@ use PhpOption\Option;
 /**
  * The session of a signed agent call and the binding that holds it.
  */
-final readonly class RequestSession implements CurrentSession, AgentCallContext
+final readonly class RequestSession implements AgentCallContext, CurrentSession
 {
     /**
-     * @param Closure(): Option<AgentContext> $readContext
-     * @param Closure(Option<AgentContext>): void $installContext
+     * @param  Closure(): Option<AgentContext>  $readContext
+     * @param  Closure(Option<AgentContext>): void  $installContext
      */
     public function __construct(private Closure $readContext, private Closure $installContext) {}
 

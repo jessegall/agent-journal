@@ -84,7 +84,7 @@ final class StateEventRegistrationTest extends TestCase
     }
 
     /**
-     * @param array<string, list<string>> $events
+     * @param  array<string, list<string>>  $events
      */
     private function writeCache(string $path, array $events): void
     {

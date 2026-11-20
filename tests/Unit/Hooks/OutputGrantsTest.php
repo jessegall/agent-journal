@@ -38,8 +38,11 @@ final class OutputGrantsTest extends TestCase
 
     public function test_only_the_granted_file_is_readable(): void
     {
-        $grants = OutputGrants::fromSnapshot($this->snapshot('start-1', [$this->base.'/account/projects/own.jsonl']),
-            'start-1', $this->seal);
+        $grants = OutputGrants::fromSnapshot(
+            $this->snapshot('start-1', [$this->base.'/account/projects/own.jsonl']),
+            'start-1',
+            $this->seal
+        );
 
         $this->assertTrue($grants->allowsRead($this->base.'/account/projects/own.jsonl'));
         $this->assertFalse($grants->allowsRead($this->base.'/account/projects/foreign.jsonl'));
@@ -49,8 +52,11 @@ final class OutputGrantsTest extends TestCase
     public function test_a_link_to_a_foreign_file_is_not_the_granted_file(): void
     {
         symlink($this->base.'/account/projects/foreign.jsonl', $this->base.'/looks-own.jsonl');
-        $grants = OutputGrants::fromSnapshot($this->snapshot('start-1', [$this->base.'/looks-own.jsonl']),
-            'start-1', $this->seal);
+        $grants = OutputGrants::fromSnapshot(
+            $this->snapshot('start-1', [$this->base.'/looks-own.jsonl']),
+            'start-1',
+            $this->seal
+        );
 
         $this->assertFalse($grants->allowsRead($this->base.'/looks-own.jsonl'));
     }
@@ -59,8 +65,11 @@ final class OutputGrantsTest extends TestCase
     {
         $this->expectException(OutputGrantsInvalid::class);
 
-        OutputGrants::fromSnapshot($this->snapshot('start-2', [$this->base.'/account/projects/own.jsonl']),
-            'start-1', $this->seal);
+        OutputGrants::fromSnapshot(
+            $this->snapshot('start-2', [$this->base.'/account/projects/own.jsonl']),
+            'start-1',
+            $this->seal
+        );
     }
 
     public function test_a_path_added_by_hand_breaks_the_seal(): void

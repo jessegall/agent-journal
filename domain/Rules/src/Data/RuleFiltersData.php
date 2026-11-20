@@ -22,7 +22,8 @@ final class RuleFiltersData extends Data
         #[MapName('q')]
         public readonly string $search = '',
         public readonly int $page = 1,
-        #[Ulid] public readonly string|Optional $rule = new Optional(),
+        #[Ulid]
+        public readonly string|Optional $rule = new Optional(),
     ) {}
 
     /**

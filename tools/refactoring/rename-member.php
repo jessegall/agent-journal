@@ -75,7 +75,6 @@ final class RenameRefused extends RuntimeException
 /**
  * Marks each method, property and constant declaration with the full name of the type it is declared in.
  */
-
 final class DeclaringTypeMarker extends NodeVisitorAbstract
 {
     /**

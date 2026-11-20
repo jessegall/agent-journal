@@ -21,7 +21,7 @@ final class CommandOriginChecks
     private array $active = [];
 
     /**
-     * @param Closure(): mixed $dispatch
+     * @param  Closure(): mixed  $dispatch
      */
     public function during(CommandOriginCheck $check, Closure $dispatch): CommandOriginStatus
     {
@@ -37,7 +37,7 @@ final class CommandOriginChecks
     }
 
     /**
-     * @param Command<mixed> $command
+     * @param  Command<mixed>  $command
      */
     public function permits(Command $command): bool
     {

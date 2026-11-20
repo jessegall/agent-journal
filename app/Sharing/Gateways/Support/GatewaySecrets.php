@@ -15,7 +15,10 @@ final readonly class GatewaySecrets
 {
     private const string REFERENCE = '/^[a-z0-9_-]+$/';
 
-    public function __construct(#[Config('sharing.secrets_dir')] private string $folder) {}
+    public function __construct(
+        #[Config('sharing.secrets_dir')]
+        private string $folder,
+    ) {}
 
     public function has(string $reference): bool
     {

@@ -43,9 +43,12 @@ final readonly class NgrokGateway implements ShareGateway
         private GatewaySecrets $secrets,
         private PublicOriginCheck $origins,
         private ChallengeProbe $probe,
-        #[Config('sharing.ngrok.binary')] private string $binary,
-        #[Config('sharing.ngrok.config_dir')] private string $configFolder,
-        #[Config('sharing.ngrok.control_port')] private int $controlPort,
+        #[Config('sharing.ngrok.binary')]
+        private string $binary,
+        #[Config('sharing.ngrok.config_dir')]
+        private string $configFolder,
+        #[Config('sharing.ngrok.control_port')]
+        private int $controlPort,
     ) {}
 
     public function readiness(GatewayConfiguration $configuration): GatewayReadiness

@@ -14,8 +14,8 @@ use ReflectionMethod;
 final readonly class StateMethod
 {
     /**
-     * @param class-string<AgentState> $stateClass
-     * @param class-string $declaringClass
+     * @param  class-string<AgentState>  $stateClass
+     * @param  class-string  $declaringClass
      */
     private function __construct(
         public string $stateClass,
@@ -25,7 +25,7 @@ final readonly class StateMethod
     ) {}
 
     /**
-     * @param class-string<AgentState> $stateClass
+     * @param  class-string<AgentState>  $stateClass
      */
     public static function fromMethod(string $stateClass, ReflectionMethod $method): self
     {

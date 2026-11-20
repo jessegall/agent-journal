@@ -51,7 +51,7 @@ final class StateMethods
     /**
      * @return class-string<Event>|null
      */
-    public function eventFor(ReflectionMethod $method): ?string
+    public function eventFor(ReflectionMethod $method): string|null
     {
         $name = $method->getName();
         $parameterClass = $this->argumentClass($method);
@@ -107,7 +107,7 @@ final class StateMethods
     }
 
     /**
-     * @param ReflectionClass<AgentState> $state
+     * @param  ReflectionClass<AgentState>  $state
      * @return array<string, StateMethod>
      */
     private function discover(ReflectionClass $state): array
@@ -183,7 +183,7 @@ final class StateMethods
             && ! $parameter->isPassedByReference();
     }
 
-    private function argumentClass(ReflectionMethod $method): ?string
+    private function argumentClass(ReflectionMethod $method): string|null
     {
         $parameter = $method->getParameters()[0] ?? null;
         $type = $parameter?->getType();
@@ -213,7 +213,7 @@ final class StateMethods
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param  ReflectionClass<object>  $class
      */
     private function checkClassMarkers(ReflectionClass $class): void
     {
