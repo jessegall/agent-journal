@@ -20,7 +20,9 @@ final class AskRequester extends Model implements ReadableModel
 
     public const string LINK_TYPE = 'core.ask-requester';
 
-    /** Writes the requester row so a concurrent repeatable-read submission retries with a fresh snapshot. */
+    /**
+     * Writes the requester row so a concurrent repeatable-read submission retries with a fresh snapshot.
+     */
     public static function lockSubmissions(ActorIdentity $actor): void
     {
         self::query()->upsert(

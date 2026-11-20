@@ -19,11 +19,9 @@ use App\Processes\Values\WordSegment;
  */
 final class LexerCursor
 {
-    public readonly HereDocumentQueue $hereDocuments;
-
-    private readonly int $length;
-
     public int $position = 0;
+
+    public readonly HereDocumentQueue $hereDocuments;
 
     /**
      * @var list<Token>
@@ -38,7 +36,6 @@ final class LexerCursor
         private readonly TimeBudget $budget,
     ) {
         $this->hereDocuments = new HereDocumentQueue();
-        $this->length = strlen($source);
     }
 
     public function fork(): self
@@ -48,7 +45,7 @@ final class LexerCursor
 
     public function hasBytes(): bool
     {
-        return $this->position < $this->length;
+        return $this->position < strlen($this->source);
     }
 
     public function current(): string

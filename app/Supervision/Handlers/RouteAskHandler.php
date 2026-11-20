@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Supervision\Handlers;
 
-use App\Actors\Contracts\ActorAttention;
-use App\Actors\Support\AttentionOrigin;
 use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\JournalAssignment;
 use App\Contracts\CommandHandler;
 use App\Supervision\Commands\RouteAsk;
 use App\Supervision\Enums\AskRouteStatus;
+use App\Supervision\Support\AskAttention;
 use App\Supervision\Support\AskRecords;
 use App\Supervision\Support\SupervisorRecipients;
 use App\Supervision\Support\SupervisorRouting;
@@ -23,7 +22,7 @@ final readonly class RouteAskHandler implements CommandHandler
         private SupervisorRecipients $recipients,
         private SupervisorRouting $routes,
         private JournalAssignmentWriter $writer,
-        private ActorAttention $attention,
+        private AskAttention $attention,
     ) {}
 
     public function handle(RouteAsk $command): AskRouteStatus
@@ -51,8 +50,7 @@ final readonly class RouteAskHandler implements CommandHandler
         }
 
         $route = $this->routes->routeFor($ask->requester(), $ask->typeKey());
-        $ask->accept($recipient, $route->version);
-        $this->attention->request($recipient, AttentionOrigin::ask($ask->id, $ask->version));
+        $this->attention->retainHop($ask->accept($recipient, $route->version));
 
         return AskRouteStatus::Assigned;
     }

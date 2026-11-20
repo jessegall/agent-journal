@@ -26,12 +26,4 @@ final class InvalidScript extends RuntimeException implements CommandRefusal
         return new self($diagnostics);
     }
 
-    public static function compilerUnavailable(): self
-    {
-        return self::withDiagnostics([ScriptDiagnostic::from([
-            'message' => 'Script compilation is unavailable.',
-            'start' => 0,
-            'end' => 0,
-        ])]);
-    }
 }

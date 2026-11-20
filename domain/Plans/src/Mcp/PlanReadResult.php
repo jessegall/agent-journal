@@ -14,7 +14,9 @@ use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Contracts\PlanDetailsResolver;
 use Domain\Plans\Enums\PlanView;
 
-/** Presents the same plan details for the tool and resource. */
+/**
+ * Presents the same plan details for the tool and resource.
+ */
 final readonly class PlanReadResult
 {
     public const string TOOL = 'plans_read';
@@ -54,7 +56,9 @@ final readonly class PlanReadResult
         return new Continuation(self::TOOL, $planId, ['view' => $view->value, 'phase_offset' => 0], 0);
     }
 
-    /** @param array<string, string> $text */
+    /**
+     * @param array<string, string> $text
+     */
     private function phases(PlanDetails $plan, Continuation $position, array $text): ToolResult
     {
         $phases = $position->offset === 0 ? $plan->phases : array_values(array_filter(
@@ -104,7 +108,9 @@ final readonly class PlanReadResult
         );
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function summary(PlanDetails $plan): array
     {
         return [
@@ -125,7 +131,9 @@ final readonly class PlanReadResult
         ];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function phase(PlanPhaseTasks $phase): array
     {
         return [
@@ -137,7 +145,9 @@ final readonly class PlanReadResult
         ];
     }
 
-    /** @return array<string, string> */
+    /**
+     * @return array<string, string>
+     */
     private function text(PlanDetails $plan): array
     {
         return array_filter([

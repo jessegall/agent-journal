@@ -43,12 +43,12 @@ final readonly class NavigationRoundReports
         if ($round->navigationRound()?->proof !== null) {
             $this->settleProof($navigation, $report);
         }
-        $this->dispatch->deliver($navigation, $navigation->row_version);
+        $this->dispatch->deliver($navigation);
     }
 
     private function settleProof(NavigationRequest $navigation, NavigationRoundReport $report): void
     {
-        if (! $report->proofSeen) {
+        if (! $report->hasObservedProof) {
             $navigation->refuseProof();
 
             return;

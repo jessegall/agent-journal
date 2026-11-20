@@ -13,6 +13,7 @@ return [
         'shell:journal-check.cleanup',
         'tool:journal.web_read',
         'workspace.status',
+        'script.run-evidence',
     ],
 
 ];

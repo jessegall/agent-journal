@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Supervision\Handlers;
 
-use App\Actors\Contracts\ActorAttention;
-use App\Actors\Support\AttentionOrigin;
 use App\Agents\Values\OperationKey;
 use App\Assignments\Contracts\JournalAssignmentWriter;
 use App\Contracts\CommandHandler;
@@ -14,6 +12,7 @@ use App\Supervision\Contracts\AskAdmission;
 use App\Supervision\Enums\CoreAskType;
 use App\Supervision\Exceptions\AskRefused;
 use App\Supervision\Models\AskHop;
+use App\Supervision\Support\AskAttention;
 use App\Supervision\Support\AskRecords;
 use App\Supervision\Values\AskReference;
 
@@ -23,7 +22,7 @@ final readonly class ReplyToAskHandler implements CommandHandler
         private AskRecords $asks,
         private AskAdmission $admission,
         private JournalAssignmentWriter $assignments,
-        private ActorAttention $attention,
+        private AskAttention $attention,
     ) {}
 
     public function handle(ReplyToAsk $command): AskReference
@@ -35,10 +34,10 @@ final readonly class ReplyToAskHandler implements CommandHandler
         $this->admission->requireCurrent($command->ask, $operation, $ask->version);
 
         $hop = AskHop::currentFor($ask);
-        $attention = $this->attention->request($ask->requester(), AttentionOrigin::askReply($ask->id));
-        $hop->answer($body, $attention->requestId ?? 'pending');
+        $this->attention->retainReply($ask, $hop, $body);
         $this->assignments->releaseForJournal($ask->assignmentIdentity());
         $ask->close();
+        $this->attention->finishAnswering($hop->holder());
 
         return $command->ask;
     }

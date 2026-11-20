@@ -69,7 +69,9 @@ final class ProfileDraft extends Model implements ReadableModel
             ->all();
     }
 
-    /** @return BelongsTo<ProfileDraftRevision, $this> */
+    /**
+     * @return BelongsTo<ProfileDraftRevision, $this>
+     */
     public function currentRevision(): BelongsTo
     {
         return $this->belongsTo(ProfileDraftRevision::class, 'current_revision_id');

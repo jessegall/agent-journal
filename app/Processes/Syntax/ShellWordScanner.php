@@ -67,12 +67,7 @@ final readonly class ShellWordScanner
                 && $cursor->position === $start) {
                 $word->add(
                     $cursor->position,
-                    $this->expansions->readBalanced(
-                        $cursor,
-                        $cursor->position,
-                        $cursor->position + 2,
-                        'a process substitution',
-                    ),
+                    $this->expansions->readBalanced($cursor, 'a process substitution'),
                 );
 
                 continue;

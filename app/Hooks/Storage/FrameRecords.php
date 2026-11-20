@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Hooks\Storage;
 
+use App\Agents\Values\WorkReference;
 use App\Hooks\Exceptions\InvalidBottomState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Ticks\TickingTypes;
+use Carbon\CarbonImmutable;
 
 /**
  * The frames of one stack as they are stored, bottom first.
@@ -24,6 +26,23 @@ final readonly class FrameRecords
     public function all(): array
     {
         return $this->records;
+    }
+
+    public function entryFor(WorkReference $work): CarbonImmutable|null
+    {
+        $entered = null;
+
+        foreach ($this->records as $frame) {
+            if (! $frame->reference->isForWork($work)) {
+                continue;
+            }
+
+            if ($entered === null || $frame->enteredAt->lessThan($entered)) {
+                $entered = $frame->enteredAt;
+            }
+        }
+
+        return $entered;
     }
 
     /**

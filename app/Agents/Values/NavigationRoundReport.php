@@ -18,7 +18,7 @@ final readonly class NavigationRoundReport
         public array $rows,
         public int|null $highlight,
         public int $generation,
-        public bool $proofSeen,
+        public bool $hasObservedProof,
         public string|null $refusal,
         public array $steps = [],
     ) {}

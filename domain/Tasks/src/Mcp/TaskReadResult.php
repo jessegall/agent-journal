@@ -16,7 +16,9 @@ use Domain\Tasks\Contracts\TaskDetailsResolver;
 use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Http\Data\TaskExecutionData;
 
-/** Presents the same task details for the tool and resource. */
+/**
+ * Presents the same task details for the tool and resource.
+ */
 final readonly class TaskReadResult
 {
     public const string TOOL = 'tasks_read';
@@ -55,7 +57,9 @@ final readonly class TaskReadResult
         return $this->fields->page($summary, $text, $position, 'task_id');
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<string, mixed>
+     */
     private function summary(TaskDetails $task): array
     {
         return [
@@ -73,7 +77,9 @@ final readonly class TaskReadResult
         ];
     }
 
-    /** @return array<string, string> */
+    /**
+     * @return array<string, string>
+     */
     private function text(TaskDetails $task): array
     {
         return array_filter([

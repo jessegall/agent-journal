@@ -64,7 +64,9 @@ final readonly class PublicationLists
         ], $arguments->positiveIntegerOr('page', 1, 1_000_000));
     }
 
-    /** @param list<DocumentCard|ReportCard> $cards */
+    /**
+     * @param list<DocumentCard|ReportCard> $cards
+     */
     private function page(array $cards, bool $hasNext, Continuation $read): ToolResult
     {
         $rows = array_map(fn (DocumentCard|ReportCard $card) => [

@@ -381,7 +381,7 @@ func roundOf(round client.NavigationRound) keyscripts.Round {
 
 // navigationReportOf is a round's result as the journal reads it; a secret screen sends no rows.
 func navigationReportOf(result keyscripts.RoundResult) *client.NavigationReport {
-	report := &client.NavigationReport{Rows: []string{}, Highlight: -1, ProofSeen: result.ProofSeen}
+	report := &client.NavigationReport{Rows: []string{}, Highlight: -1, HasObservedProof: result.HasObservedProof}
 	if result.Refusal != "" {
 		refusal := result.Refusal
 		report.Refusal = &refusal

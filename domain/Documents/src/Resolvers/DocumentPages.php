@@ -57,7 +57,7 @@ final readonly class DocumentPages implements DocumentReader
                 $revision->abstract,
                 $read,
                 self::KEY,
-                $card->toArray(),
+                $card,
             ),
             PublicationView::Body => $this->body($revision, $read, $arguments, $card),
             PublicationView::Revisions => $this->revisions($document, $read, $card),
@@ -65,7 +65,7 @@ final readonly class DocumentPages implements DocumentReader
                 new RecordIdentity(Document::LINK_TYPE, $document->id),
                 $read,
                 self::KEY,
-                $card->toArray(),
+                $card,
             ),
         };
     }

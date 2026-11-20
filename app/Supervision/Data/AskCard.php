@@ -17,5 +17,7 @@ final class AskCard extends Data
         public readonly bool $open,
         public readonly bool $obligation,
         public readonly string|null $reply,
+        public readonly string|null $holderType,
+        public readonly string|null $holderId,
     ) {}
 }

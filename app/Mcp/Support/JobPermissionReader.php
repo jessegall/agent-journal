@@ -53,7 +53,12 @@ final readonly class JobPermissionReader implements JobPermissionReaderContract
 
     public function profileKey(): string
     {
-        if ($this->actors->hasActor() && ($authority = $this->actors->authority()) instanceof StartProfileAuthority) {
+        if (! $this->actors->hasActor()) {
+            return DiscoveryProfile::MainAgent->value;
+        }
+
+        $authority = $this->actors->authority();
+        if ($authority instanceof StartProfileAuthority) {
             return $authority->profileKey();
         }
 

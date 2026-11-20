@@ -220,7 +220,7 @@ func (driver *TerminalDriver) NavigateRound(round keyscripts.Round) keyscripts.R
 	stalled.epoch = driver.runtime.Gate.UserInputs()
 	stalled.actions = append(stalled.actions, result.Actions...)
 	stalled.secret = stalled.secret || result.Refusal == keyscripts.RefusedSecretScreen
-	if round.Proof != "" && result.ProofSeen {
+	if round.Proof != "" && result.HasObservedProof {
 		path := keyscripts.ProvenPath{
 			Actions:   stalled.actions,
 			Secret:    stalled.secret,

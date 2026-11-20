@@ -139,6 +139,11 @@ final class Ask extends Model implements Assignable, ReadableModel
         return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
     }
 
+    public static function forAttention(string $id): self
+    {
+        return self::query()->acrossActors()->whereKey($id)->firstOrFail();
+    }
+
     public function typeKey(): AskTypeKey
     {
         return AskTypeKey::from($this->type_key);
@@ -158,12 +163,12 @@ final class Ask extends Model implements Assignable, ReadableModel
         return SupervisorTarget::parse($this->pending_target);
     }
 
-    public function accept(ActorIdentity $holder, int $routeVersion): void
+    public function accept(ActorIdentity $holder, int $routeVersion): AskHop
     {
         $this->version++;
         $this->pending_target = null;
         $this->save();
-        AskHop::recordAcceptance($this, $holder, $routeVersion);
+        return AskHop::recordAcceptance($this, $holder, $routeVersion);
     }
 
     public function close(): void

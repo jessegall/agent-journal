@@ -23,6 +23,10 @@ interface ActorWorkStacks
      */
     public function pushFor(ActorIdentity $actor, StateReference $state): void;
 
+    public function offerFor(ActorIdentity $actor, StateReference $state): void;
+
+    public function pruneCurrent(): void;
+
     /**
      * The live frame of the type on the acting actor's work stack; none for an actor that works on no stack.
      *

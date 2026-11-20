@@ -8,12 +8,14 @@ use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Exceptions\AbilityNotRegistered;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Support\ContainerAdmission;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Contracts\ProfileResolver;
+use App\Profiles\Contracts\ScriptCompilation;
 use App\Profiles\Contracts\SupervisorDefinitions;
 use App\Profiles\Enums\ProfileChangeType;
-use App\Profiles\Exceptions\InvalidScript;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\ProfileDraft;
@@ -22,6 +24,7 @@ use App\Profiles\Support\PolicyResolver;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\CompiledScript;
 use App\Profiles\Values\DraftExpectations;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
@@ -39,6 +42,8 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         private ProfileResolver $profiles,
         private PolicyCatalogue $catalogue,
         private SupervisorDefinitions $supervisors,
+        private ContainerAdmission $containers,
+        private ScriptCompilation $scripts,
     ) {}
 
     /**
@@ -76,6 +81,7 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         );
         foreach ($definitions as $definition) {
             $definition->authorization->requireGrantableIn($this->catalogue);
+            $this->assertContainerSupport($definition);
         }
 
         $coverage = $this->supervisors->validate(
@@ -84,18 +90,31 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         $changes = array_map($this->changeOf(...), $definitions);
         $author = ActorIdentity::of($actor);
         $current = ProfileRevision::currentSources($keys);
+        $compiled = array_map(
+            fn (ProfileDefinition $definition, ScriptSource $source) =>
+                $this->scripts->compileForProfile($source, $definition->start->access),
+            $definitions,
+            $sources,
+        );
 
         return new ProfileActivation(array_map(
-            fn (ProfileDefinition $definition, ProfileChangeType $change, ScriptSource $source) => new ActivatedProfile(
-                $definition->key,
-                Profile::activate($definition, $author, $source)->revision,
+            fn (
+                ProfileDefinition $definition,
+                ProfileChangeType $change,
+                ScriptSource $source,
+                CompiledScript $script,
+            ) => $this->publish(
+                $definition,
+                $author,
                 $change,
-                $coverage[$definition->key->key],
                 new ScriptDiff($current[$definition->key->key] ?? ScriptSource::empty(), $source),
+                $script,
+                $coverage[$definition->key->key],
             ),
             $definitions,
             $changes,
             $sources,
+            $compiled,
         ), $hash);
     }
 
@@ -112,11 +131,27 @@ final readonly class ActivateProfilesHandler implements CommandHandler
             $sources[] = $drafts[$profile->key->key]->sourceAt($expected->revisionOf($profile->key));
         }
 
-        if (array_any($sources, fn (ScriptSource $source) => ! $source->isEmpty())) {
-            throw InvalidScript::compilerUnavailable();
-        }
-
         return $sources;
+    }
+
+    /**
+     * @param list<\App\Profiles\Values\SupervisorCoverage> $coverage
+     */
+    private function publish(
+        ProfileDefinition $definition,
+        ActorIdentity $author,
+        ProfileChangeType $change,
+        ScriptDiff $diff,
+        CompiledScript $script,
+        array $coverage,
+    ): ActivatedProfile {
+        $revision = Profile::activate($definition, $author, $diff->after, $script)->revision;
+
+        $publishedChange = $change === ProfileChangeType::Unchanged && $diff->before != $diff->after
+            ? ProfileChangeType::Changed
+            : $change;
+
+        return new ActivatedProfile($definition->key, $revision, $publishedChange, $coverage, $diff);
     }
 
     private function changeOf(ProfileDefinition $definition): ProfileChangeType
@@ -128,5 +163,14 @@ final readonly class ActivateProfilesHandler implements CommandHandler
         return $definition->differsFrom($this->profiles->snapshotFor($definition->key))
             ? ProfileChangeType::Changed
             : ProfileChangeType::Unchanged;
+    }
+
+    private function assertContainerSupport(ProfileDefinition $definition): void
+    {
+        $start = $definition->start;
+
+        if ($start->execution->mode === ExecutionModeType::RequiredContainer && $start->program !== null) {
+            $this->containers->assertSupported($start->program);
+        }
     }
 }

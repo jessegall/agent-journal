@@ -11,6 +11,7 @@ use App\Scripts\Exceptions\ScriptDefinitionRefused;
 use App\Scripts\Values\ObjectDefinition;
 use App\Scripts\Values\ScriptContext;
 use Illuminate\Container\Container;
+use PhpOption\Option;
 
 final readonly class ObjectRegistry implements ScriptObjectRegistration
 {
@@ -47,6 +48,14 @@ final readonly class ObjectRegistry implements ScriptObjectRegistration
     public function get(string $key): ObjectDefinition
     {
         return $this->objects->get($key);
+    }
+
+    /**
+     * @return Option<ObjectDefinition>
+     */
+    public function find(string $key): Option
+    {
+        return $this->objects->find($key);
     }
 
     /**

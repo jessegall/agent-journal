@@ -13,6 +13,7 @@ use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Models\AgentStackRow;
 use PhpOption\None;
 use PhpOption\Option;
 
@@ -40,6 +41,19 @@ final readonly class WorkStackPushes implements ActorWorkStacks
     {
         foreach ($this->workStacks->sessionsOf($actor) as $sessionId) {
             $this->addressed->push(new StackTarget($actor->id, $sessionId), $state);
+        }
+    }
+
+    public function offerFor(ActorIdentity $actor, StateReference $state): void
+    {
+        $rows = AgentStackRow::lockActiveOf($actor, $this->workStacks->sessionsOf($actor));
+        $this->addressed->offer($rows, $state);
+    }
+
+    public function pruneCurrent(): void
+    {
+        foreach ($this->targets() as $target) {
+            $this->addressed->prune($target);
         }
     }
 

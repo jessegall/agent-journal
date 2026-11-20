@@ -42,7 +42,7 @@ final class ProfileSnapshot extends Data
 
     public function allowsOperation(Operation $operation): bool
     {
-        return $this->start->access->decide($operation)->allowed;
+        return $this->start->allowsOperation($operation);
     }
 
     public function grants(string $policy, BackedEnum $ability): bool

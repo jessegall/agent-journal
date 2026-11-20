@@ -62,7 +62,7 @@ type RoundResult struct {
 	ScreenAfter *Uncertainty
 	Actions     []ActionRecord
 	Refusal     string
-	ProofSeen   bool
+	HasObservedProof bool
 	Paused      bool
 	// Path is the proven path as library entry steps, built from every round's actions once the proof showed.
 	Path []EntryStep
@@ -177,7 +177,7 @@ func (runner *Runner) checkProof(text string, stalled Uncertainty, values map[st
 	}
 	runner.waitFor(AnyScreen, roundDeadline, values)
 
-	return RoundResult{ProofSeen: proof.SeenIn(runner.screen.Snapshot().Rows)}
+	return RoundResult{HasObservedProof: proof.SeenIn(runner.screen.Snapshot().Rows)}
 }
 
 // stoppedRound is a round a key failed in: the user's keys pause it, a refusal of the label helper is reported by

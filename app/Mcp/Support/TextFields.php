@@ -9,14 +9,18 @@ use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ContinuationStale;
 
-/** Pages named fields of a record's text without splitting a Unicode character. */
+/**
+ * Pages named fields of a record's text without splitting a Unicode character.
+ */
 final readonly class TextFields implements TextFieldsContract
 {
     private const int CHUNK_BYTES = 900;
 
     public function __construct(private Continuations $continuations) {}
 
-    /** @param array<string, string> $text */
+    /**
+     * @param array<string, string> $text
+     */
     public function start(Continuation $record, array $text): Continuation
     {
         return new Continuation(
@@ -51,13 +55,17 @@ final readonly class TextFields implements TextFieldsContract
         ], $this->next($position, $chunk, $field, count($text), $selectorName));
     }
 
-    /** @param array<string, string> $text */
+    /**
+     * @param array<string, string> $text
+     */
     private function digest(array $text): string
     {
         return hash('sha256', json_encode($text, JSON_THROW_ON_ERROR));
     }
 
-    /** @return list<NextAction> */
+    /**
+     * @return list<NextAction>
+     */
     private function next(Continuation $position, TextChunk $chunk, int $field, int $total, string $selectorName): array
     {
         if (! $chunk->hasMore && $field + 1 >= $total) {

@@ -11,6 +11,6 @@ final readonly class SignInStarted
 {
     public function __construct(
         public string $attemptId,
-        public bool $rejoined,
+        public bool $didRejoin,
     ) {}
 }
