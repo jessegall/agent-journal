@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Plans\Mcp;
 
 use App\Assignments\Enums\AssignmentOutcomeType;
-use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
+use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Support\AssignmentResult;
-use App\Bus\Support\RequestKey;
+use App\Bus\Contracts\RequestKey;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;

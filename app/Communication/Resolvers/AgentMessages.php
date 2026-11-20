@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Communication\Resolvers;
 
+use App\Agents\Models\AgentSession;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
-use App\Agents\Models\JobMessageSource;
-use App\Agents\Models\MessageSelection;
 use App\Assignments\Support\NumberedPage;
 use App\Communication\Contracts\AgentMessageReader;
 use App\Communication\Data\AgentInbox;
@@ -26,7 +25,6 @@ use App\Mcp\Support\Continuation;
 use App\Mcp\Support\Continuations;
 use App\Mcp\Support\TextChunk;
 use App\Reads\Support\ReadBuilder;
-use Illuminate\Database\Eloquent\Builder;
 
 final readonly class AgentMessages implements AgentMessageReader
 {
@@ -42,7 +40,7 @@ final readonly class AgentMessages implements AgentMessageReader
     public function inbox(AgentInboxState $state, int $page): AgentInbox
     {
         $numbered = new NumberedPage($page);
-        $incoming = $this->incoming()->where(fn (Builder $messages) => $state->apply($messages));
+        $incoming = $this->incoming()->where(fn ($messages) => $messages->forInboxState($state));
         $total = (clone $incoming)->count();
         $messages = $incoming->orderByDesc('created_at')->orderByDesc('id')
             ->offset(($numbered->number - 1) * $numbered->size)
@@ -61,7 +59,7 @@ final readonly class AgentMessages implements AgentMessageReader
     {
         return new AgentInboxCounts(
             $this->incoming()->whereNull('read_at')->count(),
-            AgentInboxState::Pending->apply($this->incoming())->count(),
+            $this->incoming()->where(fn ($messages) => $messages->forInboxState(AgentInboxState::Pending))->count(),
         );
     }
 
@@ -147,12 +145,12 @@ final readonly class AgentMessages implements AgentMessageReader
 
     private function selected(): string|null
     {
-        return $this->session->hasSession() ? MessageSelection::messageFor($this->session->sessionId()) : null;
+        return $this->session->hasSession() ? AgentSession::selectedMessage($this->session->sessionId()) : null;
     }
 
     private function source(): string|null
     {
-        return $this->session->hasSession() ? JobMessageSource::messageFor($this->session->sessionId()) : null;
+        return $this->session->hasSession() ? AgentSession::jobSourceMessage($this->session->sessionId()) : null;
     }
 
     private function card(Message $message, string|null $selected, string|null $source): AgentMessageCard

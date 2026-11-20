@@ -280,7 +280,7 @@ use App\Agents\Support\PreparedStart;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\RankedLaunchCandidate;
-use App\Agents\Support\ReadGrant;
+use App\Agents\Contracts\ReadGrant;
 use App\Agents\Support\ScreenReportAnswer;
 use App\Agents\Support\SelectedAccount;
 use App\Agents\Support\SelectedProgram;
@@ -360,7 +360,7 @@ use App\Assignments\Exceptions\AutoAssignmentSizeInvalid;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
-use App\Assignments\Mcp\Concerns\ReadsAssignmentArguments;
+use App\Mcp\Tools\Concerns\ReadsAssignmentArguments;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\ActivityRegistration;
 use App\Assignments\Support\AssigneeIdentity;
@@ -446,7 +446,7 @@ use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
-use App\Bus\Support\RequestKey;
+use App\Bus\Contracts\RequestKey;
 use App\Bus\Values\RecoveryCall;
 use App\Comments\Calls\ListCommentsCall;
 use App\Comments\Commands\PostComment;
@@ -649,11 +649,11 @@ use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
-use App\Mcp\Support\JobPermissionReader;
+use App\Mcp\Contracts\JobPermissionReader;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\TextChunk;
-use App\Mcp\Support\TextFields;
+use App\Mcp\Contracts\TextFields;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalWriteTool;
@@ -1146,6 +1146,11 @@ final class CoreApi
                 ShareGatewayChanged::class,
             )
             ->contracts(
+                JobPermissionReader::class,
+                TextFields::class,
+                Continuations::class,
+                RequestKey::class,
+                ReadGrant::class,
                 SessionPolicyReader::class,
                 LaunchCandidates::class,
                 StartReservations::class,
@@ -2206,11 +2211,6 @@ final class CoreApi
                 JournalReadTool::class,
                 JournalWriteTool::class,
                 ReadsAssignmentArguments::class,
-                RequestKey::class,
-                ReadGrant::class,
-                Continuations::class,
-                TextFields::class,
-                JobPermissionReader::class,
                 JournalResource::class,
                 RendersRefusal::class,
                 RunsCallPipelines::class,

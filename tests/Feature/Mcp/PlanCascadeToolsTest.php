@@ -58,11 +58,14 @@ final class PlanCascadeToolsTest extends TestCase
             ->assertJsonPath('result.structuredContent.skipped_finished', 1)
             ->assertJsonPath('result.structuredContent.next_actions.0.tool', 'operations_read')
             ->json('result.structuredContent');
-        $first = $this->callMcpTool(
+        $operations = $this->callMcpTool(
             $this->caller,
             'operations_read',
             $summary['next_actions'][0]['arguments'],
-        )->assertJsonPath('result.structuredContent.outcome_count', 23)->json('result.structuredContent');
+        );
+        $this->assertFalse($operations->json('result.isError'), $operations->getContent());
+        $first = $operations->assertJsonPath('result.structuredContent.outcome_count', 23)
+            ->json('result.structuredContent');
         $last = $this->callMcpTool(
             $this->caller,
             'operations_read',

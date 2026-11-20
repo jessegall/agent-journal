@@ -134,11 +134,14 @@ final class TaskToolsTest extends TestCase
 
     private function start(Task $task): int
     {
-        return $this->callMcpTool(
+        $response = $this->callMcpTool(
             $this->caller,
             'tasks_start',
             ['task_id' => $task->id, 'request_key' => 'start-task'],
-        )->assertJsonPath('result.isError', false)->json('result.structuredContent.run_number');
+        );
+        $this->assertFalse($response->json('result.isError'), $response->getContent());
+
+        return $response->json('result.structuredContent.run_number');
     }
 
     /** @return array<string, mixed> */

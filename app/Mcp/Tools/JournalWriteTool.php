@@ -6,7 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
-use App\Bus\Support\RequestKey;
+use App\Bus\Contracts\RequestKey;
 use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;

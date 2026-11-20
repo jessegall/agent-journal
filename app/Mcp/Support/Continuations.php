@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Mcp\Contracts\Continuations as ContinuationsContract;
 use App\Agents\Support\AgentContext;
 use App\Mcp\Data\ContinuationPayload;
 use App\Mcp\Data\NextAction;
@@ -16,7 +17,7 @@ use Illuminate\Contracts\Encryption\Encrypter;
  * Issues and opens the opaque continuation cursors of the calling session: a payload signed with HMAC-SHA256 over the
  * application key, bound to the agent and session and valid for 30 minutes.
  */
-final readonly class Continuations
+final readonly class Continuations implements ContinuationsContract
 {
     public const int LIFETIME_MINUTES = 30;
 

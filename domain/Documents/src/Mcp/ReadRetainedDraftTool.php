@@ -8,7 +8,7 @@ use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
+use App\Mcp\Contracts\Continuations;
 use App\Mcp\Support\ToolArguments;
 use Domain\Documents\Contracts\DraftReader;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

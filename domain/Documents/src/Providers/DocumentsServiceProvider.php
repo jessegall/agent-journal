@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Providers;
 
-use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionProvenance;
 use App\Autoload\Support\FolderClasses;
@@ -89,8 +87,7 @@ final class DocumentsServiceProvider extends ServiceProvider
     /** @param Builder<RetainedDraft> $drafts */
     private function limitDrafts(Builder $drafts): void
     {
-        $actors = $this->app->make(CurrentActor::class);
-        if ($actors->hasActor() && $actors->actor()->type === ActorType::User) {
+        if ($this->app->make(RetainedDrafts::class)->mayAdminister()) {
             return;
         }
 

@@ -54,8 +54,9 @@ final class PlanToolsTest extends TestCase
         $this->addTask($first, $build, 'add-build-task');
         $this->addTask($second, $check, 'add-check-task');
 
-        $this->callMcpTool($this->caller, 'plans_start', ['plan_id' => $id, 'request_key' => 'start-plan'])
-            ->assertJsonPath('result.isError', false)->assertJsonPath('result.structuredContent.state', 'started');
+        $started = $this->callMcpTool($this->caller, 'plans_start', ['plan_id' => $id, 'request_key' => 'start-plan']);
+        $this->assertFalse($started->json('result.isError'), $started->getContent());
+        $started->assertJsonPath('result.structuredContent.state', 'started');
         $this->callMcpTool($this->caller, 'phases_read', ['phase_id' => $first])
             ->assertJsonPath('result.structuredContent.task_ids', [$build->id]);
         $build->finish();

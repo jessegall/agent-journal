@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Domain\Chat\Tests\Feature;
+namespace Tests\Feature\Communication;
 
+use App\Agents\Models\AgentSession;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Models\MessageSelection;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\ReceiptCaller;
 use App\Bus\Support\ReceiptRetention;
@@ -33,13 +33,6 @@ final class AgentMessageCommandsTest extends MessagingTestCase
 {
     use SendsSignedCalls;
 
-    protected function tearDown(): void
-    {
-        $this->emptyTables('chat_selections', 'chat_job_sources');
-
-        parent::tearDown();
-    }
-
     public function test_select_changes_only_the_callers_selection_and_hides_other_messages(): void
     {
         $question = $this->ownerAsks($this->inboxIdOf($this->builder), 'Choose this request.');
@@ -48,8 +41,8 @@ final class AgentMessageCommandsTest extends MessagingTestCase
 
         $this->asAgent($this->reviewer);
         $this->assertThrows(fn () => $this->runOnBus(new SelectMessage($question)), MessageMissing::class);
-        $this->assertSame($question, MessageSelection::messageFor($this->builder->id));
-        $this->assertNull(MessageSelection::messageFor($this->reviewer->id));
+        $this->assertSame($question, AgentSession::selectedMessage($this->builder->id));
+        $this->assertNull(AgentSession::selectedMessage($this->reviewer->id));
         $this->assertNull($this->stored($question)->read_at);
         $this->assertSame(MessageState::WaitingForAnswer, $this->stored($question)->state);
     }
