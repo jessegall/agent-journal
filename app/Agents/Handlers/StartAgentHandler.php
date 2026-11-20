@@ -99,7 +99,10 @@ final readonly class StartAgentHandler implements CommandHandler
         $record->startedAs($started->session);
         $this->material->keep($request->requestId, $started);
         $this->events->dispatch(new StartAccepted(
-            $request->requestId, $request->agentId, $started->session->id, $request->authorizedSource,
+            $request->requestId,
+            $request->agentId,
+            $started->session->id,
+            $request->authorizedSource,
         ));
 
         return self::receiptOf($request, $started->session, true);
@@ -139,7 +142,7 @@ final readonly class StartAgentHandler implements CommandHandler
                 AccountModeType::Subscription,
                 ExecutionModeType::RequiredContainer,
             );
-            $this->capabilities->capability($query)->requireSupported();
+            $this->capabilities->capability($query)->assertSupported();
         }
 
         if (! $this->images->isVerified((string) $request->execution()->imageReference)) {

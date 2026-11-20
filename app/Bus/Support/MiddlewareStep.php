@@ -43,7 +43,7 @@ final readonly class MiddlewareStep
             }
 
             $record->called = true;
-            $this->checkReplacement($call, $passed, $name);
+            $this->assertValidReplacement($call, $passed, $name);
 
             try {
                 return $record->result = $next($passed);
@@ -69,7 +69,7 @@ final readonly class MiddlewareStep
         return $result;
     }
 
-    private function checkReplacement(CommandCall $call, CommandCall $passed, string $name): void
+    private function assertValidReplacement(CommandCall $call, CommandCall $passed, string $name): void
     {
         if ($passed->command() === $call->command()) {
             return;

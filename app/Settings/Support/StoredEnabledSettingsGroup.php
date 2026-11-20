@@ -121,7 +121,7 @@ final readonly class StoredEnabledSettingsGroup implements EnabledSettingsGroup
      */
     private function requireMember(Setting $setting): void
     {
-        $this->stored->requireOwn($setting);
+        $this->stored->assertOwnSetting($setting);
 
         if ($this->registry->groupOf($setting) !== $this->group) {
             throw SettingUnavailable::for($this->owner, $setting->key());

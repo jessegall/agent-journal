@@ -30,7 +30,7 @@ final readonly class CredentialLookup
             throw CredentialRejected::unknown();
         }
 
-        $this->refuseUnusableSession($session);
+        $this->assertUsableSession($session);
 
         return $session;
     }

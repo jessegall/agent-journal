@@ -38,7 +38,7 @@ final readonly class PlanReadResult
         $view = PlanView::from($position->filters['view']);
         $readsText = isset($position->filters['text_digest']);
         $plan = $this->plans->plan($planId, $view, $readsText ? 0 : $position->offset);
-        $position->requireRevision($plan->revision);
+        $position->assertCurrentRevision($plan->revision);
 
         $text = $this->text($plan);
 
@@ -68,7 +68,11 @@ final readonly class PlanReadResult
 
         if ($next === null && ! $inline) {
             $next = $this->fields->start(new Continuation(
-                self::TOOL, $plan->id, ['view' => PlanView::Context->value], 1, revision: $plan->revision,
+                self::TOOL,
+                $plan->id,
+                ['view' => PlanView::Context->value],
+                1,
+                revision: $plan->revision,
             ), $text);
         }
 

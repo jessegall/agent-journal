@@ -34,7 +34,7 @@ final readonly class OwnerSharePolicy implements SharePolicy
     /**
      * @throws SharingNotAllowed
      */
-    public function requireManager(Actor $actor): void
+    public function assertManager(Actor $actor): void
     {
         if (! $this->mayManage($actor)) {
             throw SharingNotAllowed::forActor($actor);

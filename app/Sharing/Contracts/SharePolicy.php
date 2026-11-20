@@ -19,7 +19,7 @@ interface SharePolicy
     /**
      * @throws SharingNotAllowed
      */
-    public function requireManager(Actor $actor): void;
+    public function assertManager(Actor $actor): void;
 
     public function mayDisclose(RecordIdentity $record): bool;
 }

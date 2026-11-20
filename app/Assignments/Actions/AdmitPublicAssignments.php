@@ -38,7 +38,7 @@ final readonly class AdmitPublicAssignments
 
     public function admitPublic(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
     {
-        $this->providers->requirePublic($record->type);
+        $this->providers->assertPublic($record->type);
         $actor = $this->actors->actor();
 
         if ($actor->type === ActorType::Engine) {
@@ -54,8 +54,8 @@ final readonly class AdmitPublicAssignments
 
     public function admitMaintenance(RecordIdentity $record, AssigneeIdentity $requested): AdmittedAssignment
     {
-        $this->providers->requirePublic($record->type);
-        $this->maintenance->checkMaintenance(AssignRecord::MAINTENANCE_SCOPE);
+        $this->providers->assertPublic($record->type);
+        $this->maintenance->assertMaintenanceGranted(AssignRecord::MAINTENANCE_SCOPE);
 
         return $this->resolve($record, $requested);
     }
@@ -69,5 +69,4 @@ final readonly class AdmitPublicAssignments
 
         return new AdmittedAssignment($record, $requested, $resolved);
     }
-
 }

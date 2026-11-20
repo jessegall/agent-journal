@@ -17,11 +17,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('uploads_append')]
-#[Description('Append one UTF-8 chunk at the next zero-based index.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('uploads_append')]
 #[Dispatches(AppendUpload::class)]
+#[Description('Append one UTF-8 chunk at the next zero-based index.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class AppendUploadTool extends JournalWriteTool
 {

@@ -49,7 +49,7 @@ final readonly class UiDeclarations
         $slotHosts = [];
 
         foreach ($domains as $owner) {
-            self::refuseRepeatedKeys($owner, 'page', array_map(fn ($page) => $page->key, $owner->pages));
+            self::assertUniqueKeys($owner, 'page', array_map(fn ($page) => $page->key, $owner->pages));
 
             foreach ($owner->pages as $page) {
                 $registered = RegisteredPage::of($owner, $page);
@@ -69,7 +69,7 @@ final readonly class UiDeclarations
         $navigation = [];
 
         foreach ($domains as $owner) {
-            self::refuseRepeatedKeys($owner, 'section', array_map(fn ($section) => $section->key, $owner->sections));
+            self::assertUniqueKeys($owner, 'section', array_map(fn ($section) => $section->key, $owner->sections));
 
             foreach ($owner->sections as $section) {
                 if (! array_key_exists($section->slot, $slotHosts)) {
@@ -84,7 +84,7 @@ final readonly class UiDeclarations
                 fn (NavigationItem $item) => RegisteredNavigation::of($owner, $item, $pages),
                 $owner->navigation,
             );
-            self::refuseRepeatedKeys(
+            self::assertUniqueKeys(
                 $owner,
                 'navigation',
                 array_merge([], ...array_map(fn (RegisteredNavigation $root) => $root->keys(), $roots)),
@@ -199,7 +199,7 @@ final readonly class UiDeclarations
             fn (NavigationItem $item) => RegisteredNavigation::of($parent->owner, $item, $this->pages),
             $items,
         );
-        self::refuseRepeatedKeys(
+        self::assertUniqueKeys(
             $parent->owner,
             'navigation',
             array_merge([], ...array_map(fn (RegisteredNavigation $child) => $child->keys(), $children)),
@@ -235,7 +235,7 @@ final readonly class UiDeclarations
     /**
      * @param  list<string>  $keys
      */
-    private static function refuseRepeatedKeys(DomainUi $owner, string $type, array $keys): void
+    private static function assertUniqueKeys(DomainUi $owner, string $type, array $keys): void
     {
         foreach (array_count_values($keys) as $key => $count) {
             if ($count > 1) {

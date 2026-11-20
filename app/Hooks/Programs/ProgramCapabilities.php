@@ -43,7 +43,7 @@ final readonly class ProgramCapabilities
         return in_array($hookMethod, $this->hookMethods, true);
     }
 
-    public function checkSupports(string $hookMethod): void
+    public function assertSupports(string $hookMethod): void
     {
         if (! $this->supports($hookMethod)) {
             throw UnsupportedHook::for($this->program, $hookMethod);

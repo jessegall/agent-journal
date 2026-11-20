@@ -34,7 +34,7 @@ final readonly class StartStacks
      */
     public function open(StackTarget $target): void
     {
-        $this->transaction->requireOpen($target);
+        $this->transaction->assertOpen($target);
 
         AgentStackRow::insertIfMissing($target, new FrameRecords([
             new FrameRecord(
@@ -51,7 +51,7 @@ final readonly class StartStacks
 
     public function close(StackTarget $target): void
     {
-        $this->transaction->requireOpen($target);
+        $this->transaction->assertOpen($target);
 
         AgentStackRow::lockAuthorizedFor($target)->closeAt(CarbonImmutable::now());
     }

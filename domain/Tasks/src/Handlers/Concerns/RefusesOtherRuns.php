@@ -15,7 +15,7 @@ trait RefusesOtherRuns
     /**
      * @throws TaskRunNotYours
      */
-    private function refuseUnlessCurrentTaskRun(Task $task, int $runNumber): void
+    private function assertCurrentTaskRun(Task $task, int $runNumber): void
     {
         if (! $task->isCurrentRun($runNumber)) {
             throw TaskRunNotYours::forRun($task->number, $runNumber);

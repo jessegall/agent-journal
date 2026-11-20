@@ -30,7 +30,7 @@
                 "nameMatches": "^[A-Z][a-z]+$"
             },
             {
-                "nameMatches": "^(Domains|Exports|Links|Processes|Reads|Records)[A-Z]"
+                "nameMatches": "^(Domains|Exports|Links|Processes|Reads|Records|Reports)[A-Z]"
             },
             {
                 "file": "tests/**"

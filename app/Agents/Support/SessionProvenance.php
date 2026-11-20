@@ -57,7 +57,11 @@ final readonly class SessionProvenance implements SessionProvenanceContract
             ->exists();
     }
 
-    /** @param Builder<*> $records */
+    /**
+     * @template T of Model
+     *
+     * @param  Builder<T>  $records
+     */
     public function limitToCurrentSession(Builder $records): void
     {
         $this->fromSession($records, $this->session->sessionId());
@@ -66,7 +70,7 @@ final readonly class SessionProvenance implements SessionProvenanceContract
     /**
      * @template T of Model
      *
-     * @param Builder<T> $records
+     * @param  Builder<T>  $records
      * @return Builder<T>
      */
     public function fromSession(Builder $records, string $sessionId): Builder
@@ -110,6 +114,6 @@ final readonly class SessionProvenance implements SessionProvenanceContract
 
         $parent = AgentSession::query()->whereKey($origin->id)->value('parent_session_id');
 
-        return $parent === null ? null : AgentSession::query()->find($parent);
+        return $parent === null ? null : AgentSession::query()->whereKey($parent)->first();
     }
 }

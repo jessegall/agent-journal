@@ -46,7 +46,7 @@ final class DocumentRevisionResource extends PublicationResource implements HasU
             throw ToolArgumentInvalid::for('revision', 'a positive revision number');
         }
 
-        $this->reads->requireAllowed(new ReadRequest(DocumentPages::TOOL, ResourceAreaType::JournalContent));
+        $this->reads->assertAllowed(new ReadRequest(DocumentPages::TOOL, ResourceAreaType::JournalContent));
 
         return $this->markdown($this->documents->document($id, $this->bodyArguments(DocumentPages::TOOL, $revision)));
     }

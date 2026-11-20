@@ -41,7 +41,7 @@ final readonly class RegisteredNavigation
         ];
 
         foreach (array_filter($namedClasses) as $interface => $className) {
-            $owner->checkImplements($key, $className, $interface);
+            $owner->assertImplements($key, $className, $interface);
         }
 
         return new self(

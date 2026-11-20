@@ -24,7 +24,7 @@ final readonly class StateEventStacks
      */
     public function restoreActive(StateEventDispatch $dispatch, StackTarget $target): Option
     {
-        $dispatch->checkTarget($target);
+        $dispatch->assertTargetGranted($target);
 
         if (! AgentSession::lockRunningTarget($target)) {
             return None::create();

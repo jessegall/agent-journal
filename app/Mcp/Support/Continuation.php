@@ -29,7 +29,7 @@ final readonly class Continuation
     /**
      * @throws ContinuationStale
      */
-    public function requireRevision(int $current): void
+    public function assertCurrentRevision(int $current): void
     {
         if ($this->revision !== null && $this->revision !== $current) {
             throw ContinuationStale::revisionChanged($this->revision, $current);

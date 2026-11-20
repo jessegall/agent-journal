@@ -36,7 +36,7 @@ final readonly class AssignmentStore implements AssignmentStorage
      */
     public function lockCurrent(RecordIdentity $record): Option
     {
-        $this->requireTransaction();
+        $this->assertInTransaction();
         $row = AssignmentRecord::query()->forRecord($record)->lockForUpdate()->first();
 
         return $row === null ? None::create() : Some::create($row->toAssignment());
@@ -65,7 +65,7 @@ final readonly class AssignmentStore implements AssignmentStorage
      */
     public function assignIfUnheld(RecordIdentity $record, AssigneeIdentity $holder): Assignment
     {
-        $this->requireTransaction();
+        $this->assertInTransaction();
         AssignmentRecord::insertUnlessHeld($record, $holder);
 
         return AssignmentRecord::query()->forRecord($record)->lockForUpdate()->firstOrFail()->toAssignment();
@@ -76,7 +76,7 @@ final readonly class AssignmentStore implements AssignmentStorage
      */
     public function replace(Assignment $current, AssigneeIdentity $holder): Assignment
     {
-        $this->requireTransaction();
+        $this->assertInTransaction();
         AssignmentRecord::query()->whereKey($current->reference->id)->delete();
 
         return AssignmentRecord::holding($current->record, $holder)->toAssignment();
@@ -84,7 +84,7 @@ final readonly class AssignmentStore implements AssignmentStorage
 
     public function remove(Assignment $current): void
     {
-        $this->requireTransaction();
+        $this->assertInTransaction();
         AssignmentRecord::query()->whereKey($current->reference->id)->delete();
     }
 
@@ -94,7 +94,7 @@ final readonly class AssignmentStore implements AssignmentStorage
      */
     public function releaseAll(AssigneeIdentity $holder): AssignmentResult
     {
-        $this->requireTransaction();
+        $this->assertInTransaction();
         $rows = AssignmentRecord::query()
             ->heldForRetirement($holder)
             ->readAll('every assignment the retiring holder holds is released')
@@ -123,7 +123,7 @@ final readonly class AssignmentStore implements AssignmentStorage
     /**
      * @throws AssignmentTransactionRequired
      */
-    private function requireTransaction(): void
+    private function assertInTransaction(): void
     {
         if ($this->database->transactionLevel() === 0) {
             throw AssignmentTransactionRequired::forStore();

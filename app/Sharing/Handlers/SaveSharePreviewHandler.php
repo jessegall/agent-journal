@@ -26,7 +26,7 @@ final readonly class SaveSharePreviewHandler implements CommandHandler
     public function handle(SaveSharePreview $command): SavedSharePreview
     {
         $owner = $command->dispatchedBy();
-        $this->policy->requireManager($owner);
+        $this->policy->assertManager($owner);
         $root = new RecordIdentity($command->rootType, $command->rootId);
         $configuration = $command->gatewayConfigurationId === null
             ? ShareGatewayConfiguration::usableDefault()

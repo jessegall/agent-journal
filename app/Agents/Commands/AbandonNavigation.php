@@ -18,7 +18,7 @@ use App\Operations\Enums\ResourceAreaType;
 
 /**
  * The main agent gives up on a navigation request, saying why: the stalled key script ends and the runtime stays
- * held for the person.
+ * held for the user.
  *
  * @extends Command<string>
  */

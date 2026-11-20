@@ -31,5 +31,5 @@ interface AssignmentTransaction
      *
      * @throws AssignmentTransactionRequired
      */
-    public function requireOpen(): void;
+    public function assertOpen(): void;
 }

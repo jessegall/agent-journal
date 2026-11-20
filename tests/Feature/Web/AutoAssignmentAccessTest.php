@@ -55,11 +55,11 @@ final class AutoAssignmentAccessTest extends TestCase
 
         $this->assertInstanceOf(DenyAllAutoAssignmentAccess::class, $access);
         $this->assertThrows(
-            fn () => $access->requireRead($this->owner, ActorIdentity::of($this->owner)),
+            fn () => $access->assertMayRead($this->owner, ActorIdentity::of($this->owner)),
             AutoAssignmentDenied::class,
         );
         $this->assertThrows(
-            fn () => $access->requireWrite($this->owner, ActorIdentity::of($this->worker)),
+            fn () => $access->assertMayWrite($this->owner, ActorIdentity::of($this->worker)),
             AutoAssignmentDenied::class,
         );
     }
@@ -69,24 +69,24 @@ final class AutoAssignmentAccessTest extends TestCase
         $this->assertInstanceOf(OwnerAutoAssignmentAccess::class, $this->access);
 
         foreach ([ActorIdentity::of($this->owner), ActorIdentity::of($this->worker)] as $target) {
-            $this->access->requireRead($this->owner, $target);
-            $this->access->requireWrite($this->owner, $target);
+            $this->access->assertMayRead($this->owner, $target);
+            $this->access->assertMayWrite($this->owner, $target);
             $this->assertTrue($this->access->mayReadTotals($this->owner, $target));
         }
     }
 
     public function test_a_dispatcher_writes_another_agent_but_not_itself_or_a_user(): void
     {
-        $this->access->requireWrite($this->dispatcher, ActorIdentity::of($this->worker));
-        $this->access->requireRead($this->dispatcher, ActorIdentity::of($this->worker));
+        $this->access->assertMayWrite($this->dispatcher, ActorIdentity::of($this->worker));
+        $this->access->assertMayRead($this->dispatcher, ActorIdentity::of($this->worker));
 
         $this->assertTrue($this->access->mayReadTotals($this->dispatcher, ActorIdentity::of($this->worker)));
         $this->assertThrows(
-            fn () => $this->access->requireWrite($this->dispatcher, ActorIdentity::of($this->dispatcher)),
+            fn () => $this->access->assertMayWrite($this->dispatcher, ActorIdentity::of($this->dispatcher)),
             AutoAssignmentDenied::class,
         );
         $this->assertThrows(
-            fn () => $this->access->requireWrite($this->dispatcher, ActorIdentity::of($this->owner)),
+            fn () => $this->access->assertMayWrite($this->dispatcher, ActorIdentity::of($this->owner)),
             AutoAssignmentDenied::class,
         );
     }
@@ -95,23 +95,23 @@ final class AutoAssignmentAccessTest extends TestCase
     {
         $other = Agent::named('Other', 'writing-helper');
 
-        $this->access->requireRead($this->worker, ActorIdentity::of($this->worker));
+        $this->access->assertMayRead($this->worker, ActorIdentity::of($this->worker));
 
         $this->assertFalse($this->access->mayReadTotals($this->worker, ActorIdentity::of($this->worker)));
         $this->assertThrows(
-            fn () => $this->access->requireWrite($this->worker, ActorIdentity::of($this->worker)),
+            fn () => $this->access->assertMayWrite($this->worker, ActorIdentity::of($this->worker)),
             AutoAssignmentDenied::class,
         );
         $this->assertThrows(
-            fn () => $this->access->requireWrite($this->worker, ActorIdentity::of($other)),
+            fn () => $this->access->assertMayWrite($this->worker, ActorIdentity::of($other)),
             AssignmentDenied::class,
         );
         $this->assertThrows(
-            fn () => $this->access->requireRead($this->worker, ActorIdentity::of($other)),
+            fn () => $this->access->assertMayRead($this->worker, ActorIdentity::of($other)),
             AssignmentDenied::class,
         );
         $this->assertThrows(
-            fn () => $this->access->requireWrite(new EngineActor(), ActorIdentity::of($this->worker)),
+            fn () => $this->access->assertMayWrite(new EngineActor(), ActorIdentity::of($this->worker)),
             AutoAssignmentDenied::class,
         );
     }

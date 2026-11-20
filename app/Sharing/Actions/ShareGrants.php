@@ -48,7 +48,7 @@ final readonly class ShareGrants
     public function create(Actor $owner, string $previewId, string $previewChecksum, ShareDuration $duration): Share
     {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
-        $this->requireLiveSlot();
+        $this->assertLiveSlotFree();
         $share = Share::grant(
             $consumed->root,
             $owner->actorId(),
@@ -75,7 +75,7 @@ final readonly class ShareGrants
         ShareDuration $duration,
     ): Share {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
-        $this->requireLiveSlot();
+        $this->assertLiveSlotFree();
         $proposal = Share::lockProposal($proposalId);
 
         if (! $proposal->root()->isSameAs($consumed->root)) {
@@ -129,7 +129,7 @@ final readonly class ShareGrants
      */
     private function consume(Actor $owner, string $previewId, string $previewChecksum): ConsumedPreview
     {
-        $this->policy->requireManager($owner);
+        $this->policy->assertManager($owner);
         $configurationId = SharePreview::of($previewId)->share_gateway_configuration_id;
 
         ShareInstallation::lockForAdmission();
@@ -146,7 +146,7 @@ final readonly class ShareGrants
      *
      * @throws ShareQuotaReached
      */
-    private function requireLiveSlot(): void
+    private function assertLiveSlotFree(): void
     {
         if (Share::liveCount() >= Share::MOST_LIVE) {
             throw ShareQuotaReached::at(Share::MOST_LIVE);

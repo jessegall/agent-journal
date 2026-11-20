@@ -122,7 +122,7 @@ final readonly class DomainUi
      *
      * @param  class-string  $interface
      */
-    public function checkImplements(string $declaration, string $className, string $interface): void
+    public function assertImplements(string $declaration, string $className, string $interface): void
     {
         if (! is_subclass_of($className, $interface)) {
             throw UiResolverInvalid::notA($declaration, $className, $interface);
@@ -132,7 +132,7 @@ final readonly class DomainUi
     /**
      * Refuses an action controller that is not an invokable class in this domain's namespace.
      */
-    public function checkController(string $declaration, string $controller): void
+    public function assertInvokableController(string $declaration, string $controller): void
     {
         if (! str_starts_with($controller, $this->namespace.'\\') || ! method_exists($controller, '__invoke')) {
             throw UiResolverInvalid::controllerNotOwned($declaration, $controller);

@@ -49,6 +49,6 @@ final readonly class WriteResponsibilities implements ResponsibilityWriter
 
     private function admit(RecordIdentity $record): void
     {
-        $this->providers->requireInternal($record->type);
+        $this->providers->assertInternal($record->type);
     }
 }

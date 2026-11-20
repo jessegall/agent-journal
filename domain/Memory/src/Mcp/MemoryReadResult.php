@@ -33,7 +33,7 @@ final readonly class MemoryReadResult
 
         if ($cursor !== null) {
             $position = $this->continuations->open($cursor, self::TOOL, $id);
-            $position->requireRevision($memory->revision);
+            $position->assertCurrentRevision($memory->revision);
 
             return $this->fields->page($summary, $text, $position, 'memory_id');
         }
@@ -43,7 +43,11 @@ final readonly class MemoryReadResult
         }
 
         $position = $this->fields->start(new Continuation(
-            self::TOOL, $id, [], 1, revision: $memory->revision,
+            self::TOOL,
+            $id,
+            [],
+            1,
+            revision: $memory->revision,
         ), $text);
 
         return $this->fields->page($summary, $text, $position, 'memory_id');

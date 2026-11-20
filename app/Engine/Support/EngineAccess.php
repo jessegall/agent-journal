@@ -77,7 +77,7 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
      *
      * @throws EngineAccessRefused
      */
-    public function requireGranted(): void
+    public function assertGranted(): void
     {
         if ($this->grant instanceof NoEngineGrant) {
             throw EngineAccessRefused::ungranted();
@@ -87,7 +87,7 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
     /**
      * @throws EngineAccessRefused
      */
-    public function checkTarget(StackTarget $target): void
+    public function assertTargetGranted(StackTarget $target): void
     {
         if (! $this->grant->allowsTarget($target)) {
             throw EngineAccessRefused::forTarget($target, $this->grant->description());
@@ -99,7 +99,7 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
      *
      * @throws EngineAccessRefused
      */
-    public function checkTargetOrMaintenance(StackTarget $target, string $capability): void
+    public function assertTargetOrMaintenanceGranted(StackTarget $target, string $capability): void
     {
         if (! $this->grant->allowsTarget($target) && ! $this->allowsMaintenance($capability)) {
             throw EngineAccessRefused::forTarget($target, $this->grant->description());
@@ -114,7 +114,7 @@ final class EngineAccess implements EngineTargetAccess, MaintenanceAdmission
     /**
      * @throws EngineAccessRefused
      */
-    public function checkMaintenance(string $capability): void
+    public function assertMaintenanceGranted(string $capability): void
     {
         if (! $this->allowsMaintenance($capability)) {
             throw EngineAccessRefused::forMaintenance($capability, $this->grant->description());

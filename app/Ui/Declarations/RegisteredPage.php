@@ -40,7 +40,7 @@ final readonly class RegisteredPage
         $path = RoutePath::of($key, $page->path);
 
         if ($page->visibility !== null) {
-            $owner->checkImplements($key, $page->visibility, VisibilityCheck::class);
+            $owner->assertImplements($key, $page->visibility, VisibilityCheck::class);
         }
 
         return new self(

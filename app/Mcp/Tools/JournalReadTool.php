@@ -27,7 +27,7 @@ abstract class JournalReadTool extends JournalTool
     {
         return $call->answerTool($this->name(), function () use ($request, $reads): ToolResult {
             $arguments = $this->arguments($request);
-            $reads->requireAllowed($this->readRequest($arguments));
+            $reads->assertAllowed($this->readRequest($arguments));
 
             return $this->read($arguments);
         });

@@ -32,7 +32,7 @@ final class SupplyAccountSettings implements Listener
         }
 
         $compatibility = $this->compatibilities->for($program);
-        $compatibility->requireStartable();
+        $compatibility->assertStartable();
         $event->settings->holdFor(
             $compatibility->version,
             $compatibility->binaryDigest,

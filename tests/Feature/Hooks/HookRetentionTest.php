@@ -130,7 +130,7 @@ final class HookRetentionTest extends TestCase
     {
         $this->expectException(RetentionTooShort::class);
 
-        new RetentionPeriods(hookCallDays: 0)->checkLongerThan(new HookRetryWindow(300));
+        new RetentionPeriods(hookCallDays: 0)->assertLongerThan(new HookRetryWindow(300));
     }
 
     public function test_the_command_prunes_in_batches_and_says_how_much(): void

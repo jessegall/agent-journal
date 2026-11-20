@@ -20,8 +20,8 @@ final class EngineAccessTest extends TestCase
     {
         $access = new EngineAccess();
 
-        $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 's')));
-        $this->assertRefused(fn () => $access->checkMaintenance('starts.silence'));
+        $this->assertRefused(fn () => $access->assertTargetGranted(new StackTarget('a', 's')));
+        $this->assertRefused(fn () => $access->assertMaintenanceGranted('starts.silence'));
     }
 
     public function test_a_frame_grant_allows_its_own_target_only(): void
@@ -29,11 +29,11 @@ final class EngineAccessTest extends TestCase
         $access = new EngineAccess();
         $access->grantFrame(new StackTarget('a', 's'), 'frame-1');
 
-        $access->checkTarget(new StackTarget('a', 's'));
+        $access->assertTargetGranted(new StackTarget('a', 's'));
         $this->assertSame('frame-1', $access->frameGrantFor(new EngineActor())->get()->frameId);
         $this->assertTrue($access->frameGrantFor(ActorContext::forAgent(EngineActor::ID))->isEmpty());
-        $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 'other')));
-        $this->assertRefused(fn () => $access->checkMaintenance('starts.silence'));
+        $this->assertRefused(fn () => $access->assertTargetGranted(new StackTarget('a', 'other')));
+        $this->assertRefused(fn () => $access->assertMaintenanceGranted('starts.silence'));
     }
 
     public function test_a_maintenance_grant_allows_its_capability_only(): void
@@ -41,9 +41,9 @@ final class EngineAccessTest extends TestCase
         $access = new EngineAccess();
         $access->grantMaintenance('starts.silence');
 
-        $access->checkMaintenance('starts.silence');
-        $this->assertRefused(fn () => $access->checkMaintenance('other'));
-        $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 's')));
+        $access->assertMaintenanceGranted('starts.silence');
+        $this->assertRefused(fn () => $access->assertMaintenanceGranted('other'));
+        $this->assertRefused(fn () => $access->assertTargetGranted(new StackTarget('a', 's')));
     }
 
     public function test_clear_takes_the_grant_back(): void
@@ -52,7 +52,7 @@ final class EngineAccessTest extends TestCase
         $access->grantFrame(new StackTarget('a', 's'), 'frame-1');
         $access->clear();
 
-        $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 's')));
+        $this->assertRefused(fn () => $access->assertTargetGranted(new StackTarget('a', 's')));
     }
 
     private function assertRefused(callable $check): void

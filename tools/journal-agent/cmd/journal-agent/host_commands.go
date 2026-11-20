@@ -145,7 +145,7 @@ type runtimeOpener struct {
 	socket      *host.AttachSocket
 }
 
-// defaultRows and defaultColumns size a terminal the host opens before any person attaches to it.
+// defaultRows and defaultColumns size a terminal the host opens before any user attaches to it.
 const (
 	defaultRows    uint16 = 40
 	defaultColumns uint16 = 120
@@ -266,9 +266,9 @@ func (opener runtimeOpener) processRuntime(
 	return driver, nil
 }
 
-// terminalRuntime starts the runtime's program on a PTY the attach socket owns, or takes the one a person attached
+// terminalRuntime starts the runtime's program on a PTY the attach socket owns, or takes the one a user attached
 // first, and drives it through that terminal's screen and gate: the classifier and the key script runner read the
-// same screen the person sees, and every key, the person's too, passes the one gate.
+// same screen the user sees, and every key, the user's too, passes the one gate.
 func (opener runtimeOpener) terminalRuntime(
 	runtimeID string,
 	prepared host.PreparedStart,
@@ -405,7 +405,7 @@ func forwardKeys(in io.Reader, connection net.Conn) {
 }
 
 // errCodexHasNoTerminal refuses to attach to Codex: its runtimes are threads on the account's shared app-server, and
-// a second interactive Codex for the person to type into would be a second sign-in owner.
+// a second interactive Codex for the user to type into would be a second sign-in owner.
 var errCodexHasNoTerminal = errors.New("a Codex runtime runs as a thread on its account's shared app-server and has " +
 	"no terminal to attach to")
 
@@ -535,7 +535,7 @@ func openMainRuntime(
 
 // startOf builds the program's terminal start for a runtime from its pinned profile and its start grant: the
 // settings files and start folders written, the arguments, and the environment with the credential, the process
-// generation and the bypass log for the hook relay. Attaching a person and serving a terminal runtime both start
+// generation and the bypass log for the hook relay. Attaching a user and serving a terminal runtime both start
 // the program through it.
 func startOf(
 	profile contracts.ProgramProfile,

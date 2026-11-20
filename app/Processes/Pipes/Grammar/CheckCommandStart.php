@@ -21,7 +21,7 @@ final readonly class CheckCommandStart implements Pipe
     public function handle(CommandToParse $toParse): CommandToParse
     {
         $cursor = $toParse->cursor();
-        $toParse->draft()->checkBudget($cursor->position());
+        $toParse->draft()->assertWithinBudget($cursor->position());
         if ($cursor->atEnd()) {
             throw ShellGrammarStopped::invalid('A command is missing at the end of the line.', $cursor->position());
         }

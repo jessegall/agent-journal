@@ -19,7 +19,11 @@ interface SessionProvenance
 
     public function isFromCurrentSession(Model $record): bool;
 
-    /** @param Builder<*> $records */
+    /**
+     * @template T of Model
+     *
+     * @param  Builder<T>  $records
+     */
     public function limitToCurrentSession(Builder $records): void;
 
     /**

@@ -33,7 +33,7 @@ final class MessageResource extends JournalResource implements HasUriTemplate
         $id = ToolArguments::uriId($request);
         $view = ToolArguments::query($this->name(), $request, ['view', 'continuation']);
         $tool = MessageReadResult::TOOL;
-        $this->reads->requireAllowed(new ReadRequest($tool, arguments: ['message_id' => $id]));
+        $this->reads->assertAllowed(new ReadRequest($tool, arguments: ['message_id' => $id]));
 
         return Response::text(json_encode(
             $this->messages->read($id, $view, $tool)->structuredContent(),

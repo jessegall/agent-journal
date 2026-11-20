@@ -23,7 +23,7 @@ final readonly class RegisteredAction
     {
         $routeName = $owner->fullKey('action', $action->name);
         $path = RoutePath::of($routeName, $action->path);
-        $owner->checkController($routeName, $action->controller);
+        $owner->assertInvokableController($routeName, $action->controller);
 
         return new self($owner, $action, $routeName, $path, $owner->uri($path), $guard);
     }

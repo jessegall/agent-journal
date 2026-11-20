@@ -18,11 +18,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('reports_create')]
-#[Description('File a report from text or one sealed upload.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('reports_create')]
 #[Dispatches(CreateReport::class)]
+#[Description('File a report from text or one sealed upload.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CreateReportTool extends JournalWriteTool
 {

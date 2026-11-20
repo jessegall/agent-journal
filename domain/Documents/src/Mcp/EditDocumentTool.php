@@ -13,11 +13,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('docs_edit')]
-#[Description('Replace one section of an open edit using text or one sealed upload.')]
-#[IsDestructive(true)]
 #[IsIdempotent]
+#[Name('docs_edit')]
+#[IsDestructive(true)]
 #[Dispatches(EditDocument::class)]
+#[Description('Replace one section of an open edit using text or one sealed upload.')]
 final class EditDocumentTool extends DraftWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

@@ -18,11 +18,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('reports_close')]
-#[Description('Close a report with a reason, preserving the findings.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('reports_close')]
 #[Dispatches(CloseReport::class)]
+#[Description('Close a report with a reason, preserving the findings.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CloseReportTool extends JournalWriteTool
 {

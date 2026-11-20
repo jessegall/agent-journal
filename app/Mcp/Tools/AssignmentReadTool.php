@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Support\AssignmentData;
 use App\Assignments\Support\AssignmentHolder;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ToolArguments;
 use App\Records\Contracts\RecordResolver;
 use App\Records\Support\RecordIdentity;
@@ -23,8 +23,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  */
 #[IsReadOnly]
 #[Name('assignments_read')]
-#[Description('Who holds one record, such as tasks.task with its id, and the assignment reference a reassign or unassign must name; holder is null when nobody holds it.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
+#[Description('Who holds one record, such as tasks.task with its id, and the assignment reference a reassign or unassign must name; holder is null when nobody holds it.')]
 final class AssignmentReadTool extends JournalReadTool
 {
     public function __construct(

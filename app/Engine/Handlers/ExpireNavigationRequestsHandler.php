@@ -21,7 +21,7 @@ final readonly class ExpireNavigationRequestsHandler implements CommandHandler
 
     public function handle(ExpireNavigationRequests $command): void
     {
-        $this->access->checkMaintenance(ExpireNavigationRequests::MAINTENANCE_SCOPE);
+        $this->access->assertMaintenanceGranted(ExpireNavigationRequests::MAINTENANCE_SCOPE);
 
         $this->navigation->expireDue();
     }

@@ -56,7 +56,7 @@ final readonly class ProfileAuthorization
      *
      * @throws ActorNotAllowed
      */
-    public function requireGranted(string $policy, BackedEnum $ability): void
+    public function assertGranted(string $policy, BackedEnum $ability): void
     {
         if (! array_any($this->grants, fn (AbilityGrant $grant): bool => $grant->isFor($policy, $ability))) {
             throw ActorNotAllowed::to($ability, 'record');

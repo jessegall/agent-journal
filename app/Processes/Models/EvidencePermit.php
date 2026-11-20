@@ -120,7 +120,7 @@ final class EvidencePermit extends Model implements ReadableModel
      *
      * @throws EvidencePermitRefused
      */
-    public function checkUse(ActorIdentity $runner, string $requestId, string $classificationDigest): void
+    public function assertUsable(ActorIdentity $runner, string $requestId, string $classificationDigest): void
     {
         if ($this->runner_type !== $runner->type->value || $this->runner_id !== $runner->id) {
             throw EvidencePermitRefused::otherActor();

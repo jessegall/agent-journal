@@ -78,7 +78,7 @@ final class SignInAgainTest extends TestCase
         $this->assertSame($first, $this->account->live_writer_attempt_id);
         $this->assertSame($generation + 1, $this->account->sign_in_generation);
         $this->expectException(AccountUnavailable::class);
-        $this->account->requireAvailable();
+        $this->account->assertAvailable();
     }
 
     public function test_the_host_takes_it_only_after_the_accounts_processes_ended(): void

@@ -137,7 +137,7 @@ final class TreeDraft
     /**
      * @throws ShellGrammarStopped
      */
-    public function checkBudget(int $position): void
+    public function assertWithinBudget(int $position): void
     {
         if ($this->budget->isSpent()) {
             throw ShellGrammarStopped::pastLimit(AnalysisLimit::Milliseconds, $position);

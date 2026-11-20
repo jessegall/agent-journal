@@ -24,7 +24,7 @@ final readonly class SettleFrameTimesHandler implements CommandHandler
         }
 
         foreach ($command->settlements as $settlement) {
-            $this->access->checkTargetOrMaintenance($settlement->target, SettleFrameTimes::MAINTENANCE_SCOPE);
+            $this->access->assertTargetOrMaintenanceGranted($settlement->target, SettleFrameTimes::MAINTENANCE_SCOPE);
         }
 
         EngineFrameTime::recordMany($command->settlements);

@@ -94,13 +94,13 @@ final class AccountStorageTest extends TestCase
     public function test_a_held_or_unsigned_account_refuses_starts_with_a_safe_reason(): void
     {
         $account = $this->account('Work');
-        $account->requireAvailable();
+        $account->assertAvailable();
         $this->assertSame('/journal/accounts/work', $account->directoryForStart());
 
         $account->beginRemoval();
 
         try {
-            $account->requireAvailable();
+            $account->assertAvailable();
             $this->fail('A start was allowed on an account being removed.');
         } catch (AccountUnavailable $refused) {
             $this->assertSame(StartUnavailableReason::Maintenance, $refused->reason);

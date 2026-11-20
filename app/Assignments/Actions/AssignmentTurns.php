@@ -56,7 +56,7 @@ final readonly class AssignmentTurns implements AutoAssignmentTrigger
             throw AssignmentDenied::forCaller(ActorIdentity::of($actor));
         }
 
-        $this->maintenance->checkMaintenance(AssignRecord::MAINTENANCE_SCOPE);
+        $this->maintenance->assertMaintenanceGranted(AssignRecord::MAINTENANCE_SCOPE);
         $stop = $this->stopTimes->at($budget->stopNanoseconds);
 
         if ($stop->remainingMilliseconds() <= 0 || $budget->isEmpty()) {

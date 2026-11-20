@@ -40,7 +40,7 @@ final class SettingKey
      *
      * @throws SettingReferenceInvalid
      */
-    public static function requireAddress(string $owner, string $key): void
+    public static function assertValidAddress(string $owner, string $key): void
     {
         if (trim($owner) === '') {
             throw SettingReferenceInvalid::emptyOwner();

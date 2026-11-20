@@ -16,11 +16,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('docs_comment')]
-#[Description('Add an attributed comment to a document.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[Name('docs_comment')]
+#[IsDestructive(false)]
 #[Dispatches(CommentOnDocument::class)]
+#[Description('Add an attributed comment to a document.')]
 final class CommentOnDocumentTool extends JournalWriteTool
 {
     use PublicationArguments;

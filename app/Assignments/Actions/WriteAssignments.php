@@ -21,6 +21,7 @@ use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Exceptions\AssignmentRootFinished;
 use App\Assignments\Policies\AssignmentPolicy;
 use App\Assignments\Storage\AssignmentStore;
+use App\Assignments\Support\AdmittedAssignment;
 use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
@@ -29,7 +30,6 @@ use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\AdmittedAssignment;
 use App\Assignments\Support\JournalAssignment;
 use App\Records\Support\RecordIdentity;
 use Closure;
@@ -56,7 +56,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
 
     public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $admitted = $this->actors->actor()->type === ActorType::Engine
             ? $this->admission->admitMaintenance($record, $recipient)
             : $this->admission->admitPublic($record, $recipient);
@@ -66,7 +66,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
 
     public function assignForJournal(JournalAssignment $assignment): AssignmentResult
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
 
         return $this->assignAdmitted($this->journalAdmission->admit($assignment));
     }
@@ -90,7 +90,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
         AssignmentReference $expected,
         AssigneeIdentity $recipient,
     ): AssignmentResult {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $admitted = $this->admission->admitPublic($record, $recipient);
 
         return $this->replaceAdmitted($admitted, $expected);
@@ -98,7 +98,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
 
     public function reassignForJournal(JournalAssignment $assignment, AssignmentReference $expected): AssignmentResult
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
 
         return $this->replaceAdmitted($this->journalAdmission->admit($assignment, $expected), $expected);
     }
@@ -123,8 +123,8 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
 
     public function unassign(RecordIdentity $record, AssignmentReference $expected): AssignmentResult
     {
-        $this->providers->requirePublic($record->type);
-        $this->transaction->requireOpen();
+        $this->providers->assertPublic($record->type);
+        $this->transaction->assertOpen();
         $this->requireUnassign();
         $this->providers->recordProvider($record->type)->requireAssignable($record);
 
@@ -140,7 +140,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
 
     public function assignUnfinished(AssigneeIdentity $recipient, Closure $records): AssignmentResult
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         [$group, $finished] = $this->checkedGroup($records);
         $admitted = $this->admission->admitPublic($group->root, $recipient);
         $root = $this->store->lockCurrent($group->root);
@@ -161,7 +161,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
         AssigneeIdentity $recipient,
         Closure $records,
     ): AssignmentResult {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         [$group, $finished] = $this->checkedGroup($records);
         $admitted = $this->admission->admitPublic($group->root, $recipient);
         $this->store->lockExpected($group->root, $expectedRoot);
@@ -175,7 +175,7 @@ final readonly class WriteAssignments implements AssignmentWriter, JournalAssign
 
     public function unassignUnfinished(AssignmentReference $expectedRoot, Closure $records): AssignmentResult
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $this->requireUnassign();
         [$group, $finished] = $this->checkedGroup($records);
         $this->store->lockExpected($group->root, $expectedRoot);

@@ -135,7 +135,7 @@ final readonly class ContainerManifest
             throw ManifestRefused::because('a helper has exactly one mount, its workspace at /workspace');
         }
 
-        self::checkSource($mounts[0]->source);
+        self::assertValidSource($mounts[0]->source);
 
         return new self(
             $image,
@@ -156,7 +156,7 @@ final readonly class ContainerManifest
     /**
      * @throws ManifestRefused
      */
-    private static function checkSource(string $source): void
+    private static function assertValidSource(string $source): void
     {
         if (! str_starts_with($source, '/')
             || in_array('..', explode('/', $source), true)

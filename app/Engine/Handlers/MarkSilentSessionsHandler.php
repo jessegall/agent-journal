@@ -21,7 +21,7 @@ final readonly class MarkSilentSessionsHandler implements CommandHandler
 
     public function handle(MarkSilentSessions $command): void
     {
-        $this->access->checkMaintenance(MarkSilentSessions::MAINTENANCE_SCOPE);
+        $this->access->assertMaintenanceGranted(MarkSilentSessions::MAINTENANCE_SCOPE);
 
         $this->heartbeats->markSilentStarts();
     }

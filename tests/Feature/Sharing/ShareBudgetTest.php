@@ -75,12 +75,12 @@ final class ShareBudgetTest extends TestCase
         $preview = MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
         $preview->chargeRecords(1_000);
         $preview->chargeLinks(2_000);
-        $preview->requireHops(4);
+        $preview->assertHopsWithinBudget(4);
 
         $this->assertThrows(fn () => $read->chargeRendered(1), ShareBudgetExceeded::class, 'rendered output');
         $this->assertThrows(fn () => $preview->chargeRecords(1), ShareBudgetExceeded::class, '1000 records');
         $this->assertThrows(fn () => $preview->chargeLinks(1), ShareBudgetExceeded::class, '2000 links');
-        $this->assertThrows(fn () => $preview->requireHops(5), ShareBudgetExceeded::class, '4 relations');
+        $this->assertThrows(fn () => $preview->assertHopsWithinBudget(5), ShareBudgetExceeded::class, '4 relations');
     }
 
     public function test_work_after_two_seconds_is_refused(): void

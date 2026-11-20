@@ -48,7 +48,7 @@ final class EngineTickedDeliveryTest extends TestCase
             ) => $line === 'Engine listener failed' && $context['listener'] === FailingEngineListener::class,
         )->once();
         $this->expectException(EngineAccessRefused::class);
-        $this->app->make(EngineAccess::class)->checkMaintenance('fixtures.second');
+        $this->app->make(EngineAccess::class)->assertMaintenanceGranted('fixtures.second');
     }
 
     public function test_with_no_listeners_only_plain_observers_hear_it(): void

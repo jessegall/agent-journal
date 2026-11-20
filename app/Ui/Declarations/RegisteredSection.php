@@ -35,7 +35,7 @@ final readonly class RegisteredSection
         }
 
         if ($section->visibility !== null) {
-            $owner->checkImplements($key, $section->visibility, VisibilityCheck::class);
+            $owner->assertImplements($key, $section->visibility, VisibilityCheck::class);
         }
 
         return new self(

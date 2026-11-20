@@ -19,7 +19,11 @@ final class RecordedStepsCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): RecordedSteps
     {
-        return StoredJson::read($key, $value, fn (array $stored) => RecordedSteps::from($stored)->checkVersion());
+        return StoredJson::read(
+            $key,
+            $value,
+            fn (array $stored) => RecordedSteps::from($stored)->assertCurrentVersion(),
+        );
     }
 
     /**

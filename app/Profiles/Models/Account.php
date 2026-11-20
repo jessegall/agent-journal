@@ -150,7 +150,7 @@ final class Account extends Model implements ReadableModel
             ->whereKey($accountId)
             ->lockForUpdate()
             ->firstOrFail();
-        $account->requireAvailable();
+        $account->assertAvailable();
 
         return $account;
     }
@@ -343,7 +343,7 @@ final class Account extends Model implements ReadableModel
      *
      * @throws AccountUnavailable
      */
-    public function requireAvailable(): void
+    public function assertAvailable(): void
     {
         if (! $this->state->canStart() || $this->maintenance) {
             throw AccountUnavailable::forStart($this->program, $this->state->startUnavailableReason());

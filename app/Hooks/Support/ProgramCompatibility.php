@@ -75,7 +75,7 @@ final readonly class ProgramCompatibility
      *
      * @throws ProgramArrangementUnproven
      */
-    public function requireStartable(): void
+    public function assertStartable(): void
     {
         if (! $this->arrangementEvidence->isNativeShown()) {
             throw ProgramArrangementUnproven::for(

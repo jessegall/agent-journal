@@ -21,7 +21,7 @@ final readonly class CommandDecision
         return new self(CommandAdmissionRefused::forDecision($code, $reason, $recovery));
     }
 
-    public function requireAllowed(): void
+    public function assertAllowed(): void
     {
         if ($this->refusal !== null) {
             throw $this->refusal;

@@ -18,9 +18,9 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 
 /** @extends Command<string> */
-#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 #[HandledBy(SelectMessageHandler::class)]
 #[Authorize(MessagePolicy::class, MessageAbility::Work)]
+#[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 #[Operation('messages_select', ResourceAreaType::JournalWork, AccessType::Edit)]
 final readonly class SelectMessage extends Command implements AuthorizedCommand
 {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Communication\Mcp;
 
-use App\Mcp\Attributes\VisibleToProfiles;
 use App\Agents\Values\ReadRequest;
 use App\Communication\Contracts\ConversationResolver;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
@@ -14,9 +14,9 @@ use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 
+#[VisibleToProfiles]
 #[Name('messages_show')]
 #[Description('Show one message you may see.')]
-#[VisibleToProfiles]
 final class MessageShowTool extends JournalReadTool
 {
     public function __construct(private readonly ConversationResolver $conversations) {}

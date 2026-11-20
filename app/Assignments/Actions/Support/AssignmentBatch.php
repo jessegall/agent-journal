@@ -39,7 +39,7 @@ final readonly class AssignmentBatch
         $byType = [];
 
         foreach ($group->records as $record) {
-            $this->providers->requirePublic($record->type);
+            $this->providers->assertPublic($record->type);
         }
 
         foreach ($group->records as $record) {

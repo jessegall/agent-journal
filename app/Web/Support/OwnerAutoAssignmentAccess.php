@@ -35,7 +35,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
      * @throws AutoAssignmentDenied
      * @throws AssignmentDenied
      */
-    public function requireRead(Actor $actor, ActorIdentity $target): void
+    public function assertMayRead(Actor $actor, ActorIdentity $target): void
     {
         if ($this->admission->admits($actor) || self::isSelf($actor, $target)) {
             return;
@@ -48,7 +48,7 @@ final readonly class OwnerAutoAssignmentAccess implements AutoAssignmentAccess
      * @throws AutoAssignmentDenied
      * @throws AssignmentDenied
      */
-    public function requireWrite(Actor $actor, ActorIdentity $target): void
+    public function assertMayWrite(Actor $actor, ActorIdentity $target): void
     {
         if ($this->admission->admits($actor)) {
             return;

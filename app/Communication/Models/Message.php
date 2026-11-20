@@ -18,13 +18,13 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Exceptions\MessageStateConflict;
 use App\Communication\Models\Scopes\MessageVisibility;
 use App\Communication\Support\AcceptedOperation;
-use App\Queries\Support\TextSearch;
 use App\Communication\Support\InboxMembership;
 use App\Communication\Support\MessageEnvelope;
 use App\Communication\Support\RegisteredInboxes;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Queries\Support\TextSearch;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
@@ -364,7 +364,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
             return;
         }
 
-        $this->refuseWhenClosed();
+        $this->assertOpen();
         $this->state = MessageState::WaitingForAnswer;
         $this->is_question = true;
         $this->state_version++;
@@ -392,7 +392,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
      */
     public function dismissBy(ActorIdentity $actor, DismissalType $type, string $reason, CarbonImmutable $at): void
     {
-        $this->refuseWhenClosed();
+        $this->assertOpen();
         $this->state = MessageState::Dismissed;
         $this->state_version++;
         $this->dismissal_type = $type;
@@ -404,7 +404,7 @@ final class Message extends Model implements Assignable, Numbered, ReadableModel
     /**
      * @throws MessageStateConflict
      */
-    private function refuseWhenClosed(): void
+    private function assertOpen(): void
     {
         if ($this->state->isClosed()) {
             throw MessageStateConflict::closed($this->id);

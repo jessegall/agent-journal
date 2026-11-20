@@ -75,9 +75,9 @@ final class OwnerSharePolicyTest extends TestCase
         $this->assertTrue($policy->mayManage(ActorContext::forUser($this->ownerId)));
         $this->assertFalse($policy->mayManage(TestActors::user(2)));
         $this->assertFalse($policy->mayManage(ActorContext::forAgent($this->ownerId)));
-        $this->assertThrows(fn () => $policy->requireManager(TestActors::user(2)), SharingNotAllowed::class);
+        $this->assertThrows(fn () => $policy->assertManager(TestActors::user(2)), SharingNotAllowed::class);
         $this->assertThrows(
-            fn () => $policy->requireManager(ActorContext::forAgent(TestIds::of(3))),
+            fn () => $policy->assertManager(ActorContext::forAgent(TestIds::of(3))),
             SharingNotAllowed::class,
         );
     }

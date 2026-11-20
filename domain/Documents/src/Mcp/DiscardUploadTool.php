@@ -17,11 +17,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('uploads_discard')]
-#[Description('Discard a private upload and its chunks.')]
-#[IsDestructive(true)]
 #[IsIdempotent]
+#[IsDestructive(true)]
+#[Name('uploads_discard')]
 #[Dispatches(DiscardUpload::class)]
+#[Description('Discard a private upload and its chunks.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class DiscardUploadTool extends JournalWriteTool
 {

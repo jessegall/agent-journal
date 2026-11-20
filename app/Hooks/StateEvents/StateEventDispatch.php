@@ -33,7 +33,7 @@ final readonly class StateEventDispatch
         return clone ($this, ['afterCommit' => true]);
     }
 
-    public function checkTarget(StackTarget $target): void
+    public function assertTargetGranted(StackTarget $target): void
     {
         $allowed = $this->audience->filter(fn (StateEventAudience $audience) => $audience->allowsTarget($target));
 

@@ -81,7 +81,7 @@ final class CommandBusServiceProvider extends ServiceProvider
     {
         // Resolved on each call, never captured: under Octane each request has its own RunningCommand.
         $connection->beforeStartingTransaction(
-            static fn () => Container::getInstance()->make(RunningCommand::class)->refuseExplicitTransaction(),
+            static fn () => Container::getInstance()->make(RunningCommand::class)->assertNoExplicitTransaction(),
         );
     }
 

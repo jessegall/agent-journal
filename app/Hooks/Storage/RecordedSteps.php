@@ -32,7 +32,7 @@ final class RecordedSteps extends Data
         return new self(self::CURRENT_VERSION, $steps);
     }
 
-    public function checkVersion(): self
+    public function assertCurrentVersion(): self
     {
         if ($this->version !== self::CURRENT_VERSION) {
             throw StoredValueInvalid::forVersion('steps', $this->version);

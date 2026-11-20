@@ -22,7 +22,7 @@ final readonly class DatabaseAssignmentTransaction implements AssignmentTransact
 
     public function __construct(private ConnectionInterface $database) {}
 
-    public function requireOpen(): void
+    public function assertOpen(): void
     {
         if ($this->database->transactionLevel() === 0) {
             throw AssignmentTransactionRequired::forIsolation('none');
@@ -38,7 +38,7 @@ final readonly class DatabaseAssignmentTransaction implements AssignmentTransact
     public function run(Closure $work): mixed
     {
         if ($this->database->transactionLevel() > 0) {
-            $this->requireOpen();
+            $this->assertOpen();
 
             return $work();
         }

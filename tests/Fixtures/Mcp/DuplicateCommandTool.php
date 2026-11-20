@@ -22,7 +22,7 @@ final class DuplicateCommandTool extends JournalWriteTool
     protected function command(ToolArguments $arguments): WriteNote
     {
         $first = new WriteNote($arguments->text('text'));
-        strlen($first->text);
+        strlen($first->text); // @phpstan-ignore function.resultUnused (the unrelated call the rule must find)
 
         return new WriteNote($arguments->text('text'));
     }

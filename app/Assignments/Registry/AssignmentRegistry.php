@@ -7,7 +7,6 @@ namespace App\Assignments\Registry;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\AssignableProvider;
-use App\Assignments\Contracts\JournalAssignableProvider;
 use App\Assignments\Contracts\AssignedWorkProvider;
 use App\Assignments\Contracts\AssigneeProvider;
 use App\Assignments\Contracts\AssignmentPoolFactory;
@@ -15,6 +14,7 @@ use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AutoAssigner;
 use App\Assignments\Contracts\AutoAssignmentActivity;
+use App\Assignments\Contracts\JournalAssignableProvider;
 use App\Assignments\Enums\AssignmentPurpose;
 use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
@@ -135,7 +135,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         string $owner,
         AssignmentPurpose $purpose,
     ): void {
-        RecordIdentity::checkType($type);
+        RecordIdentity::assertKnownType($type);
         $this->requireOwner($owner);
 
         if (! is_subclass_of($providerClass, AssignableProvider::class)) {
@@ -230,14 +230,14 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         $this->activities->put($type, $registration->activityClass);
     }
 
-    public function requirePublic(string $type): void
+    public function assertPublic(string $type): void
     {
         if (! $this->purposeOf($type)->isPublic()) {
             throw AssignmentTypeInternal::forType($type);
         }
     }
 
-    public function requireInternal(string $type): void
+    public function assertInternal(string $type): void
     {
         if (! $this->purposeOf($type)->isResponsibility()) {
             throw AssignmentTypeUnavailable::forType($type);

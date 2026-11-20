@@ -12,9 +12,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 #[Name(JournalSearch::TOOL)]
 #[Description('Search visible journal records and page through matches by type.')]
-#[IsReadOnly]
 final class SearchTool extends JournalReadTool
 {
     public function __construct(private readonly JournalSearch $search) {}

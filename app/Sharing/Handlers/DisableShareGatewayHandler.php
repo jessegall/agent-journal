@@ -36,7 +36,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
     public function handle(DisableShareGateway $command): GatewayConfiguration
     {
         $owner = $command->dispatchedBy();
-        $this->policy->requireManager($owner);
+        $this->policy->assertManager($owner);
         ShareInstallation::lockForAdmission();
         $configuration = ShareGatewayConfiguration::lockById($command->configurationId);
 

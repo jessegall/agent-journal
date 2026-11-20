@@ -61,7 +61,7 @@ final readonly class NavigationAnswerCheck
     /**
      * @throws NavigationAnswerRefused
      */
-    public function checkVersion(NavigationRequest $navigation, int $expectedRowVersion): void
+    public function assertCurrentVersion(NavigationRequest $navigation, int $expectedRowVersion): void
     {
         if (! $navigation->isAtRowVersion($expectedRowVersion)) {
             throw NavigationAnswerRefused::staleVersion(

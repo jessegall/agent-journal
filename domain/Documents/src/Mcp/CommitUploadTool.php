@@ -17,11 +17,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('uploads_commit')]
-#[Description('Verify all bytes and seal the upload.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('uploads_commit')]
 #[Dispatches(CommitUpload::class)]
+#[Description('Verify all bytes and seal the upload.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CommitUploadTool extends JournalWriteTool
 {

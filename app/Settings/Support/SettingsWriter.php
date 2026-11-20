@@ -149,7 +149,7 @@ final readonly class SettingsWriter
      */
     private function lockedRecord(string $owner, string $key, int $expectedRevision): SettingsRecord
     {
-        $this->transaction->requireRunning(new SettingsRecord()->getConnection());
+        $this->transaction->assertRunning(new SettingsRecord()->getConnection());
         SettingsRecord::insertIfAbsent($owner);
         $record = SettingsRecord::lockedForOwner($owner);
 

@@ -13,9 +13,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 #[Name('docs_read')]
 #[Description('Read a document summary, body range, revisions or comments.')]
-#[IsReadOnly]
 final class ReadDocumentTool extends PublicationReadTool
 {
     public function __construct(private readonly DocumentReader $documents) {}

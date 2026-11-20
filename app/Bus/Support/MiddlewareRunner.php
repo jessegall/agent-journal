@@ -86,7 +86,7 @@ final readonly class MiddlewareRunner
         if ($this->registry->entryOf($call->name()) === CommandEntry::Application) {
             $this->admission->assess(
                 $this->registry->effective($call, CommandAdmissionStage::BeforeHandler),
-            )->requireAllowed();
+            )->assertAllowed();
         }
 
         return $this->subjects->handOver($call, $next);

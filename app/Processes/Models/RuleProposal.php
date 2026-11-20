@@ -121,7 +121,7 @@ final class RuleProposal extends Model implements ReadableModel
      */
     public function revise(int $expectedRevision, ProposedRule $proposed, ActorIdentity $author): RuleProposalRevision
     {
-        $this->checkAuthor($author);
+        $this->assertAuthor($author);
         if ($expectedRevision !== $this->current_revision) {
             throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
         }
@@ -136,7 +136,7 @@ final class RuleProposal extends Model implements ReadableModel
      */
     public function withdraw(ActorIdentity $author): void
     {
-        $this->checkAuthor($author);
+        $this->assertAuthor($author);
         if (! $this->state->canAcceptRevision()) {
             throw RuleProposalRefused::ended($this->id, $this->state);
         }
@@ -165,7 +165,7 @@ final class RuleProposal extends Model implements ReadableModel
     /**
      * @throws RuleProposalRefused
      */
-    public function checkReviewable(int $expectedRevision): void
+    public function assertReviewable(int $expectedRevision): void
     {
         if ($this->state !== ProposalState::Pending) {
             throw RuleProposalRefused::notPending($this->id, $this->state);
@@ -240,7 +240,7 @@ final class RuleProposal extends Model implements ReadableModel
     /**
      * @throws RuleProposalRefused
      */
-    private function checkAuthor(ActorIdentity $actor): void
+    private function assertAuthor(ActorIdentity $actor): void
     {
         if (! $this->isAuthoredBy($actor)) {
             throw RuleProposalRefused::notTheAuthor($this->id);

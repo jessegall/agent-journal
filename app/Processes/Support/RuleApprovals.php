@@ -46,13 +46,13 @@ final readonly class RuleApprovals
      */
     public function approve(RuleProposal $proposal, OwnerApproval $approval, ActorIdentity $approver): ApprovalReceipt
     {
-        $proposal->checkReviewable($approval->expectedRevision);
+        $proposal->assertReviewable($approval->expectedRevision);
         $declaration = $proposal->revisions()->where('revision', $proposal->current_revision)->sole();
         $rule = $declaration->payload;
         $this->checkConflicts($rule);
         $this->checkReaders($rule, $declaration, $approval->readers);
         $classification = ClassificationRule::forRule($proposal->project_key, $rule);
-        $classification->checkExpected($approval->expectedActiveRevision);
+        $classification->assertExpectedRevision($approval->expectedActiveRevision);
         $request = $proposal->commandRequest()->lockForUpdate()->first();
 
         $approved = RuleRevision::approve($declaration, $proposal->project_key, $approver, $approval->readers, []);

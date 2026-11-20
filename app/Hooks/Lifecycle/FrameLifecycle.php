@@ -63,7 +63,7 @@ final class FrameLifecycle
      *
      * @throws StackChangedInLifecycle
      */
-    public function refuseChangeDuringCallbacks(StackTarget $target): void
+    public function assertNotInCallbacks(StackTarget $target): void
     {
         if (isset($this->running[self::keyOf($target)])) {
             throw StackChangedInLifecycle::for($target->description());

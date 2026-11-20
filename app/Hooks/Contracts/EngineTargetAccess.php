@@ -31,5 +31,5 @@ interface EngineTargetAccess
     /**
      * Refuses a target the engine's current grant does not cover.
      */
-    public function checkTarget(StackTarget $target): void;
+    public function assertTargetGranted(StackTarget $target): void;
 }

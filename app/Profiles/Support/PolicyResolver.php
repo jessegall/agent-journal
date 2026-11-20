@@ -40,7 +40,7 @@ final readonly class PolicyResolver
         string $configurationHash,
     ): ProfileDefinition {
         $project = $proposal->overrideFor($profile->base);
-        $this->requireKnownOperations($profile, $project);
+        $this->assertKnownOperations($profile, $project);
 
         $start = new ProfileStartPolicy(
             $profile->program,
@@ -173,7 +173,7 @@ final readonly class PolicyResolver
     /**
      * @throws ProfilePolicyRefused
      */
-    private function requireKnownOperations(ProposedProfile $profile, PolicyOverride $project): void
+    private function assertKnownOperations(ProposedProfile $profile, PolicyOverride $project): void
     {
         foreach ([...$project->operationNames(), ...$profile->override->operationNames()] as $operation) {
             if (! $this->operations->has($operation)) {

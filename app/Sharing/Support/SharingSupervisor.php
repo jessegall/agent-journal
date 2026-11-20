@@ -58,7 +58,7 @@ final class SharingSupervisor
      */
     public function work(): bool
     {
-        $this->requireNoTransaction();
+        $this->assertNoTransaction();
         $claim = $this->asSystem(new ClaimGatewayOperation($this->runId));
 
         if ($claim === null) {
@@ -89,7 +89,7 @@ final class SharingSupervisor
     public function checkHealth(): void
     {
         foreach (ShareGatewayEndpoint::openOfRun($this->runId) as $endpoint) {
-            $this->requireNoTransaction();
+            $this->assertNoTransaction();
             $healthy = $this->gateways->healthOf($endpoint)->isHealthy();
             $this->asSystem(
                 new RecordGatewayHealth(
@@ -155,7 +155,7 @@ final class SharingSupervisor
      *
      * @throws SupervisorInsideTransaction
      */
-    private function requireNoTransaction(): void
+    private function assertNoTransaction(): void
     {
         if ($this->database->transactionLevel() > 0) {
             throw SupervisorInsideTransaction::atLevel($this->database->transactionLevel());

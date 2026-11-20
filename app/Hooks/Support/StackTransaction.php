@@ -107,7 +107,7 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
     public function runWithin(OperationDeadline $deadline, Closure $work): mixed
     {
         if ($this->database->transactionLevel() > 0) {
-            $this->checkLimitsAreSet();
+            $this->assertLimitsAreSet();
 
             return $work();
         }
@@ -131,14 +131,14 @@ final readonly class StackTransaction implements StackTransactionContract, Stack
     /**
      * Refuses a stack change outside a transaction, so it can only commit together with the work that caused it.
      */
-    public function requireOpen(StackTarget $target): void
+    public function assertOpen(StackTarget $target): void
     {
         if ($this->database->transactionLevel() === 0) {
             throw StackTransactionRequired::forTarget($target->description());
         }
     }
 
-    private function checkLimitsAreSet(): void
+    private function assertLimitsAreSet(): void
     {
         if ($this->database->scalar("SELECT current_setting('lock_timeout')") === '0') {
             throw StackTransactionRequired::withoutLimits();

@@ -79,8 +79,8 @@ final class ClassificationRule extends Model implements ReadableModel
      */
     public function activate(RuleRevision $revision, int $expectedRevision): void
     {
-        $this->checkExpected($expectedRevision);
-        $this->checkOwnRevision($revision);
+        $this->assertExpectedRevision($expectedRevision);
+        $this->assertOwnRevision($revision);
         if ($revision->revision <= $this->active_revision) {
             throw ClassificationRuleRefused::notNewer($this->rule_id, $revision->revision, $this->active_revision);
         }
@@ -94,7 +94,7 @@ final class ClassificationRule extends Model implements ReadableModel
      */
     public function retire(int $expectedRevision, string $reason): void
     {
-        $this->checkExpected($expectedRevision);
+        $this->assertExpectedRevision($expectedRevision);
         if ($this->state !== ClassificationState::Active) {
             throw ClassificationRuleRefused::notActive($this->rule_id, $this->state);
         }
@@ -110,8 +110,8 @@ final class ClassificationRule extends Model implements ReadableModel
      */
     public function restoreFrom(RuleRevision $earlier, int $expectedRevision): void
     {
-        $this->checkExpected($expectedRevision);
-        $this->checkOwnRevision($earlier);
+        $this->assertExpectedRevision($expectedRevision);
+        $this->assertOwnRevision($earlier);
         $this->point($earlier, "Revision {$earlier->revision} restored.");
     }
 
@@ -135,7 +135,7 @@ final class ClassificationRule extends Model implements ReadableModel
     /**
      * @throws ClassificationRuleRefused
      */
-    public function checkExpected(int $expectedRevision): void
+    public function assertExpectedRevision(int $expectedRevision): void
     {
         if ($expectedRevision !== $this->active_revision) {
             throw ClassificationRuleRefused::stale($this->rule_id, $expectedRevision, $this->active_revision);
@@ -145,7 +145,7 @@ final class ClassificationRule extends Model implements ReadableModel
     /**
      * @throws ClassificationRuleRefused
      */
-    private function checkOwnRevision(RuleRevision $revision): void
+    private function assertOwnRevision(RuleRevision $revision): void
     {
         if (! $revision->belongsToRule($this)) {
             throw ClassificationRuleRefused::otherRule($this->rule_id, $revision->rule_id);

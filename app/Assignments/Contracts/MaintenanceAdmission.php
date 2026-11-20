@@ -6,5 +6,5 @@ namespace App\Assignments\Contracts;
 
 interface MaintenanceAdmission
 {
-    public function checkMaintenance(string $capability): void;
+    public function assertMaintenanceGranted(string $capability): void;
 }

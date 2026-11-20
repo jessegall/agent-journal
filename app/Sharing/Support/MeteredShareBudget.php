@@ -114,7 +114,7 @@ final class MeteredShareBudget implements ShareBudget
             throw ShareBudgetExceeded::forQueries($this->mostQueries);
         }
 
-        $this->requireTime();
+        $this->assertTimeWithinBudget();
 
         return $measurement->value;
     }
@@ -125,7 +125,7 @@ final class MeteredShareBudget implements ShareBudget
     public function chargeText(int $bytes): void
     {
         $this->textBytes += $bytes;
-        $this->requireLoadedBytes();
+        $this->assertLoadedBytesWithinBudget();
     }
 
     /**
@@ -134,7 +134,7 @@ final class MeteredShareBudget implements ShareBudget
     public function chargeMetadata(int $bytes): void
     {
         $this->metadataBytes += $bytes;
-        $this->requireLoadedBytes();
+        $this->assertLoadedBytesWithinBudget();
     }
 
     /**
@@ -164,7 +164,7 @@ final class MeteredShareBudget implements ShareBudget
             throw ShareBudgetExceeded::forNodes($this->mostRecords);
         }
 
-        $this->requireTime();
+        $this->assertTimeWithinBudget();
     }
 
     /**
@@ -178,13 +178,13 @@ final class MeteredShareBudget implements ShareBudget
             throw ShareBudgetExceeded::forLinks($this->mostLinks);
         }
 
-        $this->requireTime();
+        $this->assertTimeWithinBudget();
     }
 
     /**
      * @throws ShareBudgetExceeded
      */
-    public function requireHops(int $hops): void
+    public function assertHopsWithinBudget(int $hops): void
     {
         if ($hops > $this->mostHops) {
             throw ShareBudgetExceeded::forHops($this->mostHops);
@@ -209,7 +209,7 @@ final class MeteredShareBudget implements ShareBudget
     /**
      * @throws ShareBudgetExceeded
      */
-    private function requireLoadedBytes(): void
+    private function assertLoadedBytesWithinBudget(): void
     {
         if ($this->textBytes + $this->metadataBytes > $this->mostLoadedBytes) {
             throw ShareBudgetExceeded::forBytes('loaded records', $this->mostLoadedBytes);
@@ -219,7 +219,7 @@ final class MeteredShareBudget implements ShareBudget
     /**
      * @throws ShareBudgetExceeded
      */
-    private function requireTime(): void
+    private function assertTimeWithinBudget(): void
     {
         if ($this->startedAt->diffInMilliseconds(CarbonImmutable::now()) > $this->mostMilliseconds) {
             throw ShareBudgetExceeded::forTime($this->mostMilliseconds);

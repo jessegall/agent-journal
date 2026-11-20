@@ -26,7 +26,7 @@ final readonly class LockingNumberAllocator
     public function allocate(Model&Numbered $record): void
     {
         if (! $this->outsideCommands->isAllowed()) {
-            $this->transaction->requireRunning($record->getConnection());
+            $this->transaction->assertRunning($record->getConnection());
         }
 
         $this->types->requireDeclared($record->getMorphClass());

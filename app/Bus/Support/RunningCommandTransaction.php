@@ -17,7 +17,7 @@ final readonly class RunningCommandTransaction implements CommandTransaction
 {
     public function __construct(private RunningCommand $running, private ConnectionInterface $database) {}
 
-    public function requireRunning(Connection $connection): void
+    public function assertRunning(Connection $connection): void
     {
         if (! $this->running->isRunning() || $connection !== $this->database || $connection->transactionLevel() === 0) {
             throw CommandTransactionMissing::for((string) $connection->getName());

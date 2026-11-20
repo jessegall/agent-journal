@@ -38,7 +38,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
     public function handle(ConfigureShareGateway $command): GatewayConfiguration
     {
         $owner = $command->dispatchedBy();
-        $this->policy->requireManager($owner);
+        $this->policy->assertManager($owner);
 
         if (! $this->gateways->has($command->gatewayKey)) {
             throw UnknownShareGateway::forKey($command->gatewayKey);

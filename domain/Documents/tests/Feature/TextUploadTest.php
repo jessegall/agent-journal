@@ -88,7 +88,7 @@ final class TextUploadTest extends TestCase
 
     private function consume(string $id, UploadType $type): string
     {
-        $this->mock(CommandTransaction::class)->shouldReceive('requireRunning')->once();
+        $this->mock(CommandTransaction::class)->shouldReceive('assertRunning')->once();
 
         try {
             return $this->app->make(DatabaseManager::class)->connection()->transaction(

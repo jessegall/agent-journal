@@ -18,6 +18,6 @@ final readonly class GroupReference
      */
     public function __construct(public string $owner, public string $key)
     {
-        SettingKey::requireAddress($owner, $key);
+        SettingKey::assertValidAddress($owner, $key);
     }
 }

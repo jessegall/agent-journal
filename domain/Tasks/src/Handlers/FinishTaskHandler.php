@@ -29,7 +29,7 @@ final readonly class FinishTaskHandler implements CommandHandler
      */
     public function handle(FinishTask $command, Task $task): void
     {
-        $this->refuseUnlessCurrentTaskRun($task, $command->runNumber);
+        $this->assertCurrentTaskRun($task, $command->runNumber);
         $task->finishRun($command->note);
         $run = $task->currentRun();
 

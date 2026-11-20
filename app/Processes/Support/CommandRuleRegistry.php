@@ -42,7 +42,7 @@ final readonly class CommandRuleRegistry
         );
         $standing = self::withoutReplaced($rules);
         self::checkIds($standing);
-        self::checkDisjoint($standing);
+        self::assertDisjoint($standing);
         $active = [];
         $held = [];
         foreach ($standing as $rule) {
@@ -243,7 +243,7 @@ final readonly class CommandRuleRegistry
      *
      * @throws CommandRuleConflict
      */
-    private static function checkDisjoint(array $rules): void
+    private static function assertDisjoint(array $rules): void
     {
         foreach ($rules as $index => $rule) {
             foreach (array_slice($rules, $index + 1) as $other) {

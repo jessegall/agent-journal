@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
-use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Exceptions\CrossOwnerReadRefused;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\RefusalDetails;
 use App\Bus\Contracts\RefusalMapper as RefusalMapperContract;
@@ -51,10 +48,10 @@ final readonly class RefusalMapper implements RefusalMapperContract
                 RefusalCode::Unauthenticated,
                 $failure->getMessage(),
             ),
-            $failure instanceof AuthorizationException,
-            $failure instanceof UserActorRequired,
-            $failure instanceof CrossOwnerReadRefused,
-            $failure instanceof ActorNotAllowed => new MappedRefusal(RefusalCode::Forbidden, $failure->getMessage()),
+            $failure instanceof AuthorizationException => new MappedRefusal(
+                RefusalCode::Forbidden,
+                $failure->getMessage(),
+            ),
             $failure instanceof ModelNotFoundException => new MappedRefusal(
                 RefusalCode::RecordUnavailable,
                 'The record does not exist or is not available to you.',

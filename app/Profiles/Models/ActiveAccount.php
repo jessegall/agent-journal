@@ -152,7 +152,7 @@ final class ActiveAccount extends Model implements ReadableModel
      */
     public function select(Account $account): bool
     {
-        $account->requireAvailable();
+        $account->assertAvailable();
 
         if ($this->account_id === $account->id) {
             return false;

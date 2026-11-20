@@ -74,7 +74,7 @@ final readonly class ShareScope
                     continue;
                 }
 
-                $budget->requireHops($hops);
+                $budget->assertHopsWithinBudget($hops);
 
                 foreach ($this->candidatesOf($source, $capabilities, $budget, $seen) as $candidate) {
                     $found[] = $candidate;

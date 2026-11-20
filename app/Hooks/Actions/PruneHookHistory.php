@@ -29,7 +29,7 @@ final readonly class PruneHookHistory
 
     public function prune(): PrunedHistory
     {
-        $this->periods->checkLongerThan($this->retryWindow);
+        $this->periods->assertLongerThan($this->retryWindow);
         $now = CarbonImmutable::now();
 
         return new PrunedHistory(

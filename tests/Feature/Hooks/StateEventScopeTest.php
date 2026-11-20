@@ -131,7 +131,7 @@ final class StateEventScopeTest extends TestCase
         $access->withinMaintenance('outer', function () use ($access, $target): void {
             try {
                 $access->withinFrameGrant(new FrameGrant($target, 'frame'), function () use ($access, $target): void {
-                    $access->checkTarget($target);
+                    $access->assertTargetGranted($target);
 
                     throw SimulatedFailure::of('The frame operation failed.');
                 });

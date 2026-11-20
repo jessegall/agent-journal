@@ -24,7 +24,7 @@ final readonly class StatePush
 
     public function push(StackTarget $target, AgentStackRow $row, StateReference $reference): void
     {
-        $this->lifecycle->refuseChangeDuringCallbacks($target);
+        $this->lifecycle->assertNotInCallbacks($target);
         $before = $this->restorer->restore($row->frames);
         $after = $before->withoutExposedInactive()->withStateOnTop($reference);
 

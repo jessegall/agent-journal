@@ -100,7 +100,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
 
             $count = ($counts[$profile->value] ?? 0) + 1;
             $size = ($sizes[$profile->value] ?? 0) + $bytes;
-            $this->requireBudget($profile, $count, $size);
+            $this->assertWithinBudget($profile, $count, $size);
             $counts[$profile->value] = $count;
             $sizes[$profile->value] = $size;
         }
@@ -110,7 +110,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
         $this->toolBytes = $sizes;
     }
 
-    private function requireBudget(DiscoveryProfile $profile, int $count, int $bytes): void
+    private function assertWithinBudget(DiscoveryProfile $profile, int $count, int $bytes): void
     {
         if ($count > $profile->toolLimit()) {
             throw McpBudgetExceeded::tools($profile->value, $count, $profile->toolLimit());
@@ -160,7 +160,7 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
 
         $contribution = new ReflectionClass($className)->newInstanceWithoutConstructor();
         $type = $contribution->recordType();
-        RecordIdentity::checkType($type);
+        RecordIdentity::assertKnownType($type);
 
         if (isset($this->searchContributions[$type])) {
             throw McpSearchTypeTaken::between($type, $this->searchContributions[$type], $className);
@@ -247,8 +247,8 @@ final class McpCatalogue implements JournalToolNames, McpRegistration
     {
         $definitions = [];
         foreach ($this->resources as $className) {
-            $definition = $this->definitionOf($className)->toArray();
-            $definitions[$definition['uriTemplate'] ?? $definition['uri']] = $definition;
+            $resource = $this->definitionOf($className);
+            $definitions[$resource->uri()] = $resource->toArray();
         }
 
         return $definitions;

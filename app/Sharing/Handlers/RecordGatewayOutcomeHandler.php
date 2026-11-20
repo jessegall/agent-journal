@@ -38,7 +38,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
 
     public function handle(RecordGatewayOutcome $command): void
     {
-        $this->refuseStaleGatewayRun(ShareInstallation::lockForAdmission(), $command->runId);
+        $this->assertCurrentGatewayRun(ShareInstallation::lockForAdmission(), $command->runId);
         $claimed = ShareGatewayOperation::of($command->operationId);
         $configuration = ShareGatewayConfiguration::lockById($claimed->share_gateway_configuration_id);
         $endpoint = ShareGatewayEndpoint::lockHeldBy($configuration->id, $command->endpointVersion, $command->runId);

@@ -45,7 +45,7 @@ final class StateEventActivity
         }
     }
 
-    public function checkForReentry(StackTarget $target): void
+    public function assertNotReentered(StackTarget $target): void
     {
         if (isset($this->evaluating[$target->description()])) {
             throw StateEventReentry::duringEvaluation($target);

@@ -28,8 +28,8 @@ final class AskQuestionCall extends Data implements JournalCall
         #[Required]
         public readonly string $body,
         #[MapName('request_key')]
-        #[LiteralTypeScriptType('string')]
         #[WithCast(CallKeyCast::class)]
+        #[LiteralTypeScriptType('string')]
         #[WithTransformer(CallKeyTransformer::class)]
         public readonly CallKey $requestKey,
         public readonly QuestionRecord|null $relatedRecord = null,

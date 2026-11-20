@@ -35,12 +35,12 @@ final class ProgramCapabilitiesTest extends TestCase
     {
         $this->expectExceptionObject(UnsupportedHook::for('Test program', 'onCompaction'));
 
-        $this->capabilities(RewriteSupport::WithoutApproval)->checkSupports('onCompaction');
+        $this->capabilities(RewriteSupport::WithoutApproval)->assertSupports('onCompaction');
     }
 
     public function test_a_hook_the_adapter_maps_passes(): void
     {
-        $this->capabilities(RewriteSupport::WithoutApproval)->checkSupports('onStop');
+        $this->capabilities(RewriteSupport::WithoutApproval)->assertSupports('onStop');
 
         $this->addToAssertionCount(1);
     }

@@ -29,3 +29,5 @@ final readonly class JournalClient
         public TextCalls $text,
     ) {}
 }
+
+// changed by hand

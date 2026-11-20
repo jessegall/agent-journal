@@ -44,7 +44,7 @@ final class ShareRecordRegistry
     public function register(ShareRecordRegistration $registration): void
     {
         $alias = $registration->alias;
-        RecordIdentity::checkType($alias);
+        RecordIdentity::assertKnownType($alias);
 
         if (! is_subclass_of($registration->modelClass, Shareable::class)) {
             throw ShareRecordInvalid::notShareable($alias, $registration->modelClass);

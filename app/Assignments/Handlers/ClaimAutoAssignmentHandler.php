@@ -42,7 +42,7 @@ final readonly class ClaimAutoAssignmentHandler implements CommandHandler
             throw AssignmentDenied::forCaller($caller);
         }
 
-        $this->maintenance->checkMaintenance(AssignRecord::MAINTENANCE_SCOPE);
+        $this->maintenance->assertMaintenanceGranted(AssignRecord::MAINTENANCE_SCOPE);
 
         return $this->writer->claim($command->key, $this->claim(...));
     }

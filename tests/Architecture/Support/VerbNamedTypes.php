@@ -29,7 +29,7 @@ final readonly class VerbNamedTypes implements FileScan
         'Describes', 'Dispatches', 'Emits', 'Enforces', 'Exports', 'Exposes', 'Finds', 'Follows', 'Forwards', 'Gives',
         'Grants', 'Guards', 'Handles', 'Has', 'Holds', 'Inspects', 'Is', 'Keeps', 'Lets', 'Limits', 'Lists', 'Loads',
         'Locks', 'Logs', 'Makes', 'Maps', 'Marks', 'Needs', 'Notifies', 'Offers', 'Opens', 'Owns', 'Parses', 'Passes',
-        'Prepares', 'Produces', 'Provides', 'Publishes', 'Receives', 'Registers', 'Remembers', 'Renders', 'Reports',
+        'Prepares', 'Produces', 'Provides', 'Publishes', 'Receives', 'Registers', 'Remembers', 'Renders',
         'Requires', 'Resolves', 'Returns', 'Runs', 'Sends', 'Serves', 'Shows', 'Signs', 'Starts', 'Stops', 'Stores',
         'Supplies', 'Supports', 'Takes', 'Tells', 'Tracks', 'Updates', 'Uses', 'Validates', 'Verifies', 'Wakes',
         'Watches', 'Wraps', 'Writes',
@@ -37,7 +37,7 @@ final readonly class VerbNamedTypes implements FileScan
 
     public function key(): string
     {
-        return 'verb-named-types-1';
+        return 'verb-named-types-2';
     }
 
     public function findingsIn(ParsedFile $file): array

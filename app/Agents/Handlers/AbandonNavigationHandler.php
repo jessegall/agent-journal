@@ -15,7 +15,7 @@ use App\Contracts\CommandHandler;
 
 /**
  * Ends a navigation request the main agent gave up on: abandoned with its reason, its queued rounds cancelled and its
- * key script ended entry_unavailable; the runtime keeps its navigation hold, which only a person clears.
+ * key script ended entry_unavailable; the runtime keeps its navigation hold, which only a user clears.
  */
 final readonly class AbandonNavigationHandler implements CommandHandler
 {
@@ -29,7 +29,7 @@ final readonly class AbandonNavigationHandler implements CommandHandler
     public function handle(AbandonNavigation $command): string
     {
         $navigation = $this->answering->lockedForAnswerer($command->navigationId);
-        $this->answering->checkVersion($navigation, $command->expectedRowVersion);
+        $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);
 
         $navigation->abandon($command->reason);
         DriverRequest::query()

@@ -16,7 +16,7 @@ trait RefusesOtherDrafts
     /**
      * @throws DraftConflict
      */
-    private function refuseUnlessDraftEditor(DocumentDraft $draft, RequestEditor $editors): void
+    private function assertDraftEditor(DocumentDraft $draft, RequestEditor $editors): void
     {
         if (! $editors->isEditing($draft)) {
             throw DraftConflict::notYours();
@@ -26,7 +26,7 @@ trait RefusesOtherDrafts
     /**
      * @throws DraftConflict
      */
-    private function refuseStaleDraftVersion(DocumentDraft $draft, int $version): void
+    private function assertCurrentDraftVersion(DocumentDraft $draft, int $version): void
     {
         if (! $draft->isAtVersion($version)) {
             throw DraftConflict::stale($version, $draft->version);

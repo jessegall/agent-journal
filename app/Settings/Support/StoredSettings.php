@@ -46,7 +46,7 @@ final readonly class StoredSettings
      */
     public function requirePlain(Setting $setting): void
     {
-        $this->requireOwn($setting);
+        $this->assertOwnSetting($setting);
 
         if ($this->registry->isInToggleGroup($setting)) {
             throw GroupSnapshotRequired::for($this->owner, $setting->key());
@@ -56,7 +56,7 @@ final readonly class StoredSettings
     /**
      * @throws SettingUnavailable
      */
-    public function requireOwn(Setting $setting): void
+    public function assertOwnSetting(Setting $setting): void
     {
         if ($this->registry->ownerOf($setting)->owner !== $this->owner) {
             throw SettingUnavailable::for($this->owner, $setting->key());

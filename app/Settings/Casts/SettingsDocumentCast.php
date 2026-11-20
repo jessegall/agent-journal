@@ -36,7 +36,7 @@ final class SettingsDocumentCast implements CastsAttributes
             throw SettingsDocumentInvalid::wrongEnvelope($owner);
         }
 
-        $this->requireSize($owner, $value);
+        $this->assertSizeWithinLimit($owner, $value);
 
         try {
             $envelope = json_decode($value, false, 512, JSON_THROW_ON_ERROR);
@@ -70,7 +70,7 @@ final class SettingsDocumentCast implements CastsAttributes
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
         $json = $value->toJson();
-        $this->requireSize((string) $attributes['owner'], $json);
+        $this->assertSizeWithinLimit((string) $attributes['owner'], $json);
 
         return [$key => $json];
     }
@@ -78,7 +78,7 @@ final class SettingsDocumentCast implements CastsAttributes
     /**
      * @throws SettingsDocumentInvalid
      */
-    private function requireSize(string $owner, string $json): void
+    private function assertSizeWithinLimit(string $owner, string $json): void
     {
         if (strlen($json) > SettingsDocument::MOST_BYTES) {
             throw SettingsDocumentInvalid::tooLarge($owner, strlen($json), SettingsDocument::MOST_BYTES);

@@ -27,9 +27,9 @@ final readonly class AddressedStackPush
 
     public function push(StackTarget $target, StateReference $state): void
     {
-        $this->transaction->requireOpen($target);
+        $this->transaction->assertOpen($target);
 
-        $this->requireRunning($target);
+        $this->assertRunning($target);
         $stack = AgentStackRow::lockAuthorizedFor($target);
         $this->eventScope->admit([$target], fn () => $this->statePush->push($target, $stack, $state));
     }
@@ -37,7 +37,7 @@ final readonly class AddressedStackPush
     /**
      * Refuses a target whose session is not running.
      */
-    private function requireRunning(StackTarget $target): void
+    private function assertRunning(StackTarget $target): void
     {
         $session = AgentSession::query()
             ->whereKey($target->sessionId)

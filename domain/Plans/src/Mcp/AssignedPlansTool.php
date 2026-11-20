@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp;
 
-use App\Mcp\Attributes\VisibleToProfiles;
-use App\Mcp\Enums\DiscoveryProfile;
 use App\Assignments\Support\NumberedPage;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
+use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
@@ -26,8 +26,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  */
 #[IsReadOnly]
 #[Name('plans_assigned')]
-#[Description('The plans you hold, with their state, progress and the assignment reference. Filter by search and states, page through with page and per_page (1 to 100, 20 unless given), or send only the continuation a result gave.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent)]
+#[Description('The plans you hold, with their state, progress and the assignment reference. Filter by search and states, page through with page and per_page (1 to 100, 20 unless given), or send only the continuation a result gave.')]
 final class AssignedPlansTool extends JournalReadTool
 {
     public function __construct(private readonly PlanResolver $plans, private readonly NumberedPages $pages) {}

@@ -42,7 +42,7 @@ final readonly class AgentStateMachine
         OperationDeadline $deadline,
         Closure $render,
     ): ProgramReply {
-        $capabilities->checkSupports($input->methodName());
+        $capabilities->assertSupports($input->methodName());
         $identity = $this->access->hookIdentity();
 
         if ($deadline->hasRunOut()) {

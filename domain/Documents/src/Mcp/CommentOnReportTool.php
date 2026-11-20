@@ -18,11 +18,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('reports_comment')]
-#[Description('Add an attributed comment to a report.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('reports_comment')]
 #[Dispatches(CommentOnReport::class)]
+#[Description('Add an attributed comment to a report.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class CommentOnReportTool extends JournalWriteTool
 {

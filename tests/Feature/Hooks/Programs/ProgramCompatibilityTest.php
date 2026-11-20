@@ -69,17 +69,17 @@ final class ProgramCompatibilityTest extends TestCase
         $this->assertSame(ProgramEvidence::PrerequisiteMissing, $compatibility->arrangementEvidence);
         $this->expectException(ProgramArrangementUnproven::class);
 
-        $compatibility->requireStartable();
+        $compatibility->assertStartable();
     }
 
     public function test_only_native_evidence_lets_a_start_through(): void
     {
         $shown = $this->withEvidence(ProgramEvidence::NativeShown);
-        $shown->requireStartable();
+        $shown->assertStartable();
 
         $this->expectException(ProgramArrangementUnproven::class);
 
-        $this->withEvidence(ProgramEvidence::ContractPassed)->requireStartable();
+        $this->withEvidence(ProgramEvidence::ContractPassed)->assertStartable();
     }
 
     private function withEvidence(ProgramEvidence $evidence): ProgramCompatibility

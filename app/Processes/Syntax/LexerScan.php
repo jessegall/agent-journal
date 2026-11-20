@@ -50,7 +50,7 @@ final class LexerScan
     {
         $length = strlen($this->source);
         while ($this->position < $length) {
-            $this->checkBudget();
+            $this->assertWithinBudget();
             $character = $this->source[$this->position];
 
             match (true) {
@@ -237,7 +237,7 @@ final class LexerScan
         $depth = 0;
         $length = strlen($this->source);
         for ($index = $start; $index < $length; $index++) {
-            $this->checkBudget();
+            $this->assertWithinBudget();
             $character = $this->source[$index];
             if ($character === '(') {
                 $depth++;
@@ -313,7 +313,7 @@ final class LexerScan
         $extended = $this->dialect !== ShellDialect::Sh;
 
         while ($this->position < $length) {
-            $this->checkBudget();
+            $this->assertWithinBudget();
             $character = $this->source[$this->position];
 
             if ($extended
@@ -412,7 +412,7 @@ final class LexerScan
         $index = $start + 3;
         $length = strlen($this->source);
         while ($index < $length) {
-            $this->checkBudget();
+            $this->assertWithinBudget();
             $character = $this->source[$index];
             if ($character === '\\') {
                 $index += 2;
@@ -467,7 +467,7 @@ final class LexerScan
         $length = strlen($this->source);
 
         while (true) {
-            $this->checkBudget();
+            $this->assertWithinBudget();
             if ($this->position >= $length) {
                 throw ShellLineUnreadable::unfinished('a double-quoted string', $open);
             }
@@ -604,7 +604,7 @@ final class LexerScan
         $index = $contentStart;
         $length = strlen($this->source);
         while ($index < $length) {
-            $this->checkBudget();
+            $this->assertWithinBudget();
             $character = $this->source[$index];
             if ($character === '\\') {
                 $index += 2;
@@ -875,7 +875,7 @@ final class LexerScan
             $bodyEnd = $lineStart;
             $length = strlen($this->source);
             while ($lineStart <= $length) {
-                $this->checkBudget();
+                $this->assertWithinBudget();
                 $lineEnd = strpos($this->source, "\n", $lineStart);
                 $lineEnd = $lineEnd === false ? $length : $lineEnd;
                 $line = substr($this->source, $lineStart, $lineEnd - $lineStart);
@@ -951,7 +951,7 @@ final class LexerScan
     /**
      * @throws ShellLineUnreadable
      */
-    private function checkBudget(): void
+    private function assertWithinBudget(): void
     {
         if (++$this->steps % 256 === 0 && $this->budget->isSpent()) {
             throw ShellLineUnreadable::pastLimit(AnalysisLimit::Milliseconds, $this->position);

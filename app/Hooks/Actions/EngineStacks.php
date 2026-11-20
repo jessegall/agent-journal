@@ -33,8 +33,8 @@ final readonly class EngineStacks
 
     public function push(StackTarget $target, StateReference $reference): void
     {
-        $this->transaction->requireOpen($target);
-        $this->access->checkTarget($target);
+        $this->transaction->assertOpen($target);
+        $this->access->assertTargetGranted($target);
 
         if (! AgentSession::sharedLockFor($target->sessionId)->isActive()) {
             throw StackTargetRefused::forTarget($target->description());
@@ -49,9 +49,9 @@ final readonly class EngineStacks
      */
     public function popExposed(StackTarget $target): void
     {
-        $this->transaction->requireOpen($target);
-        $this->access->checkTarget($target);
-        $this->lifecycle->refuseChangeDuringCallbacks($target);
+        $this->transaction->assertOpen($target);
+        $this->access->assertTargetGranted($target);
+        $this->lifecycle->assertNotInCallbacks($target);
         $row = AgentStackRow::lockKeptFor(AgentStackRow::query()->authorizedFor($target), $target);
 
         if (! $row->isActive()) {

@@ -40,7 +40,7 @@ final readonly class TaskReadResult
 
         if ($cursor !== null) {
             $position = $this->continuations->open($cursor, self::TOOL, $taskId);
-            $position->requireRevision($task->revision);
+            $position->assertCurrentRevision($task->revision);
 
             return $this->fields->page($summary, $text, $position, 'task_id');
         }
@@ -82,5 +82,4 @@ final readonly class TaskReadResult
             'cancel_reason' => $task->cancelReason,
         ], is_string(...));
     }
-
 }

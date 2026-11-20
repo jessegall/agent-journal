@@ -24,7 +24,7 @@ final readonly class EngineAuthorizerProvider implements AuthorizerProvider
      */
     public function forActor(Actor $actor): Authorizer
     {
-        $this->access->requireGranted();
+        $this->access->assertGranted();
 
         return new UnrestrictedAuthorizer();
     }

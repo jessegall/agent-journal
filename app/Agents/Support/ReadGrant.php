@@ -17,7 +17,7 @@ final readonly class ReadGrant
         return $request->isRecovery() || $this->admission->assess($request)->allowed;
     }
 
-    public function requireAllowed(ReadRequest $request): void
+    public function assertAllowed(ReadRequest $request): void
     {
         if ($request->isRecovery()) {
             return;

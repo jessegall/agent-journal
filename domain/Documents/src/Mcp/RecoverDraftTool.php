@@ -13,11 +13,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('docs_drafts_recover')]
-#[Description('Open an authorized saved draft as a new private edit.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('docs_drafts_recover')]
 #[Dispatches(RecoverDraft::class)]
+#[Description('Open an authorized saved draft as a new private edit.')]
 final class RecoverDraftTool extends DraftWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

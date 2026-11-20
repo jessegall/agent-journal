@@ -16,11 +16,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('docs_create')]
-#[Description('Publish a document from text or one sealed upload.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[Name('docs_create')]
+#[IsDestructive(false)]
 #[Dispatches(CreateDocument::class)]
+#[Description('Publish a document from text or one sealed upload.')]
 final class CreateDocumentTool extends JournalWriteTool
 {
     use PublicationArguments;

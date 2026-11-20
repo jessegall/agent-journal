@@ -19,12 +19,13 @@ use App\Communication\Enums\AgentInboxState;
 use App\Communication\Enums\AgentMessageView;
 use App\Communication\Models\Message;
 use App\Communication\Support\RegisteredInboxes;
-use App\Mcp\Support\Continuation;
-use App\Mcp\Support\Continuations;
-use App\Mcp\Support\TextChunk;
 use App\Mcp\Contracts\SearchContribution;
 use App\Mcp\Data\SearchHit;
 use App\Mcp\Data\SearchPage;
+use App\Mcp\Support\Continuation;
+use App\Mcp\Support\Continuations;
+use App\Mcp\Support\TextChunk;
+use App\Reads\Support\ReadBuilder;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class AgentMessages implements AgentMessageReader
@@ -41,7 +42,7 @@ final readonly class AgentMessages implements AgentMessageReader
     public function inbox(AgentInboxState $state, int $page): AgentInbox
     {
         $numbered = new NumberedPage($page);
-        $incoming = $state->apply($this->incoming());
+        $incoming = $this->incoming()->where(fn (Builder $messages) => $state->apply($messages));
         $total = (clone $incoming)->count();
         $messages = $incoming->orderByDesc('created_at')->orderByDesc('id')
             ->offset(($numbered->number - 1) * $numbered->size)
@@ -70,7 +71,11 @@ final readonly class AgentMessages implements AgentMessageReader
         $matching = Message::query()->matchingBody($query)->orderByDesc('created_at')->orderByDesc('id')
             ->offset(($page - 1) * $size)->readLimit($size + 1)->get();
         $hits = $matching->take($size)->map(fn (Message $message): SearchHit => SearchHit::matching(
-            self::SEARCH_TYPE, $message->id, "Message {$message->number}", $message->body, $query,
+            self::SEARCH_TYPE,
+            $message->id,
+            "Message {$message->number}",
+            $message->body,
+            $query,
         ))->all();
 
         return new SearchPage(array_values($hits), $matching->count() > $size);
@@ -95,7 +100,7 @@ final readonly class AgentMessages implements AgentMessageReader
             : $this->continuations->open($continuation, self::CONTEXT_TOOL, $messageId);
         $currentId = (string) $position->filters['message_id'];
         $message = $currentId === $root->id ? $root : Message::visibleById($currentId);
-        $position->requireRevision($message->revision());
+        $position->assertCurrentRevision($message->revision());
         $body = TextChunk::of($message->body, $position->offset, $position->characterOffset, self::CHUNK_BYTES);
 
         return new AgentMessageDetails(
@@ -109,8 +114,12 @@ final readonly class AgentMessages implements AgentMessageReader
     {
         if ($body->hasMore) {
             return $this->continuations->issue(new Continuation(
-                self::CONTEXT_TOOL, $position->selector, $position->filters,
-                $body->nextLine, $body->nextCharacter, $message->revision(),
+                self::CONTEXT_TOOL,
+                $position->selector,
+                $position->filters,
+                $body->nextLine,
+                $body->nextCharacter,
+                $message->revision(),
             ));
         }
 
@@ -119,12 +128,17 @@ final readonly class AgentMessages implements AgentMessageReader
         }
 
         return $this->continuations->issue(new Continuation(
-            self::CONTEXT_TOOL, $position->selector, ['message_id' => $message->reply_to_id], 1,
+            self::CONTEXT_TOOL,
+            $position->selector,
+            ['message_id' => $message->reply_to_id],
+            1,
         ));
     }
 
-    /** @return Builder<Message> */
-    private function incoming(): Builder
+    /**
+     * @return ReadBuilder<Message>
+     */
+    private function incoming(): ReadBuilder
     {
         $actor = ActorIdentity::of($this->actors->actor());
 

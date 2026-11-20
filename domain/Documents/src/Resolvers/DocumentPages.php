@@ -51,7 +51,7 @@ final readonly class DocumentPages implements DocumentReader
             ? $this->firstRead((string) $id, $current->number, $arguments)
             : $this->continuations->open($cursor, self::TOOL, (string) $id);
         if (! $read->filters['explicit_revision']) {
-            $read->requireRevision($current->number);
+            $read->assertCurrentRevision($current->number);
         }
 
         $revision = $read->revision === $current->number ? $current : $document->publishedRevision(
@@ -62,12 +62,19 @@ final readonly class DocumentPages implements DocumentReader
 
         return match ($view) {
             PublicationView::Summary => $this->pages->summary(
-                MarkdownText::body($revision->body), $revision->abstract, $read, self::KEY, $card,
+                MarkdownText::body($revision->body),
+                $revision->abstract,
+                $read,
+                self::KEY,
+                $card,
             ),
             PublicationView::Body => $this->body($revision, $read, $arguments, $card),
             PublicationView::Revisions => $this->revisions($document, $read, $card),
             PublicationView::Comments => $this->pages->comments(
-                new RecordIdentity(Document::LINK_TYPE, $document->id), $read, self::KEY, $card,
+                new RecordIdentity(Document::LINK_TYPE, $document->id),
+                $read,
+                self::KEY,
+                $card,
             ),
         };
     }
@@ -113,7 +120,11 @@ final readonly class DocumentPages implements DocumentReader
         $page = $matching->take(self::REVISIONS);
         $last = $page->last();
         $next = $last !== null && $matching->count() > $page->count() ? [$this->continuations->link(new Continuation(
-            $read->tool, $read->selector, $read->filters, $last->number + 1, revision: $read->revision,
+            $read->tool,
+            $read->selector,
+            $read->filters,
+            $last->number + 1,
+            revision: $read->revision,
         ), self::KEY)] : [];
 
         return ToolResult::ok([

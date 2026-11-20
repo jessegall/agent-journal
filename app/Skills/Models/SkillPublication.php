@@ -167,7 +167,7 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public function recordProgress(int $fence, int $filesStaged): void
     {
-        $this->checkFence($fence);
+        $this->assertHeldBy($fence);
         $this->progress = $filesStaged;
         $this->save();
     }
@@ -177,7 +177,7 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public function deliver(int $fence, PublicationManifest $manifest): void
     {
-        $this->checkFence($fence);
+        $this->assertHeldBy($fence);
         $this->moveTo(PublicationState::Delivered);
         $this->manifest = $manifest->jsonSerialize();
         $this->open_key = null;
@@ -474,7 +474,7 @@ final class SkillPublication extends Model implements ReadableModel
     /**
      * @throws SkillPublicationStale when a newer worker holds it
      */
-    private function checkFence(int $fence): void
+    private function assertHeldBy(int $fence): void
     {
         if (! $this->isHeldBy($fence)) {
             throw SkillPublicationStale::for($fence, $this->fencing_version);

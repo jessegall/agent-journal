@@ -40,7 +40,7 @@ final readonly class ResolverDefinition
         string $interface,
         string $dataClass,
     ): self {
-        $owner->checkImplements($declaration, $resolver, $interface);
+        $owner->assertImplements($declaration, $resolver, $interface);
 
         $constructor = new ReflectionClass($resolver)->getConstructor();
         $parameters = $constructor === null ? [] : $constructor->getParameters();

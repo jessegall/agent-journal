@@ -18,11 +18,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('uploads_begin')]
-#[Description('Start a private text upload with its size and SHA-256 digest.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('uploads_begin')]
 #[Dispatches(BeginUpload::class)]
+#[Description('Start a private text upload with its size and SHA-256 digest.')]
 #[VisibleToProfiles(DiscoveryProfile::MainAgent, DiscoveryProfile::WritingHelper, DiscoveryProfile::ReadOnlyHelper)]
 final class BeginUploadTool extends JournalWriteTool
 {

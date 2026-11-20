@@ -28,8 +28,8 @@ final class SelectMessageCall extends Data implements JournalCall
         #[Ulid]
         public readonly string $messageId,
         #[MapName('request_key')]
-        #[LiteralTypeScriptType('string')]
         #[WithCast(CallKeyCast::class)]
+        #[LiteralTypeScriptType('string')]
         #[WithTransformer(CallKeyTransformer::class)]
         public readonly CallKey $requestKey,
     ) {}

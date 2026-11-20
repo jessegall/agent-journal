@@ -51,7 +51,7 @@ final readonly class UploadStore implements SealedUploads
 
     public function consume(string $uploadId, UploadType $type): string
     {
-        $this->transaction->requireRunning($this->database->connection());
+        $this->transaction->assertRunning($this->database->connection());
 
         return TextUpload::locked($uploadId)->consume($type);
     }

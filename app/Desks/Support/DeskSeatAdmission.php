@@ -41,7 +41,7 @@ final readonly class DeskSeatAdmission
             return new AdmittedSeat($desk, DeskSeat::ofDeskById($desk, $held->get()->record->id), $actor, $held);
         }
 
-        $this->requireOneForwardingSeat($desk, $actor);
+        $this->assertOneForwardingSeat($desk, $actor);
         $seat = DeskSeat::query()->ofDesk($desk)->vacant()->first() ?? throw SeatCapacityReached::forDesk($desk->id);
 
         return new AdmittedSeat($desk, $seat, $actor, None::create());
@@ -56,7 +56,7 @@ final readonly class DeskSeatAdmission
         $admitted = new AdmittedSeatChange($desk, $seat, $before, SeatOccupant::of($before), $change->actor);
 
         if (! $admitted->keepsTheOccupant()) {
-            $this->requireOneForwardingSeat($desk, $change->actor);
+            $this->assertOneForwardingSeat($desk, $change->actor);
         }
 
         return $admitted;
@@ -107,7 +107,7 @@ final readonly class DeskSeatAdmission
      *
      * @throws SecondForwardingSeat
      */
-    private function requireOneForwardingSeat(DeskRecord $desk, ActorIdentity $actor): void
+    private function assertOneForwardingSeat(DeskRecord $desk, ActorIdentity $actor): void
     {
         if (! $desk->forwards_occupants) {
             return;

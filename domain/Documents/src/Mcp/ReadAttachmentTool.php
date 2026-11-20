@@ -12,9 +12,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 #[Name('attachments_read')]
 #[Description('Read private sealed upload text by id.')]
-#[IsReadOnly]
 final class ReadAttachmentTool extends PublicationReadTool
 {
     public function __construct(private readonly AttachmentReader $attachments) {}

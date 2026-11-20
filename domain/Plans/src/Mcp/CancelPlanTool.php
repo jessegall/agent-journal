@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp;
 
-use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Attributes\VisibleToProfiles;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use Domain\Plans\Api\PlanTextLimits;
@@ -19,10 +19,10 @@ use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
 #[IsIdempotent]
 #[IsDestructive]
+#[VisibleToProfiles]
 #[Name('plans_cancel')]
 #[Dispatches(CancelPlan::class)]
 #[Description('Cancel a plan with a reason. Its tasks remain.')]
-#[VisibleToProfiles]
 final class CancelPlanTool extends PlanWriteTool
 {
     protected function writeSchema(JsonSchema $schema): array

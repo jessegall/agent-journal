@@ -80,7 +80,7 @@ final readonly class AnswerNavigationHandler implements CommandHandler
         if (! in_array($navigation->state, [NavigationState::Open, NavigationState::Answering], true)) {
             throw NavigationAnswerRefused::notAnswerable($navigation->id, $navigation->state->value);
         }
-        $this->answering->checkVersion($navigation, $command->expectedRowVersion);
+        $this->answering->assertCurrentVersion($navigation, $command->expectedRowVersion);
         if ($navigation->screen->generation !== $command->generation) {
             throw NavigationAnswerRefused::staleScreen(
                 $navigation->id,

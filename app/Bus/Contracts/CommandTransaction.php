@@ -17,5 +17,5 @@ interface CommandTransaction
      *
      * @throws CommandTransactionMissing
      */
-    public function requireRunning(Connection $connection): void;
+    public function assertRunning(Connection $connection): void;
 }

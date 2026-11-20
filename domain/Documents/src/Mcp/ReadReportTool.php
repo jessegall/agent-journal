@@ -13,9 +13,9 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 #[Name('reports_read')]
 #[Description('Read a report summary, body range or comments.')]
-#[IsReadOnly]
 final class ReadReportTool extends PublicationReadTool
 {
     public function __construct(private readonly ReportReader $reports) {}

@@ -70,13 +70,13 @@ final class StateMethods
                 throw InvalidStateMethod::for($method, 'uses a reserved state method name for an event listener.');
             }
 
-            $this->checkUnmarked($method);
+            $this->assertUnmarked($method);
 
             return null;
         }
 
         if (! $this->hasEventMethodName($name) && ! $takesEvent && ! $returnsCommands) {
-            $this->checkUnmarked($method);
+            $this->assertUnmarked($method);
 
             return null;
         }
@@ -163,7 +163,7 @@ final class StateMethods
     private function isHookOverride(ReflectionMethod $method, ReflectionMethod $hook): bool
     {
         if ($method->getDeclaringClass()->getName() === AgentState::class) {
-            $this->checkUnmarked($method);
+            $this->assertUnmarked($method);
 
             return false;
         }
@@ -215,7 +215,7 @@ final class StateMethods
         return $method->isPublic() && ! $method->isStatic() && ! $method->isAbstract();
     }
 
-    private function checkUnmarked(ReflectionMethod $method): void
+    private function assertUnmarked(ReflectionMethod $method): void
     {
         if ($method->getAttributes(StackWide::class) !== []) {
             throw InvalidStateMethod::for($method, 'may use StackWide only on a hook override or state event method.');

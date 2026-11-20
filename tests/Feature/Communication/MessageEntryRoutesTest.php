@@ -12,14 +12,14 @@ use Tests\Support\MessagingTestCase;
 use Tests\Support\SendsMcpFrames;
 
 /**
- * A person sends, asks and pages through messages over Core's own HTTP entries, named by inbox ids and answered with
+ * A user sends, asks and pages through messages over Core's own HTTP entries, named by inbox ids and answered with
  * data, never a page; a request that names a session or an actor instead of inboxes is refused.
  */
 final class MessageEntryRoutesTest extends MessagingTestCase
 {
     use SendsMcpFrames;
 
-    public function test_a_person_sends_asks_and_reads_back_over_http(): void
+    public function test_a_user_sends_asks_and_reads_back_over_http(): void
     {
         $pair = ['sourceInboxId' => $this->ownerInboxId(), 'destinationInboxId' => $this->inboxIdOf($this->builder)];
 

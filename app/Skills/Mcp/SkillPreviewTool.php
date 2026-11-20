@@ -18,11 +18,11 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 /** Shows who a skill reaches, or one agent's selection. */
 #[IsReadOnly]
+#[VisibleToProfiles]
 #[Name('skills_preview')]
 #[Description(
     'Show which visible agents a skill reaches, each with a match and reason, or show one agent’s skill selection.',
 )]
-#[VisibleToProfiles]
 final class SkillPreviewTool extends JournalReadTool
 {
     public function __construct(

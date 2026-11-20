@@ -28,7 +28,7 @@ final readonly class HostCapability
      * @throws ContainerUnavailable
      * @throws HostCapabilityUnsupported
      */
-    public function requireSupported(): void
+    public function assertSupported(): void
     {
         if ($this->status !== CapabilityStatusType::Supported) {
             throw $this->query->capability->refusalFor($this);

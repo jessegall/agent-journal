@@ -14,12 +14,12 @@ use App\Assignments\Exceptions\AutoAssignmentDenied;
  */
 final readonly class DenyAllAutoAssignmentAccess implements AutoAssignmentAccess
 {
-    public function requireRead(Actor $actor, ActorIdentity $target): void
+    public function assertMayRead(Actor $actor, ActorIdentity $target): void
     {
         throw AutoAssignmentDenied::forRead($actor);
     }
 
-    public function requireWrite(Actor $actor, ActorIdentity $target): void
+    public function assertMayWrite(Actor $actor, ActorIdentity $target): void
     {
         throw AutoAssignmentDenied::forWrite($actor);
     }

@@ -115,7 +115,7 @@ final class McpToolRulesTest extends TestCase
     }
 
     /**
-     * @param  ReflectionClass<JournalWriteTool>  $type
+     * @param  ReflectionClass<covariant JournalWriteTool>  $type
      * @return list<string>
      */
     private function commandViolations(ReflectionClass $type): array

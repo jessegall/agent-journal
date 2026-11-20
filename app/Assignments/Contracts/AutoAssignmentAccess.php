@@ -18,13 +18,13 @@ interface AutoAssignmentAccess
      * @throws AutoAssignmentDenied
      * @throws AssignmentDenied
      */
-    public function requireRead(Actor $actor, ActorIdentity $target): void;
+    public function assertMayRead(Actor $actor, ActorIdentity $target): void;
 
     /**
      * @throws AutoAssignmentDenied
      * @throws AssignmentDenied
      */
-    public function requireWrite(Actor $actor, ActorIdentity $target): void;
+    public function assertMayWrite(Actor $actor, ActorIdentity $target): void;
 
     /**
      * Whether the reader may see the target's held count and room, asked once requireRead has passed: an actor

@@ -17,7 +17,7 @@ final readonly class TransactionalIdentityLinks implements IdentityLinks
 
     public function link(Model $record, RecordIdentity $other): void
     {
-        $this->transaction->requireRunning($record->getConnection());
+        $this->transaction->assertRunning($record->getConnection());
         $this->types->requireRegistered($other->type);
 
         Link::connectKey($record, $other->type, $other->id);

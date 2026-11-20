@@ -13,8 +13,8 @@ use Domain\Documents\Api\Events\DocumentClosed;
 use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Api\Events\DraftKept;
 use Domain\Documents\Enums\CloseCause;
-use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Exceptions\DraftMarkdownInvalid;
+use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Models\RetainedDraft;
@@ -40,7 +40,7 @@ final readonly class DraftClosing
      */
     public function closeOwn(DraftTarget $target): CloseResult
     {
-        $requireEditor = fn (DocumentDraft $draft) => $this->refuseUnlessDraftEditor($draft, $this->editors);
+        $requireEditor = fn (DocumentDraft $draft) => $this->assertDraftEditor($draft, $this->editors);
 
         return $this->closeTarget($target, $requireEditor, CloseCause::Author, null, null);
     }
@@ -95,7 +95,7 @@ final readonly class DraftClosing
             ?? throw DraftMissing::forDocument($document->number);
         $requireCloser($draft);
         if ($target->expectedVersion !== null) {
-            $this->refuseStaleDraftVersion($draft, $target->expectedVersion);
+            $this->assertCurrentDraftVersion($draft, $target->expectedVersion);
         }
 
         return $this->closeLocked($document, $draft, $cause, $closer, $reason);

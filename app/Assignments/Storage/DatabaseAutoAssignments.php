@@ -50,7 +50,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
 
     public function status(AutoAssignmentKey $key): AutoAssignmentStatus
     {
-        $this->access->requireRead($this->actors->actor(), $key->actor);
+        $this->access->assertMayRead($this->actors->actor(), $key->actor);
         $row = AutoAssignment::query()->forKey($key)->first();
 
         if ($row === null) {
@@ -72,7 +72,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
 
     public function enable(AutoAssignmentInput $input, int $expectedRevision): AutoAssignmentChange
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $existing = AutoAssignment::lockedFor($input->key);
 
         if ($existing->isEmpty()) {
@@ -80,7 +80,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
         }
 
         $row = $existing->get();
-        $this->refuseUnlessAtRevision($row, $expectedRevision);
+        $this->assertAtRevision($row, $expectedRevision);
         $changed = $row->configure(true, $input->pool, $input->size);
 
         return new AutoAssignmentChange($changed, $row->configuration_revision);
@@ -88,9 +88,9 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
 
     public function configure(AutoAssignmentInput $input, int $expectedRevision): AutoAssignmentChange
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $row = AutoAssignment::lockedFor($input->key)->getOrThrow(AutoAssignmentMissing::forKey($input->key));
-        $this->refuseUnlessAtRevision($row, $expectedRevision);
+        $this->assertAtRevision($row, $expectedRevision);
         $changed = $row->configure($row->enabled, $input->pool, $input->size);
 
         return new AutoAssignmentChange($changed, $row->configuration_revision);
@@ -98,7 +98,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
 
     public function disable(AutoAssignmentKey $key, int $expectedRevision): AutoAssignmentChange
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $existing = AutoAssignment::lockedFor($key);
 
         if ($existing->isEmpty()) {
@@ -106,7 +106,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
         }
 
         $row = $existing->get();
-        $this->refuseUnlessAtRevision($row, $expectedRevision);
+        $this->assertAtRevision($row, $expectedRevision);
         $changed = $row->configure(false, $row->pool, $row->size);
 
         return new AutoAssignmentChange($changed, $row->configuration_revision);
@@ -114,7 +114,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
 
     public function claim(AutoAssignmentKey $key, Closure $claim): AutoAssignmentOutcome
     {
-        $this->transaction->requireOpen();
+        $this->transaction->assertOpen();
         $row = AutoAssignment::lockedFor($key);
 
         if ($row->isEmpty() || ! $row->get()->enabled) {
@@ -159,7 +159,7 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentResolver, 
     /**
      * @throws AutoAssignmentRevisionChanged
      */
-    private function refuseUnlessAtRevision(AutoAssignment $row, int $expectedRevision): void
+    private function assertAtRevision(AutoAssignment $row, int $expectedRevision): void
     {
         if (! $row->isAtRevision($expectedRevision)) {
             throw AutoAssignmentRevisionChanged::for($expectedRevision, $row->configuration_revision);

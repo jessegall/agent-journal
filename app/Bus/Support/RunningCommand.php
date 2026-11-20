@@ -86,7 +86,7 @@ final class RunningCommand
     /**
      * Called before any transaction begins: while a command runs, the bus owns the transaction and none other opens.
      */
-    public function refuseExplicitTransaction(): void
+    public function assertNoExplicitTransaction(): void
     {
         if ($this->command !== null) {
             throw ExplicitTransactionInCommand::for($this->command);

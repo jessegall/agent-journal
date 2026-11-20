@@ -16,7 +16,7 @@ trait RefusesUnusableSessions
     /**
      * @throws CredentialRejected
      */
-    private function refuseUnusableSession(AgentSession $session): void
+    private function assertUsableSession(AgentSession $session): void
     {
         if ($session->startToken === null) {
             throw CredentialRejected::unknown();

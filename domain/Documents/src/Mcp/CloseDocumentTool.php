@@ -16,11 +16,11 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
 use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
-#[Name('docs_close')]
-#[Description('Close an edit and publish a revision if its text changed.')]
-#[IsDestructive(false)]
 #[IsIdempotent]
+#[Name('docs_close')]
+#[IsDestructive(false)]
 #[Dispatches(CloseDocument::class)]
+#[Description('Close an edit and publish a revision if its text changed.')]
 final class CloseDocumentTool extends JournalWriteTool
 {
     use PublicationArguments;

@@ -28,7 +28,7 @@ final readonly class CheckJobGrant implements CommandMiddleware
         }
 
         $command = $this->registry->effective($call, CommandAdmissionStage::BeforeMiddleware);
-        $this->admission->assess($command)->requireAllowed();
+        $this->admission->assess($command)->assertAllowed();
 
         return $next($call);
     }

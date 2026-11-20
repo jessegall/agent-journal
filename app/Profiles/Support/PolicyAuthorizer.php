@@ -30,7 +30,7 @@ final readonly class PolicyAuthorizer implements Authorizer
     public function authorize(Policy $policy, Actor $actor, object|string $subject, BackedEnum $ability): void
     {
         $this->catalogue->requireGrantable($policy::class, $ability);
-        $this->grants->requireGranted($policy::class, $ability);
+        $this->grants->assertGranted($policy::class, $ability);
         $decide = [$policy, 'authorize'];
 
         if (! is_callable($decide)) {

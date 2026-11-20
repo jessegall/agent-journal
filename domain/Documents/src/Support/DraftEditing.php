@@ -37,8 +37,8 @@ final readonly class DraftEditing
         $document = Document::lockedForEditing(RecordReference::idOrNumber($target->documentNumber));
         $draft = DocumentDraft::query()->where('document_id', $document->id)->where('token', $target->token)->first()
             ?? throw DraftMissing::forDocument($document->number);
-        $this->refuseUnlessDraftEditor($draft, $this->editors);
-        $this->refuseStaleDraftVersion($draft, $target->expectedVersion);
+        $this->assertDraftEditor($draft, $this->editors);
+        $this->assertCurrentDraftVersion($draft, $target->expectedVersion);
         $draft->saveText($newText(DraftText::of($draft)));
         $this->events->dispatch(new DocumentDraftSaved($document->id, $draft->version));
 

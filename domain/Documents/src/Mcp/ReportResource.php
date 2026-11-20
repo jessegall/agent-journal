@@ -39,7 +39,7 @@ final class ReportResource extends PublicationResource implements HasUriTemplate
     protected function read(Request $request): Response
     {
         $id = ToolArguments::read($this->name(), $request, ['id'])->recordReference('id');
-        $this->reads->requireAllowed(new ReadRequest(ReportPages::TOOL, ResourceAreaType::JournalContent));
+        $this->reads->assertAllowed(new ReadRequest(ReportPages::TOOL, ResourceAreaType::JournalContent));
 
         return $this->markdown($this->reports->report($id, $this->bodyArguments(ReportPages::TOOL)));
     }

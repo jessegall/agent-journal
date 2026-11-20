@@ -34,7 +34,7 @@ final readonly class CanonicalRenderer
         $key = SkillKey::from($skill->key());
         $sections = $skill->sections()->resolve($this->parts, $owner, $skill->name());
         $this->checkSections($key, $sections);
-        $this->checkDescription($key, $skill->description());
+        $this->assertValidDescription($key, $skill->description());
 
         $frontMatter = rtrim(Yaml::dump(['name' => $key->key, 'description' => $skill->description()]), "\n");
         $body = implode('', array_map(fn (SkillSection $section) => <<<SECTION
@@ -85,7 +85,7 @@ final readonly class CanonicalRenderer
         }
     }
 
-    private function checkDescription(SkillKey $key, string $description): void
+    private function assertValidDescription(SkillKey $key, string $description): void
     {
         if (! mb_check_encoding($description, 'UTF-8')) {
             throw SkillDeclarationInvalid::encoding($key->key);

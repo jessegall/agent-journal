@@ -38,8 +38,8 @@ final readonly class AutoAssignmentAdmission
      */
     public function admitKey(AutoAssignmentKey $key): void
     {
-        $this->providers->requirePublic($key->assignableType);
-        $this->access->requireWrite($this->actors->actor(), $key->actor);
+        $this->providers->assertPublic($key->assignableType);
+        $this->access->assertMayWrite($this->actors->actor(), $key->actor);
         $assignee = AssigneeIdentity::ofActorIdentity($key->actor);
         $this->providers->assigneeProvider($assignee->type)->requireEligible($assignee);
     }

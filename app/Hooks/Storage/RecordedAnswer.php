@@ -28,7 +28,7 @@ final class RecordedAnswer extends Data
         return new self(self::CURRENT_VERSION, $type, $stdout, $stderr, $exitCode);
     }
 
-    public function checkVersion(): self
+    public function assertCurrentVersion(): self
     {
         if ($this->version !== self::CURRENT_VERSION) {
             throw StoredValueInvalid::forVersion('answer', $this->version);

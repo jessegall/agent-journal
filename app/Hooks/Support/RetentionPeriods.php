@@ -22,7 +22,7 @@ final readonly class RetentionPeriods
     /**
      * Refuses a call retention that a retry could outlive: a deleted call must be too old to be retried as new.
      */
-    public function checkLongerThan(HookRetryWindow $retryWindow): void
+    public function assertLongerThan(HookRetryWindow $retryWindow): void
     {
         if ($this->hookCallDays * 86400 <= $retryWindow->seconds) {
             throw RetentionTooShort::forDays($this->hookCallDays, $retryWindow->seconds);

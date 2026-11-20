@@ -18,9 +18,9 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * skills_revision: one revision of a stored skill as it was saved.
  */
 #[IsReadOnly]
+#[VisibleToProfiles]
 #[Name('skills_revision')]
 #[Description('One revision of a stored skill as saved: name, description, condition and sections.')]
-#[VisibleToProfiles]
 final class SkillRevisionTool extends JournalReadTool
 {
     public function __construct(

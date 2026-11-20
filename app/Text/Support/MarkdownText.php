@@ -493,7 +493,7 @@ final readonly class MarkdownText
         $ends = [];
         $next = array_fill(0, 6, $lineCount + 1);
         foreach (array_reverse($headings, true) as $position => [$line, $level]) {
-            $ends[$position] = min(array_slice($next, 0, $level)) - 1;
+            $ends[$position] = min($lineCount + 1, ...array_slice($next, 0, $level)) - 1;
             $next[$level - 1] = $line;
         }
 

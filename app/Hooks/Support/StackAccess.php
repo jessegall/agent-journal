@@ -32,7 +32,7 @@ final readonly class StackAccess
     /**
      * Refuses a stack other than the calling agent's own.
      */
-    public function checkTarget(StackTarget $target): void
+    public function assertTargetGranted(StackTarget $target): void
     {
         if ($target != $this->target()) {
             throw StackTargetRefused::forTarget($target->description());

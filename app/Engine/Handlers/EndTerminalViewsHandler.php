@@ -23,7 +23,7 @@ final readonly class EndTerminalViewsHandler implements CommandHandler
 
     public function handle(EndTerminalViews $command): void
     {
-        $this->access->checkMaintenance(EndTerminalViews::MAINTENANCE_SCOPE);
+        $this->access->assertMaintenanceGranted(EndTerminalViews::MAINTENANCE_SCOPE);
         $now = $this->clock->now();
 
         TerminalView::endLapsed($now);

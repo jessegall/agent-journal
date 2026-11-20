@@ -97,7 +97,7 @@ final class HostCapabilitiesTest extends TestCase
         );
 
         try {
-            $capability->requireSupported();
+            $capability->assertSupported();
             $this->fail('An unproven combination was admitted.');
         } catch (AccountContainerUnsupported $refusal) {
             $this->assertSame(StartRefusalType::AccountContainerUnsupported, $refusal->reason());
@@ -120,7 +120,7 @@ final class HostCapabilitiesTest extends TestCase
         );
 
         try {
-            $capability->requireSupported();
+            $capability->assertSupported();
             $this->fail('An unproven stop guarantee was admitted.');
         } catch (HostCapabilityUnsupported $refusal) {
             $this->assertSame(StartRefusalType::CapabilityUnsupported, $refusal->reason());
@@ -155,7 +155,7 @@ final class HostCapabilitiesTest extends TestCase
                 HookProgram::Codex,
                 ExecutionModeType::ProtectedHost,
             ),
-        )->requireSupported();
+        )->assertSupported();
         $this->assertSame(
             CapabilityStatusType::Unverified,
             $capabilities->capability(

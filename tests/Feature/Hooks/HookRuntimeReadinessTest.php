@@ -118,7 +118,7 @@ final class HookRuntimeReadinessTest extends TestCase
     {
         $retryWindow = $this->app->make(HookRetryWindow::class);
 
-        $this->app->make(RetentionPeriods::class)->checkLongerThan($retryWindow);
+        $this->app->make(RetentionPeriods::class)->assertLongerThan($retryWindow);
         $this->assertGreaterThan(0, $retryWindow->seconds);
     }
 

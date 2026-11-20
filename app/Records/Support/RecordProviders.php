@@ -38,7 +38,7 @@ final class RecordProviders implements RecordProviderRegistration, RecordResolve
 
     public function register(string $type, string $providerClass): void
     {
-        RecordIdentity::checkType($type);
+        RecordIdentity::assertKnownType($type);
 
         if (! is_subclass_of($providerClass, RecordProvider::class)) {
             throw RecordProviderInvalid::notAProvider($type, $providerClass);

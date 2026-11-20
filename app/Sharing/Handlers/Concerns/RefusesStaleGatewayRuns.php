@@ -15,7 +15,7 @@ trait RefusesStaleGatewayRuns
     /**
      * @throws GatewayRunStale
      */
-    private function refuseStaleGatewayRun(ShareInstallation $installation, string $runId): void
+    private function assertCurrentGatewayRun(ShareInstallation $installation, string $runId): void
     {
         if (! $installation->isCurrentRun($runId)) {
             throw GatewayRunStale::for($runId);

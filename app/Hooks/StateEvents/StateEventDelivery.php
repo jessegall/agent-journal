@@ -85,7 +85,7 @@ final readonly class StateEventDelivery
 
     private function collect(StateEventDispatch $dispatch, StackTarget $target): StateEventResults
     {
-        $this->activity->checkForReentry($target);
+        $this->activity->assertNotReentered($target);
 
         return $this->activity->evaluate($target, fn () => $this->evaluate($dispatch, $target));
     }

@@ -25,7 +25,7 @@ final readonly class BlockTaskHandler implements CommandHandler
      */
     public function handle(BlockTask $command, Task $task): void
     {
-        $this->refuseUnlessCurrentTaskRun($task, $command->runNumber);
+        $this->assertCurrentTaskRun($task, $command->runNumber);
         $task->blockRun($command->reason);
         $this->events->dispatch(new TaskBlocked($command->taskId));
     }

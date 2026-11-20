@@ -53,5 +53,5 @@ interface ShareBudget
     /**
      * @throws ShareBudgetExceeded
      */
-    public function requireHops(int $hops): void;
+    public function assertHopsWithinBudget(int $hops): void;
 }

@@ -79,7 +79,7 @@ final readonly class EvidenceRuns
     public function start(EvidencePermit $permit, ActorIdentity $runner, string $requestId): ProcessRun
     {
         $classification = $this->classify($permit->source_line, $permit->working_folder, $permit->candidate_rules);
-        $permit->checkUse($runner, $requestId, $this->digestOf($classification));
+        $permit->assertUsable($runner, $requestId, $this->digestOf($classification));
         if ($permit->wasStartedBy($requestId)) {
             return ProcessRun::ofAnyActor($permit->process_run_id);
         }

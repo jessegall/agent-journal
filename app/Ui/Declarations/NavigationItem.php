@@ -58,8 +58,8 @@ final class NavigationItem
         string|null $group = null,
         int $position = 0,
     ): self {
-        self::refuseLooseValues($key, 'route', $route);
-        self::refuseLooseValues($key, 'query', $query);
+        self::assertNoLooseValues($key, 'route', $route);
+        self::assertNoLooseValues($key, 'query', $query);
 
         return new self($key, $label, $icon, $page ?? $key, $route, $query, position: $position, group: $group);
     }
@@ -148,7 +148,7 @@ final class NavigationItem
     /**
      * @param  array<mixed>  $values
      */
-    private static function refuseLooseValues(string $item, string $type, array $values): void
+    private static function assertNoLooseValues(string $item, string $type, array $values): void
     {
         if (! array_all($values, fn (mixed $value, int|string $name) => is_string($name) && is_string($value))) {
             throw InvalidNavigationDeclaration::valuesNotStrings($item, $type);

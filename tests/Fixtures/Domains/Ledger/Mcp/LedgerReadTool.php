@@ -16,8 +16,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * Reads a ledger entry.
  */
 #[IsReadOnly]
-#[Name('ledger_read')]
 #[VisibleToProfiles]
+#[Name('ledger_read')]
 #[Description('Reads a ledger entry.')]
 final class LedgerReadTool extends JournalReadTool
 {

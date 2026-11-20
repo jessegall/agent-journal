@@ -19,7 +19,11 @@ final class RecordedAnswerCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): RecordedAnswer
     {
-        return StoredJson::read($key, $value, fn (array $stored) => RecordedAnswer::from($stored)->checkVersion());
+        return StoredJson::read(
+            $key,
+            $value,
+            fn (array $stored) => RecordedAnswer::from($stored)->assertCurrentVersion(),
+        );
     }
 
     /**

@@ -20,7 +20,7 @@ final readonly class RestoreStack implements Pipe
 
     public function handle(PreparedCall $prepared): RestoredCall
     {
-        $this->lifecycle->refuseChangeDuringCallbacks($prepared->call->target);
+        $this->lifecycle->assertNotInCallbacks($prepared->call->target);
 
         return $prepared->restored($this->restorer->restore($prepared->row->frames));
     }

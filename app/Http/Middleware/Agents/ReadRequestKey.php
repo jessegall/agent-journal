@@ -53,7 +53,7 @@ final readonly class ReadRequestKey
             self::requireDeclaredFields($request, $declaration);
 
             if ($declaration->endpoint->effect === CallEffect::Read) {
-                $this->reads->requireAllowed(self::readRequest($declaration, $request));
+                $this->reads->assertAllowed(self::readRequest($declaration, $request));
             }
         }
 

@@ -34,14 +34,14 @@ interface AssignmentProviders
      * @throws AssignmentTypeInternal
      * @throws AssignmentTypeUnavailable
      */
-    public function requirePublic(string $type): void;
+    public function assertPublic(string $type): void;
 
     /**
      * Refuses a record type that public writers assign, so Core's own writer touches only its internal types.
      *
      * @throws AssignmentTypeUnavailable
      */
-    public function requireInternal(string $type): void;
+    public function assertInternal(string $type): void;
 
     public function journalProvider(string $type): JournalAssignableProvider;
 

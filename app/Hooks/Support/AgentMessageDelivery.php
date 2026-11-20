@@ -33,7 +33,7 @@ final readonly class AgentMessageDelivery
 
     public function retainEvent(StackTarget $target, StateEventDispatch $dispatch, StateEventContext $context): void
     {
-        $dispatch->checkTarget($target);
+        $dispatch->assertTargetGranted($target);
 
         if ($context->isEmpty()) {
             return;

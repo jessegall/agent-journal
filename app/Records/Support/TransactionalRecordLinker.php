@@ -16,7 +16,7 @@ final readonly class TransactionalRecordLinker implements RecordLinker
 
     public function linkFrom(Model $source, array $targets): void
     {
-        $this->transaction->requireRunning($source->getConnection());
+        $this->transaction->assertRunning($source->getConnection());
 
         foreach ($targets as $target) {
             Link::connect($source, $this->records->requireReadable($target));
@@ -45,7 +45,7 @@ final readonly class TransactionalRecordLinker implements RecordLinker
     {
         $from = $this->records->requireWritable($source);
         $to = $this->records->requireReadable($target);
-        $this->transaction->requireRunning($from->getConnection());
+        $this->transaction->assertRunning($from->getConnection());
         $ordered = [$from, $to];
         usort(
             $ordered,

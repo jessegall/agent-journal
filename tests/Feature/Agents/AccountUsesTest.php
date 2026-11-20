@@ -224,7 +224,7 @@ final class AccountUsesTest extends TestCase
     {
         $this->app->instance(CommandTransaction::class, new class implements CommandTransaction
         {
-            public function requireRunning(Connection $connection): void {}
+            public function assertRunning(Connection $connection): void {}
         });
         $this->app->forgetInstance(IdentityLinks::class);
     }

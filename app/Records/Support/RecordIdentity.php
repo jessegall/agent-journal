@@ -25,7 +25,7 @@ final readonly class RecordIdentity
         public string $type,
         public string $id,
     ) {
-        self::checkType($type);
+        self::assertKnownType($type);
 
         if (! Str::isUlid($id)) {
             throw InvalidRecordIdentity::forId($type, $id);
@@ -35,7 +35,7 @@ final readonly class RecordIdentity
     /**
      * @throws InvalidRecordIdentity
      */
-    public static function checkType(string $type): void
+    public static function assertKnownType(string $type): void
     {
         if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {
             throw InvalidRecordIdentity::forType($type);
