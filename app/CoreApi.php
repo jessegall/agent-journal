@@ -786,6 +786,7 @@ use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Enums\CommandDirectory;
+use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Enums\SupervisorCoverageType;
@@ -1831,6 +1832,7 @@ final class CoreApi
                 ScriptObject::class,
                 ScriptMember::class,
                 ProfileBase::class,
+                InstancePolicy::class,
                 OfflineReplyMode::class,
                 ProfileSnapshot::class,
                 ProfileStartPolicy::class,

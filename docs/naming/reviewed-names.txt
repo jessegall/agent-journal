@@ -392,6 +392,9 @@ case	Icon::Docs
 case	Icon::Home
 case	Icon::Plan
 case	Icon::Rules
+case	InstancePolicy::PerJob
+case	InstancePolicy::Reusable
+case	InstancePolicy::Single
 case	InterpretationState::AwaitingReader
 case	InterpretationState::Invalid
 case	InterpretationState::Provisional
@@ -5353,6 +5356,7 @@ constant	HelperCommitImport::SAFE_SETTINGS
 constant	HelperCommitImport::TIMEOUT_SECONDS
 constant	HelperDispatch::ADDRESSED_REASON
 constant	HelperDispatch::NEW_HELPER_REASON
+constant	HelperDispatch::OWN_HELPER_REASON
 constant	HelperIdentity::FIXED_COLUMNS
 constant	HelperJob::LINK_TYPE
 constant	HelperNotice::MOST_DELIVERED
@@ -5906,6 +5910,7 @@ enum	HookEvent
 enum	HookProgram
 enum	HostCapabilityType
 enum	Icon
+enum	InstancePolicy
 enum	InterpretationState
 enum	JobState
 enum	JournalRouteType
@@ -7249,6 +7254,7 @@ method	AreaCycles::areaOf()
 method	AreaCycles::areaOfFile()
 method	AreaCycles::areaOfName()
 method	AreaCycles::cycles()
+method	AreaCycles::forbiddenUses()
 method	AreaCycles::ofEdges()
 method	AreaCycles::ofProject()
 method	AreaCycles::stronglyConnectedGroups()
@@ -10837,7 +10843,9 @@ method	HelperDispatch::candidatesFor()
 method	HelperDispatch::continueJob()
 method	HelperDispatch::isRepeat()
 method	HelperDispatch::launch()
+method	HelperDispatch::newActor()
 method	HelperDispatch::newHelper()
+method	HelperDispatch::ownHelper()
 method	HelperDispatch::purposeOf()
 method	HelperDispatch::repeated()
 method	HelperDispatch::reserve()
@@ -10845,6 +10853,8 @@ method	HelperDispatch::send()
 method	HelperDispatch::start()
 method	HelperIdentity::booted()
 method	HelperIdentity::declare()
+method	HelperIdentity::declareDesignated()
+method	HelperIdentity::designatedFor()
 method	HelperIdentity::helperActor()
 method	HelperIdentity::ofProfile()
 method	HelperIdentity::representing()
@@ -13543,6 +13553,7 @@ method	ProfileProposal::profile()
 method	ProfileProposal::supervisors()
 method	ProfileProposal::withBuiltIns()
 method	ProfileProposalRefused::classRule()
+method	ProfileProposalRefused::unknownInstances()
 method	ProfileProposalRefused::unreadable()
 method	ProfileProposalRefused::unsupportedField()
 method	ProfileProvenance::__construct()
@@ -13782,6 +13793,7 @@ method	ProposedOperationData::__construct()
 method	ProposedOperationData::toOperationRule()
 method	ProposedProfile::__construct()
 method	ProposedProfileData::__construct()
+method	ProposedProfileData::instancePolicy()
 method	ProposedResourceData::__construct()
 method	ProposedResourceData::toResourceRequest()
 method	ProposedRule::__construct()
@@ -19977,6 +19989,7 @@ parameter	$folderArguments
 parameter	$folders
 parameter	$follower
 parameter	$following
+parameter	$forbidden
 parameter	$form
 parameter	$format
 parameter	$forward
@@ -20116,6 +20129,7 @@ parameter	$installationName
 parameter	$installed
 parameter	$installedVersion
 parameter	$installer
+parameter	$instances
 parameter	$instead
 parameter	$instruction
 parameter	$instructions
@@ -21414,6 +21428,7 @@ parameter	$value	app/Profiles/Casts/ProfileAuthorizationCast.php
 parameter	$value	app/Profiles/Casts/ProfileBaseCast.php
 parameter	$value	app/Profiles/Casts/ProfileStartPolicyCast.php
 parameter	$value	app/Profiles/Casts/SupervisorRoutesCast.php
+parameter	$value	app/Profiles/Exceptions/ProfileProposalRefused.php
 parameter	$value	app/Reads/Support/BoundedReads.php
 parameter	$value	app/Settings/Casts/SettingsDocumentCast.php
 parameter	$value	app/Sharing/Casts/GatewaySettingsCast.php
@@ -25485,6 +25500,7 @@ property	ProfileDefaults::$programPinned
 property	ProfileDefaults::$revision
 property	ProfileDefinition::$authorization
 property	ProfileDefinition::$base
+property	ProfileDefinition::$instances
 property	ProfileDefinition::$instructions
 property	ProfileDefinition::$key
 property	ProfileDefinition::$label
@@ -25516,6 +25532,7 @@ property	ProfileScriptCompiler::$checks
 property	ProfileScriptCompiler::$keywords
 property	ProfileScriptCompiler::$objects
 property	ProfileSelection::$base
+property	ProfileSelection::$instances
 property	ProfileSelection::$revision
 property	ProfileSelection::$selection
 property	ProfileSelection::$start
@@ -25523,6 +25540,7 @@ property	ProfileShowCommand::$description
 property	ProfileShowCommand::$signature
 property	ProfileSnapshot::$authorization
 property	ProfileSnapshot::$base
+property	ProfileSnapshot::$instances
 property	ProfileSnapshot::$instructions
 property	ProfileSnapshot::$key
 property	ProfileSnapshot::$model
@@ -25635,6 +25653,7 @@ property	ProposedOperationData::$resources
 property	ProposedProfile::$allowedModels
 property	ProposedProfile::$base
 property	ProposedProfile::$container
+property	ProposedProfile::$instances
 property	ProposedProfile::$instructions
 property	ProposedProfile::$key
 property	ProposedProfile::$label
@@ -25650,6 +25669,7 @@ property	ProposedProfile::$withheldAbilities
 property	ProposedProfileData::$allowedModels
 property	ProposedProfileData::$base
 property	ProposedProfileData::$container
+property	ProposedProfileData::$instances
 property	ProposedProfileData::$instructions
 property	ProposedProfileData::$label
 property	ProposedProfileData::$model
@@ -29226,6 +29246,7 @@ variable	$checks
 variable	$checksums
 variable	$child
 variable	$children
+variable	$choice
 variable	$choiceKeys
 variable	$choose
 variable	$chosen

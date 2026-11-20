@@ -6,6 +6,7 @@ namespace App\Profiles\Values;
 
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\StartPolicy;
+use App\Profiles\Enums\InstancePolicy;
 
 /**
  * What a start from a profile is: the program and model selected for it, the profile's type, the revision it was
@@ -18,6 +19,7 @@ final readonly class ProfileSelection
         public ProfileBase $base,
         public int $revision,
         public ProfileStartPolicy $start,
+        public InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}
 
     /**

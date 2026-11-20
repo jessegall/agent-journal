@@ -13,6 +13,7 @@ use App\Agents\Support\StartReceipt;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\StartProfileMain;
+use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Exceptions\ProfileCannotCoordinate;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProposedProfile;
@@ -57,6 +58,7 @@ final class ProfileStartTest extends TestCase
     public function test_default_resolves_to_the_profiles_model_and_revision(): void
     {
         $this->activate(self::main('opus', HookProgram::ClaudeCode, false));
+        $revision = $this->currentRevision();
 
         $receipt = $this->start('default', null);
 
@@ -65,7 +67,7 @@ final class ProfileStartTest extends TestCase
         $source = $receipt->selection->source;
         $this->assertSame(ProgramSourceType::Profile, $source->programSource);
         $this->assertSame('journal-main', $source->profileKey);
-        $this->assertSame(1, $source->profileRevision);
+        $this->assertSame($revision, $source->profileRevision);
     }
 
     public function test_a_pinned_program_refuses_another(): void
@@ -89,13 +91,14 @@ final class ProfileStartTest extends TestCase
     public function test_a_later_activation_leaves_an_accepted_start_as_it_was(): void
     {
         $this->activate(self::main('opus', HookProgram::ClaudeCode, false));
+        $revision = $this->currentRevision();
         $receipt = $this->start('default', null);
 
         $this->activate(self::main('sonnet', HookProgram::Codex, true));
 
         $session = AgentSession::query()->findOrFail($receipt->sessionId);
 
-        $this->assertSame(1, $session->profile_revision);
+        $this->assertSame($revision, $session->profile_revision);
         $this->assertSame('opus', $session->model);
         $this->assertSame(HookProgram::ClaudeCode->value, $session->program);
     }
@@ -117,6 +120,14 @@ final class ProfileStartTest extends TestCase
             PolicyOverride::none(),
             [],
         );
+    }
+
+    /**
+     * The revision the main profile is at now; rows another test committed may have numbered it past one.
+     */
+    private function currentRevision(): int
+    {
+        return $this->app->make(ProfileResolver::class)->snapshotFor(ProfileKey::from('journal-main'))->revision;
     }
 
     private function activate(ProposedProfile $profile): void

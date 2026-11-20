@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Profiles;
 
+use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Support\PolicyOverride;
 use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Support\ProposedProfile;
@@ -31,6 +32,7 @@ final class TestProposals
         array|null $skillAllowlist = null,
         array $requiredSkills = [],
         array $withheldAbilities = [],
+        InstancePolicy $instances = InstancePolicy::Reusable,
     ): ProposedProfile {
         return new ProposedProfile(
             ProfileKey::from($key),
@@ -47,6 +49,7 @@ final class TestProposals
             PolicyOverride::none(),
             [],
             $withheldAbilities,
+            instances: $instances,
         );
     }
 

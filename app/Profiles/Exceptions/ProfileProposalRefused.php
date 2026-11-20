@@ -24,6 +24,11 @@ final class ProfileProposalRefused extends InvalidArgumentException implements C
         return new self("A class rule is written access:area, such as delete:workspace; {$text} is not.", previous: $previous);
     }
 
+    public static function unknownInstances(string $key, string $value): self
+    {
+        return new self("Profile {$key} names instances {$value}; use single, per_job or reusable.");
+    }
+
     public static function unsupportedField(string $key, string $field): self
     {
         return new self("Profile {$key} sets {$field}, which this version does not support yet.");

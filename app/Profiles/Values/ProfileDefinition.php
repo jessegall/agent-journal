@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Values;
 
+use App\Profiles\Enums\InstancePolicy;
+
 /**
  * What an owner activates for one profile: its stable key, label and the content of its next revision, its start
  * policy included. A null skill allowlist means every applicable skill; an empty one means none.
@@ -25,6 +27,7 @@ final readonly class ProfileDefinition
         public ProfileStartPolicy $start,
         public ProfileAuthorization $authorization,
         public SupervisorRoutes $supervisor = new SupervisorRoutes(),
+        public InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}
 
     /**
@@ -48,7 +51,8 @@ final readonly class ProfileDefinition
             || $mine->stopConditions != $theirs->stopConditions
             || $mine->execution != $theirs->execution
             || $this->authorization != $active->authorization
-            || $this->supervisor != $active->supervisor;
+            || $this->supervisor != $active->supervisor
+            || $this->instances !== $active->instances;
     }
 
     public function supervisorProfile(): SupervisorProfile

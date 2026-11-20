@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('authorization_type', 32);
             $table->json('ability_grants');
             $table->json('supervisor');
+            $table->string('instances', 16);
             $table->text('script_source');
             $table->json('script_commands');
             $table->json('compiled_script')->nullable();

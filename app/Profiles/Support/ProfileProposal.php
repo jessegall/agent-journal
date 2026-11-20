@@ -32,7 +32,7 @@ final readonly class ProfileProposal
     /**
      * Feature fields of later work; a proposal naming one is refused as unsupported.
      */
-    private const array UNSUPPORTED_FIELDS = ['instances', 'script', 'commands'];
+    private const array UNSUPPORTED_FIELDS = ['script', 'commands'];
 
     /**
      * @param  list<BaseOverride>  $baseOverrides
@@ -126,6 +126,7 @@ final readonly class ProfileProposal
                 $fields->withheldAbilities,
             ),
             self::supervisors($profile),
+            $fields->instancePolicy($key),
         );
     }
 

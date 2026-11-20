@@ -11,6 +11,7 @@ use App\Profiles\Casts\ProfileAuthorizationCast;
 use App\Profiles\Casts\ProfileBaseCast;
 use App\Profiles\Casts\ProfileStartPolicyCast;
 use App\Profiles\Casts\SupervisorRoutesCast;
+use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Models\Concerns\PreventsRevisionUpdates;
 use App\Profiles\Values\CompiledScript;
@@ -49,6 +50,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ProfileStartPolicy $start_policy
  * @property ProfileAuthorization $authorization
  * @property SupervisorRoutes $supervisor
+ * @property InstancePolicy $instances
  * @property string $script_source
  * @property array<string, mixed> $script_commands
  * @property ActorType $author_type
@@ -66,6 +68,7 @@ use Illuminate\Database\Eloquent\Model;
     'start_policy',
     'authorization',
     'supervisor',
+    'instances',
     'script_source',
     'script_commands',
     'compiled_script',
@@ -94,6 +97,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'start_policy' => ProfileStartPolicyCast::class,
             'authorization' => ProfileAuthorizationCast::class,
             'supervisor' => SupervisorRoutesCast::class,
+            'instances' => InstancePolicy::class,
             'script_commands' => 'array',
             'compiled_script' => 'array',
             'author_type' => ActorType::class,
@@ -125,6 +129,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'start_policy' => $definition->start,
             'authorization' => $definition->authorization,
             'supervisor' => $definition->supervisor,
+            'instances' => $definition->instances,
             'script_source' => $source->text,
             'script_commands' => $source->definitions(),
             'compiled_script' => $compiled?->graph,
@@ -159,7 +164,7 @@ final class ProfileRevision extends Model implements ReadableModel
     }
 
     /**
-     * @param list<string> $keys
+     * @param  list<string>  $keys
      * @return array<string, ScriptSource>
      */
     public static function currentSources(array $keys): array
@@ -195,6 +200,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'start' => $this->start_policy,
             'authorization' => $this->authorization,
             'supervisor' => $this->supervisor,
+            'instances' => $this->instances,
         ]);
     }
 

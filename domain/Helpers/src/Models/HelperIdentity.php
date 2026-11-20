@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use PhpOption\Option;
 
 /**
  * A helper of one parent actor, declared from a profile for the lasting agent actor it represents; its parent, profile
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $profile_base
  * @property string $helper_actor_type
  * @property string $helper_actor_id
+ * @property string|null $designated_profile
  */
 #[Table('helper_identities')]
 #[Fillable(['profile_key', 'profile_base'])]
@@ -76,6 +78,33 @@ final class HelperIdentity extends Model implements ReadableModel
         $identity->save();
 
         return $identity;
+    }
+
+    /**
+     * Declares the one helper the whole installation keeps for a profile whose instances are single; the unique
+     * designation refuses a second one.
+     */
+    public static function declareDesignated(
+        ActorIdentity $parent,
+        ActorIdentity $helper,
+        string $profileKey,
+        string $profileBase,
+    ): self {
+        $identity = self::declare($parent, $helper, $profileKey, $profileBase);
+        $identity->designated_profile = $profileKey;
+        $identity->save();
+
+        return $identity;
+    }
+
+    /**
+     * The helper designated for the profile, whoever holds it.
+     *
+     * @return Option<self>
+     */
+    public static function designatedFor(string $profileKey): Option
+    {
+        return Option::fromValue(self::query()->acrossActors()->where('designated_profile', $profileKey)->first());
     }
 
     /**

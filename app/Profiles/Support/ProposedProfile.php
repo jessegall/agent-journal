@@ -6,6 +6,7 @@ namespace App\Profiles\Support;
 
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Values\StopCondition;
+use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\SupervisorRoutes;
@@ -42,5 +43,6 @@ final readonly class ProposedProfile
         public array $stopConditions,
         public array $withheldAbilities = [],
         public SupervisorRoutes $supervisor = new SupervisorRoutes(),
+        public InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}
 }

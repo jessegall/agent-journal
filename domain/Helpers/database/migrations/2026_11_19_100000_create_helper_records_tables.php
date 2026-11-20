@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('profile_base', 64);
             $table->string('helper_actor_type', 16);
             $table->string('helper_actor_id');
+            $table->string('designated_profile', 64)->nullable()->unique();
             $table->timestampsTz();
 
             $table->index(['actor_type', 'actor_id']);

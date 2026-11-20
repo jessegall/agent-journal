@@ -7,6 +7,7 @@ namespace App\Profiles\Values;
 use App\Actors\Contracts\Policy;
 use App\Agents\Values\Operation;
 use App\Processes\Values\ProcessGrants;
+use App\Profiles\Enums\InstancePolicy;
 use BackedEnum;
 use Spatie\LaravelData\Data;
 
@@ -31,6 +32,7 @@ final class ProfileSnapshot extends Data
         public readonly ProfileStartPolicy $start,
         public readonly ProfileAuthorization $authorization,
         public readonly SupervisorRoutes $supervisor = new SupervisorRoutes(),
+        public readonly InstancePolicy $instances = InstancePolicy::Reusable,
     ) {}
 
     /**

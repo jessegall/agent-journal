@@ -23,16 +23,19 @@ return [
             'base' => 'writing-helper',
             'model' => 'sonnet',
             'supervisor' => ['default' => 'profile:journal-code-reviewer'],
+            'instances' => 'per_job',
         ],
         'journal-code-reviewer' => [
             'base' => 'read-only-helper',
             'model' => 'sonnet',
             'supervisor' => ['default' => 'profile:journal-main', 'merge.ready' => 'profile:journal-merger'],
+            'instances' => 'single',
         ],
         'journal-merger' => [
             'base' => 'writing-helper',
             'model' => 'sonnet',
             'supervisor' => ['default' => 'profile:journal-main'],
+            'instances' => 'single',
         ],
     ],
 

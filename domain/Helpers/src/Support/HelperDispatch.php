@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Helpers\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\StartOwnedAgent;
 use App\Agents\Contracts\CallingProgram;
@@ -21,6 +22,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Profiles\Contracts\ProfileSelections;
+use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSelection;
@@ -51,6 +53,8 @@ final readonly class HelperDispatch
 {
     private const string NEW_HELPER_REASON = 'A new helper starts a new conversation.';
 
+    private const string OWN_HELPER_REASON = 'The profile keeps one helper, or one per job, and each job starts fresh.';
+
     private const string ADDRESSED_REASON = 'The helper you named starts a new conversation for this work.';
 
     public function __construct(
@@ -73,6 +77,13 @@ final readonly class HelperDispatch
 
         $profile = $this->admittedProfile($request->profileKey, $request->model, $request->programKey);
         $purpose = $this->purposeOf($request);
+
+        if ($profile->instances !== InstancePolicy::Reusable) {
+            $choice = new ConversationChoice(true, ConversationModeType::New, self::OWN_HELPER_REASON);
+
+            return $this->launch($request, $profile, $purpose, $this->ownHelper($request, $profile), $choice);
+        }
+
         $candidate = $this->candidatesFor($request, $profile, $purpose)[0] ?? null;
 
         if ($candidate === null) {
@@ -236,12 +247,37 @@ final readonly class HelperDispatch
         ));
     }
 
-    private function newHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity
+    /**
+     * The helper a profile with single or per-job instances works with: the one designated helper of the profile, or a
+     * fresh one for this job. A busy designated helper is refused by the launch, never copied.
+     */
+    private function ownHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity
     {
-        $actor = $this->commands->run(new CreateAgent(
+        if ($profile->instances === InstancePolicy::PerJob) {
+            return $this->newHelper($request, $profile);
+        }
+
+        return HelperIdentity::designatedFor($request->profileKey)->getOrCall(
+            fn () => HelperIdentity::declareDesignated(
+                $request->parent,
+                $this->newActor($request, $profile),
+                $request->profileKey,
+                $profile->base->key,
+            ),
+        );
+    }
+
+    private function newActor(DispatchRequest $request, ProfileSelection $profile): ActorIdentity
+    {
+        return $this->commands->run(new CreateAgent(
             sprintf('%s helper', $profile->base->label),
             $request->profileKey,
         ));
+    }
+
+    private function newHelper(DispatchRequest $request, ProfileSelection $profile): HelperIdentity
+    {
+        $actor = $this->newActor($request, $profile);
 
         return HelperIdentity::declare($request->parent, $actor, $request->profileKey, $profile->base->key);
     }

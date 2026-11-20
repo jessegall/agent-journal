@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Profiles\Data;
 
+use App\Profiles\Enums\InstancePolicy;
+use App\Profiles\Exceptions\ProfileProposalRefused;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
@@ -38,5 +40,18 @@ final class ProposedProfileData extends Data
         public readonly array $stopConditions = [],
         #[DataCollectionOf(WithheldAbilityData::class)]
         public readonly array $withheldAbilities = [],
+        public readonly string $instances = 'reusable',
     ) {}
+
+    /**
+     * How many helpers the profile may have; a value it does not know refuses the proposal.
+     *
+     * @throws ProfileProposalRefused
+     */
+    public function instancePolicy(string $key): InstancePolicy
+    {
+        $policy = InstancePolicy::tryFrom($this->instances);
+
+        return $policy ?? throw ProfileProposalRefused::unknownInstances($key, $this->instances);
+    }
 }

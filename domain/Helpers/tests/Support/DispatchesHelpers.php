@@ -14,6 +14,7 @@ use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Enums\InstancePolicy;
 use App\Profiles\Values\ProfileBase;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -44,6 +45,8 @@ trait DispatchesHelpers
         $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
             TestProposals::profile('plan-reviewer', ProfileBase::readOnlyHelper()),
             TestProposals::profile('journal-main', ProfileBase::mainAgent()),
+            TestProposals::profile('lone-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::Single),
+            TestProposals::profile('job-reviewer', ProfileBase::readOnlyHelper(), instances: InstancePolicy::PerJob),
         )));
         $this->parent = TestStart::start();
         $this->parent->startRequest($this->app);
