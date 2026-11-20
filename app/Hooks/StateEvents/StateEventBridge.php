@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Events;
+namespace App\Hooks\StateEvents;
 
 use App\Contracts\Event;
-use App\Hooks\Events\Support\StateEventDelivery;
-use App\Hooks\Events\Support\StateEventDispatch;
-use App\Hooks\Events\Support\StateEventScope;
 
 /**
  * The dispatcher entry point for an event that registered states can observe.

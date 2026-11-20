@@ -8,10 +8,10 @@ use App\Actors\Contracts\ActorAttention;
 use App\Actors\Support\AttentionOrigin;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Events\Support\StateEventContext;
-use App\Hooks\Events\Support\StateEventDispatch;
 use App\Hooks\Models\PendingAgentMessage;
 use App\Hooks\Stack\HookAnswer;
+use App\Hooks\StateEvents\StateEventContext;
+use App\Hooks\StateEvents\StateEventDispatch;
 
 /**
  * Keeps authorized event context and idle hook messages, and hands them over in the next eligible hook.

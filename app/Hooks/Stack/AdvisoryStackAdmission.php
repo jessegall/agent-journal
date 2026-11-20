@@ -6,13 +6,12 @@ namespace App\Hooks\Stack;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStacks;
-use App\Actors\Enums\ActorType;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\EngineTargetAccess;
-use App\Hooks\Events\Support\StateEventScope;
+use App\Hooks\StateEvents\StateEventScope;
 use Closure;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
@@ -95,17 +94,13 @@ final class AdvisoryStackAdmission implements StackAdmission
 
         $actor = $this->actors->actor();
 
-        if ($actor->type === ActorType::Engine) {
-            $grant = $this->engine->frameGrant();
+        $grant = $this->engine->frameGrantFor($actor);
 
-            return $grant->isDefined()
-                ? $this->eventScope->admitFrame($grant->get(), $work)
-                : $this->eventScope->admit([], $work);
+        if ($grant->isDefined()) {
+            return $this->eventScope->admitFrame($grant->get(), $work);
         }
 
-        $targets = $actor->type->isAgent()
-            ? array_map(fn (string $session) => new StackTarget($actor->id, $session), $sessions)
-            : [];
+        $targets = array_map(fn (string $session) => new StackTarget($actor->id, $session), $sessions);
 
         return $this->eventScope->admit($targets, $work);
     }

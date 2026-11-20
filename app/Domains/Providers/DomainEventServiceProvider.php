@@ -12,8 +12,8 @@ use App\Domains\Support\FailureLoggingListener;
 use App\Domains\Support\ListenerPolicy;
 use App\Hooks\Declarations\StateEvents;
 use App\Hooks\Declarations\StateMethods;
-use App\Hooks\Events\StateEventBridge;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\StateEvents\StateEventBridge;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 
@@ -28,7 +28,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
 
     public function boot(): void
     {
-        $this->app->booted($this->registerStateBridges(...));
+        $this->app->booted(fn () => $this->registerStateBridges());
     }
 
     public function shouldDiscoverEvents(): bool

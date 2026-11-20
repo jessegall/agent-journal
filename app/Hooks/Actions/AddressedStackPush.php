@@ -8,9 +8,9 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Events\Support\StateEventScope;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StatePush;
+use App\Hooks\StateEvents\StateEventScope;
 use App\Hooks\Support\StackTransaction;
 
 /**

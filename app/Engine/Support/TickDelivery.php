@@ -16,6 +16,7 @@ use App\Engine\Values\TickCandidate;
 use App\Hooks\Exceptions\WorkOccurrenceStale;
 use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickContext;
+use App\Hooks\Values\FrameGrant;
 use App\Hooks\Values\WorkLockSet;
 use App\Reads\Support\ScopedReadMeter;
 use Carbon\CarbonImmutable;

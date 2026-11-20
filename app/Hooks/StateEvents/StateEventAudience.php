@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Events\Support;
+namespace App\Hooks\StateEvents;
 
 use App\Actors\Contracts\AuthoritySource;
 use App\Actors\Support\ActorContext;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
-use App\Engine\Support\FrameGrant;
+use App\Hooks\Values\FrameGrant;
 use PhpOption\Option;
 
 /**

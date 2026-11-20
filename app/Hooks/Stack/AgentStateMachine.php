@@ -6,12 +6,12 @@ namespace App\Hooks\Stack;
 
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Events\Support\StateEventActivity;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Hooks\Exceptions\ReplayFound;
 use App\Hooks\Pipelines\AnswerHookPipeline;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
+use App\Hooks\StateEvents\StateEventActivity;
 use App\Hooks\Support\IncomingWorkList;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;

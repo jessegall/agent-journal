@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Engine;
 
+use App\Actors\Support\ActorContext;
 use App\Agents\Support\StackTarget;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Support\EngineAccess;
+use App\Engine\Support\EngineActor;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,6 +30,8 @@ final class EngineAccessTest extends TestCase
         $access->grantFrame(new StackTarget('a', 's'), 'frame-1');
 
         $access->checkTarget(new StackTarget('a', 's'));
+        $this->assertSame('frame-1', $access->frameGrantFor(new EngineActor())->get()->frameId);
+        $this->assertTrue($access->frameGrantFor(ActorContext::forAgent(EngineActor::ID))->isEmpty());
         $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 'other')));
         $this->assertRefused(fn () => $access->checkMaintenance('starts.silence'));
     }

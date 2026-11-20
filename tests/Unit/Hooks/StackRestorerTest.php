@@ -270,7 +270,7 @@ final class StackRestorerTest extends TestCase
                 new ClosureStateLoader(SwitchableState::class, fn () => ScriptedState::delegating()),
             ),
         );
-        $types = new StateTypes($events, FixedFileEditPermission::loader());
+        $types = new StateTypes($events, FixedOperationPolicy::loader());
         $restorer = new StackRestorer(
             $types,
             new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))),
