@@ -37,4 +37,4 @@ def test_sonnet_is_sonnet_on_claude_whatever_program_the_main_agent_runs():
 
 def test_equal_is_the_general_model_of_the_main_agents_own_program_and_never_the_strongest():
     assert model("equal").chosen("claude") == CheckpointReviewChoice("claude", "sonnet")
-    assert model("equal").chosen("codex") == CheckpointReviewChoice("codex", "gpt-6.2-sol")
+    assert model("equal").chosen("codex") == CheckpointReviewChoice("codex", "gpt-6.1-terra")

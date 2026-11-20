@@ -88,7 +88,7 @@ def test_helper_goes_by_the_split(helper_split_story, helper_viewer):
     story = helper_split_story
     set_split(story, 'claude 0,codex 100', viewer=helper_viewer)
     helper_id, _ = started(story)
-    story.expect_text(f'agent show {helper_id}', 'program: codex', 'program_model: gpt-6.2-sol')
+    story.expect_text(f'agent show {helper_id}', 'program: codex', 'program_model: gpt-6.1-terra')
     answer = story.run('worker split --json --environment main')
     story.expect_rows(answer.code == 0, detail=answer.output_text)
     rows = json.loads(answer.output_text)['rows']

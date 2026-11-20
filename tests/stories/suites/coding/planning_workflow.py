@@ -76,7 +76,7 @@ def test_the_functional_designer_runs_on_the_strongest_model_and_starts_its_sequ
 
 def test_the_planner_runs_on_a_cheaper_model_and_works_from_the_design(bundled_story):
     planner = profile(bundled_story, PLANNER)
-    bundled_story.expect_rows(planner.agent_type == "helper", planner.tier == ModelTier.GENERAL, planner.model == "sonnet", planner.codex_model == "gpt-6.2-sol",
+    bundled_story.expect_rows(planner.agent_type == "helper", planner.tier == ModelTier.GENERAL, planner.model == "sonnet", planner.codex_model == "gpt-6.1-terra",
                         "functional design document" in planner.body, "cheaper model" in planner.body, detail=planner.body)
 
 

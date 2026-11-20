@@ -36,7 +36,7 @@ def test_nothing_set_dispatches_as_today_on_codex(split_story):
     story = split_story
     parent = Actor(story.new_row_id('agent start codex-parent codex main --environment main'), ActorType.AGENT)
     worker = dispatch(story, actor=parent)
-    expect_program(story, worker, 'codex', 'gpt-6.2-sol')
+    expect_program(story, worker, 'codex', 'gpt-6.1-terra')
 
 
 def test_nothing_set_dispatches_as_today_person_needs_program(split_story):

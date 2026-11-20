@@ -111,7 +111,7 @@ def test_legacy_profiles_are_copied_without_deletion_and_keep_their_fields(profi
     expect_value(FileAccess.read(original), text)
     expect_value("moved-from:" in FileAccess.read(profile_path(story)), True)
     expect_value((row["agent_type"], row["access"]), ("helper", "read-only"))
-    expect_value((row["model"], row["codex_model"]), ("sonnet", "gpt-6.2-sol"))
+    expect_value((row["model"], row["codex_model"]), ("sonnet", "gpt-6.1-terra"))
     expect_value((row["occupant"], row["mcp_tools"]), ("each-launch", ["mcp__wiki__search"]))
     if suffix == ".md":
         expect_value(row["description"], "Reads changes\nand their tests")

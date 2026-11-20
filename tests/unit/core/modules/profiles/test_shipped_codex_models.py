@@ -16,8 +16,8 @@ def expect_journal_medior_models(item, expected) -> None:
     assert actual == expected, actual
 
 
-def test_a_medior_runs_on_sol_on_codex_as_on_sonnet_on_claude():
-    expect_journal_medior_models(MODELS, ("sonnet", "gpt-6.2-sol"))
+def test_a_medior_runs_on_terra_on_codex_as_on_sonnet_on_claude():
+    expect_journal_medior_models(MODELS, ("sonnet", "gpt-6.1-terra"))
 
 
 def test_a_senior_runs_on_astra_on_codex_as_on_opus_on_claude():

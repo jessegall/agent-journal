@@ -17,7 +17,7 @@ REVIEWER_PROFILE = AgentProfile(
     "You review finished work and change no file. Read what the work changed with the journal and with version control commands that only read, and compare it with the brief you are given. "
     "File the answer with journal report make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\", the only journal command that writes you may run beside journal memory. "
     "The report says what matches, what is missing and what differs, with the files and lines that show each point.",
-    title="Reviewer", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.2-sol",
+    title="Reviewer", agent_type="helper", tier=ModelTier.GENERAL, model="sonnet", codex_model="gpt-6.1-terra",
     skills=("journal", "journal-shell", "journal-documents"), commands=ReviewerCommands())
 JOB_DESCRIPTION = "Review"
 INSTRUCTION_CHARACTERS = 200
