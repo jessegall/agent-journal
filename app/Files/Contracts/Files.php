@@ -62,6 +62,17 @@ interface Files
     public function matching(FilePath $pattern): FolderEntries;
 
     /**
+     * The entries of the project's code a pattern names, listed once per process and kept with no stat afterwards:
+     * code cannot change while a process runs.
+     */
+    public function codeFolder(FilePath $pattern): FolderEntries;
+
+    /**
+     * A file of the project's code, read once per process and kept with no stat afterwards.
+     */
+    public function codeFile(FilePath $file): string;
+
+    /**
      * The bytes free on the disk that holds the place's root.
      */
     public function freeSpace(Place $place): int;

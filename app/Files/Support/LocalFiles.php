@@ -33,6 +33,7 @@ final class LocalFiles implements Files
         private readonly PathConfinement $confinement,
         private readonly FileContents $contents,
         private readonly FolderWalker $walker,
+        private readonly CodeFiles $code,
     ) {}
 
     public function filePathOf(string $absolutePath): FilePath
@@ -113,6 +114,16 @@ final class LocalFiles implements Files
     public function matching(FilePath $pattern): FolderEntries
     {
         return $this->whileReading($pattern, fn () => $this->walker->expand($pattern));
+    }
+
+    public function codeFolder(FilePath $pattern): FolderEntries
+    {
+        return $this->code->folder($pattern);
+    }
+
+    public function codeFile(FilePath $file): string
+    {
+        return $this->code->file($file);
     }
 
     public function freeSpace(Place $place): int

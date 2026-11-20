@@ -16,6 +16,7 @@ declare(strict_types=1);
 use App\Files\Enums\Place;
 use App\Files\Exceptions\DepthTooDeep;
 use App\Files\Support\ClosedFolders;
+use App\Files\Support\CodeFiles;
 use App\Files\Support\FileContents;
 use App\Files\Support\FolderWalker;
 use App\Files\Support\LocalFiles;
@@ -50,15 +51,15 @@ sleep(2);
 
 $config = new Repository(['files' => [
     'places' => ['project' => $folder, 'temporary' => $folder],
-    'closed_folders' => [],
     'cached_bytes' => CACHED_BYTES,
     'largest_cached_file' => LARGEST_CACHED_FILE,
 ]]);
 $roots = new PlaceRoots($config);
-$closed = new ClosedFolders($config, $roots);
+$closed = new ClosedFolders($roots);
 $confinement = new PathConfinement($roots, $closed);
 $contents = new FileContents(CACHED_BYTES, LARGEST_CACHED_FILE);
-$files = new LocalFiles($roots, $confinement, $contents, new FolderWalker($roots, $closed, $confinement));
+$walker = new FolderWalker($roots, $closed, $confinement);
+$files = new LocalFiles($roots, $confinement, $contents, $walker, CodeFiles::over($folder));
 
 $unchanged = FilePath::in(Place::Project, 'unchanged.json');
 

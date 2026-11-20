@@ -40,6 +40,20 @@ enum Place: string
     }
 
     /**
+     * The folders inside this place the funnel never enters, relative to its root: the project's repository,
+     * dependencies, agent worktrees and the folder the accounts live in.
+     *
+     * @return list<string>
+     */
+    public function closedFolders(): array
+    {
+        return match ($this) {
+            self::Project => ['.journal/worktrees', '.git', 'vendor', 'node_modules', 'storage/app/private'],
+            self::Accounts, self::SharingSecrets, self::SharingTunnels, self::HostSkills, self::Temporary => [],
+        };
+    }
+
+    /**
      * The configuration key that names this place's root folder.
      */
     public function rootSetting(): string

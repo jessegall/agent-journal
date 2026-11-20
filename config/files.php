@@ -15,9 +15,6 @@ return [
         'temporary' => sys_get_temp_dir(),
     ],
 
-    // The folders inside a place the funnel never enters, relative to the project root.
-    'closed_folders' => ['.journal/worktrees', '.git', 'vendor', 'node_modules', 'storage/app/private'],
-
     // The most bytes of file contents kept for repeated reads in one process, and the largest file kept.
     'cached_bytes' => 32 * 1024 * 1024,
     'largest_cached_file' => 1024 * 1024,
