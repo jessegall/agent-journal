@@ -7,6 +7,7 @@ namespace App\Mcp\Support;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Support\ReadGrant;
 use App\Agents\Values\Operation;
+use App\Bus\Attributes\Authorize;
 use App\Bus\Support\CommandAuthorization;
 use App\Bus\Support\CommandRegistry;
 use App\Mcp\Attributes\Dispatches;
@@ -14,6 +15,7 @@ use App\Mcp\Enums\DiscoveryProfile;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Profiles\Values\StartProfileAuthority;
+use ReflectionClass;
 
 final readonly class JobPermissionReader
 {
@@ -30,7 +32,7 @@ final readonly class JobPermissionReader
         }
 
         if ($tool instanceof JournalReadTool) {
-            return $this->reads->allows($tool->readRequest());
+            return $this->allowsRead($tool);
         }
 
         if (! $this->actors->hasActor()) {
@@ -85,5 +87,30 @@ final readonly class JobPermissionReader
 
         return ! $authority instanceof StartProfileAuthority
             || $tool->isVisibleTo(DiscoveryProfile::from($authority->profile->base->key));
+    }
+
+    private function allowsRead(JournalReadTool $tool): bool
+    {
+        if (! $this->reads->allows($tool->readRequest())) {
+            return false;
+        }
+
+        if (! $this->actors->hasActor()) {
+            return true;
+        }
+
+        $authority = $this->actors->authority();
+
+        if (! $authority instanceof StartProfileAuthority) {
+            return true;
+        }
+
+        foreach (new ReflectionClass($tool)->getAttributes(Authorize::class) as $attribute) {
+            $declaration = $attribute->newInstance();
+
+            return $authority->profile->authorization->grants($declaration->policy, $declaration->ability);
+        }
+
+        return true;
     }
 }

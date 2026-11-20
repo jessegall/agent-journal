@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Memory\Mcp;
+
+use App\Mcp\Attributes\Dispatches;
+use App\Mcp\Support\ToolArguments;
+use Domain\Memory\Commands\EditMemory;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
+
+#[IsIdempotent]
+#[IsDestructive(false)]
+#[Name('memories_edit')]
+#[Dispatches(EditMemory::class)]
+#[Description('Edit your memory at the revision you read.')]
+final class EditMemoryTool extends MemoryWriteTool
+{
+    protected function writeSchema(JsonSchema $schema): array
+    {
+        return [
+            'memory_id' => $schema->string()->max(26)->required(),
+            'expected_revision' => $schema->integer()->min(1)->required(),
+            'text' => $schema->string(),
+            'weight' => $schema->integer()->min(1)->max(10),
+        ];
+    }
+
+    protected function command(ToolArguments $arguments): EditMemory
+    {
+        return new EditMemory(
+            $arguments->ulid('memory_id'),
+            $arguments->positiveInteger('expected_revision'),
+            $arguments->optionalText('text'),
+            $arguments->optionalWholeNumber('weight'),
+        );
+    }
+}

@@ -641,6 +641,7 @@ use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
+use App\Mcp\Support\JobPermissionReader;
 use App\Mcp\Support\Continuation;
 use App\Mcp\Support\Continuations;
 use App\Mcp\Support\TextChunk;
@@ -2175,6 +2176,7 @@ final class CoreApi
                 ReadGrant::class,
                 Continuations::class,
                 TextFields::class,
+                JobPermissionReader::class,
                 JournalResource::class,
                 RendersRefusal::class,
                 RunsCallPipelines::class,
