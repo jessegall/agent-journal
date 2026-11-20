@@ -156,6 +156,7 @@ use App\Agents\Contracts\CallingProgram;
 use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Support\SessionProvenance;
+use App\Bus\Contracts\CommandTransaction;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchCandidates;
@@ -1147,6 +1148,7 @@ final class CoreApi
                 RecordProvider::class,
                 RecordResolver::class,
                 RecordLinker::class,
+                CommandTransaction::class,
                 CurrentSession::class,
                 ConversationVisits::class,
                 AutoAssignmentActivity::class,

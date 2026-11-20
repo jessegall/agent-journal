@@ -31,6 +31,11 @@ final readonly class SessionProvenance
         }
     }
 
+    public function forget(Model $record): void
+    {
+        Link::forgetModels([$record]);
+    }
+
     public function isFromCurrentSession(Model $record): bool
     {
         if (! $this->session->hasSession()) {
