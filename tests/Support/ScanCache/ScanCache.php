@@ -9,8 +9,9 @@ use Tests\Architecture\Support\ParsedFile;
 
 /**
  * Keeps each file's findings for each scan on disk, keyed by its path with the hash of the content they were read
- * from, so a run parses only the files that changed since the last one and a changed file replaces its old entry.
- * Parallel workers each write a whole new cache file and rename it into place.
+ * from, so a run parses only the files that changed since the last one and a changed file replaces its old entry. A
+ * file whose modified time and size are unchanged is not even hashed, and a scan that found nothing new writes
+ * nothing. Parallel workers each write a whole new cache file and rename it into place.
  */
 final class ScanCache
 {
@@ -54,19 +55,29 @@ final class ScanCache
         $cacheFile = self::cacheFileFor($scan);
         $stored = self::read($cacheFile);
         $byFile = [];
+        $changed = false;
 
         foreach ($paths as $path) {
-            $hash = sha1((string) file_get_contents($path));
+            $stamp = filemtime($path).':'.filesize($path);
 
-            if (($stored[$path]['hash'] ?? null) !== $hash) {
-                self::$parsedFiles++;
-                $stored[$path] = ['hash' => $hash, 'findings' => $scan->findingsIn(ParsedFile::fromPath($path))];
+            if (($stored[$path]['stamp'] ?? null) !== $stamp) {
+                $hash = sha1((string) file_get_contents($path));
+
+                if (($stored[$path]['hash'] ?? null) !== $hash) {
+                    self::$parsedFiles++;
+                    $stored[$path] = ['hash' => $hash, 'findings' => $scan->findingsIn(ParsedFile::fromPath($path))];
+                }
+
+                $stored[$path]['stamp'] = $stamp;
+                $changed = true;
             }
 
             $byFile[$path] = $stored[$path]['findings'];
         }
 
-        self::write($cacheFile, $stored);
+        if ($changed) {
+            self::write($cacheFile, $stored);
+        }
 
         return $byFile;
     }
@@ -86,7 +97,7 @@ final class ScanCache
     }
 
     /**
-     * @return array<string, array{hash: string, findings: list<mixed>}>
+     * @return array<string, array{hash: string, stamp?: string, findings: list<mixed>}>
      */
     private static function read(string $cacheFile): array
     {
@@ -100,7 +111,7 @@ final class ScanCache
     }
 
     /**
-     * @param  array<string, array{hash: string, findings: list<mixed>}>  $findings
+     * @param  array<string, array{hash: string, stamp?: string, findings: list<mixed>}>  $findings
      */
     private static function write(string $cacheFile, array $findings): void
     {

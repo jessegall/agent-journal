@@ -37,7 +37,7 @@ final class AffectedTestsTest extends TestCase
         );
     }
 
-    public function test_a_change_outside_every_domain_runs_everything(): void
+    public function test_a_change_to_an_area_everything_stands_on_or_the_test_support_runs_everything(): void
     {
         $this->assertSame(
             AffectedTests::EVERYTHING,
@@ -46,6 +46,25 @@ final class AffectedTestsTest extends TestCase
                 'app/Bus/Support/CommandRegistry.php',
             ),
         );
+        $this->assertSame(AffectedTests::EVERYTHING, $this->affectedBy('tests/Support/CommitsHookRows.php'));
+        $this->assertSame(AffectedTests::EVERYTHING, $this->affectedBy('config/accounts.php'));
+    }
+
+    public function test_a_change_to_a_core_area_runs_its_tests_and_the_tests_that_name_the_class(): void
+    {
+        $affected = $this->affectedBy('app/Profiles/Support/ClaudeKeySignIn.php');
+
+        $this->assertNotSame(AffectedTests::EVERYTHING, $affected);
+        $this->assertContains('tests/Feature/Profiles', $affected);
+        $this->assertContains('tests/Architecture', $affected);
+        $this->assertNotContains('tests/Feature/Bus', $affected);
+    }
+
+    public function test_a_changed_test_file_runs_itself(): void
+    {
+        $affected = $this->affectedBy('tests/Feature/Profiles/SignInSecretTest.php');
+
+        $this->assertSame(['tests/Architecture', 'tests/Feature/Profiles/SignInSecretTest.php'], $affected);
     }
 
     /**

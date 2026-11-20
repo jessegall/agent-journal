@@ -8,9 +8,11 @@ use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 
 /**
- * The tests a set of changed files can break, read from the domain boundaries: a change inside one domain that touches
- * none of its exports runs that domain's tests; a change to an export also runs every domain that requires it, however
- * far up; a change anywhere else (Core in app, the shared tests, configuration) runs every test.
+ * The tests a set of changed files can break, read from the domain boundaries and Core's areas: a change inside one
+ * domain that touches none of its exports runs that domain's tests; a change to an export also runs every domain that
+ * requires it, however far up; a change to a Core area in app/<Area> runs that area's own test folders and every test
+ * or domain that names one of the changed classes; a changed test file runs itself. A change to an area everything
+ * stands on, the shared test support or the configuration runs every test.
  */
 final readonly class AffectedTests
 {
@@ -24,6 +26,16 @@ final readonly class AffectedTests
      */
     private const string ARCHITECTURE = 'tests/Architecture';
 
+    /**
+     * The Core areas every other area and domain stands on, so a change to one runs every test.
+     */
+    private const array GLOBAL_AREAS = ['Bus', 'Domains', 'Actors', 'Records', 'Providers', 'Contracts', 'Support'];
+
+    /**
+     * The test folders that mirror Core's areas, tests/<Kind>/<Area>.
+     */
+    private const array TEST_KINDS = ['Feature', 'Unit'];
+
     public function __construct(private DomainRegistry $registry, private string $root) {}
 
     /**
@@ -35,30 +47,104 @@ final readonly class AffectedTests
     public function for(array $changedFiles): array
     {
         $affected = [];
+        $paths = [];
 
         foreach ($changedFiles as $file) {
             $owner = $this->ownerOf($file);
 
-            if ($owner === null) {
+            if ($owner !== null) {
+                $affected[$owner->name] = $owner;
+
+                if ($this->isExport($owner, $file)) {
+                    foreach ($this->dependentsOf($owner) as $dependent) {
+                        $affected[$dependent->name] = $dependent;
+                    }
+                }
+
+                continue;
+            }
+
+            $corePaths = $this->corePathsFor($file);
+
+            if ($corePaths === null) {
                 return self::EVERYTHING;
             }
 
-            $affected[$owner->name] = $owner;
+            foreach ($corePaths['paths'] as $path) {
+                $paths[$path] = $path;
+            }
 
-            if ($this->isExport($owner, $file)) {
-                foreach ($this->dependentsOf($owner) as $dependent) {
-                    $affected[$dependent->name] = $dependent;
-                }
+            foreach ($corePaths['domains'] as $domain) {
+                $affected[$domain->name] = $domain;
             }
         }
 
-        $folders = array_values(array_filter(
-            array_map(fn (DomainEntry $entry) => $this->testFolderOf($entry), $affected),
-            fn (string $folder) => is_dir("{$this->root}/{$folder}"),
-        ));
-        sort($folders);
+        $folders = array_map(fn (DomainEntry $entry) => $this->testFolderOf($entry), $affected);
+        $selected = array_values(array_unique(array_filter(
+            [...$folders, ...array_values($paths)],
+            fn (string $path) => file_exists("{$this->root}/{$path}"),
+        )));
+        sort($selected);
 
-        return [self::ARCHITECTURE, ...$folders];
+        return [self::ARCHITECTURE, ...array_values(array_diff($selected, [self::ARCHITECTURE]))];
+    }
+
+    /**
+     * What a change outside every domain runs: a changed test file itself, or a Core area's test folders with every
+     * test and domain that names one of the changed class; null when the change reaches everything.
+     *
+     * @return array{paths: list<string>, domains: list<DomainEntry>}|null
+     */
+    private function corePathsFor(string $file): array|null
+    {
+        $isTestFile = preg_match('#^tests/(Feature|Unit|Architecture)/.+Test\.php$#', $file) === 1;
+
+        if ($isTestFile) {
+            return ['paths' => [$file], 'domains' => []];
+        }
+
+        if (preg_match('#^app/([A-Z][A-Za-z]+)/.+$#', $file, $area) !== 1
+            || in_array($area[1], self::GLOBAL_AREAS, true)) {
+            return null;
+        }
+
+        $paths = array_map(fn (string $kind) => "tests/{$kind}/{$area[1]}", self::TEST_KINDS);
+
+        if (! str_ends_with($file, '.php')) {
+            return ['paths' => $paths, 'domains' => []];
+        }
+
+        $class = 'App\\'.str_replace('/', '\\', substr($file, 4, -4));
+        [$tests, $domains] = $this->namersOf($class);
+
+        return ['paths' => [...$paths, ...$tests], 'domains' => $domains];
+    }
+
+    /**
+     * The test files and the domains whose code name the class.
+     *
+     * @return array{list<string>, list<DomainEntry>}
+     */
+    private function namersOf(string $class): array
+    {
+        $tests = [];
+        $domains = [];
+        $domainFolders = array_map(fn (DomainEntry $entry) => $entry->folder, $this->registry->all());
+        $folders = implode(' ', array_map(escapeshellarg(...), [$this->root.'/tests', ...$domainFolders]));
+        exec('grep -rlF '.escapeshellarg($class).' '.$folders, $found);
+
+        foreach ($found as $path) {
+            $relative = substr($path, strlen($this->root) + 1);
+            $owner = $this->ownerOf($relative);
+
+            if ($owner !== null) {
+                $domains[$owner->name] = $owner;
+            } elseif (str_ends_with($relative, 'Test.php')) {
+                $tests[] = $relative;
+            }
+        }
+
+        return [$tests, array_values($domains)];
     }
 
     /**

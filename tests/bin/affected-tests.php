@@ -78,15 +78,10 @@ if ($files === []) {
 $folders = new AffectedTests($app->make(DomainRegistry::class), $root)->for($files);
 
 $configuration = configurationFor($root, $folders);
-$listed = explode(
-    "\n",
-    run(['php', 'artisan', 'test', '--list-tests', "--configuration={$configuration}"], $environment, $root, true),
-);
-$count = count(array_filter($listed, fn (string $line) => str_starts_with($line, ' - ')));
 
 fwrite(STDOUT, $folders === AffectedTests::EVERYTHING
-    ? "Running {$count} tests: a change outside every domain, so every test runs.\n"
-    : "Running {$count} tests of: ".implode(', ', $folders)."\n");
+    ? "Running every test: the change reaches an area everything stands on.\n"
+    : 'Running the tests of: '.implode(', ', $folders)."\n");
 
 $exitCode = (int) run(
     ['php', 'artisan', 'test', '--parallel', '--recreate-databases', "--configuration={$configuration}"],

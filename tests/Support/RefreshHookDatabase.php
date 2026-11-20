@@ -31,6 +31,10 @@ trait RefreshHookDatabase
         HookDatabase::select($this->app);
         $this->rebuildWhenMigrationsChanged();
 
+        // A test's commits need not wait for the disk: what a test writes is thrown away, and the setting holds for
+        // this session only, so the app's own database stays durable.
+        $this->app->make(DatabaseManager::class)->connection()->statement('SET synchronous_commit = off');
+
         if (! HookDatabase::isParallelWorker($this->app)) {
             $this->app->make(Kernel::class)->call('migrate', ['--force' => true]);
         }
@@ -106,8 +110,8 @@ trait RefreshHookDatabase
     }
 
     /**
-     * Empties the tables a test committed rows to, in one statement; their sequences keep counting, as no test reads
-     * an id it did not make.
+     * Empties the tables a test committed rows to, in one statement, and starts their sequences again, as some tests
+     * read the first id a table hands out.
      */
     protected function emptyTables(string ...$tables): void
     {
@@ -116,6 +120,6 @@ trait RefreshHookDatabase
         }
 
         $quoted = implode(', ', array_map(fn (string $table) => '"'.$table.'"', $tables));
-        $this->app->make(DatabaseManager::class)->connection()->statement("truncate table {$quoted} cascade");
+        $this->app->make(DatabaseManager::class)->connection()->statement("truncate table {$quoted} restart identity cascade");
     }
 }
